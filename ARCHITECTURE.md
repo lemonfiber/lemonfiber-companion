@@ -248,6 +248,32 @@ nothing about why. `tests/Templates` drives the framework's own parser over ever
 template and fails on what it reports, rather than keeping a second copy of the
 supported vocabulary that would silently drift from the installed package.
 
+### Language
+
+The application ships **`en` and `nl`**, and no more. Every other rule here is
+about code a developer reads; these two are about the only text the operator
+ever sees.
+
+| | Rule | Enforced by |
+|---|---|---|
+| L1 | Text a person reads comes from the translator | phpstan: own rule, scoped to presenters, view models and screens |
+| L2 | Every locale carries the same keys, none empty and none equal to its key | test |
+
+**The line between the two kinds of text.** A refusal on screen, an empty state,
+a notification body — a person reads these, so they are keys in
+`lang/<locale>/<module>.php` and reach the screen through `__()` with a
+replacement array. An exception message, a log line, a PHPStan rule's message —
+a developer reads these, so they are `sprintf` and are **never** translated.
+Translating a stack trace helps nobody and makes the one audience who needs it
+read it in a language they did not choose.
+
+**Why L2 is the guard that matters.** A key missing from `nl` fails nothing.
+Laravel looks it up, misses, falls back to `en`, misses again, and renders the
+key — so a Dutch device shows `health.unreachable` where a sentence belongs and
+ships that way. Nothing else in this repository can see that, and a comparison
+of the two catalogues is cheap. The reverse direction is checked too: a key in
+`nl` with no `en` counterpart is a typo or text nothing shows any more.
+
 ### Comments
 
 | | Rule | Enforced by |

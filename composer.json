@@ -34,15 +34,10 @@
         "nativephp/mobile": "^4.4"
     },
     "require-dev": {
-        "bamarni/composer-bin-plugin": "^1.9",
-        "captainhook/captainhook": "^5.29",
         "ergebnis/composer-normalize": "^2.53",
         "ergebnis/phpstan-rules": "^2.13",
-        "fakerphp/faker": "^1.24",
         "larastan/larastan": "^3.12",
-        "laravel/pail": "^1.2",
         "laravel/pint": "^1.32",
-        "mockery/mockery": "^1.6",
         "nikic/php-parser": "^5.8",
         "nunomaduro/collision": "^8.9",
         "pestphp/pest": "^5.1",
@@ -89,7 +84,6 @@
     },
     "config": {
         "allow-plugins": {
-            "bamarni/composer-bin-plugin": true,
             "ergebnis/composer-normalize": true,
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
@@ -101,10 +95,6 @@
         "sort-packages": true
     },
     "extra": {
-        "bamarni-bin": {
-            "bin-links": false,
-            "forward-command": true
-        },
         "laravel": {
             "dont-discover": []
         }

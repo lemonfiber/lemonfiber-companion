@@ -372,6 +372,15 @@ services:
         tags:
             - phpstan.rules.rule
 
+    # L1 — text a person reads comes from the translator. Scoped to the
+    # directories a string passes through on its way to a screen, because that
+    # is where the distinction between user-facing and developer-facing text
+    # can be drawn from the path alone.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoUserFacingLiteralRule
+        tags:
+            - phpstan.rules.rule
+
     # A9 — a service provider binds and does not work. Twelve module providers
     # run before the first frame; N1-R36 wants that frame usable without waiting
     # on a read.
