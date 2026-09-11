@@ -14,7 +14,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "kernel"
+            "kind": "kernel",
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            }
         }
     }
 }

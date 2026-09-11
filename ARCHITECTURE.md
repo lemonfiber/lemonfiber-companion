@@ -438,7 +438,9 @@ out. R3 refuses those three shapes by name. R2 is the general answer: plant the
 smallest violation of every rule, run the machine that enforces it, and require
 it to report.
 
-**Every fixture sits under a directory called `Fixtures`.** For the length of a
+**Every fixture sits under a directory called `Fixtures`**, with one exception:
+the coverage report a floors fixture needs goes to `coverage/`, which is
+generated output and wholly ignored already. For the length of a
 run the files are really on disk, so `.gitignore` and `pint.json` both exclude
 that one name. Without it, a commit made beside a run picks up a deliberate rule
 violation, `git status` reports a dirty tree that is about to clean itself, and
@@ -483,7 +485,9 @@ there, and neither is read as a description of the current code.
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
 | G6 | No committed `->only(`, and no `->skip()` without a reason | arch |
+| G7 | Every module declares its own coverage and mutation floors | arch |
 | G8 | Every port in `Modules\Kernel` is bound, once, in the composition root | test: the booted composition root |
+| G9 | No module is below the coverage floor it declared | test: the `Floors` suite, over the clover report |
 
 **G2 is the most valuable rule on this page.** A fake that has drifted from its
 adapter makes the suite green while the application is broken, and nothing else
@@ -508,6 +512,36 @@ tests/Contract/StackContract.php
 | H5 | A string with a value in it is built with `sprintf` — never `.`, never interpolation | phpstan: own rule, one per node type |
 | H6 | An exception is named for what happened, not for being an exception | arch |
 | H7 | A test is named and described for the behaviour it pins | arch |
+
+**Why the floors are per module.** One percentage across twelve modules is an
+average, and an average is true about what it covered and silent about what it
+covered over: a capability at 100% carries an adapter at 40% and the gate
+reports a pass. The clover report already holds the per-file numbers, so
+splitting it by directory costs nothing at the point of measurement and turns
+one number into twelve.
+
+**There is deliberately no default floor.** A module that declares none fails
+G7 by name. A default would put the number back where nobody chose it, and a
+module added tomorrow would inherit a bar somebody picked for a different
+module — which is the silent exemption the change exists to remove. The kind's
+convention is named in the failure message instead, so declaring it is a
+ten-second job rather than a guess.
+
+**The ratchet is on the declared floors, not the measured ones.** The obvious
+rule — a floor tracks actual coverage and may only rise — is a gate that blocks
+its own cure: a module gaining a well-tested class raises its real coverage
+without anyone deciding to, and the build turns red for an improvement. Declared
+floors move only when somebody edits a manifest, so the total can never be
+tripped by code getting better. The slack between a floor and the real number is
+printed every run and argued down in review.
+
+**Mutation floors are declared in the same place and cannot be read the same
+way.** There is no machine-readable mutation report — Pest offers `--min`, which
+fails a run, and nothing that emits a score. So the floors are enforced by
+invocation: modules sharing a floor share one run, because a floor of 100 admits
+no offsetting between them, and a module whose floor differs gets its own. The
+path list is generated from the manifests rather than written out, which is what
+stops it going stale the day a module is added.
 
 **Why G6 is worth a rule of its own.** A committed `->only()` makes Pest run
 that one test and report green. Every other rule on this page stops holding, the

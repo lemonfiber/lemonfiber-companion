@@ -16,7 +16,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "adapter"
+            "kind": "adapter",
+            "floors": {
+                "coverage": 100,
+                "mutation": 0
+            }
         }
     }
 }

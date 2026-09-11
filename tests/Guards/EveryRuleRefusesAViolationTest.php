@@ -69,6 +69,18 @@ it('the analyser reports every rule it is supposed to', function (): void {
     ));
 
     $reported = analyserFindings();
+
+    // Told apart from "every rule stayed quiet" on purpose. A malformed module
+    // manifest stops Larastan booting, the analyser writes a stack trace to
+    // stderr and nothing to stdout, and every fixture below then reads as a
+    // rule that did not fire — forty findings, all of them wrong, none of them
+    // the real one.
+    expect($reported)->not->toBeNull(
+        'The analyser produced no readable output at all, so nothing below was measured. '
+        . 'Run `vendor/bin/phpstan analyse .rule-fixtures` and read stderr: a bootstrap '
+        . 'failure looks exactly like every rule going silent at once.',
+    );
+
     $silent = [];
 
     foreach ($fixtures as $fixture) {
@@ -169,9 +181,12 @@ it('reports the rules nothing can be planted under', function (): void {
  * time. The tree is passed on the command line, which replaces the `paths` in
  * the configuration and leaves the rules and their scoping intact.
  *
- * @return array<string, list<string>>
+ * Null where the analyser did not run at all, which is a different fact from
+ * an analyser that ran and reported nothing.
+ *
+ * @return array<string, list<string>>|null
  */
-function analyserFindings(): array
+function analyserFindings(): ?array
 {
     $raw = shell_exec(sprintf(
         '%s/vendor/bin/phpstan analyse %s --error-format=json --no-progress 2>/dev/null',
@@ -184,7 +199,7 @@ function analyserFindings(): array
     $files = is_array($decoded) ? ($decoded['files'] ?? null) : null;
 
     if (! is_array($files)) {
-        return [];
+        return null;
     }
 
     $found = [];
@@ -233,7 +248,7 @@ function text(mixed $value): string
  *
  * @return array<string, string>
  */
-function suiteFailures(string $suites = 'Arch,Templates,Modules,Feature'): array
+function suiteFailures(string $suites = 'Arch,Templates,Modules,Feature,Floors'): array
 {
     $log = sprintf('%s/fixtures-junit.xml', sys_get_temp_dir());
 

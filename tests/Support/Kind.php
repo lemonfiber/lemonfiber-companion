@@ -79,6 +79,37 @@ enum Kind: string
         };
     }
 
+    /**
+     * The coverage floor a module of this kind usually carries.
+     *
+     * Named in G7's failure message rather than applied as a default. The
+     * difference is the whole point: a suggestion has to be typed into the
+     * module's own manifest by somebody who looked at it, and a default is a
+     * number that arrives without anyone deciding.
+     */
+    public function conventionalCoverageFloor(): int
+    {
+        // Every kind, for now. The run has been held to 100% since the first
+        // commit, so twelve floors of 100 are the same bar written twelve
+        // times — what changes is that lowering one is local and visible
+        // instead of dropping the number for everybody.
+        return 100;
+    }
+
+    /** The mutation floor a module of this kind usually carries. */
+    public function conventionalMutationFloor(): int
+    {
+        return match ($this) {
+            // Where the decisions are, and therefore where a surviving mutant
+            // means a test that asserts nothing.
+            self::Kernel, self::Capability, self::Surface => 100,
+            // A component holds state and an adapter forwards a call. Mutating
+            // either measures the fake rather than the application, which is a
+            // number that looks like rigour and is not.
+            self::Design, self::Adapter => 0,
+        };
+    }
+
     /** Whether a module of this kind renders, and so may hold mutable state. */
     public function renders(): bool
     {
