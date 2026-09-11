@@ -10,7 +10,9 @@ use function is_string;
 
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\GroupUse;
+use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
@@ -57,6 +59,49 @@ final readonly class Imports
         }
 
         return [...self::imported($statements), ...self::writtenOut($statements)];
+    }
+
+    /**
+     * The fully-qualified name the file declares, or an empty string.
+     *
+     * Read from the file rather than derived from its path, because the two
+     * disagree exactly when W2 is being broken — and a name derived from the
+     * path sends the autoloader to a file that declares something else, which
+     * loads it once without defining the expected class and leaves it to be
+     * loaded again by whatever looks next. The second load is a fatal
+     * redeclaration, and it happens before any rule can report the misplacement.
+     */
+    public static function declaredName(string $file): string
+    {
+        $source = file_get_contents($file);
+
+        if (! is_string($source)) {
+            return '';
+        }
+
+        $statements = new ParserFactory()->createForNewestSupportedVersion()->parse($source);
+
+        if ($statements === null) {
+            return '';
+        }
+
+        $finder = new NodeFinder();
+
+        /** @var ClassLike|null $declaration */
+        $declaration = $finder->findFirstInstanceOf($statements, ClassLike::class);
+
+        if ($declaration?->name === null) {
+            return '';
+        }
+
+        /** @var Namespace_|null $namespace */
+        $namespace = $finder->findFirstInstanceOf($statements, Namespace_::class);
+
+        // Joined by hand rather than read from `namespacedName`, which the
+        // parser only fills in once a NameResolver has walked the tree.
+        return $namespace?->name === null
+            ? $declaration->name->toString()
+            : sprintf('%s\\%s', $namespace->name->toString(), $declaration->name->toString());
     }
 
     /**

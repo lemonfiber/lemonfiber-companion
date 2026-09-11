@@ -83,6 +83,7 @@ final readonly class Fixtures
             ...self::analysability(),
             ...self::textAndSecurity(),
             ...self::sizeAndSuiteIntegrity(),
+            ...self::placement(),
             ...self::rulesAboutRules(),
             ...self::notDrivable(),
         ];
@@ -1250,6 +1251,51 @@ final readonly class Fixtures
                     public function answer(): string;
                 }
                 PHP, 'G8 —', 'Unbound'),
+        ];
+    }
+
+    /** @return list<Fixture> */
+    private static function placement(): array
+    {
+        return [
+            Fixture::suite('W1', 'app/Support/Stray.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace App\Support;
+
+                final readonly class Stray {}
+                PHP, 'W1 —', 'Stray'),
+
+            // A namespace no autoloader maps, rather than another real module's:
+            // PSR-4 would resolve the same file under two names and PHP would
+            // fatal on the second declaration before the rule could report.
+            Fixture::suite('W2', 'app-modules/health/src/Fixtures/Borrowed.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Elsewhere\Fixtures;
+
+                final readonly class Borrowed {}
+                PHP, 'W2 —', 'Borrowed'),
+
+            Fixture::suite('W3', 'resources/views/stray.blade.php', <<<'BLADE'
+                <native:text>a screen with no module</native:text>
+                BLADE, 'W3 —', 'stray.blade.php'),
+
+            Fixture::suite('W4', 'app-modules/health/tests/Fixtures/BorrowedTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Elsewhere\Tests\Fixtures;
+
+                it('answers to another module', function (): void {
+                    expect(true)->toBeTrue();
+                });
+                PHP, 'W4 —', 'BorrowedTest'),
         ];
     }
 

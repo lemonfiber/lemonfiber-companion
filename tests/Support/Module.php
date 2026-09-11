@@ -147,6 +147,16 @@ final readonly class Module
             $relative = str_replace([sprintf('%s/src/', $this->path), '.php'], '', $file);
             $name = sprintf('%s\\%s', $this->namespace, str_replace('/', '\\', $relative));
 
+            // A file whose declared name does not match its path is left alone.
+            // Asking the autoloader for the path's name would send it to this
+            // file, which declares something else — so the class stays
+            // undefined, the file stays loaded, and the next thing to look at it
+            // loads it again and fatals on the redeclaration. W2 reports the
+            // misplacement; this only has to avoid triggering it.
+            if (Imports::declaredName($file) !== $name) {
+                continue;
+            }
+
             if (class_exists($name) || interface_exists($name) || enum_exists($name)) {
                 $names[] = $name;
             }

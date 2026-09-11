@@ -360,6 +360,47 @@ code nothing reaches.
 fails resolution when a dependency matches a published advisory, so the failure
 arrives at `composer update` rather than at `composer audit` in CI a week later.
 
+### Where things go
+
+```
+app/Providers/            the composition root, and nothing else
+app-modules/<name>/
+  composer.json           declares the module's kind, which generates its rules
+  src/Api/                what other modules may name
+  src/Api/Commands/       one public method each, returning Outcome
+  src/Api/Queries/        one public method each, never returning Outcome
+  src/Internal/           unreachable from anywhere else
+  src/Internal/Presenters/   pure: data in, view model out
+  resources/views/        the screens this module navigates to
+  tests/                  mirroring src/, one directory level for one
+lang/<locale>/<module>.php   every sentence a person reads
+tests/Arch/               the rules
+tests/Templates/          Blade, which no analyser reads
+tests/Contract/           one suite per port, run against the adapter and the fake
+tests/Feature/            the composition root
+tests/Guards/             every rule, shown to refuse a violation
+tests/Support/            what the four above share
+phpstan/Rules/            the rules that are easier to write than to find
+```
+
+| | Rule | Enforced by |
+|---|---|---|
+| W1 | `app/` holds only `App\Providers` | arch |
+| W2 | A module's `src/` declares only its own namespace | arch |
+| W3 | Root `tests/` holds only the suites; root `resources/views/` holds no Blade | arch |
+| W4 | A module's tests are namespaced for that module | arch |
+
+**These are not tidiness.** Every rule on this page is derived from a path or a
+namespace: the kind rules read `app-modules/<name>/composer.json`, the published
+surface rule reads `Api` against `Internal`, H4 pairs a test with its source by
+replacing one path segment. A file in the wrong place is a file the rules
+governing its neighbours do not reach — and nothing says so, because a rule that
+finds no files reports a green tick.
+
+`app/` is the sharpest case. The permission to name both a port and an adapter is
+granted by path, along with an exemption from A2, A3 and A4, so a class put there
+acquires all of it without anyone deciding it should.
+
 ### The rules about the rules
 
 | | Rule | Enforced by |
