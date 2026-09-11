@@ -2,103 +2,96 @@
 
 declare(strict_types=1);
 
-// The architecture in ARCHITECTURE.md, made executable.
-//
-// Every rule here is one a reviewer would otherwise have to hold in their head
-// on every pull request. Reviewers are inconsistent about that and a test is
-// not, which is the whole argument for writing them down as code.
+// The rules that are not about module boundaries — shape, naming, and the
+// habits that make a class hard to test. Boundaries live in
+// ModuleBoundariesTest.php, generated from each module's declared kind.
 
 // ---------------------------------------------------------------------------
-// The dependency rule: arrows point inward, and never back out.
+// A — framework coupling. Every rule here exists so a constructor tells the
+// truth about what a class needs.
 // ---------------------------------------------------------------------------
 
-arch('a feature never reaches an adapter')
-    ->expect('App\Companion')
-    ->not->toUse('App\Adapters');
-
-arch('a port depends on nothing but PHP and its own values')
-    ->expect('App\Contracts')
-    ->not->toUse(['App\Companion', 'App\Adapters', 'Illuminate', 'Native', 'Lemonfiber\Sdk', 'Saloon']);
-
-arch('nothing depends on an adapter except the bindings that install it')
-    ->expect('App\Adapters')
-    ->not->toBeUsedIn(['App\Companion', 'App\Contracts']);
-
-// ---------------------------------------------------------------------------
-// N1-R16 — the SDK is the only way out.
-// ---------------------------------------------------------------------------
-
-arch('the SDK is named in exactly one place')
-    ->expect('Lemonfiber\Sdk')
-    ->toOnlyBeUsedIn('App\Adapters\Stack');
-
-arch('no HTTP client reaches the application')
-    ->expect(['GuzzleHttp', 'Saloon', 'Symfony\Component\HttpClient'])
-    ->not->toBeUsedIn(['App\Companion', 'App\Contracts', 'App\Support']);
-
-arch('nothing opens a socket by hand')
-    ->expect(['curl_init', 'curl_exec', 'fsockopen', 'stream_socket_client', 'file_get_contents'])
-    ->not->toBeUsed();
-
-// ---------------------------------------------------------------------------
-// Hidden dependencies: a constructor should declare what a class needs.
-// ---------------------------------------------------------------------------
-
-arch('a feature asks for what it needs rather than reaching for it')
+arch('a class asks for what it needs rather than reaching for it')
     ->expect(['app', 'resolve', 'Illuminate\Support\Facades', 'Illuminate\Container'])
-    ->not->toBeUsedIn(['App\Companion', 'App\Contracts', 'App\Support']);
+    ->not->toBeUsedIn(['App', 'Modules']);
 
 arch('configuration is read from config, never from the environment')
     ->expect('env')
     ->toOnlyBeUsedIn('Config');
 
+arch('no Eloquent anywhere')
+    ->expect(['Illuminate\Database\Eloquent', 'Illuminate\Database\Query'])
+    ->not->toBeUsedIn(['App', 'Modules']);
+
+// Mutable global state is checked in NoGlobalStateTest.php by reflection —
+// Pest's architecture expectations have no rule for it.
+
 // ---------------------------------------------------------------------------
-// Shape.
+// B — the untestable primitives. PHPStan's disallowed-calls catches the call
+// sites; these catch the imports that would precede them.
 // ---------------------------------------------------------------------------
+
+arch('time arrives through the clock port')
+    ->expect(['Carbon', 'Illuminate\Support\Carbon', 'DateTime', 'DateTimeImmutable'])
+    ->not->toBeUsedIn('Modules\Kernel\Api');
+
+// ---------------------------------------------------------------------------
+// C/D — errors and data shape.
+// ---------------------------------------------------------------------------
+
+arch('nothing is silenced')
+    ->expect(['App', 'Modules'])
+    ->not->toUse('@');
+
+// Scoped to production code: the test support classes read manifests off disk
+// and a bare RuntimeException is the honest answer when one is unreadable.
+arch('no exception is thrown that says nothing')
+    ->expect(['Exception', 'RuntimeException', 'LogicException', 'InvalidArgumentException'])
+    ->not->toBeUsedIn(['App', 'Modules']);
+
+// ---------------------------------------------------------------------------
+// H — naming and size. A name that permits anything is how a class acquires
+// twenty methods.
+// ---------------------------------------------------------------------------
+
+arch('no class is named for nothing in particular')
+    ->expect(['Modules', 'App'])
+    ->not->toHaveSuffix('Manager')
+    ->not->toHaveSuffix('Helper')
+    ->not->toHaveSuffix('Util')
+    ->not->toHaveSuffix('Utils')
+    ->not->toHaveSuffix('Service')
+    ->not->toHaveSuffix('Data')
+    ->not->toHaveSuffix('Info');
+
+arch('an interface is named for what it does, not for being an interface')
+    ->expect(['Modules', 'App'])
+    ->not->toHaveSuffix('Interface')
+    ->not->toHavePrefix('Abstract');
 
 arch('every class is final')
-    ->expect('App')
+    ->expect(['App', 'Modules'])
     ->toBeFinal();
 
-// A screen's state is what the renderer reads on re-render, so components are
-// the one mutable shape here. The exemption is named rather than left as a gap:
-// anything else that wants to be mutable is caught by this test and is probably
-// the wrong design.
-arch('everything is readonly except the components the renderer re-reads')
-    ->expect('App')
-    ->toBeReadonly()
-    ->ignoring('App\Companion');
-
-arch('a port is an interface')
-    ->expect('App\Contracts')
-    ->toBeInterfaces()
-    ->ignoring('App\Contracts\Values');
-
-arch('a view model carries no behaviour')
-    ->expect('App\Companion')
-    ->classes()
-    ->toHaveSuffix('View')
-    ->toBeReadonly()
-    ->ignoring(['App\Companion\Shared']);
-
 // ---------------------------------------------------------------------------
-// Leftovers and silence.
+// Leftovers.
 // ---------------------------------------------------------------------------
 
 arch('no debugging survives a commit')
-    ->expect(['dd', 'dump', 'var_dump', 'print_r', 'ray', 'die', 'exit'])
+    ->expect(['dd', 'dump', 'var_dump', 'print_r', 'ray', 'die', 'exit', 'var_export'])
     ->not->toBeUsed();
 
-arch('nothing is silenced')
-    ->expect('App')
-    ->not->toUse('@');
+// ---------------------------------------------------------------------------
+// G — tests. A fake that has drifted makes the suite green while the app is
+// broken, so the rules that keep fakes honest are themselves enforced.
+// ---------------------------------------------------------------------------
 
-arch('the application holds no mutable global state')
-    ->expect('App')
-    ->not->toHaveStaticProperties();
+arch('nothing mocks a type we do not own')
+    ->expect(['Mockery', 'PHPUnit\Framework\MockObject'])
+    ->not->toBeUsed();
 
 // ---------------------------------------------------------------------------
-// The framework's own preset, which catches a long tail cheaply.
+// The framework's own presets, which catch a long tail cheaply.
 // ---------------------------------------------------------------------------
 
 arch()->preset()->php();

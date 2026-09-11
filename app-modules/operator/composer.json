@@ -1,0 +1,29 @@
+{
+    "name": "modules/operator",
+    "description": "The operator surface: navigation and screen composition only.",
+    "type": "library",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "version": "1.0",
+    "require": {
+        "php": "^8.5",
+        "modules/kernel": "*",
+        "modules/design": "*",
+        "modules/connection": "*",
+        "modules/stacks": "*",
+        "modules/health": "*",
+        "modules/backups": "*",
+        "modules/updates": "*",
+        "nativephp/mobile": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Operator\\": "src/",
+            "Modules\\Operator\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "kind": "surface"
+        }
+    }
+}

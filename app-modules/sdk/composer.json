@@ -1,0 +1,23 @@
+{
+    "name": "modules/sdk",
+    "description": "The only module permitted to name the SDK (N1-R16).",
+    "type": "library",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "version": "1.0",
+    "require": {
+        "php": "^8.5",
+        "modules/kernel": "*",
+        "lemonfiber/sdk-php": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Sdk\\": "src/",
+            "Modules\\Sdk\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "kind": "adapter"
+        }
+    }
+}

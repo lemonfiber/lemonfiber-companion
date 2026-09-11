@@ -1,178 +1,324 @@
 # Architecture
 
-How this app is put together, which patterns it uses on purpose, and which
-shapes are refused. Most of what is below is a test in `tests/Arch`; where it
-cannot be, it says so.
+This document is the contract. Where it and the code disagree, one of them is a
+bug — and the tests in `tests/Arch` exist so that it is usually the code.
 
-The short version: **ports and adapters, sliced by feature, with every view
-dumb and every boundary faked in tests.**
+Three layers enforce what follows, deliberately overlapping:
+
+| Layer | Enforces | Fails at |
+|---|---|---|
+| `composer.json` per module | which modules may reach which | dependency resolution |
+| PHPStan (`disallowed-calls`, `cognitive-complexity`, ergebnis, shipmonk) | what code may call and how complex it may get | static analysis |
+| Pest (`tests/Arch`, `tests/Templates`) | shape, naming, boundaries, Blade | the test suite |
+
+No layer is sufficient alone. Composer cannot see a namespace used without
+being required in a monorepo that autoloads everything; arch tests cannot read a
+Blade template; neither reads the lock file. The overlap is the point.
 
 ---
 
-## The dependency rule
-
-One direction, and it does not bend.
+## The shape
 
 ```
-resources/views/companion/**      Blade + EDGE. Reads its component. Nothing else.
-        │
-        ▼
-app/Companion/<Feature>/          Components and presenters. The app's behaviour.
-        │
-        ▼
-app/Contracts/                    Ports. Interfaces and value objects only.
-        ▲
-        │
-app/Adapters/                     The only code that touches anything outside.
+app/                      the composition root — the ONLY place a port meets an adapter
+app-modules/
+  kernel/                 ports, values, outcomes.            depends on NOTHING
+  design/                 EDGE components + theme tokens
+
+  connection/             pairing, session, multi-stack       (N1)
+  stacks/                 stacks and their services
+  health/                 verdict, findings, repairs          (N2)
+  backups/                snapshots
+  updates/                versions, apply, undo
+
+  operator/               navigation + screen composition     (N2)
+  household/              navigation + screen composition     (N3)
+
+  sdk/                    the only module that names the SDK  (N1-R16)
+  device/                 permissions, notifications          (N4)
+  vault/                  secure storage, app lock            (N4)
 ```
 
-- **Features** depend on `Contracts` and `Support`. Never on `Adapters`, never on
-  the SDK, never on NativePHP's bridges.
-- **Contracts** depend on nothing but PHP and their own value objects. No Laravel,
-  no Saloon, no framework of any kind. This is what makes them cheap to fake.
-- **Adapters** depend on whatever they wrap, and nothing depends on them except
-  the container binding that installs them.
-- **Views** depend on nothing. They read what their component exposes.
+Every module declares its kind in its own manifest:
 
-Arrows point inward. An adapter knowing about a feature is the mistake this rule
-exists to prevent, because it is how a boundary quietly stops being one.
+```json
+"extra": { "lemonfiber": { "kind": "capability" } }
+```
 
-## Two boundaries, and only two
+The kind is not decoration. `tests/Arch/ModuleBoundariesTest.php` reads it and
+generates that module's rules, so **a module added without rules is not a module
+without rules** — it inherits its kind's constraints the moment it exists. This
+is the difference between a convention and an invariant: nobody has to remember.
 
-Everything outside this application reaches it through one of these.
+### What each kind may depend on
 
-### `Contracts\Stack` — lemonfiber
+| Kind | May use | May never use |
+|---|---|---|
+| `kernel` | nothing. Not Illuminate, not Native, not the SDK | everything |
+| `capability` | `kernel` | Illuminate, Native, the SDK, other capabilities, adapters, surfaces |
+| `design` | `kernel`, `Native\Mobile` | the SDK, capabilities, surfaces |
+| `surface` | `kernel`, `design`, capabilities, `Native\Mobile` | the SDK, adapters, the other surface |
+| `adapter` | `kernel`, the one package it adapts | capabilities, surfaces, other adapters |
 
-One port per capability the app needs of the stack: health, lifecycle, requests,
-logs. The **only** implementation is `Adapters\Stack\Sdk*`, which is the only
-code in the repository permitted to name `Lemonfiber\Sdk` (`N1-R16`).
+Two consequences worth stating plainly:
 
-A feature asks `StackHealth::read()` and gets a value object. It does not know an
-envelope exists, which is what stops the contract's shape leaking into thirty
-screens.
+**A capability module cannot be run wrong.** It has no framework, no network and
+no clock of its own, so a test of it is a unit test whether or not anyone
+intended one.
 
-**When the SDK cannot answer something, the port is not written.** The gap is
-raised and the work stops (`N1-R17`). Do not add a port whose adapter would have
-to reach around the SDK to implement it.
+**`modules/sdk` is the only manifest that requires `lemonfiber/sdk-php`.** N1-R16
+therefore stops being a rule a reviewer enforces and becomes a fact the
+dependency resolver enforces: a surface module that types `Lemonfiber\Sdk` fails
+`composer-dependency-analyser` because its own manifest does not require it.
 
-### `Contracts\Device` — the phone
+### Published surface (E2)
 
-One port per native capability: secure storage, biometrics, camera,
-notifications. Implementations live in `Adapters\Device` and are **as thin as
-they can be** — a method that calls the platform and returns, with no branching
-worth testing.
+A module exposes `Modules\<Name>\Api` and nothing else. Everything under
+`Modules\<Name>\Internal` is unreachable from other modules, enforced by an arch
+rule.
 
-That thinness is what earns the coverage exclusion. See below.
+```
+app-modules/health/src/
+  Api/            ← other modules may name these
+    Health.php            the port's consumer-facing entry
+    Verdict.php
+    Findings.php
+  Internal/       ← nothing outside this module may name these
+    FindingRanker.php
+    VerdictPolicy.php
+```
 
-## The patterns, named on purpose
+The benefit is refactoring: anything in `Internal` can be renamed, split or
+deleted without reading another module, because nothing outside can be pointing
+at it. That guarantee is worth more than the one directory it costs.
 
-### Component
+---
 
-A NativePHP component: holds the state a screen needs, exposes it to the view,
-and handles presses. It is **thin** — it calls a port, hands the answer to a
-presenter, and stores the result.
+## The rules
 
-It does not format, it does not decide, and it does not talk to anything except
-ports and presenters. A component with business logic in it is the anti-pattern
-this whole layout exists to avoid, because it is the one class that is hardest to
-test and easiest to grow.
+Each rule below is enforced somewhere. Where a rule is not yet enforced
+mechanically, it says so — an unenforced rule is a wish, and labelling it
+honestly is better than pretending.
 
-Components are the one exception to `readonly` — the renderer reads their state
-on re-render, so they must be mutable. The exemption is named in the arch test
-rather than left as a gap.
+### Framework coupling
+
+| | Rule | Enforced by |
+|---|---|---|
+| A1 | No Eloquent, no Active Record. Persistence is a port; adapters own the storage | arch: no `Illuminate\Database` outside adapters |
+| A2 | No facades. Dependencies arrive through constructors | phpstan `disallowed-calls` |
+| A3 | No service location — `app()`, `resolve()`, `Container` | phpstan `disallowed-calls` |
+| A4 | No container-reaching helpers (`config()`, `cache()`, `auth()`, `request()`) outside adapters | phpstan `disallowed-calls` |
+| A5 | `env()` only inside `config/` | arch |
+| A6 | No mutable static state | arch: `not->toHaveStaticProperties()` |
+| A7 | `Illuminate\*` forbidden in `kernel` and every `capability` | arch: module kind |
+
+**Why A1 is first.** An Eloquent model cannot be constructed without a database,
+so every test that touches one is an integration test wearing a unit test's
+clothes. It is also the single largest source of hidden IO in a Laravel codebase:
+a property access can issue a query. Neither is acceptable in a module that is
+supposed to be pure.
+
+**Why A7 costs something and is worth it.** Giving up `Collection` in domain code
+is a real loss of convenience. What it buys is a domain that does not move when
+the framework does, and typed collections that say what they hold
+(`Findings`, not `Collection<int, mixed>`).
+
+### The untestable primitives
+
+| | Rule | Enforced by |
+|---|---|---|
+| B1 | Time only through the `Clock` port | phpstan `disallowed-calls`: `now`, `time`, `date`, `Carbon::now`, `new DateTime` |
+| B2 | Randomness only through the `Entropy` port | phpstan `disallowed-calls`: `random_int`, `rand`, `uniqid`, `Str::random` |
+| B3 | Filesystem only in adapters | phpstan `disallowed-calls`, scoped by path |
+| B4 | No `sleep()`/`usleep()` — waiting is a port | phpstan `disallowed-calls` |
+
+These four share one justification. Each is a hidden input: a function whose
+result changes without its arguments changing. A test cannot pin it, so the code
+around it either goes untested or the test becomes slow and flaky. Making them
+ports turns "the session expired", "the backup is three days old" and "retry
+after thirty seconds" into things a test simply states.
+
+```php
+// refused
+$expires = now()->addHour();
+
+// required
+public function __construct(private Clock $clock) {}
+$expires = $this->clock->now()->plus(Duration::hours(1));
+
+// and in a test, no freezing of global state
+$clock = new FrozenClock(Instant::parse('2026-09-11T12:00:00Z'));
+```
+
+### Errors and control flow
+
+| | Rule | Enforced by |
+|---|---|---|
+| C1 | `Outcome` crosses module boundaries; exceptions do not | arch: public `Api` methods return `Outcome` or a value, never `void` on a fallible call |
+| C2 | No `null` for absence — an explicit type | arch: no nullable return types on `Api` |
+| C3 | Every thrown exception is module-owned, never bare `\Exception`/`\RuntimeException` | phpstan `disallowed-calls` |
+| C4 | No `@` suppression | arch |
+
+**Why C1 is worth its cost.** This application spends its life talking to a
+machine that may be off, asleep, on another network, or mid-update. Unreachable
+is not exceptional here — it is a normal Tuesday. Modelling it as a thrown
+exception makes the common case the one the compiler cannot see you forgot.
+
+```php
+public function repair(FindingId $id): Outcome
+{
+    return $this->stack->repair($id);
+}
+
+// the caller cannot quietly ignore a refusal
+$outcome->either(
+    done: fn (Repaired $r) => $this->show($r),
+    refused: fn (Refusal $r) => $this->explain($r),
+);
+```
+
+### Types and data shape
+
+| | Rule | Enforced by |
+|---|---|---|
+| D1 | No `array` in a public `Api` signature — value objects or typed collections | arch |
+| D2 | No primitive obsession: ids, tokens, durations are types | arch: `Api` signatures reject bare `string`/`int` for named concepts |
+| D3 | No `mixed` in public signatures | phpstan (level max + type coverage 100%) |
+| D4 | Enums for every closed set, never string constants | arch |
+
+D2's payoff is concrete: a stack id and a service id are both strings, and
+nothing stops you passing one where the other belongs. `StackId` and `ServiceId`
+are two types, and the mistake stops compiling.
+
+### Boundaries
+
+| | Rule | Enforced by |
+|---|---|---|
+| E1 | Module kind enforcement | arch, generated from each manifest |
+| E2 | `Api` is the published surface; `Internal` is unreachable | arch |
+| E3 | The SDK is named in exactly one module | composer + arch |
+| E4 | `Native\*` confined to `design`, `surface`, `device`, `vault` | arch: module kind |
+
+### The SuperNative surface
+
+| | Rule | Enforced by |
+|---|---|---|
+| F1 | Components are thin: hold state, delegate decisions | phpstan cognitive complexity + arch size cap |
+| F2 | Presenters are pure: data in, view model out, no ports injected | arch: no constructor promotion of a port type |
+| F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | `tests/Templates` |
+
+EDGE styling is **Tailwind-shaped and is not Tailwind**. There is no CSS build,
+no JIT and no stylesheet to come up short. An unrecognised class is parsed,
+found to mean nothing, and dropped — the screen renders, looks wrong, and says
+nothing about why. `tests/Templates` drives the framework's own parser over every
+template and fails on what it reports, rather than keeping a second copy of the
+supported vocabulary that would silently drift from the installed package.
+
+### Tests
+
+| | Rule | Enforced by |
+|---|---|---|
+| G1 | No mocking types you do not own — hand-written fakes for our ports | arch: no Mockery on foreign namespaces |
+| G2 | Every port has one contract test, run against the real adapter **and** its fake | `tests/Contract` |
+| G3 | No test reaches the network | `Http::preventStrayRequests()` + arch |
+| G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
+
+**G2 is the most valuable rule on this page.** A fake that has drifted from its
+adapter makes the suite green while the application is broken, and nothing else
+here catches that. One contract test per port, run twice, is what makes every
+fake trustworthy — and therefore what makes G1 safe to adopt.
+
+```
+tests/Contract/StackContract.php
+  ✓ SdkStack    (the real adapter, against a recorded fixture)
+  ✓ FakeStack   (in memory)
+  — the same assertions, both times
+```
+
+### Naming and size
+
+| | Rule | Enforced by |
+|---|---|---|
+| H1 | No `Manager`, `Helper`, `Util`, `Service`, `Data`, `Info` suffixes | arch |
+| H2 | No `Interface`/`Abstract` affixes on type names | arch |
+| H3 | Caps: methods per class, lines per method, constructor parameters, cognitive complexity | phpstan + arch |
+| H4 | A test file mirrors its source file's location | arch |
+
+H1 is not pedantry. `BackupManager` is a name that permits anything, which is how
+a class acquires twenty methods; a class you cannot name precisely is usually
+more than one class.
+
+### Runtime lifecycle
+
+| | Rule | Enforced by |
+|---|---|---|
+| I1 | The runtime is **persistent**: no request-scoped assumptions, no state surviving a dispatch | arch: A6, plus review |
+
+NativePHP runs the application as a long-lived process, not a request. A static
+cache that would be harmlessly rebuilt per request on a web server here survives
+between screens and becomes a stale answer on someone's phone. This is the
+reason A6 is absolute rather than a preference.
+
+---
+
+## Patterns
+
+### Port
+An interface in `kernel`, named for what it does, not what implements it.
+No `Interface` suffix, no framework types in its signature.
+
+### Adapter
+The one implementation that knows a specific outside thing. Lives in an adapter
+module. Nothing depends on it; the composition root binds it to its port.
+
+### Capability
+Domain logic with ports for everything it cannot compute itself. Pure by
+construction, because its kind forbids it from reaching anything else.
+
+### Surface
+Navigation and screen composition. Holds the `NativeComponent` subclasses — the
+one mutable, framework-coupled shape in the codebase — and delegates every
+decision to a presenter.
 
 ### Presenter
-
-A **pure function** from a port's value object to a view model. No I/O, no
-container, no clock, no randomness — arguments in, view model out.
-
-This is where the interesting logic lives, which is deliberate: it is also the
-easiest thing in the codebase to test exhaustively. **100% coverage and 100%
-mutation score land here**, and they mean something because a presenter has no
-dependencies to mock.
-
-Ordering findings worst-first, deciding that a value is stale and how stale,
-turning a `Problem` into a headline and a remedy — all presenter work.
+Pure. Takes data, returns a view model. No ports injected, no IO, no clock. This
+is where 100% coverage and mutation testing actually land, because it is where
+the decisions are.
 
 ### View model
+`final readonly`, no behaviour, named for the screen it dresses.
 
-A `final readonly` object the view reads. Public properties, no methods beyond
-simple accessors, no behaviour. If a view model needs a method to decide
-something, that decision belongs in the presenter.
+### Outcome
+A returned refusal. See C1.
 
-### Port and adapter
+---
 
-An interface in `Contracts`, an implementation in `Adapters`, a fake in
-`tests/Fakes`. Features are tested against the fake; the adapter is tested
-against the real thing where that is possible and excluded where it is not.
-
-### Outcome, not exception
-
-Expected failures are values. The stack being unreachable, a credential being
-refused, a repair being declined — these are outcomes a screen renders
-(`N1-R10`), not exceptions to catch at a boundary.
-
-Exceptions are for programmer error and nothing else.
-
-## Feature slices
-
-A feature is a directory holding everything one job needs:
-
-```
-app/Companion/Health/
-    HealthComponent.php        the screen's state and presses
-    HealthPresenter.php        pure: StackHealth -> HealthView
-    HealthView.php             final readonly view model
-resources/views/companion/health.blade.php
-tests/Feature/Health/...
-```
-
-Not layered by type across the app — `app/Presenters`, `app/Components` and so on
-put every feature's pieces as far apart as they can be, and make "what does
-Health touch?" unanswerable without a search. A slice answers it by being a
-directory.
-
-A slice may use `Support` and `Contracts`. **A slice may not use another slice.**
-Where two need the same thing, it moves to `Support` or becomes a port.
-
-## Refused shapes
-
-Each of these is a test unless marked otherwise.
+## Refused, and why
 
 | Anti-pattern | Why it is refused |
 |---|---|
-| **Facades in a feature** | `Illuminate\Support\Facades\*` hides a dependency the constructor should have declared and makes a test reach for a framework. Inject the port. |
-| **Service location** | `app()`, `resolve()`, `Container::` in a feature — the same hiding, with an added runtime failure mode. |
-| **The SDK outside its adapter** | `N1-R16`. The whole boundary in one rule. |
-| **Any HTTP client** | Guzzle, cURL, `file_get_contents` on a URL. There is exactly one way out and it is the SDK. |
-| **A web view** | `<native:webview>`. ADR-0017's decision, enforced rather than remembered. |
-| **Logic in a view** | `@php` blocks, or a view calling anything but its component's accessors. |
-| **Static mutable state** | Static properties that are not constants. Shared state across a re-render is a bug that only appears on a device. |
-| **`env()` outside `config/`** | Returns null once config is cached, so it works in development and fails in a build. Laravel's own rule; worth enforcing rather than remembering. |
-| **Debug leftovers** | `dd`, `dump`, `var_dump`, `ray`, `print_r`. |
-| **Silenced errors** | The `@` operator. A suppression without a reason is a decision nobody recorded. |
-| **A cross-slice reference** | Feature A naming feature B. Promote the shared thing or make it a port. |
-| **A literal colour** | `DES-R24`. Theme tokens only, or light and dark quietly diverge. |
-| **Analytics** | `N4-R12`, denied at the dependency level so it cannot arrive transitively. |
-| **A God component** *(guard, not arch test)* | Component classes are capped on length and public method count. Past the cap, the logic belongs in a presenter. |
+| Eloquent model as domain type | cannot be constructed without a database; property access issues IO |
+| Facade | hidden global dependency; cannot be substituted by a constructor |
+| `app()` / `resolve()` in a class | hides what the class needs; the constructor stops being the truth |
+| Repository returning `null` | the check that gets forgotten; use an absence type |
+| `array` as a domain payload | no name, no invariants, no place to put the rules |
+| Generic `\Exception` | says nothing a catch block can act on |
+| Mocking the SDK | encodes a guess about foreign behaviour that passes forever after it goes stale |
+| `Manager` / `Helper` / `Service` | a name that permits anything, so the class accumulates everything |
+| Logic in Blade | unreachable by every analyser and untestable in isolation |
+| Literal colour in a template | ignores the reader's light, dark and contrast setting; fails on someone else's device |
+| A second copy of the EDGE vocabulary | drifts from the installed package, silently |
+| Static cache | survives a dispatch in a persistent runtime and becomes a stale answer |
+| PHPStan baseline | converts today's failures into tomorrow's silence |
+| `@` suppression | hides the error that was about to tell you something |
 
-## Testing shape
+---
 
-| Layer | Tested how | Bar |
-|---|---|---|
-| Presenter | Direct, no doubles | 100% coverage, 100% mutation |
-| Component | Against fake ports | 100% coverage |
-| View | Rendered, asserted on output | Covered; excluded from mutation |
-| Adapter — stack | Against the SDK's own test transport | 100% coverage |
-| Adapter — device | Not run in CI | **Excluded by name, with the reason, and a test that the list does not grow** |
+## Notes on temporary state
 
-That last row is the only place "100%" is qualified, and it is qualified in one
-file rather than by a floor below 100. An exclusion list that can grow silently
-is a coverage gate that means nothing by its second year.
-
-## Where the specification lives
-
-Requirements are in [area N](https://github.com/lemonfiber/spec/tree/main/10-functional/features/n-companion);
-the reasoning is in [ADR-0017](https://github.com/lemonfiber/spec/blob/main/00-overview/decisions/0017-the-companion-app-as-a-fourth-surface.md).
-This document is how the code is arranged. Where the two disagree, the
-specification wins and this file is wrong.
+**`minimum-stability: dev`.** The root manifest allows dev stability solely
+because `lemonfiber/sdk-php` has no tagged release yet, and `prefer-stable: true`
+keeps everything that does have one on stable. When the SDK tags a release, this
+reverts to `stable` and the constraint gets pinned with the rest of the estate.
+It is recorded here so the loosening is a decision with an end, not a default
+nobody revisits.

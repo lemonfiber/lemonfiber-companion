@@ -1,0 +1,23 @@
+{
+    "name": "modules/device",
+    "description": "The platform itself: permissions and notifications.",
+    "type": "library",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "version": "1.0",
+    "require": {
+        "php": "^8.5",
+        "modules/kernel": "*",
+        "nativephp/mobile": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Device\\": "src/",
+            "Modules\\Device\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "kind": "adapter"
+        }
+    }
+}

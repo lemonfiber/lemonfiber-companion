@@ -1,0 +1,22 @@
+{
+    "name": "modules/connection",
+    "description": "Reaching a stack: pairing, the session, and holding more than one.",
+    "type": "library",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "version": "1.0",
+    "require": {
+        "php": "^8.5",
+        "modules/kernel": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Connection\\": "src/",
+            "Modules\\Connection\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "kind": "capability"
+        }
+    }
+}

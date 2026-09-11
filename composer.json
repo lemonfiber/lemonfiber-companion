@@ -16,9 +16,21 @@
     ],
     "require": {
         "php": "^8.5",
+        "internachi/modular": "^3.0",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
-        "lemonfiber/sdk-php": "dev-main",
+        "modules/backups": "*",
+        "modules/connection": "*",
+        "modules/design": "*",
+        "modules/device": "*",
+        "modules/health": "*",
+        "modules/household": "*",
+        "modules/kernel": "*",
+        "modules/operator": "*",
+        "modules/sdk": "*",
+        "modules/stacks": "*",
+        "modules/updates": "*",
+        "modules/vault": "*",
         "nativephp/mobile": "^4.4"
     },
     "require-dev": {
@@ -40,15 +52,25 @@
         "phpstan/phpstan-strict-rules": "^2.0",
         "rector/rector": "^2.6",
         "shipmonk/composer-dependency-analyser": "^1.8",
+        "shipmonk/phpstan-rules": "^4.4",
+        "spaze/phpstan-disallowed-calls": "^4.14",
+        "tomasvotruba/cognitive-complexity": "^1.2",
         "tomasvotruba/type-coverage": "^2.3"
     },
     "repositories": [
         {
             "type": "vcs",
             "url": "https://github.com/lemonfiber/sdk-php"
+        },
+        {
+            "type": "path",
+            "url": "app-modules/*",
+            "options": {
+                "symlink": true
+            }
         }
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
@@ -78,6 +100,10 @@
     "extra": {
         "laravel": {
             "dont-discover": []
+        },
+        "bamarni-bin": {
+            "bin-links": false,
+            "forward-command": true
         }
     },
     "scripts": {
@@ -95,13 +121,11 @@
             "@lint",
             "@analyse",
             "@refactor",
-            "@guards",
             "@deps",
             "@test:coverage",
             "@test:mutation"
         ],
         "deps": "composer-dependency-analyser",
-        "guards": "@php scripts/guards.php",
         "lint": "pint --test",
         "lint:fix": "pint",
         "refactor": "rector process --dry-run",

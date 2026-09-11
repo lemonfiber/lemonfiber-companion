@@ -1,0 +1,22 @@
+{
+    "name": "modules/updates",
+    "description": "Versions, applying one, and undoing it.",
+    "type": "library",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "version": "1.0",
+    "require": {
+        "php": "^8.5",
+        "modules/kernel": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Updates\\": "src/",
+            "Modules\\Updates\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "kind": "capability"
+        }
+    }
+}

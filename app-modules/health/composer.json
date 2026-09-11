@@ -1,0 +1,22 @@
+{
+    "name": "modules/health",
+    "description": "The verdict, its findings worst-first, and the repairs offered for them.",
+    "type": "library",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "version": "1.0",
+    "require": {
+        "php": "^8.5",
+        "modules/kernel": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Health\\": "src/",
+            "Modules\\Health\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "kind": "capability"
+        }
+    }
+}

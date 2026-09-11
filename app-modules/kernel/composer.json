@@ -1,0 +1,21 @@
+{
+    "name": "modules/kernel",
+    "description": "The shared language: ports, values and outcomes. Depends on nothing.",
+    "type": "library",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "version": "1.0",
+    "require": {
+        "php": "^8.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Kernel\\": "src/",
+            "Modules\\Kernel\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "kind": "kernel"
+        }
+    }
+}

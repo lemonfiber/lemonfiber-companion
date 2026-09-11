@@ -1,0 +1,22 @@
+{
+    "name": "modules/backups",
+    "description": "Snapshots: what was taken, when, and what it would restore.",
+    "type": "library",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "version": "1.0",
+    "require": {
+        "php": "^8.5",
+        "modules/kernel": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Backups\\": "src/",
+            "Modules\\Backups\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "kind": "capability"
+        }
+    }
+}
