@@ -44,6 +44,54 @@ decide (`G1-R2`). One application serves both the operator and the household, an
 build (`N3-R1`). What a household member may do is the core's answer, rendered;
 this app holds no permission model of its own (`N3-R2`).
 
+## Where code goes
+
+This is the question that gets asked most, so it has one answer.
+
+```
+app/                    the composition root, and nothing else
+app-modules/
+  kernel/               ports, values, outcomes — depends on nothing
+  design/               EDGE components and theme tokens
+  connection/ stacks/ health/ backups/ updates/     capability
+  operator/ household/                              surface
+  sdk/ device/ vault/                               adapter
+```
+
+| Adding | Goes in |
+|---|---|
+| a screen | its surface module |
+| domain logic | a capability module |
+| anything that talks to the outside | an adapter module |
+| a shared value or a port | `kernel` |
+| a reusable component or a token | `design` |
+| a rule about all of the above | `tests/Arch` |
+
+Each module declares its kind in its own `composer.json` under
+`extra.lemonfiber.kind`, and **that declaration generates its rules**. A module
+added tomorrow is governed the moment it exists; nobody has to remember to write
+its test.
+
+What a kind may depend on:
+
+| Kind | May use | Never |
+|---|---|---|
+| `kernel` | nothing | everything |
+| `capability` | `kernel` | Illuminate, Native, the SDK, other capabilities, adapters, surfaces |
+| `design` | `kernel`, `Native\Mobile` | the SDK, capabilities, surfaces |
+| `surface` | `kernel`, `design`, capabilities, `Native\Mobile` | the SDK, adapters, the other surface |
+| `adapter` | `kernel`, the one package it adapts | capabilities, surfaces, other adapters |
+
+A module publishes `Modules\<Name>\Api`. Everything under `Internal` is
+unreachable from anywhere else, so it can be renamed or deleted without reading
+another module.
+
+`modules/sdk` is the only manifest that requires `lemonfiber/sdk-php`, which is
+what turns the rule at the top of this file into something the dependency
+resolver enforces rather than something a reviewer remembers.
+
+---
+
 ## What it must never do
 
 | | |
@@ -89,10 +137,26 @@ mislead the next reader.
 | Format | `composer lint` | Pint, `per` preset, strict rules. `composer lint:fix` writes. |
 | Static analysis | `composer analyse` | PHPStan `level: max` + Larastan + strict + deprecation + ergebnis `allRules` + 100% type coverage. **There is no baseline file and one must not be added.** |
 | Dead idioms | `composer refactor` | Rector dry-run. `composer refactor:fix` writes. |
-| Repository guards | `composer guards` | EDGE vocabulary, forbidden dependencies, permission purpose strings. |
+| Module manifests | `composer validate:modules` | Each module's own manifest, `--strict`. They generate the architecture rules, so a typo in one would otherwise disable a module's rules silently. |
 | Dependencies | `composer deps` | Unused and shadow dependencies. Plus `validate --strict`, `normalize`, `audit`. |
-| Tests | `composer test:coverage` | 100% line coverage. |
+| Tests | `composer test:coverage` | 100% line coverage. The Blade checks live here too, in `tests/Templates` — no analyser reads a template. |
 | Mutation | `composer test:mutation` | 100% on logic. Views are excluded, by decision, with the reason beside the exclusion. |
+
+### ARCHITECTURE.md is checked, not just written
+
+Every rule there names the mechanism that enforces it, and
+`tests/Arch/TheRulesAreRealTest.php` fails when the two disagree — in both
+directions. A documented rule with no artifact carrying its identifier fails;
+so does an artifact carrying an identifier the document never mentions.
+
+Two states are honest answers rather than mechanisms. `review` means a rule
+cannot be mechanised and a human has to catch it; the suite prints how many
+there are. `planned` means a rule is agreed and not yet built, and a ratchet in
+the same test means that count may fall and may not rise.
+
+If a rule blocks you, [`docs/decisions/0005`](docs/decisions/0005-how-a-rule-changes.md)
+says how to change one. Deleting the row to go green is the one route that is
+not available.
 
 ### Why coverage can be 100% when some code only runs on a device
 

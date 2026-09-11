@@ -1,58 +1,80 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# lemonfiber companion
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A companion app for a [lemonfiber](https://github.com/lemonfiber/lemonfiber)
+stack, for phones. It is the fourth surface after the CLI, the TUI and the web
+UI — and the first one that does not run on the machine it operates.
 
-## About Laravel
+It renders natively. There is no web view, no DOM and no JavaScript bridge:
+Blade templates compile to a native element tree, which the platform draws as
+SwiftUI or Jetpack Compose.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+> **Status: early.** This repository is catching up with the rest of the
+> estate. Nothing is versioned yet and nothing is published; everything lands on
+> `main` until it is complete enough to pin alongside the other repositories.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## What it does
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Two people use a stack, and the credential they sign in with decides which app
+they get.
 
-## Learning Laravel
+**An operator** sees a verdict first — whether the stack is healthy — then its
+findings worst-first, and can act on them: repair, update, snapshot, undo.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**A household member** sees what is available to them and can ask for something.
+They are not shown the machinery, because it is not theirs to operate.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## What it will not do
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+- **Talk to the API itself.** Every call goes through the published SDK. Where
+  the SDK lacks something, the gap is raised against the SDK and the work stops
+  rather than reaching past it.
+- **Send anything anywhere.** No analytics, no crash reporting, no telemetry.
+  There is no setting for this because there is no code for it.
+- **Set up a stack.** First-run setup happens at the machine. The app says so
+  rather than omitting it silently.
+- **Accept any certificate.** The certificate fingerprint comes from the pairing
+  material and is pinned; a changed certificate is refused, not warned about.
 
-## Agentic Development
+## Layout
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+```
+app/                    the composition root, and nothing else
+app-modules/
+  kernel/               ports, values, outcomes — depends on nothing
+  design/               EDGE components and theme tokens
 
-```bash
-composer require laravel/boost --dev
+  connection/           pairing, the session, holding more than one stack
+  stacks/  health/  backups/  updates/
 
-php artisan boost:install
+  operator/             navigation and screen composition
+  household/            navigation and screen composition
+
+  sdk/                  the only module that names the SDK
+  device/  vault/       the platform, and secure storage
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Each module declares what kind it is, and that declaration generates the rules
+about what it may depend on — so a module added later is governed the moment it
+exists rather than when somebody remembers to write its test.
 
-## Contributing
+## Working on it
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer install
+composer ci          # every gate, in the order CI runs them
+composer test        # just the suite
+composer lint:fix    # formatting
+```
 
-## Code of Conduct
+[`ARCHITECTURE.md`](ARCHITECTURE.md) is the contract — the rules, and for each
+one the mechanism that enforces it. A test reads that table and fails if a rule
+claims an enforcement it does not have, so it cannot quietly go out of date.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+[`AGENTS.md`](AGENTS.md) is the guide for anyone, human or otherwise, making a
+change here. [`docs/decisions/`](docs/decisions/) records why this codebase is
+shaped the way it is; decisions about the product live in the
+[spec](https://github.com/lemonfiber/spec).
 
-## Security Vulnerabilities
+## Licence
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+[Hippocratic License 3.0](LICENSE).
