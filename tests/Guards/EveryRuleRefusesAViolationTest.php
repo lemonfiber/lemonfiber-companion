@@ -233,7 +233,7 @@ function text(mixed $value): string
  *
  * @return array<string, string>
  */
-function suiteFailures(string $suites = 'Arch,Modules,Feature'): array
+function suiteFailures(string $suites = 'Arch,Templates,Modules,Feature'): array
 {
     $log = sprintf('%s/fixtures-junit.xml', sys_get_temp_dir());
 

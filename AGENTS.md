@@ -116,7 +116,7 @@ Markup looks like this:
 
 The class vocabulary is **Tailwind-shaped and defined by EDGE**, compiled to
 SwiftUI and Jetpack Compose. There is no CSS build, no JIT, and nothing that
-errors on an unknown class — a typo'd `bg-theme-backgrond` compiles happily and
+errors on an unknown class — a typo'd `bg-theme-backgrnd` compiles happily and
 renders nothing.
 
 So `composer guards` validates every class and every `<native:*>` tag against the

@@ -249,7 +249,9 @@ automatic and the operator never sees the question.
 |---|---|---|
 | F1 | Components are thin: hold state, delegate decisions | phpstan cognitive complexity + arch size cap |
 | F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor |
-| F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | planned |
+| F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | `tests/Templates`, against the installed parser and registries |
+| F5 | Every interactive element announces itself to a screen reader | `tests/Templates` |
+| F6 | Every list has an empty state | `tests/Templates` |
 | F4 | A screen that takes a port carries `#[Lazy]`; one whose content changes while open carries `#[Poll]` | arch for the first; review for the second |
 
 EDGE styling is **Tailwind-shaped and is not Tailwind**. There is no CSS build,
@@ -258,6 +260,22 @@ found to mean nothing, and dropped — the screen renders, looks wrong, and says
 nothing about why. `tests/Templates` drives the framework's own parser over every
 template and fails on what it reports, rather than keeping a second copy of the
 supported vocabulary that would silently drift from the installed package.
+
+**Nothing in this suite writes the vocabulary down.** Unknown classes come from
+`TailwindParser`'s own diagnostic channel, which already knows that a platform
+variant aimed at the other platform is a deliberate no-op rather than a mistake.
+Literal colours come from `TailwindParser::resolveColorValue`, which answers for
+`red-500` and `#B91C1C` and stays silent for `theme-background` and `2xl` —
+which is exactly the distinction DES-R24 turns on. Tag names come from the
+element registry, the component registry, and the types the collector renders
+itself. A transcribed list would keep passing through a NativePHP release that
+changed any of them, which is how a rule dies without anyone noticing.
+
+**A `bg-theme-*` token reported as unknown is a true answer, not a false
+positive.** The theme resolver is provided by the application rather than by the
+package, and the `design` module that owns it is still empty — so those classes
+really are dropped at render today. When `design` registers a resolver they start
+resolving and stop being reported, and the rule is right at both times.
 
 ### Language
 
