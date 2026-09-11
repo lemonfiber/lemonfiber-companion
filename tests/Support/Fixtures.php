@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function sprintf;
+
 /**
  * One violation per rule, and the mark it must leave.
  *
@@ -90,6 +92,7 @@ final readonly class Fixtures
             ...self::textAndSecurity(),
             ...self::sizeAndSuiteIntegrity(),
             ...self::placement(),
+            ...self::templates(),
             ...self::rulesAboutRules(),
             ...self::notDrivable(),
         ];
@@ -1302,6 +1305,79 @@ final readonly class Fixtures
                     expect(true)->toBeTrue();
                 });
                 PHP, 'W4 —', 'BorrowedTest'),
+        ];
+    }
+
+    /**
+     * The Blade rules.
+     *
+     * Written as templates in a module's own view directory, because that is
+     * where the suite looks and because a `.blade.php` file is not a class —
+     * nothing that reflects over namespaces can see one, which is the whole
+     * reason these checks exist separately from the architecture rules.
+     *
+     * @return list<Fixture>
+     */
+    private static function templates(): array
+    {
+        $views = 'app-modules/operator/resources/views/Fixtures';
+
+        return [
+            Fixture::suite('F3', sprintf('%s/unknown-class.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full flex-nonsense">
+                    <native:text>{{ __('health.healthy') }}</native:text>
+                </native:column>
+                BLADE, 'every class in', 'unknown-class'),
+
+            Fixture::suite('F3', sprintf('%s/unknown-tag.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    <native:nonsense-tag />
+                </native:column>
+                BLADE, 'every tag in', 'unknown-tag'),
+
+            Fixture::suite('F3', sprintf('%s/bare-tag.blade.php', $views), <<<'BLADE'
+                <column class="w-full">
+                    <native:text>{{ __('health.healthy') }}</native:text>
+                </column>
+                BLADE, 'every element in', 'bare-tag'),
+
+            Fixture::suite('F3', sprintf('%s/holds-logic.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    @php $count = 1; @endphp
+                </native:column>
+                BLADE, 'holds no logic', 'holds-logic'),
+
+            Fixture::suite('F3', sprintf('%s/opens-a-web-view.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    <native:webview src="https://example.test" />
+                </native:column>
+                BLADE, 'opens no web view', 'opens-a-web-view'),
+
+            Fixture::suite('F3', sprintf('%s/literal-colour.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full bg-red-500">
+                    <native:text>{{ __('health.healthy') }}</native:text>
+                </native:column>
+                BLADE, 'names no literal colour', 'literal-colour'),
+
+            Fixture::suite('F5', sprintf('%s/silent-control.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    <native:fab icon="plus" />
+                </native:column>
+                BLADE, 'every control in', 'silent-control'),
+
+            Fixture::suite('F6', sprintf('%s/no-empty-state.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    @foreach ($findings as $finding)
+                        <native:text>{{ $finding->title }}</native:text>
+                    @endforeach
+                </native:column>
+                BLADE, 'every list in', 'no-empty-state'),
+
+            Fixture::suite('L1', sprintf('%s/english-sentence.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    <native:text>This stack cannot be reached from here.</native:text>
+                </native:column>
+                BLADE, 'reads its text from the translator', 'english-sentence'),
         ];
     }
 
