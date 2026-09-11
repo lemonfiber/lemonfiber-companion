@@ -11,7 +11,7 @@ use Tests\Support\Template;
 // EDGE parses a class, finds it means nothing, and drops it: no error, no
 // warning, no failed build. The screen renders, looks wrong, and says nothing
 // about why — on a device, later, in front of whoever is holding the phone.
-// `bg-theme-backgrond` is the example in AGENTS.md for exactly that reason.
+// `bg-theme-backgrnd` is the example in AGENTS.md for exactly that reason.
 //
 // The vocabulary is never written down here. It is asked of the parser and of
 // the registries, so a NativePHP release that adds a utility makes it available
