@@ -107,8 +107,11 @@ jobs:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
-          composer update "${PACKAGE}" --no-interaction --no-scripts
-          composer install --no-interaction
+          # One command: it moves the lock, installs from it, and runs the
+          # scripts. The scripts matter here — Laravel's package discovery is a
+          # `post-autoload-dump` hook, so skipping them leaves an application
+          # that cannot boot and an analyser run that means nothing.
+          composer update "${PACKAGE}" --no-interaction
           composer analyse
           composer test
 
@@ -141,22 +144,62 @@ jobs:
             body="The analyser or the suite did not pass against it, so this is a change here rather than a bump. Read it before merging."
           fi
 
-          # Conventional subject, a sign-off and a citation: commitlint, dco and
-          # spec-check all read this, and the last of the three closes a pull
-          # request whose citation it cannot resolve.
-          # shellcheck disable=SC2016  # $input is GraphQL's variable, not the shell's
-          gh api graphql -f query='
-            mutation($input: CreateCommitOnBranchInput!) {
-              createCommitOnBranch(input: $input) { commit { oid } }
-            }' -F input="{
-              \"branch\": {\"repositoryNameWithOwner\": \"${REPO}\", \"branchName\": \"${BRANCH}\"},
-              \"expectedHeadOid\": \"${base}\",
-              \"message\": {
-                \"headline\": \"chore(sdk): take sdk-php ${HEAD_SHA:0:7}\",
-                \"body\": \"The companion reaches a stack through this client and nothing else, so a client it has not taken is a fact about this repository. ${body}\n\nWas ${PIN}.\n\nSigned-off-by: lemonfiber release <release@lemonfiber.app>\nSpec: Q-R68\"
+          # The request goes in a file, not in an argument. A lockfile's base64
+          # is hundreds of kilobytes and the first version of this passed it on
+          # the command line, where it died on `Argument list too long` — after
+          # the rebuild had already succeeded, which is the worst place to fail.
+          #
+          # Building the JSON in Python also means the message and the file
+          # contents are encoded rather than quoted into place by hand.
+          python3 - "$REPO" "$BRANCH" "$base" "$HEAD_SHA" "$PIN" "$body" <<'PY' >request.json
+          import base64
+          import json
+          import sys
+
+          repo, branch, base, head, pin, note = sys.argv[1:7]
+          files = ["composer.lock"]
+
+          print(json.dumps({
+              "query": (
+                  "mutation($input: CreateCommitOnBranchInput!) "
+                  "{ createCommitOnBranch(input: $input) { commit { oid } } }"
+              ),
+              "variables": {
+                  "input": {
+                      "branch": {
+                          "repositoryNameWithOwner": repo,
+                          "branchName": branch,
+                      },
+                      "expectedHeadOid": base,
+                      "message": {
+                          "headline": f"chore(sdk): take sdk-php {head[:7]}",
+                          # commitlint, dco and spec-check each read this, and
+                          # spec-check closes a pull request whose citation it
+                          # cannot resolve.
+                          "body": (
+                              f"The companion reaches a stack through this client and nothing else, so a client it has not taken is a fact about this repository. {note}\n\n"
+                              f"Was {pin}.\n\n"
+                              "Signed-off-by: lemonfiber release <release@lemonfiber.app>\n"
+                              "Spec: Q-R68"
+                          ),
+                      },
+                      "fileChanges": {
+                          "additions": [
+                              {
+                                  "path": name,
+                                  "contents": base64.b64encode(
+                                      open(name, "rb").read()
+                                  ).decode(),
+                              }
+                              for name in files
+                          ]
+                      },
+                  }
               },
-              \"fileChanges\": {\"additions\": [{\"path\": \"composer.lock\", \"contents\": \"$(base64 -w0 composer.lock)\"}]}
-            }" >/dev/null
+          }))
+          PY
+
+          gh api graphql --input request.json >/dev/null
 
           echo "clean=${CLEAN}" >> "$GITHUB_OUTPUT"
 
