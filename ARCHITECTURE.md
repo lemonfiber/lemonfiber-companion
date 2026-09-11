@@ -420,6 +420,14 @@ out. R3 refuses those three shapes by name. R2 is the general answer: plant the
 smallest violation of every rule, run the machine that enforces it, and require
 it to report.
 
+**Every fixture sits under a directory called `Fixtures`.** For the length of a
+run the files are really on disk, so `.gitignore` and `pint.json` both exclude
+that one name. Without it, a commit made beside a run picks up a deliberate rule
+violation, `git status` reports a dirty tree that is about to clean itself, and
+the formatter fails on files whose whole purpose is to be wrong. The convention
+costs a directory name: a `Fixtures/` directory anywhere in this repository
+belongs to the harness and is never committed.
+
 **The `Guards` suite runs alone.** `composer test` is `pest --parallel` with
 `Guards` excluded; `composer test:guards` runs it by itself. The harness plants
 a violation of every rule into the working tree, so a process reading that tree
@@ -515,31 +523,38 @@ reason A6 is absolute rather than a preference.
 ## Patterns
 
 ### Port
+
 An interface in `kernel`, named for what it does, not what implements it.
 No `Interface` suffix, no framework types in its signature.
 
 ### Adapter
+
 The one implementation that knows a specific outside thing. Lives in an adapter
 module. Nothing depends on it; the composition root binds it to its port.
 
 ### Capability
+
 Domain logic with ports for everything it cannot compute itself. Pure by
 construction, because its kind forbids it from reaching anything else.
 
 ### Surface
+
 Navigation and screen composition. Holds the `NativeComponent` subclasses — the
 one mutable, framework-coupled shape in the codebase — and delegates every
 decision to a presenter.
 
 ### Presenter
+
 Pure. Takes data, returns a view model. No ports injected, no IO, no clock. This
 is where 100% coverage and mutation testing actually land, because it is where
 the decisions are.
 
 ### View model
+
 `final readonly`, no behaviour, named for the screen it dresses.
 
 ### Outcome
+
 A returned refusal. See C1.
 
 ---

@@ -18,6 +18,12 @@ namespace Tests\Support;
  * scoped to "everywhere but the adapters" applies to them. Suite fixtures land
  * inside real modules, because a module namespace is the only thing a Pest
  * architecture expectation can resolve.
+ *
+ * Every path below sits under a directory called `Fixtures`, and that is load
+ * bearing: `.gitignore` and `pint.json` both exclude that one name. The files
+ * are genuinely on disk while a run is in progress, so without the exclusion a
+ * commit made beside one picks up a deliberate rule violation and the formatter
+ * fails on files whose purpose is to be wrong.
  */
 final readonly class Fixtures
 {
@@ -616,16 +622,16 @@ final readonly class Fixtures
             Fixture::analyser('F1', 'Plain/Tangled.php', self::tangledMethod(), 'Cognitive complexity'),
             Fixture::analyser('H3', 'Plain/AlsoTangled.php', self::tangledMethod(), 'Cognitive complexity'),
 
-            Fixture::suite('F2', 'app-modules/operator/src/Internal/Presenters/FixturePresenter.php', <<<'PHP'
+            Fixture::suite('F2', 'app-modules/operator/src/Internal/Presenters/Fixtures/Presenter.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
 
-                namespace Modules\Operator\Internal\Presenters;
+                namespace Modules\Operator\Internal\Presenters\Fixtures;
 
                 use Modules\Kernel\Api\Fixtures\Asked;
 
-                final readonly class FixturePresenter
+                final readonly class Presenter
                 {
                     public function __construct(private Asked $asked) {}
 
@@ -700,7 +706,7 @@ final readonly class Fixtures
                 }
                 PHP, 'L1 —'),
 
-            Fixture::suite('L2', 'lang/en/fixture.php', <<<'PHP'
+            Fixture::suite('L2', 'lang/en/Fixtures/planted.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
@@ -728,7 +734,7 @@ final readonly class Fixtures
                 });
                 PHP, 'G1 — nothing mocks a type we do not own', 'MocksTest'),
 
-            Fixture::suite('G3', 'tests/Feature/FixtureG3Test.php', <<<'PHP'
+            Fixture::suite('G3', 'tests/Feature/Fixtures/G3Test.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
@@ -1258,12 +1264,12 @@ final readonly class Fixtures
     private static function placement(): array
     {
         return [
-            Fixture::suite('W1', 'app/Support/Stray.php', <<<'PHP'
+            Fixture::suite('W1', 'app/Fixtures/Stray.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
 
-                namespace App\Support;
+                namespace App\Fixtures;
 
                 final readonly class Stray {}
                 PHP, 'W1 —', 'Stray'),
@@ -1281,7 +1287,7 @@ final readonly class Fixtures
                 final readonly class Borrowed {}
                 PHP, 'W2 —', 'Borrowed'),
 
-            Fixture::suite('W3', 'resources/views/stray.blade.php', <<<'BLADE'
+            Fixture::suite('W3', 'resources/views/Fixtures/stray.blade.php', <<<'BLADE'
                 <native:text>a screen with no module</native:text>
                 BLADE, 'W3 —', 'stray.blade.php'),
 
@@ -1303,7 +1309,7 @@ final readonly class Fixtures
     private static function rulesAboutRules(): array
     {
         return [
-            Fixture::suite('R1', 'tests/Arch/FixtureUndocumentedRuleTest.php', <<<'PHP'
+            Fixture::suite('R1', 'tests/Arch/Fixtures/UndocumentedRuleTest.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
@@ -1315,7 +1321,7 @@ final readonly class Fixtures
                 });
                 PHP, 'documents every rule the codebase enforces', 'Z9'),
 
-            Fixture::suite('R3', 'tests/Arch/FixtureMalformedRuleTest.php', <<<'PHP'
+            Fixture::suite('R3', 'tests/Arch/Fixtures/MalformedRuleTest.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
@@ -1331,7 +1337,7 @@ final readonly class Fixtures
                 arch('a namespace nothing registers')
                     ->expect('Native')
                     ->not->toBeUsed();
-                PHP, 'R3 — every namespace an expectation names resolves', 'FixtureMalformedRuleTest'),
+                PHP, 'R3 — every namespace an expectation names resolves', 'MalformedRuleTest'),
         ];
     }
 
