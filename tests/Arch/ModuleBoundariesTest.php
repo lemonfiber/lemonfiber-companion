@@ -32,7 +32,7 @@ foreach ($modules as $module) {
     $vendors = $module->kind->forbiddenVendors();
 
     if ($vendors !== []) {
-        arch("{$module->name} stays inside what a {$module->kind->value} module may name")
+        arch("A7/E4 — {$module->name} stays inside what a {$module->kind->value} module may name")
             ->expect($module->namespace)
             ->not->toUse($vendors);
     }
@@ -40,13 +40,13 @@ foreach ($modules as $module) {
     $others = $module->forbiddenModuleNamespaces();
 
     if ($others !== []) {
-        arch("{$module->name} respects the other modules' boundaries")
+        arch("E1 — {$module->name} respects the other modules' boundaries")
             ->expect($module->namespace)
             ->not->toUse($others);
     }
 
     // A module's own internals are its own business; nobody else's.
-    arch("{$module->name} publishes an Api and keeps the rest to itself")
+    arch("E2 — {$module->name} publishes an Api and keeps the rest to itself")
         ->expect("{$module->namespace}\\Internal")
         ->not->toBeUsedIn(
             array_map(
@@ -74,7 +74,7 @@ foreach ($modules as $module) {
 // N1-R16. The composer manifests already make this true — modules/sdk is the
 // only one requiring lemonfiber/sdk-php — but that only fails when the
 // dependency analyser runs. This fails in the test suite, which runs first.
-arch('the SDK is named in exactly one module')
+arch('E3 — the SDK is named in exactly one module')
     ->expect('Lemonfiber\Sdk')
     ->toOnlyBeUsedIn('Modules\Sdk');
 

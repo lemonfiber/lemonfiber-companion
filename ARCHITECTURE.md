@@ -109,7 +109,7 @@ honestly is better than pretending.
 | A3 | No service location — `app()`, `resolve()`, `Container` | phpstan `disallowed-calls` |
 | A4 | No container-reaching helpers (`config()`, `cache()`, `auth()`, `request()`) outside adapters | phpstan `disallowed-calls` |
 | A5 | `env()` only inside `config/` | arch |
-| A6 | No mutable static state | arch: `not->toHaveStaticProperties()` |
+| A6 | No mutable static state | arch: reflection over every module class |
 | A7 | `Illuminate\*` forbidden in `kernel` and every `capability` | arch: module kind |
 
 **Why A1 is first.** An Eloquent model cannot be constructed without a database,
@@ -181,10 +181,10 @@ $outcome->either(
 
 | | Rule | Enforced by |
 |---|---|---|
-| D1 | No `array` in a public `Api` signature — value objects or typed collections | arch |
-| D2 | No primitive obsession: ids, tokens, durations are types | arch: `Api` signatures reject bare `string`/`int` for named concepts |
+| D1 | No `array` in a public `Api` signature — value objects or typed collections | planned |
+| D2 | No primitive obsession: ids, tokens, durations are types | planned |
 | D3 | No `mixed` in public signatures | phpstan (level max + type coverage 100%) |
-| D4 | Enums for every closed set, never string constants | arch |
+| D4 | Enums for every closed set, never string constants | arch + shipmonk `ForbidMatchDefaultArmForEnums` |
 
 D2's payoff is concrete: a stack id and a service id are both strings, and
 nothing stops you passing one where the other belongs. `StackId` and `ServiceId`
@@ -204,8 +204,8 @@ are two types, and the mistake stops compiling.
 | | Rule | Enforced by |
 |---|---|---|
 | F1 | Components are thin: hold state, delegate decisions | phpstan cognitive complexity + arch size cap |
-| F2 | Presenters are pure: data in, view model out, no ports injected | arch: no constructor promotion of a port type |
-| F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | `tests/Templates` |
+| F2 | Presenters are pure: data in, view model out, no ports injected | planned |
+| F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | planned |
 
 EDGE styling is **Tailwind-shaped and is not Tailwind**. There is no CSS build,
 no JIT and no stylesheet to come up short. An unrecognised class is parsed,
@@ -219,7 +219,7 @@ supported vocabulary that would silently drift from the installed package.
 | | Rule | Enforced by |
 |---|---|---|
 | G1 | No mocking types you do not own — hand-written fakes for our ports | arch: no Mockery on foreign namespaces |
-| G2 | Every port has one contract test, run against the real adapter **and** its fake | `tests/Contract` |
+| G2 | Every port has one contract test, run against the real adapter **and** its fake | planned |
 | G3 | No test reaches the network | `Http::preventStrayRequests()` + arch |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 
@@ -242,7 +242,7 @@ tests/Contract/StackContract.php
 | H1 | No `Manager`, `Helper`, `Util`, `Service`, `Data`, `Info` suffixes | arch |
 | H2 | No `Interface`/`Abstract` affixes on type names | arch |
 | H3 | Caps: methods per class, lines per method, constructor parameters, cognitive complexity | phpstan + arch |
-| H4 | A test file mirrors its source file's location | arch |
+| H4 | A test file mirrors its source file's location | planned |
 
 H1 is not pedantry. `BackupManager` is a name that permits anything, which is how
 a class acquires twenty methods; a class you cannot name precisely is usually

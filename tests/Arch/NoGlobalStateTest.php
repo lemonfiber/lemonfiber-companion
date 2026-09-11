@@ -13,7 +13,7 @@ use Tests\Support\Module;
 // rebuild on the next request survives between screens here, and becomes a
 // stale answer on someone's phone long after the thing it cached changed.
 
-it('declares no static property anywhere in a module', function (): void {
+it('A6/I1 — declares no static property anywhere in a module', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {

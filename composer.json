@@ -74,15 +74,16 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "App\\": "app/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
-        }
+        },
+        "files": [
+            "tests/Support/rules.php"
+        ]
     },
     "config": {
         "allow-plugins": {
@@ -98,12 +99,12 @@
         "sort-packages": true
     },
     "extra": {
-        "laravel": {
-            "dont-discover": []
-        },
         "bamarni-bin": {
             "bin-links": false,
             "forward-command": true
+        },
+        "laravel": {
+            "dont-discover": []
         }
     },
     "scripts": {
