@@ -65,6 +65,15 @@ final readonly class ApiSurface
      * Inherited methods belong to whatever declared them and are that class's
      * problem; the constructor is judged by its own rules (M3).
      *
+     * An enum's `cases()`, `from()` and `tryFrom()` are excluded too, and that
+     * is the reason `isInternal()` is asked rather than a list of names being
+     * kept here. PHP declares those three on every backed enum with signatures
+     * nobody chose: `cases()` answers an array, which D1 refuses, and
+     * `tryFrom()` answers null, which C2 refuses. Reported, they would make D4
+     * — a closed set is an enum — impossible to obey, and the cure for each
+     * would be to stop using the language's own accessor. They carry no design
+     * decision, so there is nothing for these rules to find in them.
+     *
      * @param ReflectionClass<object> $class
      *
      * @return list<ReflectionMethod>
@@ -74,7 +83,8 @@ final readonly class ApiSurface
         return array_values(array_filter(
             $class->getMethods(ReflectionMethod::IS_PUBLIC),
             static fn(ReflectionMethod $method): bool => $method->getDeclaringClass()->getName() === $class->getName()
-                && ! $method->isConstructor(),
+                && ! $method->isConstructor()
+                && ! $method->isInternal(),
         ));
     }
 

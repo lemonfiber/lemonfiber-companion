@@ -18,6 +18,43 @@ use ShipMonk\ComposerDependencyAnalyser\Config\ErrorType;
  * Lemonfiber\Sdk is a shadow dependency here (E3, N1-R16) — failing in
  * resolution rather than in review.
  */
+/**
+ * Every module package the composition root does not name.
+ *
+ * The namespace is derived the same way the module manifests derive it —
+ * `modules/design` is `Modules\Design` — so a module added tomorrow is covered
+ * without anyone editing this file.
+ *
+ * @return list<string>
+ */
+function unwiredModules(): array
+{
+    /** @var array{require?: array<string, string>} $manifest */
+    $manifest = json_decode((string) file_get_contents(__DIR__ . '/composer.json'), true);
+
+    $root = '';
+
+    foreach ((array) glob(__DIR__ . '/app/*/*.php') as $file) {
+        $root .= (string) file_get_contents((string) $file);
+    }
+
+    $unwired = [];
+
+    foreach (array_keys($manifest['require'] ?? []) as $package) {
+        if (! str_starts_with($package, 'modules/')) {
+            continue;
+        }
+
+        $name = str_replace(' ', '', ucwords(str_replace('-', ' ', substr($package, strlen('modules/')))));
+
+        if (! str_contains($root, sprintf('Modules\\%s\\', $name))) {
+            $unwired[] = $package;
+        }
+    }
+
+    return $unwired;
+}
+
 return (new Configuration())
     // A dev tool invoked from a composer script is never named in PHP, so the
     // default — reporting only unused production dependencies — cannot tell one
@@ -26,7 +63,14 @@ return (new Configuration())
     // or listed below with the reason it is installed.
     ->enableAnalysisOfUnusedDevDependencies()
     ->addPathToScan(__DIR__ . '/app', isDev: false)
-    ->addPathToScan(__DIR__ . '/app-modules', isDev: false)
+    // Split rather than named as the parent, because a module's `tests/` sits
+    // inside it and is a dev path exactly like the root suite. Scanned
+    // wholesale, the first module test makes Pest a production dependency —
+    // reported as G4's own failure, on a package that is only ever a dev one.
+    // Globbed so a module added tomorrow is scanned without anyone editing
+    // this file.
+    ->addPathsToScan((array) glob(__DIR__ . '/app-modules/*/src'), isDev: false)
+    ->addPathsToScan((array) glob(__DIR__ . '/app-modules/*/tests'), isDev: true)
     ->addPathToScan(__DIR__ . '/config', isDev: false)
     ->addPathToScan(__DIR__ . '/routes', isDev: false)
     ->addPathToScan(__DIR__ . '/tests', isDev: true)
@@ -37,15 +81,14 @@ return (new Configuration())
     // framework discovers each one's service provider. That is true for every
     // module permanently, so it is stated once by prefix rather than as twelve
     // exemptions that would need a thirteenth line per module added.
-    ->ignoreErrorsOnPackages(
-        array_values(array_filter(
-            array_keys(
-                json_decode((string) file_get_contents(__DIR__ . '/composer.json'), true)['require'] ?? [],
-            ),
-            static fn(string $package): bool => str_starts_with($package, 'modules/'),
-        )),
-        [ErrorType::UNUSED_DEPENDENCY],
-    )
+    //
+    // Narrowed to the modules the composition root does not yet name. A module
+    // it does name is genuinely used, and an ignore that never fires is itself
+    // an error here — the property the nativephp/mobile line below is built on.
+    // So each module drops off this list by being wired up, which is the same
+    // self-removal by a different route, and neither half is a list anybody
+    // maintains by hand.
+    ->ignoreErrorsOnPackages(unwiredModules(), [ErrorType::UNUSED_DEPENDENCY])
     // Resolved through the container rather than named, so the analyser cannot
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])
@@ -82,11 +125,4 @@ return (new Configuration())
             'pestphp/pest-plugin-laravel',
         ],
         [ErrorType::UNUSED_DEPENDENCY],
-    )
-    // The only file naming nativephp/mobile is the arch rule that reflects over
-    // NativeComponent to ask whether a screen declares how it paints, and a test
-    // is a dev path — so the runtime the application is built on reads as a dev
-    // dependency. It is not: the first screen makes it a production use and this
-    // line stops applying. The analyser fails on an ignore that never fires,
-    // which is what makes the line remove itself rather than linger.
-    ->ignoreErrorsOnPackage('nativephp/mobile', [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV]);
+    );
