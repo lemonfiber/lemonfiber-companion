@@ -70,7 +70,7 @@ jobs:
   # and pinned by commit. Those needing a pull request are guarded, because this
   # workflow also runs on pushes to main.
   dco:
-    uses: lemonfiber/spec/.github/workflows/dco.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
+    uses: lemonfiber/spec/.github/workflows/dco.yml@d972aee34a685b3d1fa763c9ea9753191ebe87d0 # main
 
   # `pull-requests: write` is what lets the gate close a pull request whose
   # citation is missing or names an identifier that does not exist, rather than
@@ -82,24 +82,24 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/spec-check.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
+    uses: lemonfiber/spec/.github/workflows/spec-check.yml@d972aee34a685b3d1fa763c9ea9753191ebe87d0 # main
 
   commitlint:
     if: github.event_name == 'pull_request'
-    uses: lemonfiber/spec/.github/workflows/commitlint.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
+    uses: lemonfiber/spec/.github/workflows/commitlint.yml@d972aee34a685b3d1fa763c9ea9753191ebe87d0 # main
 
   hygiene:
-    uses: lemonfiber/spec/.github/workflows/hygiene.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
+    uses: lemonfiber/spec/.github/workflows/hygiene.yml@d972aee34a685b3d1fa763c9ea9753191ebe87d0 # main
 
   security:
-    uses: lemonfiber/spec/.github/workflows/security.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
+    uses: lemonfiber/spec/.github/workflows/security.yml@d972aee34a685b3d1fa763c9ea9753191ebe87d0 # main
 
   labeler:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/labeler.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
+    uses: lemonfiber/spec/.github/workflows/labeler.yml@d972aee34a685b3d1fa763c9ea9753191ebe87d0 # main
 
   # The rules, before anything slower gets a chance to hide a boundary break.
   #
