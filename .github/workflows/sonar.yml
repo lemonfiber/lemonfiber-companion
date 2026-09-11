@@ -1,0 +1,53 @@
+name: sonar
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonar-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: '8.5'
+
+# Separate from `ci` on purpose.
+#
+# Sonar needs a token, which means it cannot run on a pull request from a fork,
+# and it needs a coverage report, which means a coverage driver and a full test
+# run. Folding it into the `checks` job would make every gate in that job wait
+# for pcov and then fail for everyone without the secret. Here it can be
+# skipped cleanly and the rest of CI carries on.
+
+jobs:
+  sonar:
+    name: sonarcloud
+    # A fork has no access to the token, and a job that cannot authenticate
+    # should not report a red tick that nobody can fix.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Sonar reads history to attribute an issue to the change that
+          # introduced it, which is what makes "new code" a usable gate.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: pcov
+
+      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+
+      - name: coverage and test report
+        run: composer test:report
+
+      - uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

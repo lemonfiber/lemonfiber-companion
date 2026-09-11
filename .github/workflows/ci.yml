@@ -93,6 +93,50 @@ jobs:
       pull-requests: write
     uses: lemonfiber/spec/.github/workflows/labeler.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
 
+  # The rules, before anything slower gets a chance to hide a boundary break.
+  #
+  # Arch and Templates read files and need neither a coverage driver nor a
+  # database, so this is the cheapest job here and the one most likely to fail on
+  # a change that is wrong rather than merely broken. Failing it first means a
+  # reviewer sees "this crosses a module boundary" rather than a coverage number.
+  rules:
+    name: rules
+    needs: scope
+    if: needs.scope.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+      - run: vendor/bin/pest --testsuite=Arch,Templates
+
+  # R2 — every rule refuses a planted violation.
+  #
+  # Its own job because it runs the analyser and the test suite as subprocesses,
+  # once each, which is a full framework boot twice over. It is also the one job
+  # that writes files into the working tree, so it must not share a runner with
+  # anything that would read them.
+  guards:
+    name: the rules refuse violations
+    needs: scope
+    if: needs.scope.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+      - run: vendor/bin/pest --testsuite=Guards
+
   # Formatting, static analysis, dead idioms, the repository's own guards and
   # dependency hygiene. One install, one PHP, six commands, no coverage driver.
   checks:

@@ -129,11 +129,13 @@
         "test": "pest",
         "test:coverage": "pest --coverage --min=100",
         "test:mutation": "pest --mutate --covered-only --min=100 --ignore-min-score-on-zero-mutations --path=app-modules/connection/src,app-modules/stacks/src,app-modules/health/src,app-modules/backups/src,app-modules/updates/src,app-modules/operator/src/Internal/Presenters,app-modules/household/src/Internal/Presenters",
+        "test:report": "pest --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
         "validate:modules": "@php -r \"\\$bad=0; foreach (glob('app-modules/*/composer.json') as \\$m) { passthru('composer validate --strict --no-check-publish '.escapeshellarg(\\$m), \\$c); \\$bad = \\$bad ?: \\$c; } exit(\\$bad === 0 ? 0 : 1);\""
     },
     "scripts-descriptions": {
         "ci": "Every gate CI runs, in the order it runs them.",
         "test:mutation": "Mutation testing over the five capability modules and the two presenter directories — every place a decision is made. Components, adapters and views hold no logic to mutate, so mutating them would measure the fakes rather than the app.",
+        "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud reads (Q-R64).",
         "validate:modules": "Validate every module manifest; the root validate does not look at them."
     }
 }

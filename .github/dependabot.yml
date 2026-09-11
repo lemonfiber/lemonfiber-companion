@@ -1,0 +1,59 @@
+# ADR-0016: Dependabot, not the alternative.
+#
+# Grouped so that a week's patch updates arrive as one pull request rather than
+# nine. Each still runs the full gate set, and nine runs of that is most of the
+# cost of keeping dependencies current.
+
+version: 2
+
+updates:
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # The analysis toolchain moves together and breaks together: a new PHPStan
+      # minor and a new rule package are one change to review, not two.
+      analysis:
+        patterns:
+          - 'phpstan/*'
+          - 'larastan/*'
+          - '*/phpstan-*'
+          - 'rector/*'
+          - 'laravel/pint'
+          - 'tomasvotruba/*'
+        update-types:
+          - minor
+          - patch
+      testing:
+        patterns:
+          - 'pestphp/*'
+          - 'phpunit/*'
+          - 'nunomaduro/*'
+        update-types:
+          - minor
+          - patch
+      runtime:
+        patterns:
+          - 'laravel/framework'
+          - 'nativephp/*'
+        update-types:
+          - patch
+    commit-message:
+      prefix: build
+      include: scope
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns:
+          - '*'
+    commit-message:
+      prefix: build
+      include: scope

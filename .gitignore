@@ -30,3 +30,4 @@ Thumbs.db
 /.phpstan-cache
 /.rector-cache
 .rule-fixtures
+/coverage
