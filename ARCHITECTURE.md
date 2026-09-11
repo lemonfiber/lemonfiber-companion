@@ -273,9 +273,20 @@ changed any of them, which is how a rule dies without anyone noticing.
 
 **A `bg-theme-*` token reported as unknown is a true answer, not a false
 positive.** The theme resolver is provided by the application rather than by the
-package, and the `design` module that owns it is still empty — so those classes
-really are dropped at render today. When `design` registers a resolver they start
-resolving and stop being reported, and the rule is right at both times.
+package. `Modules\Design\Api\Theme` is that resolver and the composition root
+registers it at boot, so the two tokens this surface asserts resolve and every
+other one is still reported — which is the answer rather than a gap. The
+companion maps `lemon` to the accent role and `ink` to the foreground that sits
+on it, and leaves the rest to the platform's own theme roles, so that the
+reader's light, dark and contrast settings decide them rather than this
+repository (DES-R24, DES-R26).
+
+**Nothing about the palette is typed twice without being checked.** The two
+hexes live in the `ThemeToken` enum because a module may not read a file (B3)
+and a provider may not read one at boot (A9); `tests/Arch/BrandPaletteParityTest`
+checks them against `app-modules/design/resources/tokens.json`, which the
+hygiene gate in turn checks by digest against `brand:tokens/tokens.json`. The
+brand repository makes the same arrangement for its own `tokens.css`.
 
 ### Language
 

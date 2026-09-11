@@ -129,8 +129,16 @@ arch('H6 — an exception is named for what happened, not for being an exception
     ->expect($ourCode)
     ->not->toHaveSuffix('Exception');
 
+// `->classes()` rather than the bare list, because Pest's `toBeFinal` answers
+// false for an enum by construction — `! enum_exists($name) && ...` — so an
+// enum can never satisfy it. D4 requires a closed set to be an enum, which
+// would make the two rules together unsatisfiable the moment anyone obeyed the
+// first one. Nothing is exempted by this: an enum is final in the language and
+// `final enum` is a parse error, so there is no unsealed enum for the rule to
+// have caught.
 arch('every class is final')
     ->expect($ourCode)
+    ->classes()
     ->toBeFinal();
 
 // ---------------------------------------------------------------------------
