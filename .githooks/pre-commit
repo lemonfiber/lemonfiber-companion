@@ -1,0 +1,20 @@
+#!/bin/sh
+# The fast checks CI runs, before the commit rather than after the push.
+#
+# Fast only: the slow gates stay in this repository’s own `ci`, because a hook
+# that takes a minute is a hook people turn off, and one that is off enforces
+# nothing (OPS-R51, Q-R57).
+#
+# Each check is skipped where its tool is absent, so a contributor without it
+# gets CI’s answer rather than a hook that cannot run.
+
+set -eu
+
+[ -x vendor/bin/pint ] || exit 0
+
+vendor/bin/pint --test || {
+	echo "pre-commit: pint would change a file. Run \`composer lint:fix\`." >&2
+	exit 1
+}
+
+exit 0

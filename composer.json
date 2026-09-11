@@ -1,0 +1,118 @@
+{
+    "name": "lemonfiber/companion",
+    "description": "The lemonfiber companion app: a fourth surface, on a device that is not the machine the stack runs on.",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "type": "project",
+    "keywords": [
+        "lemonfiber",
+        "nativephp",
+        "mobile",
+        "self-hosted"
+    ],
+    "authors": [
+        {
+            "name": "NightWorks.io"
+        }
+    ],
+    "require": {
+        "php": "^8.5",
+        "laravel/framework": "^13.17",
+        "laravel/tinker": "^3.0",
+        "lemonfiber/sdk-php": "dev-main",
+        "nativephp/mobile": "^4.4"
+    },
+    "require-dev": {
+        "bamarni/composer-bin-plugin": "^1.9",
+        "captainhook/captainhook": "^5.29",
+        "ergebnis/composer-normalize": "^2.53",
+        "ergebnis/phpstan-rules": "^2.13",
+        "fakerphp/faker": "^1.24",
+        "larastan/larastan": "^3.12",
+        "laravel/pail": "^1.2",
+        "laravel/pint": "^1.32",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.9",
+        "pestphp/pest": "^5.1",
+        "pestphp/pest-plugin-arch": "^5.0",
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "phpstan/phpstan": "^2.2",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "rector/rector": "^2.6",
+        "shipmonk/composer-dependency-analyser": "^1.8",
+        "tomasvotruba/type-coverage": "^2.3"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/lemonfiber/sdk-php"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "bamarni/composer-bin-plugin": true,
+            "ergebnis/composer-normalize": true,
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        },
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.5.0"
+        },
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "git config core.hooksPath .githooks"
+        ],
+        "post-update-cmd": [
+            "git config core.hooksPath .githooks"
+        ],
+        "analyse": "phpstan analyse",
+        "ci": [
+            "@composer validate --strict",
+            "@composer normalize --dry-run",
+            "@composer audit",
+            "@lint",
+            "@analyse",
+            "@refactor",
+            "@guards",
+            "@deps",
+            "@test:coverage",
+            "@test:mutation"
+        ],
+        "deps": "composer-dependency-analyser",
+        "guards": "@php scripts/guards.php",
+        "lint": "pint --test",
+        "lint:fix": "pint",
+        "refactor": "rector process --dry-run",
+        "refactor:fix": "rector process",
+        "test": "pest",
+        "test:coverage": "pest --coverage --min=100",
+        "test:mutation": "pest --mutate --covered-only --min=100 --path=app/Companion"
+    },
+    "scripts-descriptions": {
+        "ci": "Every gate CI runs, in the order it runs them.",
+        "guards": "EDGE vocabulary, forbidden dependencies, and the rules no analyser expresses.",
+        "test:mutation": "Mutation testing over the app's own logic. Views carry no logic to mutate."
+    }
+}
