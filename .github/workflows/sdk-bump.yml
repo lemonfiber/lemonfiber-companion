@@ -107,8 +107,11 @@ jobs:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
-          composer update "${PACKAGE}" --no-interaction --no-scripts
-          composer install --no-interaction
+          # One command: it moves the lock, installs from it, and runs the
+          # scripts. The scripts matter here — Laravel's package discovery is a
+          # `post-autoload-dump` hook, so skipping them leaves an application
+          # that cannot boot and an analyser run that means nothing.
+          composer update "${PACKAGE}" --no-interaction
           composer analyse
           composer test
 
