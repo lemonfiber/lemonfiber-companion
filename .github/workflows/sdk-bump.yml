@@ -1,0 +1,208 @@
+# Take the client, so that nobody else has to.
+#
+# `sdk-drift` is a required check here, and it compares the reference
+# `composer.lock` pins for `lemonfiber/sdk-php` against that repository's main.
+# That is what `Q-R68` asks for, and it has a cost nothing was paying down:
+# every commit on the client turns every open pull request here red, including
+# ones that touch nothing near it. An author who came to add a rule is handed a
+# dependency bump.
+#
+# It happened on this repository's first day, twice, to the pull request that
+# introduced the gate. The gate was right both times. The gate is not the thing
+# to change.
+#
+# So this does the bump. `sdk-moved` in the client fires it on every push to the
+# client's main, and it opens — or updates — one pull request that takes the
+# client. What an author sees then is a check that is already green, or a pull
+# request from the bot sitting beside their own with the reason in it.
+#
+# It merges itself only when the analyser and the suite still pass. A client
+# that changes a shape this surface uses is a change here rather than a bump,
+# and that is not a thing to merge unread.
+name: sdk-bump
+
+on:
+  # How the client asks, on every push to its main.
+  workflow_dispatch:
+  # The floor, for a dispatch that never arrived.
+  schedule:
+    - cron: "20 8 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  # One bump at a time: two runs would each reset the branch under the other.
+  group: sdk-bump
+  cancel-in-progress: false
+
+env:
+  BRANCH: chore/the-companion-takes-the-client
+  SDK: lemonfiber/sdk-php
+  PACKAGE: lemonfiber/sdk-php
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      # `main` requires signed commits and only commits GitHub makes are signed,
+      # and a pull request opened with `GITHUB_TOKEN` triggers no workflows — so
+      # its required checks would never report and it could never merge. Both
+      # reasons want an app token.
+      - name: Mint a token that can open a pull request here
+        id: token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Is the lock behind at all
+        id: behind
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          pin="$(python3 - <<'PY'
+          import json
+          import sys
+
+          with open("composer.lock", encoding="utf-8") as handle:
+              lock = json.load(handle)
+          for package in lock.get("packages", []) + lock.get("packages-dev", []):
+              if package.get("name") == "lemonfiber/sdk-php":
+                  print(package.get("source", {}).get("reference", ""))
+                  break
+          else:
+              sys.exit("lemonfiber/sdk-php is not in composer.lock")
+          PY
+          )"
+          head="$(gh api "repos/${SDK}/commits/main" --jq .sha)"
+          echo "pin=${pin}" >> "$GITHUB_OUTPUT"
+          echo "head=${head}" >> "$GITHUB_OUTPUT"
+          if [ "$pin" = "$head" ]; then
+            echo "moved=no" >> "$GITHUB_OUTPUT"
+            echo "## The companion is already on the client's main" >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
+          else
+            echo "moved=yes" >> "$GITHUB_OUTPUT"
+            echo "Locked ${pin}; the client's main is ${head}."
+          fi
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        if: steps.behind.outputs.moved == 'yes'
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Take the client and check it still holds
+        id: build
+        if: steps.behind.outputs.moved == 'yes'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
+          composer update "${PACKAGE}" --no-interaction --no-scripts
+          composer install --no-interaction
+          composer analyse
+          composer test
+
+      - name: Put the change on the branch, signed
+        id: commit
+        if: steps.behind.outputs.moved == 'yes'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PIN: ${{ steps.behind.outputs.pin }}
+          HEAD_SHA: ${{ steps.behind.outputs.head }}
+          CLEAN: ${{ steps.build.outcome }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          base="$(gh api "repos/${REPO}/commits/main" --jq .sha)"
+          if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" >/dev/null 2>&1; then
+            # The branch is the bot's alone. Reset it, so yesterday's bump is not
+            # carried under today's and described as one change.
+            gh api --method PATCH "repos/${REPO}/git/refs/heads/${BRANCH}" \
+              -F sha="${base}" -F force=true >/dev/null
+          else
+            gh api --method POST "repos/${REPO}/git/refs" \
+              -f ref="refs/heads/${BRANCH}" -f sha="${base}" >/dev/null
+          fi
+
+          if [ "$CLEAN" = "success" ]; then
+            body="The analyser and the suite still pass against it."
+          else
+            body="The analyser or the suite did not pass against it, so this is a change here rather than a bump. Read it before merging."
+          fi
+
+          # Conventional subject, a sign-off and a citation: commitlint, dco and
+          # spec-check all read this, and the last of the three closes a pull
+          # request whose citation it cannot resolve.
+          # shellcheck disable=SC2016  # $input is GraphQL's variable, not the shell's
+          gh api graphql -f query='
+            mutation($input: CreateCommitOnBranchInput!) {
+              createCommitOnBranch(input: $input) { commit { oid } }
+            }' -F input="{
+              \"branch\": {\"repositoryNameWithOwner\": \"${REPO}\", \"branchName\": \"${BRANCH}\"},
+              \"expectedHeadOid\": \"${base}\",
+              \"message\": {
+                \"headline\": \"chore(sdk): take sdk-php ${HEAD_SHA:0:7}\",
+                \"body\": \"The companion reaches a stack through this client and nothing else, so a client it has not taken is a fact about this repository. ${body}\n\nWas ${PIN}.\n\nSigned-off-by: lemonfiber release <release@lemonfiber.app>\nSpec: Q-R68\"
+              },
+              \"fileChanges\": {\"additions\": [{\"path\": \"composer.lock\", \"contents\": \"$(base64 -w0 composer.lock)\"}]}
+            }" >/dev/null
+
+          echo "clean=${CLEAN}" >> "$GITHUB_OUTPUT"
+
+      - name: Open the pull request, or leave the open one updated
+        if: steps.behind.outputs.moved == 'yes'
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          PIN: ${{ steps.behind.outputs.pin }}
+          HEAD_SHA: ${{ steps.behind.outputs.head }}
+          CLEAN: ${{ steps.commit.outputs.clean }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [ "$CLEAN" = "success" ]; then
+            verdict="**\`composer analyse\` and the suite still pass.** Nothing this surface uses changed shape."
+          else
+            verdict="**The analyser or the suite did not pass.** The client has changed a shape this surface uses, so taking it is a change here rather than a bump. Read the failing run before merging; do not force it green."
+          fi
+
+          existing="$(gh pr list --repo "${REPO}" --head "${BRANCH}" --state open --json number --jq '.[0].number // ""')"
+          if [ -n "$existing" ]; then
+            echo "::notice::#${existing} updated to ${HEAD_SHA}"
+          else
+            created="$(gh pr create --repo "${REPO}" --head "${BRANCH}" --base main \
+              --title "chore(sdk): take sdk-php ${HEAD_SHA:0:7}" \
+              --body "$(printf '%s\n' \
+                "\`sdk-drift\` is a required check here, and the lock was behind. This takes the client so that the next author to open a pull request is not handed a dependency bump they did not come for." \
+                "" \
+                "- was: \`${PIN}\`" \
+                "- now: \`${HEAD_SHA}\`" \
+                "" \
+                "${verdict}" \
+                "" \
+                "Opened by \`sdk-bump\`, which the client's own \`sdk-moved\` fires on every push to its main." \
+                "" \
+                "Spec: Q-R68")")"
+            # `gh pr create` prints the pull request's URL, not its number.
+            existing="${created##*/}"
+            echo "::notice::opened #${existing}"
+          fi
+
+          if [ "$CLEAN" = "success" ]; then
+            gh pr merge "${existing}" --repo "${REPO}" --squash --auto \
+              && echo "auto-merge armed on #${existing}." \
+              || echo "::warning::could not arm auto-merge on #${existing}; merge it by hand."
+          else
+            echo "::warning::#${existing} needs reading: the client did not come out clean."
+          fi
