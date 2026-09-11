@@ -161,6 +161,16 @@ $clock = new FrozenClock(Instant::parse('2026-09-11T12:00:00Z'));
 | C3 | Every thrown exception is module-owned, never bare `\Exception`/`\RuntimeException` | phpstan `disallowed-calls` |
 | C4 | No `@` suppression | phpstan: ergebnis `NoErrorSuppressionRule` |
 | C5 | `match`, never `switch`; and no `else` | phpstan: ergebnis `NoSwitchRule` + spaze `disallowedControlStructures` |
+| C6 | No empty catch, and no `Throwable`/`Exception` caught without rethrowing | phpstan: own rule |
+| C7 | No `empty()` | phpstan: own rule |
+| C8 | No `?->` in `kernel` or a capability | phpstan: own rule, scoped by path |
+| C9 | No nested ternary, and no `??` on an array subscript | phpstan: own rule |
+
+**Why C7 is absolute.** `empty()` is true for `null`, `false`, `0`, `'0'`, `''`
+and `[]`, and this application turns on exactly the distinctions it erases. A
+stack with zero findings is healthy. A stack that has never been read is
+unknown. A backup count of zero is a warning and a backup count that has not
+arrived yet is a spinner. One function renders all of those as the same screen.
 
 **Why C5 bans `else` as well as `switch`.** `switch` compares loosely, falls
 through, and cannot be checked for the arm nobody wrote — which is the hole D4's
@@ -283,6 +293,8 @@ every rule that would otherwise have applied to whatever it exposes.
 
 | | Rule | Enforced by |
 |---|---|---|
+| P1 | No `__get`, `__set`, `__call`, `__callStatic` — `__invoke` stays | phpstan: own rule |
+| P2 | No variable variables and no dynamic class, method or property name | phpstan: own rule |
 | P3 | No `func_get_args()`, no `#[AllowDynamicProperties]` | phpstan `disallowed-calls` |
 | P4 | No reflection in production code | phpstan `disallowed-calls`, scoped by path |
 
@@ -299,6 +311,8 @@ an application they have no reason to think is broken.
 |---|---|---|
 | Q1 | No runtime configuration mutation — `ini_set`, `setlocale`, `date_default_timezone_set` and their neighbours | phpstan `disallowed-calls` |
 | Q2 | No superglobals | phpstan `disallowed-superglobals` |
+| Q3 | No `static::` or `new static()` — every class is final | phpstan: own rule |
+| Q4 | No `echo`/`print` from a module | phpstan: own rule |
 
 ### Text a person reads
 
@@ -325,6 +339,13 @@ None of these is theoretical once the second locale exists.
 | S1 | The dangerous, execution, insecure and non-timing-safe call bundles are on | phpstan `disallowed-calls`, four shipped bundles |
 | S2 | No package with a published advisory resolves | `roave/security-advisories` + `composer audit` |
 | S3 | TLS verification is never weakened | phpstan: own rule |
+
+**Q3 and Q4 are about shapes that belong to a different codebase.** Late static
+binding resolves to the class it is written in, because every class here is
+final and there is no subclass for it to find — what it actually does is tell
+the next reader that one exists. And there is no output stream: the runtime
+publishes a binary element tree, so an `echo` produces a malformed frame rather
+than a visible mistake, diagnosed on a device with no console.
 
 **Why S3 is a rule and not a review note.** ADR-0018 pins a stack's certificate
 by a fingerprint taken from the pairing material, which is what makes a stack on

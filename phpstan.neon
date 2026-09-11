@@ -511,6 +511,47 @@ services:
         tags:
             - phpstan.rules.rule
 
+    # P1/P2 — what the analyser cannot see, it cannot govern. A magic method or
+    # a dynamic name switches off every rule here for whatever it exposes.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoMagicMethodRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoDynamicAccessRule
+        tags:
+            - phpstan.rules.rule
+
+    # Q3/Q4 — the shapes that only make sense in a codebase this one is not:
+    # late static binding with no subclass to find, and output with no stream
+    # to write to.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoLateStaticBindingRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoOutputRule
+        tags:
+            - phpstan.rules.rule
+
+    # C6/C7/C8/C9 — absence, and the four ways it gets papered over.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoBroadCatchRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoEmptyRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoNullsafeInDomainRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoNestedTernaryRule
+        tags:
+            - phpstan.rules.rule
+
     # D6 — a number in a method body has a name. SonarCloud reports this too,
     # which makes it a backstop rather than the gate: a rule that only fails in
     # review is a rule people meet after they have finished.

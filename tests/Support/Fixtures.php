@@ -889,6 +889,122 @@ final readonly class Fixtures
     private static function analysability(): array
     {
         return [
+            Fixture::analyser('P1', 'Plain/MakesMembersUp.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class MakesMembersUp
+                {
+                    public function __get(string $name): mixed
+                    {
+                        return null;
+                    }
+                }
+                PHP, 'P1 —'),
+
+            Fixture::analyser('P2', 'Plain/ChoosesAtRuntime.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class ChoosesAtRuntime
+                {
+                    public function make(string $class): object
+                    {
+                        return new $class();
+                    }
+                }
+                PHP, 'P2 —'),
+
+            Fixture::analyser('Q3', 'Plain/BindsLate.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class BindsLate
+                {
+                    public function which(): string
+                    {
+                        return static::class;
+                    }
+                }
+                PHP, 'Q3 —'),
+
+            Fixture::analyser('Q4', 'Plain/WritesOutput.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class WritesOutput
+                {
+                    public function say(): void
+                    {
+                        echo 'into the element tree';
+                    }
+                }
+                PHP, 'Q4 —'),
+
+            Fixture::analyser('C6', 'Plain/SwallowsEverything.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class SwallowsEverything
+                {
+                    public function attempt(): void
+                    {
+                        try {
+                            $this->attempt();
+                        } catch (\Throwable $caught) {
+                        }
+                    }
+                }
+                PHP, 'C6 —'),
+
+            Fixture::analyser('C7', 'Plain/AsksIfEmpty.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class AsksIfEmpty
+                {
+                    /** @param list<string> $findings */
+                    public function healthy(array $findings): bool
+                    {
+                        return empty($findings);
+                    }
+                }
+                PHP, 'C7 —'),
+
+            Fixture::analyser('C9', 'Plain/NestsTernaries.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class NestsTernaries
+                {
+                    public function label(int $count): string
+                    {
+                        return $count > 9 ? ($count > 99 ? 'many' : 'some') : 'few';
+                    }
+                }
+                PHP, 'C9 —'),
+
             Fixture::analyser('P3', 'Plain/TakesAnything.php', <<<'PHP'
                 <?php
 
@@ -938,6 +1054,25 @@ final readonly class Fixtures
                     }
                 }
                 PHP, 'Q1 —'),
+
+            // C8 is scoped to the domain by path, so its fixture sits at a path
+            // shaped like one — the rule matches `/health/src/`, and the tree
+            // this is written into supplies exactly that.
+            Fixture::analyser('C8', 'health/src/GuardsANull.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Health;
+
+                final readonly class GuardsANull
+                {
+                    public function reach(?self $other): mixed
+                    {
+                        return $other?->reach(null);
+                    }
+                }
+                PHP, 'C8 —'),
 
             Fixture::analyser('Q2', 'Plain/ReadsSuperglobal.php', <<<'PHP'
                 <?php
