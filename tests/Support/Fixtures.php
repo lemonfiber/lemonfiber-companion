@@ -93,6 +93,7 @@ final readonly class Fixtures
             ...self::sizeAndSuiteIntegrity(),
             ...self::placement(),
             ...self::templates(),
+            ...self::floors(),
             ...self::rulesAboutRules(),
             ...self::notDrivable(),
         ];
@@ -1378,6 +1379,46 @@ final readonly class Fixtures
                     <native:text>This stack cannot be reached from here.</native:text>
                 </native:column>
                 BLADE, 'reads its text from the translator', 'english-sentence'),
+        ];
+    }
+
+    /**
+     * The per-module floors.
+     *
+     * The clover fixture goes to the path the real report uses. `coverage/` is
+     * generated output and wholly ignored by git already, so it needs no
+     * `Fixtures` directory to stay invisible — and a report written by hand is
+     * only portable because the reader strips the repository root, which an
+     * absolute path from CI would otherwise carry.
+     *
+     * @return list<Fixture>
+     */
+    private static function floors(): array
+    {
+        return [
+            Fixture::suite('G7', 'app-modules/Fixtures/composer.json', <<<'JSON'
+                {
+                    "name": "modules/fixtures",
+                    "description": "A module that states no bar of its own.",
+                    "type": "library",
+                    "license": "LicenseRef-Hippocratic-3.0",
+                    "require": { "php": "^8.5" },
+                    "extra": { "lemonfiber": { "kind": "capability" } }
+                }
+                JSON, 'G7 — every module declares', 'fixtures'),
+
+            Fixture::suite('G9', 'coverage/clover.xml', <<<'XML'
+                <?xml version="1.0" encoding="UTF-8"?>
+                <coverage generated="0">
+                  <project timestamp="0" name="Clover Coverage">
+                    <package name="Modules\Health">
+                      <file name="app-modules/health/src/Fixtures/Bare.php">
+                        <metrics loc="9" ncloc="9" classes="1" methods="1" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="4" coveredstatements="1" elements="5" coveredelements="1"/>
+                      </file>
+                    </package>
+                  </project>
+                </coverage>
+                XML, 'G9 — every module meets', 'health is at 25.0%'),
         ];
     }
 

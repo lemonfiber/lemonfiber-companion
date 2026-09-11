@@ -22,7 +22,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "surface"
+            "kind": "surface",
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            }
         }
     }
 }

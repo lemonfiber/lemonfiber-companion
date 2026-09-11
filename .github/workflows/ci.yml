@@ -193,7 +193,10 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - run: composer test:coverage
+      # Writes the clover report the floors gate reads. One run produces both
+      # the global number and the twelve per-module ones.
+      - run: composer test:report
+      - run: composer test:floors
 
   # The most expensive gate in the repository, so it is the most guarded: only
   # on a pull request, only once the tests have passed, and only over the app's

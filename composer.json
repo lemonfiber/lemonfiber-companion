@@ -119,7 +119,8 @@
             "@refactor",
             "@deps",
             "@test:guards",
-            "@test:coverage",
+            "@test:report",
+            "@test:floors",
             "@test:mutation"
         ],
         "deps": "composer-dependency-analyser",
@@ -127,19 +128,21 @@
         "lint:fix": "pint",
         "refactor": "rector process --dry-run",
         "refactor:fix": "rector process",
-        "test": "pest --parallel --exclude-testsuite=Guards",
-        "test:coverage": "pest --coverage --min=100",
+        "test": "pest --parallel --exclude-testsuite=Guards,Floors",
+        "test:coverage": "pest --exclude-testsuite=Guards,Floors --coverage --min=100",
+        "test:floors": "pest --testsuite=Floors",
         "test:guards": "pest --testsuite=Guards",
-        "test:mutation": "pest --mutate --covered-only --min=100 --ignore-min-score-on-zero-mutations --path=app-modules/connection/src,app-modules/stacks/src,app-modules/health/src,app-modules/backups/src,app-modules/updates/src,app-modules/operator/src/Internal/Presenters,app-modules/household/src/Internal/Presenters",
-        "test:report": "pest --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
+        "test:mutation": "@php scripts/mutation.php",
+        "test:report": "pest --exclude-testsuite=Guards,Floors --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
         "validate:modules": "@php -r \"\\$bad=0; foreach (glob('app-modules/*/composer.json') as \\$m) { passthru('composer validate --strict --no-check-publish '.escapeshellarg(\\$m), \\$c); \\$bad = \\$bad ?: \\$c; } exit(\\$bad === 0 ? 0 : 1);\""
     },
     "scripts-descriptions": {
         "ci": "Every gate CI runs, in the order it runs them.",
-        "test": "Every suite but Guards, in parallel. Guards plants a violation of every rule into the working tree, so a process reading that tree beside it sees files appear and vanish; test:guards runs it on its own.",
+        "test": "Every suite but Guards and Floors, in parallel. Guards plants a violation of every rule into the working tree, so a process reading that tree beside it sees files appear and vanish. Floors reads the clover report test:report writes, and refuses to run without one.",
+        "test:floors": "Check every module against the coverage floor it declared, over the report test:report writes (G9).",
         "test:guards": "Plant a violation of every rule and require each rule to report it (R2).",
-        "test:mutation": "Mutation testing over the five capability modules and the two presenter directories — every place a decision is made. Components, adapters and views hold no logic to mutate, so mutating them would measure the fakes rather than the app.",
-        "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud reads (Q-R64).",
+        "test:mutation": "Mutation testing at the floor each module declares. Modules sharing a floor share a run, because a floor of 100 admits no offsetting between them; a module whose floor differs gets its own.",
+        "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud and the Floors suite read (Q-R64, G9).",
         "validate:modules": "Validate every module manifest; the root validate does not look at them."
     }
 }

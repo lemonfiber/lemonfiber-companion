@@ -39,6 +39,15 @@
             <directory>tests/Feature</directory>
         </testsuite>
 
+        <!-- Read from the clover report `composer test:report` writes, so this
+             runs after it rather than inside `composer test`. It refuses to run
+             without a report instead of skipping: a floors gate that passes
+             when its input is missing passes in exactly the case where nobody
+             measured anything. -->
+        <testsuite name="Floors">
+            <directory>tests/Floors</directory>
+        </testsuite>
+
         <!-- R2, last and on its own: this plants a violation of every rule and
              runs the analyser and the suite over them as subprocesses. It is
              slow for a reason nothing can remove, and it must not run beside a

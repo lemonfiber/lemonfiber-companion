@@ -60,7 +60,7 @@ it('W2 — a module declares only its own namespace', function (): void {
 it('W3 — the root holds suites, not scattered tests', function (): void {
     // Each of these is a suite in phpunit.xml with a job attached to it. A
     // directory that is not one is a directory nothing runs.
-    $suites = ['Arch', 'Templates', 'Contract', 'Feature', 'Guards', 'Support'];
+    $suites = ['Arch', 'Templates', 'Contract', 'Feature', 'Floors', 'Guards', 'Support'];
     $strays = [];
 
     $entries = scandir(Tree::at('tests'));

@@ -30,6 +30,9 @@ return (new Configuration())
     ->addPathToScan(__DIR__ . '/config', isDev: false)
     ->addPathToScan(__DIR__ . '/routes', isDev: false)
     ->addPathToScan(__DIR__ . '/tests', isDev: true)
+    // Build tooling, so that a script reaching for a package nobody required is
+    // caught here rather than on the machine that does not have it.
+    ->addPathToScan(__DIR__ . '/scripts', isDev: true)
     // A module is required structurally, not because root code names it: the
     // framework discovers each one's service provider. That is true for every
     // module permanently, so it is stated once by prefix rather than as twelve

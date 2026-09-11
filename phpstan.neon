@@ -38,6 +38,10 @@ parameters:
         - app-modules
         - config
         - routes
+        # Build tooling is code too. It reads manifests and runs programs, which
+        # is what the two `allowIn` entries below are for — named, rather than a
+        # directory the analyser never looks at.
+        - scripts
         - tests
 
     # Pest's own annotation, corrected. See the stub for why.
@@ -197,10 +201,11 @@ parameters:
                 - 'is_file()'
                 - 'scandir()'
                 - 'glob()'
-            message: "B3 — the filesystem belongs to an adapter. It is IO, and IO is an adapter's job. A capability that reads a file cannot be unit tested and cannot be reasoned about offline. Use Modules\\Kernel\\Api\\SecureStore (implemented in app-modules/vault/src, on Keychain or Keystore) for anything that must survive a restart, or the device adapter for anything platform-owned (B3, N4-R5)."
+            message: "B3 — the filesystem belongs to an adapter. It is IO, and IO is an adapter's job. A capability that reads a file cannot be unit tested and cannot be reasoned about offline. Use Modules\\Kernel\\Api\\SecureStore (implemented in app-modules/vault/src, on Keychain or Keystore) for anything that must survive a restart, or the device adapter for anything platform-owned (B3, N4-R5). `scripts/` is exempt for the same reason `tests/` is: a build step reads the repository it is building, which is not the hidden IO this rule is about."
             allowIn:
                 - app-modules/vault/src/*
                 - app-modules/device/src/*
+                - scripts/*
                 - tests/*
 
         # --- A3/A4: service location hides what a class needs ---------------
@@ -227,13 +232,24 @@ parameters:
 
         # --- S1: the execution bundle, scoped -------------------------------
         #
+        # `passthru` is the execution bundle's, and the mutation runner's whole
+        # job is to invoke Pest once per declared floor — a gate that runs a
+        # tool, in the same category as the harness below.
+        -
+            function: 'passthru()'
+            message: "S1 — nothing in this application runs a program. scripts/ is the exception: a build step invokes the tool it is a step for (S1)."
+            allowIn:
+                - scripts/*
+
+        #
         # The rule-proving harness runs the analyser and the test suite as
         # subprocesses, which is the only way to observe whether a rule reports.
         # Scoped rather than ignored, so the ban holds everywhere else.
         -
             function: 'shell_exec()'
-            message: "S1 — nothing in this application runs a program. There is no shell on a phone worth reaching for, and a string that reaches one is a string somebody can write into. The rule-proving harness in tests/Guards is the exception: observing whether a rule reports means running the analyser and the suite as separate processes (S1)."
+            message: "S1 — nothing in this application runs a program. There is no shell on a phone worth reaching for, and a string that reaches one is a string somebody can write into. Two exceptions, both of which exist to run other gates: the rule-proving harness in tests/Guards, which observes whether a rule reports by running the analyser and the suite as separate processes, and scripts/, which is where a build step invokes a tool (S1)."
             allowIn:
+                - scripts/*
                 - tests/Guards/*
 
         # --- Q1: the runtime is persistent, so a setting stays set ----------
