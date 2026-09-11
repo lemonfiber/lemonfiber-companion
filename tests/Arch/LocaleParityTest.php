@@ -102,6 +102,40 @@ it('L2 — the locales carry the same keys', function (): void {
     ));
 });
 
+it('L2 — a locale the spell checker cannot read is excluded from it', function (): void {
+    $configuration = file_get_contents(Tree::at('typos.toml'));
+
+    // Read out of the `extend-exclude` list rather than looked for anywhere in
+    // the file, so a locale named in a comment does not satisfy this.
+    $excluded = preg_match('/^extend-exclude\s*=\s*\[(.*?)\]/ms', is_string($configuration) ? $configuration : '', $found) === 1
+        ? $found[1]
+        : '';
+
+    $unlisted = [];
+
+    foreach (array_keys(translations()) as $locale) {
+        // English is the checker's own language, so a typo there is a typo an
+        // operator would see and is worth catching.
+        if ($locale === 'en') {
+            continue;
+        }
+
+        if (! str_contains($excluded, sprintf('lang/%s/', $locale))) {
+            $unlisted[] = $locale;
+        }
+    }
+
+    expect($unlisted)->toBe([], sprintf(
+        "These catalogues are read by a spell checker that does not speak them:\n  %s\n\n"
+        . 'The checker\'s dictionary is English, so every sentence in another language is '
+        . 'a run of words it does not have and the hygiene gate fails on all of them at '
+        . 'once. Add `lang/<locale>/**` to `extend-exclude` in typos.toml. This fails here '
+        . 'rather than in CI because the CI failure names forty Dutch words and not the '
+        . 'one missing line (L2).',
+        implode("\n  ", $unlisted),
+    ));
+});
+
 it('L2 — no translation is a placeholder for one', function (): void {
     $offenders = [];
 

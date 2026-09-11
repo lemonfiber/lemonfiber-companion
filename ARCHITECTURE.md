@@ -420,6 +420,14 @@ out. R3 refuses those three shapes by name. R2 is the general answer: plant the
 smallest violation of every rule, run the machine that enforces it, and require
 it to report.
 
+**Every fixture sits under a directory called `Fixtures`.** For the length of a
+run the files are really on disk, so `.gitignore` and `pint.json` both exclude
+that one name. Without it, a commit made beside a run picks up a deliberate rule
+violation, `git status` reports a dirty tree that is about to clean itself, and
+the formatter fails on files whose whole purpose is to be wrong. The convention
+costs a directory name: a `Fixtures/` directory anywhere in this repository
+belongs to the harness and is never committed.
+
 **The `Guards` suite runs alone.** `composer test` is `pest --parallel` with
 `Guards` excluded; `composer test:guards` runs it by itself. The harness plants
 a violation of every rule into the working tree, so a process reading that tree

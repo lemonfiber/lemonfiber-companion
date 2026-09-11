@@ -17,3 +17,31 @@ ratatui = "ratatui"
 Ratatui = "Ratatui"
 lemonfiber = "lemonfiber"
 Servarr = "Servarr"
+
+# --- what this repository adds -------------------------------------------
+#
+# Everything above is the canonical floor and is byte-identical across the
+# estate. What follows is this tree's own, which the floor explicitly permits.
+
+[files]
+# The checker's dictionary is English, and a Dutch sentence is a run of words it
+# does not have — `certificaat`, `koppelingscode`, `vergrendeld`. Enumerating
+# them would be a second Dutch dictionary to maintain and would go stale the
+# first time a sentence is rewritten. The English catalogue stays checked,
+# because that is where a typo an operator can see would be.
+#
+# A locale added here needs a line here too, and LocaleParityTest fails if one
+# is missing rather than leaving the omission to be noticed.
+extend-exclude = ["lang/nl/"]
+
+[default.extend-identifiers]
+# Pest's own expectation is spelled this way; the stub mirrors its API rather
+# than correcting it.
+toBeInvokable = "toBeInvokable"
+
+# AGENTS.md shows what a mistyped EDGE class looks like, and the whole point of
+# the example is that it is misspelled. This permits the token anywhere rather
+# than only in that one phrase — an identifier exemption is the narrowest thing
+# typos offers without editing the shared `extend-ignore-re` above. Changing the
+# example to a word the checker does not know would remove the need for it.
+backgrond = "backgrond"

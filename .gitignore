@@ -29,5 +29,16 @@ Thumbs.db
 # Analysis caches, named in phpstan.neon and rector.php so CI can restore them.
 /.phpstan-cache
 /.rector-cache
-.rule-fixtures
 /coverage
+
+# The rule-proving harness writes a violation of every rule into the working
+# tree, runs the analyser and the suite over them, and takes them out again.
+# For the length of that run the files are really there — so git must not see
+# them, or a commit made beside a run picks up a deliberate rule violation, and
+# `git status` reports a dirty tree that is about to clean itself.
+#
+# Every path it writes sits under a directory called `Fixtures`, which is what
+# makes one pattern enough. `tests/Support/Fixtures.php` is the registry itself
+# and is a file rather than a directory, so it is untouched by this.
+**/Fixtures/
+.rule-fixtures/
