@@ -5,15 +5,25 @@
 # that takes a minute is a hook people turn off, and one that is off enforces
 # nothing (OPS-R51, Q-R57).
 #
+# Staged files only, which is the shape the rest of the estate uses. Two
+# reasons beyond speed: a tree-wide check reports a file the author did not
+# touch, so the first thing they learn is that the hook is somebody else's
+# problem; and this repository's rule-proving harness writes fixtures into the
+# working tree for the length of a run, which a tree-wide check would read
+# mid-flight and refuse — fixtures that exist in order to be wrong.
+#
 # Each check is skipped where its tool is absent, so a contributor without it
 # gets CI’s answer rather than a hook that cannot run.
 
 set -eu
 
+staged=$(git diff --cached --name-only --diff-filter=ACM -- '*.php')
+[ -n "$staged" ] || exit 0
 [ -x vendor/bin/pint ] || exit 0
 
-vendor/bin/pint --test || {
-	echo "pre-commit: pint would change a file. Run \`composer lint:fix\`." >&2
+# shellcheck disable=SC2086
+vendor/bin/pint --test $staged || {
+	echo "pre-commit: pint would change a staged file. Run \`composer lint:fix\`." >&2
 	exit 1
 }
 
