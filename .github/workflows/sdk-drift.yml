@@ -78,7 +78,7 @@ jobs:
           ); then
             say '## The lock could not be read'
             say ''
-            say 'This check compares what `composer.lock` pins for `lemonfiber/sdk-php`'
+            say "This check compares what \`composer.lock\` pins for \`lemonfiber/sdk-php\`"
             say 'against that repository. It could not find it, which is a fault in this'
             say 'check or in the lock rather than a finding about the client.'
             echo "::error::could not read the locked lemonfiber/sdk-php reference from composer.lock"
@@ -93,7 +93,7 @@ jobs:
             say ''
             say "The companion is built against sdk-php \`${pin}\`, which is what main is."
             say ''
-            say 'This is a required check on every pull request (`Q-R68`), so this'
+            say "This is a required check on every pull request (\`Q-R68\`), so this"
             say 'surface cannot fall behind the client without somebody being told.'
             exit 0
           fi
@@ -104,7 +104,7 @@ jobs:
             say '## The locked client is a commit that repository does not have'
             say ''
             say "\`composer.lock\` pins \`${pin}\`, which is not in sdk-php. That is not"
-            say 'drift — it is a pin nothing can resolve, so `composer install` will fail'
+            say "drift — it is a pin nothing can resolve, so \`composer install\` will fail"
             say 'rather than quietly build something old.'
             echo "::error::composer.lock pins ${pin}, which does not exist in sdk-php"
             exit 1
@@ -125,8 +125,8 @@ jobs:
           say "$behind"
           say '```'
           say ''
-          say 'To catch up: `composer update lemonfiber/sdk-php`, then commit the lock.'
-          say 'If that leaves `composer analyse` or the suite red, the client has changed'
+          say "To catch up: \`composer update lemonfiber/sdk-php\`, then commit the lock."
+          say "If that leaves \`composer analyse\` or the suite red, the client has changed"
           say 'a shape this surface uses, and taking it is a change here rather than a'
           say 'bump — say so in the pull request instead of forcing it green.'
           echo "::error::the locked client is behind sdk-php main — run composer update lemonfiber/sdk-php and commit the lock"
