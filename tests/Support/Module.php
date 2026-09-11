@@ -33,6 +33,7 @@ use SplFileInfo;
 
 use function sprintf;
 use function str_contains;
+use function str_ends_with;
 use function str_replace;
 use function ucwords;
 
@@ -101,26 +102,24 @@ final readonly class Module
      */
     public function classes(): array
     {
-        $src = sprintf('%s/src', $this->path);
+        return $this->phpFilesIn(sprintf('%s/src', $this->path));
+    }
 
-        if (! is_dir($src)) {
-            return [];
-        }
-
-        $found = [];
-
-        $tree = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS),
-        );
-
-        /** @var SplFileInfo $file */
-        foreach ($tree as $file) {
-            if ($file->getExtension() === 'php') {
-                $found[] = $file->getPathname();
-            }
-        }
-
-        return $found;
+    /**
+     * Every test file in the module, at any depth.
+     *
+     * Named by the convention rather than discovered by running them: H4 is
+     * about where a file sits, and a test that fails to load is exactly the
+     * case that must still be reported rather than skipped.
+     *
+     * @return list<string>
+     */
+    public function testFiles(): array
+    {
+        return array_values(array_filter(
+            $this->phpFilesIn(sprintf('%s/tests', $this->path)),
+            static fn(string $file): bool => str_ends_with($file, 'Test.php'),
+        ));
     }
 
     /**
@@ -179,6 +178,29 @@ final readonly class Module
         }
 
         return $forbidden;
+    }
+
+    /** @return list<string> */
+    private function phpFilesIn(string $directory): array
+    {
+        if (! is_dir($directory)) {
+            return [];
+        }
+
+        $found = [];
+
+        $tree = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+        );
+
+        /** @var SplFileInfo $file */
+        foreach ($tree as $file) {
+            if ($file->getExtension() === 'php') {
+                $found[] = $file->getPathname();
+            }
+        }
+
+        return $found;
     }
 
     private static function read(string $manifest): self

@@ -61,9 +61,38 @@ foreach ($modules as $module) {
     if (! $module->kind->renders()) {
         // Only a surface holds state the renderer re-reads. Everything else is
         // a value or a decision, and both are safer readonly.
-        arch("{$module->name} holds no mutable state")
-            ->expect($module->namespace)
-            ->toBeReadonly();
+        //
+        // Asked by reflection rather than with `->toBeReadonly()`, which refuses
+        // an interface — and `kernel` is the module of ports, so every port it
+        // publishes would have failed a rule about mutable state for declaring
+        // no state at all. That is a gate that blocks its own cure: the first
+        // port written would have turned the suite red with a message pointing
+        // nowhere useful. An interface and an enum are skipped by name here, and
+        // the reason is recorded rather than left as a silent exclusion.
+        it("{$module->name} holds no mutable state", function () use ($module): void {
+            $mutable = [];
+
+            foreach ($module->classNames() as $name) {
+                $class = new ReflectionClass($name);
+
+                if ($class->isInterface() || $class->isEnum()) {
+                    continue;
+                }
+
+                if (! $class->isReadOnly()) {
+                    $mutable[] = $name;
+                }
+            }
+
+            expect($mutable)->toBe([], sprintf(
+                "These can be changed after they are built:\n  %s\n\n"
+                . 'Only a surface holds mutable state, because only a surface is re-read by '
+                . 'the renderer. Everywhere else a value that can change after construction '
+                . 'is a value whose invariants were checked once and can be false by the time '
+                . 'anyone reads it. Mark the class readonly.',
+                implode("\n  ", $mutable),
+            ));
+        });
     }
 }
 

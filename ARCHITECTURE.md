@@ -181,8 +181,8 @@ $outcome->either(
 
 | | Rule | Enforced by |
 |---|---|---|
-| D1 | No `array` in a public `Api` signature — value objects or typed collections | planned |
-| D2 | No primitive obsession: ids, tokens, durations are types | planned |
+| D1 | No `array` in a public `Api` signature — value objects or typed collections | arch: reflection over every published method |
+| D2 | No primitive obsession: ids, tokens, durations are types | arch: no `string`/`int`/`float` parameter outside a named constructor |
 | D3 | No `mixed` in public signatures | phpstan (level max + type coverage 100%) |
 | D4 | Enums for every closed set, never string constants | arch + shipmonk `ForbidMatchDefaultArmForEnums` |
 
@@ -199,12 +199,32 @@ are two types, and the mistake stops compiling.
 | E3 | The SDK is named in exactly one module | composer + arch |
 | E4 | `Native\*` confined to `design`, `surface`, `device`, `vault` | arch: module kind |
 
+### The module API
+
+A module publishes commands and queries, and nothing dispatches them. There is
+no bus, no handler and no message object separate from the thing that handles
+it: the class **is** the message, `__invoke` is the dispatch, and the stack
+trace of a failure runs from the screen to the SDK without passing through a
+`switch` on a class name.
+
+| | Rule | Enforced by |
+|---|---|---|
+| M1 | A query never answers with `Outcome`; a command answers with nothing else | arch |
+| M2 | A class under `Api\Commands` or `Api\Queries` has exactly one public method | arch |
+| M3 | Every `Api\Commands\*` constructor takes an `IdempotencyKey` | arch |
+
+**Why M3 is not optional.** A phone loses wifi mid-request and cannot tell
+whether the stack applied the update or never heard the question. Without a key
+the only safe answer is to do nothing and ask the operator, which is the worst
+screen in the application. With one, retrying is free — so the retry can be
+automatic and the operator never sees the question.
+
 ### The SuperNative surface
 
 | | Rule | Enforced by |
 |---|---|---|
 | F1 | Components are thin: hold state, delegate decisions | phpstan cognitive complexity + arch size cap |
-| F2 | Presenters are pure: data in, view model out, no ports injected | planned |
+| F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor |
 | F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | planned |
 
 EDGE styling is **Tailwind-shaped and is not Tailwind**. There is no CSS build,
@@ -242,7 +262,7 @@ tests/Contract/StackContract.php
 | H1 | No `Manager`, `Helper`, `Util`, `Service`, `Data`, `Info` suffixes | arch |
 | H2 | No `Interface`/`Abstract` affixes on type names | arch |
 | H3 | Caps: methods per class, lines per method, constructor parameters, cognitive complexity | phpstan + arch |
-| H4 | A test file mirrors its source file's location | planned |
+| H4 | A test file mirrors its source file's location | arch: an orphan test fails, a class without one does not |
 | H5 | A string with a value in it is built with `sprintf`, never with `.` | phpstan: own rule |
 
 H1 is not pedantry. `BackupManager` is a name that permits anything, which is how
