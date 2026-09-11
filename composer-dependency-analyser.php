@@ -67,6 +67,12 @@ return (new Configuration())
             'rector/rector',
             'ergebnis/composer-normalize',
             'shipmonk/composer-dependency-analyser',
+            // S2 — roave/security-advisories is conflict-only. It ships no code
+            // to name: what it does is fail resolution when a dependency
+            // matches a published advisory, so the refusal arrives at
+            // `composer update` rather than at `composer audit` in CI a week
+            // later. There is nothing for a scanner to find, by design.
+            'roave/security-advisories',
             // Discovered at runtime: Collision renders a failure readably and
             // the Pest plugin is what boots the application for a test.
             'nunomaduro/collision',

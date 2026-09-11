@@ -1,0 +1,115 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Lemonfiber\Companion\PHPStan\Rules;
+
+use function in_array;
+
+use PhpParser\Node;
+use PhpParser\Node\ArrayItem;
+use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\String_;
+use PHPStan\Analyser\Scope;
+use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+
+use function sprintf;
+use function strtolower;
+
+/**
+ * S3 — certificate verification is never turned off.
+ *
+ * ADR-0018 pins a stack's certificate by a fingerprint taken from the pairing
+ * material, which is what makes a self-hosted stack on a home network safe to
+ * talk to without a public certificate authority. A global verify-off switch
+ * defeats that silently: the pin is still there, still compared, and no longer
+ * reached, because nothing got as far as checking it.
+ *
+ * The switch has several spellings and they all look like configuration. Guzzle
+ * takes `'verify' => false`, a stream context takes `'verify_peer' => false` and
+ * `'allow_self_signed' => true`, and curl takes `CURLOPT_SSL_VERIFYPEER => 0`.
+ * Each is one line in an options array that a reader skims past, which is why
+ * this is a rule rather than a review note.
+ *
+ * @implements Rule<ArrayItem>
+ */
+final class NoWeakenedTlsRule implements Rule
+{
+    /** Options that switch verification off when they are false. */
+    private const array OFF_WHEN_FALSE = [
+        'verify', 'verify_peer', 'verify_peer_name', 'verify_host',
+        'curlopt_ssl_verifypeer', 'curlopt_ssl_verifyhost', 'ssl_verifypeer', 'ssl_verifyhost',
+    ];
+
+    /** Options that accept a weaker chain when they are true. */
+    private const array OFF_WHEN_TRUE = ['allow_self_signed', 'verify_expiry', 'insecure'];
+
+    public function getNodeType(): string
+    {
+        return ArrayItem::class;
+    }
+
+    /** @return list<IdentifierRuleError> */
+    public function processNode(Node $node, Scope $scope): array
+    {
+        $key = $this->keyOf($node);
+
+        if ($key === null) {
+            return [];
+        }
+
+        $weakens = (in_array($key, self::OFF_WHEN_FALSE, strict: true) && $this->isFalsy($node->value))
+            || (in_array($key, self::OFF_WHEN_TRUE, strict: true) && $this->isTruthy($node->value));
+
+        if (! $weakens) {
+            return [];
+        }
+
+        return [
+            RuleErrorBuilder::message(sprintf(
+                'S3 — this turns certificate verification off, and the pairing pin is '
+                . 'what stands behind it. A stack is trusted by a fingerprint taken from '
+                . 'the material an operator scanned, not by a public authority, so %s '
+                . 'does not relax a check — it removes the only one there is, and the pin '
+                . 'goes on being compared by code nothing reaches. If a certificate is '
+                . 'being refused, the fingerprint is the thing to look at (S3, '
+                . 'ADR-0018).',
+                $key,
+            ))
+                ->identifier('lemonfiber.weakenedTls')
+                ->line($node->getStartLine())
+                ->build(),
+        ];
+    }
+
+    /** The option's name, lowercased, whether written as a string or a constant. */
+    private function keyOf(ArrayItem $item): ?string
+    {
+        if ($item->key instanceof String_) {
+            return strtolower($item->key->value);
+        }
+
+        return $item->key instanceof ConstFetch ? strtolower($item->key->name->toString()) : null;
+    }
+
+    private function isFalsy(Node $value): bool
+    {
+        if ($value instanceof Int_) {
+            return $value->value === 0;
+        }
+
+        return $value instanceof ConstFetch && strtolower($value->name->toString()) === 'false';
+    }
+
+    private function isTruthy(Node $value): bool
+    {
+        if ($value instanceof Int_) {
+            return $value->value === 1;
+        }
+
+        return $value instanceof ConstFetch && strtolower($value->name->toString()) === 'true';
+    }
+}

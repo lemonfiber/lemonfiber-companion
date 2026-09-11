@@ -80,6 +80,8 @@ final readonly class Fixtures
             ...self::boundaries(),
             ...self::surfaceAndText(),
             ...self::testsAndNaming(),
+            ...self::analysability(),
+            ...self::textAndSecurity(),
             ...self::rulesAboutRules(),
             ...self::notDrivable(),
         ];
@@ -883,6 +885,181 @@ final readonly class Fixtures
     }
 
     /** @return list<Fixture> */
+    private static function analysability(): array
+    {
+        return [
+            Fixture::analyser('P3', 'Plain/TakesAnything.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class TakesAnything
+                {
+                    public function all(): int
+                    {
+                        return count(func_get_args());
+                    }
+                }
+                PHP, 'P3 —'),
+
+            Fixture::analyser('P4', 'Plain/Reflects.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                use ReflectionClass;
+
+                final class Reflects
+                {
+                    public function name(): string
+                    {
+                        return new ReflectionClass(self::class)->getName();
+                    }
+                }
+                PHP, 'P4 —'),
+
+            Fixture::analyser('Q1', 'Plain/ChangesTheRuntime.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class ChangesTheRuntime
+                {
+                    public function widen(): void
+                    {
+                        ini_set('memory_limit', '1G');
+                    }
+                }
+                PHP, 'Q1 —'),
+
+            Fixture::analyser('Q2', 'Plain/ReadsSuperglobal.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class ReadsSuperglobal
+                {
+                    public function host(): mixed
+                    {
+                        return $_SERVER['HTTP_HOST'] ?? null;
+                    }
+                }
+                PHP, 'Q2 —'),
+        ];
+    }
+
+    /** @return list<Fixture> */
+    private static function textAndSecurity(): array
+    {
+        return [
+            Fixture::analyser('L3', 'Plain/CountsBytes.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class CountsBytes
+                {
+                    public function width(string $name): int
+                    {
+                        return strlen($name);
+                    }
+                }
+                PHP, 'L3 —'),
+
+            Fixture::analyser('L4', 'Plain/FormatsADate.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class FormatsADate
+                {
+                    public function shown(int $stamp): string
+                    {
+                        return gmdate('d/m/Y', $stamp);
+                    }
+                }
+                PHP, 'L4 —'),
+
+            Fixture::analyser('L5', 'Plain/FormatsANumber.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class FormatsANumber
+                {
+                    public function shown(float $size): string
+                    {
+                        return number_format($size, 2, '.', ',');
+                    }
+                }
+                PHP, 'L5 —'),
+
+            Fixture::analyser('L6', 'Plain/SortsByBytes.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class SortsByBytes
+                {
+                    public function order(string $a, string $b): int
+                    {
+                        return strcmp($a, $b);
+                    }
+                }
+                PHP, 'L6 —'),
+
+            Fixture::analyser('S1', 'Plain/RunsAProgram.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class RunsAProgram
+                {
+                    public function out(): mixed
+                    {
+                        return shell_exec('echo hello');
+                    }
+                }
+                PHP, 'S1 —'),
+
+            Fixture::analyser('S3', 'Plain/WeakensTls.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class WeakensTls
+                {
+                    /** @return array<string, mixed> */
+                    public function options(): array
+                    {
+                        return ['verify' => false, 'timeout' => 5];
+                    }
+                }
+                PHP, 'S3 —'),
+        ];
+    }
+
+    /** @return list<Fixture> */
     private static function rulesAboutRules(): array
     {
         return [
@@ -940,6 +1117,13 @@ final readonly class Fixtures
                 . 'harness would have to edit and restore rather than a fixture it can drop '
                 . 'in and delete. Driven by hand instead: a capability listener bound to a '
                 . 'surface event, registered in AppServiceProvider::boot().',
+            ),
+            Fixture::notDrivable(
+                'S2',
+                'A fixture would have to be a dependency with a published advisory, which '
+                . 'means installing a vulnerable package on purpose in order to watch '
+                . 'resolution refuse it. roave/security-advisories is conflict-only and '
+                . 'carries no code, so there is nothing to call either.',
             ),
             Fixture::notDrivable(
                 'G4',

@@ -13,6 +13,16 @@ includes:
     # The rules that make ARCHITECTURE.md's A/B/C sections enforceable at the
     # call site rather than at the import, which is all an arch test can see.
     - vendor/spaze/phpstan-disallowed-calls/extension.neon
+    # S1 — the four bundles the package already ships. Each is a list somebody
+    # else maintains of calls that are dangerous, run something, are insecure by
+    # construction, or leak through timing. Where one conflicts with this
+    # codebase the conflict is scoped with `allowIn` below, never ignored: an
+    # ignore says the rule is wrong, and `allowIn` says where it does not apply
+    # and leaves it in force everywhere else.
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-dangerous-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-execution-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-insecure-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-non-timing-safe-calls.neon
     - vendor/shipmonk/phpstan-rules/rules.neon
 
 parameters:
@@ -215,6 +225,88 @@ parameters:
                 - config/*
                 - tests/*
 
+        # --- S1: the execution bundle, scoped -------------------------------
+        #
+        # The rule-proving harness runs the analyser and the test suite as
+        # subprocesses, which is the only way to observe whether a rule reports.
+        # Scoped rather than ignored, so the ban holds everywhere else.
+        -
+            function: 'shell_exec()'
+            message: "S1 — nothing in this application runs a program. There is no shell on a phone worth reaching for, and a string that reaches one is a string somebody can write into. The rule-proving harness in tests/Guards is the exception: observing whether a rule reports means running the analyser and the suite as separate processes (S1)."
+            allowIn:
+                - tests/Guards/*
+
+        # --- Q1: the runtime is persistent, so a setting stays set ----------
+        -
+            function:
+                - 'ini_set()'
+                - 'ini_alter()'
+                - 'error_reporting()'
+                - 'set_error_handler()'
+                - 'set_exception_handler()'
+                - 'restore_error_handler()'
+                - 'date_default_timezone_set()'
+                - 'setlocale()'
+                - 'set_time_limit()'
+                - 'assert_options()'
+            message: "Q1 — the runtime is one long-lived process, so nothing resets. On a web server these calls last until the response ends; here Runtime::boot() runs once and every interaction after it inherits whatever the last screen changed. Configure it in config/ where the value is read once and is the same on every screen (Q1, I1)."
+            allowIn:
+                - config/*
+                - tests/*
+
+        # --- P3: a class whose shape is a runtime question ------------------
+        -
+            function: 'func_get_args()'
+            message: "P3 — a method's parameters are its signature. func_get_args() takes arguments the signature does not declare, so the analyser cannot check a call site and no rule here can see what is being passed. Declare the parameters, or take a typed collection (P3, D1)."
+
+        # --- L3: bytes are not characters ------------------------------------
+        -
+            function:
+                - 'strlen()'
+                - 'substr()'
+                - 'strtoupper()'
+                - 'strtolower()'
+                - 'ucfirst()'
+                - 'lcfirst()'
+                - 'str_pad()'
+                - 'str_split()'
+                - 'strpos()'
+                - 'strrpos()'
+                - 'wordwrap()'
+            message: "L3 — text a person reads is measured in characters, not bytes. This application ships en and nl and runs on a phone where names, stack labels and service titles carry accents: truncating one of those with substr() splits a character in half and renders a replacement glyph. Use the mb_* equivalent, which is what the multibyte extension is for (L3)."
+            allowIn:
+                - tests/*
+
+        # --- L4: a format string is one locale's answer ----------------------
+        -
+            function:
+                - 'date_format()'
+                - 'gmdate()'
+                - 'strftime()'
+            message: "L4 — a date is formatted for the reader, not written out by hand. A literal like 'd/m/Y' is wrong in one of the two locales before anyone leaves the country, and this application's whole subject is how long ago something was read. Prefer a duration, which needs no timezone and no calendar; where a date really must be shown, let the translator's formatter decide (L4)."
+            allowIn:
+                - tests/*
+
+        # --- L5: so is a decimal separator -----------------------------------
+        -
+            function:
+                - 'number_format()'
+                - 'money_format()'
+            message: "L5 — Dutch writes 1.234,5 and English writes 1,234.5, so number_format() with separators written into the call is wrong in one locale by construction. Format through the translator, which knows which locale is on screen (L5)."
+            allowIn:
+                - tests/*
+
+        # --- L6: byte order is not alphabetical ------------------------------
+        -
+            function:
+                - 'sort()'
+                - 'rsort()'
+                - 'strcmp()'
+                - 'strcasecmp()'
+            message: "L6 — sorting text a person reads by byte order puts every accented character after z, so a service list reads as though it were shuffled. Compare with a collator for the locale on screen. Sorting values that are not text — a list of integers, an enum — is not this rule's business and belongs in a typed collection's own named operation anyway (L6, D1)."
+            allowIn:
+                - tests/*
+
     disallowedStaticCalls:
         # --- B1 ------------------------------------------------------------
         -
@@ -285,6 +377,18 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
 
+        # --- P4: reflection is the analyser's blind spot ---------------------
+        -
+            class:
+                - 'Reflection*'
+                - 'ReflectionClass'
+                - 'ReflectionMethod'
+                - 'ReflectionProperty'
+            message: "P4 — production code does not reflect. Every rule in this repository depends on the analyser being able to see what a class does, and reflection is where that stops: a member reached by name is a member no rule can find. The tests are the exception and use it deliberately — the boundary rules ask PHP directly precisely because the analyser cannot be asked (P4)."
+            allowIn:
+                - tests/*
+                - phpstan/*
+
         # --- A3: the container, named directly ------------------------------
         -
             class:
@@ -309,6 +413,39 @@ parameters:
             allowIn:
                 - app-modules/device/src/*
                 - tests/*
+
+    disallowedSuperglobals:
+        # --- Q2: the runtime fills some of these in itself -------------------
+        -
+            superglobal:
+                - '$_GET'
+                - '$_POST'
+                - '$_REQUEST'
+                - '$_SERVER'
+                - '$_ENV'
+                - '$_COOKIE'
+                - '$_SESSION'
+                - '$_FILES'
+                - '$GLOBALS'
+            message: "Q2 — a module never reads a superglobal. This application answers nothing from the network, and the device runtime populates several of these itself while driving the application through the HTTP kernel — so what is in them describes the runtime's own plumbing rather than anything a screen should act on. $_ENV also routes around A5: configuration is read from config/, once (Q2, A5)."
+            allowIn:
+                - config/*
+                - bootstrap/*
+                - tests/*
+
+    disallowedAttributes:
+        # --- P3: a property that exists only at runtime -----------------------
+        -
+            attribute: 'AllowDynamicProperties'
+            message: "P3 — a class's properties are declared. A dynamic property cannot be typed, cannot be found by any rule here, and turns a typo into a silent new field rather than an error (P3, A6)."
+
+    disallowedControlStructures:
+        # --- C5: `else`, which ergebnis's NoSwitchRule does not cover ---------
+        -
+            controlStructure:
+                - 'else'
+                - 'elseif'
+            message: "C5 — no `else`. Return from the condition that refuses and let the rest of the method carry on at one indent, so each guard states the one thing it rules out and the happy path reads top to bottom. Where the branches are both answers rather than a refusal and a path, that is a `match`, which is exhaustive and returns a value (C5)."
 
     disallowedMethodCalls:
         # --- C3: an exception that says nothing -----------------------------
@@ -359,13 +496,6 @@ services:
         tags:
             - phpstan.rules.rule
 
-    # C5 — no `else`. The `switch` half of C5 is ergebnis's NoSwitchRule, which
-    # `allRules: true` above already turns on; this is the half nobody ships.
-    -
-        class: Lemonfiber\Companion\PHPStan\Rules\NoElseRule
-        tags:
-            - phpstan.rules.rule
-
     # D5 — no positional boolean literal at a call site.
     -
         class: Lemonfiber\Companion\PHPStan\Rules\NoPositionalBooleanArgumentRule
@@ -378,6 +508,14 @@ services:
     # can be drawn from the path alone.
     -
         class: Lemonfiber\Companion\PHPStan\Rules\NoUserFacingLiteralRule
+        tags:
+            - phpstan.rules.rule
+
+    # S3 — certificate verification is never turned off. ADR-0018 pins a stack
+    # by a fingerprint from the pairing material, and a verify-off switch leaves
+    # the pin in place while making sure nothing ever reaches it.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoWeakenedTlsRule
         tags:
             - phpstan.rules.rule
 

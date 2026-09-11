@@ -160,7 +160,7 @@ $clock = new FrozenClock(Instant::parse('2026-09-11T12:00:00Z'));
 | C2 | No `null` for absence — an explicit type | arch: no nullable return types on `Api` |
 | C3 | Every thrown exception is module-owned, never bare `\Exception`/`\RuntimeException` | phpstan `disallowed-calls` |
 | C4 | No `@` suppression | phpstan: ergebnis `NoErrorSuppressionRule` |
-| C5 | `match`, never `switch`; and no `else` | phpstan: ergebnis `NoSwitchRule` + own rule |
+| C5 | `match`, never `switch`; and no `else` | phpstan: ergebnis `NoSwitchRule` + spaze `disallowedControlStructures` |
 
 **Why C5 bans `else` as well as `switch`.** `switch` compares loosely, falls
 through, and cannot be checked for the arm nobody wrote — which is the hole D4's
@@ -273,6 +273,70 @@ key — so a Dutch device shows `health.unreachable` where a sentence belongs an
 ships that way. Nothing else in this repository can see that, and a comparison
 of the two catalogues is cheap. The reverse direction is checked too: a key in
 `nl` with no `en` counterpart is a typo or text nothing shows any more.
+
+### What the analyser cannot see
+
+Every other rule here depends on the analyser being able to read the code. These
+are the constructs that take something out of its view, and each one disables
+every rule that would otherwise have applied to whatever it exposes.
+
+| | Rule | Enforced by |
+|---|---|---|
+| P3 | No `func_get_args()`, no `#[AllowDynamicProperties]` | phpstan `disallowed-calls` |
+| P4 | No reflection in production code | phpstan `disallowed-calls`, scoped by path |
+
+### The runtime is one long-lived process
+
+`Runtime::boot()` runs once and `Runtime::dispatch()` handles every interaction
+after it. Nothing between two screens resets. That is why these are stricter
+here than in a web application, where the same calls are undone by the process
+ending a few milliseconds later: here a change made on one screen is still in
+force on the next one, and on the one after that, until the operator force-quits
+an application they have no reason to think is broken.
+
+| | Rule | Enforced by |
+|---|---|---|
+| Q1 | No runtime configuration mutation — `ini_set`, `setlocale`, `date_default_timezone_set` and their neighbours | phpstan `disallowed-calls` |
+| Q2 | No superglobals | phpstan `disallowed-superglobals` |
+
+### Text a person reads
+
+The application ships two locales, so every one of these is a bug that exists
+today rather than a precaution against one.
+
+| | Rule | Enforced by |
+|---|---|---|
+| L3 | Multibyte-safe string functions only | phpstan `disallowed-calls` |
+| L4 | No date formatted by a literal format string | phpstan `disallowed-calls` |
+| L5 | No number formatted with separators written into the call | phpstan `disallowed-calls` |
+| L6 | No byte-order sorting of text a person reads | phpstan `disallowed-calls` |
+
+`strlen` counts bytes. A Dutch service name with an accent in it is longer in
+bytes than in characters, so truncating one with `substr` splits a character and
+the screen renders a replacement glyph. Dutch writes `1.234,5` where English
+writes `1,234.5`. Byte-order sorting puts every accented character after `z`.
+None of these is theoretical once the second locale exists.
+
+### Security and supply chain
+
+| | Rule | Enforced by |
+|---|---|---|
+| S1 | The dangerous, execution, insecure and non-timing-safe call bundles are on | phpstan `disallowed-calls`, four shipped bundles |
+| S2 | No package with a published advisory resolves | `roave/security-advisories` + `composer audit` |
+| S3 | TLS verification is never weakened | phpstan: own rule |
+
+**Why S3 is a rule and not a review note.** ADR-0018 pins a stack's certificate
+by a fingerprint taken from the pairing material, which is what makes a stack on
+a home network safe to talk to without a public certificate authority. Every
+spelling of the verify-off switch — `'verify' => false`, `'verify_peer' =>
+false`, `'allow_self_signed' => true`, `CURLOPT_SSL_VERIFYPEER => 0` — is one
+line in an options array that reads like configuration. It does not relax the
+check; it removes the only one there is, and leaves the pin being compared by
+code nothing reaches.
+
+`roave/security-advisories` is a conflict-only package: it carries no code and
+fails resolution when a dependency matches a published advisory, so the failure
+arrives at `composer update` rather than at `composer audit` in CI a week later.
 
 ### The rules about the rules
 
