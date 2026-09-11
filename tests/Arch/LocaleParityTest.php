@@ -104,6 +104,13 @@ it('L2 — the locales carry the same keys', function (): void {
 
 it('L2 — a locale the spell checker cannot read is excluded from it', function (): void {
     $configuration = file_get_contents(Tree::at('typos.toml'));
+
+    // Read out of the `extend-exclude` list rather than looked for anywhere in
+    // the file, so a locale named in a comment does not satisfy this.
+    $excluded = preg_match('/^extend-exclude\s*=\s*\[(.*?)\]/ms', is_string($configuration) ? $configuration : '', $found) === 1
+        ? $found[1]
+        : '';
+
     $unlisted = [];
 
     foreach (array_keys(translations()) as $locale) {
@@ -113,7 +120,7 @@ it('L2 — a locale the spell checker cannot read is excluded from it', function
             continue;
         }
 
-        if (! is_string($configuration) || ! str_contains($configuration, sprintf('lang/%s/', $locale))) {
+        if (! str_contains($excluded, sprintf('lang/%s/', $locale))) {
             $unlisted[] = $locale;
         }
     }
