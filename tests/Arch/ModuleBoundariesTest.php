@@ -63,12 +63,10 @@ foreach ($modules as $module) {
         // a value or a decision, and both are safer readonly.
         //
         // Asked by reflection rather than with `->toBeReadonly()`, which refuses
-        // an interface — and `kernel` is the module of ports, so every port it
-        // publishes would have failed a rule about mutable state for declaring
-        // no state at all. That is a gate that blocks its own cure: the first
-        // port written would have turned the suite red with a message pointing
-        // nowhere useful. An interface and an enum are skipped by name here, and
-        // the reason is recorded rather than left as a silent exclusion.
+        // an interface. `kernel` is the module of ports, so that expectation
+        // fails every port it publishes for declaring no state at all — a gate
+        // that blocks its own cure. Interfaces and enums are skipped by name
+        // below: an interface holds no state and an enum cannot be changed.
         it(sprintf('%s holds no mutable state', $module->name), function () use ($module): void {
             $mutable = [];
 

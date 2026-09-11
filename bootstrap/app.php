@@ -9,8 +9,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 /*
  * This application answers nothing from the network, and still needs routing.
  *
- * The distinction cost me an hour, so it is written down. The device does not
- * run a render loop — it drives the application through the HTTP kernel, and
+ * The device does not run a render loop. It drives the application through the
+ * HTTP kernel, and
  * `Route::native()` registers each screen as an ordinary GET route so the
  * runtime can ask for one by URI. There is no web server and no port open;
  * `public/index.php` is gone because nothing outside the device ever connects.

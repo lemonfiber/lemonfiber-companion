@@ -260,6 +260,22 @@ parameters:
                 - routes/*
                 - tests/*
 
+        # --- A8: the platform's facades are facades too ---------------------
+        #
+        # A2 covers Illuminate, and the module kinds permit `Native` in design
+        # and surface modules — so this entry is what stops a screen calling
+        # SecureStorage::get() directly, bypassing the vault adapter, its port
+        # and every rule that makes a screen renderable off a device. The
+        # package ships sixteen of these; SecureStorage is the sharp one,
+        # because the session token lives there (N1-R23).
+        -
+            class: 'Native\Mobile\Facades\*'
+            message: "A8 — the platform is reached through a port, not a facade. Native\\Mobile\\Facades\\* is a static global lookup exactly as an Illuminate facade is: no constructor mentions it, no test can substitute it without touching global state, and a screen that calls one cannot be rendered off a device. Define the capability as a port in Modules\\Kernel\\Api and implement it once — app-modules/device/src for anything the platform owns, app-modules/vault/src for anything that must survive a restart. SecureStorage in particular is where the session token lives, and reaching it from a screen bypasses the one adapter that is allowed to hold it (A8, A2, N1-R23, N4-R5)."
+            allowIn:
+                - app-modules/device/src/*
+                - app-modules/vault/src/*
+                - tests/*
+
         # --- B3: Storage is the filesystem with a nicer name ----------------
         -
             class: 'Illuminate\Support\Facades\Storage'
@@ -353,5 +369,13 @@ services:
     # D5 — no positional boolean literal at a call site.
     -
         class: Lemonfiber\Companion\PHPStan\Rules\NoPositionalBooleanArgumentRule
+        tags:
+            - phpstan.rules.rule
+
+    # A9 — a service provider binds and does not work. Twelve module providers
+    # run before the first frame; N1-R36 wants that frame usable without waiting
+    # on a read.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\ServiceProviderBindsOnlyRule
         tags:
             - phpstan.rules.rule

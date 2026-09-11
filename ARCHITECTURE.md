@@ -111,6 +111,8 @@ honestly is better than pretending.
 | A5 | `env()` only inside `config/` | arch |
 | A6 | No mutable static state | arch: reflection over every module class |
 | A7 | `Illuminate\*` forbidden in `kernel` and every `capability` | arch: module kind |
+| A8 | `Native\Mobile\Facades\*` only in `device` and `vault` | phpstan `disallowed-calls` |
+| A9 | A service provider binds and does not work: no read, no request, no resolve in `register()`/`boot()` | phpstan: own rule |
 
 **Why A1 is first.** An Eloquent model cannot be constructed without a database,
 so every test that touches one is an integration test wearing a unit test's
@@ -208,6 +210,7 @@ are two types, and the mistake stops compiling.
 | E2 | `Api` is the published surface; `Internal` is unreachable | arch |
 | E3 | The SDK is named in exactly one module | composer + arch |
 | E4 | `Native\*` confined to `design`, `surface`, `device`, `vault` | arch: module kind |
+| E5 | A listener obeys the module kinds, checked in the dispatcher rather than in the imports | test: the booted composition root |
 
 ### The module API
 
@@ -236,6 +239,7 @@ automatic and the operator never sees the question.
 | F1 | Components are thin: hold state, delegate decisions | phpstan cognitive complexity + arch size cap |
 | F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor |
 | F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | planned |
+| F4 | A screen that takes a port carries `#[Lazy]`; one whose content changes while open carries `#[Poll]` | arch for the first; review for the second |
 
 EDGE styling is **Tailwind-shaped and is not Tailwind**. There is no CSS build,
 no JIT and no stylesheet to come up short. An unrecognised class is parsed,
@@ -243,6 +247,22 @@ found to mean nothing, and dropped — the screen renders, looks wrong, and says
 nothing about why. `tests/Templates` drives the framework's own parser over every
 template and fails on what it reports, rather than keeping a second copy of the
 supported vocabulary that would silently drift from the installed package.
+
+### Comments
+
+| | Rule | Enforced by |
+|---|---|---|
+| K1 | A comment states the situation and why, never the history of how it came to be | review, plus an arch check for the obvious markers |
+| K2 | A docblock only where a native type cannot speak | arch |
+
+A comment is read by someone who was not there. They cannot tell a fact from a
+recollection, and the recollection is the half that goes stale — so `glob()` has
+no globstar is worth writing down forever, and *we used to use glob* stops being
+checkable the moment its author leaves. Rationale is welcome: why a thing is the
+way it is, what it costs, what would make it wrong.
+
+The exception is a commit message and a decision record. History is the point
+there, and neither is read as a description of the current code.
 
 ### Tests
 

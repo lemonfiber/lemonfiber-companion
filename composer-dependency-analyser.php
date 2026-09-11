@@ -41,4 +41,10 @@ return (new Configuration())
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])
     ->ignoreErrorsOnPackage('laravel/tinker', [ErrorType::UNUSED_DEPENDENCY])
-    ->ignoreErrorsOnPackage('nativephp/mobile', [ErrorType::UNUSED_DEPENDENCY]);
+    // The only file naming nativephp/mobile is the arch rule that reflects over
+    // NativeComponent to ask whether a screen declares how it paints, and a test
+    // is a dev path — so the runtime the application is built on reads as a dev
+    // dependency. It is not: the first screen makes it a production use and this
+    // line stops applying. The analyser fails on an ignore that never fires,
+    // which is what makes the line remove itself rather than linger.
+    ->ignoreErrorsOnPackage('nativephp/mobile', [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV]);

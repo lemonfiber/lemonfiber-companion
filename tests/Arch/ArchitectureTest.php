@@ -16,11 +16,11 @@ use Tests\Support\Module;
 // an expectation by matching a registered PSR-4 prefix. Given the bare parent
 // it matches no files, finds nothing to check, and reports a green tick.
 //
-// Every rule in this file was written that way, and every one of them was
-// therefore vacuous for module code: a class named `HealthManager` passed H1,
-// a module class calling a facade passed A3/A4, a non-final class passed
-// `toBeFinal`. They were caught by planting each violation and watching the
-// rule not fire.
+// The failure is silent and total: with the bare parent, a class named
+// `HealthManager` passes H1, a module class calling a facade passes A3/A4, and
+// a non-final class passes `toBeFinal`. The only way to tell the difference
+// between a rule that holds and a rule that checked nothing is to plant a
+// violation under it.
 //
 // So the list is derived from the manifests, the same way the boundary rules
 // are. A module added tomorrow is covered without anyone editing this line,
@@ -35,12 +35,10 @@ $ourCode = ['App', ...Module::namespaces()];
 // truth about what a class needs.
 // ---------------------------------------------------------------------------
 
-// One symbol per rule, and functions kept apart from namespaces, because a
-// single `expect()` list holding both passes vacuously: adding `'app'` to a list
-// that also names `Illuminate\Support\Facades` stops the whole expectation
-// reporting anything, including the namespace that would otherwise have failed.
-// That was true of this rule as written, and was found by planting a facade call
-// in a module and watching it go green.
+// One symbol per rule, and functions kept apart from namespaces: a single
+// `expect()` list holding both passes vacuously. `['app',
+// 'Illuminate\Support\Facades']` reports nothing at all, while either entry
+// alone reports — so mixing the two kinds silently disables the whole rule.
 foreach (['app', 'resolve'] as $located) {
     arch(sprintf('A3 — a class asks for what it needs rather than calling %s()', $located))
         ->expect($located)
@@ -77,11 +75,10 @@ arch('B1 — time arrives through the clock port')
 // C/D — errors and data shape.
 // ---------------------------------------------------------------------------
 
-// C4 is enforced by ergebnis's NoErrorSuppressionRule under `allRules: true`,
-// not here. Pest's `not->toUse('@')` was tried first and does not report a
-// suppressed call — `@file_get_contents(...)` passes it — so keeping it would
-// have been a green tick standing in for a check. The analyser catches it at the
-// call site, which is the only place `@` exists.
+// C4 lives in ergebnis's NoErrorSuppressionRule under `allRules: true`, not
+// here. Pest's `not->toUse('@')` does not report a suppressed call —
+// `@file_get_contents(...)` passes it — and the analyser catches it at the call
+// site, which is the only place `@` exists.
 
 // Scoped to production code: the test support classes read manifests off disk
 // and a bare RuntimeException is the honest answer when one is unreadable.

@@ -8,15 +8,13 @@ use function Tests\Support\enforcementSources;
 // ARCHITECTURE.md, checked against itself.
 //
 // The document carries a table of rules and, for each, the mechanism that
-// enforces it. Nothing verified that column, and it was wrong twice: D4
-// ("enums for every closed set") claimed `arch` and had no rule behind it, and
-// A6 named `not->toHaveStaticProperties()`, a Pest expectation that does not
-// exist — the test had been rewritten to use reflection and the document was
-// left describing the mechanism that never worked.
+// enforces it. That column is the part a reader trusts and stops checking, and
+// it can go wrong in two ways that look identical from the outside: a rule that
+// claims `arch` with nothing behind it, and a rule that names a Pest
+// expectation which does not exist, so the suite reports a green tick for a
+// check it never ran.
 //
-// Both survived review because a rule table is exactly the kind of document
-// people stop reading once they trust it. A table that can lie is worse than no
-// table, so this makes lying fail.
+// A table that can lie is worse than no table, so both directions fail here.
 //
 // Every enforcement artifact carries its rule's identifier: arch rules in their
 // description, PHPStan bans in the `message:` a developer reads when blocked,

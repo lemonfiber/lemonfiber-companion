@@ -9,10 +9,10 @@ use Tests\Support\Module;
 // One direction only, and the asymmetry is the whole design.
 //
 // An orphan test fails: `tests/Health/VerdictPolicyTest.php` with no
-// `src/Health/VerdictPolicy.php` behind it means the class was renamed, moved
-// or deleted and the test was left describing something that no longer exists.
-// Those tests keep passing — they are usually asserting on a fixture — and they
-// are read by the next person as current documentation of the design.
+// `src/Health/VerdictPolicy.php` behind it describes a class that is not there,
+// because it was renamed, moved or deleted. Such a test keeps passing — it is
+// usually asserting on the fixture it set up — and the next reader takes it for
+// current documentation of the design.
 //
 // A class with no dedicated test does NOT fail. The coverage and mutation
 // floors already prove every line and every decision is exercised, and by a
