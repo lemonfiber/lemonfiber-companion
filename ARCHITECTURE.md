@@ -523,31 +523,38 @@ reason A6 is absolute rather than a preference.
 ## Patterns
 
 ### Port
+
 An interface in `kernel`, named for what it does, not what implements it.
 No `Interface` suffix, no framework types in its signature.
 
 ### Adapter
+
 The one implementation that knows a specific outside thing. Lives in an adapter
 module. Nothing depends on it; the composition root binds it to its port.
 
 ### Capability
+
 Domain logic with ports for everything it cannot compute itself. Pure by
 construction, because its kind forbids it from reaching anything else.
 
 ### Surface
+
 Navigation and screen composition. Holds the `NativeComponent` subclasses — the
 one mutable, framework-coupled shape in the codebase — and delegates every
 decision to a presenter.
 
 ### Presenter
+
 Pure. Takes data, returns a view model. No ports injected, no IO, no clock. This
 is where 100% coverage and mutation testing actually land, because it is where
 the decisions are.
 
 ### View model
+
 `final readonly`, no behaviour, named for the screen it dresses.
 
 ### Outcome
+
 A returned refusal. See C1.
 
 ---
