@@ -82,6 +82,7 @@ final readonly class Fixtures
             ...self::testsAndNaming(),
             ...self::analysability(),
             ...self::textAndSecurity(),
+            ...self::sizeAndSuiteIntegrity(),
             ...self::rulesAboutRules(),
             ...self::notDrivable(),
         ];
@@ -1056,6 +1057,64 @@ final readonly class Fixtures
                     }
                 }
                 PHP, 'S3 —'),
+        ];
+    }
+
+    /** @return list<Fixture> */
+    private static function sizeAndSuiteIntegrity(): array
+    {
+        return [
+            Fixture::analyser('D6', 'Plain/WaitsThirtySeconds.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class WaitsThirtySeconds
+                {
+                    public function timeout(): int
+                    {
+                        return 30;
+                    }
+                }
+                PHP, 'D6 —'),
+
+            // In a pass of its own: this is the violation that stops the rest of
+            // the run happening, so sharing a pass with the other fixtures would
+            // hide every one of them.
+            Fixture::isolatedSuite('G6', 'app-modules/health/tests/Fixtures/NarrowedTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                it('is the only test that will run', function (): void {
+                    expect(true)->toBeTrue();
+                })->only();
+                PHP, 'G6 —', 'NarrowedTest'),
+
+            Fixture::suite('H7', 'app-modules/health/tests/Fixtures/MiscTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                it('holds a behaviour', function (): void {
+                    expect(true)->toBeTrue();
+                });
+                PHP, 'H7 —', 'MiscTest'),
+
+            Fixture::suite('G8', 'app-modules/kernel/src/Api/Fixtures/Unbound.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Kernel\Api\Fixtures;
+
+                interface Unbound
+                {
+                    public function answer(): string;
+                }
+                PHP, 'G8 —', 'Unbound'),
         ];
     }
 

@@ -511,6 +511,14 @@ services:
         tags:
             - phpstan.rules.rule
 
+    # D6 — a number in a method body has a name. SonarCloud reports this too,
+    # which makes it a backstop rather than the gate: a rule that only fails in
+    # review is a rule people meet after they have finished.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoMagicNumberRule
+        tags:
+            - phpstan.rules.rule
+
     # S3 — certificate verification is never turned off. ADR-0018 pins a stack
     # by a fingerprint from the pairing material, and a verify-off switch leaves
     # the pin in place while making sure nothing ever reaches it.

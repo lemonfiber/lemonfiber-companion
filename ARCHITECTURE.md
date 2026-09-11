@@ -197,6 +197,7 @@ $outcome->either(
 | D3 | No `mixed` in public signatures | phpstan (level max + type coverage 100%) |
 | D4 | Enums for every closed set, never string constants | arch + shipmonk `ForbidMatchDefaultArmForEnums` |
 | D5 | No bare `true`/`false` at a call site — name the argument or split the method | phpstan: own rule |
+| D6 | No unnamed numeric literal in a method body | phpstan: own rule + SonarCloud |
 
 D2's payoff is concrete: a stack id and a service id are both strings, and
 nothing stops you passing one where the other belongs. `StackId` and `ServiceId`
@@ -386,6 +387,8 @@ there, and neither is read as a description of the current code.
 | G3 | No test reaches the network | `Http::preventStrayRequests()` + arch |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
+| G6 | No committed `->only(`, and no `->skip()` without a reason | arch |
+| G8 | Every port in `Modules\Kernel` is bound, once, in the composition root | test: the booted composition root |
 
 **G2 is the most valuable rule on this page.** A fake that has drifted from its
 adapter makes the suite green while the application is broken, and nothing else
@@ -409,6 +412,19 @@ tests/Contract/StackContract.php
 | H4 | A test file mirrors its source file's location | arch: an orphan test fails, a class without one does not |
 | H5 | A string with a value in it is built with `sprintf` — never `.`, never interpolation | phpstan: own rule, one per node type |
 | H6 | An exception is named for what happened, not for being an exception | arch |
+| H7 | A test is named and described for the behaviour it pins | arch |
+
+**Why G6 is worth a rule of its own.** A committed `->only()` makes Pest run
+that one test and report green. Every other rule on this page stops holding, the
+run says nothing is wrong, and the change that did it is one word long. It is the
+single most expensive thing that can be committed here.
+
+**Why D6 permits 0, 1 and 2.** Their names would be the number. Everything else
+— a thirty-second timeout, a three-attempt budget, a staleness threshold in
+seconds — is a decision an operator can feel, and a decision that lives as a
+literal cannot be found by searching for what it means. Only method bodies are
+read, so moving the number to a class constant or an enum case is both the cure
+and the exemption.
 
 H1 is not pedantry. `BackupManager` is a name that permits anything, which is how
 a class acquires twenty methods; a class you cannot name precisely is usually

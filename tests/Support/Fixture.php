@@ -61,6 +61,24 @@ final readonly class Fixture
         );
     }
 
+    /**
+     * A file the suite reads, in a pass of its own.
+     *
+     * For a violation that changes what the rest of the run does, and would
+     * otherwise hide every other fixture in the same pass.
+     */
+    public static function isolatedSuite(string $rule, string $path, string $code, string $marker, string $evidence = ''): self
+    {
+        return new self(
+            $rule,
+            Proof::IsolatedSuite,
+            $path,
+            $code,
+            $marker,
+            $evidence === '' ? basename($path, '.php') : $evidence,
+        );
+    }
+
     /** A rule with no snippet that breaks it, and why. */
     public static function notDrivable(string $rule, string $reason): self
     {

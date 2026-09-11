@@ -104,6 +104,28 @@ it('the suite fails every rule it is supposed to', function (): void {
     $failures = suiteFailures();
     $silent = [];
 
+    // The isolated ones each get a pass to themselves, with only their own
+    // file on disk, because each changes what the rest of the run does.
+    foreach (Fixtures::all() as $alone) {
+        if ($alone->proof !== Proof::IsolatedSuite) {
+            continue;
+        }
+
+        removeFixtures();
+        writeFixture(Tree::at($alone->path), $alone->code);
+
+        // The Arch suite alone, because a `->only()` in a module test narrows
+        // whatever run loads it — including the test that reports it. G6 is a
+        // text scan for exactly that reason: it reads the file rather than
+        // running it, so a suite that does not load the file still reports it.
+        if (! wasRefused(suiteFailures('Arch'), $alone)) {
+            $silent[] = sprintf('%s — "%s" did not fail on its own', $alone->rule, $alone->marker);
+        }
+
+        removeFixture(Tree::at($alone->path));
+        writeFixtures();
+    }
+
     foreach ($fixtures as $fixture) {
         if (! wasRefused($failures, $fixture)) {
             $silent[] = sprintf(
@@ -211,13 +233,14 @@ function text(mixed $value): string
  *
  * @return array<string, string>
  */
-function suiteFailures(): array
+function suiteFailures(string $suites = 'Arch,Modules,Feature'): array
 {
     $log = sprintf('%s/fixtures-junit.xml', sys_get_temp_dir());
 
     shell_exec(sprintf(
-        '%s/vendor/bin/pest --testsuite=Arch,Modules,Feature --log-junit=%s > /dev/null 2>&1',
+        '%s/vendor/bin/pest --testsuite=%s --log-junit=%s > /dev/null 2>&1',
         Tree::root(),
+        escapeshellarg($suites),
         escapeshellarg($log),
     ));
 
@@ -299,7 +322,7 @@ function removeFixtures(): void
     }
 
     foreach (Fixtures::all() as $fixture) {
-        if ($fixture->proof === Proof::Suite) {
+        if ($fixture->proof === Proof::Suite || $fixture->proof === Proof::IsolatedSuite) {
             removeFixture(Tree::at($fixture->path));
         }
     }
