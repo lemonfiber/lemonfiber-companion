@@ -1,0 +1,133 @@
+# The pinned client is a copy, and a copy goes stale in silence.
+#
+# This surface reaches a stack through `lemonfiber/sdk-php` and through nothing
+# else — `ARCHITECTURE.md` says so, and the `sdk` module is the only adapter
+# allowed to name it. The dependency is `dev-main`, so `composer.lock` pins an
+# exact commit and `composer install` is content with one from any point in the
+# past. Nothing in the rest of the gate looks at how old it is.
+#
+# That is not theoretical here. This repository was created with the lock at
+# `ceb12d3e`, which predated the client's catch-up to lemonfiber `d4f5fc48` — so
+# the companion was drawn through a contract that did not have the field saying
+# what a reversal did *not* put back, and nothing would have said so.
+#
+# `Q-R68` requires this comparison to run on pull requests, fail them, and be a
+# required status check. It does, on all three: the client is current as of this
+# workflow landing, so there is nothing for a deferral (`Q-R71`) to wait on and
+# what it costs an author is a one-file `composer update`.
+#
+# A count is deliberately not what it reports. Most commits on the client change
+# nothing this surface reaches, and "behind by eleven" reads as an emergency
+# where the list reads as a decision.
+name: sdk-drift
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly, as the floor rather than the notice: a pull request is what usually
+    # asks the question, and this catches a `main` that went a week without one
+    # while the client moved.
+    - cron: "50 7 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  sdk-drift:
+    name: sdk-drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compare the locked client with the one its repository serves
+        env:
+          SDK: https://github.com/lemonfiber/sdk-php.git
+        run: |
+          set -euo pipefail
+
+          # Written to the run page as well as printed, so what this found and
+          # what it is for are read together. A red X that needs the workflow
+          # file read to interpret is how drift sits for days.
+          say() {
+            printf '%s\n' "$1"
+            printf '%s\n' "$1" >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
+          }
+
+          # The reference the lock pins is what `composer install` fetches, so it
+          # is the client this surface is actually built against.
+          if ! pin=$(python3 - <<'PY'
+          import json
+          import sys
+
+          with open("composer.lock", encoding="utf-8") as handle:
+              lock = json.load(handle)
+
+          for package in lock.get("packages", []) + lock.get("packages-dev", []):
+              if package.get("name") == "lemonfiber/sdk-php":
+                  reference = package.get("source", {}).get("reference")
+                  if not reference:
+                      sys.exit("lemonfiber/sdk-php is locked without a source reference")
+                  print(reference)
+                  break
+          else:
+              sys.exit("lemonfiber/sdk-php is not in composer.lock")
+          PY
+          ); then
+            say '## The lock could not be read'
+            say ''
+            say "This check compares what \`composer.lock\` pins for \`lemonfiber/sdk-php\`"
+            say 'against that repository. It could not find it, which is a fault in this'
+            say 'check or in the lock rather than a finding about the client.'
+            echo "::error::could not read the locked lemonfiber/sdk-php reference from composer.lock"
+            exit 2
+          fi
+
+          git clone --bare --quiet --filter=blob:none "$SDK" sdk-php.git
+          head=$(git -C sdk-php.git rev-parse main)
+
+          if [ "$pin" = "$head" ]; then
+            say '## The locked client is current'
+            say ''
+            say "The companion is built against sdk-php \`${pin}\`, which is what main is."
+            say ''
+            say "This is a required check on every pull request (\`Q-R68\`), so this"
+            say 'surface cannot fall behind the client without somebody being told.'
+            exit 0
+          fi
+
+          # A commit the clone does not have is a pin from a rewritten or deleted
+          # branch. Saying "behind" about it would be a guess.
+          if ! git -C sdk-php.git cat-file -e "${pin}^{commit}" 2>/dev/null; then
+            say '## The locked client is a commit that repository does not have'
+            say ''
+            say "\`composer.lock\` pins \`${pin}\`, which is not in sdk-php. That is not"
+            say "drift — it is a pin nothing can resolve, so \`composer install\` will fail"
+            say 'rather than quietly build something old.'
+            echo "::error::composer.lock pins ${pin}, which does not exist in sdk-php"
+            exit 1
+          fi
+
+          behind=$(git -C sdk-php.git log --oneline "${pin}..main")
+
+          say '## The locked client is behind'
+          say ''
+          say 'sdk-php has moved on since this surface last took it.'
+          say ''
+          say "- locked in \`composer.lock\`: \`${pin}\`"
+          say "- sdk-php \`main\`: \`${head}\`"
+          say ''
+          say 'The companion has not taken these:'
+          say ''
+          say '```'
+          say "$behind"
+          say '```'
+          say ''
+          say "To catch up: \`composer update lemonfiber/sdk-php\`, then commit the lock."
+          say "If that leaves \`composer analyse\` or the suite red, the client has changed"
+          say 'a shape this surface uses, and taking it is a change here rather than a'
+          say 'bump — say so in the pull request instead of forcing it green.'
+          echo "::error::the locked client is behind sdk-php main — run composer update lemonfiber/sdk-php and commit the lock"
+          exit 1
