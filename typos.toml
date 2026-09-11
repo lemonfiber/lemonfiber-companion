@@ -38,10 +38,3 @@ extend-exclude = ["lang/nl/"]
 # Pest's own expectation is spelled this way; the stub mirrors its API rather
 # than correcting it.
 toBeInvokable = "toBeInvokable"
-
-# AGENTS.md shows what a mistyped EDGE class looks like, and the whole point of
-# the example is that it is misspelled. This permits the token anywhere rather
-# than only in that one phrase — an identifier exemption is the narrowest thing
-# typos offers without editing the shared `extend-ignore-re` above. Changing the
-# example to a word the checker does not know would remove the need for it.
-backgrond = "backgrond"
