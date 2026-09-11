@@ -55,3 +55,33 @@ it('G5 — a test asserts one way', function (): void {
         implode("\n  ", $offenders),
     ));
 });
+
+it('G1 — nothing mocks a type we do not own', function (): void {
+    // Read as text rather than as a namespace expectation: `PHPUnit\` is not a
+    // registered PSR-4 prefix here, so an expectation naming it resolves to no
+    // files, and Mockery is not installed — which would make the rule report
+    // nothing in both halves while looking exactly like a rule that holds.
+    $idioms = ['Mockery::', 'Mockery\\', 'createMock(', 'getMockBuilder(', 'createStub(', 'shouldReceive('];
+    $offenders = [];
+
+    foreach (testSources() as $path => $contents) {
+        if ($path === 'tests/Arch/TestConventionsTest.php') {
+            continue;
+        }
+
+        foreach ($idioms as $idiom) {
+            if (str_contains($contents, $idiom)) {
+                $offenders[] = sprintf('%s uses %s', $path, $idiom);
+            }
+        }
+    }
+
+    expect($offenders)->toBe([], sprintf(
+        "These stand in for a type we do not own:\n  %s\n\n"
+        . 'A mock of a foreign type encodes a guess about how that type behaves, and the '
+        . 'guess keeps passing after the type changes — the suite stays green while the '
+        . 'application is broken. Write a fake for our own port instead, and let the '
+        . 'contract test prove the fake and the real adapter agree (G1, G2).',
+        implode("\n  ", $offenders),
+    ));
+});

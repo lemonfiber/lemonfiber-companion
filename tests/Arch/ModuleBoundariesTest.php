@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\Imports;
 use Tests\Support\Kind;
 use Tests\Support\Module;
 
@@ -28,35 +29,64 @@ it('has modules to check', function () use ($modules): void {
     'No module holds a class yet. These rules apply as soon as one does.',
 );
 
+// The three boundary questions are asked by reading each file's imports rather
+// than by a Pest namespace expectation. The expectation resolves a string
+// against the autoloader's registered PSR-4 prefixes, so a string that is not
+// one of them matches no files and reports nothing — `Native` is silent where
+// `Native\Mobile` reports, and the two look identical from here. These are the
+// rules the rest of the architecture rests on, so they are answered exactly.
 foreach ($modules as $module) {
-    $vendors = $module->kind->forbiddenVendors();
+    it(sprintf('A7/E4 — %s stays inside what a %s module may name', $module->name, $module->kind->value), function () use ($module): void {
+        $offenders = reachesOutside($module, $module->kind->forbiddenVendors());
 
-    if ($vendors !== []) {
-        arch(sprintf('A7/E4 — %s stays inside what a %s module may name', $module->name, $module->kind->value))
-            ->expect($module->namespace)
-            ->not->toUse($vendors);
-    }
+        expect($offenders)->toBe([], sprintf(
+            "%s names something its kind may not:\n  %s\n\n"
+            . 'A %s module is defined by what it cannot reach. Take what this needs as a '
+            . 'port in Modules\\Kernel\\Api and let the composition root decide which '
+            . 'implementation arrives (A7, E4).',
+            $module->name,
+            implode("\n  ", $offenders),
+            $module->kind->value,
+        ));
+    });
 
-    $others = $module->forbiddenModuleNamespaces();
+    it(sprintf("E1 — %s respects the other modules' boundaries", $module->name), function () use ($module): void {
+        $offenders = reachesOutside($module, $module->forbiddenModuleNamespaces());
 
-    if ($others !== []) {
-        arch(sprintf("E1 — %s respects the other modules' boundaries", $module->name))
-            ->expect($module->namespace)
-            ->not->toUse($others);
-    }
+        expect($offenders)->toBe([], sprintf(
+            "%s reaches into a module it may not:\n  %s\n\n"
+            . "A module's kind decides which other kinds it may name, and a permitted "
+            . 'module is still only reachable through its published Api (E1, E2).',
+            $module->name,
+            implode("\n  ", $offenders),
+        ));
+    });
 
-    // A module's own internals are its own business; nobody else's.
-    arch(sprintf('E2 — %s publishes an Api and keeps the rest to itself', $module->name))
-        ->expect(sprintf('%s\\Internal', $module->namespace))
-        ->not->toBeUsedIn(
-            array_map(
-                static fn(Module $other): string => $other->namespace,
-                array_values(array_filter(
-                    Module::all(),
-                    static fn(Module $other): bool => $other->name !== $module->name,
-                )),
-            ),
-        );
+    it(sprintf('E2 — %s publishes an Api and keeps the rest to itself', $module->name), function () use ($module): void {
+        $internal = sprintf('%s\\Internal', $module->namespace);
+        $intruders = [];
+
+        foreach (Module::all() as $other) {
+            if ($other->name === $module->name) {
+                continue;
+            }
+
+            foreach ($other->classes() as $file) {
+                if (Imports::anyUnder(Imports::of($file), $internal)) {
+                    $intruders[] = $file;
+                }
+            }
+        }
+
+        expect($intruders)->toBe([], sprintf(
+            "These reach into %s's internals:\n  %s\n\n"
+            . 'Anything under Internal can be renamed, split or deleted without reading '
+            . 'another module, and that guarantee is the whole reason the directory '
+            . 'exists. Publish what is needed under Api, or move the caller (E2).',
+            $module->name,
+            implode("\n  ", $intruders),
+        ));
+    });
 
     if (! $module->kind->renders()) {
         // Only a surface holds state the renderer re-reads. Everything else is
@@ -94,6 +124,30 @@ foreach ($modules as $module) {
     }
 }
 
+/**
+ * Every file in the module that names one of the forbidden namespaces.
+ *
+ * @param list<string> $forbidden
+ *
+ * @return list<string>
+ */
+function reachesOutside(Module $module, array $forbidden): array
+{
+    $offenders = [];
+
+    foreach ($module->classes() as $file) {
+        $names = Imports::of($file);
+
+        foreach ($forbidden as $namespace) {
+            if (Imports::anyUnder($names, $namespace)) {
+                $offenders[] = sprintf('%s names %s', $file, $namespace);
+            }
+        }
+    }
+
+    return $offenders;
+}
+
 // ---------------------------------------------------------------------------
 // The exceptions, asserted by name so they cannot be widened by accident.
 // ---------------------------------------------------------------------------
@@ -105,27 +159,60 @@ arch('E3 — the SDK is named in exactly one module')
     ->expect('Lemonfiber\Sdk')
     ->toOnlyBeUsedIn('Modules\Sdk');
 
-arch('nothing but the sdk adapter speaks HTTP')
-    ->expect(['GuzzleHttp', 'Saloon', 'Symfony\Component\HttpClient'])
-    ->toOnlyBeUsedIn('Modules\Sdk');
+it('E3 — only the sdk adapter speaks HTTP', function (): void {
+    $offenders = [];
+
+    foreach (Module::all() as $module) {
+        if ($module->name === 'sdk') {
+            continue;
+        }
+
+        $offenders = [...$offenders, ...reachesOutside($module, ['GuzzleHttp', 'Saloon', 'Symfony\\Component\\HttpClient'])];
+    }
+
+    expect($offenders)->toBe([], sprintf(
+        "These speak HTTP without being the SDK adapter:\n  %s\n\n"
+        . 'Every call to lemonfiber goes through lemonfiber/sdk-php. A second client in '
+        . 'this application is a fourth consumer the contract does not know it has, and '
+        . 'the first thing it will get wrong is the envelope (E3, N1-R16).',
+        implode("\n  ", $offenders),
+    ));
+});
 
 arch('nothing opens a socket by hand')
     ->expect(['curl_init', 'curl_exec', 'fsockopen', 'stream_socket_client'])
     ->not->toBeUsed();
 
 // The composition root is the one place a port is allowed to meet an adapter.
-arch('only the composition root names an adapter')
-    ->expect(array_map(
+//
+// One rule per adapter. A list on the left of `toBeUsedIn` is read as "uses all
+// of these", so three adapters in one expectation would report only a module
+// that named every one of them — and a module naming a single adapter, which is
+// the whole failure being guarded against, would pass.
+it('E1 — only the composition root names an adapter', function (): void {
+    $adapters = array_map(
         static fn(Module $m): string => $m->namespace,
         array_values(array_filter(
             Module::all(),
             static fn(Module $m): bool => $m->kind === Kind::Adapter,
         )),
-    ))
-    ->not->toBeUsedIn(array_map(
-        static fn(Module $m): string => $m->namespace,
-        array_values(array_filter(
-            Module::all(),
-            static fn(Module $m): bool => $m->kind !== Kind::Adapter,
-        )),
+    );
+
+    $offenders = [];
+
+    foreach (Module::all() as $module) {
+        if ($module->kind === Kind::Adapter) {
+            continue;
+        }
+
+        $offenders = [...$offenders, ...reachesOutside($module, $adapters)];
+    }
+
+    expect($offenders)->toBe([], sprintf(
+        "These name an adapter from outside the composition root:\n  %s\n\n"
+        . 'A port meets its adapter in app/Providers and nowhere else. A module that '
+        . 'names one has decided which implementation it gets, which is the decision '
+        . 'that makes it untestable without the thing the adapter talks to (E1).',
+        implode("\n  ", $offenders),
     ));
+});

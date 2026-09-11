@@ -11,7 +11,10 @@
 >
     <testsuites>
         <!-- The rules, first: a boundary break should fail before anything
-             slower gets a chance to hide it. -->
+             slower gets a chance to hide it. R1 and R3 live here: the document
+             and the codebase are checked against each other in both directions,
+             and every architecture expectation is checked for the three shapes
+             that read as a rule and check nothing. -->
         <testsuite name="Arch">
             <directory>tests/Arch</directory>
         </testsuite>
@@ -34,6 +37,14 @@
         <!-- The composition root. -->
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+        </testsuite>
+
+        <!-- R2, last and on its own: this plants a violation of every rule and
+             runs the analyser and the suite over them as subprocesses. It is
+             slow for a reason nothing can remove, and it must not run beside a
+             suite that would see its fixtures. -->
+        <testsuite name="Guards">
+            <directory>tests/Guards</directory>
         </testsuite>
     </testsuites>
 

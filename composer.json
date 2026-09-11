@@ -34,6 +34,7 @@
         "nativephp/mobile": "^4.4"
     },
     "require-dev": {
+        "ext-simplexml": "*",
         "ergebnis/composer-normalize": "^2.53",
         "ergebnis/phpstan-rules": "^2.13",
         "larastan/larastan": "^3.12",

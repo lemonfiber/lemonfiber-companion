@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
+// The two files that must name what they refuse in order to refuse it: this
+// one holds the markers, and the fixture registry holds a snippet carrying each
+// of them so the rule can be shown to fire.
+const EXEMPT = ['tests/Arch/CommentsTest.php', 'tests/Support/Fixtures.php'];
+
 // K1/K2 — what a comment is for.
 //
 // A comment states the situation as it is and why it is that way. It does not
@@ -73,7 +78,7 @@ it('K1 — a comment says what is true, not what happened', function (): void {
     $offenders = [];
 
     foreach (commentLines() as $path => $lines) {
-        if ($path === 'tests/Arch/CommentsTest.php') {
+        if (in_array($path, EXEMPT, strict: true)) {
             continue;
         }
 
@@ -101,7 +106,7 @@ it('K2 — a docblock says what a type cannot', function (): void {
     $offenders = [];
 
     foreach (commentLines() as $path => $lines) {
-        if ($path === 'tests/Arch/CommentsTest.php') {
+        if (in_array($path, EXEMPT, strict: true)) {
             continue;
         }
 

@@ -156,7 +156,7 @@ $clock = new FrozenClock(Instant::parse('2026-09-11T12:00:00Z'));
 
 | | Rule | Enforced by |
 |---|---|---|
-| C1 | `Outcome` crosses module boundaries; exceptions do not | arch: public `Api` methods return `Outcome` or a value, never `void` on a fallible call |
+| C1 | `Outcome` crosses module boundaries; exceptions do not | arch: no public `Api` method returns `void` |
 | C2 | No `null` for absence — an explicit type | arch: no nullable return types on `Api` |
 | C3 | Every thrown exception is module-owned, never bare `\Exception`/`\RuntimeException` | phpstan `disallowed-calls` |
 | C4 | No `@` suppression | phpstan: ergebnis `NoErrorSuppressionRule` |
@@ -273,6 +273,29 @@ key — so a Dutch device shows `health.unreachable` where a sentence belongs an
 ships that way. Nothing else in this repository can see that, and a comparison
 of the two catalogues is cheap. The reverse direction is checked too: a key in
 `nl` with no `en` counterpart is a typo or text nothing shows any more.
+
+### The rules about the rules
+
+| | Rule | Enforced by |
+|---|---|---|
+| R1 | Every documented rule has an artifact carrying its identifier, and every identifier an artifact carries is documented | test |
+| R2 | Every rule that claims to be enforced refuses a planted violation | test: the `Guards` suite |
+| R3 | An architecture expectation names one symbol per rule, and every namespace it names resolves | arch |
+
+**Why R2 exists.** R1 asks whether an artifact exists. It cannot ask whether the
+artifact works, and the two are indistinguishable from the outside: a rule can
+be documented, tagged, registered and run on every commit while permitting
+exactly what it names. Three ways for that to happen are known and all three
+report a green tick — an expectation naming a namespace no autoloader
+registers, a list on the left of `toBeUsedIn` that is read as *uses all of
+these*, and a list holding both a function name and a namespace, which cancel
+out. R3 refuses those three shapes by name. R2 is the general answer: plant the
+smallest violation of every rule, run the machine that enforces it, and require
+it to report.
+
+A rule with no fixture fails R2. That is the part that matters — it makes *I did
+not check this one* impossible to leave implicit, which is the condition the
+three above needed in order to survive.
 
 ### Comments
 

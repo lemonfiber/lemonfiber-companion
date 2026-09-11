@@ -14,6 +14,29 @@ use Tests\Support\ApiSurface;
 // so a reflection sweep is what lets these rules exist before the module they
 // govern does.
 
+it('C1 — no Api method changes something and says nothing', function (): void {
+    $offenders = [];
+
+    foreach (ApiSurface::classesIn() as $class) {
+        foreach (ApiSurface::publicMethodsOf($class) as $method) {
+            if (ApiSurface::namesIn($method->getReturnType()) === ['void']) {
+                $offenders[] = ApiSurface::describe($method);
+            }
+        }
+    }
+
+    expect($offenders)->toBe([], sprintf(
+        "These cross a module boundary and answer with nothing:\n  %s\n\n"
+        . 'This application spends its life talking to a machine that may be off, '
+        . 'asleep, on another network or mid-update, so unreachable is a normal '
+        . 'Tuesday rather than an exception. A method that returns void has no way to '
+        . 'say it was refused except by throwing, which makes the common case the one '
+        . 'the compiler cannot see you forgot. Answer with an Outcome and let the '
+        . 'caller open it (C1).',
+        implode("\n  ", $offenders),
+    ));
+});
+
 it('C2 — no Api method answers with null', function (): void {
     $offenders = [];
 

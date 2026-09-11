@@ -29,3 +29,4 @@ Thumbs.db
 # Analysis caches, named in phpstan.neon and rector.php so CI can restore them.
 /.phpstan-cache
 /.rector-cache
+.rule-fixtures

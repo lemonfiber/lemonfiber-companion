@@ -131,9 +131,12 @@ function treeSources(): array
  */
 function phpFilesUnder(string $directory): array
 {
-    // This checker and its reader both name every identifier they report on, so
-    // including them would make every rule look enforced by the act of checking.
-    $excluded = ['TheRulesAreRealTest.php', 'rules.php'];
+    // Three files name identifiers without enforcing anything. This checker and
+    // its reader report on every identifier there is, so including them would
+    // make every rule look enforced by the act of checking; the fixture registry
+    // holds a violation of each rule verbatim, so an identifier written inside
+    // one of those snippets would read as an enforcement of it.
+    $excluded = ['TheRulesAreRealTest.php', 'rules.php', 'Fixtures.php'];
     $found = [];
 
     foreach (Tree::filesUnder($directory, '.php') as $file) {

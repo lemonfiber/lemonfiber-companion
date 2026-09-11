@@ -55,9 +55,11 @@ arch('A5 — configuration is read from config, never from the environment')
     ->expect('env')
     ->toOnlyBeUsedIn('Config');
 
-arch('A1 — no Eloquent anywhere')
-    ->expect(['Illuminate\Database\Eloquent', 'Illuminate\Database\Query'])
-    ->not->toBeUsedIn($ourCode);
+foreach (['Illuminate\Database\Eloquent', 'Illuminate\Database\Query'] as $orm) {
+    arch(sprintf('A1 — no %s anywhere', $orm))
+        ->expect($orm)
+        ->not->toBeUsedIn($ourCode);
+}
 
 // Mutable global state is checked in NoGlobalStateTest.php by reflection —
 // Pest's architecture expectations have no rule for it.
@@ -67,9 +69,11 @@ arch('A1 — no Eloquent anywhere')
 // sites; these catch the imports that would precede them.
 // ---------------------------------------------------------------------------
 
-arch('B1 — time arrives through the clock port')
-    ->expect(['Carbon', 'Illuminate\Support\Carbon', 'DateTime', 'DateTimeImmutable'])
-    ->not->toBeUsedIn('Modules\Kernel\Api');
+foreach (['Carbon', 'Illuminate\Support\Carbon', 'DateTime', 'DateTimeImmutable'] as $ambient) {
+    arch(sprintf('B1 — %s does not reach the kernel', $ambient))
+        ->expect($ambient)
+        ->not->toBeUsedIn('Modules\Kernel\Api');
+}
 
 // ---------------------------------------------------------------------------
 // C/D — errors and data shape.
@@ -86,9 +90,11 @@ arch('B1 — time arrives through the clock port')
 // This catches the import. The throw itself is caught by PHPStan's ban on these
 // constructors, which is the half that matters — a file can throw a global
 // `\RuntimeException` without importing anything.
-arch('C3 — no exception is thrown that says nothing')
-    ->expect(['Exception', 'RuntimeException', 'LogicException', 'InvalidArgumentException'])
-    ->not->toBeUsedIn($ourCode);
+foreach (['Exception', 'RuntimeException', 'LogicException', 'InvalidArgumentException'] as $bare) {
+    arch(sprintf('C3 — %s says nothing a catch block can act on', $bare))
+        ->expect($bare)
+        ->not->toBeUsedIn($ourCode);
+}
 
 // ---------------------------------------------------------------------------
 // H — naming and size. A name that permits anything is how a class acquires
@@ -157,9 +163,11 @@ arch('D4 — a closed set is an enum, not a handful of string constants')
     ->not->toHaveSuffix('Type')
     ->not->toHaveSuffix('Kind');
 
-arch('G1 — nothing mocks a type we do not own')
-    ->expect(['Mockery', 'PHPUnit\Framework\MockObject'])
-    ->not->toBeUsed();
+// G1 is checked over the text of the test files in TestConventionsTest. A Pest
+// namespace expectation cannot see it: `PHPUnit\` is not a registered PSR-4
+// prefix in this installation, so an expectation naming it resolves to no files
+// and reports nothing — and the other mocking library is not installed, which
+// makes an expectation naming it silent for a second, different reason.
 
 // ---------------------------------------------------------------------------
 // The framework's own presets, which catch a long tail cheaply.
