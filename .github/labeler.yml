@@ -1,0 +1,38 @@
+# Labels a pull request by what it touches, matching the estate's set.
+#
+# Modelled on sdk-php's, with the paths this repository actually has: the guards
+# here are PHPStan rules and Pest suites rather than one script, the twelve
+# modules are where the application lives, and the translation catalogues are
+# their own kind of change because a missing key ships as a visible key.
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ['**/*.md', 'docs/**']
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/workflows/**', 'sonar-project.properties']
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: ['composer.json', 'composer.lock', '.github/dependabot.yml']
+
+rules:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'ARCHITECTURE.md'
+          - 'phpstan.neon'
+          - 'phpstan/**'
+          - 'tests/Arch/**'
+          - 'tests/Guards/**'
+          - 'composer-dependency-analyser.php'
+          - 'pint.json'
+          - 'rector.php'
+
+modules:
+  - changed-files:
+      - any-glob-to-any-file: ['app-modules/**', 'app/**']
+
+translations:
+  - changed-files:
+      - any-glob-to-any-file: ['lang/**']
