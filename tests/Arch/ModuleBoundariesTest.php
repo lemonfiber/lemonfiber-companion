@@ -32,7 +32,7 @@ foreach ($modules as $module) {
     $vendors = $module->kind->forbiddenVendors();
 
     if ($vendors !== []) {
-        arch("A7/E4 — {$module->name} stays inside what a {$module->kind->value} module may name")
+        arch(sprintf('A7/E4 — %s stays inside what a %s module may name', $module->name, $module->kind->value))
             ->expect($module->namespace)
             ->not->toUse($vendors);
     }
@@ -40,14 +40,14 @@ foreach ($modules as $module) {
     $others = $module->forbiddenModuleNamespaces();
 
     if ($others !== []) {
-        arch("E1 — {$module->name} respects the other modules' boundaries")
+        arch(sprintf("E1 — %s respects the other modules' boundaries", $module->name))
             ->expect($module->namespace)
             ->not->toUse($others);
     }
 
     // A module's own internals are its own business; nobody else's.
-    arch("E2 — {$module->name} publishes an Api and keeps the rest to itself")
-        ->expect("{$module->namespace}\\Internal")
+    arch(sprintf('E2 — %s publishes an Api and keeps the rest to itself', $module->name))
+        ->expect(sprintf('%s\\Internal', $module->namespace))
         ->not->toBeUsedIn(
             array_map(
                 static fn(Module $other): string => $other->namespace,
@@ -69,7 +69,7 @@ foreach ($modules as $module) {
         // port written would have turned the suite red with a message pointing
         // nowhere useful. An interface and an enum are skipped by name here, and
         // the reason is recorded rather than left as a silent exclusion.
-        it("{$module->name} holds no mutable state", function () use ($module): void {
+        it(sprintf('%s holds no mutable state', $module->name), function () use ($module): void {
             $mutable = [];
 
             foreach ($module->classNames() as $name) {

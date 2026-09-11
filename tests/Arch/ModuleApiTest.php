@@ -98,7 +98,7 @@ it('M1 — a query asks and a command decides', function (): void {
 
     foreach (ApiSurface::classesIn('Queries') as $class) {
         foreach (ApiSurface::publicMethodsOf($class) as $method) {
-            if (in_array(ApiSurface::OUTCOME, ApiSurface::namesIn($method->getReturnType()), true)) {
+            if (in_array(ApiSurface::OUTCOME, ApiSurface::namesIn($method->getReturnType()), strict: true)) {
                 $offenders[] = sprintf('%s answers with an Outcome', ApiSurface::describe($method));
             }
         }
@@ -164,7 +164,7 @@ it('M3 — a command can be sent twice', function (): void {
             $carried = [...$carried, ...ApiSurface::namesIn($parameter->getType())];
         }
 
-        if (! in_array(ApiSurface::IDEMPOTENCY_KEY, $carried, true)) {
+        if (! in_array(ApiSurface::IDEMPOTENCY_KEY, $carried, strict: true)) {
             $offenders[] = $class->getName();
         }
     }

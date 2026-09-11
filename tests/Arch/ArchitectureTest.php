@@ -2,18 +2,56 @@
 
 declare(strict_types=1);
 
+use Tests\Support\Module;
+
 // The rules that are not about module boundaries — shape, naming, and the
 // habits that make a class hard to test. Boundaries live in
 // ModuleBoundariesTest.php, generated from each module's declared kind.
+//
+// ---------------------------------------------------------------------------
+// Where the namespaces below come from, and why not just `Modules`.
+//
+// `Modules` is not a namespace anything is registered under. Each module
+// registers its own — `Modules\Health\`, `Modules\Kernel\` — and Pest resolves
+// an expectation by matching a registered PSR-4 prefix. Given the bare parent
+// it matches no files, finds nothing to check, and reports a green tick.
+//
+// Every rule in this file was written that way, and every one of them was
+// therefore vacuous for module code: a class named `HealthManager` passed H1,
+// a module class calling a facade passed A3/A4, a non-final class passed
+// `toBeFinal`. They were caught by planting each violation and watching the
+// rule not fire.
+//
+// So the list is derived from the manifests, the same way the boundary rules
+// are. A module added tomorrow is covered without anyone editing this line,
+// and a module holding no classes yet is left out because Pest raises rather
+// than passing when asked about an empty namespace.
+// ---------------------------------------------------------------------------
+
+$ourCode = ['App', ...Module::namespaces()];
 
 // ---------------------------------------------------------------------------
 // A — framework coupling. Every rule here exists so a constructor tells the
 // truth about what a class needs.
 // ---------------------------------------------------------------------------
 
-arch('A3/A4 — a class asks for what it needs rather than reaching for it')
-    ->expect(['app', 'resolve', 'Illuminate\Support\Facades', 'Illuminate\Container'])
-    ->not->toBeUsedIn(['App', 'Modules']);
+// One symbol per rule, and functions kept apart from namespaces, because a
+// single `expect()` list holding both passes vacuously: adding `'app'` to a list
+// that also names `Illuminate\Support\Facades` stops the whole expectation
+// reporting anything, including the namespace that would otherwise have failed.
+// That was true of this rule as written, and was found by planting a facade call
+// in a module and watching it go green.
+foreach (['app', 'resolve'] as $located) {
+    arch(sprintf('A3 — a class asks for what it needs rather than calling %s()', $located))
+        ->expect($located)
+        ->not->toBeUsedIn($ourCode);
+}
+
+foreach (['Illuminate\Support\Facades', 'Illuminate\Container'] as $global) {
+    arch(sprintf('A2/A4 — %s is a global lookup no constructor mentions', $global))
+        ->expect($global)
+        ->not->toBeUsedIn($ourCode);
+}
 
 arch('A5 — configuration is read from config, never from the environment')
     ->expect('env')
@@ -21,7 +59,7 @@ arch('A5 — configuration is read from config, never from the environment')
 
 arch('A1 — no Eloquent anywhere')
     ->expect(['Illuminate\Database\Eloquent', 'Illuminate\Database\Query'])
-    ->not->toBeUsedIn(['App', 'Modules']);
+    ->not->toBeUsedIn($ourCode);
 
 // Mutable global state is checked in NoGlobalStateTest.php by reflection —
 // Pest's architecture expectations have no rule for it.
@@ -39,15 +77,21 @@ arch('B1 — time arrives through the clock port')
 // C/D — errors and data shape.
 // ---------------------------------------------------------------------------
 
-arch('C4 — nothing is silenced')
-    ->expect(['App', 'Modules'])
-    ->not->toUse('@');
+// C4 is enforced by ergebnis's NoErrorSuppressionRule under `allRules: true`,
+// not here. Pest's `not->toUse('@')` was tried first and does not report a
+// suppressed call — `@file_get_contents(...)` passes it — so keeping it would
+// have been a green tick standing in for a check. The analyser catches it at the
+// call site, which is the only place `@` exists.
 
 // Scoped to production code: the test support classes read manifests off disk
 // and a bare RuntimeException is the honest answer when one is unreadable.
+//
+// This catches the import. The throw itself is caught by PHPStan's ban on these
+// constructors, which is the half that matters — a file can throw a global
+// `\RuntimeException` without importing anything.
 arch('C3 — no exception is thrown that says nothing')
     ->expect(['Exception', 'RuntimeException', 'LogicException', 'InvalidArgumentException'])
-    ->not->toBeUsedIn(['App', 'Modules']);
+    ->not->toBeUsedIn($ourCode);
 
 // ---------------------------------------------------------------------------
 // H — naming and size. A name that permits anything is how a class acquires
@@ -59,21 +103,31 @@ arch('C3 — no exception is thrown that says nothing')
 // expectation — the name of the failing rule is what tells you which word was
 // used, so each word gets its own name.
 foreach (['Manager', 'Helper', 'Util', 'Utils', 'Service', 'Data', 'Info'] as $vague) {
-    arch("H1 — no class is named {$vague}, a name that permits anything")
-        ->expect(['Modules', 'App'])
+    arch(sprintf('H1 — no class is named %s, a name that permits anything', $vague))
+        ->expect($ourCode)
         ->not->toHaveSuffix($vague);
 }
 
 arch('H2 — an interface is named for what it does, not for being an interface')
-    ->expect(['Modules', 'App'])
+    ->expect($ourCode)
     ->not->toHaveSuffix('Interface');
 
 arch('H2 — an abstract class is named for what it is, not for being abstract')
-    ->expect(['Modules', 'App'])
+    ->expect($ourCode)
     ->not->toHavePrefix('Abstract');
 
+// An exception is the one class people habitually name after its base class
+// rather than after its subject. `StackUnreachableException` says twice that it
+// is an exception and once what happened; `StackUnreachable` reads as a fact at
+// the catch site, which is where the name is actually used. The suffix also
+// hides the duplicate: StackUnreachableException and CannotReachStackException
+// look like two different things in a directory listing.
+arch('H6 — an exception is named for what happened, not for being an exception')
+    ->expect($ourCode)
+    ->not->toHaveSuffix('Exception');
+
 arch('every class is final')
-    ->expect(['App', 'Modules'])
+    ->expect($ourCode)
     ->toBeFinal();
 
 // ---------------------------------------------------------------------------
@@ -100,7 +154,7 @@ arch('no debugging survives a commit')
 // Stale) — shipmonk's ForbidMatchDefaultArmForEnums is the other half, because
 // a `default` arm silently restores the hole the enum just closed.
 arch('D4 — a closed set is an enum, not a handful of string constants')
-    ->expect(['Modules', 'App'])
+    ->expect($ourCode)
     ->not->toHaveSuffix('Status')
     ->not->toHaveSuffix('State')
     ->not->toHaveSuffix('Type')

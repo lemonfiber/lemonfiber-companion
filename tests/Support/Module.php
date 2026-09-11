@@ -12,28 +12,20 @@ use function dirname;
 use function enum_exists;
 use function explode;
 use function file_get_contents;
-
-use FilesystemIterator;
-
 use function glob;
 use function in_array;
 use function interface_exists;
 use function is_array;
-use function is_dir;
 use function is_string;
 use function json_decode;
 
 use const JSON_THROW_ON_ERROR;
 
 use JsonException;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use RuntimeException;
-use SplFileInfo;
 
 use function sprintf;
 use function str_contains;
-use function str_ends_with;
 use function str_replace;
 use function ucwords;
 
@@ -92,6 +84,24 @@ final readonly class Module
     }
 
     /**
+     * The namespaces of every module holding at least one class.
+     *
+     * `Modules` on its own is not one of these and must never be used as a
+     * stand-in for them: nothing is registered under that prefix, so a Pest
+     * expectation given it resolves to no files and passes having checked
+     * nothing. Every rule that names module code names these instead.
+     *
+     * @return list<string>
+     */
+    public static function namespaces(): array
+    {
+        return array_map(
+            static fn(self $module): string => $module->namespace,
+            self::populated(),
+        );
+    }
+
+    /**
      * Every class file in the module, at any depth.
      *
      * `src/*.php` would see only the top level, and this layout deliberately
@@ -102,7 +112,7 @@ final readonly class Module
      */
     public function classes(): array
     {
-        return $this->phpFilesIn(sprintf('%s/src', $this->path));
+        return Tree::filesUnder(sprintf('%s/src', $this->path), '.php');
     }
 
     /**
@@ -116,10 +126,7 @@ final readonly class Module
      */
     public function testFiles(): array
     {
-        return array_values(array_filter(
-            $this->phpFilesIn(sprintf('%s/tests', $this->path)),
-            static fn(string $file): bool => str_ends_with($file, 'Test.php'),
-        ));
+        return Tree::filesUnder(sprintf('%s/tests', $this->path), 'Test.php');
     }
 
     /**
@@ -167,7 +174,7 @@ final readonly class Module
                 continue;
             }
 
-            if (! in_array($other->kind->value, $permitted, true)) {
+            if (! in_array($other->kind->value, $permitted, strict: true)) {
                 $forbidden[] = $other->namespace;
 
                 continue;
@@ -180,29 +187,6 @@ final readonly class Module
         return $forbidden;
     }
 
-    /** @return list<string> */
-    private function phpFilesIn(string $directory): array
-    {
-        if (! is_dir($directory)) {
-            return [];
-        }
-
-        $found = [];
-
-        $tree = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
-        );
-
-        /** @var SplFileInfo $file */
-        foreach ($tree as $file) {
-            if ($file->getExtension() === 'php') {
-                $found[] = $file->getPathname();
-            }
-        }
-
-        return $found;
-    }
-
     private static function read(string $manifest): self
     {
         $raw = file_get_contents($manifest);
@@ -212,7 +196,7 @@ final readonly class Module
         }
 
         try {
-            $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($raw, associative: true, depth: 512, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new RuntimeException(sprintf('%s is not valid JSON', $manifest), 0, $e);
         }

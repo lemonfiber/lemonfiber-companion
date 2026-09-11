@@ -81,6 +81,10 @@ parameters:
         function: 8
 
     ergebnis:
+        # `allRules` is where several documented rules actually live rather than
+        # in an arch test: C4 (no `@` suppression) is NoErrorSuppressionRule and
+        # the `switch` half of C5 is NoSwitchRule. Both were tried as Pest
+        # expectations first and neither reported anything.
         allRules: true
         noExtends:
             classesAllowedToBeExtended:
@@ -324,10 +328,30 @@ parameters:
             message: "C3 — every thrown exception is module-owned. A bare throw tells a catch block nothing it can act on, and a module boundary should be returning an Outcome rather than throwing at all (C1). Where a throw is genuinely right, name it: an exception class owned by the module says which module refused, and why (C3)."
 
 services:
-    # H5 — sprintf over concatenation. Written here rather than found in a
-    # package because no published rule set carries it, and the rule is small
-    # enough that owning it costs less than the alternative of not having it.
+    # H5 — sprintf over concatenation and over interpolation. Two classes
+    # because a PHPStan rule declares exactly one node type, one rule as far as
+    # a reader is concerned: there is one way to build a string with a value in
+    # it. Written here rather than found in a package because no published rule
+    # set carries it, and the rule is small enough that owning it costs less
+    # than the alternative of not having it.
     -
         class: Lemonfiber\Companion\PHPStan\Rules\PreferSprintfOverConcatRule
+        tags:
+            - phpstan.rules.rule
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\PreferSprintfOverInterpolationRule
+        tags:
+            - phpstan.rules.rule
+
+    # C5 — no `else`. The `switch` half of C5 is ergebnis's NoSwitchRule, which
+    # `allRules: true` above already turns on; this is the half nobody ships.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoElseRule
+        tags:
+            - phpstan.rules.rule
+
+    # D5 — no positional boolean literal at a call site.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoPositionalBooleanArgumentRule
         tags:
             - phpstan.rules.rule

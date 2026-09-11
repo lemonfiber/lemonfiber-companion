@@ -4,25 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use function dirname;
+use function basename;
 use function explode;
 use function file_get_contents;
-
-use FilesystemIterator;
-
 use function implode;
 use function in_array;
 use function is_dir;
 use function is_string;
 use function preg_match;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use RuntimeException;
-use SplFileInfo;
 
 use function sprintf;
-use function str_ends_with;
 use function trim;
 
 /**
@@ -32,7 +25,7 @@ use function trim;
  */
 function documentedRules(): array
 {
-    $path = sprintf('%s/ARCHITECTURE.md', dirname(__DIR__, 2));
+    $path = Tree::at('ARCHITECTURE.md');
     $document = file_get_contents($path);
 
     if (! is_string($document)) {
@@ -84,7 +77,6 @@ function enforcementSources(): string
  */
 function configSources(): array
 {
-    $root = dirname(__DIR__, 2);
     $found = [];
 
     $configs = [
@@ -98,7 +90,7 @@ function configSources(): array
     ];
 
     foreach ($configs as $file) {
-        $contents = file_get_contents(sprintf('%s/%s', $root, $file));
+        $contents = file_get_contents(Tree::at($file));
 
         if (is_string($contents)) {
             $found[] = $contents;
@@ -116,10 +108,12 @@ function configSources(): array
  */
 function treeSources(): array
 {
-    $root = dirname(__DIR__, 2);
     $found = [];
 
-    foreach ([sprintf('%s/tests', $root), sprintf('%s/app-modules', $root)] as $directory) {
+    // `phpstan/` is here because our own PHPStan rules carry their identifier in
+    // the message a developer reads when blocked, which is the same join as an
+    // arch rule's description.
+    foreach ([Tree::at('tests'), Tree::at('app-modules'), Tree::at('phpstan')] as $directory) {
         if (! is_dir($directory)) {
             continue;
         }
@@ -142,21 +136,12 @@ function phpFilesUnder(string $directory): array
     $excluded = ['TheRulesAreRealTest.php', 'rules.php'];
     $found = [];
 
-    $tree = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
-    );
-
-    /** @var SplFileInfo $file */
-    foreach ($tree as $file) {
-        if (! str_ends_with($file->getFilename(), '.php')) {
+    foreach (Tree::filesUnder($directory, '.php') as $file) {
+        if (in_array(basename($file), $excluded, strict: true)) {
             continue;
         }
 
-        if (in_array($file->getFilename(), $excluded, true)) {
-            continue;
-        }
-
-        $contents = file_get_contents($file->getPathname());
+        $contents = file_get_contents($file);
 
         if (is_string($contents)) {
             $found[] = $contents;

@@ -99,7 +99,7 @@ final readonly class ApiSurface
 
         $name = $returns->getName();
 
-        return in_array($name, ['self', 'static', $method->getDeclaringClass()->getName()], true);
+        return in_array($name, ['self', 'static', $method->getDeclaringClass()->getName()], strict: true);
     }
 
     /**

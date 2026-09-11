@@ -56,7 +56,7 @@ it('documents every rule the codebase enforces', function (): void {
     preg_match_all('/(?<![-A-Za-z0-9])([A-Z]\d{1,2})\b(?=\s*[—\/,)])/u', enforcementSources(), $found);
 
     foreach (array_unique($found[1]) as $id) {
-        if (! in_array($id, $documented, true)) {
+        if (! in_array($id, $documented, strict: true)) {
             $undocumented[] = $id;
         }
     }

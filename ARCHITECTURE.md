@@ -157,7 +157,16 @@ $clock = new FrozenClock(Instant::parse('2026-09-11T12:00:00Z'));
 | C1 | `Outcome` crosses module boundaries; exceptions do not | arch: public `Api` methods return `Outcome` or a value, never `void` on a fallible call |
 | C2 | No `null` for absence — an explicit type | arch: no nullable return types on `Api` |
 | C3 | Every thrown exception is module-owned, never bare `\Exception`/`\RuntimeException` | phpstan `disallowed-calls` |
-| C4 | No `@` suppression | arch |
+| C4 | No `@` suppression | phpstan: ergebnis `NoErrorSuppressionRule` |
+| C5 | `match`, never `switch`; and no `else` | phpstan: ergebnis `NoSwitchRule` + own rule |
+
+**Why C5 bans `else` as well as `switch`.** `switch` compares loosely, falls
+through, and cannot be checked for the arm nobody wrote — which is the hole D4's
+enums exist to close, so leaving `switch` available would reopen it. `else` is
+subtler: it is where two branches begin drifting apart, and where a refusal gets
+handled inline instead of being returned as an `Outcome` the caller has to open.
+Returning early from the refusal leaves the happy path at one indent, reading top
+to bottom.
 
 **Why C1 is worth its cost.** This application spends its life talking to a
 machine that may be off, asleep, on another network, or mid-update. Unreachable
@@ -185,6 +194,7 @@ $outcome->either(
 | D2 | No primitive obsession: ids, tokens, durations are types | arch: no `string`/`int`/`float` parameter outside a named constructor |
 | D3 | No `mixed` in public signatures | phpstan (level max + type coverage 100%) |
 | D4 | Enums for every closed set, never string constants | arch + shipmonk `ForbidMatchDefaultArmForEnums` |
+| D5 | No bare `true`/`false` at a call site — name the argument or split the method | phpstan: own rule |
 
 D2's payoff is concrete: a stack id and a service id are both strings, and
 nothing stops you passing one where the other belongs. `StackId` and `ServiceId`
@@ -242,6 +252,7 @@ supported vocabulary that would silently drift from the installed package.
 | G2 | Every port has one contract test, run against the real adapter **and** its fake | planned |
 | G3 | No test reaches the network | `Http::preventStrayRequests()` + arch |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
+| G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
 
 **G2 is the most valuable rule on this page.** A fake that has drifted from its
 adapter makes the suite green while the application is broken, and nothing else
@@ -263,7 +274,8 @@ tests/Contract/StackContract.php
 | H2 | No `Interface`/`Abstract` affixes on type names | arch |
 | H3 | Caps: methods per class, lines per method, constructor parameters, cognitive complexity | phpstan + arch |
 | H4 | A test file mirrors its source file's location | arch: an orphan test fails, a class without one does not |
-| H5 | A string with a value in it is built with `sprintf`, never with `.` | phpstan: own rule |
+| H5 | A string with a value in it is built with `sprintf` — never `.`, never interpolation | phpstan: own rule, one per node type |
+| H6 | An exception is named for what happened, not for being an exception | arch |
 
 H1 is not pedantry. `BackupManager` is a name that permits anything, which is how
 a class acquires twenty methods; a class you cannot name precisely is usually
