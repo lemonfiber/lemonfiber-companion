@@ -72,8 +72,16 @@ jobs:
   dco:
     uses: lemonfiber/spec/.github/workflows/dco.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
 
+  # `pull-requests: write` is what lets the gate close a pull request whose
+  # citation is missing or names an identifier that does not exist, rather than
+  # only going red at it. The workflow-level `contents: read` above is the
+  # default for a job that declares nothing; a job-level block replaces that
+  # default outright, so `contents: read` is restated here rather than inherited.
   spec-check:
     if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
     uses: lemonfiber/spec/.github/workflows/spec-check.yml@718ef921411ed5823745aeb2e4efb7d842cca06e # main
 
   commitlint:
@@ -135,7 +143,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: none
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - run: vendor/bin/pest --testsuite=Guards
+      - run: composer test:guards
 
   # Formatting, static analysis, dead idioms, the repository's own guards and
   # dependency hygiene. One install, one PHP, six commands, no coverage driver.

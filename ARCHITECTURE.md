@@ -406,7 +406,7 @@ acquires all of it without anyone deciding it should.
 | | Rule | Enforced by |
 |---|---|---|
 | R1 | Every documented rule has an artifact carrying its identifier, and every identifier an artifact carries is documented | test |
-| R2 | Every rule that claims to be enforced refuses a planted violation | test: the `Guards` suite |
+| R2 | Every rule that claims to be enforced refuses a planted violation | test: the `Guards` suite, run on its own |
 | R3 | An architecture expectation names one symbol per rule, and every namespace it names resolves | arch |
 
 **Why R2 exists.** R1 asks whether an artifact exists. It cannot ask whether the
@@ -419,6 +419,13 @@ these*, and a list holding both a function name and a namespace, which cancel
 out. R3 refuses those three shapes by name. R2 is the general answer: plant the
 smallest violation of every rule, run the machine that enforces it, and require
 it to report.
+
+**The `Guards` suite runs alone.** `composer test` is `pest --parallel` with
+`Guards` excluded; `composer test:guards` runs it by itself. The harness plants
+a violation of every rule into the working tree, so a process reading that tree
+beside it sees files appear and vanish mid-run — which is a failure that looks
+like anything except what it is. Everything else is deterministic in parallel
+and is checked that way.
 
 A rule with no fixture fails R2. That is the part that matters — it makes *I did
 not check this one* impossible to leave implicit, which is the condition the
