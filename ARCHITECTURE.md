@@ -243,6 +243,7 @@ tests/Contract/StackContract.php
 | H2 | No `Interface`/`Abstract` affixes on type names | arch |
 | H3 | Caps: methods per class, lines per method, constructor parameters, cognitive complexity | phpstan + arch |
 | H4 | A test file mirrors its source file's location | planned |
+| H5 | A string with a value in it is built with `sprintf`, never with `.` | phpstan: own rule |
 
 H1 is not pedantry. `BackupManager` is a name that permits anything, which is how
 a class acquires twenty methods; a class you cannot name precisely is usually

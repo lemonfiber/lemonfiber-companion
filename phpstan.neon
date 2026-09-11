@@ -322,3 +322,12 @@ parameters:
             allowInInstanceOf:
                 - 'Throwable'
             message: "C3 — every thrown exception is module-owned. A bare throw tells a catch block nothing it can act on, and a module boundary should be returning an Outcome rather than throwing at all (C1). Where a throw is genuinely right, name it: an exception class owned by the module says which module refused, and why (C3)."
+
+services:
+    # H5 — sprintf over concatenation. Written here rather than found in a
+    # package because no published rule set carries it, and the rule is small
+    # enough that owning it costs less than the alternative of not having it.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\PreferSprintfOverConcatRule
+        tags:
+            - phpstan.rules.rule

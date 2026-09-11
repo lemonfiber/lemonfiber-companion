@@ -32,7 +32,7 @@ use function trim;
  */
 function documentedRules(): array
 {
-    $path = dirname(__DIR__, 2) . '/ARCHITECTURE.md';
+    $path = sprintf('%s/ARCHITECTURE.md', dirname(__DIR__, 2));
     $document = file_get_contents($path);
 
     if (! is_string($document)) {
@@ -98,7 +98,7 @@ function configSources(): array
     ];
 
     foreach ($configs as $file) {
-        $contents = file_get_contents($root . '/' . $file);
+        $contents = file_get_contents(sprintf('%s/%s', $root, $file));
 
         if (is_string($contents)) {
             $found[] = $contents;
@@ -119,7 +119,7 @@ function treeSources(): array
     $root = dirname(__DIR__, 2);
     $found = [];
 
-    foreach ([$root . '/tests', $root . '/app-modules'] as $directory) {
+    foreach ([sprintf('%s/tests', $root), sprintf('%s/app-modules', $root)] as $directory) {
         if (! is_dir($directory)) {
             continue;
         }

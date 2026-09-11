@@ -43,6 +43,7 @@
         "laravel/pail": "^1.2",
         "laravel/pint": "^1.32",
         "mockery/mockery": "^1.6",
+        "nikic/php-parser": "^5.8",
         "nunomaduro/collision": "^8.9",
         "pestphp/pest": "^5.1",
         "pestphp/pest-plugin-arch": "^5.0",
@@ -79,6 +80,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Lemonfiber\\Companion\\PHPStan\\": "phpstan/",
             "Tests\\": "tests/"
         },
         "files": [

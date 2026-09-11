@@ -108,6 +108,6 @@ it('reports how many rules rest on a human reading the diff', function (): void 
     fwrite(STDOUT, sprintf(
         "\n  rules resting on review: %d%s\n",
         count($review),
-        $review === [] ? '' : ' (' . implode(', ', $review) . ')',
+        $review === [] ? '' : sprintf(' (%s)', implode(', ', $review)),
     ));
 });

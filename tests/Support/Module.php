@@ -57,7 +57,7 @@ final readonly class Module
     public static function all(): array
     {
         $root = dirname(__DIR__, 2);
-        $manifests = glob($root . '/app-modules/*/composer.json');
+        $manifests = glob(sprintf('%s/app-modules/*/composer.json', $root));
 
         if ($manifests === false) {
             throw new RuntimeException('app-modules could not be listed');
@@ -101,14 +101,16 @@ final readonly class Module
      */
     public function classes(): array
     {
-        if (! is_dir($this->path . '/src')) {
+        $src = sprintf('%s/src', $this->path);
+
+        if (! is_dir($src)) {
             return [];
         }
 
         $found = [];
 
         $tree = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($this->path . '/src', FilesystemIterator::SKIP_DOTS),
+            new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS),
         );
 
         /** @var SplFileInfo $file */
@@ -136,8 +138,8 @@ final readonly class Module
         $names = [];
 
         foreach ($this->classes() as $file) {
-            $relative = str_replace([$this->path . '/src/', '.php'], '', $file);
-            $name = $this->namespace . '\\' . str_replace('/', '\\', $relative);
+            $relative = str_replace([sprintf('%s/src/', $this->path), '.php'], '', $file);
+            $name = sprintf('%s\\%s', $this->namespace, str_replace('/', '\\', $relative));
 
             if (class_exists($name) || interface_exists($name) || enum_exists($name)) {
                 $names[] = $name;
@@ -173,7 +175,7 @@ final readonly class Module
             }
 
             // A permitted module is reachable only through its published Api.
-            $forbidden[] = $other->namespace . '\Internal';
+            $forbidden[] = sprintf('%s\Internal', $other->namespace);
         }
 
         return $forbidden;
@@ -218,7 +220,7 @@ final readonly class Module
 
         return new self(
             name: $short,
-            namespace: 'Modules\\' . str_replace(' ', '', ucwords(str_replace('-', ' ', $short))),
+            namespace: sprintf('Modules\\%s', str_replace(' ', '', ucwords(str_replace('-', ' ', $short)))),
             kind: Kind::from($kind),
             path: dirname($manifest),
         );
