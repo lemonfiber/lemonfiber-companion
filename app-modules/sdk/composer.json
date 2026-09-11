@@ -3,10 +3,9 @@
     "description": "The only module permitted to name the SDK (N1-R16).",
     "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
-    "version": "1.0",
     "require": {
         "php": "^8.5",
-        "modules/kernel": "*",
+        "modules/kernel": "dev-main",
         "lemonfiber/sdk-php": "dev-main"
     },
     "autoload": {

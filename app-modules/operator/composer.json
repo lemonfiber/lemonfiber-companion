@@ -3,16 +3,15 @@
     "description": "The operator surface: navigation and screen composition only.",
     "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
-    "version": "1.0",
     "require": {
         "php": "^8.5",
-        "modules/kernel": "*",
-        "modules/design": "*",
-        "modules/connection": "*",
-        "modules/stacks": "*",
-        "modules/health": "*",
-        "modules/backups": "*",
-        "modules/updates": "*",
+        "modules/kernel": "dev-main",
+        "modules/design": "dev-main",
+        "modules/connection": "dev-main",
+        "modules/stacks": "dev-main",
+        "modules/health": "dev-main",
+        "modules/backups": "dev-main",
+        "modules/updates": "dev-main",
         "nativephp/mobile": "^4.4"
     },
     "autoload": {

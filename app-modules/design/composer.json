@@ -3,10 +3,9 @@
     "description": "The EDGE component vocabulary and the theme tokens every surface renders through.",
     "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
-    "version": "1.0",
     "require": {
         "php": "^8.5",
-        "modules/kernel": "*",
+        "modules/kernel": "dev-main",
         "nativephp/mobile": "^4.4"
     },
     "autoload": {

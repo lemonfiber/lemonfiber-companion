@@ -119,9 +119,9 @@ jobs:
       # Cheapest first, so a misplaced brace fails in seconds rather than after
       # the analyser has walked the tree.
       - run: composer validate --strict
+      - run: composer validate:modules
       - run: composer normalize --dry-run
       - run: composer lint
-      - run: composer guards
       - run: composer analyse
       - run: composer refactor
       - run: composer deps

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b5496e7d1ab91ebbabd452ccb383dd7",
+    "content-hash": "9df69ba84a174891f0428445f1cb2f37",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3064,13 +3064,13 @@
             "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "git@github.com:lemonfiber/sdk-php.git",
-                "reference": "f8cfcc208a37be39487e1b72f32b30e9d2e6ce1c"
+                "url": "https://github.com/lemonfiber/sdk-php.git",
+                "reference": "ceb12d3e93809085e0c9ec17a1ef58efe833e944"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/f8cfcc208a37be39487e1b72f32b30e9d2e6ce1c",
-                "reference": "f8cfcc208a37be39487e1b72f32b30e9d2e6ce1c",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/ceb12d3e93809085e0c9ec17a1ef58efe833e944",
+                "reference": "ceb12d3e93809085e0c9ec17a1ef58efe833e944",
                 "shasum": ""
             },
             "require": {
@@ -3196,7 +3196,11 @@
                 "self-hosted",
                 "sse"
             ],
-            "time": "2026-09-11T00:01:40+00:00"
+            "support": {
+                "source": "https://github.com/lemonfiber/sdk-php/tree/main",
+                "issues": "https://github.com/lemonfiber/sdk-php/issues"
+            },
+            "time": "2026-09-11T18:52:31+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -3273,14 +3277,14 @@
         },
         {
             "name": "modules/backups",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/backups",
-                "reference": "4bf475175763ebd2c43491994ea1a37790a246e9"
+                "reference": "045fff0d1bf69413d2313db9c1872e2664a119ae"
             },
             "require": {
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -3306,14 +3310,14 @@
         },
         {
             "name": "modules/connection",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/connection",
-                "reference": "8c84dc45d5b65acb9418bc92ec47a680b463eb7b"
+                "reference": "61d8a1578eb7dc49b10f493563f1a9eab476a022"
             },
             "require": {
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -3339,14 +3343,14 @@
         },
         {
             "name": "modules/design",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/design",
-                "reference": "b8adfb8d0821336b0c516e3df9d49e1bddf4a139"
+                "reference": "16a493540eac6e3df2105a39dd297078bffac898"
             },
             "require": {
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
             },
@@ -3373,14 +3377,14 @@
         },
         {
             "name": "modules/device",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/device",
-                "reference": "80ebf6e13926d328d10bfb37dadf5dcbad0708d1"
+                "reference": "066891d4158cb53d0627499ae57cfb3f15db556f"
             },
             "require": {
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
             },
@@ -3407,14 +3411,14 @@
         },
         {
             "name": "modules/health",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/health",
-                "reference": "7a38e0f4bd2629a91e889d2d6dda5b8135f4c8af"
+                "reference": "a5c3fca3d7b66a53d5410adeff65298bce91a1e8"
             },
             "require": {
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -3440,17 +3444,17 @@
         },
         {
             "name": "modules/household",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/household",
-                "reference": "43e44cf47d7393a536d1076d1323e0d4be10574b"
+                "reference": "7a1b21c31e3f91adf20e0b07f793a377c808ff13"
             },
             "require": {
-                "modules/connection": "*",
-                "modules/design": "*",
-                "modules/kernel": "*",
-                "modules/stacks": "*",
+                "modules/connection": "dev-main",
+                "modules/design": "dev-main",
+                "modules/kernel": "dev-main",
+                "modules/stacks": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
             },
@@ -3477,11 +3481,11 @@
         },
         {
             "name": "modules/kernel",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/kernel",
-                "reference": "6c986bf7aa27efc206353b9faf3b191999b7ffdd"
+                "reference": "5449c53ab49479bf9247f8334a10a7509d081e8c"
             },
             "require": {
                 "php": "^8.5"
@@ -3509,20 +3513,20 @@
         },
         {
             "name": "modules/operator",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/operator",
-                "reference": "966bc71ce0cfe7d17e5656087bcc98d694eb59e7"
+                "reference": "44dc97fdc43da9ced4442ce2603ed91b85da0600"
             },
             "require": {
-                "modules/backups": "*",
-                "modules/connection": "*",
-                "modules/design": "*",
-                "modules/health": "*",
-                "modules/kernel": "*",
-                "modules/stacks": "*",
-                "modules/updates": "*",
+                "modules/backups": "dev-main",
+                "modules/connection": "dev-main",
+                "modules/design": "dev-main",
+                "modules/health": "dev-main",
+                "modules/kernel": "dev-main",
+                "modules/stacks": "dev-main",
+                "modules/updates": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
             },
@@ -3549,15 +3553,15 @@
         },
         {
             "name": "modules/sdk",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/sdk",
-                "reference": "3c84b202b345ba32abd08994b9f716200ccd52ec"
+                "reference": "3be441f964c9f5ded2e44dff1e2dd5154b73b4de"
             },
             "require": {
                 "lemonfiber/sdk-php": "dev-main",
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -3583,14 +3587,14 @@
         },
         {
             "name": "modules/stacks",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/stacks",
-                "reference": "5bddd9a0c23d9c118640b1d0bc9ed1aa78fd5b29"
+                "reference": "acc8e785a4f6e2979b98716892908bfb16dfb1a0"
             },
             "require": {
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -3616,14 +3620,14 @@
         },
         {
             "name": "modules/updates",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/updates",
-                "reference": "d3ee41422d305e098eef141ba0c58603d5c5e4b9"
+                "reference": "34f8a21a13d42cae6c5ff2d87ba7cf136dd89fbd"
             },
             "require": {
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "php": "^8.5"
             },
             "type": "library",
@@ -3649,14 +3653,14 @@
         },
         {
             "name": "modules/vault",
-            "version": "1.0",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "app-modules/vault",
-                "reference": "b8206d30f33f9c8f6496739307c1a50cffc28334"
+                "reference": "f1bcaba5b0021ee91c86338d216694822ea4f147"
             },
             "require": {
-                "modules/kernel": "*",
+                "modules/kernel": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
             },
@@ -13886,7 +13890,20 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {},
+    "stability-flags": {
+        "modules/backups": 20,
+        "modules/connection": 20,
+        "modules/design": 20,
+        "modules/device": 20,
+        "modules/health": 20,
+        "modules/household": 20,
+        "modules/kernel": 20,
+        "modules/operator": 20,
+        "modules/sdk": 20,
+        "modules/stacks": 20,
+        "modules/updates": 20,
+        "modules/vault": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

@@ -3,13 +3,12 @@
     "description": "The household surface: navigation and screen composition only.",
     "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
-    "version": "1.0",
     "require": {
         "php": "^8.5",
-        "modules/kernel": "*",
-        "modules/design": "*",
-        "modules/connection": "*",
-        "modules/stacks": "*",
+        "modules/kernel": "dev-main",
+        "modules/design": "dev-main",
+        "modules/connection": "dev-main",
+        "modules/stacks": "dev-main",
         "nativephp/mobile": "^4.4"
     },
     "autoload": {
