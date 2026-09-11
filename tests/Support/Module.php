@@ -57,9 +57,15 @@ final readonly class Module
     public static function all(): array
     {
         $root = dirname(__DIR__, 2);
+        $manifests = glob($root . '/app-modules/*/composer.json');
+
+        if ($manifests === false) {
+            throw new RuntimeException('app-modules could not be listed');
+        }
+
         $found = [];
 
-        foreach (glob($root . '/app-modules/*/composer.json') ?: [] as $manifest) {
+        foreach ($manifests as $manifest) {
             $found[] = self::read($manifest);
         }
 
@@ -192,7 +198,9 @@ final readonly class Module
         }
 
         $name = $decoded['name'] ?? null;
-        $kind = $decoded['extra']['lemonfiber']['kind'] ?? null;
+        $extra = $decoded['extra'] ?? null;
+        $lemonfiber = is_array($extra) ? $extra['lemonfiber'] ?? null : null;
+        $kind = is_array($lemonfiber) ? $lemonfiber['kind'] ?? null : null;
 
         if (! is_string($name) || ! str_contains($name, '/')) {
             throw new RuntimeException(sprintf('%s declares no module name', $manifest));

@@ -54,19 +54,22 @@ arch('no exception is thrown that says nothing')
 // twenty methods.
 // ---------------------------------------------------------------------------
 
-arch('no class is named for nothing in particular')
-    ->expect(['Modules', 'App'])
-    ->not->toHaveSuffix('Manager')
-    ->not->toHaveSuffix('Helper')
-    ->not->toHaveSuffix('Util')
-    ->not->toHaveSuffix('Utils')
-    ->not->toHaveSuffix('Service')
-    ->not->toHaveSuffix('Data')
-    ->not->toHaveSuffix('Info');
+// One rule per suffix rather than one chain of them. A chain reports the first
+// offending suffix and stops, and `->not` cannot legally follow a completed
+// expectation — the name of the failing rule is what tells you which word was
+// used, so each word gets its own name.
+foreach (['Manager', 'Helper', 'Util', 'Utils', 'Service', 'Data', 'Info'] as $vague) {
+    arch("no class is named {$vague}, a name that permits anything")
+        ->expect(['Modules', 'App'])
+        ->not->toHaveSuffix($vague);
+}
 
 arch('an interface is named for what it does, not for being an interface')
     ->expect(['Modules', 'App'])
-    ->not->toHaveSuffix('Interface')
+    ->not->toHaveSuffix('Interface');
+
+arch('an abstract class is named for what it is, not for being abstract')
+    ->expect(['Modules', 'App'])
     ->not->toHavePrefix('Abstract');
 
 arch('every class is final')
