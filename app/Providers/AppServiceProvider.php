@@ -6,14 +6,17 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Modules\Design\Api\Theme;
+use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Vault\Api\PlatformKeychain;
 use Native\Mobile\Edge\TailwindParser;
 use Native\Mobile\SecureStorage as PlatformStore;
+use NativePHP\LocalNotifications\LocalNotifications;
 
 /**
  * The composition root.
@@ -53,6 +56,20 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             SecureStorage::class,
             static fn(): SecureStorage => new PlatformKeychain(new PlatformStore()),
+        );
+
+        // Bound, not a singleton, for the same reason the store above is not:
+        // the plugin's centre is a handle to something outside this process,
+        // and this runtime is persistent (I1).
+        //
+        // Local rather than pushed, which is the decision this line records. A
+        // push payload reaches the handset through Google's or Apple's relay —
+        // a third party reading what a stack said about somebody's home — and
+        // NothingLeavesThisDeviceTest is the rule that refuses it. A local
+        // notification is composed and shown on the device and never leaves it.
+        $this->app->bind(
+            Notifier::class,
+            static fn(): Notifier => new PlatformNotifier(new LocalNotifications()),
         );
     }
 

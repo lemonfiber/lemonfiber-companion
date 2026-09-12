@@ -138,6 +138,13 @@ parameters:
                 # one: a subclass with the methods written out, which fails to
                 # compile when the real class changes instead of drifting.
                 - Native\Mobile\SecureStorage
+                # The same argument for the local-notifications plugin. There is
+                # no notification centre behind a PHP process on a laptop —
+                # `requestPermission()` answers `null` wherever `nativephp_call()`
+                # is absent — so without these two the adapter's whole delivery
+                # path is a branch no test can reach.
+                - NativePHP\LocalNotifications\LocalNotifications
+                - NativePHP\LocalNotifications\ScheduledNotification
         # A screen's state is what the renderer reads on re-render, so a
         # component's properties are mutable by construction. Every other class
         # in this application is readonly, and an architecture test says so
