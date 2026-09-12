@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\Capabilities;
+use Modules\Kernel\Api\Reading;
+use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\Showing;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Module;
@@ -67,6 +73,120 @@ function waitsOnAPort(ReflectionClass $class): bool
         $type = $parameter->getType();
 
         if ($type instanceof ReflectionNamedType && ! $type->isBuiltin() && interface_exists($type->getName())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// N1-R39 — a screen says which stack it is showing.
+//
+// The app holds more than one stack (N1-R11) and must never attribute a reading
+// from one to another. Every other guard on that is in the kernel: `StackId` is
+// a type, `Capabilities` carries the stack that declared it, `Stack::is()`
+// compares identity rather than address. A screen is where all of that can still
+// be undone in one line, by reading the current stack from somewhere shared
+// instead of from what the screen was given.
+//
+// Shared state is the failure mode by name in the requirement, and it is the
+// natural thing to write: the runtime here is persistent (I1), so a static or a
+// singleton holding "the stack we are looking at" survives between screens and
+// works perfectly until two screens are open on two stacks. Then one of them is
+// showing the other's readings, with no error anywhere.
+//
+// So the rule is about the constructor: a screen that shows anything belonging
+// to a stack takes a `StackId`. Checked over the signature because that is the
+// only part of "where did this come from" that is visible to a rule at all —
+// what a screen does with the id afterwards is F2 and review.
+
+it('N1-R39 — a screen that shows a stack\'s data is told which stack', function (): void {
+    $offenders = [];
+
+    foreach (Module::all() as $module) {
+        foreach ($module->classNames() as $name) {
+            $class = new ReflectionClass($name);
+
+            if (! $class->isSubclassOf(NativeComponent::class)) {
+                continue;
+            }
+
+            if (! showsSomethingOfAStacks($class) || isToldWhichStack($class)) {
+                continue;
+            }
+
+            $offenders[] = $name;
+        }
+    }
+
+    sort($offenders);
+
+    expect($offenders)->toBe([], sprintf(
+        "These screens show a stack's data without being told which stack:\n  %s\n\n"
+        . 'The app holds more than one (N1-R11), and a screen that reads the current '
+        . 'stack from shared state works until two are open at once — then one shows the '
+        . "other's readings, with no error anywhere. The runtime is persistent (I1), so "
+        . "that shared value survives between screens rather than being rebuilt.\n"
+        . 'Take a `StackId` in the constructor and carry it. A screen that genuinely '
+        . 'belongs to no stack — pairing, a settings page — holds none of these types '
+        . 'and is not asked (N1-R39).',
+        implode("\n  ", $offenders),
+    ));
+});
+
+/**
+ * Whether a screen is handed anything that belongs to one stack in particular.
+ *
+ * Named rather than inferred: these are the kernel types whose value is a fact
+ * about one machine, so holding one without saying which machine is the mistake
+ * the rule is about. A screen holding none of them has nothing to misattribute.
+ *
+ * @param ReflectionClass<NativeComponent> $class
+ */
+function showsSomethingOfAStacks(ReflectionClass $class): bool
+{
+    $ofOneStack = [
+        Capabilities::class,
+        Reading::class,
+        Report::class,
+        Showing::class,
+        Stack::class,
+    ];
+
+    foreach ($class->getConstructor()?->getParameters() ?? [] as $parameter) {
+        $type = $parameter->getType();
+
+        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+            continue;
+        }
+
+        if (in_array($type->getName(), $ofOneStack, strict: true)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Whether the screen was told which stack, by being given the identity itself.
+ *
+ * A `Stack` counts: it carries its own `StackId`, so a screen holding one has
+ * been told. What does not count is anything the screen could have fetched for
+ * itself, which is the whole of what the requirement refuses.
+ *
+ * @param ReflectionClass<NativeComponent> $class
+ */
+function isToldWhichStack(ReflectionClass $class): bool
+{
+    foreach ($class->getConstructor()?->getParameters() ?? [] as $parameter) {
+        $type = $parameter->getType();
+
+        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+            continue;
+        }
+
+        if (in_array($type->getName(), [StackId::class, Stack::class], strict: true)) {
             return true;
         }
     }
