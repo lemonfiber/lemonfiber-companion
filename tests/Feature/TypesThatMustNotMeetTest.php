@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Interrupted;
 use Modules\Kernel\Api\Pairing;
-use Modules\Kernel\Api\Session;
 use Tests\Support\ApiSurface;
 
 /**
