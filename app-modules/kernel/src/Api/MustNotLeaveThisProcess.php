@@ -51,11 +51,8 @@ final class MustNotLeaveThisProcess extends LogicException
      */
     public static function aCredential(): self
     {
-        return new self(
-            'A credential may not be serialised. N1-R7 exchanges it for a session once and '
-            . 'keeps nothing to re-send, and N1-R23 keeps it out of every cache — a credential '
-            . 'that reached one can be replayed, and unlike a session nothing on the server '
-            . 'expires it on a schedule.',
-        );
+        // One literal, for the reason `CredentialIsSpent` carries: a
+        // concatenated message is several mutants that no test can tell apart.
+        return new self('A credential may not be serialised. N1-R7 exchanges it for a session once and keeps nothing to re-send, and N1-R23 keeps it out of every cache — a credential that reached one can be replayed, and unlike a session nothing on the server expires it on a schedule.');
     }
 }

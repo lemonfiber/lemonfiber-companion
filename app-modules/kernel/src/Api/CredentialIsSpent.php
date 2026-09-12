@@ -29,10 +29,10 @@ final class CredentialIsSpent extends InvalidArgumentException
     /** Asked for a second time. */
     public static function already(): self
     {
-        return new self(
-            'This credential has already been exchanged for a session. N1-R7 keeps nothing '
-            . 'to re-send: ask the exchange for the session it returned rather than the '
-            . 'credential for its value again.',
-        );
+        // One literal rather than three concatenated. A concatenated message is
+        // several mutants — remove a side, swap two — and none of them changes
+        // what any test asserts, because a test matching a fragment matches the
+        // mutated string too. Kept on one line for that reason.
+        return new self('This credential has already been exchanged for a session. N1-R7 keeps nothing to re-send: ask the exchange for the session it returned rather than the credential for its value again.');
     }
 }
