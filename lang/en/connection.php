@@ -14,6 +14,7 @@ return [
     'paired' => 'Paired with :stack',
     'pairing_refused' => 'That pairing link was refused. Ask for a new one from the stack.',
     'fingerprint_changed' => "This stack's certificate has changed. Pair again from the stack itself before continuing.",
+    'fingerprint_changed_action' => 'Check that this is your machine, then pair again from its own screen.',
     'no_stacks' => 'No stack is paired yet.',
     'no_stacks_action' => 'Scan the pairing code shown on your stack.',
 ];
