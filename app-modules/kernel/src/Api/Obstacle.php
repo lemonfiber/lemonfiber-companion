@@ -28,6 +28,13 @@ namespace Modules\Kernel\Api;
  * accident; a case cannot, and a `match` over it stops compiling the moment
  * another is added.
  *
+ * `ADR-0018` adds the fifth, and it is the only one of them that may not be an
+ * accident: a connection presenting a certificate that does not match the
+ * fingerprint pairing material carried is refused rather than warned about, and
+ * the operator is told that this is not the machine the app was introduced to.
+ * It arrives looking like a stack that is simply there, which is what makes
+ * collapsing it into the others dangerous rather than merely unhelpful.
+ *
  * **Where each one happened** is what separates them, and it is worth naming
  * because it is what makes each remedy different. `DeviceHasNoNetwork` is
  * decided without leaving the device. `LocalNetworkIsNotPermitted` is decided
@@ -78,6 +85,17 @@ enum Obstacle: string
     case StackDidNotAnswer = 'no_answer';
 
     /**
+     * Something answered, and it is not the machine this app was paired with.
+     *
+     * The certificate does not match the fingerprint pairing material carried,
+     * so the connection is refused rather than warned about (`ADR-0018`).
+     * Critical rather than an error: every other case here is a machine that is
+     * off, a network that is down, or a credential that expired, and this one
+     * is the only one that may mean somebody else is answering.
+     */
+    case StackIsNotTheOnePaired = 'fingerprint_changed';
+
+    /**
      * The stack answered, and refused the credential.
      *
      * The connection works. Pairing is what does not, which is why this is one
@@ -101,6 +119,7 @@ enum Obstacle: string
             self::DeviceHasNoNetwork => 'COMPANION-NO-NETWORK',
             self::LocalNetworkIsNotPermitted => 'COMPANION-LOCAL-NETWORK-REFUSED',
             self::StackDidNotAnswer => 'COMPANION-NO-ANSWER',
+            self::StackIsNotTheOnePaired => 'COMPANION-CERTIFICATE-CHANGED',
             self::CredentialWasRefused => 'COMPANION-CREDENTIAL-REFUSED',
         });
     }
@@ -119,6 +138,7 @@ enum Obstacle: string
             self::LocalNetworkIsNotPermitted,
             self::StackDidNotAnswer,
             self::CredentialWasRefused => Severity::Error,
+            self::StackIsNotTheOnePaired => Severity::Critical,
         };
     }
 
@@ -136,7 +156,9 @@ enum Obstacle: string
     {
         return match ($this) {
             self::DeviceHasNoNetwork, self::StackDidNotAnswer => Standing::Guided,
-            self::LocalNetworkIsNotPermitted, self::CredentialWasRefused => Standing::Actionable,
+            self::LocalNetworkIsNotPermitted,
+            self::CredentialWasRefused,
+            self::StackIsNotTheOnePaired => Standing::Actionable,
         };
     }
 }
