@@ -25,7 +25,16 @@ namespace Modules\Kernel\Api;
  */
 final readonly class Authenticated
 {
-    private function __construct() {}
+    private function __construct()
+    {
+        // Deliberately empty, and empty is the point.
+        //
+        // This type carries nothing. What it means is entirely in the fact that
+        // one exists: the device asked, and the person holding it answered. A
+        // field here — a timestamp, a method, a confidence — would be a second
+        // thing to check, and the whole design is that there is nothing to
+        // check because an `Authenticated` cannot be built any other way.
+    }
 
     /**
      * The device said yes.
