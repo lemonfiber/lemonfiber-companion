@@ -1,10 +1,11 @@
 {
     "name": "modules/kernel",
     "description": "The shared language: ports, values and outcomes. Depends on nothing.",
-    "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
     "require": {
-        "php": "^8.5"
+        "php": "^8.5",
+        "ext-mbstring": "*"
     },
     "autoload": {
         "psr-4": {
@@ -14,11 +15,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "kernel",
             "floors": {
                 "coverage": 100,
                 "mutation": 100
-            }
+            },
+            "kind": "kernel"
         }
     }
 }

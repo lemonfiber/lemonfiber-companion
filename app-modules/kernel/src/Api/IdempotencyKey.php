@@ -45,6 +45,19 @@ final readonly class IdempotencyKey
         return new self($trimmed);
     }
 
+    /**
+     * A key from something nobody can guess, which is where one should come from.
+     *
+     * `of()` exists for a key the caller already holds — one read back from a
+     * request that was interrupted, so the retry carries the same one. A key
+     * being *made* comes from the `Entropy` port and through here, so that no
+     * command has to decide for itself how long unguessable is (B2).
+     */
+    public static function from(Nonce $nonce): self
+    {
+        return new self($nonce->shown());
+    }
+
     public function sent(): string
     {
         return $this->key;

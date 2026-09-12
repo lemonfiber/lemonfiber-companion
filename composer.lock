@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab49673c3dfe2cb9da8b7be891feb578",
+    "content-hash": "c3472aa927b1f228f85065c6f4d40051",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3393,9 +3393,10 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/device",
-                "reference": "63ce62b041a94dd0bbaead53d256cca3f42e3565"
+                "reference": "d48f8599dc42700b080af57e5c2a7b68d64650b9"
             },
             "require": {
+                "ext-sodium": "*",
                 "modules/kernel": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
@@ -3509,9 +3510,10 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/kernel",
-                "reference": "f2cd20c9141185936bcc047c6f467afc8c860519"
+                "reference": "854ab868ed03debc481e8cb5c97d1d8675bd421e"
             },
             "require": {
+                "ext-mbstring": "*",
                 "php": "^8.5"
             },
             "type": "library",
@@ -14449,7 +14451,9 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.5"
+        "php": "^8.5",
+        "ext-mbstring": "*",
+        "ext-sodium": "*"
     },
     "platform-dev": {
         "ext-simplexml": "*"
