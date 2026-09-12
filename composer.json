@@ -33,7 +33,8 @@
         "modules/stacks": "dev-main",
         "modules/updates": "dev-main",
         "modules/vault": "dev-main",
-        "nativephp/mobile": "^4.4"
+        "nativephp/mobile": "^4.4",
+        "nativephp/mobile-local-notifications": "^0.0.3"
     },
     "require-dev": {
         "ext-simplexml": "*",
@@ -59,6 +60,11 @@
         "tomasvotruba/type-coverage": "^2.3"
     },
     "repositories": [
+        {
+            "name": "nativephp",
+            "type": "composer",
+            "url": "https://plugins.nativephp.com"
+        },
         {
             "type": "vcs",
             "url": "https://github.com/lemonfiber/sdk-php"

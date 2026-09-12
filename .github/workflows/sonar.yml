@@ -16,6 +16,10 @@ concurrency:
 
 env:
   PHP_VERSION: '8.5'
+  # See `ci.yml` for why this is here: the local-notifications plugin comes
+  # from a private Composer repository and an install without the credential
+  # fails with `402`.
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
 # Separate from `ci` on purpose.
 #

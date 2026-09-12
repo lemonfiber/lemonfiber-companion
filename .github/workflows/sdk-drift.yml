@@ -33,6 +33,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # See `ci.yml`: the local-notifications plugin is served from a private
+  # Composer repository, and an install without this fails with `402`.
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+
 jobs:
   sdk-drift:
     name: sdk-drift
