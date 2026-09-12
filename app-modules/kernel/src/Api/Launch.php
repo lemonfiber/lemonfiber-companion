@@ -97,18 +97,17 @@ final readonly class Launch
      */
     public function either(Closure $locked, Closure $unpaired, Closure $blocked, Closure $ready): object
     {
-        if ($this->locked) {
-            return $locked();
-        }
-
-        if ($this->obstacle instanceof Obstacle) {
-            return $blocked($this->obstacle);
-        }
-
-        if ($this->stack instanceof StackId) {
-            return $ready($this->stack);
-        }
-
-        return $unpaired();
+        // One `return` over four `if`s, and the order is the meaning: a locked
+        // app shows the lock whatever else is true, an obstacle outranks a
+        // stack that would otherwise be ready, and unpaired is what is left
+        // when none of the three hold. Written as a chain of early returns this
+        // reads as four independent decisions; written as one expression the
+        // precedence is on the page, which is what a reader is checking.
+        return match (true) {
+            $this->locked => $locked(),
+            $this->obstacle instanceof Obstacle => $blocked($this->obstacle),
+            $this->stack instanceof StackId => $ready($this->stack),
+            default => $unpaired(),
+        };
     }
 }
