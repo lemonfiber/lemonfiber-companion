@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Connection\Api;
+namespace Modules\Kernel\Api;
 
 use Closure;
 
