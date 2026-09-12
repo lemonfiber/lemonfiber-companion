@@ -7,12 +7,14 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Screen;
 use Modules\Design\Api\Theme;
+use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Api\PlatformScreen;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\SecureStorage;
@@ -87,6 +89,16 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             Capture::class,
             static fn(): Capture => new PlatformScreen(new Screen()),
+        );
+
+        // The same handle again, and bound for the same reason. `N4-R7` locks
+        // the app on backgrounding and `N4-R19` asks again after a period the
+        // operator sets — both of which are decisions about *when*, made in
+        // `LockRule` on the native side where they can be tested without a
+        // handset. This is only how an answer becomes a Lock.
+        $this->app->bind(
+            DeviceAuth::class,
+            static fn(): DeviceAuth => new PlatformAuth(new Screen()),
         );
     }
 

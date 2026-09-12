@@ -6,6 +6,7 @@ namespace Lemonfiber\Native;
 
 use function is_array;
 use function json_decode;
+use function json_encode;
 use function nativephp_call;
 
 /**
@@ -67,6 +68,33 @@ final readonly class Screen
     }
 
     /**
+     * Whether the device can authenticate anybody at all.
+     *
+     * False where no screen lock is configured, and false off a handset — which
+     * is the honest answer in both cases: there is nobody to ask.
+     */
+    public function canAuthenticate(): bool
+    {
+        return $this->asked(Call::CanAuthenticate, 'canAuthenticate');
+    }
+
+    /**
+     * Ask the device who this is.
+     *
+     * The reason is shown in the platform's own dialog, which is the app's last
+     * chance to say why it is asking.
+     *
+     * Answers whether the prompt was *raised*, not whether it succeeded: the
+     * dialog is the operator's to answer in their own time, and the real result
+     * arrives as an event. A caller wanting the answer waits for that; a caller
+     * wanting to know whether anything happened at all reads this.
+     */
+    public function authenticate(string $reason): bool
+    {
+        return $this->asked(Call::Authenticate, 'acknowledged', ['reason' => $reason]);
+    }
+
+    /**
      * One bridge call, reduced to the one thing every answer carries.
      *
      * `nativephp_call()` is the bridge. On a handset it is a C extension
@@ -96,8 +124,21 @@ final readonly class Screen
      */
     private function ask(Call $function): bool
     {
-        $said = json_decode((string) nativephp_call($function->value, '{}'), associative: true);
+        return $this->asked($function, 'protected');
+    }
 
-        return is_array($said) && ($said['protected'] ?? false) === true;
+    /**
+     * One bridge call, reduced to the one key its answer is about.
+     *
+     * @param array<string, string> $with
+     */
+    private function asked(Call $function, string $key, array $with = []): bool
+    {
+        $said = json_decode(
+            (string) nativephp_call($function->value, (string) json_encode($with)),
+            associative: true,
+        );
+
+        return is_array($said) && ($said[$key] ?? false) === true;
     }
 }

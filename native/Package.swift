@@ -24,12 +24,18 @@ let package = Package(
             exclude: [
                 "LemonfiberFunctions.swift",
                 "LemonfiberInit.swift",
+                "LemonfiberAuth.swift",
             ]
         ),
         .testTarget(
             name: "CaptureRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/CaptureRuleTests"
+        ),
+        .testTarget(
+            name: "LockRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/LockRuleTests"
         ),
     ]
 )

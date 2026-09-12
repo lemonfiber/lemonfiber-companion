@@ -121,35 +121,64 @@ jobs:
             import sys
             from pathlib import Path
 
-            kotlin = Path("native/android/src/test/kotlin/CaptureRuleTest.kt").read_text()
-            swift = Path("native/ios/Tests/CaptureRuleTests/CaptureRuleTests.swift").read_text()
+            # Every mirrored pair, found rather than listed: a rule added
+            # tomorrow with only one half written is exactly what this exists to
+            # catch, and a hand-kept list would not know about it.
+            pairs = [
+                (
+                    Path("native/android/src/test/kotlin") / f"{name}Test.kt",
+                    Path("native/ios/Tests") / f"{name}Tests" / f"{name}Tests.swift",
+                )
+                for name in sorted(
+                    p.stem.removesuffix("Test")
+                    for p in Path("native/android/src/test/kotlin").glob("*Test.kt")
+                )
+            ]
 
-            # Kotlin cannot put an em dash in a backticked function name, so the
-            # requirement ids read `N4-R9 - ...` there and `N4-R9 — ...` in Swift.
-            # Normalised rather than reported as a difference: a punctuation mark
-            # is not a disagreement about behaviour, and a check that cries wolf
-            # about one is a check nobody reads.
-            asked = {
-                "kotlin": {re.sub(r"^(N4-R\d+) - ", r"\1 — ", name)
-                           for name in re.findall(r"fun `([^`]+)`", kotlin)},
-                "swift": set(re.findall(r'@Test\("([^"]+)"\)', swift)),
-            }
+            missing = [str(p) for pair in pairs for p in pair if not p.exists()]
 
-            if asked["kotlin"] == asked["swift"]:
-                print(f"Both halves answer the same {len(asked['kotlin'])} questions.")
-                sys.exit(0)
+            if missing:
+                print("::error::A rule is tested on one platform and not the other.")
+                for path in missing:
+                    print(f"  no such file: {path}")
+                sys.exit(1)
 
-            print("::error::The Kotlin and Swift halves no longer ask the same questions.")
+            failed = False
 
-            for side, other in (("kotlin", "swift"), ("swift", "kotlin")):
-                missing = sorted(asked[side] - asked[other])
-                if missing:
-                    print(f"Only in {side}:")
-                    for name in missing:
-                        print(f"  {name}")
+            for kotlin_path, swift_path in pairs:
+                kotlin = kotlin_path.read_text()
+                swift = swift_path.read_text()
 
-            print()
-            print("A window protected on one platform and not the other is the bug")
-            print("nobody finds: each half looks right on its own. Add the missing")
-            print("case rather than deleting the one that has no pair.")
-            sys.exit(1)
+                # Kotlin cannot put an em dash in a backticked function name, so
+                # the requirement ids read `N4-R9 - ...` there and `N4-R9 — ...`
+                # in Swift. Normalised rather than reported as a difference: a
+                # punctuation mark is not a disagreement about behaviour, and a
+                # check that cries wolf about one is a check nobody reads.
+                asked = {
+                    "kotlin": {re.sub(r"^(N4-R\d+) - ", r"\1 — ", name)
+                               for name in re.findall(r"fun `([^`]+)`", kotlin)},
+                    "swift": set(re.findall(r'@Test\("([^"]+)"\)', swift)),
+                }
+
+                if asked["kotlin"] == asked["swift"]:
+                    print(f"{kotlin_path.stem}: both halves answer the same "
+                          f"{len(asked['kotlin'])} questions.")
+                    continue
+
+                failed = True
+                print(f"::error::{kotlin_path.stem} and {swift_path.stem} no longer "
+                      "ask the same questions.")
+
+                for side, other in (("kotlin", "swift"), ("swift", "kotlin")):
+                    only = sorted(asked[side] - asked[other])
+                    if only:
+                        print(f"Only in {side}:")
+                        for name in only:
+                            print(f"  {name}")
+
+            if failed:
+                print()
+                print("A rule kept on one platform and not the other is the bug nobody")
+                print("finds: each half looks right on its own. Add the missing case")
+                print("rather than deleting the one that has no pair.")
+                sys.exit(1)

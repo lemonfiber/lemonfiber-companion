@@ -31,4 +31,22 @@ enum Call: string
 
     /** Whether the window is protected from capture right now. */
     case IsProtected = 'Lemonfiber.IsProtected';
+
+    /**
+     * Ask the device who this is (`N4-R7`, `N4-R8`).
+     *
+     * Answers immediately and sends the real result as an event: the dialog is
+     * the operator's to answer in their own time, and a bridge call that waited
+     * would hold the thread it was called on.
+     */
+    case Authenticate = 'Lemonfiber.Authenticate';
+
+    /**
+     * Whether the device can authenticate anybody at all.
+     *
+     * A device with no screen lock is a different condition from an operator who
+     * declined — one is answered by telling them to set one, the other by asking
+     * again.
+     */
+    case CanAuthenticate = 'Lemonfiber.CanAuthenticate';
 }
