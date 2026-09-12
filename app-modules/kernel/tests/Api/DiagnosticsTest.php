@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Tests\Api;
 
 use function expect;
+use function implode;
 use function it;
 
 use Modules\Kernel\Api\Diagnostics;
@@ -12,6 +13,8 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WireVersion;
+
+use function sprintf;
 
 const A_LOFT = 'a1b2c3d4e5f60718';
 const A_SHED = 'b2c3d4e5f6071829';
@@ -68,4 +71,29 @@ it('is named the same thing every time', function (): void {
 
     expect($first)->toBe($second)
         ->and($first)->toEndWith('.txt');
+});
+
+it('reads the way the person receiving it will read it', function (): void {
+    // The whole report, pinned. Every other test here asks whether a fact is
+    // present; this one asks what the file actually looks like — which is the
+    // question that matters for a thing a human opens in a mail client.
+    //
+    // It is also what catches the blank line. A separator is invisible to
+    // `toContain` and survives being changed to anything at all, and the version
+    // without it runs the stack list straight into the sentence about what was
+    // withheld — which reads as though the last stack were the subject of it.
+    $said = Diagnostics::assemble(
+        Shape::current(),
+        WireVersion::One,
+        StackId::of(Nonce::of(A_LOFT)),
+    )->text();
+
+    expect($said)->toBe(implode("\n", [
+        'lemonfiber companion, state shape 1',
+        'api version 1',
+        'stacks configured: 1',
+        sprintf('  %s', A_LOFT),
+        '',
+        'This report holds no credential, no address and no reading from a stack.',
+    ]));
 });
