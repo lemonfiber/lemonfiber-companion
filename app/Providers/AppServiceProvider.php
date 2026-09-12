@@ -7,7 +7,9 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Modules\Design\Api\Theme;
 use Modules\Device\Api\SystemClock;
+use Modules\Device\Api\SystemEntropy;
 use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\Entropy;
 use Native\Mobile\Edge\TailwindParser;
 
 /**
@@ -33,6 +35,13 @@ final class AppServiceProvider extends ServiceProvider
         // second instance would answer identically; one object is the honest
         // description of that.
         $this->app->singleton(Clock::class, static fn(): Clock => new SystemClock());
+
+        // The other hidden input, bound the same way and with the same
+        // consequence: nothing that needs a value nobody can guess learns
+        // whether it got the platform's randomness or a counter, which is what
+        // makes a test about a retry a statement rather than a guess
+        // (A3, B2, G8).
+        $this->app->singleton(Entropy::class, static fn(): Entropy => new SystemEntropy());
     }
 
     public function boot(): void

@@ -4,6 +4,7 @@
     "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
     "require": {
+        "ext-mbstring": "*",
         "php": "^8.5"
     },
     "autoload": {

@@ -4,9 +4,10 @@
     "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
     "require": {
-        "php": "^8.5",
+        "ext-sodium": "*",
         "modules/kernel": "dev-main",
-        "nativephp/mobile": "^4.4"
+        "nativephp/mobile": "^4.4",
+        "php": "^8.5"
     },
     "autoload": {
         "psr-4": {

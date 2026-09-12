@@ -15,7 +15,8 @@
         }
     ],
     "require": {
-        "php": "^8.5",
+        "ext-mbstring": "*",
+        "ext-sodium": "*",
         "internachi/modular": "^3.0",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
@@ -31,7 +32,8 @@
         "modules/stacks": "dev-main",
         "modules/updates": "dev-main",
         "modules/vault": "dev-main",
-        "nativephp/mobile": "^4.4"
+        "nativephp/mobile": "^4.4",
+        "php": "^8.5"
     },
     "require-dev": {
         "ext-simplexml": "*",
