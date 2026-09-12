@@ -34,19 +34,11 @@ final class MustNotLeaveThisProcess extends LogicException
 {
     public static function aSession(): self
     {
-        return new self(
-            'A session may not be serialised. It is a credential, and serialising one writes it '
-            . 'in full wherever the result is kept — a cache entry, a queued payload, a session '
-            . 'file. Pass the Session itself, or take the header off it at the edge.',
-        );
+        return new self('A session may not be serialised. It is a credential, and serialising one writes it in full wherever the result is kept — a cache entry, a queued payload, a session file. Pass the Session itself, or take the header off it at the edge.');
     }
 
     public static function anAddress(): self
     {
-        return new self(
-            'A stack address may not be serialised. N1-R15 keeps it beside a credential, not '
-            . 'because it is secret but because it is where somebody lives, and anything that '
-            . 'serialises one accumulates a map of private networks.',
-        );
+        return new self('A stack address may not be serialised. N1-R15 keeps it beside a credential, not because it is secret but because it is where somebody lives, and anything that serialises one accumulates a map of private networks.');
     }
 }
