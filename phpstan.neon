@@ -403,6 +403,26 @@ parameters:
                 - tests/*
                 - app-modules/*/tests/*
 
+        # --- N4-R11 -------------------------------------------------------
+        #
+        # `Dialog::alert()` is the one call that raises an alert of the app's
+        # own: a modal the operator did not ask for, saying whatever the caller
+        # passed. N4-R11 refuses exactly that — every notification originates in
+        # the core's notification decisions, and `Notification` is the type that
+        # carries one, holding a `Code` the server declared and no prose at all.
+        #
+        # Scoped to `alert()` on purpose. `toast()` is in-app feedback on an
+        # action the operator just performed — "copied", "saved" — which is not
+        # an alert and which the requirement is not about. A rule that took the
+        # whole facade would be refusing a confirmation message under a
+        # requirement about notifications, and a rule that overreaches is a rule
+        # somebody switches off.
+        -
+            method:
+                - 'Native\Mobile\Facades\Dialog::alert()'
+            message: "N4-R11 — the app raises no alerts of its own. An alert here is a sentence this application wrote, shown to the operator as though the stack had said it. Every notification originates in the core's decisions: build a Modules\\Kernel\\Api\\Notification from the Code the server sent and let the translator supply the words (N4-R11, L1)."
+
+
     disallowedNamespaces:
         # --- A2: facades are global state wearing a class name --------------
         -

@@ -1251,6 +1251,46 @@ final readonly class Fixtures
                 }
                 PHP, 'N1-R39 —', 'ShowsSomebodysStack'),
 
+            Fixture::suite('N4-R18', 'app-modules/operator/src/Internal/Screens/ShowsASessionOpenly.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Operator\Internal\Screens;
+
+                use Illuminate\View\View;
+                use Modules\Kernel\Api\Session;
+                use Native\Mobile\Edge\NativeComponent;
+
+                final class ShowsASessionOpenly extends NativeComponent
+                {
+                    public function __construct(private Session $session) {}
+
+                    public function render(): View
+                    {
+                        return view('operator::no-stack-yet');
+                    }
+                }
+                PHP, 'N4-R18 —', 'ShowsASessionOpenly'),
+
+            Fixture::analyser('N4-R11', 'Plain/RaisesItsOwnAlert.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                use Native\Mobile\Facades\Dialog;
+
+                final class RaisesItsOwnAlert
+                {
+                    public function tell(): void
+                    {
+                        Dialog::alert('Heads up', 'Something happened on your stack.');
+                    }
+                }
+                PHP, 'N4-R11 —'),
+
             Fixture::analyser('N1-R21', 'Plain/TurnsVerificationOff.php', <<<'PHP'
                 <?php
 
