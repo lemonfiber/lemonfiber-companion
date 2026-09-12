@@ -23,6 +23,13 @@ use function sprintf;
  * right parent is the honest one anyway. Material that does not parse is a bad
  * argument, not a fault that arose while running.
  *
+ *  rather than , which is what every
+ * other refusal here extends and is not merely convention: the analyser treats a
+ *  as checked, and every Pest test body is a closure — so the
+ * runtime kind makes the refusal the one case no test can exercise. The right
+ * parent is the honest one anyway. Material that does not parse is a bad
+ * argument, not a fault that arose while running.
+ *
  * The message names {@see HowItWasRead} because the remedy differs by route. A
  * scan that produced nonsense is a camera pointed at the wrong thing; the same
  * nonsense typed is a transcription error, and telling somebody to try again
@@ -48,12 +55,37 @@ final class PairingIsNotReadable extends InvalidArgumentException
      * which is a stack that produced bad material rather than an operator who
      * read it badly.
      */
-    public static function withoutIts(string $half, HowItWasRead $how): self
+    public static function withoutIts(WhatPairingMaterialSays $half, HowItWasRead $how): self
     {
         return new self(sprintf(
             'The pairing material read by %s carried no %s.',
             $how->value,
-            $half,
+            $half->value,
+        ));
+    }
+
+    /**
+     * It carried something the format does not define (`N1-R48`).
+     *
+     * The requirement says material must not carry a credential, and the
+     * tempting enforcement is a list of names — `credential`, `token`,
+     * `password` — with anything else waved through. That list is wrong the
+     * first time somebody picks a name nobody thought of, and the failure is
+     * silent: the app pairs happily, having been handed a secret out of band by
+     * whoever produced the payload.
+     *
+     * So the format is closed instead. Three keys are defined and a fourth is
+     * refused whatever it is called, which needs no list to stay current. A
+     * stack that has something new to say says it by raising the
+     * {@see WireVersion}, and a version this app does not know is a refusal
+     * that names the real problem.
+     */
+    public static function carrying(string $key, HowItWasRead $how): self
+    {
+        return new self(sprintf(
+            'The pairing material read by %s carried "%s", which pairing material does not define.',
+            $how->value,
+            $key,
         ));
     }
 }
