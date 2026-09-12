@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function app;
 use function array_map;
 use function array_search;
 use function basename;
@@ -11,8 +12,13 @@ use function glob;
 
 use const GLOB_ONLYDIR;
 
+use Illuminate\Contracts\Translation\Translator;
+
 use function is_array;
 use function is_string;
+
+use Modules\Device\Internal\Words;
+
 use function sprintf;
 
 /**
@@ -112,6 +118,22 @@ final readonly class Catalogue
         }
 
         return $collisions;
+    }
+
+    /**
+     * The application's own catalogue reader.
+     *
+     * Here rather than in either contract test, because two test files may not
+     * declare the same helper (`G10`) and building it differently in each is
+     * how two tests end up asserting about two different catalogues.
+     *
+     * The real translator rather than a fake: what those contracts assert is
+     * that a notification and a platform dialog carry the wording this
+     * repository ships, which a fake would answer for.
+     */
+    public static function words(): Words
+    {
+        return new Words(app(Translator::class));
     }
 
     /** @return array<string, string> */

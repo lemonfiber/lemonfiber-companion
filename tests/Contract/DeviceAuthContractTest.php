@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Lock;
 use Native\Mobile\Testing\FakeBridge;
+use Tests\Support\Catalogue;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\ADeviceWithAScreenLock;
 
@@ -62,7 +63,7 @@ function everyDevice(bool $willing): array
                     ->respondTo('Lemonfiber.Authenticate', ['acknowledged' => false]);
             }
 
-            return new PlatformAuth(new Screen());
+            return new PlatformAuth(new Screen(), Catalogue::words());
         },
     ];
 }
@@ -85,12 +86,12 @@ it('says whether the device can authenticate anybody at all', function (): void 
     ADeviceWithAScreenLock::ready()->bind();
 
     expect(ADeviceThatKnowsYou::willing()->isAvailable())->toBeTrue()
-        ->and(new PlatformAuth(new Screen())->isAvailable())->toBeTrue();
+        ->and(new PlatformAuth(new Screen(), Catalogue::words())->isAvailable())->toBeTrue();
 
     ADeviceWithAScreenLock::withNoScreenLock()->bind();
 
     expect(ADeviceThatKnowsYou::withNoScreenLock()->isAvailable())->toBeFalse()
-        ->and(new PlatformAuth(new Screen())->isAvailable())->toBeFalse();
+        ->and(new PlatformAuth(new Screen(), Catalogue::words())->isAvailable())->toBeFalse();
 });
 
 it('N4-R8 — a lock can only be opened by something the device made', function (): void {
