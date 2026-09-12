@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Device\Api;
 
-use function __;
-use function is_string;
-
+use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Notification;
@@ -58,6 +56,7 @@ final readonly class PlatformNotifier implements Notifier
     public function __construct(
         private Platform $centre,
         private Permissions $permissions,
+        private Words $words,
     ) {}
 
     public function standing(): Asked
@@ -112,8 +111,8 @@ final readonly class PlatformNotifier implements Notifier
                 // Built and released in one statement: the builder sends when
                 // it is destroyed, so anything that keeps it alive stops it.
                 $this->centre->send($this->idFor($says))
-                    ->title($this->words('notifications.plain.title', ['stack' => $about->stored()]))
-                    ->body($this->words('notifications.plain.body', ['code' => $says->shown()]));
+                    ->title($this->words->for('notifications.plain.title', ['stack' => $about->stored()]))
+                    ->body($this->words->for('notifications.plain.body', ['code' => $says->shown()]));
 
                 return $says;
             },
@@ -123,31 +122,14 @@ final readonly class PlatformNotifier implements Notifier
                 // reason — it must hold on a screen anybody walking past can
                 // read.
                 $this->centre->send($this->idFor($says))
-                    ->title($this->words('notifications.guarded.title'))
-                    ->body($this->words('notifications.guarded.body'));
+                    ->title($this->words->for('notifications.guarded.title'))
+                    ->body($this->words->for('notifications.guarded.body'));
 
                 return $says;
             },
         );
 
         return Shown::delivered();
-    }
-
-    /**
-     * One line from the catalogue, narrowed to a sentence.
-     *
-     * `__()` answers `string|array` because a key may name a whole group, and
-     * the notification builder takes a string. Rather than cast — which turns a
-     * mistyped key into a PHP notice on somebody's phone — a group answers with
-     * the key itself, which is visible in the notification and unmistakable.
-     *
-     * @param array<string, string> $with
-     */
-    private function words(string $key, array $with = []): string
-    {
-        $said = __($key, $with);
-
-        return is_string($said) ? $said : $key;
     }
 
     /** One id per code, so a repeat updates the alert rather than stacking another. */

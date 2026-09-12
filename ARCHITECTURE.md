@@ -140,7 +140,7 @@ honestly is better than pretending.
 | A1 | No Eloquent, no Active Record. Persistence is a port; adapters own the storage | arch: no `Illuminate\Database` outside adapters |
 | A2 | No facades. Dependencies arrive through constructors | phpstan `disallowed-calls` |
 | A3 | No service location — `app()`, `resolve()`, `Container` | phpstan `disallowed-calls` |
-| A4 | No container-reaching helpers (`config()`, `cache()`, `auth()`, `request()`) outside adapters | phpstan `disallowed-calls` |
+| A4 | No container-reaching helpers — `config()`, `cache()`, `view()`, `__()` and the rest — outside the composition root, `config/` and tests | phpstan `disallowed-calls` |
 | A5 | `env()` only inside `config/` | arch |
 | A6 | No mutable static state | arch: reflection over every module class |
 | A7 | `Illuminate\*` forbidden in `kernel` and every `capability` | arch: module kind |
