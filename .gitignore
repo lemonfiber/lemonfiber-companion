@@ -51,3 +51,4 @@ Thumbs.db
 # What a run has written, so the next one can sweep it even if this one is
 # killed before its own `afterEach` is reached.
 .rule-fixtures.written
+.env.fixtureplanted

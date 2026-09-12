@@ -400,7 +400,7 @@ None of these is theoretical once the second locale exists.
 |---|---|---|
 | S1 | The dangerous, execution, insecure and non-timing-safe call bundles are on | phpstan `disallowed-calls`, four shipped bundles |
 | S2 | No package with a published advisory resolves | `roave/security-advisories` + `composer audit` |
-| S3 | TLS verification is never weakened | phpstan: own rule |
+| S3 | TLS verification is never weakened | phpstan: own rule (array items) + `disallowed-calls` (the call and curl forms) + test over `config/` and every `.env*` (N1-R21 — the flag may not exist) |
 
 **Q3 and Q4 are about shapes that belong to a different codebase.** Late static
 binding resolves to the class it is written in, because every class here is

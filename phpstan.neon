@@ -159,6 +159,21 @@ parameters:
     filesRootDir: %rootDir%/../../..
 
     disallowedFunctionCalls:
+        # --- N1-R21: and not by curl, which predates every other spelling ---
+        #
+        # `curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false)` is the same
+        # switch as an options array and is not one: it is a positional argument
+        # to a function, so neither S3's array-item rule nor the method rule
+        # above can see it. Refused at the function, because there is no call to
+        # `curl_setopt` this application should be making at all — B3 already
+        # says the network belongs to the SDK.
+        -
+            function:
+                - 'curl_setopt()'
+                - 'curl_setopt_array()'
+                - 'stream_context_create()'
+            message: "N1-R16 — every call to the API goes through the SDK, so this application does not open a connection of its own. It is also where certificate verification gets turned off without any other rule seeing it: CURLOPT_SSL_VERIFYPEER and an `ssl` stream context are both positional, so neither the array rule nor the method rule can read them (N1-R16, N1-R21)."
+
         # --- B1: time is an input, so it arrives through a port -------------
         -
             function:
@@ -497,6 +512,24 @@ parameters:
             message: "C5 — no `else`. Return from the condition that refuses and let the rest of the method carry on at one indent, so each guard states the one thing it rules out and the happy path reads top to bottom. Where the branches are both answers rather than a refusal and a path, that is a `match`, which is exhaustive and returns a value (C5)."
 
     disallowedMethodCalls:
+        # --- N1-R21: verification is not turned off by a call either --------
+        #
+        # S3's rule reads array items, which catches `['verify' => false]` in
+        # every spelling an options array has. It cannot see a *call*, and the
+        # framework ships one: `Http::withoutVerifying()` is a single fluent
+        # method that does exactly what the array item does, reads as
+        # deliberate, and would have passed every gate in this repository.
+        #
+        # No `allowIn`. N1-R21 says verification must not be disabled in any
+        # build under any flag, and a test directory is a build — a fake that
+        # turns verification off is a fake of something this app cannot do, and
+        # the contract test that used it would be proving the wrong thing.
+        -
+            method:
+                - 'Illuminate\Http\Client\PendingRequest::withoutVerifying()'
+                - 'Illuminate\Http\Client\Factory::withoutVerifying()'
+            message: "N1-R21 — certificate verification is not turned off, in any build, under any flag. ADR-0018 pins a stack by a fingerprint from the pairing material rather than by a public authority, so this does not relax a check: it removes the only one there is, and leaves the pin being compared by code nothing reaches. If a certificate is being refused, the fingerprint is the thing to look at (N1-R21, S3)."
+
         # --- C3: an exception that says nothing -----------------------------
         #
         # Matched on the constructor rather than on the class, so that naming

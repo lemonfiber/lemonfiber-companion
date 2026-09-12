@@ -1229,6 +1229,48 @@ final readonly class Fixtures
                 }
                 PHP, 'S1 —'),
 
+            Fixture::analyser('N1-R21', 'Plain/TurnsVerificationOff.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                use Illuminate\Http\Client\Factory;
+
+                final class TurnsVerificationOff
+                {
+                    public function __construct(private Factory $http) {}
+
+                    public function call(): void
+                    {
+                        $this->http->withoutVerifying()->get('https://example.test');
+                    }
+                }
+                PHP, 'N1-R21 —'),
+
+            Fixture::analyser('N1-R16', 'Plain/OpensItsOwnConnection.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                use CurlHandle;
+
+                final class OpensItsOwnConnection
+                {
+                    public function byCurl(CurlHandle $handle): void
+                    {
+                        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, named: false);
+                    }
+                }
+                PHP, 'N1-R16 —'),
+
+            Fixture::suite('N1-R21', '.env.fixtureplanted', <<<'ENV'
+                LEMONFIBER_VERIFY_TLS=true
+                ENV, 'N1-R21 —', 'lemonfiber_verify_tls'),
+
             Fixture::analyser('S3', 'Plain/WeakensTls.php', <<<'PHP'
                 <?php
 
