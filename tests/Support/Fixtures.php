@@ -750,6 +750,25 @@ final readonly class Fixtures
                 });
                 PHP, 'G3 —'),
 
+            // Planted under `tests/Support`, which `Tree::testFiles()` reads and no
+            // testsuite loads. That is the whole trick and it is not incidental: a
+            // real G10 violation is a fatal at load, so a fixture phpunit would
+            // load could not be planted at all — the run would die before any
+            // rule could report on it, taking every other fixture in the pass with
+            // it. The rule reads text for the same reason.
+            Fixture::suite('G10', 'tests/Support/Fixtures/SecondTestSourcesTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                // `testSources` is already declared, globally, in
+                // tests/Arch/TestConventionsTest.php.
+                function testSources(): array
+                {
+                    return [];
+                }
+                PHP, 'G10 —'),
+
             Fixture::suite('G5', 'app-modules/health/tests/Fixtures/AssertsTest.php', <<<'PHP'
                 <?php
 
