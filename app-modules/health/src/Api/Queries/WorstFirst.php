@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Health\Api\Queries;
 
-use Modules\Health\Api\Finding;
-use Modules\Health\Api\Findings;
+use Modules\Kernel\Api\Finding;
+use Modules\Kernel\Api\Findings;
 
 use function usort;
 

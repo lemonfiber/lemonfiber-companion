@@ -9,12 +9,12 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
-use Modules\Health\Api\Category;
-use Modules\Health\Api\Check;
-use Modules\Health\Api\Conclusion;
-use Modules\Health\Api\Finding;
-use Modules\Health\Api\Findings;
 use Modules\Health\Api\Queries\WorstFirst;
+use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\Finding;
+use Modules\Kernel\Api\Findings;
 
 function row(string $check, Conclusion $conclusion): Finding
 {

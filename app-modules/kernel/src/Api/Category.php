@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Health\Api;
+namespace Modules\Kernel\Api;
 
 /**
  * The family a check belongs to, so a run can be narrowed to one of them.

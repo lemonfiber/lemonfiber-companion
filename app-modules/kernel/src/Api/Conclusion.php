@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Health\Api;
+namespace Modules\Kernel\Api;
 
 use function array_find;
 

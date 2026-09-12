@@ -71,6 +71,41 @@ therefore stops being a rule a reviewer enforces and becomes a fact the
 dependency resolver enforces: a surface module that types `Lemonfiber\Sdk` fails
 `composer-dependency-analyser` because its own manifest does not require it.
 
+### How a capability gets data from a stack
+
+The table above says an adapter may use `kernel` and the one package it adapts,
+and **never a capability**. That rule and the question "how does `health` get a
+report from the server?" look like they contradict each other, and the answer is
+the thing worth writing down, because the first attempt at it went the wrong way
+and had to be undone.
+
+```
+surface ──calls──▶ capability ──asks──▶ port (Modules\Kernel\Api)
+                                          ▲
+                                          │ bound once, in app/
+                                          │
+                                       adapter (modules/sdk, modules/device, …)
+```
+
+**Everything that crosses an adapter boundary is a kernel type.** That is what
+makes the rule workable rather than a wall: `modules/sdk` reads the wire and
+answers in the shared language, and a capability reads that language without
+ever knowing where it came from. It is why `Problem`, `Report`, `Findings`,
+`Conclusion` and `Category` live in `kernel` and not in `health` — they are the
+shapes the whole application speaks, and the module that owns a shape is
+whichever module everyone else has to agree with.
+
+**A capability owns decisions, not shapes.** `health` is `WorstFirst` and
+`InCategory` — the order a screen reads findings in, and how to narrow them to
+one family. Those are judgements about a report and they belong to the module
+named after it. The report itself belongs to the language.
+
+The test for which one something is: *would an adapter have to name it?* If yes
+it is a shape and it goes in the kernel; if no it is a decision and it goes in
+the capability. `Findings` moved for exactly that reason — `modules/sdk` has to
+produce one, and an adapter that named `Modules\Health` would have every adapter
+free to name every capability.
+
 ### Published surface (E2)
 
 A module exposes `Modules\<Name>\Api` and nothing else. Everything under
@@ -80,12 +115,10 @@ rule.
 ```
 app-modules/health/src/
   Api/            ← other modules may name these
-    Health.php            the port's consumer-facing entry
-    Verdict.php
-    Findings.php
+    Queries/WorstFirst.php    the order a screen reads a report in
+    Queries/InCategory.php    one family of checks, and nothing else
   Internal/       ← nothing outside this module may name these
     FindingRanker.php
-    VerdictPolicy.php
 ```
 
 The benefit is refactoring: anything in `Internal` can be renamed, split or

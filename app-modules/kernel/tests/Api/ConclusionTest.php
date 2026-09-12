@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Health\Tests\Api;
+namespace Modules\Kernel\Tests\Api;
 
 use function array_filter;
 use function array_map;
@@ -10,7 +10,7 @@ use function array_slice;
 use function expect;
 use function it;
 
-use Modules\Health\Api\Conclusion;
+use Modules\Kernel\Api\Conclusion;
 
 use function sprintf;
 

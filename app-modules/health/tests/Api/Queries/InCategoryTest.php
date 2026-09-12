@@ -9,13 +9,13 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
-use Modules\Health\Api\Category;
-use Modules\Health\Api\Check;
-use Modules\Health\Api\Conclusion;
-use Modules\Health\Api\Finding;
-use Modules\Health\Api\Findings;
 use Modules\Health\Api\Queries\InCategory;
 use Modules\Health\Api\Queries\WorstFirst;
+use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\Finding;
+use Modules\Kernel\Api\Findings;
 
 // Named apart from WorstFirstTest's `row` and `checksIn`: a module's test files
 // share one namespace, so a second `row` here is a fatal at load rather than a

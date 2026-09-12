@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Modules\Health\Tests\Api;
+namespace Modules\Kernel\Tests\Api;
 
 use function expect;
 use function it;
 
-use Modules\Health\Api\Category;
-use Modules\Health\Api\Check;
-use Modules\Health\Api\Conclusion;
-use Modules\Health\Api\Finding;
-use Modules\Health\Api\FindingHasNoTitle;
+use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\Finding;
+use Modules\Kernel\Api\FindingHasNoTitle;
 
 function aFinding(string $title = 'Torrent traffic leaves through the tunnel'): Finding
 {
