@@ -19,23 +19,33 @@ use Modules\Kernel\Api\Standing;
  * the operator who is shown "cannot connect" for all three is told to check the
  * machine when their phone is in flight mode.
  *
+ * `N4-R17` adds the fourth and says why it is not one of those: where the
+ * platform asks permission before an app may reach the local network, a refusal
+ * is "a distinct condition from an unreachable stack", and the app must offer
+ * the way to grant it. It looks exactly like a stack that is off — the request
+ * does not leave the device and nothing comes back — and it is the one of the
+ * four where the machine is fine, the network is fine, and the fix is two taps
+ * away in a settings app.
+ *
  * A closed set rather than a message, because the difference has to survive
  * every layer between the socket and the screen. A sentence can be reworded by
- * accident; a case cannot, and a `match` over it stops compiling when a fourth
- * appears.
+ * accident; a case cannot, and a `match` over it stops compiling the moment
+ * another is added.
  *
  * **Where each one happened** is what separates them, and it is worth naming
  * because it is what makes each remedy different. `DeviceHasNoNetwork` is
- * decided without leaving the device. `StackDidNotAnswer` means the device had
- * somewhere to send the request and nothing came back. `CredentialWasRefused`
- * means the stack answered — it is reachable, it is the right machine, and it
- * said no. Only the third one tells us the connection works.
+ * decided without leaving the device. `LocalNetworkIsNotPermitted` is decided
+ * without leaving it either, but by the platform rather than by the radio.
+ * `StackDidNotAnswer` means the device had somewhere to send the request and
+ * nothing came back. `CredentialWasRefused` means the stack answered — it is
+ * reachable, it is the right machine, and it said no. Only the last one tells
+ * us the connection works.
  *
- * **The app is locked is not here.** `N1-R37` lists it beside these three, and
+ * **The app is locked is still not here.** `N1-R37` lists it beside these, and
  * it belongs to the lock `N4` defines rather than to a reach: nothing was
- * attempted, so nothing stood in the way. Putting it here would make a fourth
- * case that every `match` has to answer for in a module that cannot see the
- * lock.
+ * attempted, so nothing stood in the way. A refused permission is the opposite
+ * — an attempt that the platform stopped — which is why one of them is a case
+ * here and the other is not.
  *
  * **No sentence here either.** What the operator reads is text, so it comes
  * from the translator against a key (L1); a sentence written in this file would
@@ -55,6 +65,15 @@ enum Obstacle: string
     case DeviceHasNoNetwork = 'no_network';
 
     /**
+     * The platform will not let this app onto the local network.
+     *
+     * Nothing was sent, and the stack is very probably fine. `N4-R17` requires
+     * this to be told apart from a stack that is off precisely because the two
+     * are indistinguishable from inside the request: both are silence.
+     */
+    case LocalNetworkIsNotPermitted = 'local_network_refused';
+
+    /**
      * The request went out and nothing came back.
      *
      * The machine is off, asleep, on another network, or mid-update. Normal
@@ -65,8 +84,8 @@ enum Obstacle: string
     /**
      * The stack answered, and refused the credential.
      *
-     * The connection works. Pairing is what does not, which is why this is the
-     * one case the app can offer to fix itself.
+     * The connection works. Pairing is what does not, which is why this is one
+     * of the two the app can offer to fix rather than explain.
      */
     case CredentialWasRefused = 'credential_refused';
 
@@ -84,6 +103,7 @@ enum Obstacle: string
     {
         return Code::of(match ($this) {
             self::DeviceHasNoNetwork => 'COMPANION-NO-NETWORK',
+            self::LocalNetworkIsNotPermitted => 'COMPANION-LOCAL-NETWORK-REFUSED',
             self::StackDidNotAnswer => 'COMPANION-NO-ANSWER',
             self::CredentialWasRefused => 'COMPANION-CREDENTIAL-REFUSED',
         });
@@ -100,7 +120,9 @@ enum Obstacle: string
     {
         return match ($this) {
             self::DeviceHasNoNetwork => Severity::Warning,
-            self::StackDidNotAnswer, self::CredentialWasRefused => Severity::Error,
+            self::LocalNetworkIsNotPermitted,
+            self::StackDidNotAnswer,
+            self::CredentialWasRefused => Severity::Error,
         };
     }
 
@@ -118,7 +140,7 @@ enum Obstacle: string
     {
         return match ($this) {
             self::DeviceHasNoNetwork, self::StackDidNotAnswer => Standing::Guided,
-            self::CredentialWasRefused => Standing::Actionable,
+            self::LocalNetworkIsNotPermitted, self::CredentialWasRefused => Standing::Actionable,
         };
     }
 }
