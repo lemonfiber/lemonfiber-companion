@@ -1,0 +1,155 @@
+# The native expansion's own gates — Kotlin and Swift, held to the bar the PHP is.
+#
+# Separate from `ci` for one reason, and it is the reason the whole file exists:
+# these jobs cost minutes that a change touching no native source has no business
+# spending. The Swift half needs a macOS runner, which bills at ten times an
+# ubuntu one, so a `paths:` filter is not tidiness here — it is the difference
+# between a formatting fix on a Blade template costing nothing and costing a
+# macOS minute.
+#
+# The filter is on the workflow rather than on each job. A job skipped by an `if:`
+# still reports a conclusion and still queues a runner; a workflow filtered by
+# `paths:` is never started. The cost of the second is zero.
+#
+# What is *not* here is as deliberate. There is no build of the plugin, because
+# there is nothing to build: what ships is a directory of sources the NativePHP
+# builder copies into a host app. What can be checked without a device is the
+# decision those sources make — `CaptureRule`, in both languages, with the same
+# six cases each — and that is what these run.
+name: native
+
+on:
+  pull_request:
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'native/**'
+      - '.github/workflows/native.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  kotlin:
+    name: kotlin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          gradle-version: '8.14'
+
+      # In the order a person would want to read them. A formatting finding is
+      # cheaper to read than an analyser finding, which is cheaper than a test
+      # failure — and each is often the reason for the next.
+      #
+      # `ktlintCheck` is pint, `detekt` is PHPStan, `test` is pest and
+      # `koverVerify` is the 100% floor. The Kotlin compiler runs under all of
+      # them with `allWarningsAsErrors` and `explicitApi()` on, which is the
+      # nearest thing it has to `declare(strict_types=1)`.
+      - name: ktlint, detekt, the decision, and the floor
+        working-directory: native/android
+        run: gradle ktlintCheck detekt test koverVerify --console=plain
+
+  swift:
+    name: swift
+    # The one macOS runner in this repository, and the reason the `paths:` filter
+    # above is written the way it is.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: swift-format
+        working-directory: native
+        run: swift format lint --strict --recursive --configuration .swift-format resources/ios ios
+
+      # The compiler's own findings, made blocking. The counterpart of Kotlin's
+      # `allWarningsAsErrors`, passed here rather than set in `Package.swift`
+      # because `unsafeFlags` there would make this package unusable as anybody
+      # else's dependency.
+      - name: build, with warnings blocking
+        working-directory: native
+        run: swift build -Xswiftc -warnings-as-errors
+
+      # Runs the tests and holds the 100% floor in one step, so a suite that
+      # passes while covering less cannot be read as green.
+      - name: the decision, in Swift, and the floor
+        working-directory: native
+        run: ./ios/coverage.sh
+
+  # The two halves must decide the same thing. Each is tested against the same six
+  # cases in its own language, and this is what notices if one file grows a
+  # seventh and the other does not — which is how two platforms come to disagree
+  # about when a window is protected without either looking wrong on its own.
+  agreement:
+    name: both halves answer the same questions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: compare the two test files, case for case
+        shell: python3 {0}
+        run: |
+            """Both halves must ask the same questions.
+
+            Written in Python rather than in `sed`, because the patterns that
+            pull a test name out of each file are full of regex anchors and
+            backticks — and in a shell they are three layers of quoting deep,
+            which is how a comparison ends up silently matching nothing and
+            reporting agreement.
+            """
+            import re
+            import sys
+            from pathlib import Path
+
+            kotlin = Path("native/android/src/test/kotlin/CaptureRuleTest.kt").read_text()
+            swift = Path("native/ios/Tests/CaptureRuleTests/CaptureRuleTests.swift").read_text()
+
+            # Kotlin cannot put an em dash in a backticked function name, so the
+            # requirement ids read `N4-R9 - ...` there and `N4-R9 — ...` in Swift.
+            # Normalised rather than reported as a difference: a punctuation mark
+            # is not a disagreement about behaviour, and a check that cries wolf
+            # about one is a check nobody reads.
+            asked = {
+                "kotlin": {re.sub(r"^(N4-R\d+) - ", r"\1 — ", name)
+                           for name in re.findall(r"fun `([^`]+)`", kotlin)},
+                "swift": set(re.findall(r'@Test\("([^"]+)"\)', swift)),
+            }
+
+            if asked["kotlin"] == asked["swift"]:
+                print(f"Both halves answer the same {len(asked['kotlin'])} questions.")
+                sys.exit(0)
+
+            print("::error::The Kotlin and Swift halves no longer ask the same questions.")
+
+            for side, other in (("kotlin", "swift"), ("swift", "kotlin")):
+                missing = sorted(asked[side] - asked[other])
+                if missing:
+                    print(f"Only in {side}:")
+                    for name in missing:
+                        print(f"  {name}")
+
+            print()
+            print("A window protected on one platform and not the other is the bug")
+            print("nobody finds: each half looks right on its own. Add the missing")
+            print("case rather than deleting the one that has no pair.")
+            sys.exit(1)

@@ -1,0 +1,19 @@
+# Build output from the two test harnesses. Neither is shipped: what the
+# NativePHP builder copies into a host app is `resources/`, and everything else
+# here exists only so the decisions in those sources can be run.
+#
+# Unanchored on purpose. SwiftPM puts `.build` beside whichever directory it was
+# invoked from, and Gradle does the same with `build` and `.gradle`, so a rule
+# anchored at this directory misses the copy somebody's editor makes one level
+# down — and a stray `.build` is 200MB of object files in a diff.
+.build/
+build/
+.gradle/
+.swiftpm/
+
+# Composer's own output for this package. The plugin is consumed as a path
+# repository from the repository root, so its dependencies are installed once at
+# the root — a `vendor/` here is a stray from running composer inside this
+# directory, and it is 20MB of somebody else's code in a diff.
+/vendor/
+/composer.lock
