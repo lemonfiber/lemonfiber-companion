@@ -34,6 +34,15 @@
             <directory>app-modules/*/tests</directory>
         </testsuite>
 
+        <!-- The native expansion's own PHP. A path package rather than a
+             module, so the `app-modules/*/tests` pattern above does not reach
+             it — and a package written here is not a package held to a lower
+             bar. Its Kotlin and Swift are gated by their own jobs, which run
+             only when those files change. -->
+        <testsuite name="Native">
+            <directory>native/tests</directory>
+        </testsuite>
+
         <!-- The composition root. -->
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
@@ -61,6 +70,14 @@
         <include>
             <directory>app</directory>
             <directory>app-modules/*/src</directory>
+            <!--
+                The plugin's own PHP. It is a path package rather than a module,
+                so neither pattern above reaches it — and being a package is not
+                a reason to be held to a lower bar than the code that calls it.
+                Its Kotlin and Swift are gated separately, by the jobs that only
+                run when those files change.
+            -->
+            <directory>native/src</directory>
         </include>
     </source>
 

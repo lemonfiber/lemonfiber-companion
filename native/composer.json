@@ -1,0 +1,26 @@
+{
+    "name": "lemonfiber/native",
+    "description": "The native capabilities lemonfiber uses",
+    "type": "nativephp-plugin",
+    "license": "proprietary",
+    "version": "0.1.0",
+    "require": {
+        "php": "^8.5",
+        "nativephp/mobile": "^4.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Lemonfiber\\Native\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Lemonfiber\\Native\\NativeServiceProvider"
+            ]
+        },
+        "nativephp": {
+            "manifest": "nativephp.json"
+        }
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "namespace": "Lemonfiber",
+
+    "bridge_functions": [
+        {
+            "name": "Lemonfiber.Conceal",
+            "android": "app.lemonfiber.native.LemonfiberFunctions.Conceal",
+            "ios": "LemonfiberFunctions.Conceal",
+            "description": "Protect the window from capture while a screen holding a credential, a session token or pairing material is up (N4-R18)"
+        },
+        {
+            "name": "Lemonfiber.Reveal",
+            "android": "app.lemonfiber.native.LemonfiberFunctions.Reveal",
+            "ios": "LemonfiberFunctions.Reveal",
+            "description": "Stop protecting for that screen. Backgrounding still protects (N4-R9)"
+        },
+        {
+            "name": "Lemonfiber.IsProtected",
+            "android": "app.lemonfiber.native.LemonfiberFunctions.IsProtected",
+            "ios": "LemonfiberFunctions.IsProtected",
+            "description": "Whether the window is protected from capture right now"
+        }
+    ],
+
+    "android": {
+        "min_version": 26
+    },
+
+    "ios": {
+        "min_version": "15.0",
+        "init_function": "LemonfiberInit.install"
+    }
+}

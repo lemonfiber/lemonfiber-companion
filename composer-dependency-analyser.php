@@ -111,6 +111,12 @@ return (new Configuration())
     // this file.
     ->addPathsToScan((array) glob(__DIR__ . '/app-modules/*/src'), isDev: false)
     ->addPathsToScan((array) glob(__DIR__ . '/app-modules/*/tests'), isDev: true)
+    // The native expansion's PHP, held to the same rules as everything else. A
+    // package written inside this repository is not a package exempt from them,
+    // and without these two lines the plugin's `src` is the one production path
+    // nothing here reads.
+    ->addPathToScan(__DIR__ . '/native/src', isDev: false)
+    ->addPathToScan(__DIR__ . '/native/tests', isDev: true)
     ->addPathToScan(__DIR__ . '/config', isDev: false)
     ->addPathToScan(__DIR__ . '/routes', isDev: false)
     ->addPathToScan(__DIR__ . '/tests', isDev: true)
@@ -169,6 +175,18 @@ return (new Configuration())
     // satisfy this check instead would make it the application's dependency and
     // put it one edit from being anybody's.
     ->ignoreErrorsOnPackage('lemonfiber/sdk-php', [ErrorType::SHADOW_DEPENDENCY])
+    // `nativephp_call()` is `nativephp/mobile`'s, and no static analysis can
+    // know that. It is not autoloaded: the package's service provider
+    // `require_once`s `jump_bridge_functions.php` during boot, and on a handset
+    // the function comes from a C extension instead — so it appears in no
+    // `autoload.files` entry and in no class map, and the analyser reports it as
+    // a symbol it cannot check.
+    //
+    // Scoped to `native/src`, which is the only place in this repository that
+    // may call the bridge at all — everything else reaches it through
+    // `Modules\Kernel\Api\Capture`. A blanket ignore would also cover a future
+    // undeclared function somewhere it has no business being.
+    ->ignoreErrorsOnPath(__DIR__ . '/native/src', [ErrorType::UNKNOWN_FUNCTION])
     // Resolved through the container rather than named, so the analyser cannot
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])
