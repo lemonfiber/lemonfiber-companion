@@ -11,14 +11,14 @@ use function sprintf;
 /**
  * A refusal arrived without the sentence the operator reads.
  *
- * Raised where the wire becomes a `Refusal`, and it carries the code because
+ * Raised where the wire becomes a `Problem`, and it carries the code because
  * that is the one field still worth having: it is what somebody searches for,
  * and a report saying only "a refusal was empty" cannot be followed up.
  *
  * Thrown rather than returned for the same reason `CodeIsBlank` is — this is a
  * value that cannot be constructed, not a refusal crossing a boundary (C1, C3).
  */
-final class RefusalSaysNothing extends InvalidArgumentException
+final class ProblemSaysNothing extends InvalidArgumentException
 {
     public static function about(Code $code): self
     {
