@@ -89,8 +89,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
-            "Lemonfiber\\Native\\": "native/src/"
+            "App\\": "app/"
         }
     },
     "autoload-dev": {
