@@ -41,6 +41,33 @@ function testSources(): array
     return $found;
 }
 
+/**
+ * Every top-level function a test file declares, and the namespace it lands in.
+ *
+ * Read out of the text rather than from `get_defined_functions()`, because the
+ * failure this looks for happens *while* the suite loads: the second
+ * declaration is a fatal, so by the time anything could ask PHP what exists,
+ * the run is over and the message is about the wrong file.
+ *
+ * @return array<string, list<string>> "namespace\name" => the files declaring it
+ */
+function helpersByName(): array
+{
+    $found = [];
+
+    foreach (testSources() as $path => $source) {
+        $namespace = preg_match('/^namespace\s+([^;]+);/m', $source, $matched) === 1 ? $matched[1] : '';
+
+        preg_match_all('/^function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/m', $source, $names);
+
+        foreach ($names[1] as $name) {
+            $found[sprintf('%s\\%s', $namespace, $name)][] = $path;
+        }
+    }
+
+    return $found;
+}
+
 it('G5 — a test asserts one way', function (): void {
     $offenders = [];
 
@@ -164,5 +191,30 @@ it('H7 — a test is named for the behaviour it pins', function (): void {
         . "application promises. And a grab-bag file name is how a test file acquires\n"
         . 'everything, for the same reason H1 refuses Manager (H7, H1).',
         implode("\n  ", $offenders),
+    ));
+});
+
+it('G10 — no two test files share a helper name', function (): void {
+    $clashes = [];
+
+    foreach (helpersByName() as $name => $files) {
+        if (count($files) > 1) {
+            sort($files);
+            $clashes[] = sprintf('%s is declared in %s', $name, implode(' and ', $files));
+        }
+    }
+
+    sort($clashes);
+
+    expect($clashes)->toBe([], sprintf(
+        "These declare the same helper twice:\n  %s\n\n"
+        . 'A module\'s test files share one namespace, and the root suites share the '
+        . 'global one, so two files declaring `fold` are a fatal the moment both load. '
+        . 'It cannot ship — but PHP reports the second declaration rather than the '
+        . 'clash, so the message names a file that is fine and says nothing about the '
+        . "one it collided with.\nName the helper for its subject — `foldReading`, "
+        . '`foldReach` — or move it to `tests/Support` where it can be shared on '
+        . 'purpose (G10).',
+        implode("\n  ", $clashes),
     ));
 });
