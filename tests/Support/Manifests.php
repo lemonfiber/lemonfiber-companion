@@ -27,35 +27,6 @@ use function trim;
 final readonly class Manifests
 {
     /**
-     * Packages whose purpose is sending something to somebody other than the
-     * operator.
-     *
-     * Named rather than matched on a word, because the word does not separate
-     * them from the things this rule permits: `laravel/telescope` and
-     * `laravel/pail` both look like observability and both stay on the device,
-     * and a pattern built around "log" or "monitor" would refuse the tools that
-     * make a fault legible while missing a reporter named for a colour.
-     *
-     * Adding a line here is how a new reporter gets refused, and the list being
-     * written out is what makes that a deliberate act rather than a regex
-     * somebody tunes until their package passes.
-     */
-    public const array REPORTS_TO_A_THIRD_PARTY = [
-        'sentry/sentry', 'sentry/sentry-laravel',
-        'bugsnag/bugsnag', 'bugsnag/bugsnag-laravel',
-        'facade/ignition', 'spatie/laravel-flare', 'spatie/flare-client-php',
-        'honeybadger-io/honeybadger-laravel',
-        'rollbar/rollbar-laravel',
-        'elastic/apm-agent-php',
-        'datadog/dd-trace',
-        'newrelic/monolog-enricher',
-        'segment/analytics-php',
-        'mixpanel/mixpanel-php',
-        'google/analytics-data',
-        'microsoft/application-insights',
-    ];
-
-    /**
      * Which of the named packages are required, and by which manifest.
      *
      * @param list<string> $refused
@@ -69,7 +40,7 @@ final readonly class Manifests
      * what this can do honestly is recognise the handful of markers that mean
      * "placeholder" to everybody who has ever left one.
      */
-    public const array READS_LIKE_A_PLACEHOLDER = [
+    private const array READS_LIKE_A_PLACEHOLDER = [
         'todo',
         'tbd',
         'fixme',
@@ -80,6 +51,34 @@ final readonly class Manifests
         'your app',
         'description here',
         'example.com',
+    ];
+    /**
+     * Packages whose purpose is sending something to somebody other than the
+     * operator.
+     *
+     * Named rather than matched on a word, because the word does not separate
+     * them from the things this rule permits: `laravel/telescope` and
+     * `laravel/pail` both look like observability and both stay on the device,
+     * and a pattern built around "log" or "monitor" would refuse the tools that
+     * make a fault legible while missing a reporter named for a colour.
+     *
+     * Adding a line here is how a new reporter gets refused, and the list being
+     * written out is what makes that a deliberate act rather than a regex
+     * somebody tunes until their package passes.
+     */
+    private const array REPORTS_TO_A_THIRD_PARTY = [
+        'sentry/sentry', 'sentry/sentry-laravel',
+        'bugsnag/bugsnag', 'bugsnag/bugsnag-laravel',
+        'facade/ignition', 'spatie/laravel-flare', 'spatie/flare-client-php',
+        'honeybadger-io/honeybadger-laravel',
+        'rollbar/rollbar-laravel',
+        'elastic/apm-agent-php',
+        'datadog/dd-trace',
+        'newrelic/monolog-enricher',
+        'segment/analytics-php',
+        'mixpanel/mixpanel-php',
+        'google/analytics-data',
+        'microsoft/application-insights',
     ];
 
     /**
@@ -121,12 +120,31 @@ final readonly class Manifests
     }
 
     /**
+     * Which installed packages report to a third party, and where from.
+     *
+     * The question, asked of the list rather than answered with it. It read
+     * `Manifests::requiring(Manifests::REPORTS_TO_A_THIRD_PARTY)` — a caller
+     * handing a class its own data back — which makes the *list* the interface
+     * instead of the question. Then every caller can pass a different list, and
+     * the rule becomes whatever the last caller thought it was.
+     *
+     * {@see Settings::namingVerification()} had it right already: the data is
+     * private, and what is public is the one thing anybody needs to know.
+     *
+     * @return list<string> `package — manifest`, one per hit
+     */
+    public static function reportingToAThirdParty(): array
+    {
+        return self::requiring(self::REPORTS_TO_A_THIRD_PARTY);
+    }
+
+    /**
      * Which of the named packages are required, and by which manifest.
      *
      * @param list<string> $refused
      * @return list<string> `package — manifest`, one per hit
      */
-    public static function requiring(array $refused): array
+    private static function requiring(array $refused): array
     {
         $found = [];
 

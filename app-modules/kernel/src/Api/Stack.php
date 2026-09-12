@@ -71,6 +71,29 @@ final readonly class Stack
         return $this->presents;
     }
 
+    /**
+     * Whether the machine that just answered is this one (`N1-R19`, `N1-R20`).
+     *
+     * The pinned fingerprint came from pairing material somebody carried across
+     * a gap (`ADR-0018`), and this is where it earns its keep: **every**
+     * subsequent connection is checked against it, whether or not the platform's
+     * trust store would accept the certificate. A certificate the platform likes
+     * is not evidence that this is the machine the operator paired with — a
+     * publicly trusted certificate for somebody else's host is a thing anybody
+     * can obtain.
+     *
+     * Lives on `Stack` rather than beside the transport because `N1-R22` pins to
+     * the stack rather than to an address: reaching the same machine by another
+     * route must not re-open the question of its identity, and a check that
+     * hung off the address would do exactly that.
+     */
+    public function recognises(Fingerprint $presented): Recognised
+    {
+        return $this->presents->is($presented)
+            ? Recognised::asThePairedStack()
+            : Recognised::asAStranger();
+    }
+
     public function is(self $other): bool
     {
         return $this->id->is($other->id);
