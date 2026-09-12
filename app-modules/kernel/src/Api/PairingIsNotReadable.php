@@ -23,13 +23,6 @@ use function sprintf;
  * right parent is the honest one anyway. Material that does not parse is a bad
  * argument, not a fault that arose while running.
  *
- *  rather than , which is what every
- * other refusal here extends and is not merely convention: the analyser treats a
- *  as checked, and every Pest test body is a closure — so the
- * runtime kind makes the refusal the one case no test can exercise. The right
- * parent is the honest one anyway. Material that does not parse is a bad
- * argument, not a fault that arose while running.
- *
  * The message names {@see HowItWasRead} because the remedy differs by route. A
  * scan that produced nonsense is a camera pointed at the wrong thing; the same
  * nonsense typed is a transcription error, and telling somebody to try again
