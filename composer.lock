@@ -3547,7 +3547,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/operator",
-                "reference": "e571da43751cad90e0a5ef19e4a03b240f844223"
+                "reference": "34a41b9f30a12bb083fcc17ca8c941cb31cd5a1c"
             },
             "require": {
                 "modules/backups": "dev-main",
@@ -3562,6 +3562,11 @@
             },
             "type": "library",
             "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Operator\\Providers\\OperatorServiceProvider"
+                    ]
+                },
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,
@@ -3591,7 +3596,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/sdk",
-                "reference": "04e393ff1892a2d01740c936b0fbf01de552dbf0"
+                "reference": "bddd4b6cc5056986a6d4bfea1e5c7e883c047297"
             },
             "require": {
                 "lemonfiber/sdk-php": "dev-main",
@@ -3603,7 +3608,7 @@
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,
-                        "mutation": 0
+                        "mutation": 100
                     },
                     "kind": "adapter"
                 }

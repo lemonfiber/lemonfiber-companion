@@ -15,6 +15,8 @@ return [
     'pairing_refused' => 'Die koppelingslink is geweigerd. Vraag een nieuwe aan op de stack.',
     'fingerprint_changed' => 'Het certificaat van deze stack is gewijzigd. Koppel opnieuw vanaf de stack zelf voordat je verdergaat.',
     'fingerprint_changed_action' => 'Controleer of dit jouw machine is en koppel daarna opnieuw vanaf het scherm.',
+    'setup_is_at_the_machine' => 'Een stack instellen gebeurt op de machine zelf, waar die je schijven en je netwerk kan zien.',
+    'pair' => 'Scan een koppelingscode',
     'no_stacks' => 'Er is nog geen stack gekoppeld.',
     'no_stacks_action' => 'Scan de koppelingscode die op je stack staat.',
 ];
