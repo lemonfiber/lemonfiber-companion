@@ -25,23 +25,32 @@ final class ANotificationCentre extends Platform
     /** @var list<ASentNotification> */
     private array $sent = [];
 
-    private function __construct(private readonly bool $permitted) {}
+    private function __construct(private readonly ?APermissionAnswer $answer) {}
 
-    /** A handset whose operator has allowed notifications. */
-    public static function allowing(): self
+    /**
+     * A handset, with the permission answer the prompt would change.
+     *
+     * The centre no longer decides whether notifications are permitted — it
+     * only raises the prompt, and what the operator has said lives in
+     * {@see APermissionAnswer}. That split is the adapter's, and a stand-in
+     * that kept both in one place would let an adapter that conflated them pass.
+     */
+    public static function on(APermissionAnswer $answer): self
     {
-        return new self(permitted: true);
+        return new self($answer);
     }
 
-    /** A handset whose operator has not. */
-    public static function refusing(): self
+    /** A handset where nothing watches whether the prompt was raised. */
+    public static function indifferent(): self
     {
-        return new self(permitted: false);
+        return new self(null);
     }
 
     public function requestPermission(): mixed
     {
-        return $this->permitted;
+        $this->answer?->prompted();
+
+        return null;
     }
 
     public function send(string $id): ASentNotification

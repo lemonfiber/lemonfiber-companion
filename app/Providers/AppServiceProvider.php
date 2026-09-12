@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Vault\Api\PlatformKeychain;
 use Native\Mobile\Edge\TailwindParser;
+use Native\Mobile\PushNotifications;
 use Native\Mobile\SecureStorage as PlatformStore;
 use NativePHP\LocalNotifications\LocalNotifications;
 
@@ -72,7 +73,7 @@ final class AppServiceProvider extends ServiceProvider
         // notification is composed and shown on the device and never leaves it.
         $this->app->bind(
             Notifier::class,
-            static fn(): Notifier => new PlatformNotifier(new LocalNotifications()),
+            static fn(): Notifier => new PlatformNotifier(new LocalNotifications(), new PushNotifications()),
         );
 
         // Bound for the same reason: a window is outside this process, and an

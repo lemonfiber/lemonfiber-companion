@@ -52,3 +52,15 @@ Thumbs.db
 # killed before its own `afterEach` is reached.
 .rule-fixtures.written
 .env.fixtureplanted
+
+# Build output from the native expansion's two test harnesses.
+#
+# Also declared in `native/.gitignore`, and deliberately in both. That file only
+# exists on a branch that has `native/`, so on any other branch the directory is
+# untracked leftover from the last build — which is exactly when a wide `git add`
+# sweeps 20MB of object files into a commit. This is the copy that is always
+# present.
+native/.build/
+native/.swiftpm/
+native/android/build/
+native/android/.gradle/

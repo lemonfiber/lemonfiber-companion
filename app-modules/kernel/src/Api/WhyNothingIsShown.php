@@ -22,9 +22,15 @@ enum WhyNothingIsShown
     /**
      * The operator has not allowed notifications, or has withdrawn that.
      *
-     * `N4-R13` is the rule underneath: permission is asked for at the moment it
-     * is needed and the refusal is respected. A notification withheld for this
-     * reason is one the app may offer to ask about; it is not one to retry.
+     * `N4-R1` and `N4-R4` are the rules underneath: the prompt belongs at the
+     * point of first use rather than on launch, and a declined permission is
+     * not asked for again automatically. A notification withheld for this
+     * reason is one the app may *offer* to ask about, on a screen, in front of
+     * somebody — it is not one to retry, and it is not a reason to prompt.
+     *
+     * Which of those two applies is {@see Asked}'s to answer, and the
+     * difference matters: never asked and declined are the same to a caller
+     * wanting to show something and opposite to one deciding whether to ask.
      */
     case NotificationsAreNotPermitted;
 
