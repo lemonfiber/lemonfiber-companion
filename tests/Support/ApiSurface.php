@@ -12,6 +12,7 @@ use function in_array;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Outcome;
 use ReflectionClass;
+use ReflectionIntersectionType;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionType;
@@ -140,7 +141,12 @@ final readonly class ApiSurface
             return [$type->getName()];
         }
 
-        if (! $type instanceof ReflectionUnionType) {
+        // An intersection is read as well as a union. It was not, and the gap
+        // was the usual shape: `A&B` answered an empty list, so a rule asking
+        // "does this signature mention X" quietly said no for every
+        // intersection it met. A rule whose mechanism is narrower than its
+        // sentence is worse than no rule, because it reports a pass.
+        if (! $type instanceof ReflectionUnionType && ! $type instanceof ReflectionIntersectionType) {
             return [];
         }
 
