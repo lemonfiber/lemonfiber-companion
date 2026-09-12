@@ -41,4 +41,21 @@ final class MustNotLeaveThisProcess extends LogicException
     {
         return new self('A stack address may not be serialised. N1-R15 keeps it beside a credential, not because it is secret but because it is where somebody lives, and anything that serialises one accumulates a map of private networks.');
     }
+
+    /**
+     * A credential is spent once and is gone (`N1-R7`).
+     *
+     * The strictest of the three, because a credential that reached a cache is a
+     * credential that can be replayed — and unlike a session, nothing on the
+     * server side expires it on a schedule.
+     */
+    public static function aCredential(): self
+    {
+        return new self(
+            'A credential may not be serialised. N1-R7 exchanges it for a session once and '
+            . 'keeps nothing to re-send, and N1-R23 keeps it out of every cache — a credential '
+            . 'that reached one can be replayed, and unlike a session nothing on the server '
+            . 'expires it on a schedule.',
+        );
+    }
 }
