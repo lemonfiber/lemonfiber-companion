@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\Credential;
 use Tests\Support\Imports;
 use Tests\Support\Kind;
 use Tests\Support\Module;
@@ -35,6 +36,23 @@ it('has modules to check', function () use ($modules): void {
 // one of them matches no files and reports nothing — `Native` is silent where
 // `Native\Mobile` reports, and the two look identical from here. These are the
 // rules the rest of the architecture rests on, so they are answered exactly.
+/**
+ * The values whose whole purpose is that they change, each with the reason.
+ *
+ * Written out rather than inferred, and kept to the smallest possible list. An
+ * exemption that can be earned by a naming convention is an exemption anybody
+ * can take; one that has to be added here is a line somebody has to justify in
+ * a diff.
+ */
+const MUTABLE_BY_DESIGN = [
+    // `N1-R7` — a credential is exchanged for a session once and nothing is
+    // kept to re-send. Forgetting is a mutation, and it is the entire point: a
+    // readonly credential is one that still holds its secret after the
+    // exchange, which is the thing the requirement forbids. The immutability
+    // that is right for every other value here is exactly wrong for this one.
+    Credential::class,
+];
+
 foreach ($modules as $module) {
     it(sprintf('A7/E4 — %s stays inside what a %s module may name', $module->name, $module->kind->value), function () use ($module): void {
         $offenders = reachesOutside($module, $module->kind->forbiddenVendors());
@@ -113,6 +131,10 @@ foreach ($modules as $module) {
                 $class = new ReflectionClass($name);
 
                 if ($class->isInterface() || $class->isEnum() || $class->implementsInterface(Throwable::class)) {
+                    continue;
+                }
+
+                if (in_array($name, MUTABLE_BY_DESIGN, strict: true)) {
                     continue;
                 }
 
