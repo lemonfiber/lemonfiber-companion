@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Device\Api;
 
-use function __;
-use function is_string;
-
 use Lemonfiber\Native\Screen as Native;
+use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Authenticated;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Lock;
@@ -32,7 +30,7 @@ use Modules\Kernel\Api\Lock;
  */
 final readonly class PlatformAuth implements DeviceAuth
 {
-    public function __construct(private Native $device) {}
+    public function __construct(private Native $device, private Words $words) {}
 
     public function isAvailable(): bool
     {
@@ -57,15 +55,9 @@ final readonly class PlatformAuth implements DeviceAuth
      * From the catalogue rather than from a caller, which is what `L1` asks for
      * and what `D2` pushed this design towards: with no parameter to pass, there
      * is nowhere for a literal to get in.
-     *
-     * A group answers with its own key rather than being cast, for the reason
-     * {@see PlatformNotifier} does the same — a mistyped key should be visible
-     * in the dialog rather than a PHP notice on somebody's phone.
      */
     private function reason(): string
     {
-        $said = __('device.unlock_reason');
-
-        return is_string($said) ? $said : 'device.unlock_reason';
+        return $this->words->for('device.unlock_reason');
     }
 }
