@@ -425,7 +425,7 @@ arrives at `composer update` rather than at `composer audit` in CI a week later.
 ### Where things go
 
 ```
-app/Providers/            the composition root, and nothing else
+bootstrap/Composition/    the composition root, and nothing else
 app-modules/<name>/
   composer.json           declares the module's kind, which generates its rules
   src/Api/                what other modules may name
@@ -447,7 +447,7 @@ phpstan/Rules/            the rules that are easier to write than to find
 
 | | Rule | Enforced by |
 |---|---|---|
-| W1 | `app/` holds only `App\Providers` | arch |
+| W1 | `bootstrap/` holds no class but the composition root | arch |
 | W2 | A module's `src/` declares only its own namespace | arch |
 | W3 | Root `tests/` holds only the suites; root `resources/views/` holds no Blade | arch |
 | W4 | A module's tests are namespaced for that module | arch |

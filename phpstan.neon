@@ -30,7 +30,7 @@ parameters:
     # Named so actions/cache can carry the result cache between runs.
     tmpDir: .phpstan-cache
     paths:
-        - app
+        - bootstrap/Composition
         # Every module, src and tests alike. Written as the parent directory
         # rather than as `app-modules/*/src`: PHPStan does not expand globs in
         # `paths`, and naming each module would mean a module added tomorrow is
@@ -281,9 +281,9 @@ parameters:
                 - 'abort()'
                 - 'event()'
                 - 'dispatch()'
-            message: "A3/A4 — dependencies arrive through the constructor. Reaching into the container makes the constructor stop telling the truth about what this class needs, and a reader has to run the code to find out. Declare the dependency as a constructor parameter and bind it in app/Providers (A3, A4)."
+            message: "A3/A4 — dependencies arrive through the constructor. Reaching into the container makes the constructor stop telling the truth about what this class needs, and a reader has to run the code to find out. Declare the dependency as a constructor parameter and bind it in bootstrap/Composition (A3, A4)."
             allowIn:
-                - app/Providers/*
+                - bootstrap/Composition/*
                 - config/*
                 - tests/*
                 - app-modules/*/tests/*
@@ -444,9 +444,9 @@ parameters:
             # Storage has its own entry below: it is banned for being IO, in
             # two more places than a facade is banned for being a facade.
             exclude: 'Illuminate\Support\Facades\Storage'
-            message: "A2 — no facades. A facade is a global lookup that no constructor mentions and no test can substitute without touching global state. Type the contract (Illuminate\\Contracts\\*) as a constructor parameter and bind it in app/Providers, or — inside a module — define a port in Modules\\Kernel\\Api and keep Illuminate out entirely (A2, A7)."
+            message: "A2 — no facades. A facade is a global lookup that no constructor mentions and no test can substitute without touching global state. Type the contract (Illuminate\\Contracts\\*) as a constructor parameter and bind it in bootstrap/Composition, or — inside a module — define a port in Modules\\Kernel\\Api and keep Illuminate out entirely (A2, A7)."
             allowIn:
-                - app/Providers/*
+                - bootstrap/Composition/*
                 - config/*
                 # routes/console.php is Artisan's own registration file: the
                 # facade there IS the composition, not a reach into one.
@@ -499,9 +499,9 @@ parameters:
             class:
                 - 'Illuminate\Container\*'
                 - 'Illuminate\Contracts\Container\Container'
-            message: "A3 — no service location. A class that reaches into the container hides what it needs. The composition root in app/Providers is the one place that is allowed to know how a port meets an adapter (A3)."
+            message: "A3 — no service location. A class that reaches into the container hides what it needs. The composition root in bootstrap/Composition is the one place that is allowed to know how a port meets an adapter (A3)."
             allowIn:
-                - app/Providers/*
+                - bootstrap/Composition/*
                 - tests/*
                 - app-modules/*/tests/*
 
@@ -593,7 +593,7 @@ parameters:
             # than `allowExceptIn: [app-modules/*]` because `allowExceptIn`
             # short-circuits every directive evaluated after it.
             allowIn:
-                - app/*
+                - bootstrap/Composition/*
                 - bootstrap/*
                 - config/*
                 - routes/*

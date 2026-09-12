@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Providers\AppServiceProvider;
+use Bootstrap\Composition\CompositionRoot;
 
 return [
-    AppServiceProvider::class,
+    CompositionRoot::class,
 ];

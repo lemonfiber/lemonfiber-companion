@@ -89,7 +89,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "Bootstrap\\Composition\\": "bootstrap/Composition/"
         }
     },
     "autoload-dev": {

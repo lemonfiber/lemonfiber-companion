@@ -1467,12 +1467,12 @@ final readonly class Fixtures
     private static function placement(): array
     {
         return [
-            Fixture::suite('W1', 'app/Fixtures/Stray.php', <<<'PHP'
+            Fixture::suite('W1', 'bootstrap/Stray.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
 
-                namespace App\Fixtures;
+                namespace Bootstrap;
 
                 final readonly class Stray {}
                 PHP, 'W1 —', 'Stray'),
@@ -1678,7 +1678,7 @@ final readonly class Fixtures
                 . 'only place that happens is the composition root — which is a file the '
                 . 'harness would have to edit and restore rather than a fixture it can drop '
                 . 'in and delete. Driven by hand instead: a capability listener bound to a '
-                . 'surface event, registered in AppServiceProvider::boot().',
+                . 'surface event, registered in CompositionRoot::boot().',
             ),
             Fixture::notDrivable(
                 'S2',

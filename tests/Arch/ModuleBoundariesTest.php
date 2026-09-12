@@ -219,7 +219,7 @@ it('E1 — only the composition root names an adapter', function (): void {
 
     expect($offenders)->toBe([], sprintf(
         "These name an adapter from outside the composition root:\n  %s\n\n"
-        . 'A port meets its adapter in app/Providers and nowhere else. A module that '
+        . 'A port meets its adapter in bootstrap/Composition and nowhere else. A module that '
         . 'names one has decided which implementation it gets, which is the decision '
         . 'that makes it untestable without the thing the adapter talks to (E1).',
         implode("\n  ", $offenders),

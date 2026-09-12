@@ -68,7 +68,7 @@
 
     <source>
         <include>
-            <directory>app</directory>
+            <directory>bootstrap/Composition</directory>
             <directory>app-modules/*/src</directory>
             <!--
                 The plugin's own PHP. It is a path package rather than a module,

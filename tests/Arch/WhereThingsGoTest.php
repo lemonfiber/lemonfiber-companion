@@ -14,22 +14,33 @@ use Tests\Support\Tree;
 // is a file that the rules governing its neighbours do not reach, and nothing
 // says so, because a rule that finds no files reports a green tick.
 
-it('W1 — app/ is the composition root and nothing else', function (): void {
+it('W1 — the composition root is the only class under bootstrap/', function (): void {
     $strays = [];
 
-    foreach (Tree::filesUnder(Tree::at('app'), '.php') as $file) {
-        if (! str_contains($file, '/app/Providers/')) {
-            $strays[] = str_replace(sprintf('%s/', Tree::root()), '', $file);
+    foreach (Tree::filesUnder(Tree::at('bootstrap'), '.php') as $file) {
+        $relative = str_replace(sprintf('%s/', Tree::root()), '', $file);
+
+        // `bootstrap/` holds framework wiring that is not classes at all —
+        // `app.php` and `providers.php` return values, and `cache/` is written
+        // by the framework. What this rule is about is classes, and there is
+        // one: the composition root.
+        if (str_starts_with($relative, 'bootstrap/Composition/')) {
+            continue;
+        }
+
+        if (Tree::declaresAClass($file)) {
+            $strays[] = $relative;
         }
     }
 
     expect($strays)->toBe([], sprintf(
-        "These sit in app/ without being the composition root:\n  %s\n\n"
-        . 'app/ holds App\\Providers and nothing else. It is the one place permitted to '
-        . 'name both a port and the adapter behind it, and that permission is granted by '
-        . 'path — so a class put here quietly acquires it, along with an exemption from '
-        . 'A2, A3 and A4. Domain logic belongs in a capability module, a screen in a '
-        . 'surface module, and anything that talks to the outside in an adapter (W1).',
+        "These sit under bootstrap/ without being the composition root:\n  %s\n\n"
+        . 'bootstrap/Composition holds the composition root and nothing else. It is the '
+        . 'one place permitted to name both a port and the adapter behind it, and that '
+        . 'permission is granted by path — so a class put here quietly acquires it, along '
+        . 'with an exemption from A2, A3 and A4. Domain logic belongs in a capability '
+        . 'module, a screen in a surface module, and anything that talks to the outside '
+        . 'in an adapter (W1).',
         implode("\n  ", $strays),
     ));
 });

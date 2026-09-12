@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Providers;
+namespace Bootstrap\Composition;
 
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Screen;
@@ -27,13 +27,19 @@ use NativePHP\LocalNotifications\LocalNotifications;
 /**
  * The composition root.
  *
+ * Named for what it is rather than for the framework slot it fills, and living
+ * beside `bootstrap/providers.php` — the file that names it — rather than under
+ * an `app/` directory that held nothing else. Laravel does not require the `App`
+ * namespace anywhere; `providers.php` returns a class list, and nothing in this
+ * application has models to discover.
+ *
  * This is the one place in the application permitted to name both a port and
  * the adapter that implements it. Every other class receives what it needs
  * through its constructor and never learns which implementation it got — which
  * is what makes a capability module testable without a device, a network or a
  * stack to talk to.
  */
-final class AppServiceProvider extends ServiceProvider
+final class CompositionRoot extends ServiceProvider
 {
     public function register(): void
     {
