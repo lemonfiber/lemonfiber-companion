@@ -14,13 +14,14 @@ use Modules\Connection\Api\Obstacle;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 
-it('is the three N1-R10 refuses to collapse', function (): void {
-    // Pinned rather than counted. Adding a fourth is a decision — the lock is
-    // the one that keeps being proposed and keeps belonging elsewhere — and it
-    // should be made against a failing test rather than noticed later on a
-    // screen that now has an unlabelled state.
+it('is the four an operator must be able to tell apart', function (): void {
+    // Pinned rather than counted. Adding one is a decision — the lock keeps
+    // being proposed and keeps belonging elsewhere, while `N4-R17` asked for
+    // the permission case by name — and it should be made against a failing
+    // test rather than noticed later on a screen with an unlabelled state.
     expect(Obstacle::cases())->toBe([
         Obstacle::DeviceHasNoNetwork,
+        Obstacle::LocalNetworkIsNotPermitted,
         Obstacle::StackDidNotAnswer,
         Obstacle::CredentialWasRefused,
     ]);
@@ -39,6 +40,7 @@ it('names each one differently in the identifier an operator searches for', func
 
     expect($codes)->toBe([
         'COMPANION-NO-NETWORK',
+        'COMPANION-LOCAL-NETWORK-REFUSED',
         'COMPANION-NO-ANSWER',
         'COMPANION-CREDENTIAL-REFUSED',
     ]);
@@ -49,6 +51,7 @@ it('calls no network a warning and the other two errors', function (): void {
     // leave. The other two mean something that is supposed to work does not,
     // and `Severity::demandsAttention` is what a screen reads off this.
     expect(Obstacle::DeviceHasNoNetwork->severity())->toBe(Severity::Warning);
+    expect(Obstacle::LocalNetworkIsNotPermitted->severity())->toBe(Severity::Error);
     expect(Obstacle::StackDidNotAnswer->severity())->toBe(Severity::Error);
     expect(Obstacle::CredentialWasRefused->severity())->toBe(Severity::Error);
 
@@ -58,9 +61,11 @@ it('calls no network a warning and the other two errors', function (): void {
 it('offers a button only where the app can press it', function (): void {
     // Turning on Wi-Fi and waking a machine happen somewhere this application
     // cannot reach. Pairing again is a thing it does — `N1-R20` names it as the
-    // remedy for exactly this case.
+    // remedy for exactly that case — and `N4-R17` obliges the app to offer the
+    // way to grant a refused permission, which is a button by definition.
     expect(Obstacle::DeviceHasNoNetwork->standing())->toBe(Standing::Guided);
     expect(Obstacle::StackDidNotAnswer->standing())->toBe(Standing::Guided);
+    expect(Obstacle::LocalNetworkIsNotPermitted->standing())->toBe(Standing::Actionable);
     expect(Obstacle::CredentialWasRefused->standing())->toBe(Standing::Actionable);
 
     expect(Obstacle::CredentialWasRefused->standing()->offersAButton())->toBeTrue();

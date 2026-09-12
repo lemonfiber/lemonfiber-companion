@@ -5,6 +5,8 @@ declare(strict_types=1);
 return [
     'no_network' => 'Dit apparaat heeft geen netwerkverbinding.',
     'no_network_action' => 'Maak verbinding met wifi of zet mobiele data aan en probeer het opnieuw.',
+    'local_network_refused' => 'Deze app mag het lokale netwerk niet op.',
+    'local_network_refused_action' => 'Geef lemonfiber toegang tot het lokale netwerk in Instellingen.',
     'no_answer' => 'Deze stack gaf geen antwoord.',
     'no_answer_action' => 'Controleer of de machine aanstaat en op hetzelfde netwerk zit.',
     'credential_refused' => 'Deze stack heeft de koppeling van deze app geweigerd.',
