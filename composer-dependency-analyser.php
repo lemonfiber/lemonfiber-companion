@@ -102,7 +102,7 @@ return (new Configuration())
     // dependency must be either referenced in code, included in phpstan.neon,
     // or listed below with the reason it is installed.
     ->enableAnalysisOfUnusedDevDependencies()
-    ->addPathToScan(__DIR__ . '/app', isDev: false)
+    ->addPathToScan(__DIR__ . '/bootstrap/Composition', isDev: false)
     // Split rather than named as the parent, because a module's `tests/` sits
     // inside it and is a dev path exactly like the root suite. Scanned
     // wholesale, the first module test makes Pest a production dependency —

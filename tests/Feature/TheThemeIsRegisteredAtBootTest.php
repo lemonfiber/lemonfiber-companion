@@ -30,7 +30,7 @@ it('G8 — every asserted token resolves once the application has booted', funct
         . 'A dropped class is not an error anywhere — it is parsed, found to mean '
         . 'nothing, and discarded, so the screen renders without its accent and says '
         . 'nothing. It means no theme resolver reached the parser: check that '
-        . 'AppServiceProvider::boot() still calls TailwindParser::setThemeResolver() '
+        . 'CompositionRoot::boot() still calls TailwindParser::setThemeResolver() '
         . '(G8, F3).',
         implode("\n  ", $dropped),
     ));

@@ -7,7 +7,7 @@ use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
 
 return RectorConfig::configure()
     ->withPaths([
-        __DIR__ . '/app',
+        __DIR__ . '/bootstrap/Composition',
         // Every module, named as the parent. Rector does expand globs, but a
         // glob would still need a second entry for tests, and this way a module
         // added tomorrow is refactored without anyone remembering this file.

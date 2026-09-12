@@ -41,7 +41,7 @@ it('G8 — every port is bound to exactly one adapter', function (): void {
         "These ports have no adapter behind them:\n  %s\n\n"
         . 'A port with no binding resolves at the moment a screen first asks for it — on '
         . 'a device, after the operator has tapped something and is waiting. Bind it in '
-        . 'app/Providers, which is the one place allowed to know which implementation a '
+        . 'bootstrap/Composition, which is the one place allowed to know which implementation a '
         . "port gets.\nNo test below this one can find it: a module test hands its "
         . 'subject a fake directly, because the module is not allowed to know the '
         . 'container exists (G8, A3).',
