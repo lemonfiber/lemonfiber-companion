@@ -917,6 +917,36 @@ final readonly class Fixtures
                 }
                 PHP, 'K2 —'),
 
+            Fixture::suite('K3', 'app-modules/health/src/Fixtures/Repeats.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                /**
+                 * A label, for a screen that has to call this something.
+                 *
+                 * `InvalidArgumentException` rather than `RuntimeException`, which is
+                 * what every other refusal here extends and is not merely convention:
+                 * the analyser treats a `RuntimeException` as checked, and every Pest
+                 * test body is a closure, so the runtime kind would make this refusal
+                 * the one case that no test anywhere could exercise.
+                 *
+                 * rather than , which is what every other refusal here extends and is
+                 * not merely convention: the analyser treats a as checked, and every
+                 * Pest test body is a closure, so the runtime kind would make this
+                 * refusal the one case that no test anywhere could exercise.
+                 */
+                final readonly class Repeats
+                {
+                    public function label(): string
+                    {
+                        return 'x';
+                    }
+                }
+                PHP, 'K3 —'),
+
             Fixture::suite('M1', 'app-modules/health/src/Api/Commands/Fixtures/AnswersPlainly.php', <<<'PHP'
                 <?php
 
