@@ -9,6 +9,8 @@ use function array_values;
 use function implode;
 use function in_array;
 
+use Modules\Kernel\Api\IdempotencyKey;
+use Modules\Kernel\Api\Outcome;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -31,11 +33,16 @@ use function str_starts_with;
  */
 final readonly class ApiSurface
 {
+    // Named by class rather than as a string now that the kernel publishes
+    // them. A string here is a reference nothing checks: renaming `Outcome`
+    // would leave M1 comparing against a class that no longer exists, and a
+    // comparison that never matches reads exactly like a rule that holds.
+
     /** The one type a refusal crosses a module boundary as (C1). */
-    public const string OUTCOME = 'Modules\Kernel\Api\Outcome';
+    public const string OUTCOME = Outcome::class;
 
     /** The one type that makes a command safe to retry (M3). */
-    public const string IDEMPOTENCY_KEY = 'Modules\Kernel\Api\IdempotencyKey';
+    public const string IDEMPOTENCY_KEY = IdempotencyKey::class;
 
     /**
      * Every published class under `Modules\<Name>\Api\<segments>`.

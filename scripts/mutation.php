@@ -89,8 +89,19 @@ foreach ($byFloor as $floor => $paths) {
         implode(', ', array_map(static fn(string $p): string => basename(dirname($p)), $paths)),
     ));
 
+    // The same two suites `composer test` leaves out, for the same reasons and
+    // with an extra one here. `Floors` reads the clover report rather than
+    // producing one, so it fails outright in a run that was never asked for
+    // coverage — and a mutation run is exactly that. `Guards` plants violations
+    // and runs the analyser and the suite over them as subprocesses, which
+    // under mutation would be re-run once per mutant.
+    //
+    // Nothing was catching this: with no module holding code, the loop above
+    // never reached a run at all, so the invocation was unexercised until the
+    // first one did.
     $command = sprintf(
-        '%s/vendor/bin/pest --mutate --covered-only --ignore-min-score-on-zero-mutations --min=%d --path=%s',
+        '%s/vendor/bin/pest --mutate --covered-only --ignore-min-score-on-zero-mutations '
+        . '--exclude-testsuite=Guards,Floors --min=%d --path=%s',
         escapeshellarg($root),
         $floor,
         escapeshellarg(implode(',', $paths)),

@@ -97,13 +97,22 @@ foreach ($modules as $module) {
         // fails every port it publishes for declaring no state at all — a gate
         // that blocks its own cure. Interfaces and enums are skipped by name
         // below: an interface holds no state and an enum cannot be changed.
+        //
+        // A Throwable is skipped for a third reason, and it is the language's
+        // rather than a judgement: a readonly class may only extend a readonly
+        // one, and `Exception` declares `$message`, `$code`, `$file`, `$line`
+        // and `$trace` as ordinary properties. `final readonly class X extends
+        // InvalidArgumentException` is a fatal error, so requiring it here
+        // would put C3 — every thrown exception is module-owned — permanently
+        // out of reach. Nothing is exempted that could have been caught: the
+        // mutability belongs to PHP's base class, not to anything written here.
         it(sprintf('%s holds no mutable state', $module->name), function () use ($module): void {
             $mutable = [];
 
             foreach ($module->classNames() as $name) {
                 $class = new ReflectionClass($name);
 
-                if ($class->isInterface() || $class->isEnum()) {
+                if ($class->isInterface() || $class->isEnum() || $class->implementsInterface(Throwable::class)) {
                     continue;
                 }
 
