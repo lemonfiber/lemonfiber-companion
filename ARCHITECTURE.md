@@ -532,7 +532,7 @@ there, and neither is read as a description of the current code.
 | G7 | Every module declares its own coverage and mutation floors | arch |
 | G8 | Every port in `Modules\Kernel` is bound, once, in the composition root | test: the booted composition root |
 | G9 | No module is below the coverage floor it declared | test: the `Floors` suite, over the clover report |
-| G10 | No two test files declare the same helper name | arch: over the text of the test files |
+| G10 | No two test files declare the same helper or file-level constant name | arch: over the text of the test files |
 
 **G2 is the most valuable rule on this page.** A fake that has drifted from its
 adapter makes the suite green while the application is broken, and nothing else
