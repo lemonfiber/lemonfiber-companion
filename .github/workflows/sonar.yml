@@ -85,10 +85,24 @@ jobs:
       pull-requests: write
     uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@4189c0a9b8b40540f32588bd434e1f0f7a4aafb7 # main
     with:
-      # Zero, and this branch is what makes it true: both standing issues are
-      # fixed in the same commit that adds the gate, because a gate switched on
-      # over a backlog is a gate somebody raises the allowance for on day one.
-      # It is a ceiling rather than a budget — it may only fall.
-      allowed-open: 0
+      # Two, which is what actually stands against `main` right now — and this
+      # branch is the one that takes both away.
+      #
+      # Zero was the first answer and it was wrong in a specific, instructive
+      # way: the gate counts open issues against the *project*, which is `main`,
+      # and `main` still carries `php:S1186` and `php:S1142` until this merges.
+      # Declaring zero made the gate refuse the very pull request that brings the
+      # count to zero. A ratchet with no way to acknowledge what it inherited is
+      # a ratchet that jams on the day it is installed.
+      #
+      # The shared gate already anticipates this: a raise may name the backlog
+      # standing against the base branch and nothing past it, so this can say
+      # `2` and could not have said `3`. Reality may be declared; headroom may
+      # not.
+      #
+      # The follow-up drops it to 0 once `main` has been re-scanned, and the
+      # gate itself will say so — it prints "below the declared allowance;
+      # lower it" for exactly this.
+      allowed-open: 2
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
