@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 use function json_encode;
+use function mb_strlen;
 
 use Modules\Kernel\Api\MustNotLeaveThisProcess;
 use Modules\Kernel\Api\Session;
@@ -14,7 +15,9 @@ use Modules\Kernel\Api\SessionIsBlank;
 
 use function print_r;
 use function serialize;
+use function sprintf;
 use function str_contains;
+use function unserialize;
 use function var_export;
 
 // Deliberately low-entropy and obviously not a credential. A realistic-looking
@@ -87,5 +90,19 @@ it('N1-R15 — a session does not leave the process in a serialised payload', fu
     // walks private properties itself. A credential reaches a cache entry or a
     // queued job payload that way, in full.
     expect(fn(): string => serialize(Session::of(A_TOKEN)))
+        ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
+});
+
+it('N1-R15 — a session does not come back from a serialised payload either', function (): void {
+    // A crafted payload naming the class is the only way in, and it is also the
+    // realistic one: object injection starts with a string somebody controls.
+    //
+    // Built from the class name rather than typed as a literal: a renamed class
+    // would leave a hand-written payload naming a type that no longer exists,
+    // and `unserialize` would answer `false` quietly while this test went on
+    // passing for the wrong reason.
+    $payload = sprintf('O:%d:"%s":0:{}', mb_strlen(Session::class), Session::class);
+
+    expect(fn(): mixed => unserialize($payload))
         ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });

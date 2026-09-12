@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 use function json_encode;
+use function mb_strlen;
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AddressIsUnreachable;
@@ -15,7 +16,9 @@ use Modules\Kernel\Api\Scheme;
 
 use function print_r;
 use function serialize;
+use function sprintf;
 use function str_contains;
+use function unserialize;
 use function var_export;
 
 const AN_ADDRESS = 'https://192.168.1.42:8443';
@@ -145,5 +148,19 @@ it('N1-R15 — an address does not leave the process in a serialised payload', f
     // Not secrecy. Anything that serialises stack addresses accumulates a map
     // of private networks, which is the thing N1-R15 is actually protecting.
     expect(fn(): string => serialize(Address::of(AN_ADDRESS)))
+        ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
+});
+
+it('N1-R15 — an address does not come back from a serialised payload either', function (): void {
+    // Same door, other side. Without `__unserialize` a crafted payload naming this
+    // class would be walked back into an object with whatever properties it carried.
+    //
+    // Built from the class name rather than typed as a literal: a renamed class
+    // would leave a hand-written payload naming a type that no longer exists,
+    // and `unserialize` would answer `false` quietly while this test went on
+    // passing for the wrong reason.
+    $payload = sprintf('O:%d:"%s":0:{}', mb_strlen(Address::class), Address::class);
+
+    expect(fn(): mixed => unserialize($payload))
         ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });

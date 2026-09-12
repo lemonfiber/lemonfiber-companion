@@ -37,6 +37,7 @@
     },
     "require-dev": {
         "ext-simplexml": "*",
+        "ext-tokenizer": "*",
         "ergebnis/composer-normalize": "^2.53",
         "ergebnis/phpstan-rules": "^2.13",
         "larastan/larastan": "^3.12",
