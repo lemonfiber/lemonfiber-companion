@@ -15,6 +15,16 @@ it('N1-R26 — carries a bound, in the unit a person feels', function (): void {
     expect(Timeout::ordinary()->inSeconds())->toBe(Timeout::CEILING);
 });
 
+it('N1-R26 — the ceiling and the floor are both allowed, which is what makes them bounds', function (): void {
+    // The boundary, asserted from `of()` rather than from `ordinary()`, which
+    // constructs directly and so proves nothing about the comparison. Mutation
+    // testing found this: `> CEILING` and `>= CEILING` behave identically until
+    // something asks for exactly ten, and a bound that refuses its own stated
+    // maximum is an off-by-one nobody reads in a docblock.
+    expect(Timeout::of(Timeout::CEILING)->inSeconds())->toBe(Timeout::CEILING);
+    expect(Timeout::of(Timeout::FLOOR)->inSeconds())->toBe(Timeout::FLOOR);
+});
+
 it('N1-R26 — the bound is not raised to accommodate a slow stack', function (): void {
     // The clause that needs a type. Carrying a bound is a habit and habits
     // hold; raising one is a decision, and it arrives at three in the morning
