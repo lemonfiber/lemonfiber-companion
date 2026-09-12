@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Modules\Connection\Tests\Api;
+namespace Modules\Kernel\Tests\Api;
 
 use function expect;
 use function it;
 
-use Modules\Connection\Api\Obstacle;
-use Modules\Connection\Api\Reach;
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Reach;
 
 use function sprintf;
 
@@ -27,7 +27,7 @@ function opened(): Code
  * that ignores its argument would still pass a test that only asked which side
  * ran.
  */
-function fold(Reach $reach): Code
+function foldReach(Reach $reach): Code
 {
     return $reach->either(
         made: static fn(object $reached): Code => Code::of(sprintf('made:%s', $reached::class)),
@@ -36,17 +36,17 @@ function fold(Reach $reach): Code
 }
 
 it('takes the made branch when the stack answered', function (): void {
-    expect(fold(Reach::made(opened()))->shown())->toBe(sprintf('made:%s', Code::class));
+    expect(foldReach(Reach::made(opened()))->shown())->toBe(sprintf('made:%s', Code::class));
 });
 
 it('hands the blocked arm the obstacle itself, not the fact of one', function (): void {
     // The whole point: there is no moment at which "it did not work" exists as
     // a value on its own, so there is nothing for a caller to render one
     // sentence from — which is the collapse N1-R10 forbids.
-    expect(fold(Reach::blockedBy(Obstacle::CredentialWasRefused))->shown())
+    expect(foldReach(Reach::blockedBy(Obstacle::CredentialWasRefused))->shown())
         ->toBe('blocked:credential_refused');
 
-    expect(fold(Reach::blockedBy(Obstacle::DeviceHasNoNetwork))->shown())
+    expect(foldReach(Reach::blockedBy(Obstacle::DeviceHasNoNetwork))->shown())
         ->toBe('blocked:no_network');
 });
 
