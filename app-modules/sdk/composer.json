@@ -1,12 +1,12 @@
 {
     "name": "modules/sdk",
     "description": "The only module permitted to name the SDK (N1-R16).",
-    "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
     "require": {
         "php": "^8.5",
-        "modules/kernel": "dev-main",
-        "lemonfiber/sdk-php": "dev-main"
+        "lemonfiber/sdk-php": "dev-main",
+        "modules/kernel": "dev-main"
     },
     "autoload": {
         "psr-4": {
@@ -16,11 +16,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "adapter",
             "floors": {
                 "coverage": 100,
                 "mutation": 0
-            }
+            },
+            "kind": "adapter"
         }
     }
 }

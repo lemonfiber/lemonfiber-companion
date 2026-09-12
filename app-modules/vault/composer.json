@@ -1,8 +1,8 @@
 {
     "name": "modules/vault",
     "description": "Secure storage and the app lock.",
-    "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
     "require": {
         "php": "^8.5",
         "modules/kernel": "dev-main",
@@ -16,11 +16,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "adapter",
             "floors": {
                 "coverage": 100,
                 "mutation": 0
-            }
+            },
+            "kind": "adapter"
         }
     }
 }

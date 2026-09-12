@@ -1,8 +1,8 @@
 {
     "name": "modules/updates",
     "description": "Versions, applying one, and undoing it.",
-    "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
     "require": {
         "php": "^8.5",
         "modules/kernel": "dev-main"
@@ -15,11 +15,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "capability",
             "floors": {
                 "coverage": 100,
                 "mutation": 100
-            }
+            },
+            "kind": "capability"
         }
     }
 }

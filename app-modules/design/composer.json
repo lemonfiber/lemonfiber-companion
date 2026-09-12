@@ -1,8 +1,8 @@
 {
     "name": "modules/design",
     "description": "The EDGE component vocabulary and the theme tokens every surface renders through.",
-    "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
     "require": {
         "php": "^8.5",
         "modules/kernel": "dev-main",
@@ -16,11 +16,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "design",
             "floors": {
                 "coverage": 100,
                 "mutation": 0
-            }
+            },
+            "kind": "design"
         }
     }
 }
