@@ -59,6 +59,47 @@ it('C2 — no Api method answers with null', function (): void {
     ));
 });
 
+it('D3 — no Api signature says mixed', function (): void {
+    // The rule is "No `mixed` in public signatures" and its stated mechanism —
+    // level max plus 100% type coverage — cannot see it. Type coverage counts
+    // whether a type is *declared*, and `mixed` is a declared type; `mixed
+    // $said): mixed` is fully covered by that measure and passes level max,
+    // because `mixed` is legal PHP.
+    //
+    // So the rule read as enforced and nothing checked it. Nothing in the
+    // repository does it today, which is why: the gap was invisible until the
+    // first one, and by then it would have been the example to copy.
+    //
+    // `mixed` is the return of D1 and D2 wearing a different word. An array in
+    // a signature says "some shape, work it out"; `mixed` says the same thing
+    // about every value, and the caller works it out with `is_string`.
+    $offenders = [];
+
+    foreach (ApiSurface::classesIn() as $class) {
+        foreach (ApiSurface::publicMethodsOf($class) as $method) {
+            $types = ApiSurface::namesIn($method->getReturnType());
+
+            foreach ($method->getParameters() as $parameter) {
+                $types = [...$types, ...ApiSurface::namesIn($parameter->getType())];
+            }
+
+            if (in_array('mixed', $types, strict: true)) {
+                $offenders[] = ApiSurface::describe($method);
+            }
+        }
+    }
+
+    expect($offenders)->toBe([], sprintf(
+        "These publish a signature that says mixed:\n  %s\n\n"
+        . '`mixed` is what D1 and D2 refuse, wearing a different word. An array in a '
+        . 'signature says "some shape, work it out"; `mixed` says it about every value, '
+        . "and whoever receives one works it out with `is_string`.\n"
+        . 'Name the type. Where a value really can be several things, that is a sum type '
+        . 'with an `either()`, which is how this codebase says it everywhere else (D3).',
+        implode("\n  ", $offenders),
+    ));
+});
+
 it('D1 — no Api signature is an untyped bag', function (): void {
     $offenders = [];
 
