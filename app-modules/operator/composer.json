@@ -21,6 +21,11 @@
         }
     },
     "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Operator\\Providers\\OperatorServiceProvider"
+            ]
+        },
         "lemonfiber": {
             "floors": {
                 "coverage": 100,

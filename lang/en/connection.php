@@ -15,6 +15,8 @@ return [
     'pairing_refused' => 'That pairing link was refused. Ask for a new one from the stack.',
     'fingerprint_changed' => "This stack's certificate has changed. Pair again from the stack itself before continuing.",
     'fingerprint_changed_action' => 'Check that this is your machine, then pair again from its own screen.',
+    'setup_is_at_the_machine' => 'Setting a stack up happens at the machine itself, where it can see your drives and your network.',
+    'pair' => 'Scan a pairing code',
     'no_stacks' => 'No stack is paired yet.',
     'no_stacks_action' => 'Scan the pairing code shown on your stack.',
 ];
