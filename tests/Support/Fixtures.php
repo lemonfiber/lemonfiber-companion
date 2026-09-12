@@ -1229,6 +1229,28 @@ final readonly class Fixtures
                 }
                 PHP, 'S1 —'),
 
+            Fixture::suite('N1-R39', 'app-modules/operator/src/Internal/Screens/ShowsSomebodysStack.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Operator\Internal\Screens;
+
+                use Illuminate\View\View;
+                use Modules\Kernel\Api\Reading;
+                use Native\Mobile\Edge\NativeComponent;
+
+                final class ShowsSomebodysStack extends NativeComponent
+                {
+                    public function __construct(private Reading $reading) {}
+
+                    public function render(): View
+                    {
+                        return view('operator::no-stack-yet');
+                    }
+                }
+                PHP, 'N1-R39 —', 'ShowsSomebodysStack'),
+
             Fixture::analyser('N1-R21', 'Plain/TurnsVerificationOff.php', <<<'PHP'
                 <?php
 
