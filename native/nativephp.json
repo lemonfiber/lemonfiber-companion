@@ -1,6 +1,5 @@
 {
     "namespace": "Lemonfiber",
-
     "bridge_functions": [
         {
             "name": "Lemonfiber.Conceal",
@@ -21,13 +20,21 @@
             "description": "Whether the window is protected from capture right now"
         }
     ],
-
     "android": {
-        "min_version": 26
+        "min_version": 26,
+        "permissions": [
+            "android.permission.INTERNET",
+            "android.permission.ACCESS_NETWORK_STATE"
+        ]
     },
-
     "ios": {
         "min_version": "15.0",
-        "init_function": "LemonfiberInit.install"
+        "init_function": "LemonfiberInit.install",
+        "info_plist": {
+            "NSLocalNetworkUsageDescription": "lemonfiber talks to your stack on your own network. It does not send anything anywhere else.",
+            "NSBonjourServices": [
+                "_lemonfiber._tcp"
+            ]
+        }
     }
 }
