@@ -71,7 +71,7 @@ one the mechanism that enforces it. A test reads that table and fails if a rule
 claims an enforcement it does not have, so it cannot quietly go out of date.
 
 [`AGENTS.md`](AGENTS.md) is the guide for anyone, human or otherwise, making a
-change here. [`docs/decisions/`](docs/decisions/) records why this codebase is
+change here. [`.docs/decisions/`](.docs/decisions/) records why this codebase is
 shaped the way it is; decisions about the product live in the
 [spec](https://github.com/lemonfiber/spec).
 
