@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\Catalogue;
 use Tests\Support\Tree;
 
 // L2 — every locale carries the same keys, and every value is a sentence.
@@ -21,49 +22,19 @@ use Tests\Support\Tree;
 /**
  * Every translation key, flattened to dotted form, per locale.
  *
+ * Read through `Catalogue` rather than walked here: three rules needed the same
+ * flatten and the same knowledge of where `lang/` is, and three copies of that
+ * disagree the day one of them moves — quietly, because the copy that stops
+ * finding files still passes.
+ *
  * @return array<string, array<string, string>> locale => key => value
  */
 function translations(): array
 {
     $found = [];
 
-    $directories = glob(Tree::at('lang/*'), GLOB_ONLYDIR);
-
-    foreach ($directories === false ? [] : $directories as $directory) {
-        $locale = basename($directory);
-        $found[$locale] = [];
-
-        foreach (Tree::filesUnder($directory, '.php') as $file) {
-            /** @var mixed $group */
-            $group = require $file;
-
-            $found[$locale] = [
-                ...$found[$locale],
-                ...flattenKeys(basename($file, '.php'), $group),
-            ];
-        }
-    }
-
-    return $found;
-}
-
-/**
- * @return array<string, string>
- */
-function flattenKeys(string $prefix, mixed $value): array
-{
-    if (is_string($value)) {
-        return [$prefix => $value];
-    }
-
-    if (! is_array($value)) {
-        return [];
-    }
-
-    $found = [];
-
-    foreach ($value as $key => $nested) {
-        $found = [...$found, ...flattenKeys(sprintf('%s.%s', $prefix, $key), $nested)];
+    foreach (Catalogue::locales() as $locale) {
+        $found[$locale] = Catalogue::all($locale);
     }
 
     return $found;
