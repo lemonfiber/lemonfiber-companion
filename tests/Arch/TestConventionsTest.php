@@ -58,9 +58,21 @@ function helpersByName(): array
     foreach (testSources() as $path => $source) {
         $namespace = preg_match('/^namespace\s+([^;]+);/m', $source, $matched) === 1 ? $matched[1] : '';
 
-        preg_match_all('/^function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/m', $source, $names);
+        // Functions and file-level constants alike. They collide the same way
+        // and for the same reason — one namespace, two files — and PHP reports
+        // them differently, which is the only thing that makes them feel like
+        // two problems. A duplicate `function` is a fatal; a duplicate `const`
+        // is a warning today and a fatal in PHP 9, so the constant is the one
+        // that ships. `A_DIGEST` was declared in `FingerprintTest` and again in
+        // `StackTest`, and the run said so in a line nobody reads.
+        //
+        // A `const` inside a class is not this: it is scoped to the class and
+        // cannot clash. Anchoring at the start of a line is what tells them
+        // apart, since a class constant is always indented here.
+        preg_match_all('/^function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/m', $source, $functions);
+        preg_match_all('/^const\s+([A-Za-z_][A-Za-z0-9_]*)\s*=/m', $source, $constants);
 
-        foreach ($names[1] as $name) {
+        foreach ([...$functions[1], ...$constants[1]] as $name) {
             $found[sprintf('%s\\%s', $namespace, $name)][] = $path;
         }
     }
@@ -194,7 +206,7 @@ it('H7 — a test is named for the behaviour it pins', function (): void {
     ));
 });
 
-it('G10 — no two test files share a helper name', function (): void {
+it('G10 — no two test files share a helper or constant name', function (): void {
     $clashes = [];
 
     foreach (helpersByName() as $name => $files) {

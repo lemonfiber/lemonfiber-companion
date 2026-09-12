@@ -48,3 +48,6 @@ Thumbs.db
 # and is a file rather than a directory, so it is untouched by this.
 **/Fixtures/
 .rule-fixtures/
+# What a run has written, so the next one can sweep it even if this one is
+# killed before its own `afterEach` is reached.
+.rule-fixtures.written
