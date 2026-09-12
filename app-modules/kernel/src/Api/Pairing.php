@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 use function array_key_exists;
+use function array_keys;
 use function is_array;
+use function is_int;
 use function is_string;
 use function json_decode;
 use function trim;
@@ -58,7 +60,7 @@ final readonly class Pairing
      * where a reader finds it, rather than in a tag that would take the test
      * away.
      */
-    public static function read(string $said, HowItWasRead $how): self
+    public static function read(string $said, HowItWasRead $how, Clock $clock): self
     {
         $found = json_decode($said, associative: true);
 
@@ -66,14 +68,36 @@ final readonly class Pairing
             throw PairingIsNotReadable::fromWhatWasRead($how);
         }
 
+        foreach (array_keys($found) as $key) {
+            // `WhatPairingMaterialSays` is the only place the three keys are
+            // spelled. A `tryFrom` answering null is read here and nowhere
+            // else, which is what keeps the spelling from being written twice.
+            //
+            // Cast because a JSON array decodes to integer keys, and `[1, 2]`
+            // is a payload somebody can send. Refused like any other key the
+            // format does not define, and named in the refusal.
+            $name = (string) $key;
+
+            if (WhatPairingMaterialSays::tryFrom($name) === null) {
+                throw PairingIsNotReadable::carrying($name, $how);
+            }
+        }
+
+        // Read before the address and the fingerprint, because material that
+        // is too old should not be reported as material that is malformed. A
+        // stale code with a typo in its address is stale first — telling
+        // somebody to check what they scanned, when what they need is a new
+        // code, is the screen `N1-R49` is about.
+        self::stillGood($found, $how, $clock);
+
         // `Address::of()` and `Fingerprint::of()` do their own refusing, and
         // this deliberately does not catch them. A malformed address inside
         // well-formed material is that type's refusal to explain, not this
         // one's — and wrapping it would replace a message naming the problem
         // with one naming the envelope.
         return new self(
-            Address::of(self::halfOf($found, 'address', $how)),
-            Fingerprint::of(self::halfOf($found, 'fingerprint', $how)),
+            Address::of(self::halfOf($found, WhatPairingMaterialSays::Address, $how)),
+            Fingerprint::of(self::halfOf($found, WhatPairingMaterialSays::Fingerprint, $how)),
             $how,
         );
     }
@@ -102,6 +126,50 @@ final readonly class Pairing
     }
 
     /**
+     * Refuses material that has expired (`N1-R49`).
+     *
+     * The check is here, at the one moment a payload becomes a `Pairing`,
+     * rather than on a reader the caller is trusted to ask. A type that can
+     * exist in an expired state is a type somebody holds past its expiry, and
+     * the whole point of the expiry is that nothing acts on stale material.
+     *
+     * Expiring *at* the instant counts as expired. A boundary that admits the
+     * exact second is a boundary two clocks disagree about.
+     *
+     * @param array<array-key, mixed> $found
+     */
+    private static function stillGood(array $found, HowItWasRead $how, Clock $clock): void
+    {
+        $when = WhatPairingMaterialSays::Expires;
+
+        if (! array_key_exists($when->value, $found)) {
+            throw PairingIsNotReadable::withoutIts($when, $how);
+        }
+
+        $said = $found[$when->value];
+
+        // An integer, and not a string holding one. A format that takes both
+        // has two spellings of the same fact, and the day a producer switches
+        // spelling is the day every app that only handled the other reports
+        // material it was handed correctly as malformed.
+        //
+        // Nothing checks the sign here. `Instant::atEpochSeconds()` refuses a
+        // moment before the epoch and says so, and a second check would be the
+        // same rule written twice — with the copy answering a worse sentence.
+        // That is the reasoning `read()` already gives for letting `Address`
+        // and `Fingerprint` do their own refusing.
+        if (! is_int($said)) {
+            throw PairingIsNotReadable::withoutIts($when, $how);
+        }
+
+        $expires = Instant::atEpochSeconds($said);
+
+        if (! $clock->now()->isBefore($expires)) {
+            throw PairingIsSpent::since($expires, $how);
+        }
+    }
+
+    /**
      * One half of the material, or a refusal naming which half was missing.
      *
      * Written out rather than `$found['address'] ?? null`, which the analyser
@@ -113,13 +181,13 @@ final readonly class Pairing
      *
      * @param array<array-key, mixed> $found
      */
-    private static function halfOf(array $found, string $half, HowItWasRead $how): string
+    private static function halfOf(array $found, WhatPairingMaterialSays $half, HowItWasRead $how): string
     {
-        if (! array_key_exists($half, $found)) {
+        if (! array_key_exists($half->value, $found)) {
             throw PairingIsNotReadable::withoutIts($half, $how);
         }
 
-        $said = $found[$half];
+        $said = $found[$half->value];
 
         if (! is_string($said) || trim($said) === '') {
             throw PairingIsNotReadable::withoutIts($half, $how);
