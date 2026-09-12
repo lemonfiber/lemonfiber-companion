@@ -6,20 +6,15 @@ namespace Modules\Kernel\Tests\Api;
 
 use function array_map;
 use function expect;
-use function implode;
-use function in_array;
 use function it;
 
 use Modules\Kernel\Api\Code;
-use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Interrupted;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Whereabouts;
 use ReflectionClass;
-use ReflectionNamedType;
 use ReflectionParameter;
 
 use function sprintf;
@@ -143,41 +138,21 @@ it('N1-R11 — names its stack on both arms', function (): void {
         ->toBeTrue();
 });
 
-it('N1-R45 — no part of this type can touch the pairing or its fingerprint', function (): void {
+it('N1-R45 — names its stack and nothing that could re-pin a certificate', function (): void {
     // A credential expiring is not the machine changing — ADR-0018 is explicit
     // — so re-pairing when a session ends would throw away a pinned certificate
     // that is still correct, and then ask the operator to accept a new one.
     // That is a habit an attacker would like them to have.
     //
-    // What this checks is narrow, and worth stating plainly rather than letting
-    // the name imply more: no parameter and no return type anywhere on this
-    // class is a `Pairing` or a `Fingerprint`, so there is no path *through an
-    // interruption* that can discard what pairing established. It says nothing
-    // about code elsewhere and does not try to. N1-R22 pins trust to the stack
-    // rather than to where it answers, which is why naming the stack is enough
-    // to come back to the same certificate.
-    $forbidden = [Pairing::class, Fingerprint::class];
-    $found = [];
+    // The signatures are checked in `TypesThatMustNotMeetTest`, with the other
+    // requirements that are satisfied by a path not existing, because a
+    // reflection loop written per subject is how one of them ends up reading
+    // only the shapes its author happened to think of. What is checked here is
+    // the positive half: naming the stack is enough to come back to the same
+    // pinned certificate, because N1-R22 pins trust to the stack rather than to
+    // where it answers.
+    $on = theStackTheOperatorWasOn();
 
-    foreach (new ReflectionClass(Interrupted::class)->getMethods() as $method) {
-        $types = [$method->getReturnType()];
-
-        foreach ($method->getParameters() as $parameter) {
-            $types[] = $parameter->getType();
-        }
-
-        foreach ($types as $type) {
-            if ($type instanceof ReflectionNamedType && in_array($type->getName(), $forbidden, strict: true)) {
-                $found[] = sprintf('%s mentions %s', $method->getName(), $type->getName());
-            }
-        }
-    }
-
-    expect($found)->toBe([], sprintf(
-        "An interruption reaches the pairing:\n  %s\n\n"
-        . 'A session ending is a credential expiring, and ADR-0018 says that is not the '
-        . 'machine changing. A path from here to a pairing is a path to re-pinning a '
-        . 'certificate that was never wrong (N1-R45).',
-        implode("\n  ", $found),
-    ));
+    expect(Interrupted::theSessionEnded($on, whereTheOperatorWas())->on()->stored())
+        ->toBe($on->stored());
 });
