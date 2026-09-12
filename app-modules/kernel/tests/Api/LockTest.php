@@ -50,7 +50,7 @@ it('N4-R8 — there is no way to open a lock from a boolean', function (): void 
     // it.
     expect(get_class_methods(Lock::class))->toBe(['held', 'openedBy', 'either']);
 
-    $takes = (new ReflectionMethod(Lock::class, 'openedBy'))->getParameters()[0]->getType();
+    $takes = new ReflectionMethod(Lock::class, 'openedBy')->getParameters()[0]->getType();
 
     expect($takes instanceof ReflectionNamedType ? $takes->getName() : null)
         ->toBe(Authenticated::class);
