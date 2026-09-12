@@ -32,6 +32,25 @@ use LogicException;
  */
 final class MustNotLeaveThisProcess extends LogicException
 {
+    /**
+     * A key that was asked to outlive the attempt it belongs to (`N1-R42`).
+     *
+     * Different from the others above, and worth saying why it is here at all.
+     * A key is not a secret — it goes on the wire in a header, and anybody
+     * watching the connection has it. What it must not do is *persist*.
+     *
+     * `N1-R42` says a key serves retry within a single attempt and must not
+     * replay an action across a reconnection. A serialised key is precisely a
+     * key that outlived its attempt: whatever reads it back sends the operator's
+     * earlier action again, at a moment nobody chose, against a stack whose
+     * state has moved on. That is the failure `ADR-0020` spends its length
+     * rejecting, arriving through the one door the ADR does not name.
+     */
+    public static function anIdempotencyKey(): self
+    {
+        return new self('An idempotency key was serialised. A key serves one attempt; one that is written down is one that replays the action after a reconnection (N1-R42).');
+    }
+
     public static function aSession(): self
     {
         return new self('A session may not be serialised. It is a credential, and serialising one writes it in full wherever the result is kept — a cache entry, a queued payload, a session file. Pass the Session itself, or take the header off it at the edge.');

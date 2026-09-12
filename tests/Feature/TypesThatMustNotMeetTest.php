@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Interrupted;
 use Modules\Kernel\Api\Pairing;
+use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Tests\Support\ApiSurface;
 
@@ -52,6 +54,16 @@ function typesThatMustNotMeet(): array
             . 'carried across a gap by eye or by camera and is public in the sense that '
             . 'matters, so a path from it to a session is a path from a photograph in a camera '
             . 'roll to an admitted app.',
+        ],
+        [
+            SecureStorage::class,
+            [IdempotencyKey::class],
+            'N1-R42',
+            'A key serves retry within a single attempt and must not replay an action '
+            . 'across a reconnection. A storage port that could take one is a key that '
+            . 'survives the attempt it belongs to, and whatever reads it back sends the '
+            . 'operator earlier action again — at a moment nobody chose, against a stack '
+            . 'whose state has moved on.',
         ],
     ];
 }
