@@ -1,6 +1,5 @@
 {
     "namespace": "Lemonfiber",
-
     "bridge_functions": [
         {
             "name": "Lemonfiber.Conceal",
@@ -19,13 +18,31 @@
             "android": "app.lemonfiber.native.LemonfiberFunctions.IsProtected",
             "ios": "LemonfiberFunctions.IsProtected",
             "description": "Whether the window is protected from capture right now"
+        },
+        {
+            "name": "Lemonfiber.Authenticate",
+            "android": "app.lemonfiber.native.LemonfiberAuth.Authenticate",
+            "ios": "LemonfiberAuth.Authenticate",
+            "description": "Ask the device who this is, falling back to the passcode when biometry fails (N4-R8)"
+        },
+        {
+            "name": "Lemonfiber.CanAuthenticate",
+            "android": "app.lemonfiber.native.LemonfiberAuth.CanAuthenticate",
+            "ios": "LemonfiberAuth.CanAuthenticate",
+            "description": "Whether the device has a screen lock configured and can authenticate at all"
         }
     ],
-
     "android": {
-        "min_version": 26
+        "min_version": 26,
+        "permissions": [
+            "android.permission.USE_BIOMETRIC"
+        ],
+        "dependencies": {
+            "implementation": [
+                "androidx.biometric:biometric:1.1.0"
+            ]
+        }
     },
-
     "ios": {
         "min_version": "15.0",
         "init_function": "LemonfiberInit.install"
