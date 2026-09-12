@@ -18,6 +18,7 @@ use ShipMonk\ComposerDependencyAnalyser\Config\ErrorType;
  * Lemonfiber\Sdk is a shadow dependency here (E3, N1-R16) — failing in
  * resolution rather than in review.
  */
+
 /**
  * Every PHP file under a directory, at any depth.
  *
