@@ -38,14 +38,38 @@ use function strtolower;
  */
 final class NoWeakenedTlsRule implements Rule
 {
-    /** Options that switch verification off when they are false. */
+    /**
+     * Options that switch verification off when they are false.
+     *
+     * The spellings come from `Settings::ABOUT_VERIFICATION`, which is the
+     * other half of this requirement — it reads configuration key names, this
+     * reads call options — and knew five this did not: `verify_ssl`,
+     * `verify_tls`, `verify_cert`, `ssl_verify` and `tls_verify`. Every one is
+     * an option key a real client accepts, so each was a line that turned
+     * verification off with nothing looking at it.
+     *
+     * Neither file had named the other, which is how two lists about one
+     * security property drift. `NothingTurnsVerificationOffTest` holds the
+     * vocabulary now and reports any spelling no gate refuses.
+     */
     private const array OFF_WHEN_FALSE = [
         'verify', 'verify_peer', 'verify_peer_name', 'verify_host',
+        'verify_ssl', 'verify_tls', 'verify_cert', 'ssl_verify', 'tls_verify',
         'curlopt_ssl_verifypeer', 'curlopt_ssl_verifyhost', 'ssl_verifypeer', 'ssl_verifyhost',
     ];
 
-    /** Options that accept a weaker chain when they are true. */
-    private const array OFF_WHEN_TRUE = ['allow_self_signed', 'verify_expiry', 'insecure'];
+    /**
+     * Options that accept a weaker chain when they are true.
+     *
+     * `skip_verify` and `no_verify` read the other way round from everything
+     * above — the switch is on when the option is true — which is exactly why a
+     * reader skims past one. Same list, opposite polarity, and getting the
+     * polarity wrong would make this rule refuse the safe spelling and pass the
+     * dangerous one.
+     */
+    private const array OFF_WHEN_TRUE = [
+        'allow_self_signed', 'verify_expiry', 'insecure', 'skip_verify', 'no_verify',
+    ];
 
     public function getNodeType(): string
     {
