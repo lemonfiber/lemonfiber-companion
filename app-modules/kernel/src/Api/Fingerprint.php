@@ -61,6 +61,27 @@ final readonly class Fingerprint
     }
 
     /**
+     * The digest, for folding into a form a person can check (`N1-R50`).
+     *
+     * The one reader this type has, and named for the single thing it is for.
+     * `ADR-0018` rejects the human-read fingerprint — sixty-four hex characters
+     * across two screens, where people check the first four and the last four —
+     * so there is deliberately no `shown()`, and this is not it. What it feeds
+     * is {@see AtAGlance}, which folds every byte of the digest into sixteen
+     * characters somebody will really compare.
+     *
+     * It exists because typed pairing has no software comparison available:
+     * nothing was scanned, so nothing carried a digest to compare against, and
+     * `N1-R50` leaves the operator confirming. The name is the guard rail — a
+     * call site reading this for any other purpose reads as obviously wrong,
+     * which is the same argument `Session::forTheHeader()` makes.
+     */
+    public function forComparingByEye(): string
+    {
+        return $this->digest;
+    }
+
+    /**
      * Whether this is the certificate that was promised, compared in constant
      * time.
      *
