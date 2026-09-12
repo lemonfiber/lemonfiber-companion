@@ -161,9 +161,15 @@ function reachesOutside(Module $module, array $forbidden): array
 // The exceptions, asserted by name so they cannot be widened by accident.
 // ---------------------------------------------------------------------------
 
-// N1-R16. The composer manifests already make this true — modules/sdk is the
-// only one requiring lemonfiber/sdk-php — but that only fails when the
-// dependency analyser runs. This fails in the test suite, which runs first.
+// `N1-R16` and `N1-R1`. The composer manifests already make this true —
+// modules/sdk is the only one requiring lemonfiber/sdk-php — but that only fails
+// when the dependency analyser runs. This fails in the test suite, which runs
+// first.
+//
+// `N1-R1` is the same fact from the other side: the app speaks the published web
+// API contract and does not implement a second client of its own (`ADR-0013`).
+// One module naming the SDK is what makes a second client impossible to write
+// without this failing.
 arch('E3 — the SDK is named in exactly one module')
     ->expect('Lemonfiber\Sdk')
     ->toOnlyBeUsedIn('Modules\Sdk');
@@ -183,10 +189,36 @@ it('E3 — only the sdk adapter speaks HTTP', function (): void {
         "These speak HTTP without being the SDK adapter:\n  %s\n\n"
         . 'Every call to lemonfiber goes through lemonfiber/sdk-php. A second client in '
         . 'this application is a fourth consumer the contract does not know it has, and '
-        . 'the first thing it will get wrong is the envelope (E3, N1-R16).',
+        . 'the first thing it will get wrong is the envelope (E3, N1-R1, N1-R16).',
         implode("\n  ", $offenders),
     ));
 });
+
+// `N1-R17` — where the SDK does not expose something, the app waits.
+//
+// Three things must not happen, and two of them are already impossible here.
+// Reaching past the SDK and re-implementing the call both mean speaking HTTP
+// from outside `modules/sdk`, which the rule above refuses, or naming
+// `Lemonfiber\Sdk` from outside it, which the one above that refuses.
+//
+// The third — approximating the answer from another endpoint — is deliberately
+// *not* given a rule, and the reason is worth writing down because the absence
+// looks like an oversight.
+//
+// A checker for it would have to read prose. The first attempt matched comments
+// containing "work around", "approximate" and "derive it from", and it found
+// two files: `Finding`, whose docblock explains that a payload designed before
+// its screen would be one the first screen has to *work around*, and `Wire`,
+// which says the translator will ask `WireVersion` rather than *re-derive it
+// from* an integer. Both are the rule being explained, not broken. A rule that
+// fires on its own documentation is a rule somebody deletes, and the deletion
+// takes the real coverage with it — which is exactly why `Vocabulary` reads
+// tokens rather than text.
+//
+// So this one is held by review, and by `EveryPortIsProvenTwiceTest`: an
+// approximation has to live somewhere, and somewhere is a class that would need
+// a port, a contract test and an adapter before it could reach anything. That
+// is a long way to go without somebody asking why.
 
 arch('nothing opens a socket by hand')
     ->expect(['curl_init', 'curl_exec', 'fsockopen', 'stream_socket_client'])
