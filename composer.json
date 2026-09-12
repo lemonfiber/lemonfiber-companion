@@ -21,6 +21,7 @@
         "internachi/modular": "^3.0",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
+        "lemonfiber/native": "^0.1",
         "modules/backups": "dev-main",
         "modules/connection": "dev-main",
         "modules/design": "dev-main",
@@ -34,7 +35,6 @@
         "modules/updates": "dev-main",
         "modules/vault": "dev-main",
         "nativephp/mobile": "^4.4",
-        "lemonfiber/native": "^0.1",
         "nativephp/mobile-local-notifications": "^0.0.3"
     },
     "require-dev": {
