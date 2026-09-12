@@ -1688,6 +1688,18 @@ final readonly class Fixtures
                 . 'carries no code, so there is nothing to call either.',
             ),
             Fixture::notDrivable(
+                'G11',
+                'The violation is an attribute taken off an element of phpunit.xml, and '
+                . 'this harness writes whole files rather than editing one — editing that '
+                . 'file would also change the run doing the editing. The second half is '
+                . 'worse: what the settings produce is a non-zero exit code, and the '
+                . 'harness reads a JUnit report, which records a test that triggered a '
+                . 'warning as a test that passed. Driven by hand instead, both ways: take '
+                . 'an attribute out and watch the arch rule name it, then delete '
+                . '`.env.testing` and watch `composer test:mutation` exit 1 where it '
+                . 'exited 0.',
+            ),
+            Fixture::notDrivable(
                 'G4',
                 'A shadow dependency needs a package to shadow. The rule is enforced by '
                 . 'composer-dependency-analyser, a third tool this harness does not run, and '
