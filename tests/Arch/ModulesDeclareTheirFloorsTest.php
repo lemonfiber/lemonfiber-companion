@@ -64,7 +64,7 @@ it('G7 — the floors may be raised and may not quietly net out', function (): v
     //
     // A lowered floor is one line in a reviewed diff. This catches the case
     // where nobody reads it.
-    $total = 2000;
+    $total = 2100;
 
     $declared = array_sum(array_map(
         static fn(Module $module): int => ($module->coverageFloor ?? 0) + ($module->mutationFloor ?? 0),
