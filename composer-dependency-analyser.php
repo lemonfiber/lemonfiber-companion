@@ -129,6 +129,25 @@ return (new Configuration())
     // self-removal by a different route, and neither half is a list anybody
     // maintains by hand.
     ->ignoreErrorsOnPackages(modulesWithNoCode(), [ErrorType::UNUSED_DEPENDENCY])
+    // The analyser reads `use` statements, so a module whose only classes name
+    // each other from the same namespace is invisible to it: nothing imports
+    // anything, and the only files that mention the package are its own tests,
+    // which are a dev path. It reports the module as one to move to
+    // require-dev — which cannot be done, because a module ships and its
+    // service provider is discovered at boot.
+    //
+    // Written out rather than derived, and that is the decision rather than an
+    // omission. The condition that actually produces this is "no prod-path file
+    // imports one of the module's classes", which is the analyser's own rule —
+    // health escapes it only because `Api\Queries\WorstFirst` happens to sit
+    // one namespace down and therefore imports `Api\Finding`. A list computed
+    // from a re-statement of somebody else's rule disagrees with it eventually
+    // and ignores an error that does fire.
+    //
+    // It cannot go stale: this analyser reports an ignore that never applied,
+    // so the day something outside connection names it, the gate fails and
+    // names this line as the thing to delete.
+    ->ignoreErrorsOnPackage('modules/connection', [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV])
     // Resolved through the container rather than named, so the analyser cannot
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])
