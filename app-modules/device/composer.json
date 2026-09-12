@@ -1,13 +1,13 @@
 {
     "name": "modules/device",
     "description": "The platform itself: permissions and notifications.",
-    "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
     "require": {
+        "php": "^8.5",
         "ext-sodium": "*",
         "modules/kernel": "dev-main",
-        "nativephp/mobile": "^4.4",
-        "php": "^8.5"
+        "nativephp/mobile": "^4.4"
     },
     "autoload": {
         "psr-4": {
@@ -17,11 +17,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "adapter",
             "floors": {
                 "coverage": 100,
                 "mutation": 0
-            }
+            },
+            "kind": "adapter"
         }
     }
 }
