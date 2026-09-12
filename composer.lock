@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "37627609635e2b88af8192b4beab23d1",
+    "content-hash": "2d4197f3113fee7f5471a2daa3e2d46d",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3102,12 +3102,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "354db94f3a93d2036a3cc7f2c1eb401e00fd0e1d"
+                "reference": "12187e3d67690856f79cac67975b47aad825a831"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/354db94f3a93d2036a3cc7f2c1eb401e00fd0e1d",
-                "reference": "354db94f3a93d2036a3cc7f2c1eb401e00fd0e1d",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/12187e3d67690856f79cac67975b47aad825a831",
+                "reference": "12187e3d67690856f79cac67975b47aad825a831",
                 "shasum": ""
             },
             "require": {
@@ -3237,7 +3237,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-09-12T19:02:58+00:00"
+            "time": "2026-09-12T19:09:02+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -3976,6 +3976,61 @@
                 "source": "https://github.com/NativePHP/mobile-air/tree/4.4.0"
             },
             "time": "2026-09-11T12:34:30+00:00"
+        },
+        {
+            "name": "nativephp/mobile-local-notifications",
+            "version": "0.0.3",
+            "dist": {
+                "type": "zip",
+                "url": "https://plugins.nativephp.com/dist/nativephp/mobile-local-notifications/nativephp-mobile-local-notifications-e8296118ea20a6125d96073ec9443d8a15383bb1-zip-5d47bd.zip",
+                "reference": "e8296118ea20a6125d96073ec9443d8a15383bb1",
+                "shasum": "cc235d7c9d8b29ccbabc9db913cbe4252746b80e"
+            },
+            "require": {
+                "nativephp/mobile": "^3.2.1 || ^4.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^2.7|^3.0|^4.0"
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "NativePHP\\LocalNotifications\\LocalNotificationsServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NativePHP\\LocalNotifications\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "pest"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "NativePHP",
+                    "email": "support@nativephp.com"
+                }
+            ],
+            "description": "Local notifications for NativePHP Mobile with Laravel Notification channel integration",
+            "time": "2026-07-15T18:46:26+00:00"
         },
         {
             "name": "nesbot/carbon",

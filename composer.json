@@ -34,7 +34,8 @@
         "modules/updates": "dev-main",
         "modules/vault": "dev-main",
         "nativephp/mobile": "^4.4",
-        "lemonfiber/native": "^0.1"
+        "lemonfiber/native": "^0.1",
+        "nativephp/mobile-local-notifications": "^0.0.3"
     },
     "require-dev": {
         "ext-simplexml": "*",
@@ -66,6 +67,11 @@
             "options": {
                 "symlink": true
             }
+        },
+        {
+            "name": "nativephp",
+            "type": "composer",
+            "url": "https://plugins.nativephp.com"
         },
         {
             "type": "vcs",

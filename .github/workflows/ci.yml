@@ -14,6 +14,19 @@ concurrency:
 
 env:
   PHP_VERSION: '8.5'
+  # What lets `composer install` reach `plugins.nativephp.com`.
+  #
+  # `nativephp/mobile-local-notifications` is a paid first-party plugin served
+  # from a private Composer repository, so an install without this credential
+  # fails on the download with `402` rather than with anything that names the
+  # cause. Set as an organisation secret so every repository in the estate that
+  # needs a plugin can reach one without a second place to keep the value.
+  #
+  # A pull request from a fork is given no secrets, so this is empty there and
+  # the install fails. That is the same limitation every paid dependency has and
+  # is not something a workflow can route around; the scan job above already
+  # skips forks for the same reason.
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
 # Shaped for cost as much as for correctness.
 #
