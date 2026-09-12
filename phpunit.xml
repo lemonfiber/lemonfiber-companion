@@ -6,9 +6,28 @@
          failOnRisky="true"
          failOnWarning="true"
          failOnDeprecation="true"
+         failOnNotice="true"
+         failOnPhpunitDeprecation="true"
+         failOnPhpunitNotice="true"
+         failOnPhpunitWarning="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutCoverageMetadata="false"
 >
+    <!-- G11 — a diagnostic fails the run.
+         The `failOn*` attributes above are one half of that, and on their own
+         they are narrower than they read. A warning, notice or deprecation
+         raised under `@` is dropped by PHPUnit's issue filter before it reaches
+         the result, so the run prints it and still exits zero: the count in the
+         summary and the exit code disagree, and only one of them is a gate.
+         Most of what a framework raises at boot is raised under `@` — a missing
+         file read with `@file_get_contents` is the common one — which makes
+         that the class of diagnostic this repository is most likely to meet and
+         least likely to fail on.
+         The `ignoreSuppressionOf*` attributes on `<source>` below turn the
+         suppression off for the result only. They report; they do not raise.
+         `tests/Arch/TheSuiteCannotGoQuietTest.php` is what keeps both halves
+         here, because either half alone is a gate that reads as one and is not.
+    -->
     <testsuites>
         <!-- The rules, first: a boundary break should fail before anything
              slower gets a chance to hide it. R1 and R3 live here: the document
@@ -66,7 +85,20 @@
         </testsuite>
     </testsuites>
 
-    <source>
+    <!-- G11, the other half. Each attribute names one kind of diagnostic that
+         PHPUnit would otherwise discard for having been raised under `@`, and
+         `restrictNotices` and `restrictWarnings` are left at their default of
+         false so that a diagnostic raised inside a dependency still counts —
+         our code is what asked for it. -->
+    <source
+        ignoreSuppressionOfDeprecations="true"
+        ignoreSuppressionOfPhpDeprecations="true"
+        ignoreSuppressionOfErrors="true"
+        ignoreSuppressionOfNotices="true"
+        ignoreSuppressionOfPhpNotices="true"
+        ignoreSuppressionOfWarnings="true"
+        ignoreSuppressionOfPhpWarnings="true"
+    >
         <include>
             <directory>bootstrap/Composition</directory>
             <directory>app-modules/*/src</directory>
@@ -81,6 +113,14 @@
         </include>
     </source>
 
+    <!-- The whole environment a test runs in, and the only place it is written.
+         `APP_ENV=testing` is load bearing beyond naming the environment: Laravel
+         reads `.env.<APP_ENV>` where that file exists and `.env` where it does
+         not, so it is what points the suite at the committed `.env.testing`
+         instead of at whatever `.env` the machine happens to have. Delete that
+         file and the suite reads a path that is not in the repository — a
+         different environment per machine, and on a machine with no `.env` at
+         all, a warning per booted test. G11 is what turns that into a failure. -->
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

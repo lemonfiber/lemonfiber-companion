@@ -533,6 +533,7 @@ there, and neither is read as a description of the current code.
 | G8 | Every port in `Modules\Kernel` is bound, once, in the composition root | test: the booted composition root |
 | G9 | No module is below the coverage floor it declared | test: the `Floors` suite, over the clover report |
 | G10 | No two test files declare the same helper or file-level constant name | arch: over the text of the test files |
+| G11 | A diagnostic fails the run, and no setting exempts one | arch: the settings, read out of `phpunit.xml` |
 
 **G2 is the most valuable rule on this page.** A fake that has drifted from its
 adapter makes the suite green while the application is broken, and nothing else
@@ -598,6 +599,22 @@ stops it going stale the day a module is added.
 that one test and report green. Every other rule on this page stops holding, the
 run says nothing is wrong, and the change that did it is one word long. It is the
 single most expensive thing that can be committed here.
+
+**G11 is G6's other half, and it is two settings rather than one.** `->only()`
+stops the suite reporting; a diagnostic nothing acts on lets it report and be
+ignored. `failOnWarning` and its neighbours are what act — and on their own they
+are narrower than they read, because PHPUnit's issue filter drops a warning,
+notice or deprecation raised inside `@` before the result is assembled. The run
+prints the diagnostic, counts it in the summary, and exits zero: the number a
+reader sees and the number the gate reads are not the same number. Most of what
+a framework raises at boot is raised under `@`, so that is not the rare case, it
+is the usual one. `ignoreSuppressionOf*` on `<source>` is what puts the
+suppressed ones back in front of the `failOn*` attributes, and G11 requires both
+halves because either alone reads like a gate and is not one.
+
+The settings only make PHPUnit *report* what PHP raised anyway. Nothing about
+them changes what the application does, and `@` suppresses in production exactly
+as it did before.
 
 **Why D6 permits 0, 1 and 2.** Their names would be the number. Everything else
 — a thirty-second timeout, a three-attempt budget, a staleness threshold in
