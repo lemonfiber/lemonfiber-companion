@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Connection\Api\Obstacle;
-use Tests\Support\Tree;
+use Tests\Support\Catalogue;
 
 // N1-R10 — three different things, each with its own remedy.
 //
@@ -19,49 +19,18 @@ use Tests\Support\Tree;
 // not do, and because the pairing it checks is between a module and the
 // application's text rather than anything inside either.
 
-/**
- * One locale's connection catalogue.
- *
- * @return array<string, string>
- */
-function connectionCatalogue(string $locale): array
-{
-    /** @var mixed $group */
-    $group = require Tree::at(sprintf('lang/%s/connection.php', $locale));
-
-    if (! is_array($group)) {
-        return [];
-    }
-
-    $found = [];
-
-    foreach ($group as $key => $value) {
-        if (is_string($key) && is_string($value)) {
-            $found[$key] = $value;
-        }
-    }
-
-    return $found;
-}
-
-/** @return list<string> */
-function locales(): array
-{
-    $directories = glob(Tree::at('lang/*'), GLOB_ONLYDIR);
-
-    return array_map(basename(...), $directories === false ? [] : $directories);
-}
-
 it('N1-R10 — every obstacle has a sentence and a remedy, in every language', function (): void {
     $missing = [];
 
-    foreach (locales() as $locale) {
-        $catalogue = connectionCatalogue($locale);
+    foreach (Catalogue::locales() as $locale) {
+        $catalogue = Catalogue::of($locale, 'connection');
 
         foreach (Obstacle::cases() as $obstacle) {
-            foreach ([$obstacle->value, sprintf('%s_action', $obstacle->value)] as $key) {
+            foreach (['connection.%s', 'connection.%s_action'] as $shape) {
+                $key = sprintf($shape, $obstacle->value);
+
                 if (! array_key_exists($key, $catalogue)) {
-                    $missing[] = sprintf('%s is missing connection.%s', $locale, $key);
+                    $missing[] = sprintf('%s is missing %s', $locale, $key);
                 }
             }
         }
@@ -82,10 +51,10 @@ it('N1-R10 — every obstacle has a sentence and a remedy, in every language', f
 it('N1-R10 — no two obstacles say the same thing', function (): void {
     $collisions = [];
 
-    foreach (locales() as $locale) {
-        $catalogue = connectionCatalogue($locale);
+    foreach (Catalogue::locales() as $locale) {
+        $catalogue = Catalogue::of($locale, 'connection');
 
-        foreach (['%s', '%s_action'] as $shape) {
+        foreach (['connection.%s', 'connection.%s_action'] as $shape) {
             $said = [];
 
             foreach (Obstacle::cases() as $obstacle) {

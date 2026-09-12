@@ -3,6 +3,24 @@
 declare(strict_types=1);
 
 return [
+    'category' => [
+        'environment' => 'Omgeving',
+        'storage' => 'Opslag',
+        'network' => 'Netwerk',
+        'vpn' => 'VPN',
+        'credentials' => 'Inloggegevens',
+        'services' => 'Services',
+        'providers' => 'Aanbieders',
+        'queue' => 'Wachtrij',
+        'config' => 'Configuratie',
+    ],
+    'conclusion' => [
+        'fail' => 'Mislukt',
+        'unverified' => 'Kon niet worden gecontroleerd',
+        'warn' => 'Heeft aandacht nodig',
+        'pass' => 'Geslaagd',
+        'skipped' => 'Overgeslagen',
+    ],
     'healthy' => 'Alles draait',
     'degraded' => 'Sommige services hebben aandacht nodig',
     'unreachable' => 'Deze stack is hiervandaan niet bereikbaar.',

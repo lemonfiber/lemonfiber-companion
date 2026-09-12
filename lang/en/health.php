@@ -3,6 +3,24 @@
 declare(strict_types=1);
 
 return [
+    'category' => [
+        'environment' => 'Environment',
+        'storage' => 'Storage',
+        'network' => 'Network',
+        'vpn' => 'VPN',
+        'credentials' => 'Credentials',
+        'services' => 'Services',
+        'providers' => 'Providers',
+        'queue' => 'Queue',
+        'config' => 'Configuration',
+    ],
+    'conclusion' => [
+        'fail' => 'Failed',
+        'unverified' => 'Could not be checked',
+        'warn' => 'Needs attention',
+        'pass' => 'Passed',
+        'skipped' => 'Skipped',
+    ],
     'healthy' => 'Everything is running',
     'degraded' => 'Some services need attention',
     'unreachable' => 'This stack cannot be reached from here.',
