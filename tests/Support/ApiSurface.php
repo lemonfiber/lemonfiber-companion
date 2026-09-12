@@ -51,7 +51,7 @@ final readonly class ApiSurface
      * language's own rules, so a rule about published signatures reported on
      * them would be a rule about PHP rather than about this codebase.
      */
-    private const array SHAPED_BY_PHP = ['__debugInfo', '__serialize', '__sleep'];
+    private const array SHAPED_BY_PHP = ['__debugInfo', '__serialize', '__unserialize', '__sleep'];
 
     /**
      * Every published class under `Modules\<Name>\Api\<segments>`.

@@ -10,8 +10,13 @@ use function json_encode;
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AddressIsUnreachable;
+use Modules\Kernel\Api\MustNotLeaveThisProcess;
+use Modules\Kernel\Api\Scheme;
 
+use function print_r;
+use function serialize;
 use function str_contains;
+use function var_export;
 
 const AN_ADDRESS = 'https://192.168.1.42:8443';
 
@@ -44,6 +49,47 @@ it('says nothing about the address when it refuses one', function (): void {
     }
 
     expect(str_contains($said, 'stack.local'))->toBeFalse();
+
+    // And the same of the refusal that does quote a vocabulary back: it lists
+    // what a stack is reached over, never what this one said it was.
+    try {
+        Address::of('ftp://stack.local');
+    } catch (AddressIsUnreachable $refusal) {
+        $said = $refusal->getMessage();
+    }
+
+    expect(str_contains($said, 'ftp'))->toBeFalse();
+});
+
+it('refuses a scheme a stack is not dialled over', function (): void {
+    // Not the same refusal as "no scheme". `file:///etc/passwd` parses, carries
+    // a scheme, and would be answered `isEncrypted() === false` — a true
+    // sentence about a stack that was never there. The honest reading is that
+    // the pairing material did not survive the trip.
+    expect(fn(): Address => Address::of('file:///etc/passwd'))
+        ->toThrow(AddressIsUnreachable::class, 'something else');
+
+    expect(fn(): Address => Address::of('ftp://stack.local'))
+        ->toThrow(AddressIsUnreachable::class, 'something else');
+});
+
+it('lists the ways a stack is dialled by reading them, not by spelling them', function (): void {
+    // The refusal tells an operator what a stack *is* reached over, so the
+    // sentence carries the vocabulary. Read from the enum rather than typed
+    // beside it: a scheme added there and not here would leave somebody being
+    // told their address is impossible by a sentence that no longer lists the
+    // way they were told to reach their stack.
+    $said = '';
+
+    try {
+        Address::of('ftp://stack.local');
+    } catch (AddressIsUnreachable $refusal) {
+        $said = $refusal->getMessage();
+    }
+
+    foreach (Scheme::cases() as $scheme) {
+        expect(str_contains($said, $scheme->value))->toBeTrue();
+    }
 });
 
 it('answers N1-R12 from the one fact that decides it', function (): void {
@@ -79,4 +125,25 @@ it('refuses a malformed address as well as one with no scheme', function (): voi
     // other half of the `is_string` check.
     expect(fn(): Address => Address::of(':80'))
         ->toThrow(AddressIsUnreachable::class, 'needs a scheme');
+});
+
+it('is closed to every reader that asks the type, and open to the one that does not', function (): void {
+    // The docblock says this carries the redaction `Session` carries, so it
+    // carries the same caveat with it. `var_export` walks private properties
+    // directly and no method intercepts it.
+    //
+    // Worth stating twice rather than once and cross-referenced, because the
+    // reason differs: a session is a credential, and an address is where
+    // somebody lives. N4-R13's report assembler has to refuse to walk both, and
+    // a reader who found the caveat only on the credential could reasonably
+    // conclude the other was already sealed.
+    expect(str_contains(print_r(Address::of(AN_ADDRESS), return: true), AN_ADDRESS))->toBeFalse();
+    expect(str_contains(var_export(Address::of(AN_ADDRESS), return: true), AN_ADDRESS))->toBeTrue();
+});
+
+it('N1-R15 — an address does not leave the process in a serialised payload', function (): void {
+    // Not secrecy. Anything that serialises stack addresses accumulates a map
+    // of private networks, which is the thing N1-R15 is actually protecting.
+    expect(fn(): string => serialize(Address::of(AN_ADDRESS)))
+        ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });

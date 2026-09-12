@@ -42,10 +42,13 @@ use function trim;
  * operator their pairing code is broken when what is true is that their
  * connection is not private. That distinction is exactly what `N1-R12` exists
  * to keep, and it is lost if the value cannot be constructed.
+ *
+ * A scheme {@see Scheme} does not name is refused, which is the other side of
+ * the same coin: `file://` is not an insecure stack, it is not a stack.
  */
 final readonly class Address implements JsonSerializable
 {
-    private function __construct(private string $url, private string $scheme) {}
+    private function __construct(private string $url, private Scheme $scheme) {}
 
     /**
      * What a debugger prints.
@@ -55,6 +58,34 @@ final readonly class Address implements JsonSerializable
     public function __debugInfo(): array
     {
         return ['url' => '(a stack address, hidden)'];
+    }
+
+    /**
+     * What `serialize()` writes, which is nothing.
+     *
+     * `__debugInfo()` above answers the readers that are people. This answers
+     * the one that is code, and the answer is a refusal — see
+     * {@see MustNotLeaveThisProcess} for why it is not a redaction.
+     *
+     * @return array<string, never>
+     */
+    public function __serialize(): array
+    {
+        throw MustNotLeaveThisProcess::anAddress();
+    }
+
+    /**
+     * What `unserialize()` reads, which is nothing either.
+     *
+     * The other half of the same door. Without it a crafted payload naming this
+     * class would be walked back into an object with whatever properties it
+     * carried, which is a Address nobody constructed.
+     *
+     * @param array<string, never> $data
+     */
+    public function __unserialize(array $data): void
+    {
+        throw MustNotLeaveThisProcess::anAddress();
     }
 
     public static function of(string $url): self
@@ -70,13 +101,20 @@ final readonly class Address implements JsonSerializable
         // whole check. An `|| $scheme === ''` beside it reads like caution and is
         // a branch no input can reach, which is a line no test can defend and no
         // mutant can be killed on.
-        $scheme = parse_url($trimmed, PHP_URL_SCHEME);
+        $said = parse_url($trimmed, PHP_URL_SCHEME);
 
-        if (! is_string($scheme)) {
+        if (! is_string($said)) {
             throw AddressIsUnreachable::withoutAScheme();
         }
 
-        return new self($trimmed, mb_strtolower($scheme));
+        // RFC 3986 calls the scheme case-insensitive, and a QR code encoder that
+        // upper-cases the whole payload to shorten it is a real thing — so the
+        // case is normalised before the vocabulary is consulted rather than a
+        // second case being added to it.
+        $scheme = Scheme::tryFrom(mb_strtolower($said))
+            ?? throw AddressIsUnreachable::withAnUnknownScheme();
+
+        return new self($trimmed, $scheme);
     }
 
     /** The value the client dials, and nothing else. */
@@ -88,14 +126,14 @@ final readonly class Address implements JsonSerializable
     /**
      * Whether what travels to this address is encrypted.
      *
-     * The question `N1-R12` asks, answered from the one fact that decides it.
-     * A screen that worked this out for itself would be a second implementation
-     * of a one-line rule, and the two would disagree about the case nobody
-     * thought of.
+     * The question `N1-R12` asks, handed to the type that owns the answer. This
+     * is not a second implementation of {@see Scheme::isEncrypted()} — it is the
+     * address saying which scheme to ask, which is the only part of the question
+     * an address knows.
      */
     public function isEncrypted(): bool
     {
-        return $this->scheme === 'https';
+        return $this->scheme->isEncrypted();
     }
 
     public function is(self $other): bool

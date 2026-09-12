@@ -62,6 +62,34 @@ final readonly class Session implements JsonSerializable
      * token is the stack's business, and a client that quietly edits a
      * credential before sending it fails in a way the server cannot explain.
      */
+    /**
+     * What `serialize()` writes, which is nothing.
+     *
+     * `__debugInfo()` above answers the readers that are people. This answers
+     * the one that is code, and the answer is a refusal — see
+     * {@see MustNotLeaveThisProcess} for why it is not a redaction.
+     *
+     * @return array<string, never>
+     */
+    public function __serialize(): array
+    {
+        throw MustNotLeaveThisProcess::aSession();
+    }
+
+    /**
+     * What `unserialize()` reads, which is nothing either.
+     *
+     * The other half of the same door. Without it a crafted payload naming this
+     * class would be walked back into an object with whatever properties it
+     * carried, which is a Session nobody constructed.
+     *
+     * @param array<string, never> $data
+     */
+    public function __unserialize(array $data): void
+    {
+        throw MustNotLeaveThisProcess::aSession();
+    }
+
     public static function of(string $token): self
     {
         if (trim($token) === '') {

@@ -8,10 +8,12 @@ use function expect;
 use function it;
 use function json_encode;
 
+use Modules\Kernel\Api\MustNotLeaveThisProcess;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SessionIsBlank;
 
 use function print_r;
+use function serialize;
 use function str_contains;
 use function var_export;
 
@@ -62,12 +64,28 @@ it('does not serialise itself into a payload', function (): void {
     expect($encoded)->toBe('{"session":"(a session, hidden)"}');
 });
 
-it('is still readable by var_export, which is the part this cannot close', function (): void {
-    // Asserted rather than left implied. `print_r` and `var_export` read
-    // private properties directly and no method intercepts them, so this type
-    // narrows the surface and does not seal it. What seals it is a diagnostic
-    // report that refuses to walk a `Session` at all (N4-R13), and there is no
-    // report assembler yet — when there is, this test is where somebody will
-    // find out what it still has to do.
+it('is closed to every reader that asks the type, and open to the one that does not', function (): void {
+    // Four readers, and they do not all go through the same door. `var_dump`
+    // and `print_r` consult `__debugInfo()`; `json_encode` consults
+    // `jsonSerialize()`; `serialize()` consults `__serialize()`, which refuses.
+    //
+    // `var_export` asks nothing. It walks private properties directly and there
+    // is no method that intercepts it, so this type narrows the surface and
+    // does not seal it — asserted rather than left implied, because the gap is
+    // invisible otherwise and somebody will eventually reach for `var_export`
+    // in a log line.
+    //
+    // What seals it is a diagnostic report that refuses to walk a `Session` at
+    // all (N4-R13), and there is no report assembler yet — when there is, this
+    // test is where somebody will find out what it still has to do.
+    expect(str_contains(print_r(Session::of(A_TOKEN), return: true), A_TOKEN))->toBeFalse();
     expect(str_contains(var_export(Session::of(A_TOKEN), return: true), A_TOKEN))->toBeTrue();
+});
+
+it('N1-R15 — a session does not leave the process in a serialised payload', function (): void {
+    // The third way out, and the one neither redaction covers: `serialize()`
+    // walks private properties itself. A credential reaches a cache entry or a
+    // queued job payload that way, in full.
+    expect(fn(): string => serialize(Session::of(A_TOKEN)))
+        ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });
