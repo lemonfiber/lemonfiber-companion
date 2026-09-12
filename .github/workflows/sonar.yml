@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: read
+  # The gate below edits one sticky verdict comment on the pull request.
+  pull-requests: write
 
 concurrency:
   group: sonar-${{ github.ref }}
@@ -55,3 +57,56 @@ jobs:
       - uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Q-R64 — the check this repository was the only one in the estate without.
+  #
+  # The scan above produces the analysis; nothing here read it. SonarCloud's free
+  # plan cannot express "zero issues" as a quality gate condition, so a green
+  # `SonarCloud Code Analysis` tick means the *quality gate* passed, not that the
+  # project is clean — and this repository merged a pull request with two issues
+  # standing open under exactly that tick. `php:S1186` on an empty constructor and
+  # `php:S1142` on a method with four returns, both reported, both unread, because
+  # no check in this repository ever asked for the number.
+  #
+  # Every other repository here calls the shared reusable in `spec`, which asks
+  # both questions Q-R64 needs — new issues on this pull request, and open issues
+  # against the project — and blocks on either. One definition, so a repository
+  # cannot drift into gating differently from its neighbours, and so a fix to the
+  # gate reaches all of them at once.
+  gate:
+    # No `name:`, deliberately. The required-check context is built from the job
+    # ids — `gate / gate` — and every other repository here is protected under
+    # exactly that string. A display name would rename the context and leave
+    # this repository's branch protection pointing at a check that never
+    # reports, which is the same hole this file exists to close.
+    #
+    # After the scan, so there is a summary to read. Without this the gate polls
+    # for a comment the scan has not been started to produce yet and spends its
+    # whole timeout waiting for one.
+    needs: sonar
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@4189c0a9b8b40540f32588bd434e1f0f7a4aafb7 # main
+    with:
+      # Two, which is what actually stands against `main` right now — and this
+      # branch is the one that takes both away.
+      #
+      # Zero was the first answer and it was wrong in a specific, instructive
+      # way: the gate counts open issues against the *project*, which is `main`,
+      # and `main` still carries `php:S1186` and `php:S1142` until this merges.
+      # Declaring zero made the gate refuse the very pull request that brings the
+      # count to zero. A ratchet with no way to acknowledge what it inherited is
+      # a ratchet that jams on the day it is installed.
+      #
+      # The shared gate already anticipates this: a raise may name the backlog
+      # standing against the base branch and nothing past it, so this can say
+      # `2` and could not have said `3`. Reality may be declared; headroom may
+      # not.
+      #
+      # The follow-up drops it to 0 once `main` has been re-scanned, and the
+      # gate itself will say so — it prints "below the declared allowance;
+      # lower it" for exactly this.
+      allowed-open: 2
+    secrets:
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
