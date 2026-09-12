@@ -19,40 +19,184 @@ use ShipMonk\ComposerDependencyAnalyser\Config\ErrorType;
  * resolution rather than in review.
  */
 /**
- * Every module package the composition root does not name.
+ * Every PHP file under a directory, at any depth.
  *
- * The namespace is derived the same way the module manifests derive it —
- * `modules/design` is `Modules\Design` — so a module added tomorrow is covered
- * without anyone editing this file.
+ * `glob` has no globstar, so a pattern would see one level and answer for the
+ * rest by saying nothing — which here would call a module unused because the
+ * file naming it sat one directory deeper.
  *
  * @return list<string>
  */
-function unwiredModules(): array
+function filesUnder(string $directory): array
+{
+    if (! is_dir($directory)) {
+        return [];
+    }
+
+    $found = [];
+
+    $walk = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(
+        $directory,
+        FilesystemIterator::SKIP_DOTS,
+    ));
+
+    foreach ($walk as $file) {
+        if ($file instanceof SplFileInfo && $file->getExtension() === 'php') {
+            $found[] = $file->getPathname();
+        }
+    }
+
+    sort($found);
+
+    return $found;
+}
+
+/**
+ * The names a file actually references, with comments and strings left out.
+ *
+ * Matching the raw text would count a namespace written in a comment, and this
+ * repository's comments name module namespaces constantly — the architecture
+ * rules explain themselves in terms of `Modules\Health\Internal` and the like.
+ * A comment is not a use, and treating it as one puts a module back on the
+ * exemption list for a sentence about it.
+ *
+ * @return list<string>
+ */
+function namesIn(string $file): array
+{
+    $found = [];
+
+    foreach (token_get_all((string) file_get_contents($file)) as $token) {
+        if (! is_array($token)) {
+            continue;
+        }
+
+        if (in_array($token[0], [T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED, T_STRING], true)) {
+            $found[] = $token[1];
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * The module packages nothing outside the module uses at all.
+ *
+ * A module is required by the root structurally rather than because root code
+ * names it: the framework discovers each one's service provider. That holds
+ * for as long as nothing has been wired to it, and stops holding the moment
+ * something is — so the list is derived rather than written out, and a module
+ * drops off it by being used.
+ *
+ * @return list<string>
+ */
+function unusedModules(): array
+{
+    return modulesWhere(static fn(string $name, string $own): bool
+        => ! namedIn($name, $own, productionTrees()) && ! namedIn($name, $own, devTrees()));
+}
+
+/**
+ * The module packages only a test names.
+ *
+ * The state every module passes through on its way to being wired up: it has
+ * classes and a suite of its own, and no production code has reached for it
+ * yet. The analyser reports that as a production dependency used only in dev,
+ * which is true and is not a fault — the manifest requires it because the
+ * framework loads it, not because `app/` types it.
+ *
+ * @return list<string>
+ */
+function modulesOnlyTestsUse(): array
+{
+    return modulesWhere(static fn(string $name, string $own): bool
+        => ! namedIn($name, $own, productionTrees()) && namedIn($name, $own, devTrees()));
+}
+
+/**
+ * Module packages matching a predicate over their namespace and own directory.
+ *
+ * Two lists rather than one because the analyser reports an ignore that never
+ * fires as an error, which is the property that makes an exemption remove
+ * itself. Ignoring both error types for every unwired module would mean one of
+ * the two never fires for each of them, and the file would fail on its own
+ * exemptions.
+ *
+ * @param callable(string, string): bool $matches
+ *
+ * @return list<string>
+ */
+function modulesWhere(callable $matches): array
 {
     /** @var array{require?: array<string, string>} $manifest */
     $manifest = json_decode((string) file_get_contents(__DIR__ . '/composer.json'), true);
 
-    $root = '';
-
-    foreach ((array) glob(__DIR__ . '/app/*/*.php') as $file) {
-        $root .= (string) file_get_contents((string) $file);
-    }
-
-    $unwired = [];
+    $found = [];
 
     foreach (array_keys($manifest['require'] ?? []) as $package) {
         if (! str_starts_with($package, 'modules/')) {
             continue;
         }
 
-        $name = str_replace(' ', '', ucwords(str_replace('-', ' ', substr($package, strlen('modules/')))));
+        $short = substr($package, strlen('modules/'));
+        $name = str_replace(' ', '', ucwords(str_replace('-', ' ', $short)));
 
-        if (! str_contains($root, sprintf('Modules\\%s\\', $name))) {
-            $unwired[] = $package;
+        // A module's own files are excluded wherever this looks: declaring a
+        // namespace is not using it. `app-modules/kernel/src` is what
+        // `modules/kernel` provides, not a consumer of it.
+        if ($matches($name, sprintf('%s/app-modules/%s/', __DIR__, $short))) {
+            $found[] = $package;
         }
     }
 
-    return $unwired;
+    return $found;
+}
+
+/** @return list<string> */
+function productionTrees(): array
+{
+    return [
+        __DIR__ . '/app',
+        __DIR__ . '/config',
+        __DIR__ . '/routes',
+        ...(array) glob(__DIR__ . '/app-modules/*/src'),
+    ];
+}
+
+/** @return list<string> */
+function devTrees(): array
+{
+    return [
+        __DIR__ . '/tests',
+        __DIR__ . '/scripts',
+        ...(array) glob(__DIR__ . '/app-modules/*/tests'),
+    ];
+}
+
+/**
+ * Whether any file in these trees, outside `$own`, references `Modules\<name>`.
+ *
+ * @param list<string> $trees
+ */
+function namedIn(string $name, string $own, array $trees): bool
+{
+    $prefix = sprintf('Modules\\%s\\', $name);
+
+    foreach ($trees as $tree) {
+        foreach (filesUnder($tree) as $file) {
+            if (str_starts_with($file, $own)) {
+                continue;
+            }
+
+            foreach (namesIn($file) as $used) {
+                if (str_starts_with($used, $prefix)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 return (new Configuration())
@@ -88,7 +232,8 @@ return (new Configuration())
     // So each module drops off this list by being wired up, which is the same
     // self-removal by a different route, and neither half is a list anybody
     // maintains by hand.
-    ->ignoreErrorsOnPackages(unwiredModules(), [ErrorType::UNUSED_DEPENDENCY])
+    ->ignoreErrorsOnPackages(unusedModules(), [ErrorType::UNUSED_DEPENDENCY])
+    ->ignoreErrorsOnPackages(modulesOnlyTestsUse(), [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV])
     // Resolved through the container rather than named, so the analyser cannot
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])
