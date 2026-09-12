@@ -488,6 +488,29 @@ final readonly class Fixtures
                 }
                 PHP, 'missingType.parameter'),
 
+            // The second half of D3, and the half its own fixture was not
+            // proving. The one above plants a *missing* type and shows the
+            // analyser refuses it. The rule says "no `mixed` in public
+            // signatures", which is a different claim: `mixed` is a declared
+            // type, so it is fully covered by the type-coverage measure and
+            // legal at level max. The rule read as enforced and nothing checked
+            // it.
+            Fixture::suite('D3', 'app-modules/health/src/Api/Fixtures/SaysMixed.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Api\Fixtures;
+
+                final readonly class SaysMixed
+                {
+                    public function anything(mixed $said): mixed
+                    {
+                        return $said;
+                    }
+                }
+                PHP, 'D3 —', 'SaysMixed'),
+
             Fixture::suite('D4', 'app-modules/health/src/Fixtures/SchemeIsALiteral.php', <<<'PHP'
                 <?php
 

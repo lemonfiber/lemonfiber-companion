@@ -237,7 +237,7 @@ $outcome->either(
 |---|---|---|
 | D1 | No `array` in a public `Api` signature — value objects or typed collections | arch: reflection over every published method |
 | D2 | No primitive obsession: ids, tokens, durations are types | arch: no `string`/`int`/`float` parameter outside a named constructor |
-| D3 | No `mixed` in public signatures | phpstan (level max + type coverage 100%) |
+| D3 | No `mixed` in public signatures | phpstan (level max + type coverage 100%) for a missing type, plus arch for `mixed` itself — coverage counts a type as declared, and `mixed` is one |
 | D4 | Enums for every closed set, never string constants and never a literal compared against | arch (names) + test over source tokens (literals) + shipmonk `ForbidMatchDefaultArmForEnums` |
 | D5 | No bare `true`/`false` at a call site — name the argument or split the method | phpstan: own rule |
 | D6 | No unnamed numeric literal in a method body | phpstan: own rule + SonarCloud |
@@ -481,6 +481,22 @@ these*, and a list holding both a function name and a namespace, which cancel
 out. R3 refuses those three shapes by name. R2 is the general answer: plant the
 smallest violation of every rule, run the machine that enforces it, and require
 it to report.
+
+**A fixture must break the rule's sentence, not its mechanism.** This is the
+failure R2 is most likely to miss, because a fixture written from the code that
+enforces a rule passes by construction.
+
+`D3` says "no `mixed` in public signatures". Its fixture planted a parameter
+with *no type at all* and asserted the analyser reported `missingType.parameter`
+— which it does, and which proves something true about missing types and nothing
+at all about `mixed`. Type coverage counts whether a type is declared, and
+`mixed` is a declared type; `mixed $said): mixed` is 100% covered by that
+measure and legal at level max. The rule read as enforced, R2 read as satisfied,
+and a published signature saying `mixed` would have passed every gate.
+
+Write the fixture from the sentence. If the sentence cannot be broken in a way
+the mechanism sees, that is the finding: the mechanism is narrower than the rule
+and one of the two has to move.
 
 **Every fixture sits under a directory called `Fixtures`**, with one exception:
 the coverage report a floors fixture needs goes to `coverage/`, which is
