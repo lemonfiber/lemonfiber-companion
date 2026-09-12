@@ -32,7 +32,17 @@ Servarr = "Servarr"
 #
 # A locale added here needs a line here too, and LocaleParityTest fails if one
 # is missing rather than leaving the omission to be noticed.
-extend-exclude = ["lang/nl/"]
+# The decision records live under `.docs/`, which is the estate's convention
+# (`lemonfiber` and `brand` keep theirs there too) and is a directory this
+# checker skips by default — so moving them there would have quietly taken them
+# out of the spell check. `.git` has to come back out by hand once hidden files
+# are in: its object files are compressed binary, and the checker reads them as
+# seventy-odd misspellings that no edit can ever fix.
+#
+# The rest of what this admits is a gain rather than a cost: the workflows, the
+# hooks and this file's neighbours are now checked too, and were not before.
+ignore-hidden = false
+extend-exclude = ["lang/nl/", ".git/"]
 
 [default.extend-identifiers]
 # Pest's own expectation is spelled this way; the stub mirrors its API rather

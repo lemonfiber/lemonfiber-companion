@@ -154,7 +154,7 @@ cannot be mechanised and a human has to catch it; the suite prints how many
 there are. `planned` means a rule is agreed and not yet built, and a ratchet in
 the same test means that count may fall and may not rise.
 
-If a rule blocks you, [`docs/decisions/0005`](docs/decisions/0005-how-a-rule-changes.md)
+If a rule blocks you, [`.docs/decisions/0005`](.docs/decisions/0005-how-a-rule-changes.md)
 says how to change one. Deleting the row to go green is the one route that is
 not available.
 
