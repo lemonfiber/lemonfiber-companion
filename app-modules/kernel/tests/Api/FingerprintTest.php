@@ -64,5 +64,17 @@ it('offers no way to show one to a person', function (): void {
     // display accessor here would be the beginning of that screen.
     // `get_class_methods` rather than reflection: P4 forbids reflection here,
     // and the question is only which names exist.
-    expect(get_class_methods(Fingerprint::class))->toBe(['of', 'is']);
+    //
+    // `forComparingByEye()` is named on this list deliberately, and it is not a
+    // display accessor — it is the one input to `AtAGlance`, which folds the
+    // whole digest into sixteen characters somebody will really compare. That
+    // exists because `N1-R50` has no software comparison available: typed
+    // pairing scanned nothing, so nothing carried a digest to compare against,
+    // and what is left is the operator confirming.
+    //
+    // The two live apart so that the ability to display a fingerprint cannot be
+    // reached *from* a fingerprint — getting one is an explicit act naming
+    // `AtAGlance`, which is a line a reviewer sees. Adding a second reader here
+    // fails this test, which is the point of pinning the list.
+    expect(get_class_methods(Fingerprint::class))->toBe(['of', 'forComparingByEye', 'is']);
 });
