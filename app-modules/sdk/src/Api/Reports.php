@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Report;
+use Modules\Sdk\Internal\Wire;
 
 /**
  * The `doctor` envelope, read as the report the health module works in.
@@ -49,7 +50,7 @@ final readonly class Reports
     /** @param Envelope<mixed> $envelope the `doctor` envelope, as the client returned it */
     public static function in(Envelope $envelope): Report
     {
-        $data = self::payload($envelope);
+        $data = self::payload(Wire::checked($envelope));
 
         if (! is_array($data)) {
             throw ReportIsUnreadable::missing('data');

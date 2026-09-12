@@ -11,6 +11,7 @@ use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\Problem;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Severity;
@@ -165,4 +166,14 @@ it('leaves the wrong kind to the client to report', function (): void {
     // would.
     expect(fn(): Problem => Problems::in(new Envelope(1, 'status', aWholeError())))
         ->toThrow(UnexpectedKind::class);
+});
+
+it('N1-R13 — refuses an envelope in a wire version this app does not read', function (): void {
+    // Asserted here and not only over `Wire`, because what is being pinned is
+    // that this translator asks. A gate nothing calls is a gate.
+    //
+    // An error is the answer most likely to arrive from a stack ahead of its app,
+    // because a version mismatch is itself the kind of thing a stack reports.
+    expect(fn(): Problem => Problems::in(new Envelope(99, 'error', [])))
+        ->toThrow(EnvelopeIsNotRead::class, 'version 99');
 });

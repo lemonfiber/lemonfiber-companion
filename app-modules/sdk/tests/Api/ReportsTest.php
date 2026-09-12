@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Report;
@@ -227,4 +228,15 @@ it('refuses a payload that is not an object at all', function (): void {
 it('leaves the wrong kind to the client to report', function (): void {
     expect(fn(): Report => Reports::in(new Envelope(1, 'status', aWholeRun())))
         ->toThrow(UnexpectedKind::class);
+});
+
+it('N1-R13 — refuses an envelope in a wire version this app does not read', function (): void {
+    // Asserted here and not only over `Wire`, because what is being pinned is
+    // that this translator asks. A gate nothing calls is a gate.
+    //
+    // A report read out of an envelope this app does not understand is the worst
+    // of the two: a screen shows a stack as healthy, or as broken, from fields
+    // whose meaning moved.
+    expect(fn(): Report => Reports::in(new Envelope(99, 'doctor', [])))
+        ->toThrow(EnvelopeIsNotRead::class, 'version 99');
 });
