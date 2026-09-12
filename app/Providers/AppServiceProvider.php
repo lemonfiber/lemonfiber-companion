@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Lemonfiber\Native\Screen;
 use Modules\Design\Api\Theme;
 use Modules\Device\Api\PlatformNotifier;
+use Modules\Device\Api\PlatformScreen;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
+use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Notifier;
@@ -71,6 +74,19 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             Notifier::class,
             static fn(): Notifier => new PlatformNotifier(new LocalNotifications(), new PushNotifications()),
+        );
+
+        // Bound for the same reason: a window is outside this process, and an
+        // app holding one from launch would go on answering with the state it
+        // saw then.
+        //
+        // `N4-R9` is not reached through this binding at all. The native half
+        // installs a lifecycle observer as the app starts and protects a
+        // backgrounded app whether or not anything here is ever resolved — a
+        // requirement with no exceptions should not depend on a container entry.
+        $this->app->bind(
+            Capture::class,
+            static fn(): Capture => new PlatformScreen(new Screen()),
         );
     }
 

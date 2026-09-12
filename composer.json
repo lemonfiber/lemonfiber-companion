@@ -21,6 +21,7 @@
         "internachi/modular": "^3.0",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
+        "lemonfiber/native": "^0.1",
         "modules/backups": "dev-main",
         "modules/connection": "dev-main",
         "modules/design": "dev-main",
@@ -60,6 +61,13 @@
         "tomasvotruba/type-coverage": "^2.3"
     },
     "repositories": [
+        {
+            "type": "path",
+            "url": "native",
+            "options": {
+                "symlink": true
+            }
+        },
         {
             "name": "nativephp",
             "type": "composer",
@@ -141,11 +149,11 @@
         "refactor": "rector process --dry-run",
         "refactor:fix": "rector process",
         "test": "pest --parallel --exclude-testsuite=Guards,Floors",
-        "test:coverage": "pest --exclude-testsuite=Guards,Floors --coverage --min=100",
+        "test:coverage": "php -d pcov.directory=. -d pcov.exclude='~/(vendor|bootstrap/cache)/~' vendor/bin/pest --exclude-testsuite=Guards,Floors --coverage --min=100",
         "test:floors": "pest --testsuite=Floors",
         "test:guards": "pest --testsuite=Guards",
         "test:mutation": "@php scripts/mutation.php",
-        "test:report": "pest --exclude-testsuite=Guards,Floors --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
+        "test:report": "php -d pcov.directory=. -d pcov.exclude='~/(vendor|bootstrap/cache)/~' vendor/bin/pest --exclude-testsuite=Guards,Floors --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
         "validate:modules": "@php scripts/manifests.php validate --strict --no-check-publish"
     },
     "scripts-descriptions": {
@@ -156,7 +164,7 @@
         "test:floors": "Check every module against the coverage floor it declared, over the report test:report writes (G9).",
         "test:guards": "Plant a violation of every rule and require each rule to report it (R2).",
         "test:mutation": "Mutation testing at the floor each module declares. Modules sharing a floor share a run, because a floor of 100 admits no offsetting between them; a module whose floor differs gets its own.",
-        "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud and the Floors suite read (Q-R64, G9).",
+        "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud and the Floors suite read (Q-R64, G9). The pcov flags are load-bearing: left alone, pcov instruments the longest common prefix of the phpunit source includes, which is `app` \u2014 and that reaches `app-modules` only because the match is on the string rather than the path. `native/src` falls outside it, so every line of the plugin's PHP read as never executed while its tests passed. Pointing the directory at the repository root fixes that, and excluding vendor makes the run faster than it was before.",
         "validate:modules": "Validate every module manifest; the root validate does not look at them."
     }
 }

@@ -1,0 +1,20 @@
+# One width, read by both Kotlin tools.
+#
+# ktlint reads `.editorconfig` and detekt is configured from `detekt.yml`, and
+# with the two set differently they fight: ktlint's formatter rejoins a line that
+# detekt then rejects for being too long, and `ktlintFormat` followed by `detekt`
+# never converges. 110 is also what `.swift-format` uses, so a comment written
+# for one half does not need rewrapping to move to the other.
+root = false
+
+[*.kt]
+max_line_length = 110
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+
+[*.kts]
+max_line_length = 110
+indent_size = 4
+indent_style = space
+insert_final_newline = true

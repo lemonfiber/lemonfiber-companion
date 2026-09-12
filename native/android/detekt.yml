@@ -1,0 +1,33 @@
+# What this adds on top of detekt's defaults.
+#
+# `buildUponDefaultConfig` is on, so everything not named here is detekt's own
+# default. Only the disagreements are written out, and each one says why —
+# a suppressed rule with no reason is indistinguishable from a rule nobody
+# understood.
+comments:
+  # Every public declaration is documented. This codebase's whole convention is
+  # that the reasoning lives beside the code, and the Kotlin half is not exempt
+  # from it because it is a smaller half.
+  UndocumentedPublicClass:
+    active: true
+  UndocumentedPublicFunction:
+    active: true
+  UndocumentedPublicProperty:
+    active: true
+
+style:
+  MaxLineLength:
+    # The same width the Swift side uses, so a comment written for one file does
+    # not have to be rewrapped to move to the other.
+    maxLineLength: 110
+  MagicNumber:
+    active: true
+
+naming:
+  # A NativePHP plugin ships its native sources flat under `resources/android`,
+  # because that is the directory the builder copies into the host app — there
+  # is no `app/lemonfiber/native/` tree here and there cannot be one. The package
+  # is still what the manifest names in `nativephp.json`, and a mismatch between
+  # the two is caught there rather than by a rule about directory layout.
+  InvalidPackageDeclaration:
+    active: false
