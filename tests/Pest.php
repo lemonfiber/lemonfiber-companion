@@ -3,9 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Http;
-
-use function sprintf;
-
 use Tests\TestCase;
 
 // The native expansion's tests are here too, by path rather than by name: they
