@@ -56,13 +56,6 @@ final readonly class Session implements JsonSerializable
     }
 
     /**
-     * The one place a string becomes a session.
-     *
-     * Not trimmed on the way in beyond the blank check: whitespace inside a
-     * token is the stack's business, and a client that quietly edits a
-     * credential before sending it fails in a way the server cannot explain.
-     */
-    /**
      * What `serialize()` writes, which is nothing.
      *
      * `__debugInfo()` above answers the readers that are people. This answers
@@ -90,6 +83,13 @@ final readonly class Session implements JsonSerializable
         throw MustNotLeaveThisProcess::aSession();
     }
 
+    /**
+     * The one place a string becomes a session.
+     *
+     * Not trimmed on the way in beyond the blank check: whitespace inside a
+     * token is the stack's business, and a client that quietly edits a
+     * credential before sending it fails in a way the server cannot explain.
+     */
     public static function of(string $token): self
     {
         if (trim($token) === '') {

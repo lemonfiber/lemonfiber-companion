@@ -27,12 +27,6 @@ use function trim;
 final readonly class Manifests
 {
     /**
-     * Which of the named packages are required, and by which manifest.
-     *
-     * @param list<string> $refused
-     * @return list<string> `package — manifest`, one per hit
-     */
-    /**
      * Words that mean nobody has written the sentence yet.
      *
      * Written out rather than guessed at. A purpose string is prose, and a rule

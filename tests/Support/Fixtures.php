@@ -970,6 +970,28 @@ final readonly class Fixtures
                 }
                 PHP, 'K3 —'),
 
+            Fixture::suite('K4', 'app-modules/health/src/Fixtures/Orphans.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                final readonly class Orphans
+                {
+                    /**
+                     * What a screen calls this, for the one place that has to name it.
+                     */
+                    /**
+                     * How many of them there are.
+                     */
+                    public function howMany(): int
+                    {
+                        return 1;
+                    }
+                }
+                PHP, 'K4 —'),
+
             Fixture::suite('M1', 'app-modules/health/src/Api/Commands/Fixtures/AnswersPlainly.php', <<<'PHP'
                 <?php
 

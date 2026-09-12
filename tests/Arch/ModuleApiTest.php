@@ -37,24 +37,70 @@ it('C1 — no Api method changes something and says nothing', function (): void 
     ));
 });
 
-it('C2 — no Api method answers with null', function (): void {
+/**
+ * The boundary methods where a foreign null arrives and stops.
+ *
+ * Named one at a time, because each is a claim that somebody else's signature
+ * is the reason — not this codebase's design. The list is the prompt: adding to
+ * it means writing down whose `?string` it is.
+ *
+ * `WhatTheDeviceSaid::orNothingSaid()` takes what
+ * `PushNotifications::checkPermission()` answers, and that is a third-party
+ * method returning `?string`. The null means a bridge with no device behind it
+ * — every machine that is not a handset — and this method exists precisely to
+ * end it: null and an unrecognised word both become `NotDetermined`, which
+ * withholds the notification and leaves asking still possible.
+ *
+ * That is C2 being obeyed rather than broken. The rule wants exactly one place
+ * where a foreign null becomes one of our types, and this is one.
+ */
+const NULL_ARRIVES_FROM_OUTSIDE = ['Modules\Device\Api\WhatTheDeviceSaid::orNothingSaid()'];
+
+it('C2 — no Api method answers with null, and none takes it either', function (): void {
+    // Both halves, and the parameter half was missing.
+    //
+    // The rule is "no `null` for absence", and a nullable *parameter* is the
+    // purer form of it: the caller passes nothing to mean there is no stack,
+    // and the callee asks `instanceof` to find out which it got. That is the
+    // guess the rule exists to remove, made one stack frame earlier.
+    //
+    // Only the return half was checked. `?StackId $on = null` on a published
+    // method passed everything — D1 saw no array, D2 saw no primitive, and this
+    // read the return type only. Nothing in the repository does it today, which
+    // is why nobody noticed: the gap was invisible until somebody wrote the
+    // first one, and by then it would have been the example to copy.
     $offenders = [];
 
     foreach (ApiSurface::classesIn() as $class) {
         foreach (ApiSurface::publicMethodsOf($class) as $method) {
-            $returns = $method->getReturnType();
+            if ($method->getReturnType()?->allowsNull() === true) {
+                $offenders[] = sprintf('%s answers with null', ApiSurface::describe($method));
+            }
 
-            if ($returns?->allowsNull() === true) {
-                $offenders[] = ApiSurface::describe($method);
+            foreach ($method->getParameters() as $parameter) {
+                if (in_array(ApiSurface::describe($method), NULL_ARRIVES_FROM_OUTSIDE, strict: true)) {
+                    continue;
+                }
+
+                if ($parameter->getType()?->allowsNull() === true) {
+                    $offenders[] = sprintf(
+                        '%s takes null as $%s',
+                        ApiSurface::describe($method),
+                        $parameter->getName(),
+                    );
+                }
             }
         }
     }
 
     expect($offenders)->toBe([], sprintf(
-        "These answer with null, which is the check that gets forgotten:\n  %s\n\n"
+        "These pass null across a module boundary, which is the check that gets forgotten:\n  %s\n\n"
         . 'Null cannot say which of "not read yet" and "read, and there is nothing" '
-        . 'it means, so the caller guesses. Answer with a type that says which — an '
-        . 'absence type, an empty typed collection, or an Outcome carrying the refusal (C2).',
+        . 'it means, so whoever receives it guesses. Answer with a type that says which — an '
+        . "absence type, an empty typed collection, or an Outcome carrying the refusal.\n"
+        . 'A nullable parameter is the same defect one frame earlier: it makes "no stack" and '
+        . '"a stack" the same call, told apart by an `instanceof` the caller cannot see. Give '
+        . 'each its own method, or take a sum type that holds both (C2).',
         implode("\n  ", $offenders),
     ));
 });

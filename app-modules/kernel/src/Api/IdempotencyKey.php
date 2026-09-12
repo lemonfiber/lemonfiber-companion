@@ -28,6 +28,41 @@ final readonly class IdempotencyKey
     private function __construct(private string $key) {}
 
     /**
+     * What `serialize()` writes, which is nothing (`N1-R42`).
+     *
+     * The key is not a secret — it is sent in a header and anybody watching the
+     * connection has it — so this is not the redaction `Session` does. It is the
+     * other half of the requirement: a key serves retry *within a single
+     * attempt*, and a serialised key is one that outlived its attempt. Whatever
+     * reads it back sends the operator's earlier action again, at a moment
+     * nobody chose, against a stack whose state has moved on.
+     *
+     * `N1-R41` already refuses to retain an undelivered action, and `Attempted`
+     * has no arm for a pending one. This closes the same door from the other
+     * side: even if a command were held, its key could not be written down.
+     *
+     * @return array<string, never>
+     */
+    public function __serialize(): array
+    {
+        throw MustNotLeaveThisProcess::anIdempotencyKey();
+    }
+
+    /**
+     * What `unserialize()` reads, which is nothing either.
+     *
+     * Without it a crafted payload naming this class walks back into an object
+     * carrying whatever key it liked — and a key somebody else chose is a key
+     * that matches an action the operator did not take.
+     *
+     * @param array<string, never> $data
+     */
+    public function __unserialize(array $data): void
+    {
+        throw MustNotLeaveThisProcess::anIdempotencyKey();
+    }
+
+    /**
      * The one place a string becomes a key.
      *
      * Empty is refused. A blank key is one the server cannot recognise a

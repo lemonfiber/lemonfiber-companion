@@ -526,6 +526,7 @@ three above needed in order to survive.
 | K1 | A comment states the situation and why, never the history of how it came to be | review, plus an arch check for the obvious markers |
 | K2 | A docblock only where a native type cannot speak | arch |
 | K3 | A docblock says a thing once; a paragraph repeating another is a copy that goes stale | arch |
+| K4 | A docblock describes a symbol, never another docblock | arch |
 
 A comment is read by someone who was not there. They cannot tell a fact from a
 recollection, and the recollection is the half that goes stale — so `glob()` has
