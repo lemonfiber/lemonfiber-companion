@@ -9,6 +9,14 @@ use Tests\Support\Fixtures;
 use Tests\Support\Proof;
 use Tests\Support\Tree;
 
+/**
+ * Where this run records what it has written.
+ *
+ * Beside the analyser tree and gitignored with it, because it is the same kind
+ * of thing: a working file of the guards run, present only while one is going.
+ */
+const WRITTEN = '.rule-fixtures.written';
+
 // The third leg.
 //
 // TheRulesAreRealTest says a documented rule has an artifact carrying its
@@ -28,11 +36,36 @@ use Tests\Support\Tree;
 // the three above needed in order to survive.
 
 beforeEach(function (): void {
+    // Swept *before* planting, not only after. `afterEach` is the right place
+    // for the normal end of a run and it is not reached by the abnormal one: a
+    // killed process runs no hook, and this suite takes long enough to be the
+    // thing somebody kills. What it leaves behind then survives the whole of the
+    // next run, which fails on a rule nobody touched.
+    removeFixtures();
     writeFixtures();
 });
 
 afterEach(function (): void {
     removeFixtures();
+});
+
+it('takes back out what a killed run left behind', function (): void {
+    // The case `afterEach` cannot cover, asserted directly rather than trusted.
+    //
+    // A run that is killed leaves files and a manifest naming them. This stands
+    // in for that run: a path the current fixture list does not name, recorded
+    // the way a write records itself. Removing by name would walk straight past
+    // it — which is what happened, and what surfaced was an unrelated rule
+    // failing an hour before anybody suspected the tree rather than the rule.
+    $stray = Tree::at('app-modules/health/tests/Fixtures/LeftBehindTest.php');
+
+    writeFixture($stray, '<?php // yesterday\'s run, killed');
+
+    expect(is_file($stray))->toBeTrue();
+
+    removeFixtures();
+
+    expect(is_file($stray))->toBeFalse();
 });
 
 it('has a fixture for every rule that claims to be enforced', function (): void {
@@ -320,6 +353,32 @@ function writeFixture(string $path, string $code): void
     }
 
     file_put_contents($path, sprintf("%s\n", trim($code)));
+    file_put_contents(Tree::at(WRITTEN), sprintf("%s\n", $path), FILE_APPEND);
+}
+
+/**
+ * Every path this run has written, read back.
+ *
+ * @return list<string>
+ */
+function fixturesWritten(): array
+{
+    $manifest = Tree::at(WRITTEN);
+
+    if (! is_file($manifest)) {
+        return [];
+    }
+
+    $said = file_get_contents($manifest);
+
+    if (! is_string($said)) {
+        return [];
+    }
+
+    return array_values(array_filter(
+        explode("\n", trim($said)),
+        static fn(string $path): bool => $path !== '',
+    ));
 }
 
 /**
@@ -329,9 +388,28 @@ function writeFixture(string $path, string $code): void
  * survives nothing — not a failure, not an exception, not an interrupted run.
  * A fixture left behind turns every later run red for a reason that looks
  * nothing like the reason it is actually red.
+ *
+ * **The manifest is what makes that true of the interrupted run.** Removing by
+ * name can only remove what the *current* fixture list names, and neither of the
+ * two cases that matter is in it: a process killed mid-run leaves files nobody
+ * asked about, and a fixture list edited between runs leaves yesterday's paths
+ * unreachable by today's cleaner. Both happened on 2026-09-12, and what surfaced
+ * was `G6` failing — a rule that had not been touched, whose fixture was fine,
+ * and which passed the moment it was reproduced by hand. An hour went into
+ * reading it as a real regression.
+ *
+ * So every write records its path, and the sweep reads that record first. The
+ * by-name pass stays: it is the one that still works when the manifest itself is
+ * what went missing.
  */
 function removeFixtures(): void
 {
+    foreach (fixturesWritten() as $path) {
+        removeFixture($path);
+    }
+
+    removeFixture(Tree::at(WRITTEN));
+
     foreach (array_keys(Fixtures::companions()) as $path) {
         removeFixture(Tree::at($path));
     }
