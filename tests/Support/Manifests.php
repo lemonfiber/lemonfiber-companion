@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function array_any;
 use function array_keys;
 use function file_get_contents;
 use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
+use function mb_strtolower;
 use function sprintf;
+use function str_contains;
 use function str_replace;
 use function trim;
 
@@ -51,6 +54,71 @@ final readonly class Manifests
         'google/analytics-data',
         'microsoft/application-insights',
     ];
+
+    /**
+     * Which of the named packages are required, and by which manifest.
+     *
+     * @param list<string> $refused
+     * @return list<string> `package — manifest`, one per hit
+     */
+    /**
+     * Words that mean nobody has written the sentence yet.
+     *
+     * Written out rather than guessed at. A purpose string is prose, and a rule
+     * that tried to judge prose would be argued with and then switched off —
+     * what this can do honestly is recognise the handful of markers that mean
+     * "placeholder" to everybody who has ever left one.
+     */
+    public const array READS_LIKE_A_PLACEHOLDER = [
+        'todo',
+        'tbd',
+        'fixme',
+        'xxx',
+        'lorem ipsum',
+        'placeholder',
+        'change me',
+        'your app',
+        'description here',
+        'example.com',
+    ];
+
+    /**
+     * The sentence iOS shows before it will let the app reach the local network.
+     *
+     * Read from this application's own plugin manifest, because that is where it
+     * lives: `nativephp/mobile` turns a plugin's `ios.info_plist` into the built
+     * app's `Info.plist`, so the string in that file is the string the operator
+     * sees. Empty where none is declared, which is a failure rather than an
+     * absence — `N4-R16` says there is one.
+     */
+    public static function localNetworkPurpose(): string
+    {
+        $manifest = json_decode(
+            (string) file_get_contents(sprintf('%s/native/nativephp.json', Tree::root())),
+            associative: true,
+        );
+
+        if (! is_array($manifest)) {
+            return '';
+        }
+
+        $ios = $manifest['ios'] ?? [];
+        $plist = is_array($ios) ? ($ios['info_plist'] ?? []) : [];
+        $said = is_array($plist) ? ($plist['NSLocalNetworkUsageDescription'] ?? '') : '';
+
+        return is_string($said) ? trim($said) : '';
+    }
+
+    /**
+     * Whether a sentence is one nobody has written yet.
+     *
+     * Case-folded, because a placeholder is as likely to arrive shouting.
+     */
+    public static function readsLikeAPlaceholder(string $said): bool
+    {
+        $folded = mb_strtolower($said);
+        return array_any(self::READS_LIKE_A_PLACEHOLDER, fn(string $marker): bool => str_contains($folded, $marker));
+    }
 
     /**
      * Which of the named packages are required, and by which manifest.
