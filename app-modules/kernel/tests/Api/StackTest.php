@@ -61,7 +61,13 @@ it('N1-R23 — does not carry the session', function (): void {
     // Pinned rather than left to reading, because the pressure to add it will
     // arrive from a screen that has a stack and wants a header, and the change
     // is one property wide.
-    expect(get_class_methods(Stack::class))->toBe(['of', 'id', 'name', 'at', 'presents', 'is']);
+    // `recognises` joins the list deliberately. It answers a question about this
+    // stack's own identity — whether the machine that replied presented the
+    // certificate pinned at pairing (`N1-R19`) — and `N1-R22` puts that on the
+    // stack rather than on the address, so that reaching the same machine by
+    // another route does not re-open the question.
+    expect(get_class_methods(Stack::class))
+        ->toBe(['of', 'id', 'name', 'at', 'presents', 'recognises', 'is']);
 });
 
 it('refuses a stack an operator cannot tell from another', function (): void {
