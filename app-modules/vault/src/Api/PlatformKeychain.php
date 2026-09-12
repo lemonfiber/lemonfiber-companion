@@ -41,13 +41,13 @@ final readonly class PlatformKeychain implements SecureStorage
         // platform answers `Unavailable` for a device with no store and
         // `NotFound` for a store that is present and empty, which is exactly
         // the distinction being asked about.
-        return $this->store->read(self::keyFor(StackId::rememberedAs('probe')))->status
+        return $this->store->read($this->keyFor(StackId::rememberedAs('probe')))->status
             !== SecureStorageStatus::Unavailable;
     }
 
     public function keep(StackId $stack, Session $session): Kept
     {
-        return $this->store->set(self::keyFor($stack), $session->forTheHeader())
+        return $this->store->set($this->keyFor($stack), $session->forTheHeader())
             ? Kept::safely()
             : Kept::refused($this->whyItRefused());
     }
@@ -58,7 +58,7 @@ final readonly class PlatformKeychain implements SecureStorage
         // never kept is the ordinary case after a refusal, and `N4-R6` leaves
         // the app holding a session it could not store — the one thing that
         // must always work is getting rid of it.
-        $this->store->delete(self::keyFor($stack));
+        $this->store->delete($this->keyFor($stack));
 
         return Kept::safely();
     }
@@ -66,14 +66,14 @@ final readonly class PlatformKeychain implements SecureStorage
     /** Which of the two refusals this was, read from the store rather than guessed. */
     private function whyItRefused(): WhySessionCannotBeKept
     {
-        return $this->store->read(self::keyFor(StackId::rememberedAs('probe')))->status
+        return $this->store->read($this->keyFor(StackId::rememberedAs('probe')))->status
             === SecureStorageStatus::Unavailable
                 ? WhySessionCannotBeKept::DeviceHasNoSecureStorage
                 : WhySessionCannotBeKept::StoreWouldNotOpen;
     }
 
     /** One key per stack, so two paired stacks never share a session (`N1-R11`). */
-    private static function keyFor(StackId $stack): string
+    private function keyFor(StackId $stack): string
     {
         return sprintf('%s.%s', self::UNDER, $stack->stored());
     }

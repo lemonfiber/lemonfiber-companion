@@ -11,6 +11,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Vault\Api\PlatformKeychain;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\APlatformStore;
 
 // The SecureStorage contract, run against the adapter and against the fake.
 //
@@ -30,11 +31,15 @@ use Tests\Support\Fakes\AKeychainInMemory;
 // to the adapter's own tests — a contract asserting it would either fail on the
 // fake or be weakened to pass, and a weakened contract is how a fake drifts.
 //
-// The adapter is constructed but not driven on this machine: there is no
-// Keychain behind a PHP process on a laptop, and a test that tried would be
-// asserting about the NativePHP stub rather than about either implementation.
-// So the adapter's arm asserts the shape of the promise — the types it accepts,
-// the exception it raises — and the fake's arm asserts the behaviour.
+// The adapter is driven against a hand-written stand-in for the platform's own
+// store. There is no Keychain behind a PHP process on a laptop, and without the
+// stand-in the adapter is a file nothing executes — so the three things it
+// actually decides (which key a stack gets, which refusal a failure is, that
+// forgetting ignores the result) would go unchecked until somebody held a phone.
+//
+// A subclass written out by hand rather than a mock, which is what G1 asks for:
+// a mock asserts on calls and drifts silently when the real class changes, and
+// this fails to compile.
 
 const A_PAIRED_STACK = 'a1b2c3d4e5f60718';
 const THE_TOKEN = 'a-session-not-a-secret';
@@ -120,9 +125,49 @@ it('N1-R11 — two stacks do not share one session', function (): void {
 });
 
 it('PlatformKeychain answers the same port', function (): void {
-    // Not driven: there is no Keychain behind a PHP process on a laptop, and a
-    // test that called it would be asserting about NativePHP's stub. What is
-    // checkable here is that the adapter is the port — which is what stops the
-    // fake being the only thing that implements it.
     expect(PlatformKeychain::class)->toImplement(SecureStorage::class);
+});
+
+it('N4-R5 — the adapter keeps a session where the platform keeps things', function (): void {
+    $store = APlatformStore::working();
+    $keychain = new PlatformKeychain($store);
+
+    expect($keychain->isAvailable())->toBeTrue();
+    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))->toBe('kept');
+    expect($store->keysHeld())->toBe([sprintf('lemonfiber.session.%s', A_PAIRED_STACK)]);
+});
+
+it('N1-R11 — the adapter gives each stack its own key', function (): void {
+    // One key holding "the session" is how the second pairing overwrites the
+    // first, and the first stack starts answering with somebody else's
+    // credential. The fake cannot show this — it is keyed the same way by
+    // construction — so it is checked here, against the thing that builds keys.
+    $store = APlatformStore::working();
+    $keychain = new PlatformKeychain($store);
+
+    $keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN));
+    $keychain->keep(StackId::of(Nonce::of('b2c3d4e5f6071829')), Session::of('another-session-not-a-secret'));
+
+    expect($store->keysHeld())->toHaveCount(2);
+});
+
+it('N4-R6 — the adapter tells a device with no store from one that refused', function (): void {
+    // The distinction the whole refusal type exists for, and the one place it
+    // is read off the platform rather than decided by us.
+    expect(howItWent(new PlatformKeychain(APlatformStore::absent())
+        ->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))->toBe('no_secure_storage');
+
+    expect(howItWent(new PlatformKeychain(APlatformStore::refusing())
+        ->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))->toBe('store_would_not_open');
+
+    expect(new PlatformKeychain(APlatformStore::absent())->isAvailable())->toBeFalse();
+});
+
+it('N4-R6 — the adapter forgets even where the store said no', function (): void {
+    // The one thing that must always work: a refusal leaves the app holding a
+    // session it could not store, and getting rid of it cannot depend on the
+    // store that just refused. The adapter ignores the delete result for
+    // exactly this reason.
+    expect(howItWent(new PlatformKeychain(APlatformStore::absent())->forget(aStackThatIsPaired())))
+        ->toBe('kept');
 });
