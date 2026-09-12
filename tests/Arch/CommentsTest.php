@@ -327,3 +327,45 @@ it('K3 — a docblock does not say the same thing twice', function (): void {
         implode("\n  ", $offenders),
     ));
 });
+
+it('K4 — a docblock has something to describe', function (): void {
+    // A docblock on the line after another docblock describes nothing. PHP
+    // attaches the *second* one to whatever follows, and the first is left
+    // pointing at it — so the method it was written for now has none, and the
+    // paragraph explaining that method sits above a different one.
+    //
+    // It happens one way: a method is inserted in front of an anchor, or moved
+    // away from it, and the docblock stays where it was. Four were found when
+    // this was written, and two of them were strays left behind by a move whose
+    // real docblock was intact fifty lines further down — so the file carried
+    // the same paragraph twice, with one copy describing the wrong thing.
+    //
+    // A blank line between them is enough to say the first describes the file
+    // rather than the next symbol, which is the one legitimate arrangement.
+    $offenders = [];
+
+    foreach (commentedFiles() as $path => $contents) {
+        if (in_array($path, EXEMPT, strict: true)) {
+            continue;
+        }
+
+        foreach (explode("\n", $contents) as $number => $line) {
+            $next = explode("\n", $contents)[$number + 1] ?? '';
+
+            if (trim($line) === '*/' && str_starts_with(trim($next), '/**')) {
+                $offenders[] = sprintf('%s:%d', $path, $number + 1);
+            }
+        }
+    }
+
+    expect($offenders)->toBe([], sprintf(
+        "These docblocks describe the docblock below them:\n  %s\n\n"
+        . 'PHP attaches the second one to whatever follows, so the method the first was '
+        . 'written for has none, and the paragraph explaining it now sits above something '
+        . "else.\nIt happens when a method is inserted in front of its docblock or moved "
+        . 'away from it. Move the docblock to the thing it describes, or delete it if the '
+        . 'real one is already there — a stray copy is worse than none, because it reads '
+        . 'as current. A blank line between them says the first describes the file (K4).',
+        implode("\n  ", $offenders),
+    ));
+});

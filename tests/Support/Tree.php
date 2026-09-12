@@ -74,11 +74,6 @@ final readonly class Tree
     }
 
     /**
-     * Every test file in the repository, root suites and module suites alike.
-     *
-     * @return list<string>
-     */
-    /**
      * Whether a file declares a class, an interface, an enum or a trait.
      *
      * Read over tokens rather than with a pattern, for the reason `Vocabulary`
