@@ -3281,7 +3281,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/backups",
-                "reference": "1676fdf82442add7edda9926c92d979ce791f53a"
+                "reference": "3f21963dc257497a321cab5c3dca658b189025c4"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3290,11 +3290,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "capability",
                     "floors": {
                         "coverage": 100,
                         "mutation": 100
-                    }
+                    },
+                    "kind": "capability"
                 }
             },
             "autoload": {
@@ -3318,7 +3318,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/connection",
-                "reference": "59718ae04391491b32560690f657438c1f37a1b3"
+                "reference": "9320fa3d224b122f67458c07a0d9305109b8deda"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3327,11 +3327,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "capability",
                     "floors": {
                         "coverage": 100,
                         "mutation": 100
-                    }
+                    },
+                    "kind": "capability"
                 }
             },
             "autoload": {
@@ -3355,7 +3355,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/design",
-                "reference": "ebf72a2385f8e5b7e0e1f3f0d4d30b976aefa72e"
+                "reference": "f072966f461c2adbca84e81a1a2d444dc98f8ccb"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3365,11 +3365,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "design",
                     "floors": {
                         "coverage": 100,
                         "mutation": 0
-                    }
+                    },
+                    "kind": "design"
                 }
             },
             "autoload": {
@@ -3393,7 +3393,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/device",
-                "reference": "d48f8599dc42700b080af57e5c2a7b68d64650b9"
+                "reference": "c11014ff8b88ff458c43eaaf10a473c1b60dc63e"
             },
             "require": {
                 "ext-sodium": "*",
@@ -3404,11 +3404,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "adapter",
                     "floors": {
                         "coverage": 100,
                         "mutation": 0
-                    }
+                    },
+                    "kind": "adapter"
                 }
             },
             "autoload": {
@@ -3432,7 +3432,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/health",
-                "reference": "5ede98af9f1ac742637d020dda3758a1f51d14a8"
+                "reference": "f7da3590aca21189c16e486178e824b8b1617158"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3441,11 +3441,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "capability",
                     "floors": {
                         "coverage": 100,
                         "mutation": 100
-                    }
+                    },
+                    "kind": "capability"
                 }
             },
             "autoload": {
@@ -3469,7 +3469,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/household",
-                "reference": "7f5245ef8c3c48f1fb23de1e1d1d31af935282dc"
+                "reference": "de78f8e470214c199319774101d4bfc27b7fce08"
             },
             "require": {
                 "modules/connection": "dev-main",
@@ -3482,11 +3482,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "surface",
                     "floors": {
                         "coverage": 100,
                         "mutation": 100
-                    }
+                    },
+                    "kind": "surface"
                 }
             },
             "autoload": {
@@ -3510,7 +3510,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/kernel",
-                "reference": "854ab868ed03debc481e8cb5c97d1d8675bd421e"
+                "reference": "b57a8f552d71037d67b86e5b3df662295b6c947b"
             },
             "require": {
                 "ext-mbstring": "*",
@@ -3519,11 +3519,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "kernel",
                     "floors": {
                         "coverage": 100,
                         "mutation": 100
-                    }
+                    },
+                    "kind": "kernel"
                 }
             },
             "autoload": {
@@ -3547,7 +3547,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/operator",
-                "reference": "11cdc1572681655675ac5087c8e46bd3b078fb10"
+                "reference": "e571da43751cad90e0a5ef19e4a03b240f844223"
             },
             "require": {
                 "modules/backups": "dev-main",
@@ -3563,11 +3563,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "surface",
                     "floors": {
                         "coverage": 100,
                         "mutation": 100
-                    }
+                    },
+                    "kind": "surface"
                 }
             },
             "autoload": {
@@ -3591,7 +3591,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/sdk",
-                "reference": "1357e36c0512d4a11c9ab61a3066d10a4f2b44da"
+                "reference": "04e393ff1892a2d01740c936b0fbf01de552dbf0"
             },
             "require": {
                 "lemonfiber/sdk-php": "dev-main",
@@ -3601,11 +3601,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "adapter",
                     "floors": {
                         "coverage": 100,
                         "mutation": 0
-                    }
+                    },
+                    "kind": "adapter"
                 }
             },
             "autoload": {
@@ -3629,7 +3629,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/stacks",
-                "reference": "091703935c3523552611243db34ee3fd4963ceb3"
+                "reference": "e3b72c8c8344e585342f359bacdd669d556fcdfc"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3638,11 +3638,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "capability",
                     "floors": {
                         "coverage": 100,
                         "mutation": 100
-                    }
+                    },
+                    "kind": "capability"
                 }
             },
             "autoload": {
@@ -3666,7 +3666,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/updates",
-                "reference": "07e50e833915192a8b2cb4a3e18ff71f825bb69e"
+                "reference": "ec53e6fcabcaeaf85541de7c7b903b8a8f14782f"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3675,11 +3675,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "capability",
                     "floors": {
                         "coverage": 100,
                         "mutation": 100
-                    }
+                    },
+                    "kind": "capability"
                 }
             },
             "autoload": {
@@ -3703,7 +3703,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/vault",
-                "reference": "0013c11e068b92651f2e8fb7a6a75cc6e4684cf2"
+                "reference": "e1619a0aa2e2610910afadcab28cc10148261289"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3713,11 +3713,11 @@
             "type": "library",
             "extra": {
                 "lemonfiber": {
-                    "kind": "adapter",
                     "floors": {
                         "coverage": 100,
                         "mutation": 0
-                    }
+                    },
+                    "kind": "adapter"
                 }
             },
             "autoload": {

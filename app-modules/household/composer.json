@@ -1,13 +1,13 @@
 {
     "name": "modules/household",
     "description": "The household surface: navigation and screen composition only.",
-    "type": "library",
     "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
     "require": {
         "php": "^8.5",
-        "modules/kernel": "dev-main",
-        "modules/design": "dev-main",
         "modules/connection": "dev-main",
+        "modules/design": "dev-main",
+        "modules/kernel": "dev-main",
         "modules/stacks": "dev-main",
         "nativephp/mobile": "^4.4"
     },
@@ -19,11 +19,11 @@
     },
     "extra": {
         "lemonfiber": {
-            "kind": "surface",
             "floors": {
                 "coverage": 100,
                 "mutation": 100
-            }
+            },
+            "kind": "surface"
         }
     }
 }

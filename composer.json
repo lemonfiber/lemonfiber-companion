@@ -115,6 +115,7 @@
             "@composer validate --strict",
             "@validate:modules",
             "@composer normalize --dry-run",
+            "@normalize:modules",
             "@composer audit",
             "@lint",
             "@analyse",
@@ -128,6 +129,8 @@
         "deps": "composer-dependency-analyser",
         "lint": "pint --test",
         "lint:fix": "pint",
+        "normalize:modules": "@php scripts/manifests.php normalize --dry-run",
+        "normalize:modules:fix": "@php scripts/manifests.php normalize",
         "refactor": "rector process --dry-run",
         "refactor:fix": "rector process",
         "test": "pest --parallel --exclude-testsuite=Guards,Floors",
@@ -136,10 +139,12 @@
         "test:guards": "pest --testsuite=Guards",
         "test:mutation": "@php scripts/mutation.php",
         "test:report": "pest --exclude-testsuite=Guards,Floors --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
-        "validate:modules": "@php -r \"\\$bad=0; foreach (glob('app-modules/*/composer.json') as \\$m) { passthru('composer validate --strict --no-check-publish '.escapeshellarg(\\$m), \\$c); \\$bad = \\$bad ?: \\$c; } exit(\\$bad === 0 ? 0 : 1);\""
+        "validate:modules": "@php scripts/manifests.php validate --strict --no-check-publish"
     },
     "scripts-descriptions": {
         "ci": "Every gate CI runs, in the order it runs them.",
+        "normalize:modules": "Check every module manifest against the normalizer; the root normalize does not look at them.",
+        "normalize:modules:fix": "Normalize every module manifest in place.",
         "test": "Every suite but Guards and Floors, in parallel. Guards plants a violation of every rule into the working tree, so a process reading that tree beside it sees files appear and vanish. Floors reads the clover report test:report writes, and refuses to run without one.",
         "test:floors": "Check every module against the coverage floor it declared, over the report test:report writes (G9).",
         "test:guards": "Plant a violation of every rule and require each rule to report it (R2).",
