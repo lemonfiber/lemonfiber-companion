@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Health\Api\Queries;
 
-use Modules\Health\Api\Category;
-use Modules\Health\Api\Findings;
+use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Findings;
 
 /**
  * The findings from one family of checks, and nothing else.

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Modules\Health\Tests\Api;
+namespace Modules\Kernel\Tests\Api;
 
 use function expect;
 use function it;
 
-use Modules\Health\Api\Check;
-use Modules\Health\Api\CheckIsUnnamed;
+use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\CheckIsUnnamed;
 
 it('carries the identifier the server sent', function (): void {
     expect(Check::of('vpn.egress-match')->shown())->toBe('vpn.egress-match');

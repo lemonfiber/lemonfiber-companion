@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Modules\Health\Api\Category;
-use Modules\Health\Api\Conclusion;
+use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Conclusion;
 use Tests\Support\Catalogue;
 
 // L1/L2 — every case a screen branches on has a word, in every language.

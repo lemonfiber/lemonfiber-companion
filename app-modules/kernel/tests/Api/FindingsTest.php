@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Health\Tests\Api;
+namespace Modules\Kernel\Tests\Api;
 
 use function array_keys;
 use function array_map;
@@ -10,11 +10,11 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
-use Modules\Health\Api\Category;
-use Modules\Health\Api\Check;
-use Modules\Health\Api\Conclusion;
-use Modules\Health\Api\Finding;
-use Modules\Health\Api\Findings;
+use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\Finding;
+use Modules\Kernel\Api\Findings;
 
 function finding(string $check, Conclusion $conclusion): Finding
 {
