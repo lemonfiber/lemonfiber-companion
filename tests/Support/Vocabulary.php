@@ -14,8 +14,7 @@ use function str_replace;
 use const T_COMMENT;
 use const T_CONSTANT_ENCAPSED_STRING;
 use const T_DOC_COMMENT;
-use const T_IS_IDENTICAL;
-use const T_IS_NOT_IDENTICAL;
+use const T_MATCH;
 use const T_WHITESPACE;
 
 use function token_get_all;
@@ -65,7 +64,30 @@ final readonly class Vocabulary
     }
 
     /**
+     * A string literal with something in it.
+     *
+     * `''` is not a vocabulary — it is the emptiness check every value object
+     * opens with, a fact about a string rather than a decision about a set.
+     *
+     * @param array{int, string, int}|string $token
+     * @phpstan-assert-if-true array{int, string, int} $token
+     */
+    public static function isANonEmptyLiteral(array|string $token): bool
+    {
+        return is_array($token)
+            && $token[0] === T_CONSTANT_ENCAPSED_STRING
+            && trim($token[1], "'\"") !== '';
+    }
+
+    /**
      * The literals compared against in one file's source.
+     *
+     * Two shapes, because there are two ways to decide a value is one of a set
+     * and this rule was written knowing only the first. `===` was the whole of
+     * it, and `match ($said) { 'granted', 'denied' => … }` makes exactly the
+     * same claim — the same closed set, the same silent fall-through on a
+     * misspelling — while producing no comparison token at all. So it went
+     * unseen, in the idiom this codebase reaches for first.
      *
      * @return list<array{string, int}>
      */
@@ -75,18 +97,22 @@ final readonly class Vocabulary
         $found = [];
 
         foreach ($tokens as $at => $token) {
-            if (! self::isAnIdentityComparison($token)) {
+            if (self::isAnIdentityComparison($token)) {
+                $found = [...$found, ...self::literalsBeside($tokens, $at)];
+
                 continue;
             }
 
-            $found = [...$found, ...self::literalsBeside($tokens, $at)];
+            if (self::isAMatch($token)) {
+                $found = [...$found, ...MatchArms::of($tokens, $at)];
+            }
         }
 
         return $found;
     }
 
     /**
-     * A `===` or `!==`, which is where a vocabulary gets decided.
+     * A `===` or `!==`, which is one of the two places a vocabulary gets decided.
      *
      * @param array{int, string, int}|string $token
      */
@@ -110,23 +136,24 @@ final readonly class Vocabulary
         $found = [];
 
         foreach ([$tokens[$at - 1] ?? null, $tokens[$at + 1] ?? null] as $beside) {
-            if (! is_array($beside) || $beside[0] !== T_CONSTANT_ENCAPSED_STRING) {
+            if ($beside === null || ! self::isANonEmptyLiteral($beside)) {
                 continue;
             }
 
-            $said = trim($beside[1], "'\"");
-
-            // `=== ''` is not a vocabulary. It is the emptiness check every
-            // value object opens with — a fact about a string rather than a
-            // decision about a set.
-            if ($said === '') {
-                continue;
-            }
-
-            $found[] = [$said, $beside[2]];
+            $found[] = [trim($beside[1], "'\""), $beside[2]];
         }
 
         return $found;
+    }
+
+    /**
+     * A `match`, which decides a vocabulary without ever writing `===`.
+     *
+     * @param array{int, string, int}|string $token
+     */
+    private static function isAMatch(array|string $token): bool
+    {
+        return is_array($token) && $token[0] === T_MATCH;
     }
 
     /**
