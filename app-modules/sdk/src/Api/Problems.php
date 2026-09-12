@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Sdk\Internal\Wire;
 
 /**
  * The `error` envelope, read as the kernel's `Problem`.
@@ -54,7 +55,7 @@ final readonly class Problems
     /** @param Envelope<mixed> $envelope the `error` envelope, as the client returned it */
     public static function in(Envelope $envelope): Problem
     {
-        $data = self::payload($envelope);
+        $data = self::payload(Wire::checked($envelope));
 
         if (! is_array($data)) {
             throw ProblemIsUnreadable::missing('data');
