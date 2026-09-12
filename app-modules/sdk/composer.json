@@ -18,7 +18,7 @@
         "lemonfiber": {
             "floors": {
                 "coverage": 100,
-                "mutation": 0
+                "mutation": 100
             },
             "kind": "adapter"
         }

@@ -129,7 +129,7 @@ return (new Configuration())
     // self-removal by a different route, and neither half is a list anybody
     // maintains by hand.
     ->ignoreErrorsOnPackages(modulesWithNoCode(), [ErrorType::UNUSED_DEPENDENCY])
-    // The analyser reads `use` statements, so a module whose only classes name
+    // The analyser reads `use` statements, so a module whose classes only name
     // each other from the same namespace is invisible to it: nothing imports
     // anything, and the only files that mention the package are its own tests,
     // which are a dev path. It reports the module as one to move to
@@ -144,10 +144,26 @@ return (new Configuration())
     // from a re-statement of somebody else's rule disagrees with it eventually
     // and ignores an error that does fire.
     //
-    // It cannot go stale: this analyser reports an ignore that never applied,
-    // so the day something outside connection names it, the gate fails and
-    // names this line as the thing to delete.
-    ->ignoreErrorsOnPackage('modules/connection', [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV])
+    // Neither line can go stale: this analyser reports an ignore that never
+    // applied, so the day something outside one of these names it, the gate
+    // fails and names the line to delete.
+    ->ignoreErrorsOnPackages(
+        ['modules/connection', 'modules/sdk'],
+        [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV],
+    )
+    // N1-R16 says the SDK is named in exactly one module, and `modules/sdk` is
+    // that module — so the SDK is its dependency rather than the application's,
+    // and the root manifest does not require it. That is what makes it a shadow
+    // dependency here: used in scanned code, absent from the root.
+    //
+    // The comment above about boundaries enforced from the far side no longer
+    // covers this one package, and that is stated rather than left implied. E3
+    // is enforced by `tests/Arch/ModuleBoundariesTest.php`, which holds
+    // `Lemonfiber\Sdk` to `Modules\Sdk` and has a planted violation in the
+    // Guards suite proving it fires. Adding the package to the root manifest to
+    // satisfy this check instead would make it the application's dependency and
+    // put it one edit from being anybody's.
+    ->ignoreErrorsOnPackage('lemonfiber/sdk-php', [ErrorType::SHADOW_DEPENDENCY])
     // Resolved through the container rather than named, so the analyser cannot
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])
