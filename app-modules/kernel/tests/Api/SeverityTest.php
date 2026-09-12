@@ -12,7 +12,7 @@ use Modules\Kernel\Api\Severity;
 
 it('reads the four the server sends', function (): void {
     // The values are the wire's. A rename here would make every refusal
-    // unparseable, and the parse is in an adapter where nothing else is
+    // unparsable, and the parse is in an adapter where nothing else is
     // looking at these strings.
     expect(array_map(
         static fn(Severity $severity): string => $severity->value,
