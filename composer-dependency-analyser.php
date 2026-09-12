@@ -144,11 +144,14 @@ return (new Configuration())
     // from a re-statement of somebody else's rule disagrees with it eventually
     // and ignores an error that does fire.
     //
-    // Neither line can go stale: this analyser reports an ignore that never
+    // The list cannot go stale: this analyser reports an ignore that never
     // applied, so the day something outside one of these names it, the gate
-    // fails and names the line to delete.
+    // fails and names the line to delete. That has already happened once —
+    // `modules/connection` was here until its two classes moved to the kernel,
+    // and the gate said so on the first run rather than leaving a dead line for
+    // somebody to wonder about later.
     ->ignoreErrorsOnPackages(
-        ['modules/connection', 'modules/health', 'modules/sdk'],
+        ['modules/health', 'modules/sdk'],
         [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV],
     )
     // N1-R16 says the SDK is named in exactly one module, and `modules/sdk` is

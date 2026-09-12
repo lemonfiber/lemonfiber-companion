@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Modules\Connection\Api\Obstacle;
+use Modules\Kernel\Api\Obstacle;
 use Tests\Support\Catalogue;
 
 // N1-R10 — three different things, each with its own remedy.

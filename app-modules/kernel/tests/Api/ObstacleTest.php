@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Connection\Tests\Api;
+namespace Modules\Kernel\Tests\Api;
 
 use function array_map;
 use function array_unique;
@@ -10,7 +10,7 @@ use function count;
 use function expect;
 use function it;
 
-use Modules\Connection\Api\Obstacle;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 

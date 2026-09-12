@@ -2,11 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Connection\Api;
-
-use Modules\Kernel\Api\Code;
-use Modules\Kernel\Api\Severity;
-use Modules\Kernel\Api\Standing;
+namespace Modules\Kernel\Api;
 
 /**
  * What stood between the app and a stack, told apart rather than summarised.
