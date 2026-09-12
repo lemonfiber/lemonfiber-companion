@@ -45,7 +45,7 @@ final readonly class Screen
      */
     public function conceal(): bool
     {
-        return $this->ask('Lemonfiber.Conceal');
+        return $this->ask(Call::Conceal);
     }
 
     /**
@@ -57,13 +57,13 @@ final readonly class Screen
      */
     public function reveal(): bool
     {
-        return $this->ask('Lemonfiber.Reveal');
+        return $this->ask(Call::Reveal);
     }
 
     /** Whether the window is protected from capture right now. */
     public function isProtected(): bool
     {
-        return $this->ask('Lemonfiber.IsProtected');
+        return $this->ask(Call::IsProtected);
     }
 
     /**
@@ -94,9 +94,9 @@ final readonly class Screen
      * `protected` key, and a loose check on a missing key is the kind of false
      * that turns into a true the day somebody returns `"false"`.
      */
-    private function ask(string $function): bool
+    private function ask(Call $function): bool
     {
-        $said = json_decode((string) nativephp_call($function, '{}'), associative: true);
+        $said = json_decode((string) nativephp_call($function->value, '{}'), associative: true);
 
         return is_array($said) && ($said['protected'] ?? false) === true;
     }

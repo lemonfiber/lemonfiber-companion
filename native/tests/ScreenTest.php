@@ -13,6 +13,13 @@ use Native\Mobile\Testing\FakeBridge;
 // encoding and the decoding of the answer — the whole path — instead of through
 // something built to resemble it.
 //
+// The bridge names are written out as literals here, and that is deliberate
+// rather than an oversight. `Screen` reaches them through `Call`, so a test
+// spelling them `Call::Conceal->value` would agree with a wrong enum and prove
+// nothing — the literal is the test stating the wire name for itself. `CallTest`
+// holds the enum against `nativephp.json` separately, which is the pair that
+// keeps the Kotlin and the Swift in the conversation.
+//
 // What the native half decides is not re-litigated here. `CaptureRule` carries
 // that, in Kotlin and in Swift, with the same six cases each. This file is about
 // the three things the PHP can get wrong on its own: which function it calls,
