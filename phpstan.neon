@@ -208,6 +208,18 @@ parameters:
                 - 'microtime()'
                 - 'hrtime()'
                 - 'strtotime()'
+                # The rest of the ways to read the clock. `new DateTimeImmutable()`
+                # was already refused as a class; these are the function spellings
+                # of the same act, and `date_create()` is the one that matters most
+                # — it builds the object the class rule forbids, without naming it.
+                - 'getdate()'
+                - 'localtime()'
+                - 'gettimeofday()'
+                - 'idate()'
+                - 'gmmktime()'
+                - 'gmstrftime()'
+                - 'date_create()'
+                - 'date_create_immutable()'
             message: "B1 — time arrives through the Clock port. Time is a hidden input: the same call returns a different answer tomorrow, so no test can pin it. Inject Modules\\Kernel\\Api\\Clock and call $this->clock->now(). The one implementation that reads the device clock lives in app-modules/device/src (B1)."
             allowIn:
                 - app-modules/device/src/*
@@ -223,6 +235,13 @@ parameters:
                 - 'mt_rand()'
                 - 'srand()'
                 - 'mt_srand()'
+                # Randomness that does not look like randomness. Each of these
+                # draws from the global generator without the word `rand` being
+                # anywhere near the call site, which is exactly why a reader — and
+                # this list — skipped them.
+                - 'shuffle()'
+                - 'str_shuffle()'
+                - 'array_rand()'
                 - 'uniqid()'
             message: "B2 — randomness arrives through the Entropy port. Randomness is a hidden input. An idempotency key or a request id built from rand() cannot be asserted on, so the test asserts nothing. Inject Modules\\Kernel\\Api\\Entropy; its device-backed implementation lives in app-modules/device/src, and tests use the deterministic fake (B2)."
             allowIn:
@@ -257,6 +276,32 @@ parameters:
                 - 'is_file()'
                 - 'scandir()'
                 - 'glob()'
+                # Reading is reaching the filesystem as much as writing is, and
+                # most of these read. `is_dir()` was on A9's list and not on this
+                # one, which is the tell: the same call was work a provider may not
+                # do and not filesystem access a module may not have.
+                - 'file()'
+                - 'readfile()'
+                - 'fputs()'
+                - 'fgets()'
+                - 'fgetc()'
+                - 'fgetcsv()'
+                - 'fputcsv()'
+                - 'touch()'
+                - 'chmod()'
+                - 'symlink()'
+                - 'link()'
+                - 'tempnam()'
+                - 'tmpfile()'
+                - 'opendir()'
+                - 'readdir()'
+                - 'closedir()'
+                - 'is_dir()'
+                - 'is_readable()'
+                - 'is_writable()'
+                - 'filesize()'
+                - 'filemtime()'
+                - 'realpath()'
             message: "B3 — the filesystem belongs to an adapter. It is IO, and IO is an adapter's job. A capability that reads a file cannot be unit tested and cannot be reasoned about offline. Use Modules\\Kernel\\Api\\SecureStore (implemented in app-modules/vault/src, on Keychain or Keystore) for anything that must survive a restart, or the device adapter for anything platform-owned (B3, N4-R5). `scripts/` is exempt for the same reason `tests/` is: a build step reads the repository it is building, which is not the hidden IO this rule is about."
             allowIn:
                 - app-modules/vault/src/*
@@ -375,6 +420,14 @@ parameters:
                 - 'setlocale()'
                 - 'set_time_limit()'
                 - 'assert_options()'
+                - 'ini_restore()'
+                # Changing the encoding the `mb_` functions work in is changing
+                # what every call to them means, from anywhere, for the rest of the
+                # process. `L3` exists to put text through those functions; this is
+                # the line that would quietly redefine them.
+                - 'mb_internal_encoding()'
+                - 'mb_regex_encoding()'
+                - 'iconv_set_encoding()'
             message: "Q1 — the runtime is one long-lived process, so nothing resets. On a web server these calls last until the response ends; here Runtime::boot() runs once and every interaction after it inherits whatever the last screen changed. Configure it in config/ where the value is read once and is the same on every screen (Q1, I1)."
             allowIn:
                 - config/*
@@ -400,6 +453,19 @@ parameters:
                 - 'strpos()'
                 - 'strrpos()'
                 - 'wordwrap()'
+                # The rest of the byte-indexed string functions that have an `mb_`
+                # counterpart. `strrev()` is the plainest of them: it reverses
+                # bytes, so a reversed UTF-8 string is not text at all.
+                - 'strrev()'
+                - 'ucwords()'
+                - 'stripos()'
+                - 'strripos()'
+                - 'strstr()'
+                - 'stristr()'
+                - 'strrchr()'
+                - 'substr_count()'
+                - 'substr_replace()'
+                - 'str_word_count()'
             message: "L3 — text a person reads is measured in characters, not bytes. This application ships en and nl and runs on a phone where names, stack labels and service titles carry accents: truncating one of those with substr() splits a character in half and renders a replacement glyph. Use the mb_* equivalent, which is what the multibyte extension is for (L3)."
             allowIn:
                 - tests/*
@@ -433,6 +499,18 @@ parameters:
                 - 'rsort()'
                 - 'strcmp()'
                 - 'strcasecmp()'
+                # Sorting values and keys is sorting. `sort()` and `rsort()` were
+                # here and `asort()` was not, which meant the rule refused the
+                # spelling that discards keys and allowed the one that keeps them —
+                # and the one that keeps them is what a list of names actually uses.
+                - 'asort()'
+                - 'arsort()'
+                - 'ksort()'
+                - 'krsort()'
+                - 'natsort()'
+                - 'natcasesort()'
+                - 'strncmp()'
+                - 'strncasecmp()'
             message: "L6 — sorting text a person reads by byte order puts every accented character after z, so a service list reads as though it were shuffled. Compare with a collator for the locale on screen. Sorting values that are not text — a list of integers, an enum — is not this rule's business and belongs in a typed collection's own named operation anyway (L6, D1)."
             allowIn:
                 - tests/*
