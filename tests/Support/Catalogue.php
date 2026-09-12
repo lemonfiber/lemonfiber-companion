@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use function array_map;
+use function array_search;
 use function basename;
 use function glob;
 
@@ -80,6 +81,37 @@ final readonly class Catalogue
         }
 
         return $said;
+    }
+
+    /**
+     * The keys whose sentence a key before them already used.
+     *
+     * Two rows saying the same thing is how a distinction the type system keeps
+     * is lost at the last step: the cases stay apart, and the operator — who
+     * meets the sentence and not the case — is told the same thing twice. It
+     * reports the later key against the earlier one, so the message names the
+     * row to rewrite rather than the pair.
+     *
+     * @param array<string, string> $words
+     *
+     * @return list<string>
+     */
+    public static function saidTwice(string $locale, array $words): array
+    {
+        $collisions = [];
+        $said = [];
+
+        foreach ($words as $key => $word) {
+            $seen = array_search($word, $said, strict: true);
+
+            if ($seen !== false) {
+                $collisions[] = sprintf('%s: %s reads the same as %s', $locale, $key, $seen);
+            }
+
+            $said[$key] = $word;
+        }
+
+        return $collisions;
     }
 
     /** @return array<string, string> */

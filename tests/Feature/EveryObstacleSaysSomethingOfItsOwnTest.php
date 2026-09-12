@@ -59,16 +59,10 @@ it('N1-R10 — no two obstacles say the same thing', function (): void {
 
             foreach (Obstacle::cases() as $obstacle) {
                 $key = sprintf($shape, $obstacle->value);
-                $sentence = $catalogue[$key] ?? '';
-
-                $seen = array_search($sentence, $said, strict: true);
-
-                if ($seen !== false) {
-                    $collisions[] = sprintf('%s: %s reads the same as %s', $locale, $key, $seen);
-                }
-
-                $said[$key] = $sentence;
+                $said[$key] = $catalogue[$key] ?? '';
             }
+
+            $collisions = [...$collisions, ...Catalogue::saidTwice($locale, $said)];
         }
     }
 

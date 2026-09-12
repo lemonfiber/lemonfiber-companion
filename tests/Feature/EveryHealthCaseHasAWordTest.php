@@ -35,6 +35,19 @@ function conclusionValues(): array
 }
 
 /**
+ * The groups this checks, and the cases each one must have a word for.
+ *
+ * Named once because both rules below ask the same question of the same two
+ * enums, and a second list is the one that stops being updated.
+ *
+ * @return array<string, list<string>>
+ */
+function groups(): array
+{
+    return ['category' => categoryValues(), 'conclusion' => conclusionValues()];
+}
+
+/**
  * Every word one group holds, in one locale, keyed the way the catalogue keys it.
  *
  * @param list<string> $values
@@ -58,38 +71,13 @@ function wordsFor(string $locale, string $group, array $values): array
     return $found;
 }
 
-/**
- * The keys in a group that read the same as an earlier one.
- *
- * @param array<string, string> $words
- *
- * @return list<string>
- */
-function readingTheSame(string $locale, array $words): array
-{
-    $collisions = [];
-    $said = [];
-
-    foreach ($words as $key => $word) {
-        $seen = array_search($word, $said, strict: true);
-
-        if ($seen !== false) {
-            $collisions[] = sprintf('%s: %s reads the same as %s', $locale, $key, $seen);
-        }
-
-        $said[$key] = $word;
-    }
-
-    return $collisions;
-}
-
 it('L2 — every category and conclusion has a word in every language', function (): void {
     $missing = [];
 
     foreach (Catalogue::locales() as $locale) {
         $words = Catalogue::of($locale, 'health');
 
-        foreach (['category' => categoryValues(), 'conclusion' => conclusionValues()] as $group => $values) {
+        foreach (groups() as $group => $values) {
             foreach ($values as $value) {
                 $key = sprintf('health.%s.%s', $group, $value);
 
@@ -111,46 +99,30 @@ it('L2 — every category and conclusion has a word in every language', function
     ));
 });
 
-it('L2 — no two conclusions read the same', function (): void {
+it('L2 — no two cases in a group read the same', function (): void {
     // `Unverified` against `Passed` is the pair this exists for. A check that
     // could not run must never be readable as one that passed — that is the
     // distinction the whole subsystem turns on, and it survives the type system
-    // only to be lost in a catalogue where two rows say the same thing.
+    // only to be lost in a catalogue where two rows say the same thing. Two
+    // categories sharing a heading is the same fault on a screen an operator
+    // navigates by.
     $collisions = [];
 
     foreach (Catalogue::locales() as $locale) {
-        $collisions = [
-            ...$collisions,
-            ...readingTheSame($locale, wordsFor($locale, 'conclusion', conclusionValues())),
-        ];
+        foreach (groups() as $group => $values) {
+            $collisions = [
+                ...$collisions,
+                ...Catalogue::saidTwice($locale, wordsFor($locale, $group, $values)),
+            ];
+        }
     }
 
     sort($collisions);
 
     expect($collisions)->toBe([], sprintf(
-        "These conclusions are distinguished everywhere except where it counts:\n  %s\n\n"
-        . 'The enum keeps them apart and the operator meets the sentence. Two cases '
-        . 'sharing a word is the collapse arrived at by the back door (L2).',
-        implode("\n  ", $collisions),
-    ));
-});
-
-it('L2 — no two categories read the same', function (): void {
-    $collisions = [];
-
-    foreach (Catalogue::locales() as $locale) {
-        $collisions = [
-            ...$collisions,
-            ...readingTheSame($locale, wordsFor($locale, 'category', categoryValues())),
-        ];
-    }
-
-    sort($collisions);
-
-    expect($collisions)->toBe([], sprintf(
-        "These categories are distinguished everywhere except where it counts:\n  %s\n\n"
-        . 'A report narrowed to one family, shown under a heading that names two, is a '
-        . 'screen an operator cannot navigate (L2).',
+        "These are distinguished everywhere except where it counts:\n  %s\n\n"
+        . 'The enum keeps the cases apart and the operator meets the sentence. Two of '
+        . 'them sharing a word is the collapse arrived at by the back door (L2).',
         implode("\n  ", $collisions),
     ));
 });
