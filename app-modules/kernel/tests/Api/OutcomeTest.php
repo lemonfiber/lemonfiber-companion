@@ -9,7 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Outcome;
-use Modules\Kernel\Api\Refusal;
+use Modules\Kernel\Api\Problem;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
@@ -22,9 +22,9 @@ function repaired(): Code
     return Code::of('STACK-7');
 }
 
-function refused(): Refusal
+function refused(): Problem
 {
-    return Refusal::of(
+    return Problem::of(
         Code::of('STACK-9'),
         Severity::Error,
         Standing::Guided,
@@ -51,7 +51,7 @@ function fold(Outcome $outcome): Code
 {
     return $outcome->either(
         done: static fn(object $result): Code => Code::of(sprintf('done:%s', $result::class)),
-        refused: static fn(Refusal $refusal): Code => Code::of(sprintf('refused:%s', $refusal->code()->shown())),
+        refused: static fn(Problem $refusal): Code => Code::of(sprintf('refused:%s', $refusal->code()->shown())),
     );
 }
 
@@ -68,7 +68,7 @@ it('hands the result itself to the done branch', function (): void {
 
     $answer = Outcome::done($result)->either(
         done: static fn(object $given): object => $given,
-        refused: static fn(Refusal $refusal): object => $refusal,
+        refused: static fn(Problem $refusal): object => $refusal,
     );
 
     expect($answer)->toBe($result);
@@ -79,7 +79,7 @@ it('hands the refusal itself to the refused branch', function (): void {
 
     $answer = Outcome::refused($refusal)->either(
         done: static fn(object $given): object => $given,
-        refused: static fn(Refusal $given): object => $given,
+        refused: static fn(Problem $given): object => $given,
     );
 
     expect($answer)->toBe($refusal);
@@ -91,7 +91,7 @@ it('answers with whatever the branch that ran returned', function (): void {
     // branching a second time.
     $answer = Outcome::refused(refused())->either(
         done: static fn(object $given): Code => Code::of($given::class),
-        refused: static fn(Refusal $given): Code => $given->code(),
+        refused: static fn(Problem $given): Code => $given->code(),
     );
 
     expect($answer->shown())->toBe('STACK-9');

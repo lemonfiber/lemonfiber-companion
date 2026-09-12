@@ -8,17 +8,17 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\Code;
-use Modules\Kernel\Api\Refusal;
-use Modules\Kernel\Api\RefusalSaysNothing;
+use Modules\Kernel\Api\Problem;
+use Modules\Kernel\Api\ProblemSaysNothing;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 
 /** A refusal with everything filled in, overridable a field at a time. */
-function refusal(string $summary = 'The media drive is full', string $meaning = 'New downloads will fail until space is freed'): Refusal
+function refusal(string $summary = 'The media drive is full', string $meaning = 'New downloads will fail until space is freed'): Problem
 {
-    return Refusal::of(
+    return Problem::of(
         Code::of('STACK-7'),
         Severity::Error,
         Standing::Guided,
@@ -47,31 +47,31 @@ it('trims the two sentences the operator reads', function (): void {
 });
 
 it('refuses a refusal with no summary', function (): void {
-    expect(fn(): Refusal => refusal(summary: ''))->toThrow(RefusalSaysNothing::class);
+    expect(fn(): Problem => refusal(summary: ''))->toThrow(ProblemSaysNothing::class);
 });
 
 it('refuses a refusal with no meaning', function (): void {
     // Checked apart from the summary: one condition covering both would pass a
     // refusal that had only one of them, which is the screen with a heading and
     // nothing under it.
-    expect(fn(): Refusal => refusal(meaning: ''))->toThrow(RefusalSaysNothing::class);
+    expect(fn(): Problem => refusal(meaning: ''))->toThrow(ProblemSaysNothing::class);
 });
 
 it('refuses a summary that is only whitespace', function (): void {
-    expect(fn(): Refusal => refusal(summary: '   '))->toThrow(RefusalSaysNothing::class);
+    expect(fn(): Problem => refusal(summary: '   '))->toThrow(ProblemSaysNothing::class);
 });
 
 it('refuses a meaning that is only whitespace', function (): void {
-    expect(fn(): Refusal => refusal(meaning: "\n"))->toThrow(RefusalSaysNothing::class);
+    expect(fn(): Problem => refusal(meaning: "\n"))->toThrow(ProblemSaysNothing::class);
 });
 
 it('names the code when it refuses, because that is what gets searched for', function (): void {
-    expect(fn(): Refusal => refusal(summary: ''))
-        ->toThrow(RefusalSaysNothing::class, 'STACK-7 arrived with no summary or no meaning');
+    expect(fn(): Problem => refusal(summary: ''))
+        ->toThrow(ProblemSaysNothing::class, 'STACK-7 arrived with no summary or no meaning');
 });
 
 it('carries no remedies where the server offered none', function (): void {
-    $refusal = Refusal::of(
+    $refusal = Problem::of(
         Code::of('STACK-9'),
         Severity::Critical,
         Standing::Unknown,

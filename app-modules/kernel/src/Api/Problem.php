@@ -7,16 +7,22 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * A refusal, in the form an operator can act on.
+ * Something that went wrong, in the form an operator can act on.
  *
- * This is what crosses a module boundary when something did not happen (C1).
+ * Named for the shape rather than for one of its uses, because there is more
+ * than one. This is what an `Outcome` carries when a command was refused, and
+ * it is also what a health check carries when it found something — the server
+ * has one `Problem` definition and two payload kinds that hold it, and this
+ * side will hold it in the same two places.
+ *
+ * It is what crosses a module boundary when something did not happen (C1).
  * It is deliberately not an exception: this application spends its life
  * talking to a machine that may be off, asleep, on another network or
  * mid-update, so unreachable is a normal Tuesday rather than an exceptional
  * one, and modelling it as a throw makes the common case the one the compiler
  * cannot see you forgot.
  *
- * The shape is the server's `Problem`, from
+ * The shape is the server's own, from
  * `lemonfiber:contract/web-api.contract.json`, minus the parts noted below. It
  * is not the wire type: the `sdk` adapter is the one module allowed to know
  * that, and it maps one to the other. What is preserved is the split the
@@ -32,7 +38,7 @@ use function trim;
  * actually needs one rather than guessed at now. Until then this carries what
  * is always present, and the omission is named rather than silent.
  */
-final readonly class Refusal
+final readonly class Problem
 {
     private function __construct(
         private Code $code,
@@ -64,7 +70,7 @@ final readonly class Refusal
         $means = trim($meaning);
 
         if ($said === '' || $means === '') {
-            throw RefusalSaysNothing::about($code);
+            throw ProblemSaysNothing::about($code);
         }
 
         return new self($code, $severity, $standing, $said, $means, $remedies);

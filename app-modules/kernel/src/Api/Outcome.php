@@ -9,7 +9,8 @@ use Closure;
 /**
  * What a command answers with: it happened, or it was refused.
  *
- * The one type a refusal crosses a module boundary as (C1). Every `Api`
+ * The one type a refusal crosses a module boundary as (C1) — carrying a
+ * `Problem`, which is the shape the server describes one in. Every `Api`
  * command returns one, and the only way to read it is to say what happens in
  * both cases — which is the entire point. A caller that wanted to ignore the
  * refusal would have to write a branch that does nothing, and a branch that
@@ -17,7 +18,7 @@ use Closure;
  *
  *     $outcome->either(
  *         done: fn (Repaired $repaired): Screen => $this->show($repaired),
- *         refused: fn (Refusal $refusal): Screen => $this->explain($refusal),
+ *         refused: fn (Problem $refusal): Screen => $this->explain($refusal),
  *     );
  *
  * There is deliberately no `wasRefused()` and no `refusal()`. A pair like that
@@ -31,7 +32,7 @@ use Closure;
  */
 final readonly class Outcome
 {
-    private function __construct(private ?object $result, private ?Refusal $refusal) {}
+    private function __construct(private ?object $result, private ?Problem $refusal) {}
 
     /**
      * It happened, and this is what came back.
@@ -46,7 +47,7 @@ final readonly class Outcome
     }
 
     /** It did not happen, and this is what the operator is told. */
-    public static function refused(Refusal $refusal): self
+    public static function refused(Problem $refusal): self
     {
         return new self(null, $refusal);
     }
@@ -58,7 +59,7 @@ final readonly class Outcome
      * @template TRefused of object
      *
      * @param Closure(object): TDone     $done
-     * @param Closure(Refusal): TRefused $refused
+     * @param Closure(Problem): TRefused $refused
      *
      * @return TDone|TRefused
      */
@@ -69,7 +70,7 @@ final readonly class Outcome
         // refusal rather than the result because that is the branch this type
         // exists for: reading it the other way round would make a refusal the
         // fall-through case, which is how it comes to be the one nobody tested.
-        if ($this->refusal instanceof Refusal) {
+        if ($this->refusal instanceof Problem) {
             return $refused($this->refusal);
         }
 
