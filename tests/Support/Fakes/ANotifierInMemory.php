@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
@@ -32,28 +33,55 @@ final class ANotifierInMemory implements Notifier
     /** @var list<string> */
     private array $told = [];
 
-    private function __construct(private readonly bool $permitted) {}
+    private int $asked = 0;
+
+    private function __construct(private Asked $standing) {}
 
     /** A device whose operator has allowed notifications. */
     public static function allowed(): self
     {
-        return new self(permitted: true);
+        return new self(Asked::Granted);
     }
 
-    /** A device whose operator has not, so nothing may be shown. */
+    /** A device whose operator has declined, and must not be asked again. */
     public static function refused(): self
     {
-        return new self(permitted: false);
+        return new self(Asked::Declined);
     }
 
-    public function isPermitted(): bool
+    /** A device whose operator has not been asked yet. */
+    public static function unasked(): self
     {
-        return $this->permitted;
+        return new self(Asked::NotYet);
+    }
+
+    public function standing(): Asked
+    {
+        return $this->standing;
+    }
+
+    public function ask(): Asked
+    {
+        // Records that it was asked, and refuses to ask twice. The fake has to
+        // keep `N4-R4` too — a fake that re-asks happily is a fake that lets a
+        // caller violating the rule pass every test it is used in.
+        if ($this->standing->mayAsk()) {
+            $this->asked++;
+            $this->standing = Asked::Granted;
+        }
+
+        return $this->standing;
+    }
+
+    /** How many times the operator was actually prompted. */
+    public function timesAsked(): int
+    {
+        return $this->asked;
     }
 
     public function show(Notification $notification): Shown
     {
-        if (! $this->permitted) {
+        if (! $this->standing->mayProceed()) {
             return Shown::withheld(WhyNothingIsShown::NotificationsAreNotPermitted);
         }
 

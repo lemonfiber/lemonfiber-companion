@@ -7,12 +7,14 @@ namespace Modules\Device\Api;
 use function __;
 use function is_string;
 
+use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhyNothingIsShown;
+use Native\Mobile\PushNotifications as Permissions;
 use NativePHP\LocalNotifications\LocalNotifications as Platform;
 
 use function sprintf;
@@ -53,19 +55,55 @@ final readonly class PlatformNotifier implements Notifier
      */
     private const string UNDER = 'lemonfiber';
 
-    public function __construct(private Platform $centre) {}
+    public function __construct(
+        private Platform $centre,
+        private Permissions $permissions,
+    ) {}
 
-    public function isPermitted(): bool
+    public function standing(): Asked
     {
-        // The plugin asks and answers in one call. Asked here rather than
-        // assumed, because a refusal is respected rather than worked around
-        // (`N4-R13`) and the app has to be able to say that it was.
-        return (bool) $this->centre->requestPermission();
+        // `PushNotifications::checkPermission()` reads the answer **without
+        // prompting**, which is the call this adapter was missing. The plugin
+        // that sends local notifications offers only `requestPermission()`,
+        // which asks and answers in one go — so reading the standing answer
+        // through it meant asking for it, every time.
+        //
+        // Push and local share one permission on both platforms — the
+        // `UNUserNotificationCenter` authorisation on iOS, `POST_NOTIFICATIONS`
+        // on Android 13+ — so the push facade's reader is the right reader for
+        // a local notification. That is a fact about the platforms rather than
+        // about these two packages, which is why it is written down here.
+        return $this->readAnswer($this->permissions->checkPermission());
+    }
+
+    public function ask(): Asked
+    {
+        $standing = $this->standing();
+
+        // Guarded rather than trusted. `N4-R4` says a declined permission is
+        // not asked again automatically, and the platform usually suppresses a
+        // second dialog on its own — usually, and not on Android after a single
+        // decline. A rule kept by the operating system's good manners is not
+        // kept.
+        if (! $standing->mayAsk()) {
+            return $standing;
+        }
+
+        $this->centre->requestPermission();
+
+        // Read back rather than believing what the prompt returned. The answer
+        // that matters is the one the platform now holds, and on iOS the
+        // callback that carries the prompt's own result arrives after this
+        // call has returned.
+        return $this->standing();
     }
 
     public function show(Notification $notification): Shown
     {
-        if (! $this->isPermitted()) {
+        // Reads, never asks. A notification arriving is not the point of first
+        // use — the operator is not looking at the app, and `N4-R1` and `N4-R2`
+        // both want the prompt somewhere they are.
+        if (! $this->standing()->mayProceed()) {
             return Shown::withheld(WhyNothingIsShown::NotificationsAreNotPermitted);
         }
 
@@ -93,6 +131,27 @@ final readonly class PlatformNotifier implements Notifier
         );
 
         return Shown::delivered();
+    }
+
+    /**
+     * What the platform's word for an answer means here.
+     *
+     * `provisional` and `ephemeral` are both "may show something" — a quiet
+     * delivery and an App Clip's temporary grant — so both are `Granted`: the
+     * question this type answers is whether a notification may be shown, and
+     * for both of those it may.
+     *
+     * Anything unrecognised, and no answer at all, is `NotYet`. That is the
+     * safe reading in both directions: it withholds the notification, and it
+     * leaves asking possible rather than recording a refusal nobody made.
+     */
+    private function readAnswer(?string $said): Asked
+    {
+        return match ($said) {
+            'granted', 'provisional', 'ephemeral' => Asked::Granted,
+            'denied' => Asked::Declined,
+            default => Asked::NotYet,
+        };
     }
 
     /**

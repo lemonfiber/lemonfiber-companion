@@ -21,6 +21,13 @@ namespace Modules\Kernel\Api;
  * is the rule; a local notification is the implementation that keeps it, because
  * it never leaves the device it is displayed on.
  *
+ * **Permission is two questions, not one.** {@see self::standing()} reads what
+ * the operator has said; {@see self::ask()} raises the prompt. They were one
+ * `isPermitted()` that did both, which meant every notification re-asked
+ * somebody who had already declined — the behaviour `N4-R4` names — and it read
+ * as correct because the platform usually suppresses the second dialog itself.
+ * A `MUST NOT` kept by the operating system's good manners is not kept.
+ *
  * **`N4-R15` is the caller's, and deliberately so.** Whether a stack is still
  * configured is a fact about this device, not about the notification centre, and
  * an adapter asking it would need the whole list of stacks to display one alert.
@@ -31,14 +38,33 @@ namespace Modules\Kernel\Api;
 interface Notifier
 {
     /**
-     * Whether the operator has allowed notifications at all.
+     * What the operator has already said about notifications.
      *
-     * Asked separately from showing one so that a screen can offer to ask
-     * (`N4-R13`) at a moment the operator is already thinking about it, rather
-     * than the app discovering the refusal the first time it has something
-     * worth saying and silently dropping it.
+     * Reads the answer and never raises a prompt, which is the whole of
+     * `N4-R4`: a declined permission must not be requested again
+     * automatically, and a method that asks in order to report cannot keep
+     * that promise. {@see Asked} is the type because "never asked" and
+     * "declined" are opposite answers to "should I ask?" and identical
+     * answers to "may I proceed?" — a `bool` can only carry one of those
+     * two questions, and it is always the wrong one at some call site.
      */
-    public function isPermitted(): bool;
+    public function standing(): Asked;
+
+    /**
+     * Ask the operator, once, at the point of first use.
+     *
+     * Separate from {@see self::standing()} so that raising a system prompt is
+     * something a screen decides to do rather than a side effect of wanting to
+     * know. `N4-R1` says the prompt belongs at first use and not on launch, and
+     * `N4-R2` says the app explains itself first — both are decisions for a
+     * screen with something to show, and neither is available to an adapter
+     * reached from a notification that has already arrived.
+     *
+     * Answers what the operator said, and answers without asking where
+     * {@see Asked::mayAsk()} is false — so a caller that has not checked
+     * cannot accidentally re-prompt somebody who already declined.
+     */
+    public function ask(): Asked;
 
     /**
      * Put a notification in front of the operator, or say why not.

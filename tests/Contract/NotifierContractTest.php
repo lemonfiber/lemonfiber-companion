@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Device\Api\PlatformNotifier;
+use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
@@ -11,12 +12,13 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhyNothingIsShown;
 use Tests\Support\Fakes\ANotificationCentre;
 use Tests\Support\Fakes\ANotifierInMemory;
+use Tests\Support\Fakes\APermissionAnswer;
 
 // The Notifier contract, run against the adapter and against the fake.
 //
 // `G2`'s shape. Every other test that needs "the operator was told" will hand
 // its subject an `ANotifierInMemory` and never see a notification centre, so a
-// fake easier to satisfy than the platform would make `N4-R13`'s refusal green
+// fake easier to satisfy than the platform would make `N4-R4`'s refusal green
 // against a centre that always says yes.
 //
 // What is asserted is only what both must promise. The adapter composes words
@@ -44,40 +46,122 @@ function somethingWorthSaying(): Notification
     return Notification::fromTheCore(StackId::rememberedAs('the-loft'), Code::of('STACK-7'));
 }
 
-/** @return array<string, Closure(): array{Notifier, bool}> */
-dataset('every notifier', [
-    'the fake, allowed' => fn(): array => [ANotifierInMemory::allowed(), true],
-    'the fake, refused' => fn(): array => [ANotifierInMemory::refused(), false],
-    'the adapter, allowed' => fn(): array => [new PlatformNotifier(ANotificationCentre::allowing()), true],
-    'the adapter, refused' => fn(): array => [new PlatformNotifier(ANotificationCentre::refusing()), false],
-]);
+/**
+ * Every implementation of the port, in each of the three standings.
+ *
+ * A plain function rather than a Pest dataset, matching the other contract
+ * suites: a dataset whose value is a closure is resolved by Pest and handed back
+ * as one argument, so a pair returns as an array where the test wanted two
+ * parameters.
+ *
+ * Three standings rather than two. `NotYet` and `Declined` are the same to a
+ * caller asking whether it may show something and opposite to one deciding
+ * whether to ask, which is the distinction this whole change is about — a suite
+ * that tested "allowed" and "not allowed" could not see it.
+ *
+ * @return array<string, Closure(): Notifier>
+ */
+function everyNotifier(Asked $standing): array
+{
+    return [
+        'the fake' => fn(): Notifier => match ($standing) {
+            Asked::Granted => ANotifierInMemory::allowed(),
+            Asked::Declined => ANotifierInMemory::refused(),
+            Asked::NotYet => ANotifierInMemory::unasked(),
+        },
+        'the adapter' => function () use ($standing): Notifier {
+            $answer = match ($standing) {
+                Asked::Granted => APermissionAnswer::granted(),
+                Asked::Declined => APermissionAnswer::denied(),
+                Asked::NotYet => APermissionAnswer::notDetermined(),
+            };
 
-it('N4-R13 — says whether it may show anything before it is asked to', function (Notifier $notifier, bool $allowed): void {
-    expect($notifier->isPermitted())->toBe($allowed);
-})->with('every notifier');
+            return new PlatformNotifier(ANotificationCentre::on($answer), $answer);
+        },
+    ];
+}
 
-it('N4-R13 — shows nothing where the operator has not allowed it', function (Notifier $notifier, bool $allowed): void {
-    if ($allowed) {
-        expect(whatBecameOfIt($notifier->show(somethingWorthSaying())))->toBe('delivered');
-
-        return;
+it('reads what the operator has already said', function (): void {
+    foreach (Asked::cases() as $standing) {
+        foreach (everyNotifier($standing) as $which => $make) {
+            expect($make()->standing())->toBe($standing, $which);
+        }
     }
+});
 
-    // Withheld rather than thrown, and the reason is one a screen can act on:
-    // `mightBeWorthAsking()` is true here, which is what separates this from a
-    // stack that no longer exists.
-    expect(whatBecameOfIt($notifier->show(somethingWorthSaying())))
-        ->toBe(WhyNothingIsShown::NotificationsAreNotPermitted->name);
-})->with('every notifier');
+it('N4-R4 — asking is separate from reading, so reading never prompts', function (): void {
+    // The defect this whole change is about, asserted rather than described.
+    // `isPermitted()` asked in order to answer, and `show()` called it — so a
+    // notification arriving re-prompted somebody who had already declined.
+    //
+    // Counted on the adapter, because the count is the requirement: `N4-R4` is
+    // not about a return value, it is about how many times somebody was
+    // interrupted.
+    $answer = APermissionAnswer::denied();
+    $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer);
 
-it('shows the guarded form without complaint', function (Notifier $notifier, bool $allowed): void {
-    // Both arms have to survive both implementations. The locked form is the
-    // one a fake is most likely to get wrong, because nothing about it looks
+    $notifier->standing();
+    $notifier->standing();
+    $notifier->show(somethingWorthSaying());
+    $notifier->show(somethingWorthSaying());
+
+    expect($answer->prompts())->toBe(0);
+});
+
+it('N4-R4 — a declined permission is not asked for again', function (): void {
+    foreach (everyNotifier(Asked::Declined) as $which => $make) {
+        $notifier = $make();
+
+        expect($notifier->ask())->toBe(Asked::Declined, $which)
+            ->and($notifier->standing())->toBe(Asked::Declined, $which);
+    }
+});
+
+it('N4-R4 — the prompt is raised once, and not again once answered', function (): void {
+    $answer = APermissionAnswer::notDetermined();
+    $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer);
+
+    expect($notifier->ask())->toBe(Asked::Granted)
+        ->and($answer->prompts())->toBe(1);
+
+    // The second ask finds a standing answer and returns it without asking.
+    expect($notifier->ask())->toBe(Asked::Granted)
+        ->and($answer->prompts())->toBe(1);
+});
+
+it('N4-R1 — asks where nothing has been asked yet', function (): void {
+    foreach (everyNotifier(Asked::NotYet) as $which => $make) {
+        expect($make()->ask())->toBe(Asked::Granted, $which);
+    }
+});
+
+it('shows nothing where the operator has not allowed it', function (): void {
+    foreach ([Asked::Declined, Asked::NotYet] as $standing) {
+        foreach (everyNotifier($standing) as $which => $make) {
+            // Withheld rather than thrown, and the reason is one a screen can
+            // act on: `mightBeWorthAsking()` separates somebody who has not been
+            // asked from somebody who said no.
+            expect(whatBecameOfIt($make()->show(somethingWorthSaying())))
+                ->toBe(WhyNothingIsShown::NotificationsAreNotPermitted->name, $which);
+        }
+    }
+});
+
+it('shows something where the operator has allowed it', function (): void {
+    foreach (everyNotifier(Asked::Granted) as $which => $make) {
+        expect(whatBecameOfIt($make()->show(somethingWorthSaying())))->toBe('delivered', $which);
+    }
+});
+
+it('shows the guarded form without complaint', function (): void {
+    // Both arms have to survive both implementations. The locked form is the one
+    // a fake is most likely to get wrong, because nothing about it looks
     // different from the outside.
-    $became = whatBecameOfIt($notifier->show(somethingWorthSaying()->whileLocked()));
-
-    expect($became)->toBe($allowed ? 'delivered' : WhyNothingIsShown::NotificationsAreNotPermitted->name);
-})->with('every notifier');
+    foreach (everyNotifier(Asked::Granted) as $which => $make) {
+        expect(whatBecameOfIt($make()->show(somethingWorthSaying()->whileLocked())))
+            ->toBe('delivered', $which);
+    }
+});
 
 // --- what only the adapter promises -------------------------------------
 //
@@ -87,9 +171,10 @@ it('shows the guarded form without complaint', function (Notifier $notifier, boo
 // exists.
 
 it('N4-R20 — the locked wording names no stack', function (): void {
-    $centre = ANotificationCentre::allowing();
+    $answer = APermissionAnswer::granted();
+    $centre = ANotificationCentre::on($answer);
 
-    new PlatformNotifier($centre)->show(somethingWorthSaying()->whileLocked());
+    new PlatformNotifier($centre, $answer)->show(somethingWorthSaying()->whileLocked());
 
     $sent = $centre->sent();
 
@@ -100,9 +185,10 @@ it('N4-R20 — the locked wording names no stack', function (): void {
 });
 
 it('names the stack when the device is not locked', function (): void {
-    $centre = ANotificationCentre::allowing();
+    $answer = APermissionAnswer::granted();
+    $centre = ANotificationCentre::on($answer);
 
-    new PlatformNotifier($centre)->show(somethingWorthSaying());
+    new PlatformNotifier($centre, $answer)->show(somethingWorthSaying());
 
     $sent = $centre->sent();
 
@@ -116,8 +202,9 @@ it('keys a repeat of the same code onto the same notification', function (): voi
     // the same thing should update one entry rather than stack two, and an id
     // built from anything varying — a timestamp, a counter — would quietly give
     // the operator a pile.
-    $centre = ANotificationCentre::allowing();
-    $notifier = new PlatformNotifier($centre);
+    $answer = APermissionAnswer::granted();
+    $centre = ANotificationCentre::on($answer);
+    $notifier = new PlatformNotifier($centre, $answer);
 
     $notifier->show(somethingWorthSaying());
     $notifier->show(somethingWorthSaying());
