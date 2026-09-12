@@ -113,6 +113,12 @@ parameters:
             classesAllowedToBeExtended:
                 - InvalidArgumentException
                 - RuntimeException
+                # The parent of the first one, for the case it does not cover: a
+                # call the design has no answer for, made with no argument at all.
+                # `Session::__serialize()` is the example — there is no bad input
+                # to name, only a caller asking for an operation that does not
+                # exist (C3).
+                - LogicException
                 # The composition root is a Laravel service provider by
                 # definition; there is no way to bind a port without being one.
                 - Illuminate\Support\ServiceProvider

@@ -45,6 +45,15 @@ final readonly class ApiSurface
     public const string IDEMPOTENCY_KEY = IdempotencyKey::class;
 
     /**
+     * Magic methods PHP dictates the return type of.
+     *
+     * Not a convenience list: each of these must answer an array by the
+     * language's own rules, so a rule about published signatures reported on
+     * them would be a rule about PHP rather than about this codebase.
+     */
+    private const array SHAPED_BY_PHP = ['__debugInfo', '__serialize', '__unserialize', '__sleep'];
+
+    /**
      * Every published class under `Modules\<Name>\Api\<segments>`.
      *
      * @return list<ReflectionClass<object>>
@@ -91,7 +100,8 @@ final readonly class ApiSurface
             $class->getMethods(ReflectionMethod::IS_PUBLIC),
             static fn(ReflectionMethod $method): bool => $method->getDeclaringClass()->getName() === $class->getName()
                 && ! $method->isConstructor()
-                && ! $method->isInternal(),
+                && ! $method->isInternal()
+                && ! in_array($method->getName(), self::SHAPED_BY_PHP, strict: true),
         ));
     }
 

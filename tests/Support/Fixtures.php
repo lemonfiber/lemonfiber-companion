@@ -488,6 +488,29 @@ final readonly class Fixtures
                 }
                 PHP, 'missingType.parameter'),
 
+            Fixture::suite('D4', 'app-modules/health/src/Fixtures/SchemeIsALiteral.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                final readonly class SchemeIsALiteral
+                {
+                    // The rule quoted in prose: `$scheme === 'https'`. The check reads
+                    // tokens, so this line must not be what fails it — the one below must.
+                    public function isEncrypted(string $scheme): bool
+                    {
+                        return $scheme === 'https';
+                    }
+
+                    public function isBlank(string $said): bool
+                    {
+                        return $said === '';
+                    }
+                }
+                PHP, 'D4 — a closed set'),
+
             Fixture::suite('D4', 'app-modules/health/src/Fixtures/RepairStatus.php', <<<'PHP'
                 <?php
 

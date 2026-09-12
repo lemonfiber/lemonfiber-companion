@@ -238,7 +238,7 @@ $outcome->either(
 | D1 | No `array` in a public `Api` signature — value objects or typed collections | arch: reflection over every published method |
 | D2 | No primitive obsession: ids, tokens, durations are types | arch: no `string`/`int`/`float` parameter outside a named constructor |
 | D3 | No `mixed` in public signatures | phpstan (level max + type coverage 100%) |
-| D4 | Enums for every closed set, never string constants | arch + shipmonk `ForbidMatchDefaultArmForEnums` |
+| D4 | Enums for every closed set, never string constants and never a literal compared against | arch (names) + test over source tokens (literals) + shipmonk `ForbidMatchDefaultArmForEnums` |
 | D5 | No bare `true`/`false` at a call site — name the argument or split the method | phpstan: own rule |
 | D6 | No unnamed numeric literal in a method body | phpstan: own rule + SonarCloud |
 
