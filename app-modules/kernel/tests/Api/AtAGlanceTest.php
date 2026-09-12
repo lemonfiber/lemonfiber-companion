@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_diff;
 use function array_unique;
 use function count;
 use function dechex;
@@ -112,4 +113,24 @@ it('spreads across the alphabet rather than settling', function (): void {
     }
 
     expect(count(array_unique($seen)))->toBeGreaterThan(8);
+});
+
+it('uses every letter its alphabet declares, and no other', function (): void {
+    // The alphabet is the single source of truth for its own size. It was not:
+    // `HOW_MANY_LETTERS = 32` sat beside it, which is the same fact twice, and
+    // the copy drifts the first time somebody removes a character they have
+    // decided is also confusable. Shrink the alphabet and the fold indexes past
+    // the end; grow it and the letters past the thirty-second are never chosen,
+    // weakening the spread with nothing to say so.
+    //
+    // Pinned over a spread of digests rather than argued for: every character
+    // this produces must be one the alphabet actually contains.
+    $alphabet = mb_str_split('23456789ABCDEFGHJKLMNPQRSTUVWXYZ');
+    $used = [];
+
+    foreach (range(0, 15) as $at) {
+        $used = [...$used, ...mb_str_split(str_replace('-', '', glanceAt(str_repeat(dechex($at), 64))))];
+    }
+
+    expect(array_diff(array_unique($used), $alphabet))->toBe([]);
 });

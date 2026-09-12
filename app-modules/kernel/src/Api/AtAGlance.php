@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function count;
 use function hexdec;
 use function implode;
 use function mb_str_split;
@@ -45,11 +46,15 @@ final readonly class AtAGlance
      * typing them into a phone confuses those four before they confuse anything
      * else, and a comparison that fails because of a misread character teaches
      * the operator that failures here are noise.
+     *
+     * How many there are is *counted* rather than written down beside it. It was
+     * written down — `HOW_MANY_LETTERS = 32` — which is the same fact twice, and
+     * the copy drifts the first time somebody removes a character they have
+     * decided is also confusable. Shrink the alphabet and the fold indexes past
+     * the end; grow it and the letters past the thirty-second are never chosen,
+     * which weakens the spread silently. Neither failure names this line.
      */
     private const string LETTERS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-
-    /** How many there are, which is what the fold wraps each character into. */
-    private const int HOW_MANY_LETTERS = 32;
 
     /** How many characters in each group. */
     private const int PER_GROUP = 4;
@@ -141,7 +146,7 @@ final readonly class AtAGlance
                 $mixed = ($mixed * self::MIXED_WITH + (int) hexdec($byte) + $index) % self::WRAPS_AT;
             }
 
-            $shown .= $letters[($mixed + $at) % self::HOW_MANY_LETTERS];
+            $shown .= $letters[($mixed + $at) % count($letters)];
         }
 
         return mb_strtoupper($shown);
