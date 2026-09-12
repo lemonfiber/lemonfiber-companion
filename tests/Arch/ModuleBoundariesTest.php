@@ -242,8 +242,17 @@ it('E3 — only the sdk adapter speaks HTTP', function (): void {
 // a port, a contract test and an adapter before it could reach anything. That
 // is a long way to go without somebody asking why.
 
+// The list of ways is in `NothingOpensAConnectionByHandTest`, which is the one
+// place they are named and which reports any that no gate holds. Four were
+// found the moment it was written — `curl_multi_init`, `pfsockopen`,
+// `socket_create` and `socket_connect` — because the vocabulary had been split
+// across two gates with no overlap, so neither list read as incomplete.
 arch('nothing opens a socket by hand')
-    ->expect(['curl_init', 'curl_exec', 'fsockopen', 'stream_socket_client'])
+    ->expect([
+        'curl_init', 'curl_exec', 'curl_multi_init',
+        'fsockopen', 'pfsockopen', 'stream_socket_client',
+        'socket_create', 'socket_connect',
+    ])
     ->not->toBeUsed();
 
 // The composition root is the one place a port is allowed to meet an adapter.
