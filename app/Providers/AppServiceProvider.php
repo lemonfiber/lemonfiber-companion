@@ -10,7 +10,10 @@ use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\SecureStorage;
+use Modules\Vault\Api\PlatformKeychain;
 use Native\Mobile\Edge\TailwindParser;
+use Native\Mobile\SecureStorage as PlatformStore;
 
 /**
  * The composition root.
@@ -42,6 +45,15 @@ final class AppServiceProvider extends ServiceProvider
         // makes a test about a retry a statement rather than a guess
         // (A3, B2, G8).
         $this->app->singleton(Entropy::class, static fn(): Entropy => new SystemEntropy());
+
+        // Not a singleton. The platform's store is a handle to something
+        // outside this process, and holding one for the life of a long-running
+        // app (I1) is how a keychain that was unlocked at launch goes on
+        // reading as unlocked after the device has locked.
+        $this->app->bind(
+            SecureStorage::class,
+            static fn(): SecureStorage => new PlatformKeychain(new PlatformStore()),
+        );
     }
 
     public function boot(): void
