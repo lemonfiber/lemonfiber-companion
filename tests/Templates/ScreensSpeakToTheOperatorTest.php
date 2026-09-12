@@ -39,7 +39,7 @@ foreach ($templates as $template) {
             . 'contentDescription — and an icon-only control has nothing else for the '
             . "reader to fall back on.\nA `label` attribute counts, because that text is "
             . 'visible and is what gets read. Anything else needs `a11y-label` (F5, '
-            . 'N4-R1).',
+            . 'N4-R21).',
             implode("\n  ", $silent),
         ));
     });
