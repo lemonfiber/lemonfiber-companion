@@ -70,7 +70,12 @@ jobs:
   # cannot drift into gating differently from its neighbours, and so a fix to the
   # gate reaches all of them at once.
   gate:
-    name: issue gate
+    # No `name:`, deliberately. The required-check context is built from the job
+    # ids — `gate / gate` — and every other repository here is protected under
+    # exactly that string. A display name would rename the context and leave
+    # this repository's branch protection pointing at a check that never
+    # reports, which is the same hole this file exists to close.
+    #
     # After the scan, so there is a summary to read. Without this the gate polls
     # for a comment the scan has not been started to produce yet and spends its
     # whole timeout waiting for one.
