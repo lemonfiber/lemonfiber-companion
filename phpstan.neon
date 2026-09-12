@@ -158,6 +158,7 @@ parameters:
             allowIn:
                 - app-modules/device/src/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- B2: randomness is an input too --------------------------------
         -
@@ -173,6 +174,7 @@ parameters:
             allowIn:
                 - app-modules/device/src/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- B4: waiting is a port, not a syscall ---------------------------
         -
@@ -207,6 +209,7 @@ parameters:
                 - app-modules/device/src/*
                 - scripts/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- A3/A4: service location hides what a class needs ---------------
         -
@@ -229,6 +232,7 @@ parameters:
                 - app/Providers/*
                 - config/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- S1: the execution bundle, scoped -------------------------------
         #
@@ -269,6 +273,7 @@ parameters:
             allowIn:
                 - config/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- P3: a class whose shape is a runtime question ------------------
         -
@@ -292,6 +297,7 @@ parameters:
             message: "L3 — text a person reads is measured in characters, not bytes. This application ships en and nl and runs on a phone where names, stack labels and service titles carry accents: truncating one of those with substr() splits a character in half and renders a replacement glyph. Use the mb_* equivalent, which is what the multibyte extension is for (L3)."
             allowIn:
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- L4: a format string is one locale's answer ----------------------
         -
@@ -302,6 +308,7 @@ parameters:
             message: "L4 — a date is formatted for the reader, not written out by hand. A literal like 'd/m/Y' is wrong in one of the two locales before anyone leaves the country, and this application's whole subject is how long ago something was read. Prefer a duration, which needs no timezone and no calendar; where a date really must be shown, let the translator's formatter decide (L4)."
             allowIn:
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- L5: so is a decimal separator -----------------------------------
         -
@@ -311,6 +318,7 @@ parameters:
             message: "L5 — Dutch writes 1.234,5 and English writes 1,234.5, so number_format() with separators written into the call is wrong in one locale by construction. Format through the translator, which knows which locale is on screen (L5)."
             allowIn:
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- L6: byte order is not alphabetical ------------------------------
         -
@@ -322,6 +330,7 @@ parameters:
             message: "L6 — sorting text a person reads by byte order puts every accented character after z, so a service list reads as though it were shuffled. Compare with a collator for the locale on screen. Sorting values that are not text — a list of integers, an enum — is not this rule's business and belongs in a typed collection's own named operation anyway (L6, D1)."
             allowIn:
                 - tests/*
+                - app-modules/*/tests/*
 
     disallowedStaticCalls:
         # --- B1 ------------------------------------------------------------
@@ -336,6 +345,7 @@ parameters:
             allowIn:
                 - app-modules/device/src/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- B2 ------------------------------------------------------------
         -
@@ -351,6 +361,7 @@ parameters:
             allowIn:
                 - app-modules/device/src/*
                 - tests/*
+                - app-modules/*/tests/*
 
     disallowedNamespaces:
         # --- A2: facades are global state wearing a class name --------------
@@ -367,6 +378,7 @@ parameters:
                 # facade there IS the composition, not a reach into one.
                 - routes/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- A8: the platform's facades are facades too ---------------------
         #
@@ -383,6 +395,7 @@ parameters:
                 - app-modules/device/src/*
                 - app-modules/vault/src/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- B3: Storage is the filesystem with a nicer name ----------------
         -
@@ -392,6 +405,7 @@ parameters:
                 - app-modules/vault/src/*
                 - app-modules/device/src/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- P4: reflection is the analyser's blind spot ---------------------
         -
@@ -403,6 +417,7 @@ parameters:
             message: "P4 — production code does not reflect. Every rule in this repository depends on the analyser being able to see what a class does, and reflection is where that stops: a member reached by name is a member no rule can find. The tests are the exception and use it deliberately — the boundary rules ask PHP directly precisely because the analyser cannot be asked (P4)."
             allowIn:
                 - tests/*
+                - app-modules/*/tests/*
                 - phpstan/*
 
         # --- A3: the container, named directly ------------------------------
@@ -414,6 +429,7 @@ parameters:
             allowIn:
                 - app/Providers/*
                 - tests/*
+                - app-modules/*/tests/*
 
         # --- B1: the clock, as a type ---------------------------------------
         -
@@ -429,6 +445,7 @@ parameters:
             allowIn:
                 - app-modules/device/src/*
                 - tests/*
+                - app-modules/*/tests/*
 
     disallowedSuperglobals:
         # --- Q2: the runtime fills some of these in itself -------------------
@@ -448,6 +465,7 @@ parameters:
                 - config/*
                 - bootstrap/*
                 - tests/*
+                - app-modules/*/tests/*
 
     disallowedAttributes:
         # --- P3: a property that exists only at runtime -----------------------
@@ -488,6 +506,7 @@ parameters:
                 - config/*
                 - routes/*
                 - tests/*
+                - app-modules/*/tests/*
             # A module-owned exception constructing itself is the cure, not the
             # disease — and `new self(...)` inside a subclass of RuntimeException
             # resolves to the parent's constructor. Ordinary module code is not
