@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Interrupted;
 use Modules\Kernel\Api\Pairing;
+use Modules\Kernel\Api\Session;
 use Tests\Support\ApiSurface;
 
 /**
@@ -40,6 +42,16 @@ function typesThatMustNotMeet(): array
             . 'interruption to a pairing is a path to re-pinning a certificate that was never '
             . 'wrong, and then asking the operator to accept a new one — which is a habit an '
             . 'attacker would like them to have.',
+        ],
+        [
+            Pairing::class,
+            [Session::class, Credential::class],
+            'N1-R49',
+            'Redeeming pairing material must not be what admits the app — admission stays the '
+            . 'exchange of the operator own credential for a session (N1-R7). Material is '
+            . 'carried across a gap by eye or by camera and is public in the sense that '
+            . 'matters, so a path from it to a session is a path from a photograph in a camera '
+            . 'roll to an admitted app.',
         ],
     ];
 }
