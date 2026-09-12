@@ -73,7 +73,7 @@ final readonly class PlatformNotifier implements Notifier
         // on Android 13+ — so the push facade's reader is the right reader for
         // a local notification. That is a fact about the platforms rather than
         // about these two packages, which is why it is written down here.
-        return $this->readAnswer($this->permissions->checkPermission());
+        return WhatTheDeviceSaid::orNothingSaid($this->permissions->checkPermission())->means();
     }
 
     public function ask(): Asked
@@ -131,27 +131,6 @@ final readonly class PlatformNotifier implements Notifier
         );
 
         return Shown::delivered();
-    }
-
-    /**
-     * What the platform's word for an answer means here.
-     *
-     * `provisional` and `ephemeral` are both "may show something" — a quiet
-     * delivery and an App Clip's temporary grant — so both are `Granted`: the
-     * question this type answers is whether a notification may be shown, and
-     * for both of those it may.
-     *
-     * Anything unrecognised, and no answer at all, is `NotYet`. That is the
-     * safe reading in both directions: it withholds the notification, and it
-     * leaves asking possible rather than recording a refusal nobody made.
-     */
-    private function readAnswer(?string $said): Asked
-    {
-        return match ($said) {
-            'granted', 'provisional', 'ephemeral' => Asked::Granted,
-            'denied' => Asked::Declined,
-            default => Asked::NotYet,
-        };
     }
 
     /**

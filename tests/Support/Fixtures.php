@@ -521,6 +521,42 @@ final readonly class Fixtures
                 final readonly class RepairStatus {}
                 PHP, 'D4 — a closed set'),
 
+            Fixture::suite('D4', 'app-modules/health/src/Fixtures/StandingIsAMatch.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                final readonly class StandingIsAMatch
+                {
+                    // The same claim as `$said === 'granted'`, in the form this
+                    // codebase actually writes it — and the form D4 could not see
+                    // until the checker learned to read match arms. The subject's
+                    // own parentheses close before the body opens, which is where
+                    // the first attempt at reading them stopped.
+                    public function means(string $said): int
+                    {
+                        return match ($said) {
+                            'granted', 'provisional' => 1,
+                            'denied' => 2,
+                            default => 3,
+                        };
+                    }
+
+                    // Bodies are answers, not vocabularies. This arm must not be
+                    // what fails the fixture — a checker reading both sides would
+                    // report every message in the codebase and get switched off.
+                    public function describe(int $code): string
+                    {
+                        return match ($code) {
+                            1 => 'it was allowed',
+                            default => 'it was not',
+                        };
+                    }
+                }
+                PHP, 'D4 — a closed set', 'StandingIsAMatch'),
+
             Fixture::analyser('D4', 'Plain/MatchesDefault.php', <<<'PHP'
                 <?php
 
