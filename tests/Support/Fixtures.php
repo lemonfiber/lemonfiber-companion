@@ -1261,6 +1261,23 @@ final readonly class Fixtures
                     public function answer(): string;
                 }
                 PHP, 'G8 —', 'Unbound'),
+
+            // A port with no contract beside it. The same shape as `Unbound`
+            // above and reported by a different rule, which is the point: one
+            // says nothing implements it in the container, the other says
+            // nothing compares the things that do.
+            Fixture::suite('G2', 'app-modules/kernel/src/Api/Fixtures/Unproven.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Kernel\Api\Fixtures;
+
+                interface Unproven
+                {
+                    public function answer(): string;
+                }
+                PHP, 'G2 —', 'Unproven'),
         ];
     }
 

@@ -491,7 +491,7 @@ there, and neither is read as a description of the current code.
 | | Rule | Enforced by |
 |---|---|---|
 | G1 | No mocking types you do not own — hand-written fakes for our ports | arch: no Mockery on foreign namespaces |
-| G2 | Every port has one contract test, run against the real adapter **and** its fake | planned |
+| G2 | Every port has one contract test, run against the real adapter **and** its fake | test: the ports, their implementations and the contract file, compared |
 | G3 | No test reaches the network | `Http::preventStrayRequests()` + arch |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
@@ -506,11 +506,17 @@ here catches that. One contract test per port, run twice, is what makes every
 fake trustworthy — and therefore what makes G1 safe to adopt.
 
 ```
-tests/Contract/StackContract.php
-  ✓ SdkStack    (the real adapter, against a recorded fixture)
-  ✓ FakeStack   (in memory)
+tests/Contract/ClockContractTest.php
+  ✓ SystemClock   (the real adapter, reading the platform's clock)
+  ✓ FrozenClock   (in memory, in tests/Support/Fakes)
   — the same assertions, both times
 ```
+
+The file is named for the port, ends in `Test.php` because that is the suffix
+PHPUnit collects, and is found by the rule from either end: a port with no
+contract fails, and so does an implementation the contract does not name. Fakes
+live in `tests/Support/Fakes` rather than in a module, so that nothing
+reachable from production is a fake (`G4`).
 
 ### Naming and size
 

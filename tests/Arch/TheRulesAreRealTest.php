@@ -72,7 +72,7 @@ it('does not let the unbuilt rules grow', function (): void {
     // and not yet written, but nothing stops it becoming the place rules go to
     // be forgotten — so the count may fall and may not rise. Lower the ceiling
     // when you lower the count.
-    $ceiling = 1;
+    $ceiling = 0;
 
     $planned = array_keys(array_filter(
         documentedRules(),

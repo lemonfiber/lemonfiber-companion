@@ -6,6 +6,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Modules\Design\Api\Theme;
+use Modules\Device\Api\SystemClock;
+use Modules\Kernel\Api\Clock;
 use Native\Mobile\Edge\TailwindParser;
 
 /**
@@ -21,7 +23,16 @@ final class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // The one line that says which clock the application runs on, and the
+        // only place in the codebase allowed to say it. Everything else takes a
+        // `Clock` and never learns it got the platform's rather than a frozen
+        // one — which is what makes a test about an expiring session a
+        // statement rather than a wait (A3, B1, G8).
         //
+        // Bound as a singleton because reading the time is stateless and a
+        // second instance would answer identically; one object is the honest
+        // description of that.
+        $this->app->singleton(Clock::class, static fn(): Clock => new SystemClock());
     }
 
     public function boot(): void
