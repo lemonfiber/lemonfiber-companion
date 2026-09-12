@@ -9,6 +9,7 @@ use function array_unique;
 use function count;
 use function dechex;
 use function expect;
+use function hash;
 use function it;
 use function mb_str_split;
 use function mb_strtoupper;
@@ -57,6 +58,44 @@ it('N1-R51 — changing the first byte changes it too', function (): void {
 
 it('N1-R51 — two different certificates do not share one', function (): void {
     expect(glanceAt(ONE_CERTIFICATE))->not->toBe(glanceAt(ANOTHER_CERTIFICATE));
+});
+
+it('N1-R51 — no two certificates in a wide spread share one', function (): void {
+    // The test that was missing, and the one the whole requirement rests on.
+    //
+    // Two named certificates not colliding says almost nothing: any fold, even
+    // a badly broken one, separates two values somebody picked. The version of
+    // this class that shipped to review folded **every certificate in the world
+    // into thirty-two strings** — sixteen characters carrying five bits — and
+    // every other test in this file passed while it did. Two unrelated stacks
+    // would have shown the same code one time in thirty-two, and grinding a
+    // certificate to match a shown one would have taken about sixteen tries.
+    //
+    // So the property is checked across a spread wide enough to see a collapse:
+    // five hundred unrelated digests, five hundred different codes. Under the
+    // arithmetic this replaced, this line reads 32.
+    $codes = [];
+
+    foreach (range(1, 500) as $which) {
+        $codes[] = glanceAt(hash('sha256', (string) $which));
+    }
+
+    expect(count(array_unique($codes)))->toBe(500);
+});
+
+it('N1-R51 — reads the same in a later version as in this one', function (): void {
+    // Two screens showing a fingerprint are two builds, and one of them is
+    // older: the operator holding a phone is comparing it against a stack that
+    // was installed months ago. A fold that quietly changes turns every such
+    // comparison into a mismatch, which teaches the operator that mismatches
+    // here are noise — the same lesson a misread character teaches, arrived at
+    // the other way round.
+    //
+    // So the output is pinned rather than described. Changing the fold is
+    // allowed; changing it without noticing that every paired stack now
+    // disagrees is what this refuses.
+    expect(glanceAt(ONE_CERTIFICATE))->toBe('L8K9-L6CZ-LZV7-CAAK')
+        ->and(glanceAt(ANOTHER_CERTIFICATE))->toBe('TRYJ-D4Q9-DE2V-74NB');
 });
 
 it('N1-R51 — an anagram of a digest folds differently', function (): void {

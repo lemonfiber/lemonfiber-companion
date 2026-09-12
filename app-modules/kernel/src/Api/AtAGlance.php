@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function array_slice;
 use function count;
-use function hexdec;
+use function hash;
 use function implode;
+use function intval;
 use function mb_str_split;
-use function mb_strtoupper;
-use function strtr;
 
 /**
  * A fingerprint in a form a person can actually check.
@@ -63,22 +63,21 @@ final readonly class AtAGlance
     private const int GROUPS = 4;
 
     /**
-     * The multiplier the fold mixes with.
+     * What the digest is hashed with before it is rendered.
      *
-     * An odd prime, which is what makes the accumulate spread rather than
-     * settle: every byte shifts the running value into a different part of the
-     * range instead of clustering it.
+     * SHA-256, the same function that produced the fingerprint. Not because
+     * this is a security boundary — `Fingerprint::is()` is — but because a
+     * spread nobody has to verify by reading is worth more here than a clever
+     * one. The arithmetic this replaced was four lines long, looked reasonable,
+     * and folded every certificate in the world into thirty-two strings.
      */
-    private const int MIXED_WITH = 31;
+    private const string MIXED_BY = 'sha256';
 
-    /**
-     * Where the running value wraps.
-     *
-     * 2^32, so the arithmetic stays inside an integer on every platform this
-     * runs on rather than reaching float precision — where two different
-     * digests would start folding to the same groups, silently.
-     */
-    private const int WRAPS_AT = 4_294_967_296;
+    /** How many hexadecimal characters spell one byte. */
+    private const int PER_BYTE = 2;
+
+    /** The base the hash is spelled in. */
+    private const int HEX = 16;
 
     private function __construct(private string $shown) {}
 
@@ -124,31 +123,50 @@ final readonly class AtAGlance
     /**
      * Every byte of the digest, folded into the output alphabet.
      *
-     * A simple accumulate-and-mix rather than a second hash: this is not a
-     * security boundary — the security is `Fingerprint::is()`, which compares
-     * the whole digest — it is a display of one, and what it owes is that every
-     * input byte changes the result.
+     * **A second hash, and the reason is a bug this replaced.** What was here
+     * was a hand-rolled accumulate-and-mix, argued for in this docblock on the
+     * grounds that "this is not a security boundary". It produced **thirty-two
+     * distinct codes in total** — every certificate in the world folded to one
+     * of thirty-two strings, each a walk through the alphabet in steps of two.
+     *
+     * The arithmetic collapsed. The loop ran the same mix over the same bytes
+     * for all sixteen positions, so the only thing separating one position from
+     * the next was the seed `$at + 1`; after thirty-two rounds of `m * 31` that
+     * seed arrives multiplied by `31 ** 32`, and `31 ** 32 % 32 == 1` because 31
+     * is −1 modulo 32. The position index came out as a fixed arithmetic walk
+     * with one free number in it, and sixteen characters carried five bits.
+     *
+     * That is `N1-R51` failing in the exact way its own docblock warns about:
+     * two certificates share a code one time in thirty-two, and an attacker
+     * grinding a certificate to match a shown one needs about sixteen tries —
+     * far cheaper than the truncation this class rejects by name.
+     *
+     * So the digest is hashed and the hash is rendered. Sixteen bytes of
+     * SHA-256 across five bits each is the eighty bits the display can hold,
+     * every one of them moved by every input byte, and it is arithmetic nobody
+     * has to check by reading. The security is still `Fingerprint::is()`; what
+     * this owes is that two different certificates do not look the same, and
+     * this is the version that pays it.
      */
     private static function fold(string $digest): string
     {
-        $bytes = mb_str_split(strtr($digest, ['-' => '', ':' => '']), 2);
-        $wanted = self::PER_GROUP * self::GROUPS;
         $letters = mb_str_split(self::LETTERS);
+        $wanted = self::PER_GROUP * self::GROUPS;
         $shown = '';
 
-        for ($at = 0; $at < $wanted; $at++) {
-            $mixed = $at + 1;
+        // The whole digest goes in, so a certificate differing anywhere lands
+        // on different bytes here. Sixteen of the hash's thirty-two are read,
+        // which is not the truncation this class refuses — that one cut the
+        // *input* short and left the rest of the certificate unable to change
+        // the answer. Every byte of the digest moves every byte of this hash.
+        $bytes = mb_str_split(hash(self::MIXED_BY, $digest), self::PER_BYTE);
 
-            foreach ($bytes as $index => $byte) {
-                // Position-weighted so that two bytes swapping places changes
-                // the answer. Without the index, an anagram of a digest would
-                // fold to the same groups.
-                $mixed = ($mixed * self::MIXED_WITH + (int) hexdec($byte) + $index) % self::WRAPS_AT;
-            }
-
-            $shown .= $letters[($mixed + $at) % count($letters)];
+        foreach (array_slice($bytes, 0, $wanted) as $byte) {
+            // The low five bits of each byte. Even, with no modulo bias to
+            // argue about, because the alphabet holds exactly thirty-two.
+            $shown .= $letters[intval($byte, self::HEX) % count($letters)];
         }
 
-        return mb_strtoupper($shown);
+        return $shown;
     }
 }

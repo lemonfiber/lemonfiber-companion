@@ -61,16 +61,6 @@ final readonly class Fingerprint
     }
 
     /**
-     * Whether this is the certificate that was promised, compared in constant
-     * time.
-     *
-     * `hash_equals` rather than `===`. A fingerprint is public, so the timing
-     * of the comparison leaks nothing an attacker cannot already read — but the
-     * habit is the point: this comparison sits beside the one on `Session`,
-     * where it does matter, and two identity checks written differently invite
-     * the wrong one to be copied.
-     */
-    /**
      * The digest, for folding into a form a person can check (`N1-R50`).
      *
      * The one reader this type has, and named for the single thing it is for.
@@ -91,6 +81,16 @@ final readonly class Fingerprint
         return $this->digest;
     }
 
+    /**
+     * Whether this is the certificate that was promised, compared in constant
+     * time.
+     *
+     * `hash_equals` rather than `===`. A fingerprint is public, so the timing
+     * of the comparison leaks nothing an attacker cannot already read — but the
+     * habit is the point: this comparison sits beside the one on `Session`,
+     * where it does matter, and two identity checks written differently invite
+     * the wrong one to be copied.
+     */
     public function is(self $other): bool
     {
         return hash_equals($this->digest, $other->digest);
