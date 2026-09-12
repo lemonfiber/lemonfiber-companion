@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhyNothingIsShown;
+use Tests\Support\Catalogue;
 use Tests\Support\Fakes\ANotificationCentre;
 use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\APermissionAnswer;
@@ -76,7 +77,7 @@ function everyNotifier(Asked $standing): array
                 Asked::NotYet => APermissionAnswer::notDetermined(),
             };
 
-            return new PlatformNotifier(ANotificationCentre::on($answer), $answer);
+            return new PlatformNotifier(ANotificationCentre::on($answer), $answer, Catalogue::words());
         },
     ];
 }
@@ -98,7 +99,7 @@ it('N4-R4 — asking is separate from reading, so reading never prompts', functi
     // not about a return value, it is about how many times somebody was
     // interrupted.
     $answer = APermissionAnswer::denied();
-    $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer);
+    $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer, Catalogue::words());
 
     $notifier->standing();
     $notifier->standing();
@@ -119,7 +120,7 @@ it('N4-R4 — a declined permission is not asked for again', function (): void {
 
 it('N4-R4 — the prompt is raised once, and not again once answered', function (): void {
     $answer = APermissionAnswer::notDetermined();
-    $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer);
+    $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer, Catalogue::words());
 
     expect($notifier->ask())->toBe(Asked::Granted)
         ->and($answer->prompts())->toBe(1);
@@ -174,7 +175,7 @@ it('N4-R20 — the locked wording names no stack', function (): void {
     $answer = APermissionAnswer::granted();
     $centre = ANotificationCentre::on($answer);
 
-    new PlatformNotifier($centre, $answer)->show(somethingWorthSaying()->whileLocked());
+    new PlatformNotifier($centre, $answer, Catalogue::words())->show(somethingWorthSaying()->whileLocked());
 
     $sent = $centre->sent();
 
@@ -188,7 +189,7 @@ it('names the stack when the device is not locked', function (): void {
     $answer = APermissionAnswer::granted();
     $centre = ANotificationCentre::on($answer);
 
-    new PlatformNotifier($centre, $answer)->show(somethingWorthSaying());
+    new PlatformNotifier($centre, $answer, Catalogue::words())->show(somethingWorthSaying());
 
     $sent = $centre->sent();
 
@@ -204,7 +205,7 @@ it('keys a repeat of the same code onto the same notification', function (): voi
     // the operator a pile.
     $answer = APermissionAnswer::granted();
     $centre = ANotificationCentre::on($answer);
-    $notifier = new PlatformNotifier($centre, $answer);
+    $notifier = new PlatformNotifier($centre, $answer, Catalogue::words());
 
     $notifier->show(somethingWorthSaying());
     $notifier->show(somethingWorthSaying());

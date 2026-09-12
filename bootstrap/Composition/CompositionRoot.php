@@ -20,9 +20,7 @@ use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Vault\Api\PlatformKeychain;
 use Native\Mobile\Edge\TailwindParser;
-use Native\Mobile\PushNotifications;
 use Native\Mobile\SecureStorage as PlatformStore;
-use NativePHP\LocalNotifications\LocalNotifications;
 
 /**
  * The composition root.
@@ -81,7 +79,13 @@ final class CompositionRoot extends ServiceProvider
         // notification is composed and shown on the device and never leaves it.
         $this->app->bind(
             Notifier::class,
-            static fn(): Notifier => new PlatformNotifier(new LocalNotifications(), new PushNotifications()),
+            // Named by class rather than built by a closure here. Every one of
+            // this adapter's dependencies is a concrete class with no
+            // alternative — the notification centre, the permission handle, and
+            // the catalogue reader — so there is no implementation choice for a
+            // closure to state. The decision this line makes is the one that
+            // matters and is still written down: `Notifier` is `PlatformNotifier`.
+            PlatformNotifier::class,
         );
 
         // Bound for the same reason: a window is outside this process, and an
@@ -104,7 +108,8 @@ final class CompositionRoot extends ServiceProvider
         // handset. This is only how an answer becomes a Lock.
         $this->app->bind(
             DeviceAuth::class,
-            static fn(): DeviceAuth => new PlatformAuth(new Screen()),
+            // By class, for the reason given above the `Notifier` binding.
+            PlatformAuth::class,
         );
     }
 

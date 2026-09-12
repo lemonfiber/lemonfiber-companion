@@ -281,8 +281,60 @@ parameters:
                 - 'abort()'
                 - 'event()'
                 - 'dispatch()'
+                # The rest of the container-reaching helpers, added because A4
+                # said "container-reaching helpers" and named thirteen of them.
+                # `view()` was the one that showed it: a screen called it, no
+                # rule looked, and the sentence in ARCHITECTURE.md read as
+                # though something had.
+                - 'trans()'
+                - 'trans_choice()'
+                - '__()'
+                - 'redirect()'
+                - 'response()'
+                - 'route()'
+                - 'to_route()'
+                - 'url()'
+                - 'back()'
+                - 'old()'
+                - 'broadcast()'
+                - 'validator()'
+                - 'cookie()'
+                - 'bcrypt()'
+                - 'encrypt()'
+                - 'decrypt()'
+                - 'policy()'
+                - 'gate()'
+                - 'info()'
+                - 'context()'
             message: "A3/A4 — dependencies arrive through the constructor. Reaching into the container makes the constructor stop telling the truth about what this class needs, and a reader has to run the code to find out. Declare the dependency as a constructor parameter and bind it in bootstrap/Composition (A3, A4)."
             allowIn:
+                - bootstrap/Composition/*
+                - config/*
+                - tests/*
+                - app-modules/*/tests/*
+
+        # --- A4: `view()`, where the framework owns the signature -----------
+        #
+        # Scoped rather than left off the list above, which is the difference
+        # between an exception somebody can find and a rule that was never
+        # written.
+        #
+        # A screen is a Livewire component and `render(): View` is the
+        # framework's contract for one. Livewire instantiates a component
+        # itself and hands dependencies to `mount()`, not to `__construct()`,
+        # so there is no constructor for a view factory to arrive through —
+        # injecting one is not a stricter version of this, it is a version that
+        # does not resolve.
+        #
+        # Narrow on purpose. `Screens` is where a component's render method
+        # lives; `view()` anywhere else is the service location A3 refuses, and
+        # this entry does not reach it.
+        -
+            function:
+                - 'view()'
+            message: "A4 — `view()` reaches the container for a view factory. Inside a screen's render() it is the framework's own contract and is allowed; anywhere else, name the frame some other way. A class that reaches the container stops telling the truth about what it needs (A4)."
+            allowIn:
+                - app-modules/*/src/Internal/Screens/*
                 - bootstrap/Composition/*
                 - config/*
                 - tests/*
