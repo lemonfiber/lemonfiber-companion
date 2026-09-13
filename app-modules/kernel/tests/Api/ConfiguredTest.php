@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
+use Modules\Kernel\Api\StackName;
 
 use function str_repeat;
 
@@ -29,7 +30,7 @@ function stack(string $seed, string $called = 'The loft', string $at = 'https://
 {
     return Stack::of(
         StackId::of(Nonce::of(str_repeat($seed, Nonce::SHORTEST))),
-        $called,
+        StackName::of($called),
         Address::of($at),
         Fingerprint::of(str_repeat($seed, Fingerprint::CHARACTERS)),
     );
@@ -39,7 +40,7 @@ function stack(string $seed, string $called = 'The loft', string $at = 'https://
 function namesIn(Configured $record): array
 {
     return array_map(
-        static fn(Stack $held): string => $held->name(),
+        static fn(Stack $held): string => $held->name()->shown(),
         iterator_to_array($record, preserve_keys: false),
     );
 }
@@ -62,7 +63,7 @@ it('answers with the stack that was named', function (): void {
     $loft = stack('a', 'The loft');
     $record = Configured::none()->with(stack('b', 'My mum\'s'))->with($loft);
 
-    expect($record->stack($loft->id())->name())->toBe('The loft');
+    expect($record->stack($loft->id())->name()->shown())->toBe('The loft');
 });
 
 it('N1-R11 — refuses a stack it does not hold rather than substituting one', function (): void {

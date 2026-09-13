@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotNamed;
+use Modules\Kernel\Api\StackName;
 
 use function str_repeat;
 
@@ -36,7 +37,7 @@ function aStack(string $called = 'The loft', string $nonce = A_STACK_NONCE): Sta
 {
     return Stack::of(
         StackId::of(Nonce::of($nonce)),
-        $called,
+        StackName::of($called),
         Address::of('https://192.168.1.42:8443'),
         aDigest(),
     );
@@ -46,7 +47,7 @@ it('N1-R11 — carries the four things that make one stack', function (): void {
     $stack = aStack();
 
     expect($stack->id()->stored())->toBe(A_STACK_NONCE);
-    expect($stack->name())->toBe('The loft');
+    expect($stack->name()->shown())->toBe('The loft');
     expect($stack->at()->forTheClient())->toBe('https://192.168.1.42:8443');
     expect($stack->presents()->is(aDigest()))->toBeTrue();
 });
@@ -71,15 +72,12 @@ it('N1-R23 — does not carry the session', function (): void {
 });
 
 it('refuses a stack an operator cannot tell from another', function (): void {
-    // A name is the only thing an operator has to tell two of them apart by —
-    // "192.168.1.42" and "192.168.1.43" are not two names, which is why the
-    // address is not allowed to stand in for one.
+    // Refused by `StackName` rather than here, which is where the rule went
+    // when the name became a type. Kept as a test of `Stack` because what a
+    // caller needs to know is that this constructor refuses it — a blank name
+    // reaching a stack would be the same bug wherever it was allowed in.
     expect(fn(): Stack => aStack(called: '   '))
         ->toThrow(StackIsNotNamed::class, 'no name');
-});
-
-it('takes the name as the operator typed it, less the accident', function (): void {
-    expect(aStack(called: '  The loft  ')->name())->toBe('The loft');
 });
 
 it('N1-R22 — is the same stack wherever it answers', function (): void {
@@ -89,7 +87,7 @@ it('N1-R22 — is the same stack wherever it answers', function (): void {
     // to something else.
     $moved = Stack::of(
         StackId::of(Nonce::of(A_STACK_NONCE)),
-        'The loft, moved',
+        StackName::of('The loft, moved'),
         Address::of('https://10.0.0.7:8443'),
         aDigest(),
     );
