@@ -44,6 +44,31 @@ and nothing will say so. The rule to write at that point is the one that reads
 the endpoint argument, and it belongs with the other `act()` rules rather than
 here.
 
+## `N2-R8` — a duration the core never sends
+
+> A disruptive action MUST state what it disturbs and for how long before it is
+> confirmed.
+
+The first half is answerable and the second is not. `kinds.lifecycle` — where
+start, stop and restart live — carries `plan.services`, `plan.forms`,
+`plan.profiles` and `plan.dropped`, each named individually, which is what lets
+a screen list what an action disturbs rather than summarise it. Nothing in it
+answers *for how long*, and nothing in `start`, `undo`, `beside` or `stuck`
+does either. The only time estimates in the contract are `dashboard.eta`,
+`household.estimate`, `bandwidth.seconds` and `step.eta`, and `step` is the
+walkthrough — the machine-side setup flow this app is required not to carry out
+(`N1-R35`).
+
+An estimate written here would be a guess at something the stack knows and this
+side does not: how long a service takes to come back depends on what it was
+doing when it stopped, what depends on it, and what the machine is. It would be
+wrong in exactly the cases an operator most needs it, and wrong silently.
+
+Raised as [lemonfiber/spec#336](https://github.com/lemonfiber/spec/issues/336).
+`N2-R4` is the same requirement shape for repairs and the contract *does* answer
+it there, which is why `Repair` can hold that one by construction and there is
+no equivalent type here.
+
 ## `N2-R2` — findings worst first
 
 > Findings MUST be ordered by severity, worst first.
