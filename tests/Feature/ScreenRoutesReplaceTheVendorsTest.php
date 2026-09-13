@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Bootstrap\Composition\NativePHP\Runloop;
 use Bootstrap\Composition\NativePHP\ScreenIsNotAScreen;
 use Bootstrap\Composition\NativePHP\ScreenRouter;
 use Bootstrap\Composition\NativePHP\ScreenRoutes;
@@ -15,6 +14,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\NoStackYet;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
 use Tests\Support\Fakes\StacksInMemory;
 
 // A3 — a screen is built through the container, so it can be given a port.
@@ -234,46 +234,6 @@ function aBuildThatKnows(): Closure
     $screens = [NoStackYet::class => aScreen(...)];
 
     return static fn(string $class): mixed => ($screens[$class] ?? static fn(): string => 'no such screen')();
-}
-
-/**
- * A runloop that runs nothing and remembers what it was asked to.
- *
- * Written out rather than mocked — `G1` — so a change to the seam fails to
- * compile here instead of drifting.
- */
-final class ARunloopThatOnlyRemembers implements Runloop
-{
-    /** @var list<array{screen: string, params: array<mixed>, path: string}> */
-    private array $entered = [];
-
-    /**
-     * @param Closure(string): mixed $build
-     * @param array<mixed>           $params
-     */
-    public function enter(Closure $build, string $screen, array $params, string $path): mixed
-    {
-        $this->entered[] = ['screen' => $screen, 'params' => $params, 'path' => $path];
-
-        return '';
-    }
-
-    /**
-     * What it was last asked to run.
-     *
-     * A method rather than public properties, which the analyser refuses on a
-     * non-readonly class — and it reads better anyway: a stand-in that answers
-     * questions is one a test can be written against without knowing how it
-     * remembers.
-     *
-     * @return array{screen: string, params: array<mixed>, path: string}
-     */
-    public function whatItRan(): array
-    {
-        expect($this->entered)->not->toBeEmpty('the runloop was never entered');
-
-        return $this->entered[count($this->entered) - 1];
-    }
 }
 
 /**
