@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Closure;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Held;
