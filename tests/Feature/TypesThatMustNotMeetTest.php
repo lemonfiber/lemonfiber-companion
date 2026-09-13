@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Tests\Support\ApiSurface;
+use Tests\Support\Module;
 
 /**
  * Requirements that are satisfied by a path not existing.
@@ -144,6 +145,94 @@ it('a type that must not reach another cannot name it in any signature', functio
         . 'These requirements are satisfied by a path not existing, so the check is on the '
         . 'signatures rather than on the behaviour: a method that can be handed one of these, '
         . 'or can answer with one, is a path somebody will take.',
+        implode("\n  ", $found),
+    ));
+});
+
+/**
+ * Every type a screen names, against where it names it.
+ *
+ * Properties as well as signatures. A promoted one is both and is found by the
+ * constructor, but a screen can also declare a plain typed property, and a rule
+ * that read only methods would be a rule a field walks past.
+ *
+ * @param ReflectionClass<object> $screen
+ *
+ * @return list<array{string, list<string>}>
+ */
+function namedByScreen(ReflectionClass $screen): array
+{
+    $named = [];
+
+    foreach ($screen->getMethods() as $method) {
+        $types = ApiSurface::namesIn($method->getReturnType());
+
+        foreach ($method->getParameters() as $parameter) {
+            $types = [...$types, ...ApiSurface::namesIn($parameter->getType())];
+        }
+
+        $named[] = [ApiSurface::describe($method), $types];
+    }
+
+    foreach ($screen->getProperties() as $property) {
+        $named[] = [
+            sprintf('%s::$%s', $screen->getName(), $property->getName()),
+            ApiSurface::namesIn($property->getType()),
+        ];
+    }
+
+    return $named;
+}
+
+/**
+ * Every class this app renders from.
+ *
+ * @return list<ReflectionClass<object>>
+ */
+function screens(): array
+{
+    $found = [];
+
+    foreach (Module::all() as $module) {
+        foreach ($module->classNames() as $name) {
+            if (str_contains($name, '\\Internal\\Screens\\')) {
+                $found[] = new ReflectionClass($name);
+            }
+        }
+    }
+
+    return $found;
+}
+
+it('N2-R12 — no screen can be handed a credential', function (): void {
+    // The app may say that a credential is refused, and saying so needs its
+    // name and its state — which is what the contract's `held` carries, having
+    // "deliberately no value here, and no field a value could be put in later
+    // without the change being visible in review". The value arrives in one
+    // place only, under `revealed`, and nothing on this side has any business
+    // holding it.
+    //
+    // Checked as a path rather than as a screen, because the screen that
+    // violates this does not exist yet and the point is that it never gets
+    // written. A screen that can be handed a credential is a screen with a
+    // field to bind one to, and binding it is the small edit somebody makes
+    // while fixing something else.
+    $found = [];
+
+    foreach (screens() as $screen) {
+        foreach (namedByScreen($screen) as [$where, $types]) {
+            if (in_array(Credential::class, $types, strict: true)) {
+                $found[] = $where;
+            }
+        }
+    }
+
+    expect(array_values(array_unique($found)))->toBe([], sprintf(
+        "A screen can reach a credential's value:\n  %s\n\n"
+        . 'N2-R12 keeps this app from being a place to type a provider password into '
+        . 'over a LAN. Reporting a credential needs its name and its state; the value '
+        . "is never part of the answer, so a surface that can hold one is a surface "
+        . 'that has already gone wrong (N2-R12, N1-R15).',
         implode("\n  ", $found),
     ));
 });
