@@ -24,30 +24,29 @@ use Tests\Support\Tree;
  * works immediately against a stack on the same network, and the pinning is
  * left for later. Later is after the screens are built on top of it.
  *
- * **The gap this guards is real and not yet closed.** The SDK exposes no
- * pinning seam: `LemonfiberConnector` overrides `resolveBaseUrl`,
- * `defaultAuth` and `defaultHeaders`, and nothing else. Saloon's
- * `defaultConfig()` reaches Guzzle's options, and Guzzle reaches curl's — but
- * `CURLOPT_PINNEDPUBLICKEY` pins the **public key**, as `sha256//` over the
- * SPKI, while {@see Modules\Kernel\Api\Fingerprint} is a SHA-256 digest of the
- * certificate. Those are different values of the same length, and passing one
- * where the other is expected fails in the most expensive way available: every
- * connection refused, against a stack that is perfectly correct.
+ * **The gap this guarded is closed, and how it closed is worth keeping.** The
+ * SDK exposed no pinning seam and refused every non-loopback address, so there
+ * were two walls between this application and a stack on somebody's network.
+ * Both were questions for the specification rather than patches to write here —
+ * [spec#332](https://github.com/lemonfiber/spec/issues/332) for the seam,
+ * [spec#337](https://github.com/lemonfiber/spec/issues/337) for the address —
+ * and `ADR-0025` answered them together, because neither closes alone: a seam
+ * above an address check that refuses first is never reached, and a relaxed
+ * address with no pin is the thing `ADR-0018` exists to prevent.
  *
- * **And pinning is the second wall, not the first.** `BaseUrl::fromString()`
- * refuses every host that is not loopback, citing `C6-R1` — which says admin
- * services bind to loopback *by default*, a statement about where a server
- * binds rather than about what a client may address. `ADR-0018` is about
- * reaching `192.168.1.42`. So the address is refused before any pin would be
- * consulted, and `sdk-ts` refuses it too, for a reason of its own: a browser
- * cannot resolve names. Loopback-only is right for both SDKs' existing
- * consumers and the companion is the first that is not on the machine.
+ * The decision that came back is not the one that was proposed. Pinning the
+ * public key instead of the certificate would survive renewal, which sounds
+ * like an argument for it — and is the argument against, because `ADR-0018`
+ * decided deliberately that rotation must be *loud*. What settled it was
+ * measurement rather than reasoning: both digests can be enforced during the
+ * handshake, so the certificate digest gives up nothing, and the option that
+ * would have carried the public key is deprecated in the transport while the
+ * one matching `ADR-0018` is supported.
  *
- * Both are open questions in the specification rather than patches to write
- * here — [spec#332](https://github.com/lemonfiber/spec/issues/332) for the
- * seam, [spec#337](https://github.com/lemonfiber/spec/issues/337) for the
- * address. What belongs here is that nobody reaches a stack in the meantime and
- * discovers either afterwards.
+ * So the value is unchanged and `N1-R18` now fixes its written form — SHA-256
+ * over the DER encoding, lower-case hex — which is the half of that confusion
+ * no type can catch. `C6-R19` covers the cry-wolf worry from the other side:
+ * the stack announces a certificate change before it happens.
  */
 
 /**
@@ -57,9 +56,16 @@ use Tests\Support\Tree;
  * about: a renamed class breaks this loudly, where a string would quietly stop
  * matching and the rule would go on reporting that nothing reaches a stack.
  *
- * Empty, and not an oversight. When the pinning adapter is written this is
- * where it gets named — one entry, so the reviewer of that change is looking at
- * this list and its reasoning at the same moment.
+ * One entry, and it arrived the way this comment said it would: the SDK grew
+ * the seam (`Client::pinnedAt()`, `BaseUrl::pinned()`, `CertificatePin`), the
+ * adapter was written against it, and the reviewer of that change read this
+ * list and its reasoning at the same moment.
+ *
+ * What the entry buys is that `PinnedClients` is the only file that can open a
+ * connection, and it names one constructor. The SDK offers three: `onPort()`
+ * and `at()` build a client with no pin, which is right for a surface on the
+ * machine and wrong for every connection this application makes. Naming only
+ * the pinned one means *reach it unpinned* has no spelling here.
  *
  * **A map rather than a list, so an entry cannot arrive without saying why.**
  * The failure this guards against is not somebody deciding to connect
@@ -71,7 +77,13 @@ use Tests\Support\Tree;
  *
  * @var array<string, string> path => the requirement or ADR that permits it
  */
-const MAY_REACH_A_STACK = [];
+const MAY_REACH_A_STACK = [
+    'app-modules/sdk/src/Api/PinnedClients.php' => 'ADR-0018, N1-R16, N1-R19 — the one '
+        . 'file that opens a connection. It names `Client::pinnedAt()` and no other '
+        . 'constructor, and takes the pin off the Stack rather than as an argument, so '
+        . 'the digest is the one pairing material carried (N1-R18) and not one a caller '
+        . 'supplied from somewhere else.',
+];
 
 /** What naming any of these means: this file opens a connection. */
 const THE_TRANSPORT = [
