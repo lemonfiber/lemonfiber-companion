@@ -21,6 +21,10 @@ return [
         'pass' => 'Passed',
         'skipped' => 'Skipped',
     ],
+    'undoing' => [
+        'permanent' => 'This cannot be undone',
+        'possible' => 'This can be undone afterwards',
+    ],
     'overall' => [
         'broken' => 'Something is broken',
         'unknown' => 'Health could not be determined',

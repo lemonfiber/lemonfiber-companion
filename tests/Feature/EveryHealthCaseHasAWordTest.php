@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Undoing;
 use Tests\Support\Catalogue;
 
 // L1/L2 — every case a screen branches on has a word, in every language.
@@ -45,6 +46,11 @@ function keyedBy(array $cases): array
  * it renders as `health.overall.unknown`, which a person reads as this app
  * having broken rather than as the stack having declined to say.
  *
+ * `Undoing` earns its row from N2-R4, and is the reason that clause is an enum
+ * rather than the wire's boolean: "whether it can be undone" has to reach the
+ * operator as a sentence before they agree to something permanent, and a
+ * boolean has no sentence to reach them with.
+ *
  * Each `cases()` is written out rather than reached through a list of class
  * names, because a class name held in a variable is a set the analyser cannot
  * see, and the shorter table would buy its brevity by going dark (P2, E1).
@@ -57,6 +63,7 @@ function groups(): array
         'category' => keyedBy(Category::cases()),
         'conclusion' => keyedBy(Conclusion::cases()),
         'overall' => keyedBy(Overall::cases()),
+        'undoing' => keyedBy(Undoing::cases()),
     ];
 }
 

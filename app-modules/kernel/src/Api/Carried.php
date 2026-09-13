@@ -21,18 +21,18 @@ use Closure;
  */
 final readonly class Carried
 {
-    private function __construct(private Remedy $remedy, private ?Reading $moved) {}
+    private function __construct(private Repair $repair, private ?Reading $moved) {}
 
     /** The reading still held, so the repair went to the stack. */
-    public static function out(Remedy $remedy): self
+    public static function out(Repair $repair): self
     {
-        return new self($remedy, null);
+        return new self($repair, null);
     }
 
     /**
      * The reading moved between the confirmation and the act (`N2-R6`).
      *
-     * Takes the remedy as well as what the reading is *now*, because "refuse"
+     * Takes the repair as well as what the reading is *now*, because "refuse"
      * and "re-offer" are one requirement rather than two. The operator
      * confirmed a repair for a situation that no longer exists; what they need
      * next is that same repair, offered against the situation that does. An arm
@@ -40,17 +40,17 @@ final readonly class Carried
      * repair this was about, and a screen that remembers wrong offers the
      * wrong one.
      */
-    public static function refusedBecauseTheReadingMoved(Remedy $remedy, Reading $now): self
+    public static function refusedBecauseTheReadingMoved(Repair $repair, Reading $now): self
     {
-        return new self($remedy, $now);
+        return new self($repair, $now);
     }
 
     /**
      * @template TOut of object
      * @template TRefused of object
      *
-     * @param  Closure(Remedy): TOut  $out
-     * @param  Closure(Remedy, Reading): TRefused  $refused
+     * @param  Closure(Repair): TOut  $out
+     * @param  Closure(Repair, Reading): TRefused  $refused
      * @return TOut|TRefused
      */
     public function either(Closure $out, Closure $refused): object
@@ -59,7 +59,7 @@ final readonly class Carried
         // explain is the one the type is written around, and a fall-through is
         // how a branch becomes the one nobody tested.
         return $this->moved instanceof Reading
-            ? $refused($this->remedy, $this->moved)
-            : $out($this->remedy);
+            ? $refused($this->repair, $this->moved)
+            : $out($this->repair);
     }
 }
