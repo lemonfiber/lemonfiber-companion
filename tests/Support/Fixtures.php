@@ -1008,6 +1008,29 @@ final readonly class Fixtures
                 }
                 PHP, 'M1 —'),
 
+            // M1's other clause. The fixture above is a command answering with
+            // something that is not an `Outcome`; this is a query answering
+            // with one — the same rule read from the other end. A question that
+            // reports whether it worked is a question that did something.
+            Fixture::suite('M1', 'app-modules/health/src/Api/Queries/Fixtures/AnswersWithOutcome.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Api\Queries\Fixtures;
+
+                use Modules\Kernel\Api\IdempotencyKey;
+                use Modules\Kernel\Api\Outcome;
+
+                final readonly class AnswersWithOutcome
+                {
+                    public function __invoke(): Outcome
+                    {
+                        return Outcome::of(IdempotencyKey::of('a-key'));
+                    }
+                }
+                PHP, 'M1 —', 'AnswersWithOutcome'),
+
             Fixture::suite('M2', 'app-modules/health/src/Api/Commands/Fixtures/DoesTwoThings.php', <<<'PHP'
                 <?php
 
@@ -1085,6 +1108,27 @@ final readonly class Fixtures
                 }
                 PHP, 'P2 —'),
 
+            // P2's other clause. The fixture above reaches a property by a name
+            // held in a variable; this makes the *variable itself* dynamic,
+            // which is the older and stranger half of the same sentence.
+            Fixture::analyser('P2', 'Plain/NamesAVariable.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class NamesAVariable
+                {
+                    public function indirect(string $name): bool
+                    {
+                        $$name = true;
+
+                        return $$name;
+                    }
+                }
+                PHP, 'variable.dynamicName'),
+
             Fixture::analyser('Q3', 'Plain/BindsLate.php', <<<'PHP'
                 <?php
 
@@ -1136,6 +1180,32 @@ final readonly class Fixtures
                 }
                 PHP, 'C6 —'),
 
+            // C6's other clause. The fixture above catches broadly; this one
+            // catches narrowly and does nothing, which is the half somebody
+            // actually writes — an empty `catch` looks deliberate.
+            Fixture::analyser('C6', 'Plain/CatchesAndSaysNothing.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                use InvalidArgumentException;
+
+                final class CatchesAndSaysNothing
+                {
+                    public function go(): bool
+                    {
+                        try {
+                            throw new InvalidArgumentException('x');
+                        } catch (InvalidArgumentException) {
+                        }
+
+                        return true;
+                    }
+                }
+                PHP, 'lemonfiber.broadCatch'),
+
             Fixture::analyser('C7', 'Plain/AsksIfEmpty.php', <<<'PHP'
                 <?php
 
@@ -1168,6 +1238,27 @@ final readonly class Fixtures
                     }
                 }
                 PHP, 'C9 —'),
+
+            // C9's other clause. The fixture above plants a nested ternary; the
+            // rule also says "no `??` on an array subscript", which is a
+            // different construct caught by a different check. A rule with two
+            // clauses and one fixture has been shown to refuse half of itself.
+            Fixture::analyser('C9', 'Plain/CoalescesOnASubscript.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class CoalescesOnASubscript
+                {
+                    /** @param array<string, string> $rows */
+                    public function pick(array $rows): string
+                    {
+                        return $rows['missing'] ?? 'none';
+                    }
+                }
+                PHP, 'lemonfiber.coalesceOnArray'),
 
             Fixture::analyser('P3', 'Plain/TakesAnything.php', <<<'PHP'
                 <?php
@@ -1568,6 +1659,21 @@ final readonly class Fixtures
             Fixture::suite('W3', 'resources/views/Fixtures/stray.blade.php', <<<'BLADE'
                 <native:text>a screen with no module</native:text>
                 BLADE, 'W3 —', 'stray.blade.php'),
+
+            // W3's other clause. The fixture above is a Blade file in the root
+            // view directory; this is a test file in the root `tests/` that is
+            // not one of the suites. Root `tests/` holds `Arch`, `Feature`,
+            // `Contract` and the rest — a file loose beside them belongs to no
+            // suite, so whether it runs depends on which command somebody typed.
+            Fixture::suite('W3', 'tests/Fixtures/StrayTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                it('sits in no suite at all', function (): void {
+                    expect(true)->toBeTrue();
+                });
+                PHP, 'W3 —', 'tests/Fixtures'),
 
             Fixture::suite('W4', 'app-modules/health/tests/Fixtures/BorrowedTest.php', <<<'PHP'
                 <?php
