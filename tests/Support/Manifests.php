@@ -12,6 +12,9 @@ use function is_array;
 use function is_string;
 use function json_decode;
 use function mb_strtolower;
+
+use RuntimeException;
+
 use function sprintf;
 use function str_contains;
 use function str_replace;
@@ -141,13 +144,30 @@ final readonly class Manifests
     private static function requiring(array $refused): array
     {
         $found = [];
+        $seen = 0;
 
         foreach (self::manifests() as $path) {
             foreach (self::packagesIn($path) as $package) {
+                $seen++;
+
                 if (in_array($package, $refused, strict: true)) {
                     $found[] = sprintf('%s — %s', $package, self::asTheRepositorySeesIt($path));
                 }
             }
+        }
+
+        // Refused rather than answered empty, the way `Coverage` refuses a
+        // report that is not there. `N4-R12` passes on an empty answer, and an
+        // empty answer is what both a clean repository and an unreadable
+        // manifest give — so the one that means "nothing was looked at" says so
+        // instead. The root manifest alone requires dozens of packages.
+        if ($seen === 0) {
+            throw new RuntimeException(sprintf(
+                'No package was read from any manifest under %s. A rule that refuses a '
+                . 'package answers the same way when it has read none, and only one of '
+                . 'those is a repository with no telemetry in it.',
+                Tree::root(),
+            ));
         }
 
         return $found;
