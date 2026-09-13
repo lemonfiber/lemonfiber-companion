@@ -7,9 +7,9 @@ namespace Bootstrap\Composition;
 use Bootstrap\Composition\NativePHP\ScreenRoutes;
 use Bootstrap\Composition\NativePHP\TheHarnessInstead;
 use Bootstrap\Composition\NativePHP\TheRunloop;
+use Bootstrap\Composition\NativePHP\TheTheme;
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Screen;
-use Modules\Design\Api\Theme;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Api\PlatformScreen;
@@ -26,7 +26,6 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
-use Native\Mobile\Edge\TailwindParser;
 use Native\Mobile\SecureStorage as PlatformStore;
 
 /**
@@ -146,16 +145,16 @@ final class CompositionRoot extends ServiceProvider
 
     public function boot(): void
     {
-        // EDGE ships no theme resolver, and without one every `bg-theme-*` and
-        // `text-theme-*` class is parsed, found to mean nothing, and dropped —
-        // silently, at render, on somebody's phone. The design module owns what
-        // those tokens mean; this is the line that connects the two.
+        // Whose palette `bg-theme-*` resolves against, and — the half that was
+        // decided by luck until `nativephp/mobile-ui` arrived — that it is
+        // still ours after every other provider has had its turn.
+        // {@see TheTheme} carries the reasoning; it is a class rather than four
+        // lines here so that a test can plant a rival resolver and call it.
         //
-        // No dark resolver is registered, which is the decision rather than the
-        // gap: the parser emits a dark companion only when one exists, and the
-        // accent pair is legible either way round without one. ThemeToken::hex()
-        // carries the reasoning and the measurement.
-        TailwindParser::setThemeResolver(Theme::resolver());
+        // `$this->app->booted()` rather than `$this->booted()`, which fires at
+        // the end of *this* provider's boot rather than everybody's, and differs
+        // only in the case that matters.
+        $this->app->booted(TheTheme::paint(...));
 
         // `Route::native()`, replaced so that a screen is built through the
         // container rather than with `new`. NativePHP's own router cannot give
