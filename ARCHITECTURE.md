@@ -499,15 +499,35 @@ Write the fixture from the sentence. If the sentence cannot be broken in a way
 the mechanism sees, that is the finding: the mechanism is narrower than the rule
 and one of the two has to move.
 
-**Every fixture sits under a directory called `Fixtures`**, with one exception:
-the coverage report a floors fixture needs goes to `coverage/`, which is
-generated output and wholly ignored already. For the length of a
+**Every fixture that is a file sits under a directory called `Fixtures`**, with
+one exception: the coverage report a floors fixture needs goes to `coverage/`,
+which is generated output and wholly ignored already. For the length of a
 run the files are really on disk, so `.gitignore` and `pint.json` both exclude
 that one name. Without it, a commit made beside a run picks up a deliberate rule
 violation, `git status` reports a dirty tree that is about to clean itself, and
 the formatter fails on files whose whole purpose is to be wrong. The convention
 costs a directory name: a `Fixtures/` directory anywhere in this repository
 belongs to the harness and is never committed.
+
+**Some violations are not a file.** A second accessor on a type that already
+exists, a listener registered against another module's event, a `@param` that
+stops handing on what it read — each is a change to a file this repository owns,
+and for a long time each was recorded as *nothing can break this* with a
+paragraph explaining that the harness could only write whole files. That was an
+honest answer to the wrong question: what could not be done was the editing, not
+the breaking.
+
+`Fixture::edit` does it. It finds one piece of text in a real file and puts
+something else in its place, and it refuses a piece of text it cannot find
+exactly once — a fixture that matched nothing would leave the rule passing on an
+unedited tree, which is the vacuous green this whole harness exists to make
+impossible. What makes it safe to run against files that are committed is the
+same manifest the sweep already kept: every write records what it replaced, so
+an edited file goes back exactly as it was after a failure, an exception or a
+kill, and the by-name pass puts the text back directly for the run where the
+manifest is itself what went missing. The earliest record for a path wins, so
+two fixtures editing one file still restore it to what was there before the run
+began.
 
 **The `Guards` suite runs alone.** `composer test` is `pest --parallel` with
 `Guards` excluded; `composer test:guards` runs it by itself. The harness plants

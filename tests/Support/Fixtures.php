@@ -1953,6 +1953,112 @@ final readonly class Fixtures
                     }
                 }
                 KOTLIN, 'N3-R8 — no platform source reaches for a media player'),
+
+            // The violation is a method added to a type this repository already
+            // has, so there is no file to drop in beside it — which is why this
+            // was answered with a paragraph for as long as the harness could
+            // only write whole files. `Session` is the narrower of the two
+            // subjects: a token scoped to an address is the exact change the
+            // requirement forbids, made for a transport reason, and it is the
+            // one somebody reaches for the first time two stacks are reachable
+            // at once.
+            Fixture::edit(
+                'N1-R14',
+                'app-modules/kernel/src/Api/Session.php',
+                '    /** What `json_encode` writes. */',
+                <<<'PHP'
+                        /** A session, narrowed to the one stack it was issued by. */
+                        public function scopedTo(Address $where): self
+                        {
+                            return $this;
+                        }
+
+                        /** What `json_encode` writes. */
+                    PHP,
+                'a type that must not reach another cannot name it in any signature',
+                'scopedTo',
+            ),
+
+            // One per subject rather than one entry naming three requirements.
+            // The three are the same shape and not the same claim: each type is
+            // named for a different destination, and a fixture that broke one
+            // and spoke for all three would be the rule claiming more than it
+            // enforces — which is the thing this harness exists to catch.
+            Fixture::edit(
+                'N1-R8',
+                'app-modules/kernel/src/Api/Session.php',
+                '    /**
+     * Whether this is the same session, compared in constant time.',
+                <<<'PHP'
+                        /** The session, for a query string this time. */
+                        public function forTheQuery(): string
+                        {
+                            return $this->token;
+                        }
+
+                        /**
+                         * Whether this is the same session, compared in constant time.
+                    PHP,
+                'a value with one destination publishes one way to reach it',
+                'forTheQuery',
+            ),
+
+            Fixture::edit(
+                'N1-R7',
+                'app-modules/kernel/src/Api/Credential.php',
+                '    /**
+     * Whether this has been exchanged already.',
+                <<<'PHP'
+                        /** The secret, without spending it. */
+                        public function value(): string
+                        {
+                            return (string) $this->secret;
+                        }
+
+                        /**
+                         * Whether this has been exchanged already.
+                    PHP,
+                'a value with one destination publishes one way to reach it',
+                'value',
+            ),
+
+            Fixture::edit(
+                'N1-R15',
+                'app-modules/kernel/src/Api/Address.php',
+                '    /** What `json_encode` writes. */',
+                <<<'PHP'
+                        /** The address, for whatever wants to print it. */
+                        public function shown(): string
+                        {
+                            return $this->url;
+                        }
+
+                        /** What `json_encode` writes. */
+                    PHP,
+                'a value with one destination publishes one way to reach it',
+                'shown',
+            ),
+
+            // Nothing to drop in: a listener is only a listener once something
+            // has registered it, and the dispatcher is what this rule reads.
+            // Neither class needs to exist — `getRawListeners()` hands back the
+            // strings it was given, and the rule compares namespaces — so the
+            // whole violation is the one call that registers them.
+            Fixture::edit(
+                'E5',
+                'bootstrap/Composition/CompositionRoot.php',
+                '        TailwindParser::setThemeResolver(Theme::resolver());',
+                <<<'PHP'
+                            \Illuminate\Support\Facades\Event::listen(
+                                'Modules\Backups\Api\Events\ArchiveWritten',
+                                'Modules\Health\Internal\ListensAcrossAKind@handle',
+                            );
+
+                            TailwindParser::setThemeResolver(Theme::resolver());
+                    PHP,
+                'E5 — no listener reacts to an event its module may not name',
+                'ListensAcrossAKind',
+            ),
         ];
     }
 
@@ -1964,14 +2070,6 @@ final readonly class Fixtures
     private static function notDrivable(): array
     {
         return [
-            Fixture::notDrivable(
-                'N1-R7, N1-R8, N1-R15',
-                'The violation is a second accessor on `Session`, `Credential` or `Address` '
-                . '— a method added to a type that already exists, where this harness writes '
-                . 'whole files. Driven by hand instead: `Session::forTheQuery()`, '
-                . '`Credential::value()` and `Address::shown()`, each added and each refused '
-                . 'by name.',
-            ),
             Fixture::notDrivable(
                 'N1-R9, N2-R13',
                 'The violation is a `value()` on `Reading`, and the second half is an '
@@ -1989,12 +2087,6 @@ final readonly class Fixtures
                 . 'and a fifth severity, each refused by name.',
             ),
             Fixture::notDrivable(
-                'N1-R14',
-                'The violation is `Session` or `Credential` naming a transport type in a '
-                . 'signature, which is an edit to an existing file. Driven by hand: '
-                . '`Session::scopedTo(Address)`, refused by name.',
-            ),
-            Fixture::notDrivable(
                 'Q-R66 (discovery)',
                 'The violation is `Tree::root()` answering with somewhere else, which is what '
                 . 'every path in this harness is built from — a fixture could not be written '
@@ -2004,17 +2096,11 @@ final readonly class Fixtures
             Fixture::notDrivable(
                 'R2',
                 'A fixture for this harness would have to be a documented rule with no '
-                . 'fixture, which means editing ARCHITECTURE.md in place rather than '
-                . 'dropping a file — and the harness writes whole files. Its own failure '
-                . 'mode is the one it cannot plant.',
-            ),
-            Fixture::notDrivable(
-                'E5',
-                'A listener has to be registered before the dispatcher holds it, and the '
-                . 'only place that happens is the composition root — which is a file the '
-                . 'harness would have to edit and restore rather than a fixture it can drop '
-                . 'in and delete. Driven by hand instead: a capability listener bound to a '
-                . 'surface event, registered in CompositionRoot::boot().',
+                . 'fixture — and the run that read it would be this run, which is already '
+                . 'reporting on whether every rule has one. Its own failure mode is the one '
+                . 'it cannot plant. (Editing ARCHITECTURE.md is no longer the obstacle: '
+                . 'Fixture::edit does that. The obstacle is that the subject is the '
+                . 'harness.)',
             ),
             Fixture::notDrivable(
                 'S2',
@@ -2025,10 +2111,10 @@ final readonly class Fixtures
             ),
             Fixture::notDrivable(
                 'G11',
-                'The violation is an attribute taken off an element of phpunit.xml, and '
-                . 'this harness writes whole files rather than editing one — editing that '
-                . 'file would also change the run doing the editing. The second half is '
-                . 'worse: what the settings produce is a non-zero exit code, and the '
+                'The violation is an attribute taken off an element of phpunit.xml, which '
+                . '`Fixture::edit` could do — and editing that file would change the run '
+                . 'doing the editing, which is the half that has not gone away. The second '
+                . 'half is worse: what the settings produce is a non-zero exit code, and the '
                 . 'harness reads a JUnit report, which records a test that triggered a '
                 . 'warning as a test that passed. Driven by hand instead, both ways: take '
                 . 'an attribute out and watch the arch rule name it, then delete '

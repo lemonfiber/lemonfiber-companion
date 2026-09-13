@@ -24,6 +24,7 @@ final readonly class Fixture
         public string $code,
         public string $marker,
         public string $evidence,
+        public string $replacing = '',
     ) {}
 
     /**
@@ -77,6 +78,32 @@ final readonly class Fixture
             $marker,
             $evidence === '' ? basename($path, '.php') : $evidence,
         );
+    }
+
+    /**
+     * A change to a file this repository owns, put back afterwards.
+     *
+     * For the violation that is not a file: a second accessor on a type that
+     * already exists, a name added to a closed set, an annotation that stops
+     * handing on what it read. `$replacing` is found in the real file and
+     * `$code` is put in its place, and the harness refuses a `$replacing` it
+     * cannot find exactly once — a fixture that matched nothing would leave the
+     * rule passing on an unedited tree, which is the vacuous green this whole
+     * harness exists to make impossible.
+     *
+     * `$marker` and `$evidence` mean what they mean for a suite fixture, and
+     * `$evidence` has no useful default here: the file is a real one, so its
+     * name is not the fixture's.
+     */
+    public static function edit(
+        string $rule,
+        string $path,
+        string $replacing,
+        string $code,
+        string $marker,
+        string $evidence,
+    ): self {
+        return new self($rule, Proof::Edit, $path, $code, $marker, $evidence, $replacing);
     }
 
     /** A rule with no snippet that breaks it, and why. */

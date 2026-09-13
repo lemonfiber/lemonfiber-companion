@@ -68,6 +68,35 @@ it('takes back out what a killed run left behind', function (): void {
     expect(is_file($stray))->toBeFalse();
 });
 
+it('puts back what a killed run wrote over', function (): void {
+    // The other half, and the one with teeth. A fixture that edits a file the
+    // repository owns cannot be swept by deleting it, and a sweep that deleted
+    // it would take a source file with it. What the manifest records is
+    // therefore not the path but what the path held, so the file goes back
+    // exactly as it was — after a failure, an exception, or a kill.
+    $real = Tree::at('app-modules/health/tests/Fixtures/AlreadyHere.php');
+    $was = "<?php // the file this repository owns\n";
+
+    // Put there the way the repository has it — not through `writeFixture`,
+    // which would record it as something this run wrote and therefore as
+    // something the sweep should take away.
+    if (! is_dir(dirname($real))) {
+        mkdir(dirname($real), 0o755, recursive: true);
+    }
+
+    file_put_contents($real, $was);
+
+    writeFixture($real, '<?php // what a fixture put over it');
+    writeFixture($real, '<?php // and what a second fixture put over that');
+
+    removeFixtures();
+
+    expect(is_file($real))->toBeTrue()
+        ->and(file_get_contents($real))->toBe($was);
+
+    unlink($real);
+});
+
 it('has a fixture for every rule that claims to be enforced', function (): void {
     $covered = array_map(static fn(Fixture $f): string => $f->rule, Fixtures::all());
     $missing = [];
@@ -143,7 +172,7 @@ it('the analyser reports every rule it is supposed to', function (): void {
 it('the suite fails every rule it is supposed to', function (): void {
     $fixtures = array_values(array_filter(
         Fixtures::all(),
-        static fn(Fixture $f): bool => $f->proof === Proof::Suite,
+        static fn(Fixture $f): bool => $f->proof->readBySuite(),
     ));
 
     $failures = suiteFailures();
@@ -343,7 +372,47 @@ function writeFixtures(): void
         if ($fixture->proof === Proof::Suite) {
             writeFixture(Tree::at($fixture->path), $fixture->code);
         }
+
+        if ($fixture->proof === Proof::Edit) {
+            editFixture($fixture);
+        }
     }
+}
+
+/**
+ * Put a fixture's change into a file this repository owns.
+ *
+ * The match is asserted before the edit, not after. A `$replacing` that no
+ * longer appears — the real file was reformatted, the method renamed — would
+ * leave the tree unedited and the rule reported as refusing a violation that was
+ * never planted, which is exactly the vacuous green everything here exists to
+ * make impossible. It raises instead, from `beforeEach`, naming the fixture.
+ *
+ * Once, because two occurrences mean the snippet is not specific enough to say
+ * which one is being broken, and a fixture that edits both is not the smallest
+ * violation of anything.
+ */
+function editFixture(Fixture $fixture): void
+{
+    $path = Tree::at($fixture->path);
+    $was = is_file($path) ? (string) file_get_contents($path) : '';
+    $found = substr_count($was, $fixture->replacing);
+
+    if ($found !== 1) {
+        throw new RuntimeException(sprintf(
+            'The fixture for %s replaces text that appears %d times in %s, so it would '
+            . "plant %s. What it looks for:\n\n%s\n\nEither the file has moved on and "
+            . 'the fixture should follow it, or the snippet needs to be specific enough '
+            . 'to name one place.',
+            $fixture->rule,
+            $found,
+            $fixture->path,
+            $found === 0 ? 'nothing at all and leave the rule passing on an unedited tree' : 'in more than one place',
+            $fixture->replacing,
+        ));
+    }
+
+    writeFixture($path, str_replace($fixture->replacing, $fixture->code, $was));
 }
 
 function writeFixture(string $path, string $code): void
@@ -352,14 +421,28 @@ function writeFixture(string $path, string $code): void
         mkdir(dirname($path), 0o755, recursive: true);
     }
 
+    // What was there first, recorded before it is gone. A fixture path is
+    // normally a name nothing else uses and the sweep can simply delete it —
+    // but a fixture that *edits* an existing file has to put that file back,
+    // and a fixture path that collided with a real one would otherwise have the
+    // sweep delete a source file and say nothing. One record covers both.
+    $before = is_file($path) ? (string) file_get_contents($path) : '';
+
     file_put_contents($path, sprintf("%s\n", trim($code)));
-    file_put_contents(Tree::at(WRITTEN), sprintf("%s\n", $path), FILE_APPEND);
+    file_put_contents(
+        Tree::at(WRITTEN),
+        sprintf("%s\t%s\n", $path, sodium_bin2hex($before)),
+        FILE_APPEND,
+    );
 }
 
 /**
- * Every path this run has written, read back.
+ * Every path this run has written, with whatever was there before it.
  *
- * @return list<string>
+ * An empty string means there was nothing — the ordinary case, where the sweep
+ * deletes. Anything else is a file to put back exactly as it was.
+ *
+ * @return array<string, string>
  */
 function fixturesWritten(): array
 {
@@ -375,10 +458,30 @@ function fixturesWritten(): array
         return [];
     }
 
-    return array_values(array_filter(
-        explode("\n", trim($said)),
-        static fn(string $path): bool => $path !== '',
-    ));
+    $written = [];
+
+    foreach (explode("\n", trim($said)) as $line) {
+        if ($line === '') {
+            continue;
+        }
+
+        // A line from before this record carried what it replaced is a path and
+        // nothing else, and a path with nothing behind it is the ordinary case.
+        [$path, $before] = array_pad(explode("\t", $line, 2), 2, '');
+
+        // The *first* record for a path, not the last. Two fixtures can edit
+        // one file, and the second one records what the first one left — so
+        // replaying in order would restore the file to a state this run made.
+        // What is wanted is what was there before this run touched it at all,
+        // which is the earliest line naming it.
+        if (array_key_exists($path, $written)) {
+            continue;
+        }
+
+        $written[$path] = $before === '' ? '' : sodium_hex2bin($before);
+    }
+
+    return $written;
 }
 
 /**
@@ -404,8 +507,14 @@ function fixturesWritten(): array
  */
 function removeFixtures(): void
 {
-    foreach (fixturesWritten() as $path) {
-        removeFixture($path);
+    foreach (fixturesWritten() as $path => $before) {
+        if ($before === '') {
+            removeFixture($path);
+
+            continue;
+        }
+
+        file_put_contents($path, $before);
     }
 
     removeFixture(Tree::at(WRITTEN));
@@ -417,6 +526,14 @@ function removeFixtures(): void
     foreach (Fixtures::all() as $fixture) {
         if ($fixture->proof === Proof::Suite || $fixture->proof === Proof::IsolatedSuite) {
             removeFixture(Tree::at($fixture->path));
+        }
+
+        // Never by name: the path is a file this repository owns, and deleting
+        // it is the one outcome worse than leaving it edited. Undone by putting
+        // the text back, which needs no manifest and is what covers the run
+        // where the manifest is itself what went missing.
+        if ($fixture->proof === Proof::Edit) {
+            unEditFixture($fixture);
         }
     }
 
@@ -430,6 +547,31 @@ function removeFixture(string $path): void
     if (is_file($path)) {
         unlink($path);
     }
+}
+
+/**
+ * Take a fixture's change back out of a file this repository owns.
+ *
+ * Reads what is there rather than trusting that the manifest pass has run:
+ * where the planted text is present it goes back, and where it is not there is
+ * nothing to do — which is the ordinary case, because the manifest restored the
+ * file a moment ago.
+ */
+function unEditFixture(Fixture $fixture): void
+{
+    $path = Tree::at($fixture->path);
+
+    if (! is_file($path)) {
+        return;
+    }
+
+    $now = (string) file_get_contents($path);
+
+    if (! str_contains($now, $fixture->code)) {
+        return;
+    }
+
+    file_put_contents($path, str_replace($fixture->code, $fixture->replacing, $now));
 }
 
 /**
