@@ -58,15 +58,15 @@ final readonly class Problems
         $data = self::payload(Wire::checked($envelope));
 
         if (! is_array($data)) {
-            throw ProblemIsUnreadable::missing('data');
+            throw ProblemIsUnreadable::missing(WireField::Data);
         }
 
         return Problem::of(
-            Code::of(self::text($data, 'code')),
-            self::severity(self::text($data, 'severity')),
-            self::standing(self::text($data, 'state')),
-            self::text($data, 'summary'),
-            self::text($data, 'meaning'),
+            Code::of(self::text($data, WireField::Code)),
+            self::severity(self::text($data, WireField::Severity)),
+            self::standing(self::text($data, WireField::State)),
+            self::text($data, WireField::Summary),
+            self::text($data, WireField::Meaning),
             self::remedies($data),
         );
     }
@@ -98,13 +98,13 @@ final readonly class Problems
      *
      * @param array<mixed> $data
      */
-    private static function text(array $data, string $field): string
+    private static function text(array $data, WireField $field): string
     {
-        if (! array_key_exists($field, $data)) {
+        if (! array_key_exists($field->value, $data)) {
             throw ProblemIsUnreadable::missing($field);
         }
 
-        $said = $data[$field];
+        $said = $data[$field->value];
 
         if (! is_string($said)) {
             throw ProblemIsUnreadable::missing($field);
@@ -138,11 +138,11 @@ final readonly class Problems
      */
     private static function remedies(array $data): Remedies
     {
-        if (! array_key_exists('remedies', $data)) {
+        if (! array_key_exists(WireField::Remedies->value, $data)) {
             return Remedies::none();
         }
 
-        $rows = $data['remedies'];
+        $rows = $data[WireField::Remedies->value];
 
         if (! is_array($rows)) {
             throw ProblemIsUnreadable::remedy(0);
@@ -156,7 +156,7 @@ final readonly class Problems
                 throw ProblemIsUnreadable::remedy($position);
             }
 
-            $remedies[] = Remedy::of(self::text($row, 'action'));
+            $remedies[] = Remedy::of(self::text($row, WireField::Action));
             $position++;
         }
 

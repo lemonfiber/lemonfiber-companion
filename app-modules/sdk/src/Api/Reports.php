@@ -59,10 +59,10 @@ final readonly class Reports
         $data = self::payload(Wire::checked($envelope));
 
         if (! is_array($data)) {
-            throw ReportIsUnreadable::missing('data');
+            throw ReportIsUnreadable::missing(WireField::Data);
         }
 
-        return Report::of(self::overall(self::text($data, 'overall')), self::findings($data));
+        return Report::of(self::overall(self::text($data, WireField::Overall)), self::findings($data));
     }
 
     /**
@@ -84,13 +84,13 @@ final readonly class Reports
      *
      * @param array<mixed> $data
      */
-    private static function text(array $data, string $field): string
+    private static function text(array $data, WireField $field): string
     {
-        if (! array_key_exists($field, $data)) {
+        if (! array_key_exists($field->value, $data)) {
             throw ReportIsUnreadable::missing($field);
         }
 
-        $said = $data[$field];
+        $said = $data[$field->value];
 
         if (! is_string($said)) {
             throw ReportIsUnreadable::missing($field);
@@ -116,11 +116,11 @@ final readonly class Reports
      */
     private static function findings(array $data): Findings
     {
-        if (! array_key_exists('findings', $data)) {
-            throw ReportIsUnreadable::missing('findings');
+        if (! array_key_exists(WireField::Findings->value, $data)) {
+            throw ReportIsUnreadable::missing(WireField::Findings);
         }
 
-        $rows = $data['findings'];
+        $rows = $data[WireField::Findings->value];
 
         if (! is_array($rows)) {
             throw ReportIsUnreadable::finding(0);
@@ -145,9 +145,9 @@ final readonly class Reports
     private static function finding(array $row): Finding
     {
         return Finding::of(
-            Check::of(self::text($row, 'check')),
-            self::category(self::text($row, 'category')),
-            self::text($row, 'title'),
+            Check::of(self::text($row, WireField::Check)),
+            self::category(self::text($row, WireField::Category)),
+            self::text($row, WireField::Title),
             self::conclusion(self::verdict($row)),
             self::said(self::verdict($row)),
         );
@@ -181,16 +181,16 @@ final readonly class Reports
      */
     private static function said(array $verdict): WhatTheCheckSaid
     {
-        if (! array_key_exists('code', $verdict)) {
+        if (! array_key_exists(WireField::Code->value, $verdict)) {
             return WhatTheCheckSaid::nothingWrong();
         }
 
         return WhatTheCheckSaid::wentWrong(
-            Code::of(self::text($verdict, 'code')),
-            self::text($verdict, 'meaning'),
+            Code::of(self::text($verdict, WireField::Code)),
+            self::text($verdict, WireField::Meaning),
             self::remedies($verdict),
-            self::severity(self::text($verdict, 'severity')),
-            self::standing(self::text($verdict, 'state')),
+            self::severity(self::text($verdict, WireField::Severity)),
+            self::standing(self::text($verdict, WireField::State)),
         );
     }
 
@@ -236,24 +236,24 @@ final readonly class Reports
      */
     private static function remedies(array $verdict): Remedies
     {
-        if (! array_key_exists('remedies', $verdict)) {
+        if (! array_key_exists(WireField::Remedies->value, $verdict)) {
             return Remedies::none();
         }
 
-        $offered = $verdict['remedies'];
+        $offered = $verdict[WireField::Remedies->value];
 
         if (! is_array($offered)) {
-            throw ReportIsUnreadable::missing('remedies');
+            throw ReportIsUnreadable::missing(WireField::Remedies);
         }
 
         $read = [];
 
         foreach ($offered as $one) {
             if (! is_array($one)) {
-                throw ReportIsUnreadable::missing('remedies');
+                throw ReportIsUnreadable::missing(WireField::Remedies);
             }
 
-            $read[] = Remedy::of(self::text($one, 'action'));
+            $read[] = Remedy::of(self::text($one, WireField::Action));
         }
 
         return Remedies::of(...$read);
@@ -277,14 +277,14 @@ final readonly class Reports
      */
     private static function verdict(array $row): array
     {
-        if (! array_key_exists('verdict', $row)) {
-            throw ReportIsUnreadable::missing('verdict');
+        if (! array_key_exists(WireField::Verdict->value, $row)) {
+            throw ReportIsUnreadable::missing(WireField::Verdict);
         }
 
-        $verdict = $row['verdict'];
+        $verdict = $row[WireField::Verdict->value];
 
         if (! is_array($verdict)) {
-            throw ReportIsUnreadable::missing('verdict');
+            throw ReportIsUnreadable::missing(WireField::Verdict);
         }
 
         return $verdict;
@@ -300,7 +300,7 @@ final readonly class Reports
      */
     private static function conclusion(array $verdict): Conclusion
     {
-        $said = self::text($verdict, 'outcome');
+        $said = self::text($verdict, WireField::Outcome);
 
         return Conclusion::tryFrom($said) ?? throw ReportIsUnreadable::outcome($said);
     }

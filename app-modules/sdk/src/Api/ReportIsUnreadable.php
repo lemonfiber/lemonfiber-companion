@@ -31,11 +31,11 @@ use function sprintf;
  */
 final class ReportIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(string $field): self
+    public static function missing(WireField $field): self
     {
         return new self(sprintf(
             'The doctor envelope has no `%s`, or it is not text. Every report the contract describes carries one, so this answer did not come from a lemonfiber of a version this app can read.',
-            $field,
+            $field->value,
         ));
     }
 
@@ -49,7 +49,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function overall(string $said): self
     {
-        return self::word('overall', $said, array_map(
+        return self::word(WireField::Overall->value, $said, array_map(
             static fn(Overall $overall): string => $overall->value,
             Overall::cases(),
         ));
@@ -57,7 +57,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function category(string $said): self
     {
-        return self::word('category', $said, array_map(
+        return self::word(WireField::Category->value, $said, array_map(
             static fn(Category $category): string => $category->value,
             Category::cases(),
         ));
@@ -65,7 +65,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function outcome(string $said): self
     {
-        return self::word('verdict.outcome', $said, array_map(
+        return self::word(WireField::Outcome->under(WireField::Verdict), $said, array_map(
             static fn(Conclusion $conclusion): string => $conclusion->value,
             Conclusion::cases(),
         ));
@@ -73,7 +73,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function severity(string $said): self
     {
-        return self::word('verdict.severity', $said, array_map(
+        return self::word(WireField::Severity->under(WireField::Verdict), $said, array_map(
             static fn(Severity $severity): string => $severity->value,
             Severity::cases(),
         ));
@@ -81,7 +81,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function standing(string $said): self
     {
-        return self::word('verdict.state', $said, array_map(
+        return self::word(WireField::State->under(WireField::Verdict), $said, array_map(
             static fn(Standing $standing): string => $standing->value,
             Standing::cases(),
         ));
@@ -92,7 +92,8 @@ final class ReportIsUnreadable extends InvalidArgumentException
     {
         // The accepted list comes from the enum rather than from a sentence
         // written here, so a case added to the contract cannot leave this
-        // message describing the old vocabulary.
+        // message describing the old vocabulary. The field's own name comes
+        // from `WireField` for the same reason, one level up.
         return new self(sprintf(
             'The doctor envelope says its %s is `%s`, and this app reads %s. Guessing which of them was meant is how a check that could not run gets shown as one that passed.',
             $field,
