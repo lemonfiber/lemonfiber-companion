@@ -40,6 +40,12 @@ env:
   BRANCH: chore/the-companion-takes-the-client
   SDK: lemonfiber/sdk-php
   PACKAGE: lemonfiber/sdk-php
+  # Without this the install cannot reach the paid plugin repository and stops
+  # at HTTP 401, which is not a failing gate — it is no gate at all. `ci.yml`,
+  # `sonar.yml` and `sdk-drift.yml` all carry it; this one did not, so every
+  # bump it has ever opened said the analyser failed when the analyser had not
+  # run.
+  COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
 jobs:
   bump:
@@ -99,19 +105,33 @@ jobs:
           php-version: '8.5'
           coverage: none
 
-      - name: Take the client and check it still holds
-        id: build
+      # Split from the gates below, because "the gates failed" and "the gates
+      # could not run" are different news and were being reported as the same.
+      # An install that stops at HTTP 401 leaves nothing checked, and saying the
+      # client changed a shape on the strength of it sends the reader hunting a
+      # change that is not there.
+      - name: Take the client
+        id: install
         if: steps.behind.outputs.moved == 'yes'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           set -euo pipefail
-          # One command: it moves the lock, installs from it, and runs the
-          # scripts. The scripts matter here — Laravel's package discovery is a
+          # It moves the lock, installs from it, and runs the scripts. The
+          # scripts matter here — Laravel's package discovery is a
           # `post-autoload-dump` hook, so skipping them leaves an application
           # that cannot boot and an analyser run that means nothing.
           composer update "${PACKAGE}" --no-interaction
+
+      - name: Check it still holds
+        id: build
+        if: steps.behind.outputs.moved == 'yes' && steps.install.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          set -euo pipefail
           composer analyse
           composer test
 
@@ -123,6 +143,7 @@ jobs:
           PIN: ${{ steps.behind.outputs.pin }}
           HEAD_SHA: ${{ steps.behind.outputs.head }}
           CLEAN: ${{ steps.build.outcome }}
+          INSTALLED: ${{ steps.install.outcome }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
@@ -138,7 +159,9 @@ jobs:
               -f ref="refs/heads/${BRANCH}" -f sha="${base}" >/dev/null
           fi
 
-          if [ "$CLEAN" = "success" ]; then
+          if [ "$INSTALLED" != "success" ]; then
+            body="The client could not be installed, so nothing was checked against it — this is not a verdict on the client."
+          elif [ "$CLEAN" = "success" ]; then
             body="The analyser and the suite still pass against it."
           else
             body="The analyser or the suite did not pass against it, so this is a change here rather than a bump. Read it before merging."
@@ -202,6 +225,7 @@ jobs:
           gh api graphql --input request.json >/dev/null
 
           echo "clean=${CLEAN}" >> "$GITHUB_OUTPUT"
+          echo "installed=${INSTALLED}" >> "$GITHUB_OUTPUT"
 
       - name: Open the pull request, or leave the open one updated
         if: steps.behind.outputs.moved == 'yes'
@@ -210,11 +234,14 @@ jobs:
           PIN: ${{ steps.behind.outputs.pin }}
           HEAD_SHA: ${{ steps.behind.outputs.head }}
           CLEAN: ${{ steps.commit.outputs.clean }}
+          INSTALLED: ${{ steps.commit.outputs.installed }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
-          if [ "$CLEAN" = "success" ]; then
+          if [ "$INSTALLED" != "success" ]; then
+            verdict="**Nothing was checked against this client.** \`composer update\` did not complete — a paid plugin repository answering \`401\` does this — so neither the analyser nor the suite ran, and **\`Q-R68\` was not enforced on this run**. That is this workflow's problem or the registry's, not a verdict on the client. Read the run before merging."
+          elif [ "$CLEAN" = "success" ]; then
             verdict="**\`composer analyse\` and the suite still pass.** Nothing this surface uses changed shape."
           else
             verdict="**The analyser or the suite did not pass.** The client has changed a shape this surface uses, so taking it is a change here rather than a bump. Read the failing run before merging; do not force it green."
