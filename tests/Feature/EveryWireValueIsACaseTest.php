@@ -61,9 +61,25 @@ function theGeneratedDoctorEnvelope(): string
  */
 function wireUnion(string $field): array
 {
+    return unionIn(theGeneratedDoctorEnvelope(), $field);
+}
+
+/**
+ * The same reading, over text it is handed rather than text it goes and finds.
+ *
+ * Split from `wireUnion` because this is the half that decides, and it had only
+ * ever been asked about a generated file where every answer is the right one.
+ * Every property the five rules below demonstrate in that state is equally true
+ * of a reader that always answers with the enum it is being compared to — and
+ * the `[]` two disagreeing unions produce is a shape nobody had watched it take.
+ *
+ * @return list<string>
+ */
+function unionIn(string $source, string $field): array
+{
     $pattern = sprintf("/\\b%s\\??: ((?:'[a-z_-]+'\\|)+'[a-z_-]+')/", preg_quote($field, '/'));
 
-    preg_match_all($pattern, theGeneratedDoctorEnvelope(), $found);
+    preg_match_all($pattern, $source, $found);
 
     $unions = array_values(array_unique($found[1]));
 
@@ -88,7 +104,17 @@ function wireUnion(string $field): array
  */
 function wireOutcomes(): array
 {
-    preg_match_all("/outcome: '([a-z_-]+)'/", theGeneratedDoctorEnvelope(), $found);
+    return outcomesIn(theGeneratedDoctorEnvelope());
+}
+
+/**
+ * The same reading, over text it is handed. Split for the reason `unionIn` is.
+ *
+ * @return list<string>
+ */
+function outcomesIn(string $source): array
+{
+    preg_match_all("/outcome: '([a-z_-]+)'/", $source, $found);
 
     $values = array_values(array_unique($found[1]));
 
@@ -112,6 +138,66 @@ function valuesOf(array $cases): array
 
     return $values;
 }
+
+it('N1-R13 — the reading that decides all five can say something else', function (): void {
+    // The five rules below have only ever asked this reader about a generated
+    // file where every answer is the right one, and nothing can be planted for
+    // them: the envelope is somebody else's file in `vendor/`, restored by
+    // composer rather than by this harness. So the reading is handed the text.
+    $envelope = <<<'PHP'
+        <?php
+        /**
+         * @phpstan-type Finding array{
+         *   category: 'storage'|'network'|'weather',
+         *   severity?: 'note'|'warning',
+         * }
+         */
+        PHP;
+
+    expect(unionIn($envelope, 'category'))->toBe(['network', 'storage', 'weather']);
+
+    // Sorted, because the comparison is on sets: the order the contract writes
+    // them in is the generator's business and the order an enum declares them in
+    // is a decision made for a reader.
+    expect(unionIn($envelope, 'severity'))->toBe(['note', 'warning']);
+
+    // A field the envelope does not mention is nothing found, not an empty union
+    // — and the five rules below each assert that separately, which is what makes
+    // a change to the generator's format fail rather than quietly match nothing.
+    expect(unionIn($envelope, 'nothing'))->toBe([]);
+
+    // A single literal is not a union. The pattern wants at least one `|`, so a
+    // field the contract has narrowed to one value is reported as unreadable
+    // rather than as a one-case enum.
+    expect(unionIn("state: 'settled',", 'state'))->toBe([]);
+});
+
+it('N1-R13 — a field declared twice with different unions is refused', function (): void {
+    // The path the comment above `unionIn` describes and nothing had taken. Two
+    // occurrences that disagree are a question this cannot answer, and answering
+    // with whichever came first would be the quiet half-right result these rules
+    // exist to refuse — it would compare the enum against half a contract and
+    // pass.
+    $disagreeing = "category: 'storage'|'network',\ncategory: 'storage'|'weather',";
+
+    expect(unionIn($disagreeing, 'category'))->toBe([]);
+
+    // And the same field twice saying the same thing is one answer, not none:
+    // the generator repeats a shape wherever it is used.
+    $agreeing = "category: 'storage'|'network',\ncategory: 'storage'|'network',";
+
+    expect(unionIn($agreeing, 'category'))->toBe(['network', 'storage']);
+});
+
+it('N1-R13 — the verdict outcomes are collected across arms', function (): void {
+    // `outcome` is read as single literals rather than as a union, because the
+    // verdict is a union of object shapes and each arm fixes it to one value of
+    // its own. Two arms is the case that distinguishes this from `unionIn`.
+    $verdict = "array{outcome: 'passed', at: string}|array{outcome: 'failed', why: string}";
+
+    expect(outcomesIn($verdict))->toBe(['failed', 'passed']);
+    expect(outcomesIn('nothing here'))->toBe([]);
+});
 
 it('N1-R13 — every health category the contract describes has a case', function (): void {
     expect(wireUnion('category'))->not->toBe([], 'no category union was found in the generated envelope');

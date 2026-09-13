@@ -2110,6 +2110,16 @@ final readonly class Fixtures
     {
         return [
             Fixture::direct(
+                'N1-R13',
+                '`unionIn` and `outcomesIn` in the Feature suite handed envelope text of '
+                . 'their own: a union the enum does not match, a field declared twice with '
+                . 'unions that disagree, a single literal where a union is wanted, and a '
+                . 'field the text never mentions. Nothing could be planted: the envelope is '
+                . 'somebody else\'s file in `vendor/`, restored by composer rather than by '
+                . 'this harness, and a fixture that failed to clean up would leave the '
+                . 'installed SDK wrong.',
+            ),
+            Fixture::direct(
                 'G11',
                 '`notTurnedOn` in the Arch suite handed a settings list with one attribute '
                 . 'missing, one present but "false", and one element carrying nothing at '
@@ -2149,14 +2159,6 @@ final readonly class Fixtures
     private static function notDrivable(): array
     {
         return [
-            Fixture::notDrivable(
-                'N1-R13',
-                'The violation is a contract that moved, which means editing the generated '
-                . 'envelope in `vendor/` — somebody else\'s file, restored by composer '
-                . 'rather than by this harness, and a fixture that failed to clean up would '
-                . 'leave the installed SDK wrong. Driven by hand: a tenth health category '
-                . 'and a fifth severity, each refused by name.',
-            ),
             Fixture::notDrivable(
                 'S2',
                 'A fixture would have to be a dependency with a published advisory, which '
