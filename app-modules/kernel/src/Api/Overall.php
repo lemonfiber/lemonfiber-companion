@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function sprintf;
+
 /**
  * What a run's findings amount to, as one word.
  *
@@ -35,4 +37,17 @@ enum Overall: string
 
     /** Everything that ran passed. */
     case Healthy = 'healthy';
+
+    /**
+     * What this verdict is called at the top of a screen, as a key.
+     *
+     * Built from the case rather than listed against it, and under
+     * `health.overall.` because that group already holds a line per case. A
+     * `match` here would spell every stem twice — once as the case's value and
+     * once as the string beside it — and two spellings of one name drift.
+     */
+    public function saidOnTheScreen(): string
+    {
+        return sprintf('health.overall.%s', $this->value);
+    }
 }

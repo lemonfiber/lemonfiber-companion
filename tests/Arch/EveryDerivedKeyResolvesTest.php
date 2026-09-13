@@ -5,7 +5,10 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
+use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\HowItWasRead;
+use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Tests\Support\Catalogue;
 
@@ -41,53 +44,73 @@ use Tests\Support\Catalogue;
  */
 function everyDerivedKey(): array
 {
-    // Every key is named before any is filled in, so a reader sees the whole
-    // table at once and the analyser sees an array that always exists.
-    $derived = [
-        HowTheSignInWent::class => [],
-        HowThePairingWent::class => [],
-        WhyNothingWasScanned::class => [],
-        WhereTheCodeGot::class => [],
-        HowItWasRead::class => [],
+    return [
+        HowTheSignInWent::class => aPairPerCase(
+            HowTheSignInWent::cases(),
+            static fn(HowTheSignInWent $went): array => [$went->said(), $went->remedy()],
+        ),
+        // `NotYet` is skipped: what a screen says before anything has happened
+        // is what that screen is *for*, and the two pairing roads are for
+        // different things — so each screen spells its own opening pair and
+        // this enum answers only once there is an outcome.
+        HowThePairingWent::class => aPairPerCase(
+            array_values(array_filter(
+                HowThePairingWent::cases(),
+                static fn(HowThePairingWent $went): bool => ! $went->isNotYet(),
+            )),
+            static fn(HowThePairingWent $went): array => [$went->said(), $went->remedy()],
+        ),
+        // What the screen on each road is for, which no outcome can name.
+        HowItWasRead::class => aPairPerCase(
+            HowItWasRead::cases(),
+            static fn(HowItWasRead $road): array => [$road->askedFor(), $road->howToStart()],
+        ),
+        WhyNothingWasScanned::class => aPairPerCase(
+            WhyNothingWasScanned::cases(),
+            static fn(WhyNothingWasScanned $why): array => [$why->saidOnTheScreen(), $why->remedy()],
+        ),
+        // Not derived on the enum itself — `HowTheSignInWent` and
+        // `WhatTheStackTurnedOutToBe` both build these from an obstacle, so the
+        // pair is held here rather than in one of the two that happens to.
+        Obstacle::class => aPairPerCase(
+            Obstacle::cases(),
+            static fn(Obstacle $why): array => [
+                sprintf('connection.%s', $why->value),
+                sprintf('connection.%s_action', $why->value),
+            ],
+        ),
+        WhereTheCodeGot::class => aPairPerCase(
+            WhereTheCodeGot::cases(),
+            static fn(WhereTheCodeGot $got): array => [$got->saidUnderTheField()],
+        ),
+        Conclusion::class => aPairPerCase(
+            Conclusion::cases(),
+            static fn(Conclusion $conclusion): array => [$conclusion->saidOnTheScreen()],
+        ),
+        Overall::class => aPairPerCase(
+            Overall::cases(),
+            static fn(Overall $overall): array => [$overall->saidOnTheScreen()],
+        ),
     ];
+}
 
-    foreach (HowItWasRead::cases() as $road) {
-        // What the screen on each road is for, which the outcome cannot name:
-        // one road points a camera and the other takes dictation.
-        $derived[HowItWasRead::class][] = $road->askedFor();
-        $derived[HowItWasRead::class][] = $road->howToStart();
-    }
-
-    foreach (HowTheSignInWent::cases() as $went) {
-        // Two per case, because `N1-R10` asks for what happened *and* what to do
-        // about it, and a state with one of the pair is a screen half-written.
-        $derived[HowTheSignInWent::class][] = $went->said();
-        $derived[HowTheSignInWent::class][] = $went->remedy();
-    }
-
-    foreach (HowThePairingWent::cases() as $went) {
-        // `NotYet` is skipped and only here: what a screen says before anything
-        // has happened is what that screen is *for*, and the two pairing roads
-        // are for different things — so each screen spells its own opening pair
-        // and this enum answers only once there is an outcome.
-        if ($went->isNotYet()) {
-            continue;
-        }
-
-        $derived[HowThePairingWent::class][] = $went->said();
-        $derived[HowThePairingWent::class][] = $went->remedy();
-    }
-
-    foreach (WhyNothingWasScanned::cases() as $why) {
-        $derived[WhyNothingWasScanned::class][] = $why->saidOnTheScreen();
-        $derived[WhyNothingWasScanned::class][] = $why->remedy();
-    }
-
-    foreach (WhereTheCodeGot::cases() as $got) {
-        $derived[WhereTheCodeGot::class][] = $got->saidUnderTheField();
-    }
-
-    return $derived;
+/**
+ * Every key a set of cases builds, flattened.
+ *
+ * One helper rather than eight loops, which the complexity gate asked for and
+ * which reads better anyway: what differs per enum is *which* keys a case
+ * builds, and that is now the only thing written per entry above.
+ *
+ * @template TCase of UnitEnum
+ *
+ * @param list<TCase>                $cases
+ * @param Closure(TCase): list<string> $keys
+ *
+ * @return list<string>
+ */
+function aPairPerCase(array $cases, Closure $keys): array
+{
+    return array_merge(...array_map($keys, $cases));
 }
 
 it('L7 — every key an enum builds for itself is a line the catalogue holds', function (): void {
@@ -146,6 +169,16 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
 
     foreach (WhereTheCodeGot::cases() as $got) {
         expect($got->saidUnderTheField())->toBe(sprintf('connection.the_code_is_%s', $got->value), $got->name);
+    }
+
+    foreach (Conclusion::cases() as $conclusion) {
+        expect($conclusion->saidOnTheScreen())
+            ->toBe(sprintf('health.conclusion.%s', $conclusion->value), $conclusion->name);
+    }
+
+    foreach (Overall::cases() as $overall) {
+        expect($overall->saidOnTheScreen())
+            ->toBe(sprintf('health.overall.%s', $overall->value), $overall->name);
     }
 
     foreach (WhyNothingWasScanned::cases() as $why) {

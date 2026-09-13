@@ -104,6 +104,27 @@ it('N4-R6 — a store that will not open asks for the password rather than break
     }
 });
 
+it('N1-R2 — tapping a signed-in stack goes to the report, not back to the password', function (): void {
+    // What the list is *for*. An operator who is signed in wants to see their
+    // machine; asking them for a password they already gave is the app having
+    // forgotten what it holds.
+    $loft = aPairedStack('The loft', 'a');
+    $shed = aPairedStack('The shed', 'b');
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($loft->id(), Session::of('a-session-not-a-secret'));
+
+    $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed), $keychain);
+
+    expect($screen->tappingGoesTo($loft))->toBe(sprintf('/stacks/%s', $loft->id()->stored()))
+        ->and($screen->tappingGoesTo($shed))->toBe($screen->signInAt($shed));
+
+    // And both URIs are ones the navigation stack knows, which a string
+    // comparison cannot see: a route declared `/stacks/{stack}` and a link
+    // built as `/stack/...` would both look right here and meet nowhere.
+    expect(NativeRouter::resolve($screen->tappingGoesTo($loft)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->tappingGoesTo($shed)))->not->toBeNull();
+});
+
 it('N1-R11 — a stack in the list leads to that stack and no other', function (): void {
     // A screen nothing navigates to is a screen nobody reaches, and the route
     // is where `N1-R11` is either kept or quietly broken: two stacks in the

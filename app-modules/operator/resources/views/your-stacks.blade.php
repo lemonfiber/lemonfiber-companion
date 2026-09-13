@@ -3,7 +3,7 @@
         <native:column class="w-full gap-1">
             <native:button
                 label="{{ $stack->name()->shown() }}"
-                @navigate="{{ $this->signInAt($stack) }}"
+                @navigate="{{ $this->tappingGoesTo($stack) }}"
             />
             <native:text>
                 {{ __($this->isSignedInto($stack) ? 'connection.stack_is_open' : 'connection.stack_wants_a_password') }}

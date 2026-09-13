@@ -35,5 +35,6 @@ return [
     'unreachable_action' => 'Check that the stack is on and on the same network.',
     'stale' => 'Last checked :ago',
     'no_findings' => 'Nothing needs attention.',
+    'nothing_to_report' => 'Every check passed.',
     'repair_refused' => 'The stack refused that repair: :reason',
 ];

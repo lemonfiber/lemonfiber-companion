@@ -18,6 +18,7 @@ use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
@@ -29,6 +30,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\Questions;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Native\Mobile\Scanner;
@@ -104,6 +106,16 @@ final class CompositionRoot extends ServiceProvider
         // to prevent. It holds no state today — the binding is what keeps that
         // true of whatever it grows into.
         $this->app->bind(Admitting::class, static fn(): Admitting => new Admissions());
+
+        // Asking a stack how it is, which is what a session is opened for.
+        //
+        // Bound rather than a singleton, and taking the client factory rather
+        // than the `Reaching` port it implements: the port answers `object` so
+        // that the kernel never names the SDK's client, which is what the port
+        // is for — and a caller needing to call a method on one would have to
+        // narrow, which is a branch nothing can reach. Both classes live in
+        // `modules/sdk`, so no boundary is crossed by using the real type.
+        $this->app->bind(Asking::class, static fn(): Asking => new Questions(new PinnedClients()));
 
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,

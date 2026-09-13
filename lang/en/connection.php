@@ -67,4 +67,5 @@ return [
     'session_would_not_keep_action' => 'You are not signed in. Unlock the phone and try again.',
     'stack_is_open' => 'Signed in',
     'stack_wants_a_password' => 'Asks for your password',
+    'session_has_ended' => 'You are signed out of this stack.',
 ];

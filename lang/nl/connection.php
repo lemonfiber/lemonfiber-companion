@@ -67,4 +67,5 @@ return [
     'session_would_not_keep_action' => 'Je bent niet aangemeld. Ontgrendel de telefoon en probeer het opnieuw.',
     'stack_is_open' => 'Aangemeld',
     'stack_wants_a_password' => 'Vraagt om je wachtwoord',
+    'session_has_ended' => 'Je bent afgemeld bij deze stack.',
 ];

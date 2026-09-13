@@ -6,6 +6,7 @@ namespace Modules\Operator\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
@@ -94,6 +95,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // stack signed into later is a second entry rather than the same
             // screen re-pointed.
             Router::native('/stacks/{stack}/sign-in', SignIntoAStack::class);
+
+            // What the whole application is for: one stack, and whether it is
+            // doing what it should. A screen of its own rather than a section
+            // of the list, because `N1-R17` says the app asks a machine once
+            // per screen — a list that reported on every stack would ask every
+            // machine on the network to draw one frame.
+            Router::native('/stacks/{stack}', HowThisStackIs::class);
         });
     }
 }

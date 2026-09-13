@@ -159,6 +159,24 @@ final class YourStacks extends NativeComponent
     }
 
     /**
+     * Where tapping a stack actually goes.
+     *
+     * Straight to the report where this device still holds a session, and to
+     * the sign-in screen where it does not. That is the whole of what the list
+     * is *for*: an operator who is signed in wants to see their machine, not to
+     * be asked for a password they already gave.
+     *
+     * Decided here rather than in the template, so the two URIs have one
+     * spelling each and the branch is somewhere a test can drive it.
+     */
+    public function tappingGoesTo(Stack $stack): string
+    {
+        return $this->isSignedInto($stack)
+            ? sprintf('/stacks/%s', $stack->id()->stored())
+            : $this->signInAt($stack);
+    }
+
+    /**
      * The frame, by name.
      *
      * A `View` rather than an `Element`: the base class accepts either, and a
