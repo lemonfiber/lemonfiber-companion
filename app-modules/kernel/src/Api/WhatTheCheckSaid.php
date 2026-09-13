@@ -54,9 +54,14 @@ final readonly class WhatTheCheckSaid
      * passing arm had to hold a blank one to keep the shape, and a value
      * nothing reads is a value no test can tell from any other.
      */
-    public static function wentWrong(Code $code, string $meaning, Remedies $remedies): self
-    {
-        return new self(WentWrong::of($code, $meaning, $remedies));
+    public static function wentWrong(
+        Code $code,
+        string $meaning,
+        Remedies $remedies,
+        Severity $severity,
+        Standing $standing,
+    ): self {
+        return new self(WentWrong::of($code, $meaning, $remedies, $severity, $standing));
     }
 
     /**
@@ -64,7 +69,7 @@ final readonly class WhatTheCheckSaid
      * @template TWentWrong of object
      *
      * @param  Closure(): TNothingWrong  $nothingWrong
-     * @param  Closure(Code, string, Remedies): TWentWrong  $wentWrong
+     * @param  Closure(Code, string, Remedies, Severity, Standing): TWentWrong  $wentWrong
      * @return TNothingWrong|TWentWrong
      */
     public function either(Closure $nothingWrong, Closure $wentWrong): object
@@ -73,7 +78,13 @@ final readonly class WhatTheCheckSaid
         // explain is the one the type is written around, and a fall-through is
         // how a branch becomes the one nobody tested.
         return $this->wrong instanceof WentWrong
-            ? $wentWrong($this->wrong->code(), $this->wrong->meaning(), $this->wrong->remedies())
+            ? $wentWrong(
+                $this->wrong->code(),
+                $this->wrong->meaning(),
+                $this->wrong->remedies(),
+                $this->wrong->severity(),
+                $this->wrong->standing(),
+            )
             : $nothingWrong();
     }
 }

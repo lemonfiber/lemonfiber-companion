@@ -19,6 +19,8 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\FindingHasNoTitle;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
+use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 
 use function sprintf;
@@ -70,6 +72,8 @@ it('N2-R3 — a finding carries the code, the meaning and the remedy the core pr
         Code::of('VPN-EGRESS-MISMATCH'),
         'Traffic is leaving on your own address rather than the tunnel.',
         Remedies::of(Remedy::of('restart the tunnel')),
+        Severity::Error,
+        Standing::Remediable,
     );
 
     $shown = Finding::of(
@@ -128,5 +132,7 @@ it('N2-R3 — a failure that says nothing is refused rather than shown', functio
         Code::of('VPN-EGRESS-MISMATCH'),
         '   ',
         Remedies::none(),
+        Severity::Error,
+        Standing::Guided,
     ))->toThrow(CheckSaidNothing::class);
 });

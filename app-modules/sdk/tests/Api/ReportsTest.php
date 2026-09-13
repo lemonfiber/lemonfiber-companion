@@ -19,6 +19,8 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
 use Modules\Sdk\Api\ReportIsUnreadable;
 use Modules\Sdk\Api\Reports;
 
@@ -266,6 +268,54 @@ it('N2-R3 — reads the code, the meaning and the remedies off a failing verdict
     expect($said[0]->shown())->toBe('VPN-3|Your address was visible|1');
 });
 
+it('N2-R3 — reads how much it matters and where it stands, off the same verdict', function (): void {
+    // Both cross the wire beside the code, and both were dropped for as long as
+    // this app had nowhere to put them. Severity is taken as sent rather than
+    // worked out from the conclusion: a screen deciding for itself would be a
+    // second opinion about a judgement the engine already made, and the engine
+    // is the side that knows whether a failed check costs an afternoon or a
+    // library.
+    $report = Reports::in(doctorSaying(aRun('broken', [aFailure()])));
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(
+                Code $code,
+                string $meaning,
+                Remedies $remedies,
+                Severity $severity,
+                Standing $standing,
+            ): Code => Code::of(sprintf('%s|%s', $severity->value, $standing->value)),
+        );
+    }
+
+    expect($said[0]->shown())->toBe('critical|guided');
+});
+
+it('N2-R3 — refuses a severity this app cannot read rather than calling it advisory', function (): void {
+    // The quiet arm is the wrong place to land. A critical finding whose word
+    // did not parse would be shown as informational, and quiet is the one thing
+    // it must not be — `D4`'s argument, and the same one the category makes.
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'urgent', 'state' => 'guided', 'meaning' => 'Visible'];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(ReportIsUnreadable::class, 'urgent');
+});
+
+it('N2-R3 — refuses a standing this app cannot read rather than offering a button', function (): void {
+    // Sharper than the severity case: the distinction between `actionable` and
+    // `guided` decides whether a screen offers to do something, so a word this
+    // app cannot read must not become the arm that offers one.
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'error', 'state' => 'pending', 'meaning' => 'Visible'];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(ReportIsUnreadable::class, 'pending');
+});
+
 it('N2-R3 — a check that passed carries none of it', function (): void {
     $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
     $said = [];
@@ -290,7 +340,7 @@ it('N2-R3 — a failure the core offered nothing for carries no remedies', funct
     // same way on purpose: both mean there is nothing to offer, and a screen
     // that told them apart would be showing the difference between the core
     // having no suggestion and the core saying so.
-    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Your address was visible'];
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'critical', 'state' => 'guided', 'meaning' => 'Your address was visible'];
     $report = Reports::in(doctorSaying(aRun('broken', [aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict)])));
     $counted = [];
 
@@ -307,7 +357,7 @@ it('N2-R3 — a failure the core offered nothing for carries no remedies', funct
 });
 
 it('N2-R3 — refuses remedies that are not a list', function (): void {
-    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Visible', 'remedies' => 'restart it'];
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'error', 'state' => 'guided', 'meaning' => 'Visible', 'remedies' => 'restart it'];
 
     expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
         aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
@@ -318,7 +368,7 @@ it('N2-R3 — refuses a remedy that is not a remedy', function (): void {
     // A list of strings where a list of objects belongs. The core producing
     // this is a fault worth seeing where the payload is read, rather than as a
     // type error on somebody's screen.
-    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Visible', 'remedies' => ['restart it']];
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'error', 'state' => 'guided', 'meaning' => 'Visible', 'remedies' => ['restart it']];
 
     expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
         aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),

@@ -17,10 +17,12 @@ use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -79,6 +81,8 @@ function aRunThatExplainsItself(): Report
                     Remedy::of('Restart the tunnel'),
                     Remedy::of('Check the provider is up'),
                 ),
+                Severity::Critical,
+                Standing::Remediable,
             ),
         ),
     ));
@@ -169,6 +173,8 @@ it('N2-R3 — says so where the machine knows what is wrong and has nothing to s
                 Code::of('VPN-3'),
                 'Your address was visible to the swarm',
                 Remedies::none(),
+                Severity::Critical,
+                Standing::Remediable,
             ),
         ),
     ))));

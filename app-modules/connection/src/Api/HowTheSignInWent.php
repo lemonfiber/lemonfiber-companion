@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Connection\Api;
 
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 
 use function sprintf;
@@ -137,24 +138,66 @@ enum HowTheSignInWent: string
     }
 
     /**
+     * Where this state stands with respect to being got past.
+     *
+     * {@see Standing}'s own words: *"the distinction that earns its keep is
+     * `Actionable` against `Guided`: one puts a button on the screen and the
+     * other puts instructions on it, and a screen that confuses them offers to
+     * do something it cannot do."* That is this method's whole job, and the
+     * judgement is the kernel's rather than this surface's — {@see met()} is
+     * held to agreeing with {@see Obstacle::standing()} by a test, so the two
+     * cannot drift into deciding the same thing differently.
+     *
+     * The two states that are not obstacles answer for themselves. Somebody
+     * already signed in has nothing to do here, which is `Suppressed` — the
+     * case for something not re-shown. Somebody who has typed nothing yet has a
+     * password to type, which is `Actionable`.
+     *
+     * A store that would not open is `Actionable` too, and deliberately: unlock
+     * the phone and try again is advice somebody acts on and then comes
+     * straight back to this screen, and returning to one with no way to proceed
+     * would be the app forgetting what they came to do.
+     */
+    public function standing(): Standing
+    {
+        return match ($this) {
+            self::NotYet, self::CredentialWasRefused => Standing::Actionable,
+            self::SignedIn => Standing::Suppressed,
+            self::TooManyAttempts, self::StackDidNotAnswer => Standing::Guided,
+            self::NoStoreOnThisDevice, self::TheStoreWouldNotOpen => Standing::Actionable,
+        };
+    }
+
+    /**
      * Whether offering a password is worth putting in front of them at all.
      *
-     * Two states say no, for opposite reasons. Somebody already signed in has
-     * nothing to type; somebody the door has stopped listening to would be
-     * typing into a control that cannot help and, on a stack that counts
-     * attempts, makes the wait longer. That second one is {@see Obstacle}'s
-     * `Guided` standing arriving on a screen: the remedy is a sentence, not a
-     * button.
-     *
-     * A store that would not open keeps the field, because *unlock the phone
-     * and try again* is advice somebody acts on and then comes straight back to
-     * this screen. So does a device with nowhere to keep a session: setting a
-     * screen lock is the remedy, and returning to a screen with no way to
-     * proceed would be the app forgetting what they came to do.
+     * Asked of the standing rather than decided here, which is the point: this
+     * was a `match` of its own until it was noticed that {@see Obstacle} had
+     * already made the same judgement — and had made it differently. A stack
+     * that is not answering was being offered a password field, which is the
+     * screen offering to do something it cannot do.
      */
     public function mayTry(): bool
     {
-        return $this !== self::SignedIn && $this !== self::TooManyAttempts;
+        return $this->standing()->offersAButton();
+    }
+
+    /**
+     * Whether the operator can put this screen back to asking.
+     *
+     * The other half of `Guided`. Instructions are something somebody goes and
+     * acts on — check the machine is on, wait for the door to start listening
+     * again — and they come back to a screen still holding what it was told
+     * then. Without this they would have to leave and navigate in again, which
+     * is the app making them do its bookkeeping.
+     *
+     * Not offered where a password field is, because the field *is* the way
+     * back to asking, and two controls doing one thing is one of them being
+     * tapped by mistake.
+     */
+    public function mayStartOver(): bool
+    {
+        return $this->standing() === Standing::Guided;
     }
 
     /** What a surface shows for each thing the operator met at the door. */

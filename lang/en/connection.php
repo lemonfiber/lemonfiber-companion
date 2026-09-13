@@ -68,4 +68,5 @@ return [
     'stack_is_open' => 'Signed in',
     'stack_wants_a_password' => 'Asks for your password',
     'session_has_ended' => 'You are signed out of this stack.',
+    'start_over' => 'Try signing in again',
 ];

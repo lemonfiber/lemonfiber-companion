@@ -210,30 +210,82 @@ it('does not count a field of spaces as a password', function (): void {
 });
 
 it('offers the password field only where typing one could help', function (): void {
-    // Two states say no for opposite reasons: somebody already signed in has
-    // nothing to type, and somebody the door has stopped listening to would be
-    // typing into a control that cannot help — and, on a stack counting
-    // attempts, one that makes the wait longer. Every other state keeps the
-    // field, because its remedy is something the operator does and then comes
-    // straight back here.
+    // `Standing`'s own words: the distinction that earns its keep is
+    // `Actionable` against `Guided` — one puts a button on the screen and the
+    // other puts instructions on it, and a screen that confuses them offers to
+    // do something it cannot do.
+    //
+    // A stack that is not answering used to keep the field, which was this
+    // surface deciding for itself what the kernel had already decided — and
+    // deciding it the other way. Typing a password at a machine that did not
+    // answer fails again; the remedy is to go and look at it.
+    //
     // Pairs rather than a keyed table: an enum cannot key a PHP array, and the
-    // count below is what turns this from a list of examples into a statement
-    // about every state there is.
+    // count is what turns this from a list of examples into a statement about
+    // every state there is.
     $offered = [
-        [HowTheSignInWent::NotYet, true],
-        [HowTheSignInWent::SignedIn, false],
-        [HowTheSignInWent::CredentialWasRefused, true],
-        [HowTheSignInWent::TooManyAttempts, false],
-        [HowTheSignInWent::StackDidNotAnswer, true],
-        [HowTheSignInWent::NoStoreOnThisDevice, true],
-        [HowTheSignInWent::TheStoreWouldNotOpen, true],
+        [HowTheSignInWent::NotYet, true, false],
+        [HowTheSignInWent::SignedIn, false, false],
+        [HowTheSignInWent::CredentialWasRefused, true, false],
+        [HowTheSignInWent::TooManyAttempts, false, true],
+        [HowTheSignInWent::StackDidNotAnswer, false, true],
+        [HowTheSignInWent::NoStoreOnThisDevice, true, false],
+        [HowTheSignInWent::TheStoreWouldNotOpen, true, false],
     ];
 
     expect($offered)->toHaveCount(count(HowTheSignInWent::cases()));
 
-    foreach ($offered as [$went, $keepsTheField]) {
-        expect($went->mayTry())->toBe($keepsTheField, $went->value);
+    foreach ($offered as [$went, $keepsTheField, $offersTheWayBack]) {
+        expect($went->mayTry())->toBe($keepsTheField, $went->value)
+            ->and($went->mayStartOver())->toBe($offersTheWayBack, $went->value);
     }
+
+    // Never both: the field *is* the way back to asking, and two controls doing
+    // one thing is one of them being tapped by mistake.
+    foreach (HowTheSignInWent::cases() as $went) {
+        expect($went->mayTry() && $went->mayStartOver())->toBeFalse($went->value);
+    }
+});
+
+it('N1-R10 — takes the kernel\'s judgement about what a button can help with', function (): void {
+    // The duplication this replaced: `mayTry()` was a `match` of its own, and
+    // `Obstacle::standing()` had already made the same call — differently. Two
+    // spellings of one judgement, and the screen's was written in passing.
+    //
+    // Held here rather than merged into one type, because they are not the same
+    // set: three of the six obstacles cannot arise from signing in at all. What
+    // must hold is that where both have an opinion, it is the same one.
+    foreach ([
+        Obstacle::CredentialWasRefused,
+        Obstacle::TooManyAttempts,
+        Obstacle::StackDidNotAnswer,
+    ] as $why) {
+        expect(HowTheSignInWent::met($why)->standing())->toBe($why->standing(), $why->value);
+    }
+});
+
+it('puts the screen back to asking once the operator has gone and acted', function (): void {
+    // The other half of a `Guided` standing. Without it they would have to
+    // leave the screen and navigate in again, which is the app making them do
+    // its bookkeeping.
+    $screen = typedPassword(
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::StackDidNotAnswer)),
+        'the-operators-password',
+    );
+
+    $screen->offer();
+
+    expect($screen->mayTry())->toBeFalse()
+        ->and($screen->mayStartOver())->toBeTrue();
+
+    $screen->startOver();
+
+    expect($screen->went())->toBe(HowTheSignInWent::NotYet)
+        ->and($screen->mayTry())->toBeTrue()
+        ->and($screen->mayStartOver())->toBeFalse()
+        // Nothing was offered to the stack: the password was spent when it was
+        // offered, and this screen holds none to offer again.
+        ->and($screen->typed())->toBe('');
 });
 
 it('offers the password field only where typing one could help, on the screen too', function (): void {

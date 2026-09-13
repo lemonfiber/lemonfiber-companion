@@ -145,6 +145,26 @@ final class SignIntoAStack extends NativeComponent
         return $this->went->mayTry();
     }
 
+    /** Whether the way back to asking belongs on it instead. */
+    public function mayStartOver(): bool
+    {
+        return $this->went->mayStartOver();
+    }
+
+    /**
+     * Put the screen back to asking, after the operator has gone and acted.
+     *
+     * The other half of a `Guided` standing: the remedy was instructions, they
+     * followed them, and the screen is still holding what it was told before
+     * they did. Forgetting rather than retrying — nothing is offered to the
+     * stack here, because the password was spent when it was offered and this
+     * screen does not hold one to offer again.
+     */
+    public function startOver(): void
+    {
+        $this->went = HowTheSignInWent::NotYet;
+    }
+
     /**
      * Whether the control that offers the password may be tapped at all.
      *

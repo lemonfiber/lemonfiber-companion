@@ -12,6 +12,13 @@
         />
     @endif
 
+    @if ($this->mayStartOver())
+        {{-- The other half of a `Guided` standing. The remedy was instructions,
+             and somebody who has gone and followed them comes back to a screen
+             still holding what it was told before they did. --}}
+        <native:button label="{{ __('connection.start_over') }}" @tap="startOver()" />
+    @endif
+
     @if ($this->mayTry())
         <native:outlined-text-input
             native:model="typed"

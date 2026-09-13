@@ -11,6 +11,8 @@ use InvalidArgumentException;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
 
 use function sprintf;
 
@@ -66,6 +68,22 @@ final class ReportIsUnreadable extends InvalidArgumentException
         return self::word('verdict.outcome', $said, array_map(
             static fn(Conclusion $conclusion): string => $conclusion->value,
             Conclusion::cases(),
+        ));
+    }
+
+    public static function severity(string $said): self
+    {
+        return self::word('verdict.severity', $said, array_map(
+            static fn(Severity $severity): string => $severity->value,
+            Severity::cases(),
+        ));
+    }
+
+    public static function standing(string $said): self
+    {
+        return self::word('verdict.state', $said, array_map(
+            static fn(Standing $standing): string => $standing->value,
+            Standing::cases(),
         ));
     }
 

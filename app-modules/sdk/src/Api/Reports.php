@@ -20,6 +20,8 @@ use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Sdk\Internal\Wire;
 
@@ -187,7 +189,39 @@ final readonly class Reports
             Code::of(self::text($verdict, 'code')),
             self::text($verdict, 'meaning'),
             self::remedies($verdict),
+            self::severity(self::text($verdict, 'severity')),
+            self::standing(self::text($verdict, 'state')),
         );
+    }
+
+    /**
+     * How much a problem matters, as the engine judged it.
+     *
+     * Refused rather than defaulted where the word is not one this app knows:
+     * a verdict whose severity reads as advisory because it could not be parsed
+     * is a fault shown quietly, and quiet is the one thing a critical finding
+     * must not be. `D4`'s argument, and {@see self::category()} makes the same
+     * one about a check's family.
+     *
+     * @throws ReportIsUnreadable
+     */
+    private static function severity(string $said): Severity
+    {
+        return Severity::tryFrom($said) ?? throw ReportIsUnreadable::severity($said);
+    }
+
+    /**
+     * Where a problem stands with respect to being fixed.
+     *
+     * Refused the same way and for a sharper reason: the distinction between
+     * `Actionable` and `Guided` decides whether a screen offers a button, so a
+     * word this app cannot read must not become the arm that offers one.
+     *
+     * @throws ReportIsUnreadable
+     */
+    private static function standing(string $said): Standing
+    {
+        return Standing::tryFrom($said) ?? throw ReportIsUnreadable::standing($said);
     }
 
     /**
