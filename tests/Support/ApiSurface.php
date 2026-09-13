@@ -55,6 +55,23 @@ final readonly class ApiSurface
     private const array SHAPED_BY_PHP = ['__debugInfo', '__serialize', '__unserialize', '__sleep'];
 
     /**
+     * A class by name, as the helpers here will take it.
+     *
+     * `new ReflectionClass(Repair::class)` is a `ReflectionClass<Repair>`, and
+     * `ReflectionClass`'s template is not covariant — so the analyser refuses it
+     * everywhere a `ReflectionClass<object>` is wanted. Written once here rather
+     * than beside each rule that reflects over a named class.
+     *
+     * @param class-string $name
+     *
+     * @return ReflectionClass<object>
+     */
+    public static function reflect(string $name): ReflectionClass
+    {
+        return new ReflectionClass($name);
+    }
+
+    /**
      * Every published class under `Modules\<Name>\Api\<segments>`.
      *
      * @return list<ReflectionClass<object>>

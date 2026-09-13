@@ -213,23 +213,6 @@ function namedByScreen(ReflectionClass $screen): array
 }
 
 /**
- * A class by name, as something the support helpers will take.
- *
- * `new ReflectionClass(Repair::class)` is a `ReflectionClass<Repair>`, and
- * `ReflectionClass`'s template is not covariant — so the analyser refuses it
- * where a `ReflectionClass<object>` is wanted. The table above never met this
- * because its subjects arrive as `class-string` from a return type.
- *
- * @param class-string $name
- *
- * @return ReflectionClass<object>
- */
-function reflect(string $name): ReflectionClass
-{
-    return new ReflectionClass($name);
-}
-
-/**
  * Every class this app renders from.
  *
  * Read by what a class *is* as well as by where it sits. The directory was the
@@ -252,7 +235,7 @@ function screens(): array
     foreach (Module::all() as $module) {
         foreach ($module->classNames() as $name) {
             if (str_contains($name, '\\Internal\\Screens\\') || is_subclass_of($name, NativeComponent::class)) {
-                $found[] = reflect($name);
+                $found[] = ApiSurface::reflect($name);
             }
         }
     }
@@ -311,7 +294,7 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
     // that needed "just the one field", so it is checked rather than written
     // down. Two properties, because `does` is a string and cannot be told from
     // `answers()` by its type alone.
-    $published = ApiSurface::publicMethodsOf(reflect(Repair::class));
+    $published = ApiSurface::publicMethodsOf(ApiSurface::reflect(Repair::class));
 
     $clauses = [];
     $strings = [];
