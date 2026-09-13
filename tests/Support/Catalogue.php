@@ -18,6 +18,7 @@ use function is_array;
 use function is_string;
 
 use Modules\Device\Internal\Words;
+use RuntimeException;
 
 use function sprintf;
 
@@ -48,8 +49,24 @@ final readonly class Catalogue
     public static function locales(): array
     {
         $directories = glob(Tree::at('lang/*'), GLOB_ONLYDIR);
+        $found = array_map(basename(...), $directories === false ? [] : $directories);
 
-        return array_map(basename(...), $directories === false ? [] : $directories);
+        // Refused rather than answered empty, the way `Coverage` refuses a
+        // report that is not there. Four rules loop over this and each asks
+        // whether something is missing *in every language* — so a list with no
+        // languages in it finds nothing missing, four times, and says so with a
+        // tick. Parity also wants two of them; one language is a catalogue that
+        // agrees with itself.
+        if ($found === []) {
+            throw new RuntimeException(sprintf(
+                'No language was found under %s. A rule asking what is missing in every '
+                . 'language finds nothing missing when there are none, which is the same '
+                . 'answer as a catalogue that is complete.',
+                Tree::at('lang'),
+            ));
+        }
+
+        return $found;
     }
 
     /**
