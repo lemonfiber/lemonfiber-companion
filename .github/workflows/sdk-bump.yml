@@ -107,7 +107,7 @@ jobs:
 
       # Split from the gates below, because "the gates failed" and "the gates
       # could not run" are different news and were being reported as the same.
-      # An install that stops at HTTP 401 leaves nothing checked, and saying the
+      # An update that could not resolve leaves nothing checked, and saying the
       # client changed a shape on the strength of it sends the reader hunting a
       # change that is not there.
       - name: Take the client
@@ -122,7 +122,14 @@ jobs:
           # scripts matter here — Laravel's package discovery is a
           # `post-autoload-dump` hook, so skipping them leaves an application
           # that cannot boot and an analyser run that means nothing.
-          composer update "${PACKAGE}" --no-interaction
+          #
+          # What composer said is kept, because the pull request used to guess.
+          # It named HTTP 401 whatever had happened, and on 2026-09-13 what had
+          # actually happened was a resolver conflict it printed in full: this
+          # client required guzzle 7 and the lock here holds 8, so no update was
+          # possible at all. A reader told "401" goes looking at a registry.
+          composer update "${PACKAGE}" --no-interaction 2>&1 | tee composer-said.txt
+          exit "${PIPESTATUS[0]}"
 
       - name: Check it still holds
         id: build
@@ -148,10 +155,29 @@ jobs:
         run: |
           set -euo pipefail
 
+          # A lock that did not move is nothing to take. `composer update`
+          # leaves it untouched when it cannot resolve, and this used to commit
+          # it anyway and open a pull request titled "take sdk-php c28b7ea" with
+          # no files in it — a bump that says it took something and took
+          # nothing, which is worse than no pull request because somebody has to
+          # read it to find that out.
+          if git diff --quiet -- composer.lock; then
+            echo "::warning::composer.lock is unchanged, so there is nothing to take. The update did not move it — read the step above for why."
+            echo "moved=no" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "moved=yes" >> "$GITHUB_OUTPUT"
+
           base="$(gh api "repos/${REPO}/commits/main" --jq .sha)"
           if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" >/dev/null 2>&1; then
             # The branch is the bot's alone. Reset it, so yesterday's bump is not
             # carried under today's and described as one change.
+            #
+            # After the check above rather than before it: resetting the branch
+            # closes the pull request open on it (a ref moved out from under a
+            # PR is a PR GitHub closes), so a run that turns out to have nothing
+            # to take would otherwise shut yesterday's correct bump.
             gh api --method PATCH "repos/${REPO}/git/refs/heads/${BRANCH}" \
               -F sha="${base}" -F force=true >/dev/null
           else
@@ -228,7 +254,7 @@ jobs:
           echo "installed=${INSTALLED}" >> "$GITHUB_OUTPUT"
 
       - name: Open the pull request, or leave the open one updated
-        if: steps.behind.outputs.moved == 'yes'
+        if: steps.behind.outputs.moved == 'yes' && steps.commit.outputs.moved == 'yes'
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           PIN: ${{ steps.behind.outputs.pin }}
@@ -240,7 +266,17 @@ jobs:
           set -euo pipefail
 
           if [ "$INSTALLED" != "success" ]; then
-            verdict="**Nothing was checked against this client.** \`composer update\` did not complete — a paid plugin repository answering \`401\` does this — so neither the analyser nor the suite ran, and **\`Q-R68\` was not enforced on this run**. That is this workflow's problem or the registry's, not a verdict on the client. Read the run before merging."
+            # What composer said, rather than a guess at it. Trimmed to the
+            # resolver's own explanation where there is one — the paragraph
+            # after "could not be resolved" is the part that names the packages
+            # — and to the last lines otherwise.
+            said="$(sed -n '/could not be resolved/,$p' composer-said.txt 2>/dev/null | head -20)"
+            if [ -z "$said" ]; then
+              said="$(tail -20 composer-said.txt 2>/dev/null || echo 'composer wrote nothing this workflow kept.')"
+            fi
+            verdict="$(printf '%s\n\n```\n%s\n```' \
+              "**Nothing was checked against this client.** \`composer update\` did not complete, so neither the analyser nor the suite ran and **\`Q-R68\` was not enforced on this run**. That is this workflow's problem or the registry's, not a verdict on the client, and what composer said is below rather than summarised — an earlier version of this step named HTTP 401 whatever had happened, which sent readers to a registry that was working." \
+              "${said}")"
           elif [ "$CLEAN" = "success" ]; then
             verdict="**\`composer analyse\` and the suite still pass.** Nothing this surface uses changed shape."
           else
