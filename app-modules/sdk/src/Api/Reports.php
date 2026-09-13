@@ -146,8 +146,8 @@ final readonly class Reports
             Check::of(self::text($row, 'check')),
             self::category(self::text($row, 'category')),
             self::text($row, 'title'),
-            self::conclusion($row),
-            self::said($row),
+            self::conclusion(self::verdict($row)),
+            self::said(self::verdict($row)),
         );
     }
 
@@ -170,24 +170,15 @@ final readonly class Reports
      * no sentence is a red row the operator cannot act on, and the core
      * producing one is a fault worth seeing here.
      *
-     * @param array<mixed> $row
+     * Takes the verdict rather than the row, because {@see self::verdict()} has
+     * already established that it is there and is an array. Checking again here
+     * would be the same rule written twice, with the copy unreachable — which
+     * is what `Pairing` learned when a sign check duplicated `Instant`'s.
+     *
+     * @param array<mixed> $verdict
      */
-    private static function said(array $row): WhatTheCheckSaid
+    private static function said(array $verdict): WhatTheCheckSaid
     {
-        // Written out rather than coalesced, which `C9` refuses by name: a
-        // `??` on a subscript folds absent, present-and-null and
-        // present-and-wrong-type into one answer, and the one it picks reads as
-        // "carry on".
-        if (! array_key_exists('verdict', $row)) {
-            throw ReportIsUnreadable::missing('verdict');
-        }
-
-        $verdict = $row['verdict'];
-
-        if (! is_array($verdict)) {
-            throw ReportIsUnreadable::missing('verdict');
-        }
-
         if (! array_key_exists('code', $verdict)) {
             return WhatTheCheckSaid::nothingWrong();
         }
@@ -235,14 +226,22 @@ final readonly class Reports
     }
 
     /**
-     * The tag off the verdict, which is all this one reads.
+     * The verdict off a finding row, established once.
      *
-     * What the verdict also carries — the code, the meaning, the remedies — is
-     * read by {@see self::said()}, which is where `N2-R3` is answered.
+     * Both readers below need it, and it is found here so that neither finds it
+     * again. A second check on the same value would be unreachable anyway —
+     * arguments evaluate left to right, so the first reader refuses anything
+     * the second would have caught — and unreachable checks are the ones no
+     * test can defend.
      *
-     * @param array<mixed> $row
+     * Written out rather than coalesced, which `C9` refuses by name: a `??` on
+     * a subscript folds absent, present-and-null and present-and-wrong-type
+     * into one answer, and the one it picks reads as "carry on".
+     *
+     * @param  array<mixed>  $row
+     * @return array<mixed>
      */
-    private static function conclusion(array $row): Conclusion
+    private static function verdict(array $row): array
     {
         if (! array_key_exists('verdict', $row)) {
             throw ReportIsUnreadable::missing('verdict');
@@ -254,6 +253,19 @@ final readonly class Reports
             throw ReportIsUnreadable::missing('verdict');
         }
 
+        return $verdict;
+    }
+
+    /**
+     * The tag off the verdict, which is all this one reads.
+     *
+     * What the verdict also carries — the code, the meaning, the remedies — is
+     * read by {@see self::said()}, which is where `N2-R3` is answered.
+     *
+     * @param array<mixed> $verdict
+     */
+    private static function conclusion(array $verdict): Conclusion
+    {
         $said = self::text($verdict, 'outcome');
 
         return Conclusion::tryFrom($said) ?? throw ReportIsUnreadable::outcome($said);
