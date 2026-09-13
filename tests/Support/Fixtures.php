@@ -1225,6 +1225,34 @@ final readonly class Fixtures
                 }
                 PHP, 'C7 —'),
 
+            Fixture::analyser('H8', 'Plain/LeavesByFourDoors.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class LeavesByFourDoors
+                {
+                    public function verdict(int $findings, bool $reachable): string
+                    {
+                        if (! $reachable) {
+                            return 'unreachable';
+                        }
+
+                        if ($findings === 0) {
+                            return 'healthy';
+                        }
+
+                        if ($findings === 1) {
+                            return 'one finding';
+                        }
+
+                        return 'several findings';
+                    }
+                }
+                PHP, 'H8 —'),
+
             Fixture::analyser('C9', 'Plain/NestsTernaries.php', <<<'PHP'
                 <?php
 

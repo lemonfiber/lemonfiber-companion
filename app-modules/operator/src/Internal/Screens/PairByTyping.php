@@ -65,32 +65,51 @@ final class PairByTyping extends NativeComponent
     /**
      * The pairing code, as it stands in the field.
      *
-     * Readable publicly because that is how a native text field is bound to
-     * state: the framework reflects over public properties to build the view's
-     * data, and the template reads `$typed` from there. Writable only from
-     * inside, which is the half plain `public` gives away — a mutable public
-     * property is refused for a reason, and `protected(set)` answers the reason
-     * rather than exempting this class from it.
-     * `NativeComponent::__syncProperty()` assigns from within the hierarchy and
-     * still works; nothing outside it can put a value here.
+     * `protected` rather than public, and the template reads it through
+     * {@see typed()}. A mutable public property is refused for a reason, and
+     * `NativeComponent::__syncProperty()` assigns from the parent class — which
+     * reaches a protected member of a subclass and does not reach a private
+     * one, so this is exactly as open as the framework needs and no more.
+     *
+     * It also leaves the template with one idiom. A screen exposing some state
+     * as bare variables and the rest as `$this->something()` is a screen where
+     * a reader has to know which is which.
      *
      * A bare string because a field holds characters rather than a value.
      * {@see Pairing} is what it becomes, and it becomes one in exactly one
      * place.
      */
-    public protected(set) string $typed = '';
+    protected string $typed = '';
 
     /** What the operator is calling this machine (`N1-R11`). */
-    public protected(set) string $called = '';
+    protected string $called = '';
 
     /** What became of the pairing, once they have confirmed one. */
-    public protected(set) HowThePairingWent $went = HowThePairingWent::NotYet;
+    protected HowThePairingWent $went = HowThePairingWent::NotYet;
 
     public function __construct(
         private readonly Introducing $introducing,
         private readonly Stacks $stacks,
         private readonly Clock $clock,
     ) {}
+
+    /** What the operator has typed into the code field. */
+    public function typed(): string
+    {
+        return $this->typed;
+    }
+
+    /** What they are calling this machine. */
+    public function called(): string
+    {
+        return $this->called;
+    }
+
+    /** What became of the pairing, once they have confirmed one. */
+    public function went(): HowThePairingWent
+    {
+        return $this->went;
+    }
 
     /**
      * How far the code in the field has got, as of this frame.

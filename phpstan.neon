@@ -825,6 +825,15 @@ services:
         tags:
             - phpstan.rules.rule
 
+    # H8 — a method leaves by at most three doors. SonarCloud's S1142 found the
+    # first one, on a pull request, which is after the work is finished and
+    # where the author has stopped looking. Same argument as D6 below: a rule
+    # that only fails in review is a rule people meet too late to act on.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoManyReturnsRule
+        tags:
+            - phpstan.rules.rule
+
     # D6 — a number in a method body has a name. SonarCloud reports this too,
     # which makes it a backstop rather than the gate: a rule that only fails in
     # review is a rule people meet after they have finished.

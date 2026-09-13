@@ -68,6 +68,18 @@ it('opens waiting rather than complaining about an empty field', function (): vo
         ->and($screen->mayPair())->toBeFalse();
 });
 
+it('reports back what was typed into it, which is what the template renders', function (): void {
+    // The screen keeps its state `protected` and the template reads it through
+    // these, so a template and a screen that disagreed about a name would show
+    // the operator somebody else's. Asserted here because nothing else does:
+    // the accessors have exactly one other caller and it is a Blade file, which
+    // no analyser in this repository reads.
+    $screen = typedInto(pairingScreen(), typedCode(), name: 'The loft');
+
+    expect($screen->typed())->toBe(typedCode())
+        ->and($screen->called())->toBe('The loft');
+});
+
 it('shows a fingerprint to compare once the code parses', function (): void {
     // N1-R50's step. The form is derived from the whole fingerprint (N1-R51),
     // so it is the string the stack's own screen has to be showing.
@@ -117,7 +129,7 @@ it('pairs the stack when the operator says the form matches', function (): void 
 
     $screen->confirm();
 
-    expect($screen->went)->toBe(HowThePairingWent::Paired);
+    expect($screen->went())->toBe(HowThePairingWent::Paired);
 });
 
 it('does nothing where the control is tapped before there is a form to compare', function (): void {
@@ -128,7 +140,7 @@ it('does nothing where the control is tapped before there is a form to compare',
 
     $screen->confirm();
 
-    expect($screen->went)->toBe(HowThePairingWent::NotYet);
+    expect($screen->went())->toBe(HowThePairingWent::NotYet);
 });
 
 it('says the pairing did not happen where the stack could not be written down', function (): void {
@@ -140,8 +152,8 @@ it('says the pairing did not happen where the stack could not be written down', 
     $noStore->confirm();
     $shut->confirm();
 
-    expect($noStore->went)->toBe(HowThePairingWent::NoStoreOnThisDevice)
-        ->and($shut->went)->toBe(HowThePairingWent::TheStoreWouldNotOpen);
+    expect($noStore->went())->toBe(HowThePairingWent::NoStoreOnThisDevice)
+        ->and($shut->went())->toBe(HowThePairingWent::TheStoreWouldNotOpen);
 });
 
 it('says something under the code field in every state, and it is a real sentence', function (): void {

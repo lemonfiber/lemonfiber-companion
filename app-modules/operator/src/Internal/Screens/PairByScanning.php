@@ -67,12 +67,14 @@ final class PairByScanning extends NativeComponent
     /**
      * What the operator is calling this machine (`N1-R11`).
      *
-     * Readable publicly because a native text field binds to state that way and
-     * the template reads it from the view data; writable only from inside,
-     * which is what `protected(set)` buys — `NativeComponent::__syncProperty()`
-     * assigns from within the hierarchy, and nothing outside it can.
+     * `protected` rather than public, and the template reads it through
+     * {@see called()}. A mutable public property is refused for a reason, and
+     * `NativeComponent::__syncProperty()` assigns from the parent class — which
+     * reaches a protected member of a subclass and does not reach a private
+     * one, so this is exactly as open as the framework needs and no more. It
+     * also leaves the template with one idiom rather than two.
      */
-    public protected(set) string $called = '';
+    protected string $called = '';
 
     /**
      * What the camera came back with, or nothing yet.
@@ -82,13 +84,13 @@ final class PairByScanning extends NativeComponent
      * with. A scan happens once, at a moment the operator chose, and the result
      * is what the screen is about until they scan again.
      */
-    public protected(set) ?WhyNothingWasScanned $nothingCameBack = null;
+    protected ?WhyNothingWasScanned $nothingCameBack = null;
 
     /** What became of the pairing, once a scan has completed one. */
-    public protected(set) HowThePairingWent $went = HowThePairingWent::NotYet;
+    protected HowThePairingWent $went = HowThePairingWent::NotYet;
 
     /** Whether what the camera read could not be used as pairing material. */
-    public protected(set) bool $codeWasUnreadable = false;
+    protected bool $codeWasUnreadable = false;
 
     public function __construct(
         private readonly Scanning $camera,
@@ -96,6 +98,24 @@ final class PairByScanning extends NativeComponent
         private readonly Stacks $stacks,
         private readonly Clock $clock,
     ) {}
+
+    /** What the operator is calling this machine. */
+    public function called(): string
+    {
+        return $this->called;
+    }
+
+    /** What became of the pairing, once a scan has completed one. */
+    public function went(): HowThePairingWent
+    {
+        return $this->went;
+    }
+
+    /** Whether what the camera read could not be used as pairing material. */
+    public function codeWasUnreadable(): bool
+    {
+        return $this->codeWasUnreadable;
+    }
 
     /**
      * Whether the camera may be offered at all.

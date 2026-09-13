@@ -71,7 +71,32 @@ it('leaves the camera shut for a machine the operator has not named', function (
 
     expect($screen->mayScan())->toBeFalse()
         ->and($camera->opened())->toBe(0)
-        ->and($screen->went)->toBe(HowThePairingWent::NotYet);
+        ->and($screen->went())->toBe(HowThePairingWent::NotYet);
+});
+
+it('leaves the camera shut for a name that is only spaces', function (): void {
+    // A phone's keyboard puts a space in on its own, and a stack called " " is
+    // a stack the operator cannot tell from any other. `StackName::of()` would
+    // refuse it — which on this road means refusing it *after* the camera has
+    // read a code, so the guard is here where it can be refused before.
+    $camera = ACameraInMemory::reading(scannedCode());
+    $screen = named(scanningScreen($camera), '   ');
+
+    $screen->scan();
+
+    expect($screen->mayScan())->toBeFalse()
+        ->and($camera->opened())->toBe(0)
+        ->and($screen->went())->toBe(HowThePairingWent::NotYet);
+});
+
+it('reports back the name it was given, which is what the template renders', function (): void {
+    // The screen keeps its state `protected` and the template reads it through
+    // this, so a template and a screen that disagreed would show the operator
+    // somebody else's name on the paired screen. Asserted here because nothing
+    // else does: the accessor has exactly one other caller and it is a Blade
+    // file, which no analyser in this repository reads.
+    expect(named(scanningScreen(ACameraInMemory::reading(scannedCode())), 'The shed')->called())
+        ->toBe('The shed');
 });
 
 it('says nothing about the camera before anybody has opened it', function (): void {
@@ -94,7 +119,7 @@ it('pairs the stack from what the camera read, with nothing to confirm', functio
 
     $screen->scan();
 
-    expect($screen->went)->toBe(HowThePairingWent::Paired);
+    expect($screen->went())->toBe(HowThePairingWent::Paired);
 });
 
 it('N4-R3 — a refused camera is told apart from one somebody closed', function (): void {
@@ -113,7 +138,7 @@ it('N4-R3 — a refused camera is told apart from one somebody closed', function
         ->and($closed->settingsWouldHelp())->toBeFalse()
         ->and($none->settingsWouldHelp())->toBeFalse()
         ->and($refused->nothingWasScanned())->toBeTrue()
-        ->and($refused->went)->toBe(HowThePairingWent::NotYet);
+        ->and($refused->went())->toBe(HowThePairingWent::NotYet);
 });
 
 it('says something about every way the camera can come back empty, and it is a real sentence', function (): void {
@@ -143,9 +168,9 @@ it('tells a code it could not read apart from a camera that came back empty', fu
 
     $screen->scan();
 
-    expect($screen->codeWasUnreadable)->toBeTrue()
+    expect($screen->codeWasUnreadable())->toBeTrue()
         ->and($screen->nothingWasScanned())->toBeFalse()
-        ->and($screen->went)->toBe(HowThePairingWent::NotYet);
+        ->and($screen->went())->toBe(HowThePairingWent::NotYet);
 });
 
 it('N1-R49 — an expired code is refused on this road too', function (): void {
@@ -156,8 +181,8 @@ it('N1-R49 — an expired code is refused on this road too', function (): void {
 
     $screen->scan();
 
-    expect($screen->codeWasUnreadable)->toBeTrue()
-        ->and($screen->went)->toBe(HowThePairingWent::NotYet);
+    expect($screen->codeWasUnreadable())->toBeTrue()
+        ->and($screen->went())->toBe(HowThePairingWent::NotYet);
 });
 
 it('clears what the last attempt said before opening the camera again', function (): void {
@@ -174,7 +199,7 @@ it('clears what the last attempt said before opening the camera again', function
     $working->scan();
 
     expect($working->nothingWasScanned())->toBeFalse()
-        ->and($working->codeWasUnreadable)->toBeFalse();
+        ->and($working->codeWasUnreadable())->toBeFalse();
 });
 
 it('says the pairing did not happen where the stack could not be written down', function (): void {
@@ -192,8 +217,8 @@ it('says the pairing did not happen where the stack could not be written down', 
     $noStore->scan();
     $shut->scan();
 
-    expect($noStore->went)->toBe(HowThePairingWent::NoStoreOnThisDevice)
-        ->and($shut->went)->toBe(HowThePairingWent::TheStoreWouldNotOpen);
+    expect($noStore->went())->toBe(HowThePairingWent::NoStoreOnThisDevice)
+        ->and($shut->went())->toBe(HowThePairingWent::TheStoreWouldNotOpen);
 });
 
 it('renders the frame its template names', function (): void {

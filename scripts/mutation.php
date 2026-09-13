@@ -215,27 +215,58 @@ function declaredFloor(string $manifest): ?int
     /** @var mixed $decoded */
     $decoded = json_decode($manifest, associative: true);
 
-    if (! is_array($decoded)) {
-        return null;
-    }
+    /** @var mixed $floors */
+    $floors = is_array($decoded) ? under($decoded, 'extra', 'lemonfiber', 'floors') : null;
 
-    foreach (['extra', 'lemonfiber', 'floors'] as $key) {
-        if (! is_array($decoded) || ! array_key_exists($key, $decoded)) {
-            return null;
-        }
-
-        /** @var mixed $decoded */
-        $decoded = $decoded[$key];
-    }
-
-    if (! is_array($decoded) || ! array_key_exists('mutation', $decoded)) {
+    if (! is_array($floors) || ! array_key_exists('mutation', $floors)) {
         return null;
     }
 
     /** @var mixed $floor */
-    $floor = $decoded['mutation'];
+    $floor = $floors['mutation'];
 
     return is_int($floor) ? $floor : null;
+}
+
+/**
+ * Whatever is nested under a run of keys, or null where the path runs out.
+ *
+ * Split from {@see declaredFloor()} because the two answer different questions —
+ * where in the manifest to look, and whether what is there is a floor — and
+ * together they left one function with four ways out (`H8`).
+ *
+ * Each step is checked rather than reached through, which is the whole point: an
+ * `??` chain through four keys turns a malformed manifest into a silent zero,
+ * and that reads exactly like a module that meant to declare none.
+ *
+ * @param array<array-key, mixed> $decoded
+ */
+function under(array $decoded, string ...$keys): mixed
+{
+    $found = $decoded;
+
+    foreach ($keys as $key) {
+        if (! array_key_exists($key, $found)) {
+            return null;
+        }
+
+        /** @var mixed $next */
+        $next = $found[$key];
+
+        if (! is_array($next)) {
+            // The last key may legitimately name something that is not an
+            // array — a floor is an int — so the run ends here and the caller
+            // decides whether what it found is the shape it wanted. Returning
+            // null instead would lose the difference between "no such key" and
+            // "a key whose value is not a table", which is the distinction this
+            // function exists to keep.
+            return $key === $keys[count($keys) - 1] ? $next : null;
+        }
+
+        $found = $next;
+    }
+
+    return $found;
 }
 
 /**

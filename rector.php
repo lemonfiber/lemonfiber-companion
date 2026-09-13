@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
 use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
+use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -39,9 +40,27 @@ return RectorConfig::configure()
     //
     // Scoped to the contract suite, which is where a dataset names one fake and
     // one adapter. Everywhere else the rule is right and stays on.
+    //
+    // A screen's state is `protected` because the framework writes it, and the
+    // framework is the parent class: `NativeComponent::__syncProperty()`
+    // assigns `$this->{$name}` from its own scope, which reaches a protected
+    // member of a subclass and does not reach a private one. Privatising them
+    // does not fail to compile and does not fail the analyser — it creates a
+    // dynamic property instead, so `native:model` silently stops binding and
+    // the screen renders with the field it opened with.
+    //
+    // Measured rather than assumed: with these four made private, eight of the
+    // nine tests in `PairingAStackByScanningTest` fail. Scoped to the screens,
+    // because everywhere else in a final class the rule is right and stays on.
     ->withSkip([
         StringClassNameToClassConstantRector::class => [__DIR__ . '/tests/Arch'],
         ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [__DIR__ . '/tests/Contract'],
+        // Globbed rather than named, because `household` is a surface too and a
+        // path written out here covers the module that exists today. Rector
+        // does not expand a glob in a skip path — it compares strings — so the
+        // expansion happens here, where a surface added tomorrow is covered
+        // without anybody remembering this file.
+        PrivatizeFinalClassPropertyRector::class => (array) glob(__DIR__ . '/app-modules/*/src/Internal/Screens'),
     ])
     ->withImportNames(importShortClasses: false)
     ->withCache(__DIR__ . '/.rector-cache');

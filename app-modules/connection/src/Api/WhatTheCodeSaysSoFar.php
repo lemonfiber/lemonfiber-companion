@@ -69,17 +69,7 @@ final readonly class WhatTheCodeSaysSoFar
      */
     public static function read(string $said, HowItWasRead $how, Clock $clock): self
     {
-        if (trim($said) === '') {
-            return self::waiting();
-        }
-
-        try {
-            return self::comparing(Pairing::read($said, $how, $clock));
-        } catch (PairingIsSpent) {
-            return self::expired();
-        } catch (InvalidArgumentException) {
-            return self::unreadable();
-        }
+        return trim($said) === '' ? self::waiting() : self::parsed($said, $how, $clock);
     }
 
     /** Nothing typed yet, or not enough of it to judge. */
@@ -195,5 +185,25 @@ final readonly class WhatTheCodeSaysSoFar
             $this->said,
             FingerprintWasConfirmed::byTheOperator(AtAGlance::of($this->said->presenting())),
         );
+    }
+
+    /**
+     * What a non-empty code turns out to be.
+     *
+     * Split from {@see read()} rather than written inline, because the two ask
+     * different questions: whether anything was typed at all, and what it says
+     * if something was. Keeping them together also put four returns in one
+     * method, which SonarCloud reports and which is the same observation from
+     * the other side — a method with four exits is usually two methods.
+     */
+    private static function parsed(string $said, HowItWasRead $how, Clock $clock): self
+    {
+        try {
+            return self::comparing(Pairing::read($said, $how, $clock));
+        } catch (PairingIsSpent) {
+            return self::expired();
+        } catch (InvalidArgumentException) {
+            return self::unreadable();
+        }
     }
 }

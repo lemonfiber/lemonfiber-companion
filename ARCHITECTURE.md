@@ -670,6 +670,7 @@ reachable from production is a fake (`G4`).
 | H5 | A string with a value in it is built with `sprintf` — never `.`, never interpolation | phpstan: own rule, one per node type |
 | H6 | An exception is named for what happened, not for being an exception | arch |
 | H7 | A test is named and described for the behaviour it pins | arch |
+| H8 | A method returns from at most three places | phpstan: own rule |
 
 **Why the floors are per module.** One percentage across twelve modules is an
 average, and an average is true about what it covered and silent about what it
