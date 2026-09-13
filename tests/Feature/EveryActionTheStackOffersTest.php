@@ -47,6 +47,25 @@ const ELSEWHERE = [
 /**
  * Kinds nobody has offered yet.
  *
+ * **`Config` carries a second requirement, and this is where it will be read.**
+ * `N1-R5` says the app must offer reconfiguration *in full* once connected, and
+ * that is not gated here because it cannot honestly be gated yet. The settings
+ * are not a list this side can know: `ConfigEnvelope` carries
+ * `settings: list<array{key, secret, value}>`, which the stack reports at
+ * runtime. There is nothing static to compare against.
+ *
+ * What it means when `Config` moves up: the screen renders the list the stack
+ * sent, and the app holds no list of its own. An app that enumerates the
+ * settings it knows about offers a subset the day the stack adds one, and
+ * offers it silently — which is the whole of what `N1-R5` forbids.
+ *
+ * A rule guessing at that from the source text was considered and rejected. The
+ * only shape available is "does anything here look like a list of setting
+ * keys", which is prose-matching, and this codebase has already learned what
+ * that costs: the `N1-R17` checker matched the comments explaining the rule,
+ * and a rule that fires on its own documentation is a rule somebody deletes —
+ * taking the real coverage with it.
+ *
  * Not a debt marker and not a promise: it is the honest statement that the app
  * is early and these have been seen. Moving one up to `OFFERED` is the work;
  * moving one to `ELSEWHERE` needs a requirement written first.
