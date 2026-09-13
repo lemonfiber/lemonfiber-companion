@@ -6,13 +6,16 @@ use Illuminate\Support\Facades\View;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 
 /** A stack this device is already paired with. */
@@ -41,6 +44,19 @@ function aPairedStack(string $called, string $seed = 'a'): Stack
 // HTTP assertion would be testing NativePHP's test-mode stub rather than this
 // application's wiring.
 
+/**
+ * The launch screen, with a store that is holding whatever a test says.
+ *
+ * Named for this file, since the root suites share one namespace (`G10`). The
+ * keychain is a parameter because two of the cases below are about what the
+ * list says when a stack is signed into and when it is not, and every other
+ * case does not care — so it defaults to a working store holding nothing.
+ */
+function theLaunchScreen(Stacks $stacks, ?AKeychainInMemory $keychain = null): YourStacks
+{
+    return new YourStacks($stacks, $keychain ?? AKeychainInMemory::working());
+}
+
 it('N1-R35 — the first frame is registered, and it is this screen', function (): void {
     $resolved = NativeRouter::resolve('/');
 
@@ -51,6 +67,41 @@ it('N1-R35 — the first frame is registered, and it is this screen', function (
     );
 
     expect($resolved['class'] ?? null)->toBe(YourStacks::class);
+});
+
+it('N1-R7 — says which stacks are already signed into, so nobody retypes a password', function (): void {
+    // The reason a session is kept at all. `N1-R7` exchanges the password once,
+    // and "once" is only true if the list can tell the operator which machines
+    // will not ask again.
+    $loft = aPairedStack('The loft', 'a');
+    $shed = aPairedStack('The shed', 'b');
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($loft->id(), Session::of('a-session-not-a-secret'));
+
+    $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed), $keychain);
+
+    // `N1-R11` at the one place it is visible to an operator: signed into one
+    // machine and not the other, and the list says exactly that. A reader keyed
+    // loosely would report both as open on the strength of one session.
+    expect($screen->isSignedInto($loft))->toBeTrue()
+        ->and($screen->isSignedInto($shed))->toBeFalse();
+});
+
+it('N4-R6 — a store that will not open asks for the password rather than breaking', function (): void {
+    // The launch screen is the worst place to raise. A keychain that cannot be
+    // read is a keychain with no session in it as far as this question goes, so
+    // the operator is offered the password — which is both honest and the only
+    // thing they could act on.
+    $loft = aPairedStack('The loft', 'a');
+
+    foreach ([
+        'no store at all' => AKeychainInMemory::withNowhereSafe(),
+        'a store that will not open' => AKeychainInMemory::thatWillNotOpen(),
+    ] as $which => $keychain) {
+        $screen = theLaunchScreen(StacksInMemory::holding($loft), $keychain);
+
+        expect($screen->isSignedInto($loft))->toBeFalse($which);
+    }
 });
 
 it('N1-R11 — a stack in the list leads to that stack and no other', function (): void {
@@ -64,7 +115,7 @@ it('N1-R11 — a stack in the list leads to that stack and no other', function (
     // stacks named differently and seeded the same are one machine twice.
     $loft = aPairedStack('The loft', 'a');
     $shed = aPairedStack('The shed', 'b');
-    $screen = new YourStacks(StacksInMemory::holding($loft, $shed));
+    $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed));
 
     expect($screen->signInAt($loft))->toBe(sprintf('/stacks/%s/sign-in', $loft->id()->stored()))
         ->and($screen->signInAt($shed))->not->toBe($screen->signInAt($loft));
@@ -89,7 +140,7 @@ it('N1-R36 — a launch with stacks configured names them rather than offering t
     // It reads no stack to do it. N1-R36 asks for a usable frame without
     // waiting for a reading, and the cheapest way to keep that is to have
     // nothing to wait for — what is shown is retained configuration.
-    $screen = new YourStacks(StacksInMemory::holding(aPairedStack('The loft')));
+    $screen = theLaunchScreen(StacksInMemory::holding(aPairedStack('The loft')));
 
     expect($screen->nothingIsPairedYet())->toBeFalse();
 
@@ -106,7 +157,7 @@ it('N1-R11 — every configured stack is named, in the order they were paired', 
     // More than one stack is the requirement, and the order is what an operator
     // recognises their list by. `Configured` keeps it; this is what proves the
     // screen does not rearrange it on the way out.
-    $screen = new YourStacks(StacksInMemory::holding(
+    $screen = theLaunchScreen(StacksInMemory::holding(
         aPairedStack('The loft'),
         aPairedStack('The shed', seed: 'b'),
     ));
@@ -187,6 +238,6 @@ it('draws the frame the surface registered, by name', function (): void {
     // A fake rather than the adapter: what this asserts is the frame's name,
     // and a screen that had to reach a keychain to answer it would be a
     // different test failing for a different reason.
-    expect(new YourStacks(StacksInMemory::working())->render()->name())
+    expect(theLaunchScreen(StacksInMemory::working())->render()->name())
         ->toBe('operator::your-stacks');
 });

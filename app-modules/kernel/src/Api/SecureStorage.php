@@ -18,11 +18,14 @@ namespace Modules\Kernel\Api;
  * nowhere to put it or a store that would not open. The refusal has to carry its
  * reason to a screen, so the reason is a type — and so is the refusal.
  *
- * **There is no `read()` beside `keep()` here on purpose.** A port that both
- * stores and returns a session invites a caller to ask for one speculatively,
- * and `Session` is the type `N1-R15` will not let anybody print — the fewer
- * places it can be conjured from, the better. Reading it back belongs to
- * whatever resumes a paired stack, and that is the one reader.
+ * **`resume()` answers {@see Resumed} rather than a nullable `Session`.** This
+ * port held no reader at all for as long as nothing resumed a stack, on the
+ * argument that a port which both stores and returns a session invites a caller
+ * to ask for one speculatively — and `Session` is the type `N1-R15` will not
+ * let anybody print. The argument was about the *shape* of the reader rather
+ * than about having one, and the shape is what answers it: a caller cannot pull
+ * a session out of `Resumed` without saying what happens when there is none, so
+ * a speculative read is a read that has to name its own else-branch.
  */
 interface SecureStorage
 {
@@ -55,4 +58,19 @@ interface SecureStorage
      * needing to know which of the two it is looking at.
      */
     public function forget(StackId $stack): Kept;
+
+    /**
+     * The session this device holds for one stack, if it holds one.
+     *
+     * Per stack, because `N1-R11` keeps them separate and a reader taking no
+     * argument would be the place two stacks come to share one session.
+     *
+     * **A store that will not open answers `notHeld()` rather than raising.**
+     * As far as this question goes a keychain that cannot be read is a keychain
+     * with no session in it: the operator is asked for the password, which is
+     * both the honest outcome and the only useful one. `N4-R6`'s two refusals
+     * are told apart where a session is being *kept*, because the remedies
+     * differ there; here there is one remedy.
+     */
+    public function resume(StackId $stack): Resumed;
 }

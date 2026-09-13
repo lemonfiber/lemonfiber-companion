@@ -6,8 +6,10 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Kernel\Api\Configured;
+use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stacks;
+use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -74,7 +76,10 @@ use function view;
 #[Lazy]
 final class YourStacks extends NativeComponent
 {
-    public function __construct(private readonly Stacks $stacks) {}
+    public function __construct(
+        private readonly Stacks $stacks,
+        private readonly SecureStorage $storage,
+    ) {}
 
     /**
      * Whether this device has been introduced to anything.
@@ -105,6 +110,34 @@ final class YourStacks extends NativeComponent
     public function configured(): Configured
     {
         return $this->stacks->configured();
+    }
+
+    /**
+     * Whether this device is already signed into that stack.
+     *
+     * Asked per stack rather than once, because `N1-R11` keeps each one's
+     * session separate: an operator signed into the loft and not the shed needs
+     * to see exactly that, and a single answer for the list would be wrong for
+     * whichever stack it was not about.
+     *
+     * Read on every frame rather than held. A screen returned to after signing
+     * in would otherwise still be showing what it knew when it was built, which
+     * is the same argument {@see nothingIsPairedYet()} makes and the same rule
+     * — `N1-R38` keeps what the *operator* did on a screen, and what this
+     * device holds for a stack is not that.
+     *
+     * **The session itself does not come out of here.** `Resumed::either()` is
+     * answered with a boolean and the session is dropped, so the one thing this
+     * screen learns is whether to say *signed in* or *sign in*. `N1-R15` will
+     * not let a session reach a screen, and the shortest way to keep that true
+     * is for the screen never to hold one.
+     */
+    public function isSignedInto(Stack $stack): bool
+    {
+        return $this->storage->resume($stack->id())->either(
+            held: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIs(),
+            notHeld: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIsNot(),
+        )->held;
     }
 
     /**

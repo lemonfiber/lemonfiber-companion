@@ -65,4 +65,6 @@ return [
     'no_store_for_a_session_action' => 'Je bent niet aangemeld. Een telefoon met een schermvergrendeling heeft die plek wel; stel er een in en probeer het opnieuw.',
     'session_would_not_keep' => 'Deze telefoon liet de app de sessie niet bewaren.',
     'session_would_not_keep_action' => 'Je bent niet aangemeld. Ontgrendel de telefoon en probeer het opnieuw.',
+    'stack_is_open' => 'Aangemeld',
+    'stack_wants_a_password' => 'Vraagt om je wachtwoord',
 ];

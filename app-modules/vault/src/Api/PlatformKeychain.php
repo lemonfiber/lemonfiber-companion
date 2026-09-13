@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Vault\Api;
 
 use Modules\Kernel\Api\Kept;
+use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
@@ -50,6 +51,28 @@ final readonly class PlatformKeychain implements SecureStorage
         return $this->store->set($this->keyFor($stack), $session->forTheHeader())
             ? Kept::safely()
             : Kept::refused($this->whyItRefused());
+    }
+
+    public function resume(StackId $stack): Resumed
+    {
+        $found = $this->store->read($this->keyFor($stack));
+
+        // `Found` and nothing else. The platform answers `NotFound` for a store
+        // that is present and empty and `Unavailable` for a device with none,
+        // and both are the same answer to this question — asking only about
+        // `Found` means a status added to the vendor's enum tomorrow is read as
+        // "no session" rather than as whichever case happened to be last.
+        if ($found->status !== SecureStorageStatus::Found || $found->value === null) {
+            return Resumed::notHeld();
+        }
+
+        // `Session::of()` refuses a blank, and a store that answered `Found`
+        // with an empty string is a store that lost the value rather than one
+        // holding a session — so it is read as no session rather than allowed
+        // to raise on a launch screen.
+        return $found->value === ''
+            ? Resumed::notHeld()
+            : Resumed::with(Session::of($found->value));
     }
 
     public function forget(StackId $stack): Kept

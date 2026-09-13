@@ -1,9 +1,14 @@
 <native:column class="w-full gap-4 p-6">
     @forelse ($this->configured() as $stack)
-        <native:button
-            label="{{ $stack->name()->shown() }}"
-            @navigate="{{ $this->signInAt($stack) }}"
-        />
+        <native:column class="w-full gap-1">
+            <native:button
+                label="{{ $stack->name()->shown() }}"
+                @navigate="{{ $this->signInAt($stack) }}"
+            />
+            <native:text>
+                {{ __($this->isSignedInto($stack) ? 'connection.stack_is_open' : 'connection.stack_wants_a_password') }}
+            </native:text>
+        </native:column>
     @empty
         <native:text class="text-lg font-bold">{{ __('connection.no_stacks') }}</native:text>
         <native:text>{{ __('connection.setup_is_at_the_machine') }}</native:text>
