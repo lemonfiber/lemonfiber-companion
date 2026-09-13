@@ -301,6 +301,32 @@ automatic and the operator never sees the question.
 | F7 | No template reads a value that has one destination — a session, a credential, a stack address | `tests/Templates`, from the same table F2's surface rule counts against |
 | F4 | A screen that takes a port carries `#[Lazy]`; one whose content changes while open carries `#[Poll]` | arch for the first; review for the second |
 | F8 | A screen shows findings in the order a capability decided, never the order they arrived | arch: a screen that names findings names `WorstFirst` |
+| F9 | A class list is written out, never decided at runtime | arch: over the text of every template |
+
+**Why F9 exists, given F3.** Every rule about a class list is handed the answer
+of one function, `Template::classStrings()`, and that function drops any token
+holding a runtime expression rather than guessing at it. It has to: with the
+echo deleted, `bg-{{ $tone }}` is `bg-`, an unknown utility nobody wrote. But
+what gets dropped from `class="{{ $open ? 'bg-theme-accent' : '' }}"` is the
+whole attribute, and the class names inside it are then read by nothing at all.
+
+Three rules go quiet together, because all three read that one answer. F3 stops
+seeing an unknown utility, DES-R24 stops seeing a literal colour, and DES-R15
+stops seeing the accent set as text. A template whose ternaries hold
+`bg-theme-accnt`, `bg-red-500` and `text-theme-accent` passes every rule in
+`tests/Templates` — and EDGE agrees, because it parses each of those in turn,
+finds it means nothing and drops it. No error, no warning, no failed build: the
+screen renders wrong on a device and says nothing about why. That is the exact
+failure the vocabulary check exists to catch, so a hole in it is a rule rather
+than a note.
+
+The cure is to draw a state that changes rather than to colour it.
+`how-this-stack-is.blade.php` puts the selected bar in an element of its own
+under an `@if`, with a static class every check can read. The two forms that
+never reach `classStrings()` at all are refused alongside — a bound `:class`,
+whose value is PHP rather than a class list, and `@class([...])`, which is not
+an attribute for the expression to match — because a class name hidden in either
+is hidden the same way and costs the same thing.
 
 **Why F8 is a rule rather than a note on the screen.** `WorstFirst` is the one
 decision `health` makes about a report, and for two commits nothing called it. A
