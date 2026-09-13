@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Client;
+use Lemonfiber\Sdk\Http\BaseUrl;
+use Lemonfiber\Sdk\Http\LemonfiberConnector;
+use Lemonfiber\Sdk\Http\RunToken;
 use Tests\Support\Tree;
 
 /**
@@ -38,6 +42,10 @@ use Tests\Support\Tree;
 /**
  * Files allowed to name the SDK's transport.
  *
+ * Named by `::class` rather than as strings, which rector asks for and is right
+ * about: a renamed class breaks this loudly, where a string would quietly stop
+ * matching and the rule would go on reporting that nothing reaches a stack.
+ *
  * Empty, and not an oversight. When the pinning adapter is written this is
  * where it gets named — one entry, so the reviewer of that change is looking at
  * this list and its reasoning at the same moment.
@@ -46,10 +54,10 @@ const MAY_REACH_A_STACK = [];
 
 /** What naming any of these means: this file opens a connection. */
 const THE_TRANSPORT = [
-    'Lemonfiber\Sdk\Client',
-    'Lemonfiber\Sdk\Http\LemonfiberConnector',
-    'Lemonfiber\Sdk\Http\BaseUrl',
-    'Lemonfiber\Sdk\Http\RunToken',
+    Client::class,
+    LemonfiberConnector::class,
+    BaseUrl::class,
+    RunToken::class,
 ];
 
 it('N1-R20 — nothing opens a connection to a stack without pinning its certificate', function (): void {
