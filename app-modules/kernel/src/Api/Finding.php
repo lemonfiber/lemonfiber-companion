@@ -33,6 +33,7 @@ final readonly class Finding
         private Category $category,
         private string $title,
         private Conclusion $conclusion,
+        private WhatTheCheckSaid $said,
     ) {}
 
     /**
@@ -43,15 +44,20 @@ final readonly class Finding
      * title renders as an empty line in a list the operator is scanning for
      * the thing that is wrong.
      */
-    public static function of(Check $check, Category $category, string $title, Conclusion $conclusion): self
-    {
+    public static function of(
+        Check $check,
+        Category $category,
+        string $title,
+        Conclusion $conclusion,
+        WhatTheCheckSaid $said,
+    ): self {
         $trimmed = trim($title);
 
         if ($trimmed === '') {
             throw FindingHasNoTitle::about($check);
         }
 
-        return new self($check, $category, $trimmed, $conclusion);
+        return new self($check, $category, $trimmed, $conclusion, $said);
     }
 
     public function check(): Check
@@ -73,5 +79,18 @@ final readonly class Finding
     public function conclusion(): Conclusion
     {
         return $this->conclusion;
+    }
+
+    /**
+     * What the core said about it, in the core's own words (`N2-R3`).
+     *
+     * A `WhatTheCheckSaid` rather than three readers, so a screen cannot ask
+     * for the meaning without having established that there is one. The words
+     * arrived on the wire and were dropped for as long as this type had nowhere
+     * to put them.
+     */
+    public function said(): WhatTheCheckSaid
+    {
+        return $this->said;
     }
 }

@@ -14,10 +14,11 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\WhatTheCheckSaid;
 
 it('carries the word and the findings together', function (): void {
     $findings = Findings::of(
-        Finding::of(Check::of('vpn.egress-match'), Category::Vpn, 'Egress', Conclusion::Failed),
+        Finding::of(Check::of('vpn.egress-match'), Category::Vpn, 'Egress', Conclusion::Failed, WhatTheCheckSaid::nothingWrong()),
     );
 
     $report = Report::of(Overall::Broken, $findings);
@@ -41,7 +42,7 @@ it('does not argue with the engine about its own verdict', function (): void {
     // opinion about somebody else's data, wrong in a way nobody could see from
     // the screen — so it is carried as sent and is a bug where it was decided.
     $report = Report::of(Overall::Healthy, Findings::of(
-        Finding::of(Check::of('storage.room'), Category::Storage, 'Room', Conclusion::Failed),
+        Finding::of(Check::of('storage.room'), Category::Storage, 'Room', Conclusion::Failed, WhatTheCheckSaid::nothingWrong()),
     ));
 
     expect($report->overall())->toBe(Overall::Healthy);

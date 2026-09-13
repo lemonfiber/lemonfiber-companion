@@ -12,11 +12,15 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\DoctorEnvelope;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Remedies;
+use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -143,6 +147,7 @@ final readonly class Reports
             self::category(self::text($row, 'category')),
             self::text($row, 'title'),
             self::conclusion($row),
+            self::said($row),
         );
     }
 
@@ -152,7 +157,88 @@ final readonly class Reports
     }
 
     /**
-     * The tag off the verdict, and nothing else it carries.
+     * What the core said about the check, off the same verdict (`N2-R3`).
+     *
+     * The verdict is a union on the wire: the passing arm carries an optional
+     * note, and every other arm carries a `code`, a `meaning` and a list of
+     * `remedies`. All three are what `N2-R3` asks a finding to carry, and a
+     * screen without them can say a check failed and nothing about what or what
+     * to do.
+     *
+     * A missing `code` or `meaning` on a failing verdict is refused rather than
+     * filled in, for the reason the rest of this reader refuses: a finding with
+     * no sentence is a red row the operator cannot act on, and the core
+     * producing one is a fault worth seeing here.
+     *
+     * @param array<mixed> $row
+     */
+    private static function said(array $row): WhatTheCheckSaid
+    {
+        // Written out rather than coalesced, which `C9` refuses by name: a
+        // `??` on a subscript folds absent, present-and-null and
+        // present-and-wrong-type into one answer, and the one it picks reads as
+        // "carry on".
+        if (! array_key_exists('verdict', $row)) {
+            throw ReportIsUnreadable::missing('verdict');
+        }
+
+        $verdict = $row['verdict'];
+
+        if (! is_array($verdict)) {
+            throw ReportIsUnreadable::missing('verdict');
+        }
+
+        if (! array_key_exists('code', $verdict)) {
+            return WhatTheCheckSaid::nothingWrong();
+        }
+
+        return WhatTheCheckSaid::wentWrong(
+            Code::of(self::text($verdict, 'code')),
+            self::text($verdict, 'meaning'),
+            self::remedies($verdict),
+        );
+    }
+
+    /**
+     * The remedies the core offered, in its words.
+     *
+     * A verdict with no `remedies` key is a check the core had nothing to
+     * suggest for, which is different from one it suggested nothing for — and
+     * both read as no remedies, which is the honest answer either way.
+     * `Remedies::likeliest()` is what a screen shows first.
+     *
+     * @param array<mixed> $verdict
+     */
+    private static function remedies(array $verdict): Remedies
+    {
+        if (! array_key_exists('remedies', $verdict)) {
+            return Remedies::none();
+        }
+
+        $offered = $verdict['remedies'];
+
+        if (! is_array($offered)) {
+            throw ReportIsUnreadable::missing('remedies');
+        }
+
+        $read = [];
+
+        foreach ($offered as $one) {
+            if (! is_array($one)) {
+                throw ReportIsUnreadable::missing('remedies');
+            }
+
+            $read[] = Remedy::of(self::text($one, 'action'));
+        }
+
+        return Remedies::of(...$read);
+    }
+
+    /**
+     * The tag off the verdict, which is all this one reads.
+     *
+     * What the verdict also carries — the code, the meaning, the remedies — is
+     * read by {@see self::said()}, which is where `N2-R3` is answered.
      *
      * @param array<mixed> $row
      */

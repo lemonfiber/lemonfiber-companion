@@ -15,10 +15,11 @@ use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
+use Modules\Kernel\Api\WhatTheCheckSaid;
 
 function finding(string $check, Conclusion $conclusion): Finding
 {
-    return Finding::of(Check::of($check), Category::Vpn, 'A check that ran', $conclusion);
+    return Finding::of(Check::of($check), Category::Vpn, 'A check that ran', $conclusion, WhatTheCheckSaid::nothingWrong());
 }
 
 it('holds what it was given, in the order it was given', function (): void {
