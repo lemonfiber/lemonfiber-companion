@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function array_filter;
+use function array_values;
 use function dirname;
+use function file_exists;
 use function file_get_contents;
 
 use FilesystemIterator;
 
+use function implode;
 use function in_array;
 use function is_array;
 use function is_dir;
@@ -16,6 +20,7 @@ use function is_string;
 
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use RuntimeException;
 use SplFileInfo;
 
 use function sprintf;
@@ -34,6 +39,15 @@ use function token_get_all;
  */
 final readonly class Tree
 {
+    /**
+     * What tells this repository apart from a directory that merely resembles it.
+     *
+     * Three rather than one, because each alone is common: a parent directory
+     * holding several checkouts has none of them, but a sibling worktree of this
+     * repository has all three — and a sibling worktree is the wrong tree that
+     * answers every question plausibly.
+     */
+    private const array LANDMARKS = ['composer.json', 'phpstan.neon', 'app-modules'];
     /**
      * Every file under a directory whose name ends with the given suffix.
      *
@@ -61,10 +75,46 @@ final readonly class Tree
         return $found;
     }
 
-    /** The repository root. */
+    /**
+     * The repository root.
+     *
+     * Checked rather than computed and trusted. `dirname(__DIR__, 2)` is correct
+     * for exactly as long as this file stays two directories down, and wrong
+     * silently the moment it does not: `filesUnder` answers `[]` for a directory
+     * that is not there, so every rule built on this would read no files and
+     * report that nothing violates anything.
+     */
     public static function root(): string
     {
-        return dirname(__DIR__, 2);
+        $root = dirname(__DIR__, 2);
+        $missing = self::landmarksMissingFrom($root);
+
+        if ($missing !== []) {
+            throw new RuntimeException(sprintf(
+                '%s is not this repository: it has no %s. Every path in this harness '
+                . 'is built from here, and a root pointing somewhere else produces '
+                . 'empty file lists rather than an error — which reads as nothing '
+                . 'violating anything.',
+                $root,
+                implode(', ', $missing),
+            ));
+        }
+
+        return $root;
+    }
+
+    /**
+     * Whether a directory is this repository rather than somewhere plausible.
+     *
+     * Separate from `root()` so it can be asked about a directory that is not
+     * the answer. The failure this guards against has no file that could carry
+     * it — the root is what every path is built from, so a fixture could not be
+     * written to a tree the harness could no longer find — and the judgement is
+     * the only part of it that can be handed a violation.
+     */
+    public static function isTheRepository(string $directory): bool
+    {
+        return self::landmarksMissingFrom($directory) === [];
     }
 
     /** A path below the repository root. */
@@ -133,6 +183,27 @@ final readonly class Tree
         }
 
         return $found;
+    }
+
+    /**
+     * Which landmarks a directory has not got.
+     *
+     * The answer rather than a yes or no, so the refusal above can name what is
+     * actually absent. A message listing all three when one is missing is a
+     * message a reader stops reading, and the one-missing case is the likelier
+     * one: a sibling worktree has every landmark, a half-built checkout has
+     * some.
+     *
+     * @return list<string>
+     */
+    private static function landmarksMissingFrom(string $directory): array
+    {
+        return array_values(array_filter(
+            self::LANDMARKS,
+            static fn(string $landmark): bool => ! file_exists(
+                sprintf('%s/%s', $directory, $landmark),
+            ),
+        ));
     }
 
     /**

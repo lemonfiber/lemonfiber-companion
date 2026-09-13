@@ -96,6 +96,7 @@ final readonly class Fixtures
             ...self::floors(),
             ...self::rulesAboutRules(),
             ...self::whatASurfaceIsNeverShown(),
+            ...self::drivenDirectly(),
             ...self::notDrivable(),
         ];
     }
@@ -2096,6 +2097,39 @@ final readonly class Fixtures
     }
 
     /**
+     * The rules whose violation is a state of this run rather than a file.
+     *
+     * Each was `notDrivable` until the judgement was split from the reading
+     * around it. Nothing can be planted for these — the run that read the
+     * planted thing would be this run — but the judgement can be called with the
+     * violation, which is the same proof arriving by the other door.
+     *
+     * @return list<Fixture>
+     */
+    private static function drivenDirectly(): array
+    {
+        return [
+            Fixture::direct(
+                'Q-R66 (discovery)',
+                '`Tree::isTheRepository` handed the parent of the root — which is what '
+                . '`dirname(__DIR__, 2)` answers if the file computing it ever moves one '
+                . 'level down — and a temporary directory, and asked to refuse both. '
+                . 'Nothing could be planted for this: the root is what every path in the '
+                . 'harness is built from, so a fixture would have to be written to a tree '
+                . 'the harness could no longer find.',
+            ),
+            Fixture::direct(
+                'R2',
+                'Its own judgement — `rulesWithNoFixture` in the Guards suite — handed a '
+                . 'rule that claims enforcement and a coverage list without it, and asked '
+                . 'to name it. Planting it instead would mean documenting a rule and '
+                . 'leaving it uncovered in the repository doing the reading, and the run '
+                . 'that read it would be this run.',
+            ),
+        ];
+    }
+
+    /**
      * The rules no snippet can break, each with the reason.
      *
      * @return list<Fixture>
@@ -2110,22 +2144,6 @@ final readonly class Fixtures
                 . 'rather than by this harness, and a fixture that failed to clean up would '
                 . 'leave the installed SDK wrong. Driven by hand: a tenth health category '
                 . 'and a fifth severity, each refused by name.',
-            ),
-            Fixture::notDrivable(
-                'Q-R66 (discovery)',
-                'The violation is `Tree::root()` answering with somewhere else, which is what '
-                . 'every path in this harness is built from — a fixture could not be written '
-                . 'to a tree the harness could no longer find. Driven by hand: the root '
-                . 'pointed at `/tmp`, and both the file lists and the root check refused.',
-            ),
-            Fixture::notDrivable(
-                'R2',
-                'A fixture for this harness would have to be a documented rule with no '
-                . 'fixture — and the run that read it would be this run, which is already '
-                . 'reporting on whether every rule has one. Its own failure mode is the one '
-                . 'it cannot plant. (Editing ARCHITECTURE.md is no longer the obstacle: '
-                . 'Fixture::edit does that. The obstacle is that the subject is the '
-                . 'harness.)',
             ),
             Fixture::notDrivable(
                 'S2',
