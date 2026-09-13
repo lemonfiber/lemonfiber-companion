@@ -3,4 +3,5 @@
     <native:text>{{ __('connection.setup_is_at_the_machine') }}</native:text>
     <native:text>{{ __('connection.no_stacks_action') }}</native:text>
     <native:button label="{{ __('connection.pair') }}" />
+    <native:button label="{{ __('connection.pair_by_typing') }}" @navigate='/pair/typed' />
 </native:column>

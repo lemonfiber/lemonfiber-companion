@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\NativeServiceProvider as OurOwnExpansion;
+use Native\Mobile\UI\NativeUIServiceProvider as Controls;
 use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notifications;
 
 /**
@@ -33,6 +34,12 @@ use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notificati
  *   A build made without it has the adapters and not the functions they call.
  * - **`nativephp/mobile-local-notifications`**, which `Modules\Device\Api\
  *   PlatformNotifier` is written against.
+ * - **`nativephp/mobile-ui`**, which is where a text input comes from.
+ *   `nativephp/mobile` registers `pressable` and no field: `text_input`,
+ *   `toggle` and the rest are left to this plugin by name, in a comment in
+ *   `registerCoreElements()`. Without it there is no way to type anything into
+ *   this application at all — which means no `StackName`, which means `N1-R11`
+ *   cannot be satisfied and pairing cannot complete by either road.
  *
  * **Named by class rather than by string.** The vendor compares against the
  * first entry of a package's `extra.laravel.providers`, which is a string — so
@@ -72,6 +79,7 @@ final class NativeServiceProvider extends ServiceProvider
         return [
             OurOwnExpansion::class,
             Notifications::class,
+            Controls::class,
         ];
     }
 }

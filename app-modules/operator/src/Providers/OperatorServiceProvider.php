@@ -7,6 +7,7 @@ namespace Modules\Operator\Providers;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\Screens\NoStackYet;
+use Modules\Operator\Internal\Screens\PairByTyping;
 
 /**
  * The operator surface, declaring its own screens.
@@ -69,6 +70,12 @@ final class OperatorServiceProvider extends ServiceProvider
         // it fails.
         $this->app->booted(static function (): void {
             Router::native('/', NoStackYet::class);
+            // The typed road (N1-R6, N4-R3). Its own URI rather than a mode of
+            // the entry screen, because the navigation stack is what lets an
+            // operator back out of it — and because a screen that pairs is one
+            // #[Concealed] has to be able to name, which it cannot do for half
+            // of another screen.
+            Router::native('/pair/typed', PairByTyping::class);
         });
     }
 }
