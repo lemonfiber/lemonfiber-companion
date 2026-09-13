@@ -2,6 +2,16 @@
     <native:text class="text-lg font-bold">{{ __($this->headline(), ['stack' => $this->called()]) }}</native:text>
     <native:text>{{ __($this->supporting()) }}</native:text>
 
+    @if ($this->went()->isPaired())
+        {{-- Pairing is not signing in: the machine has been introduced and
+             this device holds no session for it. So the way onwards is the
+             password, not the report. --}}
+        <native:button
+            label="{{ __('connection.sign_in') }}"
+            @navigate="{{ $this->onwardsTo() }}"
+        />
+    @endif
+
     @unless ($this->went()->isPaired())
         <native:outlined-text-input
             native:model="typed"

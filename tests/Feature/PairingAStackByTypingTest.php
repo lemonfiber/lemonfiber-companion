@@ -9,6 +9,7 @@ use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Operator\Internal\Screens\PairByTyping;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Fakes\StacksInMemory;
@@ -224,4 +225,39 @@ it('says what this screen is for until there is an outcome, then what happened',
 
     expect($shut->headline())->toBe('connection.store_would_not_open')
         ->and($shut->supporting())->toBe('connection.store_would_not_open_action');
+});
+
+it('N1-R2 — a paired stack leads to signing into it, rather than to a sentence about where it is', function (): void {
+    // Pairing is not signing in: the machine has been introduced and this
+    // device holds no session for it. So the way onwards is the password — and
+    // it is a tap, rather than "you can reach it from the main screen" and an
+    // operator left to go and do it.
+    $screen = typedInto(pairingScreen(), typedCode());
+
+    $screen->confirm();
+
+    expect($screen->went())->toBe(HowThePairingWent::Paired)
+        ->and($screen->onwardsTo())->toStartWith('/stacks/')
+        ->and($screen->onwardsTo())->toEndWith('/sign-in')
+        ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull(
+            'Pairing leads to a URI the navigation stack does not know.',
+        );
+});
+
+it('leads nowhere until something has actually been paired', function (): void {
+    // The identifier is written at the moment the stack is made rather than
+    // read back from the store, because "which one did I just add" is a
+    // question a list of stacks does not answer — and until it is written there
+    // is no stack to lead to. The template asks `isPaired()` before it asks
+    // this, so the empty case is never rendered; it is asserted because a
+    // screen that answered `/stacks//sign-in` would look like a route and
+    // resolve to nothing.
+    $screen = typedInto(pairingScreen(), typedCode());
+
+    expect($screen->onwardsTo())->toBe('/stacks//sign-in')
+        ->and(NativeRouter::resolve($screen->onwardsTo()))->toBeNull();
+
+    $screen->confirm();
+
+    expect($screen->onwardsTo())->not->toBe('/stacks//sign-in');
 });

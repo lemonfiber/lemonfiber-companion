@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\Screens\PairByScanning;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACameraInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\SequencedEntropy;
@@ -267,4 +268,19 @@ it('says what this screen is for until there is an outcome, then what happened',
 
     expect($screen->headline())->toBe('connection.paired')
         ->and($screen->supporting())->toBe('connection.paired_action');
+});
+
+it('N1-R2 — a paired stack leads to signing into it, rather than to a sentence about where it is', function (): void {
+    // The same onward step as the typed road, and for the same reason: pairing
+    // introduces a machine and leaves this device holding no session for it.
+    $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
+
+    $screen->scan();
+
+    expect($screen->went())->toBe(HowThePairingWent::Paired)
+        ->and($screen->onwardsTo())->toStartWith('/stacks/')
+        ->and($screen->onwardsTo())->toEndWith('/sign-in')
+        ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull(
+            'Pairing leads to a URI the navigation stack does not know.',
+        );
 });

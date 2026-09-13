@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhyNothingWasScanned;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
+use function sprintf;
 use function trim;
 use function view;
 
@@ -88,6 +89,17 @@ final class PairByScanning extends NativeComponent
 
     /** What became of the pairing, once a scan has completed one. */
     protected HowThePairingWent $went = HowThePairingWent::NotYet;
+
+    /**
+     * Which stack was paired, so the screen can lead to it.
+     *
+     * Written at the moment the stack is made rather than read back from the
+     * store afterwards, which would be asking *which one did I just add* of a
+     * list that does not say. `protected` for `NativeComponent`'s property
+     * syncing, and the identifier rather than the {@see Stack} because a screen
+     * that held a stack would be holding an address (`N1-R15`).
+     */
+    protected string $paired = '';
 
     /** Whether what the camera read could not be used as pairing material. */
     protected bool $codeWasUnreadable = false;
@@ -214,6 +226,19 @@ final class PairByScanning extends NativeComponent
         return $this->went->isNotYet() ? HowItWasRead::Scanned->howToStart() : $this->went->remedy();
     }
 
+    /**
+     * Where an operator who has just paired a stack goes next.
+     *
+     * The sign-in screen for the stack they paired, because pairing is not
+     * signing in: they have introduced the machine and hold no session for it.
+     * Until this existed the screen said *"you can reach it from the main
+     * screen"* and left them to go and do it.
+     */
+    public function onwardsTo(): string
+    {
+        return sprintf('/stacks/%s/sign-in', $this->paired);
+    }
+
     /** The frame, by name. */
     public function render(): View
     {
@@ -281,6 +306,7 @@ final class PairByScanning extends NativeComponent
     private function remembered(Pairing $said): HowThePairingWent
     {
         $stack = $this->introducing->stack($said, StackName::of($this->called));
+        $this->paired = $stack->id()->stored();
 
         return $this->stacks->remember($stack)->either(
             remembered: static fn(): HowThePairingWent => HowThePairingWent::Paired,
