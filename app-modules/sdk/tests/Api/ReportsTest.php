@@ -12,13 +12,17 @@ use function iterator_to_array;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Report;
 use Modules\Sdk\Api\ReportIsUnreadable;
 use Modules\Sdk\Api\Reports;
+
+use function sprintf;
 
 /**
  * A `doctor` envelope holding whatever the case under test is about.
@@ -239,4 +243,84 @@ it('N1-R13 — refuses an envelope in a wire version this app does not read', fu
     // whose meaning moved.
     expect(fn(): Report => Reports::in(new Envelope(99, 'doctor', [])))
         ->toThrow(EnvelopeIsNotRead::class, 'version 99');
+});
+
+it('N2-R3 — reads the code, the meaning and the remedies off a failing verdict', function (): void {
+    // All three cross the wire on the verdict, beside the outcome tag. Reading
+    // the tag alone is enough to colour a row and not enough to act on it.
+    $report = Reports::in(doctorSaying(aRun('broken', [aFailure()])));
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): Code => Code::of(sprintf(
+                '%s|%s|%d',
+                $code->shown(),
+                $meaning,
+                $remedies->count(),
+            )),
+        );
+    }
+
+    expect($said[0]->shown())->toBe('VPN-3|Your address was visible|1');
+});
+
+it('N2-R3 — a check that passed carries none of it', function (): void {
+    $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): Code => Code::of(sprintf(
+                '%s|%s|%d',
+                $code->shown(),
+                $meaning,
+                $remedies->count(),
+            )),
+        );
+    }
+
+    expect($said[0]->shown())->toBe('nothing-wrong');
+});
+
+it('N2-R3 — a failure the core offered nothing for carries no remedies', function (): void {
+    // Different from a failure whose remedies are an empty list, and read the
+    // same way on purpose: both mean there is nothing to offer, and a screen
+    // that told them apart would be showing the difference between the core
+    // having no suggestion and the core saying so.
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Your address was visible'];
+    $report = Reports::in(doctorSaying(aRun('broken', [aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict)])));
+    $counted = [];
+
+    foreach ($report->findings() as $finding) {
+        $counted[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): Code => Code::of(
+                sprintf('%d', $remedies->count()),
+            ),
+        );
+    }
+
+    expect($counted[0]->shown())->toBe('0');
+});
+
+it('N2-R3 — refuses remedies that are not a list', function (): void {
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Visible', 'remedies' => 'restart it'];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(ReportIsUnreadable::class);
+});
+
+it('N2-R3 — refuses a remedy that is not a remedy', function (): void {
+    // A list of strings where a list of objects belongs. The core producing
+    // this is a fault worth seeing where the payload is read, rather than as a
+    // type error on somebody's screen.
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Visible', 'remedies' => ['restart it']];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(ReportIsUnreadable::class);
 });
