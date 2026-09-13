@@ -21,10 +21,27 @@ declare(strict_types=1);
  * The paths come from the manifests. The list used to be written out in
  * composer.json, which is a second source of truth that goes stale the day a
  * module is added and goes stale silently — the run still passes, over less.
+ *
+ * **Two arguments, both for CI.** `--list` prints the modules worth mutating as
+ * a JSON array, which is what a workflow matrix reads; `--module=<name>`
+ * narrows a run to one of them. Together they let the slowest gate in the
+ * repository run a module per runner instead of all of them in a row — it is
+ * the one gate where the work is genuinely separable, because a floor of 100
+ * admits no offsetting between modules and each is already judged alone.
+ *
+ * Neither changes what is mutated locally: `composer test:mutation` with no
+ * arguments is the whole of it, in one process, which is what somebody running
+ * it by hand wants.
  */
 
 $root = dirname(__DIR__);
 $manifests = glob(sprintf('%s/app-modules/*/composer.json', $root));
+
+/** @var list<string> $given */
+$given = array_slice($argv ?? [], 1);
+
+$asked = argument($given, '--module=');
+$listing = in_array('--list', $given, strict: true);
 
 if ($manifests === false || $manifests === []) {
     fwrite(STDERR, "No module manifests found, so there is nothing to mutate.\n");
@@ -34,6 +51,9 @@ if ($manifests === false || $manifests === []) {
 
 /** @var array<int, list<string>> $byFloor */
 $byFloor = [];
+
+/** @var list<string> $worthMutating */
+$worthMutating = [];
 
 foreach ($manifests as $manifest) {
     $raw = file_get_contents($manifest);
@@ -61,17 +81,62 @@ foreach ($manifests as $manifest) {
         continue;
     }
 
+    // Narrowed to one module where a runner was given one. The floor is still
+    // read for every module rather than only this one, because the refusal
+    // above is the check that a module declared a floor at all — and a shard
+    // that skipped it would let an undeclared floor through on eleven runners
+    // out of twelve.
+    if ($asked !== null && $asked !== $module) {
+        continue;
+    }
+
     $source = sprintf('%s/app-modules/%s/src', $root, $module);
 
     // Nothing to mutate yet. Said out loud rather than skipped in silence,
     // because "no mutants" and "every mutant killed" print the same way.
     if (sourceFiles($source) === []) {
-        fwrite(STDOUT, sprintf("  %s: no code yet, nothing to mutate\n", $module));
+        if (! $listing) {
+            fwrite(STDOUT, sprintf("  %s: no code yet, nothing to mutate\n", $module));
+        }
+
+        continue;
+    }
+
+    if ($listing) {
+        $worthMutating[] = $module;
 
         continue;
     }
 
     $byFloor[$floor][] = $source;
+}
+
+// What a workflow matrix reads. An empty array is a legitimate answer — no
+// module holds code yet — and a matrix over it runs nothing, which is why the
+// job that aggregates the shards has to treat "nothing ran" as a pass rather
+// than as an absence.
+if ($listing) {
+    // Not sorted here, and that is not an omission. `glob()` sorts what it
+    // returns, so this list arrives in the order the manifests were walked and
+    // stays in it — which is all a matrix needs, so that its runners do not
+    // reshuffle between commits. Sorting it again would have meant reaching for
+    // a byte comparison `L6` forbids, and claiming an exemption for a line that
+    // changes nothing is worse than the line.
+    fwrite(STDOUT, sprintf("%s\n", json_encode($worthMutating)));
+
+    exit(0);
+}
+
+if ($asked !== null && $byFloor === []) {
+    fwrite(STDERR, sprintf(
+        "There is no module called %s with code to mutate.\n\n"
+        . "A shard naming one that is gone is a shard that passes having done nothing,\n"
+        . "which is the whole failure this gate exists to prevent. The matrix is built\n"
+        . "from `--list` on the same commit, so this means the two disagree.\n",
+        $asked,
+    ));
+
+    exit(1);
 }
 
 if ($byFloor === []) {
@@ -113,6 +178,30 @@ foreach ($byFloor as $floor => $paths) {
 }
 
 exit($failed === 0 ? 0 : 1);
+
+/**
+ * The value of a `--name=` argument, or null where it was not given.
+ *
+ * Read off the arguments rather than through `getopt()`, which stops at the
+ * first argument it does not recognise and would silently drop everything
+ * composer passes through after `--`.
+ *
+ * `mb_substr` and `mb_strlen` because `L3` forbids the byte versions
+ * everywhere, and the rule is right to be blanket: the exception a module name
+ * would earn is the exception somebody copies to a stack name.
+ *
+ * @param list<string> $given
+ */
+function argument(array $given, string $prefix): ?string
+{
+    foreach ($given as $argument) {
+        if (str_starts_with($argument, $prefix)) {
+            return mb_substr($argument, mb_strlen($prefix));
+        }
+    }
+
+    return null;
+}
 
 /**
  * The mutation floor a manifest declares, or null where it declares none.

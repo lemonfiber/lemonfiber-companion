@@ -8,7 +8,6 @@ use Illuminate\View\View;
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\WhatTheCodeSaysSoFar;
-use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowItWasRead;
@@ -204,30 +203,33 @@ final class PairByScanning extends NativeComponent
      */
     private function paired(string $payload): HowThePairingWent
     {
-        $said = WhatTheCodeSaysSoFar::read($payload, HowItWasRead::Scanned, $this->clock);
-
-        if ($said->got() !== WhereTheCodeGot::Comparing) {
-            $this->codeWasUnreadable = true;
-
-            return $this->went;
-        }
-
         // `material()` rather than `confirmedByTheOperator()`, and the
         // difference is the whole of N1-R50. That method mints a
         // `FingerprintWasConfirmed`, which may only exist where a person
         // compared something; nobody compared anything here, because the digest
         // arrived in the payload. Reaching for it to get at the material would
         // conjure the one value the typed road is built around.
-        return $this->went = $said->material(
-            read: fn(Pairing $material): HowThePairingWent => $this->remembered($material),
-            notYet: static fn(): HowThePairingWent => HowThePairingWent::NotYet,
-        );
+        //
+        // Whether the code parsed is asked once, by `material()`, rather than
+        // by a guard here as well. The guard was the same decision written
+        // twice and the copy could not be told from its absence: both roads out
+        // of it answered `NotYet`, so removing it changed nothing a test could
+        // see — which is the shape of a line nobody should keep.
+        return $this->went = WhatTheCodeSaysSoFar::read($payload, HowItWasRead::Scanned, $this->clock)
+            ->material(
+                read: fn(Pairing $material): HowThePairingWent => $this->remembered($material),
+                notYet: function (): HowThePairingWent {
+                    $this->codeWasUnreadable = true;
+
+                    return HowThePairingWent::NotYet;
+                },
+            );
     }
 
     /** Introduce the stack and write it down, saying which of those happened. */
     private function remembered(Pairing $said): HowThePairingWent
     {
-        $stack = $this->introducing->stack($said, StackName::of(trim($this->called)));
+        $stack = $this->introducing->stack($said, StackName::of($this->called));
 
         return $this->stacks->remember($stack)->either(
             remembered: static fn(): HowThePairingWent => HowThePairingWent::Paired,

@@ -208,10 +208,16 @@ final class PairByTyping extends NativeComponent
      * because the analyser refuses a checked exception raised inside one, which
      * is what {@see Introducing::confirmed()} does when a confirmation names
      * another certificate.
+     *
+     * The name is not trimmed here. {@see StackName::of()} trims on the way in,
+     * which is where the one copy of that decision belongs, and a second trim
+     * was a line no test could distinguish from its absence. `mayPair()`'s trim
+     * is a different question — whether anything was typed at all — and is
+     * load-bearing.
      */
     private function remembered(Pairing $said, FingerprintWasConfirmed $by): HowThePairingWent
     {
-        $stack = $this->introducing->confirmed($said, StackName::of(trim($this->called)), $by);
+        $stack = $this->introducing->confirmed($said, StackName::of($this->called), $by);
 
         return $this->stacks->remember($stack)->either(
             remembered: static fn(): HowThePairingWent => HowThePairingWent::Paired,

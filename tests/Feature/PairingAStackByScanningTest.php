@@ -74,6 +74,18 @@ it('leaves the camera shut for a machine the operator has not named', function (
         ->and($screen->went)->toBe(HowThePairingWent::NotYet);
 });
 
+it('says nothing about the camera before anybody has opened it', function (): void {
+    // The state the screen opens in, and the one the template guards on. An
+    // empty answer here is what stops a screen showing a sentence about a
+    // refusal nobody met — and a key to look up where there is none would be
+    // the key itself, rendered.
+    $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
+
+    expect($screen->nothingWasScanned())->toBeFalse()
+        ->and($screen->whyNothingCameBack())->toBe('')
+        ->and($screen->settingsWouldHelp())->toBeFalse();
+});
+
 it('pairs the stack from what the camera read, with nothing to confirm', function (): void {
     // ADR-0018's whole point. The digest came in the payload, so there is no
     // fingerprint on the glass and no operator answer — `Introducing::stack()`
