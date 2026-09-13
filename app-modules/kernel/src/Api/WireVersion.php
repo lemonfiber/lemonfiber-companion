@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function usort;
+use function array_column;
+use function max;
 
 /**
  * A version of the wire contract this app can read.
@@ -46,12 +47,16 @@ enum WireVersion: int
      * be the wrong name here. A shape is the one thing this build writes; a
      * wire version is a set this build reads, and *newest* is a fact about a
      * set where *current* would be a claim about a single value.
+     *
+     * **The highest value rather than a sort.** A sort answers this correctly
+     * and, with one case, unobservably: reversing the comparison or removing
+     * the call entirely leaves the same answer, so the line could be wrong in
+     * either direction and no test could say. Taking the maximum has no such
+     * slack — every call here is load-bearing at one case, which is the size
+     * this enum is and will be until a second wire version exists.
      */
     public static function newest(): self
     {
-        $known = self::cases();
-        usort($known, static fn(self $a, self $b): int => $b->value <=> $a->value);
-
-        return $known[0];
+        return self::from(max(array_column(self::cases(), 'value')));
     }
 }

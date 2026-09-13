@@ -1789,6 +1789,30 @@ final readonly class Fixtures
                     expect(Closure::class)->toBe('Closure');
                 });
                 PHP, 'W5 —', 'SaysNothingTest'),
+
+            // A source file, not a test: C10 exempts tests deliberately, so a
+            // fixture planted under `tests/` would prove the rule green while
+            // refusing nothing.
+            Fixture::suite('C10', 'app-modules/health/src/Api/Queries/Fixtures/KeepsKeys.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Api\Queries\Fixtures;
+
+                use Modules\Kernel\Api\Findings;
+
+                use function iterator_to_array;
+
+                final readonly class KeepsKeys
+                {
+                    /** @return list<object> */
+                    public function over(Findings $findings): array
+                    {
+                        return iterator_to_array($findings, preserve_keys: false);
+                    }
+                }
+                PHP, 'C10 —', 'KeepsKeys.php'),
         ];
     }
 

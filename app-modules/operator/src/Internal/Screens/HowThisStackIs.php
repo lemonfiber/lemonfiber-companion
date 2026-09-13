@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function array_map;
-
 use Illuminate\View\View;
 
 use function is_string;
-use function iterator_to_array;
 
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Concealed;
@@ -137,10 +134,17 @@ final class HowThisStackIs extends NativeComponent
      */
     public function findings(): array
     {
-        return array_map(
-            WhatOneFindingSays::in(...),
-            iterator_to_array($this->answer()->findings, preserve_keys: false),
-        );
+        // Collected by hand, as `WorstFirst` does and for its reason: `Findings`
+        // always holds a list, so `iterator_to_array`'s `preserve_keys` cannot
+        // be wrong here — and an argument that cannot change the answer is a
+        // line no test can defend.
+        $rows = [];
+
+        foreach ($this->answer()->findings as $finding) {
+            $rows[] = WhatOneFindingSays::in($finding);
+        }
+
+        return $rows;
     }
 
     /** How many there are, which is what the empty state asks. */

@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatTheCheckSaid;
@@ -116,7 +117,11 @@ it('N1-R2 — shows what the checks found, and what it amounts to', function ():
 
     expect($screen->overall())->toBe(Overall::Degraded->saidOnTheScreen())
         ->and($screen->howMany())->toBe(1)
-        ->and($screen->met())->toBe('');
+        // Neither of the obstacle's two keys, because nothing was met. The
+        // template branches on these being empty, so a word here would put a
+        // refusal above a report that arrived.
+        ->and($screen->met())->toBe('')
+        ->and($screen->remedy())->toBe('');
 });
 
 it('N2-R3 — says what the check meant and what to try, in the core\'s own words', function (): void {
@@ -286,6 +291,11 @@ it('N1-R10 — says what the operator met where the stack did not answer', funct
         expect($screen->met())->toBe(sprintf('connection.%s', $why->value), $why->value)
             ->and($screen->remedy())->toBe(sprintf('connection.%s_action', $why->value), $why->value)
             ->and($screen->overall())->toBe('', $why->value)
+            // Still signed in. An obstacle is the stack not answering, not this
+            // device losing its session — and a screen that read the two as one
+            // would send an operator to sign in again over a machine that is
+            // merely switched off.
+            ->and($screen->isSignedIn())->toBeTrue($why->value)
             ->and($screen->howMany())->toBe(0, $why->value)
             ->and(__($screen->met()))->not->toBe($screen->met(), $why->value)
             ->and(__($screen->remedy()))->not->toBe($screen->remedy(), $why->value);
@@ -304,6 +314,7 @@ it('N1-R44 — a session that has ended sends them to sign in rather than to an 
 
     expect($screen->isSignedIn())->toBeFalse()
         ->and($screen->met())->toBe('')
+        ->and($screen->remedy())->toBe('')
         ->and($screen->overall())->toBe('')
         ->and($asking->askings())->toBe(0);
 });
@@ -349,4 +360,18 @@ it('says something real about every verdict a finding can carry', function (): v
         expect(__($conclusion->saidOnTheScreen()))
             ->not->toBe($conclusion->saidOnTheScreen(), $conclusion->value);
     }
+});
+
+it('refuses a route parameter that is not text', function (): void {
+    // A parameter arrives as `mixed`, because the navigation stack's own
+    // parameter array is untyped. Anything that is not a string names no stack,
+    // which is the same situation as a route with nothing in that segment —
+    // asserted rather than assumed, because the narrowing is a branch and a
+    // branch nothing drives is a branch that can quietly become the other one.
+    // `SigningIntoAStackTest` makes the same assertion about the same shape one
+    // screen over.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });

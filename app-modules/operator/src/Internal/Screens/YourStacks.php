@@ -4,12 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function array_map;
-
 use Illuminate\View\View;
-
-use function iterator_to_array;
-
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
 use Modules\Kernel\Api\SecureStorage;
@@ -226,10 +221,16 @@ final class YourStacks extends NativeComponent
      */
     public function share(): void
     {
-        $ids = array_map(
-            static fn(Stack $stack): StackId => $stack->id(),
-            iterator_to_array($this->configured(), preserve_keys: false),
-        );
+        // Collected by hand rather than with `iterator_to_array`, for the
+        // reason `WorstFirst` writes out: `Configured` always holds a list, so
+        // its `preserve_keys` argument cannot be wrong here and either value
+        // produces the same array. An argument that cannot change the answer is
+        // a line no test can defend.
+        $ids = [];
+
+        foreach ($this->configured() as $stack) {
+            $ids[] = $stack->id();
+        }
 
         $handed = $this->sharing->hand(
             Diagnostics::assemble(Shape::current(), WireVersion::newest(), ...$ids),

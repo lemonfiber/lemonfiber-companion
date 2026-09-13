@@ -200,6 +200,17 @@ $clock = new FrozenClock(Instant::parse('2026-09-11T12:00:00Z'));
 | C7 | No `empty()` | phpstan: own rule |
 | C8 | No `?->` in `kernel` or a capability | phpstan: own rule, scoped by path |
 | C9 | No nested ternary, and no `??` on an array subscript | phpstan: own rule |
+| C10 | No argument that cannot change the answer | arch: no `preserve_keys` on `iterator_to_array` in a source tree |
+
+**Why C10 exists at all.** `iterator_to_array($findings, preserve_keys: false)`
+is correct, and over a collection of ours it is also unobservable: every one of
+them holds a list, so both values of the argument produce the same array. It is
+written to satisfy PHPStan, which wants a `list` and gets `array<int, T>` from
+the default — so it is a line that exists for one checker and is invisible to
+every other. Mutation testing is what finds it, and did: `FalseToTrue` survived
+at two sites on the same afternoon, neither of them a bug and both of them a
+line that could have become one. `WorstFirst::over()` collects by hand and says
+why; this is that decision stopping being a convention.
 
 **Why C7 is absolute.** `empty()` is true for `null`, `false`, `0`, `'0'`, `''`
 and `[]`, and this application turns on exactly the distinctions it erases. A
