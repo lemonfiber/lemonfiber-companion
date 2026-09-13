@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Companion\PHPStan\Rules\NoWeakenedTlsRule;
 use Tests\Support\Tree;
 
 // N1-R21 — one vocabulary for certificate verification, read by both gates.
@@ -23,6 +24,12 @@ use Tests\Support\Tree;
 // This is the one place the spellings are written down. Neither gate is asked
 // to hold all of them — an option key is not a config key — but every spelling
 // must be held by at least one, and the failure says which are held by neither.
+//
+// Holding a spelling is not the same as holding it correctly, and the second
+// rule below is what that cost. `verify_expiry` sat in the analyser's
+// *off-when-true* list, where `verify_expiry => true` — asking for the expiry to
+// be checked — was refused and `=> false` passed. The rule above saw the
+// spelling in the file and called it held.
 
 /** Every spelling that means "certificate verification", in either half. */
 const MEANS_VERIFICATION = [
@@ -57,4 +64,82 @@ it('N1-R21 — every spelling of verification is held by a gate', function (): v
         . 'off under any of them passed (N1-R21).',
         implode("\n  ", $unheld),
     ));
+});
+
+/** The waivers: a name that asks to be let off rather than to check. */
+const WAIVES_VERIFICATION = ['allow_', 'insecure', 'skip_', 'no_'];
+
+/**
+ * A spelling's polarity, read off the name.
+ *
+ * Tokens rather than prose, which is the line this repository draws and has paid
+ * for: `verify_peer` and `curlopt_ssl_verifypeer` are identifiers a client
+ * defines, not sentences somebody wrote, so reading them is not the mistake the
+ * deleted `N1-R17` checker was.
+ *
+ * The waivers are asked first, because `skip_verify` and `no_verify` contain
+ * `verify` and mean the opposite of it.
+ */
+function polarityOf(string $spelling): string
+{
+    foreach (WAIVES_VERIFICATION as $waiver) {
+        if (str_contains($spelling, $waiver)) {
+            return 'off when true';
+        }
+    }
+
+    return str_contains($spelling, 'verify') ? 'off when false' : 'unreadable';
+}
+
+it('N1-R21 — a spelling the analyser knows is in the list its name says', function (): void {
+    // A spelling in the wrong list makes the analyser refuse the safe way of
+    // writing it and pass the dangerous one — which is worse than not knowing
+    // the spelling at all, because the refusal reads as the rule working.
+    $lists = new ReflectionClass(NoWeakenedTlsRule::class)->getConstants();
+
+    /** @var list<string> $offWhenFalse */
+    $offWhenFalse = $lists['OFF_WHEN_FALSE'];
+
+    /** @var list<string> $offWhenTrue */
+    $offWhenTrue = $lists['OFF_WHEN_TRUE'];
+
+    $misplaced = [];
+
+    foreach (['off when false' => $offWhenFalse, 'off when true' => $offWhenTrue] as $held => $spellings) {
+        foreach ($spellings as $spelling) {
+            $says = polarityOf($spelling);
+
+            if ($says !== $held) {
+                $misplaced[] = sprintf('%s is held %s and its name says %s', $spelling, $held, $says);
+            }
+        }
+    }
+
+    sort($misplaced);
+
+    expect($misplaced)->toBe([], sprintf(
+        "These are held with the polarity their name contradicts:\n  %s\n\n"
+        . 'A name containing `verify` asks for a check and is waived by `false`; one '
+        . 'containing `allow_`, `insecure`, `skip_` or `no_` asks to be let off and is '
+        . "waived by `true`.\nHeld the wrong way round, the analyser refuses the safe "
+        . 'spelling and passes the dangerous one, and the refusal reads as the rule '
+        . 'working. A spelling whose name says neither is one this cannot judge — give '
+        . 'it a name that reads, or say here why it does not (N1-R21, S3).',
+        implode("\n  ", $misplaced),
+    ));
+});
+
+it('N1-R21 — no spelling is in both polarity lists', function (): void {
+    // Both lists is the same fault wearing the safe half as cover: the value
+    // would be refused whichever way it was written, so the rule would look
+    // stricter than it is and the wrong-polarity half would never be found.
+    $lists = new ReflectionClass(NoWeakenedTlsRule::class)->getConstants();
+
+    /** @var list<string> $offWhenFalse */
+    $offWhenFalse = $lists['OFF_WHEN_FALSE'];
+
+    /** @var list<string> $offWhenTrue */
+    $offWhenTrue = $lists['OFF_WHEN_TRUE'];
+
+    expect(array_values(array_intersect($offWhenFalse, $offWhenTrue)))->toBe([]);
 });
