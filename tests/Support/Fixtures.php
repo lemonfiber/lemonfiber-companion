@@ -95,6 +95,7 @@ final readonly class Fixtures
             ...self::templates(),
             ...self::floors(),
             ...self::rulesAboutRules(),
+            ...self::whatASurfaceIsNeverShown(),
             ...self::notDrivable(),
         ];
     }
@@ -1895,6 +1896,67 @@ final readonly class Fixtures
     }
 
     /**
+     * The requirements a surface is held to by what it may not name.
+     *
+     * Each of these was driven by hand when it was written, which proves it once
+     * and on one machine. Here it is proved on every run, which is what the
+     * harness is for.
+
+     *
+     * @return list<Fixture>
+     */
+    private static function whatASurfaceIsNeverShown(): array
+    {
+        return [
+            Fixture::suite('N2-R12', 'app-modules/health/src/Internal/Screens/ShowsACredential.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Internal\Screens;
+
+                use Modules\Kernel\Api\Credential;
+
+                final readonly class ShowsACredential
+                {
+                    public function secret(Credential $credential): string
+                    {
+                        return '';
+                    }
+                }
+                PHP, 'N2-R12 — no screen can be handed a credential'),
+
+            Fixture::suite('N3-R9', 'app-modules/household/src/Fixtures/ShowsAReport.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Household\Fixtures;
+
+                use Modules\Kernel\Api\Report;
+
+                final readonly class ShowsAReport
+                {
+                    public function threeLinesFrom(Report $report): string
+                    {
+                        return '';
+                    }
+                }
+                PHP, 'N3-R9 — nothing on a member surface can be handed'),
+
+            Fixture::suite('N3-R8', 'native/resources/android/PlaysMedia.kt', <<<'KOTLIN'
+                package app.lemonfiber.native
+
+                class PlaysMedia(private val context: Context) {
+                    fun play(url: String) {
+                        val player = ExoPlayer.Builder(context).build()
+                    }
+                }
+                KOTLIN, 'N3-R8 — no platform source reaches for a media player'),
+        ];
+    }
+
+    /**
      * The rules no snippet can break, each with the reason.
      *
      * @return list<Fixture>
@@ -1902,6 +1964,43 @@ final readonly class Fixtures
     private static function notDrivable(): array
     {
         return [
+            Fixture::notDrivable(
+                'N1-R7, N1-R8, N1-R15',
+                'The violation is a second accessor on `Session`, `Credential` or `Address` '
+                . '— a method added to a type that already exists, where this harness writes '
+                . 'whole files. Driven by hand instead: `Session::forTheQuery()`, '
+                . '`Credential::value()` and `Address::shown()`, each added and each refused '
+                . 'by name.',
+            ),
+            Fixture::notDrivable(
+                'N1-R9, N2-R13',
+                'The violation is a `value()` on `Reading`, and the second half is an '
+                . '`@param` on `either()` that stops handing the retained arm the moment it '
+                . 'was read. Both are edits to one existing file. Driven by hand: the '
+                . 'accessor refused by name, and the annotation change refused as a missing '
+                . 'retained parameter.',
+            ),
+            Fixture::notDrivable(
+                'N1-R13',
+                'The violation is a contract that moved, which means editing the generated '
+                . 'envelope in `vendor/` — somebody else\'s file, restored by composer '
+                . 'rather than by this harness, and a fixture that failed to clean up would '
+                . 'leave the installed SDK wrong. Driven by hand: a tenth health category '
+                . 'and a fifth severity, each refused by name.',
+            ),
+            Fixture::notDrivable(
+                'N1-R14',
+                'The violation is `Session` or `Credential` naming a transport type in a '
+                . 'signature, which is an edit to an existing file. Driven by hand: '
+                . '`Session::scopedTo(Address)`, refused by name.',
+            ),
+            Fixture::notDrivable(
+                'Q-R66 (discovery)',
+                'The violation is `Tree::root()` answering with somewhere else, which is what '
+                . 'every path in this harness is built from — a fixture could not be written '
+                . 'to a tree the harness could no longer find. Driven by hand: the root '
+                . 'pointed at `/tmp`, and both the file lists and the root check refused.',
+            ),
             Fixture::notDrivable(
                 'R2',
                 'A fixture for this harness would have to be a documented rule with no '
