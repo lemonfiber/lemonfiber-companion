@@ -143,26 +143,19 @@ return (new Configuration())
     // require-dev — which cannot be done, because a module ships and its
     // service provider is discovered at boot.
     //
-    // Written out rather than derived, and that is the decision rather than an
-    // omission. The condition that actually produces this is "no prod-path file
-    // imports one of the module's classes", which is the analyser's own rule —
-    // health escapes it only because `Api\Queries\WorstFirst` happens to sit
-    // one namespace down and therefore imports `Api\Finding`. A list computed
-    // from a re-statement of somebody else's rule disagrees with it eventually
-    // and ignores an error that does fire.
+    // `modules/health` was on that list and is not any more, which is the
+    // third time this has happened and the third time the gate said so on the
+    // first run. `modules/connection` came off when its two classes moved to
+    // the kernel, `modules/sdk` when `Api\Reports` began importing
+    // `Internal\Wire`, and health when the operator's findings screen began
+    // importing `Api\Queries\WorstFirst` and `Api\Queries\InCategory` from a
+    // prod path — which is `N2-R2` being enforced where it is rendered rather
+    // than only where it is implemented.
     //
-    // The list cannot go stale: this analyser reports an ignore that never
-    // applied, so the day something outside one of these names it, the gate
-    // fails and names the line to delete. That has happened twice now —
-    // `modules/connection` was here until its two classes moved to the kernel,
-    // and `modules/sdk` until `Api\Reports` began importing `Internal\Wire`,
-    // which is the same cross-namespace import that has always kept health off
-    // this list. Both times the gate said so on the first run rather than
-    // leaving a dead line for somebody to wonder about later.
-    ->ignoreErrorsOnPackages(
-        ['modules/health'],
-        [ErrorType::PROD_DEPENDENCY_ONLY_IN_DEV],
-    )
+    // The list cannot go stale, and that is what made all three visible: this
+    // analyser reports an ignore that never applied, so the day something
+    // outside one of these names it, the gate fails and names the line to
+    // delete rather than leaving a dead one for somebody to wonder about.
     // N1-R16 says the SDK is named in exactly one module, and `modules/sdk` is
     // that module — so the SDK is its dependency rather than the application's,
     // and the root manifest does not require it. That is what makes it a shadow

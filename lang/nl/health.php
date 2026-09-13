@@ -38,6 +38,11 @@ return [
         'healthy' => 'Alles draait',
     ],
     'because_of' => 'Vanwege: :title',
+    'ago' => [
+        'minutes' => '{0} zojuist|{1} een minuut geleden|[2,*] :count minuten geleden',
+        'hours' => '{1} een uur geleden|[2,*] :count uur geleden',
+        'days' => '{1} een dag geleden|[2,*] :count dagen geleden',
+    ],
     'stale' => 'Laatst gecontroleerd :ago',
     'family_and_count' => ':family (:count)',
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',

@@ -5,16 +5,22 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
+use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
+use Modules\Operator\Internal\HowAStackLastWas;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
@@ -92,6 +98,8 @@ final class YourStacks extends NativeComponent
         private readonly Stacks $stacks,
         private readonly SecureStorage $storage,
         private readonly Sharing $sharing,
+        private readonly Verdicts $verdicts,
+        private readonly Clock $clock,
     ) {}
 
     /**
@@ -151,6 +159,52 @@ final class YourStacks extends NativeComponent
             held: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIs(),
             notHeld: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIsNot(),
         )->held;
+    }
+
+    /**
+     * What this stack last came to, with when it was read.
+     *
+     * `N2-R1` — the app opens on the overall verdict. The ordering `N2` calls
+     * its whole design is *is anything wrong*, then *what*, then *may I fix it
+     * from here*, and until this existed the first screen answered none of
+     * them: a list of machines and the names their owner gave them, with the
+     * verdict two taps and a network round trip away behind whichever stack
+     * they guessed at first.
+     *
+     * **Held, never asked.** This screen opens the app and opening the app is
+     * not a reason to talk to four machines — `N1-R17` says a screen is not a
+     * poller and `F4` says a frame is not where a socket is opened. So the word
+     * comes out of the store, which makes every one of them a retained reading
+     * and is exactly why `N1-R24` permits it: it may open a screen, and it
+     * carries when it was read.
+     *
+     * The age cannot be dropped on the way here. `Reading::either()` hands the
+     * verdict and the moment to the same arm, so a row showing a word without
+     * an age would have to have been given the age and thrown it away.
+     */
+    public function lastKnownOf(Stack $stack): HowAStackLastWas
+    {
+        // Read once here rather than inside the fold, so every row on one frame
+        // is aged against the same moment. Two rows a second apart in wall time
+        // would otherwise be aged against two different *nows*, which is a
+        // difference nobody can see and a test cannot pin.
+        $now = $this->clock->now();
+
+        return $this->verdicts->lastKnownOf($stack->id())->either(
+            waiting: static fn(): HowAStackLastWas => HowAStackLastWas::notYetKnown(),
+            holding: static fn(Reading $reading): HowAStackLastWas => $reading->either(
+                // A live reading cannot arrive here: everything this port
+                // answers came out of a store. Answered rather than refused
+                // because the arm is the type's, not this screen's — and the
+                // honest answer for a word read just now is the word with no
+                // age, which is what `notYetKnown` renders as no verdict.
+                live: static fn(): HowAStackLastWas => HowAStackLastWas::notYetKnown(),
+                retained: static fn(object $overall, Instant $at): HowAStackLastWas
+                    => $overall instanceof Overall
+                        ? HowAStackLastWas::read($overall, $at, $now)
+                        : HowAStackLastWas::notYetKnown(),
+            ),
+        );
     }
 
     /**

@@ -30,11 +30,13 @@ use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Verdicts;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Questions;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
+use Modules\Vault\Api\PlatformVerdicts;
 use Native\Mobile\Scanner;
 use Native\Mobile\SecureStorage as PlatformStore;
 use Native\Mobile\Share;
@@ -141,6 +143,18 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             Stacks::class,
             static fn(): Stacks => new PlatformStacks(new PlatformStore()),
+        );
+
+        // The last word each stack came to, in the same store and bound the
+        // same way. A third port rather than a method on either of the two
+        // above, because what it holds has obligations neither of theirs does:
+        // it is the only retained value this app *shows*, so `N1-R9` applies to
+        // it and to nothing else here — which is why it answers `Showing` and
+        // they answer collections. Folding it into `Stacks` would put a value
+        // that must carry its age behind a port whose other answers must not.
+        $this->app->bind(
+            Verdicts::class,
+            static fn(): Verdicts => new PlatformVerdicts(new PlatformStore()),
         );
 
         // Bound, not a singleton, for the same reason the store above is not:

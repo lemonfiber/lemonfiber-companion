@@ -46,9 +46,9 @@ use Modules\Kernel\Api\Severity;
  * **How much it costs is shown beside the verdict, not instead of it.** They
  * answer different questions — the verdict is whether the check passed and the
  * severity is what the answer costs — and two failed checks where one puts data
- * at risk must not read the same. It is also the second key
- * {@see \Modules\Health\Api\Queries\WorstFirst} orders by, so a row that is
- * higher up for a reason says what that reason was.
+ * at risk must not read the same. It is also the key
+ * {@see \Modules\Health\Api\Queries\WorstFirst} orders by first, so a row
+ * that is higher up for a reason says what that reason was.
  *
  * **A row with nothing wrong carries neither**, and the empty strings are what
  * the template branches on. A passing check has no meaning to explain and no

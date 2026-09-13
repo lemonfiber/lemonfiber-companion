@@ -38,6 +38,11 @@ return [
         'healthy' => 'Everything is running',
     ],
     'because_of' => 'Because of: :title',
+    'ago' => [
+        'minutes' => '{0} moments ago|{1} a minute ago|[2,*] :count minutes ago',
+        'hours' => '{1} an hour ago|[2,*] :count hours ago',
+        'days' => '{1} a day ago|[2,*] :count days ago',
+    ],
     'stale' => 'Last checked :ago',
     'family_and_count' => ':family (:count)',
     'no_findings' => 'Nothing needs attention.',

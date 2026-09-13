@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeComponent;
@@ -17,7 +18,9 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\Fakes\VerdictsInMemory;
 
 // A3 — a screen is built through the container, so it can be given a port.
 //
@@ -315,6 +318,8 @@ function aScreen(): YourStacks
         StacksInMemory::working(),
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
+        VerdictsInMemory::working(),
+        FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
     );
 }
 

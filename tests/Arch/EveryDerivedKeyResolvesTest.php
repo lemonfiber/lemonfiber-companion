@@ -8,6 +8,7 @@ use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\HowItWasRead;
+use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
@@ -92,6 +93,10 @@ function everyDerivedKey(): array
         Severity::class => aPairPerCase(
             Severity::cases(),
             static fn(Severity $severity): array => [$severity->saidOnTheScreen()],
+        ),
+        HowLongAgo::class => aPairPerCase(
+            HowLongAgo::cases(),
+            static fn(HowLongAgo $unit): array => [$unit->saidOnTheScreen()],
         ),
         Overall::class => aPairPerCase(
             Overall::cases(),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\View;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -18,7 +19,9 @@ use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\Fakes\VerdictsInMemory;
 
 /** A stack this device is already paired with. */
 function aPairedStack(string $called, string $seed = 'a'): Stack
@@ -58,11 +61,15 @@ function theLaunchScreen(
     Stacks $stacks,
     ?AKeychainInMemory $keychain = null,
     ?AShareSheetThatWasOffered $sharing = null,
+    ?VerdictsInMemory $verdicts = null,
+    ?FrozenClock $clock = null,
 ): YourStacks {
     return new YourStacks(
         $stacks,
         $keychain ?? AKeychainInMemory::working(),
         $sharing ?? AShareSheetThatWasOffered::working(),
+        $verdicts ?? VerdictsInMemory::working(),
+        $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
     );
 }
 
