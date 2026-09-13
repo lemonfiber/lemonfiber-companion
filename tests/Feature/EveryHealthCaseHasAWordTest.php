@@ -4,47 +4,60 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\Overall;
 use Tests\Support\Catalogue;
 
 // L1/L2 — every case a screen branches on has a word, in every language.
 //
-// `Category` and `Conclusion` deliberately carry no label: what a screen shows
-// for one is text a person reads, so it comes from the translator against a key
-// and a name written in the enum would be English on a Dutch phone. That
+// These enums deliberately carry no label: what a screen shows for a case is
+// text a person reads, so it comes from the translator against a key, and a
+// name written in the enum would be English on a Dutch phone. That
 // decision leaves a gap nothing else can see — an enum and a catalogue that
 // have drifted apart still compile, still pass every architecture rule, and
 // render the key where a word belongs.
 //
 // Written over `cases()` rather than over a list of keys, so a case added to
-// either enum fails here until somebody writes what it says, in both languages.
+// any of them fails here until somebody writes what it says, in both languages.
 //
-// Two enums in one file because they are one requirement. A third would be the
-// point to ask whether this should be driven by a table rather than written
-// out; two is a pair.
+// `Overall` made it three, which is where the earlier note here said to stop
+// writing them out and drive it from a table instead.
 
-/** @return list<string> */
-function categoryValues(): array
+/**
+ * What a case is called in the catalogue.
+ *
+ * @param list<BackedEnum> $cases
+ *
+ * @return list<string>
+ */
+function keyedBy(array $cases): array
 {
-    return array_map(static fn(Category $case): string => $case->value, Category::cases());
-}
-
-/** @return list<string> */
-function conclusionValues(): array
-{
-    return array_map(static fn(Conclusion $case): string => $case->value, Conclusion::cases());
+    return array_map(static fn(BackedEnum $case): string => (string) $case->value, $cases);
 }
 
 /**
  * The groups this checks, and the cases each one must have a word for.
  *
- * Named once because both rules below ask the same question of the same two
- * enums, and a second list is the one that stops being updated.
+ * Named once because both rules below ask the same question of the same enums,
+ * and a second list is the one that stops being updated.
+ *
+ * `Overall` earns its row from N2-R1: the app opens on the verdict, and
+ * `Unknown` has to arrive as a sentence of its own. Left out of the catalogue
+ * it renders as `health.overall.unknown`, which a person reads as this app
+ * having broken rather than as the stack having declined to say.
+ *
+ * Each `cases()` is written out rather than reached through a list of class
+ * names, because a class name held in a variable is a set the analyser cannot
+ * see, and the shorter table would buy its brevity by going dark (P2, E1).
  *
  * @return array<string, list<string>>
  */
 function groups(): array
 {
-    return ['category' => categoryValues(), 'conclusion' => conclusionValues()];
+    return [
+        'category' => keyedBy(Category::cases()),
+        'conclusion' => keyedBy(Conclusion::cases()),
+        'overall' => keyedBy(Overall::cases()),
+    ];
 }
 
 /**
@@ -71,7 +84,7 @@ function wordsFor(string $locale, string $group, array $values): array
     return $found;
 }
 
-it('L2 — every category and conclusion has a word in every language', function (): void {
+it('L1/L2 — every case a screen branches on has a word in every language', function (): void {
     $missing = [];
 
     foreach (Catalogue::locales() as $locale) {

@@ -1718,7 +1718,7 @@ final readonly class Fixtures
         return [
             Fixture::suite('F3', sprintf('%s/unknown-class.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full flex-nonsense">
-                    <native:text>{{ __('health.healthy') }}</native:text>
+                    <native:text>{{ __('health.overall.healthy') }}</native:text>
                 </native:column>
                 BLADE, 'every class in', 'unknown-class'),
 
@@ -1730,7 +1730,7 @@ final readonly class Fixtures
 
             Fixture::suite('F3', sprintf('%s/bare-tag.blade.php', $views), <<<'BLADE'
                 <column class="w-full">
-                    <native:text>{{ __('health.healthy') }}</native:text>
+                    <native:text>{{ __('health.overall.healthy') }}</native:text>
                 </column>
                 BLADE, 'every element in', 'bare-tag'),
 
@@ -1748,7 +1748,7 @@ final readonly class Fixtures
 
             Fixture::suite('F3', sprintf('%s/literal-colour.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full bg-red-500">
-                    <native:text>{{ __('health.healthy') }}</native:text>
+                    <native:text>{{ __('health.overall.healthy') }}</native:text>
                 </native:column>
                 BLADE, 'names no literal colour', 'literal-colour'),
 
