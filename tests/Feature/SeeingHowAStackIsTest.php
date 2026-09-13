@@ -409,6 +409,44 @@ it('N2-R3 — a row with nothing graded carries no cost at all', function (): vo
         ->and($screen->findings()[0]->code)->toBe('');
 });
 
+it('N2-R3 — a row whose check could not run carries the reason and nothing else', function (): void {
+    // Nothing was graded: a check that could not run produced no judgement, so
+    // there is no identifier to quote and no word for what it costs, and a
+    // word in either place would be this app inventing one.
+    //
+    // Driven through `couldNotSay`, which every other test on this screen
+    // walks past — they all build a check that passed, and that reaches the
+    // row through a different arm. `explainsItself()` cannot stand in for
+    // this: it reads the meaning, and on this path the meaning is the reason,
+    // so it is true whatever the other two hold.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(
+        Report::of(Overall::Degraded, Findings::of(
+            Finding::of(
+                Check::of('vpn.egress-match'),
+                Category::Vpn,
+                'Torrent traffic leaves through the tunnel',
+                Conclusion::Unverified,
+                WhatTheCheckSaid::couldNotSay(
+                    'The tunnel was down, so where the traffic left could not be established',
+                    Remedies::of(Remedy::of('Start the tunnel and run the checks again')),
+                ),
+            ),
+        )),
+    ));
+
+    $row = $screen->findings()[0];
+
+    expect($row->code)->toBe('')
+        ->and($row->cost)->toBe('')
+        // And the row is not blank: the reason and what to try about it both
+        // land in the two fields a failure uses, because an operator wants to
+        // know what a row means and what to do whichever outcome produced it.
+        ->and($row->meaning)->toBe('The tunnel was down, so where the traffic left could not be established')
+        ->and($row->explainsItself())->toBeTrue()
+        ->and($row->remedies->count())->toBe(1)
+        ->and($row->verdict)->toBe(Conclusion::Unverified->saidOnTheScreen());
+});
+
 /** A failing verdict, for the rows that exist to carry an attribution. */
 function aFailingVerdict(): WhatTheCheckSaid
 {

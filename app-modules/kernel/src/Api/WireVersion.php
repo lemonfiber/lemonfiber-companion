@@ -48,15 +48,22 @@ enum WireVersion: int
      * wire version is a set this build reads, and *newest* is a fact about a
      * set where *current* would be a claim about a single value.
      *
-     * **The highest value rather than a sort.** A sort answers this correctly
-     * and, with one case, unobservably: reversing the comparison or removing
-     * the call entirely leaves the same answer, so the line could be wrong in
-     * either direction and no test could say. Taking the maximum has no such
-     * slack — every call here is load-bearing at one case, which is the size
-     * this enum is and will be until a second wire version exists.
+     * **At one case no selection function is observable, this one included.**
+     * A set of one answers the same for the maximum, for the minimum, for a
+     * sort read from either end and for the first case: each of them returns
+     * the only element there is. So no test can tell this line from its
+     * opposite, and that is a fact about how large the set is rather than
+     * about how the line is written — it stops holding the day a second wire
+     * version is declared, and not before.
      */
     public static function newest(): self
     {
+        // Exempt from the mutator that puts `min` where `max` is, because at
+        // one case the two are the same program. The exemption removes itself:
+        // `WireVersionTest` asserts that this enum holds exactly one case, so
+        // the day a second arrives that test fails and names this line as the
+        // one to delete.
+        // @pest-mutate-ignore: MaxToMin
         return self::from(max(array_column(self::cases(), 'value')));
     }
 }
