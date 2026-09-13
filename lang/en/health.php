@@ -36,4 +36,5 @@ return [
     'repair_refused' => 'The stack refused that repair: :reason',
     'nothing_to_try' => 'The stack did not suggest anything to try for this.',
     'ask_again' => 'Check again',
+    'see_how_it_is' => 'See how this stack is doing',
 ];

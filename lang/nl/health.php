@@ -36,4 +36,5 @@ return [
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',
     'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',
     'ask_again' => 'Opnieuw controleren',
+    'see_how_it_is' => 'Bekijk hoe deze stack het doet',
 ];

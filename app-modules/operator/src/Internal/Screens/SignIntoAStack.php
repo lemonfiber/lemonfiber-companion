@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
+use function sprintf;
 use function trim;
 use function view;
 
@@ -132,6 +133,12 @@ final class SignIntoAStack extends NativeComponent
         );
     }
 
+    /** Whether the operator is in, which is when the way onwards is offered. */
+    public function isSignedIn(): bool
+    {
+        return $this->went->isSignedIn();
+    }
+
     /** Whether the password field belongs on the screen in this state. */
     public function mayTry(): bool
     {
@@ -171,6 +178,23 @@ final class SignIntoAStack extends NativeComponent
             opened: fn(Session $session): HowTheSignInWent => $this->kept($session),
             refused: static fn(Obstacle $why): HowTheSignInWent => HowTheSignInWent::met($why),
         );
+    }
+
+    /**
+     * Where an operator who has just signed in goes next.
+     *
+     * The report for the stack they signed into — which is what they came for.
+     * Until this existed the screen said *"you can reach it from the main
+     * screen"* and left them to go and do it, which is an app telling somebody
+     * to navigate on its behalf.
+     *
+     * Built from the stack this screen is already about, so it cannot lead to
+     * another machine's report, and spelled once here rather than in the
+     * template the way {@see YourStacks::signInAt()} is.
+     */
+    public function onwardsTo(): string
+    {
+        return sprintf('/stacks/%s', $this->stack()->id()->stored());
     }
 
     /** The frame, by name. */

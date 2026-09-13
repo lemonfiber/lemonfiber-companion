@@ -15,6 +15,7 @@ use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\StacksInMemory;
@@ -251,6 +252,40 @@ it('offers the password field only where typing one could help, on the screen to
     $counting->offer();
 
     expect($counting->mayTry())->toBeFalse();
+});
+
+it('N1-R2 — takes them to the report once they are in, rather than describing where it is', function (): void {
+    // What they came for. The screen used to say "you can reach it from the
+    // main screen" and leave them to go and do it, which is an app asking
+    // somebody to navigate on its behalf.
+    $screen = typedPassword(signInScreen(aDoorThatOpens()), 'the-operators-password');
+
+    expect($screen->isSignedIn())->toBeFalse();
+
+    $screen->offer();
+
+    expect($screen->isSignedIn())->toBeTrue()
+        ->and($screen->onwardsTo())->toBe(sprintf('/stacks/%s', aStackToSignInto()->id()->stored()))
+        ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull(
+            'Signing in leads to a URI the navigation stack does not know, so the '
+            . 'operator would tap into nothing.',
+        );
+});
+
+it('offers the way onwards only to somebody who actually got in', function (): void {
+    // Not the complement of `mayTry()`. A door that has stopped listening
+    // offers no password field either, and offering to show a report to
+    // somebody who never got in would be the screen answering a question
+    // nobody asked.
+    foreach ([Obstacle::CredentialWasRefused, Obstacle::TooManyAttempts, Obstacle::StackDidNotAnswer] as $met) {
+        $screen = typedPassword(
+            signInScreen(ADoorThatWasKnockedOn::refusing($met)),
+            'the-operators-password',
+        );
+        $screen->offer();
+
+        expect($screen->isSignedIn())->toBeFalse($met->value);
+    }
 });
 
 it('renders the frame it is named for', function (): void {

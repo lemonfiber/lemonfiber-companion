@@ -66,6 +66,20 @@ enum HowTheSignInWent: string
     case TheStoreWouldNotOpen = 'session_would_not_keep';
 
     /**
+     * Whether the operator is in, with a session that will survive the launch.
+     *
+     * Deleted once as unused and back with a caller: the screen shows the way
+     * onwards only in this state, and *signed in* is not the complement of
+     * {@see mayTry()} — a door that has stopped listening offers no field
+     * either, and offering to show a report to somebody who never got in would
+     * be the screen answering a question nobody asked.
+     */
+    public function isSignedIn(): bool
+    {
+        return $this === self::SignedIn;
+    }
+
+    /**
      * Whether offering the same password again is worth doing.
      *
      * `N1-R10`'s distinction where it costs the operator most. A refused

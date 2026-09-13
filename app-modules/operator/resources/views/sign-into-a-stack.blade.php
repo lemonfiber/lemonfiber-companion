@@ -2,6 +2,16 @@
     <native:text class="text-lg font-bold">{{ __($this->went()->said(), ['stack' => $this->stack()->name()->shown()]) }}</native:text>
     <native:text>{{ __($this->went()->remedy()) }}</native:text>
 
+    @if ($this->isSignedIn())
+        {{-- Straight to what they came for, rather than telling them where to
+             find it. An app that says "you can reach it from the main screen"
+             is an app asking somebody to navigate on its behalf. --}}
+        <native:button
+            label="{{ __('health.see_how_it_is') }}"
+            @navigate="{{ $this->onwardsTo() }}"
+        />
+    @endif
+
     @if ($this->mayTry())
         <native:outlined-text-input
             native:model="typed"
