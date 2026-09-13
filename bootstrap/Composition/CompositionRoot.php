@@ -20,8 +20,10 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Notifier;
+use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
+use Modules\Sdk\Api\PinnedClients;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Native\Mobile\Edge\TailwindParser;
@@ -72,6 +74,18 @@ final class CompositionRoot extends ServiceProvider
             SecureStorage::class,
             static fn(): SecureStorage => new PlatformKeychain(new PlatformStore()),
         );
+
+        // The one way this application opens a connection to a stack.
+        //
+        // Bound rather than a singleton because a client is built for one stack
+        // and holds that stack's pin — a single instance would be a client for
+        // whichever machine was reached first, which is exactly the attribution
+        // `N1-R11` refuses.
+        //
+        // `modules/sdk` is the only manifest that requires the SDK, and
+        // `NothingReachesAStackUnpinnedTest` refuses any other file that names
+        // its transport. This line is where those two facts meet the container.
+        $this->app->bind(Reaching::class, static fn(): Reaching => new PinnedClients());
 
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,
