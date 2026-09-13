@@ -122,6 +122,11 @@ parameters:
                 # The composition root is a Laravel service provider by
                 # definition; there is no way to bind a port without being one.
                 - Illuminate\Support\ServiceProvider
+                # The navigation stack, whose one overridden method builds a
+                # screen through the container instead of with `new`. Extending
+                # is the only way in: `createComponent()` is protected, and the
+                # closure that instantiates the router names its own class.
+                - Native\Mobile\Edge\NativeRouter
                 # Likewise the base test case: booting the application is the
                 # whole reason Tests\TestCase exists.
                 - Illuminate\Foundation\Testing\TestCase

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Bootstrap\Composition;
 
+use Bootstrap\Composition\NativePHP\ScreenRoutes;
+use Bootstrap\Composition\NativePHP\TheHarnessInstead;
+use Bootstrap\Composition\NativePHP\TheRunloop;
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Screen;
 use Modules\Design\Api\Theme;
@@ -139,5 +142,49 @@ final class CompositionRoot extends ServiceProvider
         // accent pair is legible either way round without one. ThemeToken::hex()
         // carries the reasoning and the measurement.
         TailwindParser::setThemeResolver(Theme::resolver());
+
+        // `Route::native()`, replaced so that a screen is built through the
+        // container rather than with `new`. NativePHP's own router cannot give
+        // a screen a port, and a screen that reached the container itself would
+        // be the service location `A3` refuses — so the substitution happens
+        // here, where naming the container is what this directory is for.
+        //
+        // In `boot()` and after the macro it replaces, which the NativePHP
+        // package adds in its own boot. Provider order between two discovered
+        // packages is not something either of them decides, so this is asserted
+        // by `ScreenRoutesReplaceTheVendorsTest` rather than assumed.
+        //
+        // Handed *how to build a screen* rather than the container. A router
+        // holding a container could resolve anything, and the rule against a
+        // container parameter exists because that is what a class holding one
+        // eventually does.
+        // Which runloop, decided here because *whether there is a device* is a
+        // fact about this composition rather than about routing. A suite must
+        // never enter the real one: it blocks against the bridge, so a test
+        // that reached it would hang rather than fail.
+        $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop();
+
+        new ScreenRoutes($this->screen(...), $runloop)->declare();
+    }
+
+    /**
+     * One screen, built with whatever it declared in its constructor.
+     *
+     * The one place a screen meets a port. NativePHP builds a screen with
+     * `new $class`, so without this a screen could hold nothing — and a screen
+     * that reached the container itself is the service location `A3` refuses.
+     *
+     * Here rather than as a closure handed to {@see ScreenRoutes}, and that is
+     * the analyser's rule rather than a preference: `make()` raises where a
+     * route names a class this application does not have, and raising a checked
+     * exception inside a closure is forbidden because a closure's caller cannot
+     * see what it throws. A method's can.
+     *
+     * `mixed` rather than `NativeComponent`, so that the check about what came
+     * back lives with the router that is about to call methods on it.
+     */
+    private function screen(string $class): mixed
+    {
+        return $this->app->make($class);
     }
 }
