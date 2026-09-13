@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function sprintf;
+
 /**
  * The family a check belongs to, so a run can be narrowed to one of them.
  *
@@ -50,4 +52,18 @@ enum Category: string
 
     /** Drift from lemonfiber-managed state, permissions, manifest validity. */
     case Config = 'config';
+
+    /**
+     * What this part of the machine is called on a screen, as a key.
+     *
+     * Built from the case rather than listed against it, and under
+     * `health.category.` because that group already holds a line per case — the
+     * derivation catching up with a table written by hand, not a second one
+     * beside it. A `match` would spell every stem twice, once as the case's
+     * value and once as the string next to it, and two spellings drift.
+     */
+    public function saidOnTheScreen(): string
+    {
+        return sprintf('health.category.%s', $this->value);
+    }
 }

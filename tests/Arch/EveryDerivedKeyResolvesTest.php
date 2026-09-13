@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
+use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Obstacle;
@@ -90,6 +91,10 @@ function everyDerivedKey(): array
         Overall::class => aPairPerCase(
             Overall::cases(),
             static fn(Overall $overall): array => [$overall->saidOnTheScreen()],
+        ),
+        Category::class => aPairPerCase(
+            Category::cases(),
+            static fn(Category $category): array => [$category->saidOnTheScreen()],
         ),
     ];
 }
@@ -179,6 +184,11 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
     foreach (Overall::cases() as $overall) {
         expect($overall->saidOnTheScreen())
             ->toBe(sprintf('health.overall.%s', $overall->value), $overall->name);
+    }
+
+    foreach (Category::cases() as $category) {
+        expect($category->saidOnTheScreen())
+            ->toBe(sprintf('health.category.%s', $category->value), $category->name);
     }
 
     foreach (WhyNothingWasScanned::cases() as $why) {

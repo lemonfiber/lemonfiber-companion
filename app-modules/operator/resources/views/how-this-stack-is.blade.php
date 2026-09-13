@@ -17,6 +17,7 @@
 
         @forelse ($this->findings() as $finding)
             <native:column class="w-full gap-1">
+                <native:text class="text-sm">{{ __($finding->about) }}</native:text>
                 <native:text class="font-bold">{{ $finding->title }}</native:text>
                 <native:text>{{ __($finding->verdict) }}</native:text>
 

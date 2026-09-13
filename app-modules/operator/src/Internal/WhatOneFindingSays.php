@@ -24,6 +24,13 @@ use Modules\Kernel\Api\Remedies;
  * `N2-R3` is the requirement, and the words are the core's own rather than this
  * app's, which is why they are rendered rather than translated.
  *
+ * **The category is carried on every row**, wrong or not. A report listing ten
+ * checks in the engine's own order is a list an operator scans for the part of
+ * the machine they are worried about, and the order is deliberately not changed
+ * to group them — reordering would be this app second-guessing the engine about
+ * which finding matters most. Saying which part each is about does the same
+ * work without taking that decision.
+ *
  * **A row with nothing wrong carries neither**, and the empty strings are what
  * the template branches on. A passing check has no meaning to explain and no
  * remedy to offer, and inventing a sentence for one would be this app writing
@@ -37,6 +44,7 @@ final readonly class WhatOneFindingSays
 {
     /**
      * @param string   $title    what the check is called, in the core's words
+     * @param string   $about    the key for which part of the machine it is about
      * @param string   $verdict  the key for what the verdict is called
      * @param string   $code     the identifier an operator quotes, or empty
      * @param string   $meaning  what it means for them, or empty
@@ -44,6 +52,7 @@ final readonly class WhatOneFindingSays
      */
     private function __construct(
         public string $title,
+        public string $about,
         public string $verdict,
         public string $code,
         public string $meaning,
@@ -63,6 +72,7 @@ final readonly class WhatOneFindingSays
         return $said->either(
             nothingWrong: static fn(): self => new self(
                 title: $finding->title(),
+                about: $finding->category()->saidOnTheScreen(),
                 verdict: $finding->conclusion()->saidOnTheScreen(),
                 code: '',
                 meaning: '',
@@ -70,6 +80,7 @@ final readonly class WhatOneFindingSays
             ),
             wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): self => new self(
                 title: $finding->title(),
+                about: $finding->category()->saidOnTheScreen(),
                 verdict: $finding->conclusion()->saidOnTheScreen(),
                 code: $code->shown(),
                 meaning: $meaning,

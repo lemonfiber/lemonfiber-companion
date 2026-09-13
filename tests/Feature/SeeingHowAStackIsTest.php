@@ -134,6 +134,7 @@ it('N2-R3 — says what the check meant and what to try, in the core\'s own word
     $row = $rows[0];
 
     expect($row->title)->toBe('Torrent traffic leaves through the tunnel')
+        ->and($row->about)->toBe(Category::Vpn->saidOnTheScreen())
         ->and($row->explainsItself())->toBeTrue()
         ->and($row->meaning)->toBe('Your address was visible to the swarm')
         ->and($row->code)->toBe('VPN-3')
@@ -190,6 +191,24 @@ it('says nothing it was not told about a check that passed', function (): void {
         ->and($row->code)->toBe('')
         ->and($row->remedies->count())->toBe(0)
         ->and($row->title)->not->toBe('');
+});
+
+it('says which part of the machine every finding is about', function (): void {
+    // Carried on every row, wrong or not: a report in the engine's own order is
+    // a list an operator scans for the part they are worried about. The order
+    // is deliberately not changed to group them — reordering would be this app
+    // second-guessing the engine about which finding matters most — so saying
+    // what each is about does that work without taking the decision.
+    $passing = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->findings()[0];
+
+    expect($passing->about)->toBe(Category::Storage->saidOnTheScreen())
+        ->and(__($passing->about))->not->toBe($passing->about);
+
+    // And every category resolves, because a report may carry any of them.
+    foreach (Category::cases() as $category) {
+        expect(__($category->saidOnTheScreen()))
+            ->not->toBe($category->saidOnTheScreen(), $category->value);
+    }
 });
 
 it('N1-R17 — asks once however many times the frame reads it', function (): void {
