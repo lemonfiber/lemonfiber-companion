@@ -63,18 +63,6 @@ enum HowTheSignInWent: string
     /** There is a store and it would not open, which is often temporary. */
     case TheStoreWouldNotOpen = 'the_store_would_not_open';
 
-    /** Whether the operator is in, with a session that will survive the launch. */
-    public function isSignedIn(): bool
-    {
-        return $this === self::SignedIn;
-    }
-
-    /** Whether nothing has been offered yet, which is not a refusal. */
-    public function isNotYet(): bool
-    {
-        return $this === self::NotYet;
-    }
-
     /**
      * Whether offering the same password again is worth doing.
      *
@@ -87,18 +75,6 @@ enum HowTheSignInWent: string
     public function isWorthAnotherAttempt(): bool
     {
         return $this === self::CredentialWasRefused;
-    }
-
-    /** Whether this device offers nowhere for a session to be kept. */
-    public function hasNowhereToKeepIt(): bool
-    {
-        return $this === self::NoStoreOnThisDevice;
-    }
-
-    /** Whether there is a store and it would not open, which often passes. */
-    public function couldNotOpenTheStore(): bool
-    {
-        return $this === self::TheStoreWouldNotOpen;
     }
 
     /**

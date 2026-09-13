@@ -95,7 +95,7 @@ it('opens offering nothing, because an empty field is not an attempt', function 
     // password nobody typed.
     $screen = signInScreen(aDoorThatOpens());
 
-    expect($screen->went()->isNotYet())->toBeTrue()
+    expect($screen->went())->toBe(HowTheSignInWent::NotYet)
         ->and($screen->mayOffer())->toBeFalse();
 });
 
@@ -153,7 +153,7 @@ it('N1-R10 — tells the three things the operator can meet at a door apart', fu
 
         expect($screen->went())->toBe($shown, $met->value)
             ->and($screen->went()->isWorthAnotherAttempt())->toBe($worthRetrying, $met->value)
-            ->and($screen->went()->isSignedIn())->toBeFalse($met->value);
+            ->and($screen->went())->not->toBe(HowTheSignInWent::SignedIn, $met->value);
     }
 });
 
@@ -195,7 +195,7 @@ it('N4-R6 — a session it could not keep is not a sign-in', function (): void {
         $screen->offer();
 
         expect($screen->went())->toBe($shown, $shown->value)
-            ->and($screen->went()->isSignedIn())->toBeFalse($shown->value);
+            ->and($screen->went())->not->toBe(HowTheSignInWent::SignedIn, $shown->value);
     }
 });
 
@@ -234,6 +234,33 @@ it('offers the password field only where typing one could help', function (): vo
     foreach ($offered as [$went, $keepsTheField]) {
         expect($went->mayTry())->toBe($keepsTheField, $went->value);
     }
+});
+
+it('offers the password field only where typing one could help, on the screen too', function (): void {
+    // The enum answers this and the screen forwards it, and the forwarding is
+    // what the template actually calls — so a screen that asked the wrong state,
+    // or asked nothing, would leave the field on a door that has stopped
+    // listening while the enum quietly said otherwise.
+    $open = signInScreen(aDoorThatOpens());
+
+    expect($open->mayTry())->toBeTrue();
+
+    $counting = typedPassword(
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::TooManyAttempts)),
+        'the-operators-password',
+    );
+    $counting->offer();
+
+    expect($counting->mayTry())->toBeFalse();
+});
+
+it('renders the frame it is named for', function (): void {
+    // Asserted because the name is the only part of a screen a unit test can
+    // hold: a `view()` naming a template that does not exist raises at the
+    // moment an operator opens it, on a device, which is the worst place to
+    // find out. `tests/Templates` reads the file itself.
+    expect(signInScreen(aDoorThatOpens())->render()->name())
+        ->toBe('operator::sign-into-a-stack');
 });
 
 it('refuses a route naming a stack this device does not hold', function (): void {
