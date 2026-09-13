@@ -1902,10 +1902,9 @@ final readonly class Fixtures
      * and on one machine. Here it is proved on every run, which is what the
      * harness is for.
      *
-     * `N3-R9` is not here yet. Its rule lands in a pull request of its own, and a
-     * fixture for a rule this branch does not carry plants a file nothing reads
-     * and reports the rule as silent — which is true, and about the wrong
-     * thing.
+     * `N3-R9` is not here. Its fixture has to be a class in a module that holds
+     * no code, and this harness cannot carry that one — see the entry for it
+     * below, which says what happens rather than why.
      *
      * @return list<Fixture>
      */
@@ -1950,6 +1949,18 @@ final readonly class Fixtures
     private static function notDrivable(): array
     {
         return [
+            Fixture::notDrivable(
+                'N3-R9',
+                'A fixture for this has to be a class in `app-modules/household`, which holds '
+                . 'no code — and planting one makes this harness report every other suite '
+                . 'fixture as silent, seventeen rules that are not involved. The same file, '
+                . 'planted by hand, fails `N3-R9` alone and nothing else; the same plant and '
+                . 'the same nested command, run outside this harness, fail eighty-eight tests '
+                . 'with `N3-R9` among them. So the fixture is right and the harness is what '
+                . 'cannot carry it, and what that is has not been established. Driven by hand '
+                . 'instead: `Summarises::threeLinesFrom(Report)` and `Tells::why(WentWrong)`, '
+                . 'each refused by name.',
+            ),
             Fixture::notDrivable(
                 'N1-R7, N1-R8, N1-R15',
                 'The violation is a second accessor on `Session`, `Credential` or `Address` '
