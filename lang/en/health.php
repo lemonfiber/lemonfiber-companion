@@ -37,4 +37,5 @@ return [
     'no_findings' => 'Nothing needs attention.',
     'nothing_to_report' => 'Every check passed.',
     'repair_refused' => 'The stack refused that repair: :reason',
+    'nothing_to_try' => 'The stack did not suggest anything to try for this.',
 ];

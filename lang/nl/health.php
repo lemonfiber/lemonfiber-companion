@@ -37,4 +37,5 @@ return [
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',
     'nothing_to_report' => 'Alle controles zijn geslaagd.',
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',
+    'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',
 ];

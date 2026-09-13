@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
@@ -12,6 +13,8 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Remedies;
+use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -60,6 +63,27 @@ function aRunWithAWarning(): Report
     ));
 }
 
+/** A run that found something, and said what it meant and what to try. */
+function aRunThatExplainsItself(): Report
+{
+    return Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.egress-match'),
+            Category::Vpn,
+            'Torrent traffic leaves through the tunnel',
+            Conclusion::Failed,
+            WhatTheCheckSaid::wentWrong(
+                Code::of('VPN-3'),
+                'Your address was visible to the swarm',
+                Remedies::of(
+                    Remedy::of('Restart the tunnel'),
+                    Remedy::of('Check the provider is up'),
+                ),
+            ),
+        ),
+    ));
+}
+
 /**
  * The screen, with a stack it knows and a keychain holding whatever a test says.
  *
@@ -87,8 +111,85 @@ it('N1-R2 — shows what the checks found, and what it amounts to', function ():
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->overall())->toBe(Overall::Degraded->saidOnTheScreen())
-        ->and($screen->findings()->count())->toBe(1)
+        ->and($screen->howMany())->toBe(1)
         ->and($screen->met())->toBe('');
+});
+
+it('N2-R3 — says what the check meant and what to try, in the core\'s own words', function (): void {
+    // The half that was on the wire and going nowhere. `Finding::said()` has
+    // carried a meaning, a code and a list of remedies since the translation
+    // was written, and until this screen existed no caller asked — an operator
+    // saw "The disk is nearly full / Needs attention" and not what that meant
+    // for them or what to do about it.
+    //
+    // Rendered rather than translated: these are the machine's sentences about
+    // the machine, and putting them through the catalogue would mean this app
+    // inventing a line for a check it has never heard of.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+
+    $rows = $screen->findings();
+
+    expect($rows)->toHaveCount(1);
+
+    $row = $rows[0];
+
+    expect($row->title)->toBe('Torrent traffic leaves through the tunnel')
+        ->and($row->explainsItself())->toBeTrue()
+        ->and($row->meaning)->toBe('Your address was visible to the swarm')
+        ->and($row->code)->toBe('VPN-3')
+        ->and($row->remedies->count())->toBe(2);
+});
+
+it('N2-R3 — offers every remedy, because the first one may not work', function (): void {
+    // `Remedies::likeliest()` exists for a screen with room for one line. This
+    // screen has room for the list, and an operator whose first remedy did not
+    // work would otherwise have nowhere to find the second.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+
+    $actions = array_map(
+        static fn(Remedy $remedy): string => $remedy->action(),
+        iterator_to_array($screen->findings()[0]->remedies, preserve_keys: false),
+    );
+
+    expect($actions)->toBe(['Restart the tunnel', 'Check the provider is up']);
+});
+
+it('N2-R3 — says so where the machine knows what is wrong and has nothing to suggest', function (): void {
+    // A failure with no remedy is representable and is a sentence rather than
+    // blank space: the operator is being told the stack knows what is wrong and
+    // has nothing to offer, which is what sends them to the machine itself.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.egress-match'),
+            Category::Vpn,
+            'Torrent traffic leaves through the tunnel',
+            Conclusion::Failed,
+            WhatTheCheckSaid::wentWrong(
+                Code::of('VPN-3'),
+                'Your address was visible to the swarm',
+                Remedies::none(),
+            ),
+        ),
+    ))));
+
+    $row = $screen->findings()[0];
+
+    expect($row->explainsItself())->toBeTrue()
+        ->and($row->remedies->count())->toBe(0)
+        ->and(__('health.nothing_to_try'))->not->toBe('health.nothing_to_try');
+});
+
+it('says nothing it was not told about a check that passed', function (): void {
+    // A passing check has no meaning to explain and no remedy to offer.
+    // Inventing a sentence for one would be this app writing words the machine
+    // did not say, which is the opposite of what `N2-R3` asks for.
+    $row = $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->findings()[0];
+
+    expect($row->explainsItself())->toBeFalse()
+        ->and($row->meaning)->toBe('')
+        ->and($row->code)->toBe('')
+        ->and($row->remedies->count())->toBe(0)
+        ->and($row->title)->not->toBe('');
 });
 
 it('N1-R17 — asks once however many times the frame reads it', function (): void {
@@ -119,7 +220,7 @@ it('N1-R10 — says what the operator met where the stack did not answer', funct
         expect($screen->met())->toBe(sprintf('connection.%s', $why->value), $why->value)
             ->and($screen->remedy())->toBe(sprintf('connection.%s_action', $why->value), $why->value)
             ->and($screen->overall())->toBe('', $why->value)
-            ->and($screen->findings()->count())->toBe(0, $why->value)
+            ->and($screen->howMany())->toBe(0, $why->value)
             ->and(__($screen->met()))->not->toBe($screen->met(), $why->value)
             ->and(__($screen->remedy()))->not->toBe($screen->remedy(), $why->value);
     }

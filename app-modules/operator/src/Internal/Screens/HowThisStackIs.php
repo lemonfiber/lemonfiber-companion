@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use function array_map;
+
 use Illuminate\View\View;
 
 use function is_string;
+use function iterator_to_array;
 
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\Findings;
+use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\SecureStorage;
@@ -18,6 +21,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Operator\Internal\WhatOneFindingSays;
 use Modules\Operator\Internal\WhatTheStackTurnedOutToBe;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -106,10 +110,29 @@ final class HowThisStackIs extends NativeComponent
         return $this->answer()->remedy;
     }
 
-    /** Each finding, in the order the checks produced them. */
-    public function findings(): Findings
+    /**
+     * Each finding, as a row a template can read, in the order they were made.
+     *
+     * Rows rather than {@see Finding}s, because a finding answers what the
+     * check said through an `either()` and Blade has no way to call one. The
+     * fold happens once per row here rather than being written into the
+     * template — which could not write it — and `N2-R3`'s words reach the
+     * screen as a result.
+     *
+     * @return list<WhatOneFindingSays>
+     */
+    public function findings(): array
     {
-        return $this->answer()->findings;
+        return array_map(
+            WhatOneFindingSays::in(...),
+            iterator_to_array($this->answer()->findings, preserve_keys: false),
+        );
+    }
+
+    /** How many there are, which is what the empty state asks. */
+    public function howMany(): int
+    {
+        return $this->answer()->findings->count();
     }
 
     /**

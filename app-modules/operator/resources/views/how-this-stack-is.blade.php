@@ -17,8 +17,29 @@
 
         @forelse ($this->findings() as $finding)
             <native:column class="w-full gap-1">
-                <native:text class="font-bold">{{ $finding->title() }}</native:text>
-                <native:text>{{ __($finding->conclusion()->saidOnTheScreen()) }}</native:text>
+                <native:text class="font-bold">{{ $finding->title }}</native:text>
+                <native:text>{{ __($finding->verdict) }}</native:text>
+
+                {{-- N2-R3: what the core said about it, in the core's own
+                     words. Rendered rather than translated — these are the
+                     machine's sentences about the machine, and putting them
+                     through the catalogue would mean this app inventing a
+                     line for a check it has never heard of. --}}
+                @if ($finding->explainsItself())
+                    <native:text>{{ $finding->meaning }}</native:text>
+                    <native:text class="text-sm">{{ $finding->code }}</native:text>
+
+                    {{-- A failure may carry no remedy at all, and that is a
+                         sentence rather than blank space: the operator is
+                         being told the machine knows what is wrong and has
+                         nothing to suggest, which is what sends them to the
+                         machine itself. --}}
+                    @forelse ($finding->remedies as $remedy)
+                        <native:text>{{ $remedy->action() }}</native:text>
+                    @empty
+                        <native:text>{{ __('health.nothing_to_try') }}</native:text>
+                    @endforelse
+                @endif
             </native:column>
         @empty
             <native:text>{{ __('health.nothing_to_report') }}</native:text>
