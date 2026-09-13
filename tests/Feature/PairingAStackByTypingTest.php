@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Operator\Internal\Screens\PairByTyping;
@@ -208,8 +209,8 @@ it('says what this screen is for until there is an outcome, then what happened',
     // answers, derived from its own case, so a fourth one needs no edit here.
     $waiting = typedInto(pairingScreen(), typedCode());
 
-    expect($waiting->headline())->toBe('connection.type_the_code')
-        ->and($waiting->supporting())->toBe('connection.type_the_code_action');
+    expect($waiting->headline())->toBe(HowItWasRead::Typed->askedFor())
+        ->and($waiting->supporting())->toBe(HowItWasRead::Typed->howToStart());
 
     $waiting->confirm();
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
+use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Tests\Support\Catalogue;
 
@@ -47,7 +48,15 @@ function everyDerivedKey(): array
         HowThePairingWent::class => [],
         WhyNothingWasScanned::class => [],
         WhereTheCodeGot::class => [],
+        HowItWasRead::class => [],
     ];
+
+    foreach (HowItWasRead::cases() as $road) {
+        // What the screen on each road is for, which the outcome cannot name:
+        // one road points a camera and the other takes dictation.
+        $derived[HowItWasRead::class][] = $road->askedFor();
+        $derived[HowItWasRead::class][] = $road->howToStart();
+    }
 
     foreach (HowTheSignInWent::cases() as $went) {
         // Two per case, because `N1-R10` asks for what happened *and* what to do
@@ -128,6 +137,15 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
 
         expect($went->said())->toBe(sprintf('connection.%s', $went->value), $went->name)
             ->and($went->remedy())->toBe(sprintf('connection.%s_action', $went->value), $went->name);
+    }
+
+    foreach (HowItWasRead::cases() as $road) {
+        expect($road->askedFor())->toBe(sprintf('connection.%s_the_code', $road->value), $road->name)
+            ->and($road->howToStart())->toBe(sprintf('connection.%s_the_code_action', $road->value), $road->name);
+    }
+
+    foreach (WhereTheCodeGot::cases() as $got) {
+        expect($got->saidUnderTheField())->toBe(sprintf('connection.the_code_is_%s', $got->value), $got->name);
     }
 
     foreach (WhyNothingWasScanned::cases() as $why) {

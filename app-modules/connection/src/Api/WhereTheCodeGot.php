@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Api;
 
+use function sprintf;
+
 /**
  * How far a pairing code the operator is typing has got.
  *
@@ -56,6 +58,11 @@ enum WhereTheCodeGot: string
     /**
      * What is said under the field, as a key the template resolves.
      *
+     * **Built from the case rather than listed against it**, which is
+     * {@see \Modules\Kernel\Api\Permission::reason()}'s shape: a `match`
+     * naming a key per case spells every stem twice — once as the case's value
+     * and once as the string beside it — and two spellings of one name drift.
+     *
      * A key rather than a sentence, because `L1` puts the words in the
      * catalogue and `A4` keeps the translator out of a class that did not ask
      * for one — the template is where `__()` is called, and the template is
@@ -72,11 +79,6 @@ enum WhereTheCodeGot: string
      */
     public function saidUnderTheField(): string
     {
-        return match ($this) {
-            self::Waiting => 'connection.type_the_code_hint',
-            self::Unreadable => 'connection.typed_code_is_unreadable_action',
-            self::Expired => 'connection.pairing_expired_action',
-            self::Comparing => 'connection.code_reads_as_a_stack',
-        };
+        return sprintf('connection.the_code_is_%s', $this->value);
     }
 }

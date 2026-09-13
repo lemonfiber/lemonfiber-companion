@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
@@ -258,9 +259,9 @@ it('says what this screen is for until there is an outcome, then what happened',
     // shared, derived from the outcome's own case.
     $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
 
-    expect($screen->headline())->toBe('connection.scan_the_code')
-        ->and($screen->supporting())->toBe('connection.scan_the_code_action')
-        ->and($screen->headline())->not->toBe('connection.type_the_code');
+    expect($screen->headline())->toBe(HowItWasRead::Scanned->askedFor())
+        ->and($screen->supporting())->toBe(HowItWasRead::Scanned->howToStart())
+        ->and($screen->headline())->not->toBe(HowItWasRead::Typed->askedFor());
 
     $screen->scan();
 

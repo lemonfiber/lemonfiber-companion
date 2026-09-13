@@ -205,13 +205,13 @@ final class PairByScanning extends NativeComponent
      */
     public function headline(): string
     {
-        return $this->went->isNotYet() ? 'connection.scan_the_code' : $this->went->said();
+        return $this->went->isNotYet() ? HowItWasRead::Scanned->askedFor() : $this->went->said();
     }
 
     /** The line under it: how to get started, or what to do about what happened. */
     public function supporting(): string
     {
-        return $this->went->isNotYet() ? 'connection.scan_the_code_action' : $this->went->remedy();
+        return $this->went->isNotYet() ? HowItWasRead::Scanned->howToStart() : $this->went->remedy();
     }
 
     /** The frame, by name. */
