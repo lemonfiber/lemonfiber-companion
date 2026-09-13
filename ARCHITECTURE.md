@@ -333,6 +333,7 @@ ever sees.
 |---|---|---|
 | L1 | Text a person reads comes from the translator | phpstan: own rule, scoped to presenters, view models and screens |
 | L2 | Every locale carries the same keys, none empty and none equal to its key | test |
+| L7 | Every catalogue key the application names is a key the catalogue holds | test |
 
 **The line between the two kinds of text.** A refusal on screen, an empty state,
 a notification body — a person reads these, so they are keys in
@@ -348,6 +349,19 @@ key — so a Dutch device shows `health.unreachable` where a sentence belongs an
 ships that way. Nothing else in this repository can see that, and a comparison
 of the two catalogues is cheap. The reverse direction is checked too: a key in
 `nl` with no `en` counterpart is a typo or text nothing shows any more.
+
+**Why L7 exists beside it.** L2 compares the catalogues against each other, so
+it is blind to the case where they agree and are both wrong: a key that is in
+neither, because somebody mistyped it at the call site or renamed the line and
+not the reader. That renders the key on every device in every locale. L7 reads
+the keys out of the source — production PHP and Blade alike, since a template is
+not PHP any analyser reads — and asks the catalogue for each one.
+
+The cure is usually not a corrected literal. Where a key belongs to a closed set,
+derive it from the case: `Permission::reason()` builds `device.camera_reason`
+from `Permission::Camera`, so there is one spelling, and the rule that checks the
+catalogue is checking the string the application actually uses. A literal at the
+call site is a second spelling, and the second spelling is the one that drifts.
 
 ### What the analyser cannot see
 

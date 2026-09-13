@@ -130,6 +130,39 @@ final readonly class WhatTheCodeSaysSoFar
     }
 
     /**
+     * The material itself, where the code got far enough to have any.
+     *
+     * The scanned road's way in, and it is separate from
+     * {@see confirmedByTheOperator()} for the reason that method exists at all:
+     * that one *mints* a {@see FingerprintWasConfirmed}, which may only exist
+     * where a person compared something. A scanned code had nothing compared by
+     * a person — `ADR-0018`'s whole point is that the digest arrived in the
+     * payload, so the comparison happens in software — and reaching for the
+     * confirming arm to get at the material would conjure the one value this
+     * module is built to make unconjurable.
+     *
+     * So the two roads take two doors, and neither serves the other's purpose:
+     * this one hands over no confirmation, and that one hands over nothing
+     * without making one.
+     *
+     * @template TRead of object
+     * @template TNotYet of object
+     *
+     * @param Closure(Pairing): TRead $read
+     * @param Closure(): TNotYet      $notYet
+     *
+     * @return TRead|TNotYet
+     */
+    public function material(Closure $read, Closure $notYet): object
+    {
+        if (! $this->said instanceof Pairing) {
+            return $notYet();
+        }
+
+        return $read($this->said);
+    }
+
+    /**
      * The operator says the form matches their stack.
      *
      * Both halves are handed to the caller together — the material and the

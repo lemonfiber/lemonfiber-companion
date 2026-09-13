@@ -2040,6 +2040,20 @@ final readonly class Fixtures
                 'shown',
             ),
 
+            // A mistyped key, in a template, which is where one is least
+            // visible: Blade is not PHP any analyser reads, so nothing else in
+            // this repository can see a string here at all. `L2` cannot either
+            // — it compares the two catalogues against each other, and they
+            // agree perfectly about a key neither of them has.
+            Fixture::edit(
+                'L7',
+                'app-modules/operator/resources/views/no-stack-yet.blade.php',
+                "{{ __('connection.setup_is_at_the_machine') }}",
+                "{{ __('connection.setup_is_at_the_machien') }}",
+                'L7 —',
+                'connection.setup_is_at_the_machien',
+            ),
+
             // Nothing to drop in: a listener is only a listener once something
             // has registered it, and the dispatcher is what this rule reads.
             // Neither class needs to exist — `getRawListeners()` hands back the
@@ -2048,14 +2062,14 @@ final readonly class Fixtures
             Fixture::edit(
                 'E5',
                 'bootstrap/Composition/CompositionRoot.php',
-                '        TailwindParser::setThemeResolver(Theme::resolver());',
+                '        $this->app->booted(TheTheme::paint(...));',
                 <<<'PHP'
                             \Illuminate\Support\Facades\Event::listen(
                                 'Modules\Backups\Api\Events\ArchiveWritten',
                                 'Modules\Health\Internal\ListensAcrossAKind@handle',
                             );
 
-                            TailwindParser::setThemeResolver(Theme::resolver());
+                            $this->app->booted(TheTheme::paint(...));
                     PHP,
                 'E5 — no listener reacts to an event its module may not name',
                 'ListensAcrossAKind',

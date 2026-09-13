@@ -12,20 +12,24 @@ use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Screen;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNotifier;
+use Modules\Device\Api\PlatformScanner;
 use Modules\Device\Api\PlatformScreen;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
+use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Reaching;
+use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
+use Native\Mobile\Scanner;
 use Native\Mobile\SecureStorage as PlatformStore;
 
 /**
@@ -131,6 +135,23 @@ final class CompositionRoot extends ServiceProvider
             static fn(): Capture => new PlatformScreen(new Screen()),
         );
 
+        // The camera, reading a pairing code (`N1-R6`).
+        //
+        // Handed *how to open a scanner* rather than the scanner itself, and
+        // the reason is `Scanner::scan()`'s shape: it is static, so an adapter
+        // holding an instance would be calling a static method through one —
+        // which the analyser refuses for this repository's own code, and which
+        // reads as an instance method to everyone afterwards. Taking the act is
+        // also what gives a suite a seam; there is none in a static call.
+        $this->app->bind(
+            Scanning::class,
+            // Built in a named method rather than here, because `make()` raises
+            // a checked exception and the analyser refuses one raised inside a
+            // closure. That is the same rule that put the container behind a
+            // method for the screen router, and it lands the same way.
+            $this->theScanner(...),
+        );
+
         // The same handle again, and bound for the same reason. `N4-R7` locks
         // the app on backgrounding and `N4-R19` asks again after a period the
         // operator sets — both of which are decisions about *when*, made in
@@ -178,6 +199,23 @@ final class CompositionRoot extends ServiceProvider
         $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop();
 
         new ScreenRoutes($this->screen(...), $runloop)->declare();
+    }
+
+    /**
+     * The camera, with the catalogue the platform's prompt is captioned from.
+     *
+     * A method rather than the closure it replaces, for two reasons that both
+     * point here. `Container::make()` raises a checked exception and the
+     * analyser refuses one raised inside a closure — the same rule that put the
+     * screen router's container behind a method. And a container may not be a
+     * *parameter* either, so this reaches the provider's own `$this->app`
+     * rather than being handed one: a class that receives a container can
+     * resolve anything, which is what the rule is about, and a provider already
+     * has one by being a provider.
+     */
+    private function theScanner(): Scanning
+    {
+        return new PlatformScanner(Scanner::scan(...), $this->app->make(Words::class));
     }
 
     /**

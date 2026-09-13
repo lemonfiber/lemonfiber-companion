@@ -48,3 +48,73 @@ it('G8 — every port is bound to exactly one adapter', function (): void {
         implode("\n  ", $unbound),
     ));
 });
+
+/**
+ * Every kernel port the container has a binding for.
+ *
+ * @return list<class-string>
+ */
+function everyBoundPort(): array
+{
+    $found = [];
+
+    foreach (Module::all() as $module) {
+        if ($module->kind->value !== 'kernel') {
+            continue;
+        }
+
+        foreach ($module->classNames() as $name) {
+            if (interface_exists($name) && app()->bound($name)) {
+                $found[] = $name;
+            }
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * What the container hands back for one port.
+ *
+ * A named function rather than a `make()` at the call site, because the
+ * analyser refuses a checked exception raised inside a closure and every Pest
+ * body is one — the same rule that put the container behind a method in the
+ * composition root. The exception is deliberately not caught: a port that
+ * cannot be built is this rule failing, and it fails loudest by raising with
+ * the container's own message, which names what was missing.
+ */
+function builtFromTheContainer(string $port): mixed
+{
+    return app()->make($port);
+}
+
+it('G8 — every port resolves to something that is actually that port', function (): void {
+    // `bound()` answers true for a binding that raises the moment anybody asks
+    // it for anything, which is the same failure at the same moment with an
+    // extra step. A closure naming a class that is not there, an adapter whose
+    // constructor gained an argument nothing supplies, a `make()` for a
+    // contract no provider binds — all of them are bound and none of them is an
+    // adapter.
+    //
+    // It also reaches the code the rule above is about. A binding closure that
+    // nothing resolves is a line the composition root carries and no test runs,
+    // and the composition root is the one file where an untested line is a
+    // launch-time fatal in front of an operator.
+    $broken = [];
+
+    foreach (everyBoundPort() as $name) {
+        $built = builtFromTheContainer($name);
+
+        if (! $built instanceof $name) {
+            $broken[] = sprintf('%s resolved to %s', $name, get_debug_type($built));
+        }
+    }
+
+    expect($broken)->toBe([], sprintf(
+        "These ports are bound to something that is not them:\n  %s\n\n"
+        . 'A binding is not a promise that anything can be built from it. Whatever this '
+        . 'resolved to is what a screen asking for the port will be handed, and it does '
+        . "not implement it — so the failure lands one call later, on a device (G8).",
+        implode("\n  ", $broken),
+    ));
+});

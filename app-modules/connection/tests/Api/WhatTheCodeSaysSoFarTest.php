@@ -142,6 +142,41 @@ it('hands the confirmation and the material it is about across together', functi
     expect($answered->with)->toBe('both');
 });
 
+it('hands the scanned road the material without minting a confirmation', function (): void {
+    // The two roads take two doors. `material()` is the scanned one: the digest
+    // arrived in the payload, nobody compared anything, and reaching for
+    // `confirmedByTheOperator()` to get at the material would conjure the one
+    // value N1-R50 rests on being unconjurable.
+    $said = parsed(digestOf('c'));
+
+    $answered = WhatTheCodeSaysSoFar::comparing($said)->material(
+        read: static fn(Pairing $about): Answered => new Answered($about === $said ? 'the same material' : 'another'),
+        notYet: static fn(): Answered => new Answered('nothing'),
+    );
+
+    expect($answered->with)->toBe('the same material');
+});
+
+it('has no material to hand over where the code did not parse', function (): void {
+    // Same guarantee as the confirming door and for a plainer reason: there is
+    // no `Pairing` in a code that did not parse, so a screen tapping through
+    // this gets the refusing arm rather than an empty one.
+    foreach ([
+        WhatTheCodeSaysSoFar::waiting(),
+        WhatTheCodeSaysSoFar::unreadable(),
+        WhatTheCodeSaysSoFar::expired(),
+    ] as $said) {
+        // The reading arm names nothing, because reaching it at all is the
+        // failure — there is no `Pairing` for it to have been handed.
+        $answered = $said->material(
+            read: static fn(): Answered => new Answered('handed over material'),
+            notYet: static fn(): Answered => new Answered('nothing'),
+        );
+
+        expect($answered->with)->toBe('nothing');
+    }
+});
+
 it('makes no confirmation about a code that never reached the comparison', function (): void {
     // N1-R50's "must not proceed on an unconfirmed fingerprint", from the side
     // that makes it hard to arrange: there was no form on the screen, so there

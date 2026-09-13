@@ -14,11 +14,43 @@ use Tests\Support\ApiSurface;
 // so a reflection sweep is what lets these rules exist before the module they
 // govern does.
 
+/**
+ * The boundary methods whose answer cannot arrive as a return value.
+ *
+ * Named one at a time, like {@see NULL_ARRIVES_FROM_OUTSIDE} below and for the
+ * same reason: each entry is a claim that somebody else's machinery is what
+ * decides the shape, and the list is the prompt to write down whose.
+ *
+ * `Scanning::forAPairingCode()` opens the platform's scanner, which is a screen
+ * of its own — it takes the display and reports through NativePHP's callback
+ * machinery after this call has returned. A method shaped
+ * `read(): WhatTheCameraSaw` would be a promise only a fake could keep, and the
+ * adapter could only keep it by blocking the runloop, which on a handset is the
+ * app hanging.
+ *
+ * That is C1 obeyed by another road rather than broken. The rule wants a refusal
+ * the caller cannot forget to handle, and the refusal here is a
+ * {@see Modules\Kernel\Api\WhatTheCameraSaw} with two arms and no third —
+ * handed to the callback, which has to open it to get at either half. What the
+ * port may not do is answer `void` *and* report by throwing, and it does not.
+ *
+ * Both the port and its adapter are named, because the rule reads every class on
+ * an Api surface and the adapter's signature is the port's.
+ */
+const THE_ANSWER_ARRIVES_LATER = [
+    'Modules\Kernel\Api\Scanning::forAPairingCode()',
+    'Modules\Device\Api\PlatformScanner::forAPairingCode()',
+];
+
 it('C1 — no Api method changes something and says nothing', function (): void {
     $offenders = [];
 
     foreach (ApiSurface::classesIn() as $class) {
         foreach (ApiSurface::publicMethodsOf($class) as $method) {
+            if (in_array(ApiSurface::describe($method), THE_ANSWER_ARRIVES_LATER, strict: true)) {
+                continue;
+            }
+
             if (ApiSurface::namesIn($method->getReturnType()) === ['void']) {
                 $offenders[] = ApiSurface::describe($method);
             }
@@ -51,10 +83,19 @@ it('C1 — no Api method changes something and says nothing', function (): void 
  * end it: null and an unrecognised word both become `NotDetermined`, which
  * withholds the notification and leaves asking still possible.
  *
+ * `WhatTheScannerSaid::orSimplyDismissed()` is the same shape one package over:
+ * `ScannerCancelled::$reason` is a third-party `?string`, and the null is the
+ * ordinary case rather than an edge — the plugin leaves the reason unset when
+ * somebody simply dismissed the scanner. This method is where that ends, and
+ * where an unrecognised word ends too.
+ *
  * That is C2 being obeyed rather than broken. The rule wants exactly one place
- * where a foreign null becomes one of our types, and this is one.
+ * where a foreign null becomes one of our types, and each of these is one.
  */
-const NULL_ARRIVES_FROM_OUTSIDE = ['Modules\Device\Api\WhatTheDeviceSaid::orNothingSaid()'];
+const NULL_ARRIVES_FROM_OUTSIDE = [
+    'Modules\Device\Api\WhatTheDeviceSaid::orNothingSaid()',
+    'Modules\Device\Api\WhatTheScannerSaid::orSimplyDismissed()',
+];
 
 it('C2 — no Api method answers with null, and none takes it either', function (): void {
     // Both halves, and the parameter half was missing.
