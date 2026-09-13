@@ -123,7 +123,21 @@ jobs:
   rules:
     name: rules
     needs: scope
-    if: needs.scope.outputs.code == 'true'
+    # `scope` deciding "no code changed" is a skip, and the gates are scoped so
+    # that a documentation change does not start a PHP toolchain. `scope`
+    # *failing* produces the same skip — a checkout that broke or a runner that
+    # died leaves no output, and no output is not a "no".
+    #
+    # Either way that is wrong. If a skipped required check satisfies branch
+    # protection, a pull request merges with none of these run and nothing red.
+    # If it does not, the check never reports and the pull request is blocked
+    # forever with nothing anywhere naming the cause. The job's own comments say
+    # which way it means to fail — "No usable base commit, so every gate runs",
+    # "a new kind of file defaults to running the gates" — and its own failure
+    # was the one path that did the opposite.
+    #
+    # So the condition asks the result as well as the output.
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -145,7 +159,21 @@ jobs:
   guards:
     name: the rules refuse violations
     needs: scope
-    if: needs.scope.outputs.code == 'true'
+    # `scope` deciding "no code changed" is a skip, and the gates are scoped so
+    # that a documentation change does not start a PHP toolchain. `scope`
+    # *failing* produces the same skip — a checkout that broke or a runner that
+    # died leaves no output, and no output is not a "no".
+    #
+    # Either way that is wrong. If a skipped required check satisfies branch
+    # protection, a pull request merges with none of these run and nothing red.
+    # If it does not, the check never reports and the pull request is blocked
+    # forever with nothing anywhere naming the cause. The job's own comments say
+    # which way it means to fail — "No usable base commit, so every gate runs",
+    # "a new kind of file defaults to running the gates" — and its own failure
+    # was the one path that did the opposite.
+    #
+    # So the condition asks the result as well as the output.
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -163,7 +191,21 @@ jobs:
   checks:
     name: checks
     needs: scope
-    if: needs.scope.outputs.code == 'true'
+    # `scope` deciding "no code changed" is a skip, and the gates are scoped so
+    # that a documentation change does not start a PHP toolchain. `scope`
+    # *failing* produces the same skip — a checkout that broke or a runner that
+    # died leaves no output, and no output is not a "no".
+    #
+    # Either way that is wrong. If a skipped required check satisfies branch
+    # protection, a pull request merges with none of these run and nothing red.
+    # If it does not, the check never reports and the pull request is blocked
+    # forever with nothing anywhere naming the cause. The job's own comments say
+    # which way it means to fail — "No usable base commit, so every gate runs",
+    # "a new kind of file defaults to running the gates" — and its own failure
+    # was the one path that did the opposite.
+    #
+    # So the condition asks the result as well as the output.
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -196,7 +238,21 @@ jobs:
   tests:
     name: tests and coverage
     needs: scope
-    if: needs.scope.outputs.code == 'true' && github.event_name == 'pull_request'
+    # `scope` deciding "no code changed" is a skip, and the gates are scoped so
+    # that a documentation change does not start a PHP toolchain. `scope`
+    # *failing* produces the same skip — a checkout that broke or a runner that
+    # died leaves no output, and no output is not a "no".
+    #
+    # Either way that is wrong. If a skipped required check satisfies branch
+    # protection, a pull request merges with none of these run and nothing red.
+    # If it does not, the check never reports and the pull request is blocked
+    # forever with nothing anywhere naming the cause. The job's own comments say
+    # which way it means to fail — "No usable base commit, so every gate runs",
+    # "a new kind of file defaults to running the gates" — and its own failure
+    # was the one path that did the opposite.
+    #
+    # So the condition asks the result as well as the output.
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
