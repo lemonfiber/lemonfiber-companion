@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Undoing;
+use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 
@@ -231,6 +232,17 @@ function reflect(string $name): ReflectionClass
 /**
  * Every class this app renders from.
  *
+ * Read by what a class *is* as well as by where it sits. The directory was the
+ * whole of this at first, and a rule that finds its subjects by namespace stops
+ * finding them the day somebody puts one somewhere else — which is not a
+ * failure anybody would see, because a rule with nothing to check passes.
+ * Anything extending `NativeComponent` renders to the operator whatever
+ * directory it is in, and that is the property the requirement is about.
+ *
+ * The directory is kept alongside it rather than replaced, for the case the
+ * subclass test cannot see: a screen written before it is wired to a base class
+ * still sits in `Screens` and is still something somebody is about to render.
+ *
  * @return list<ReflectionClass<object>>
  */
 function screens(): array
@@ -239,8 +251,8 @@ function screens(): array
 
     foreach (Module::all() as $module) {
         foreach ($module->classNames() as $name) {
-            if (str_contains($name, '\\Internal\\Screens\\')) {
-                $found[] = new ReflectionClass($name);
+            if (str_contains($name, '\\Internal\\Screens\\') || is_subclass_of($name, NativeComponent::class)) {
+                $found[] = reflect($name);
             }
         }
     }
@@ -261,6 +273,12 @@ it('N2-R12 — no screen can be handed a credential', function (): void {
     // written. A screen that can be handed a credential is a screen with a
     // field to bind one to, and binding it is the small edit somebody makes
     // while fixing something else.
+    // Assert the reading before what it says. A rule whose subjects are
+    // discovered has a state in which it examines nothing, and that state is
+    // indistinguishable from every subject passing — so it is the state to fail
+    // in rather than the one to be quietly correct in.
+    expect(screens())->not->toBe([], 'no screen was found to check, so this rule proved nothing');
+
     $found = [];
 
     foreach (screens() as $screen) {
