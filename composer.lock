@@ -3101,7 +3101,7 @@
             "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "git@github.com:lemonfiber/sdk-php.git",
+                "url": "https://github.com/lemonfiber/sdk-php.git",
                 "reference": "2d2f380f25ed1f56dcc9d2caa855e079d6ad56a9"
             },
             "dist": {
@@ -3234,6 +3234,10 @@
                 "self-hosted",
                 "sse"
             ],
+            "support": {
+                "source": "https://github.com/lemonfiber/sdk-php/tree/main",
+                "issues": "https://github.com/lemonfiber/sdk-php/issues"
+            },
             "time": "2026-09-13T21:17:22+00:00"
         },
         {
