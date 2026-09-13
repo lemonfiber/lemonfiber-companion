@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
+use Tests\Support\Template;
 use Tests\Support\Tree;
 
 // Q-R66 — a rule that found nothing is not a rule that passed.
@@ -73,4 +74,18 @@ it('Q-R66 — the root is this repository rather than wherever the run started',
     expect(Tree::at('composer.json'))->toBeFile();
     expect(Tree::at('phpstan.neon'))->toBeFile();
     expect(Tree::at('app-modules'))->toBeDirectory();
+});
+
+it('Q-R66 — the templates the Blade rules read are found', function (): void {
+    // Five rules in `tests/Templates` read `Template::all()` and one of them
+    // asserts it found anything. There is one Blade template in this
+    // repository, so the distance between "checks every screen's markup" and
+    // "checks nothing" is a directory rename.
+    //
+    // What that looks like is worse than a pass: with the template moved away
+    // the whole suite reports one skipped test and zero assertions, because
+    // four of the five are driven by a dataset that is then empty. A skipped
+    // suite is green, and greener than a passing one is — there is not even a
+    // tick to count.
+    expect(Template::all())->not->toBe([]);
 });
