@@ -77,23 +77,11 @@ it('N3-R9 — nothing on a member surface can be handed what the operator is sho
 
     foreach ($household as $module) {
         foreach ($module->classNames() as $name) {
-            $class = new ReflectionClass($name);
-
-            foreach ($class->getMethods() as $method) {
-                $named = ApiSurface::namesIn($method->getReturnType());
-
-                foreach ($method->getParameters() as $parameter) {
-                    $named = [...$named, ...ApiSurface::namesIn($parameter->getType())];
-                }
-
-                foreach ($class->getProperties() as $property) {
-                    $named = [...$named, ...ApiSurface::namesIn($property->getType())];
-                }
-
+            foreach (ApiSurface::namedBy(ApiSurface::reflect($name)) as [$where, $named]) {
                 foreach (array_intersect($named, array_keys(NEVER_SHOWN_TO_A_MEMBER)) as $shown) {
                     $found[] = sprintf(
                         '%s names %s, which is %s',
-                        ApiSurface::describe($method),
+                        $where,
                         $shown,
                         NEVER_SHOWN_TO_A_MEMBER[$shown],
                     );
