@@ -10,17 +10,24 @@ use function it;
 use Modules\Kernel\Api\Carried;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Confirmed;
+use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Reading;
-use Modules\Kernel\Api\Remedy;
+use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\RepairWasConfirmedAgainstAnOldReading;
+use Modules\Kernel\Api\Undoing;
 
 use function sprintf;
 
-/** The repair the operator said yes to. */
-function theRepair(): Remedy
+/** The repair the operator said yes to, offered the way N2-R4 requires. */
+function theRepair(): Repair
 {
-    return Remedy::of('restart the indexer');
+    return Repair::offered(
+        check: 'indexer-reachable',
+        does: 'restart the indexer',
+        effects: Effects::of('downloads pause for about a minute'),
+        undoing: Undoing::Possible,
+    );
 }
 
 /**
@@ -33,10 +40,10 @@ function theRepair(): Remedy
 function foldCarried(Carried $carried): Code
 {
     return $carried->either(
-        out: static fn(Remedy $remedy): Code => Code::of(sprintf('out:%s', $remedy->action())),
-        refused: static fn(Remedy $remedy, Reading $now): Code => Code::of(sprintf(
+        out: static fn(Repair $repair): Code => Code::of(sprintf('out:%s', $repair->answers())),
+        refused: static fn(Repair $repair, Reading $now): Code => Code::of(sprintf(
             'refused:%s:%s',
-            $remedy->action(),
+            $repair->answers(),
             $now->mayConfirmAnAction() ? 'live' : 'retained',
         )),
     );
@@ -44,14 +51,14 @@ function foldCarried(Carried $carried): Code
 
 it('N2-R5 — a repair is carried out only with a confirmation, not with a view', function (): void {
     // The requirement is broken by nobody deciding to break it: a screen
-    // renders a finding, the remedy is on it, and a tap handler calls the thing
+    // renders a finding, the repair is on it, and a tap handler calls the thing
     // that applies it. Nothing says "this was confirmed" because nothing had
     // to. `carriedOut()` takes one of these, and the only way to make one names
-    // the remedy and the reading together.
+    // the repair and the reading together.
     $shown = Reading::live(Code::of('the-indexer-is-down'));
 
     expect(foldCarried(Confirmed::against(theRepair(), $shown)->carriedOut($shown))->shown())
-        ->toBe('out:restart the indexer');
+        ->toBe('out:indexer-reachable');
 });
 
 it('N2-R6 — a repair confirmed against one reading is refused against another', function (): void {
@@ -63,7 +70,7 @@ it('N2-R6 — a repair confirmed against one reading is refused against another'
     $now = Reading::live(Code::of('the-indexer-is-down'));
 
     expect(foldCarried(Confirmed::against(theRepair(), $shown)->carriedOut($now))->shown())
-        ->toBe('refused:restart the indexer:live');
+        ->toBe('refused:indexer-reachable:live');
 });
 
 it('N2-R6 — a re-read that says the same thing is still a different reading', function (): void {
@@ -87,7 +94,7 @@ it('N2-R6 — the refusal carries what is needed to re-offer', function (): void
     $now = Reading::retained(Code::of('is'), Instant::atEpochSeconds(1_757_808_000));
 
     expect(foldCarried(Confirmed::against(theRepair(), $shown)->carriedOut($now))->shown())
-        ->toBe('refused:restart the indexer:retained');
+        ->toBe('refused:indexer-reachable:retained');
 });
 
 it('N1-R39 — a retained reading cannot confirm a repair at all', function (): void {

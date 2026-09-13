@@ -10,12 +10,12 @@ namespace Modules\Kernel\Api;
  * **`N2-R5` — confirming is not viewing.** A repair must not be carried out
  * without a confirmation distinct from the act of viewing the finding. The way
  * that requirement is broken is never a deliberate decision: a screen renders a
- * finding, the remedy is right there on it, and somewhere a tap handler calls
+ * finding, the repair is right there on it, and somewhere a tap handler calls
  * the thing that applies it. Nothing in the code says "this was confirmed",
  * because nothing had to.
  *
  * So carrying out a repair takes one of these, and the only way to make one is
- * {@see self::against()}, which needs the remedy *and* the reading named
+ * {@see self::against()}, which needs the repair *and* the reading named
  * together. Rendering a finding produces no `Confirmed` and cannot be made to;
  * a screen that wants to apply a repair has to write the word.
  *
@@ -24,7 +24,7 @@ namespace Modules\Kernel\Api;
  * stack has moved since, that agreement is about something that is no longer
  * true, and carrying it out applies a decision nobody made about the state it
  * is applied to. {@see self::carriedOut()} compares and answers
- * {@see Carried}, whose refusing arm carries the remedy and the new reading so
+ * {@see Carried}, whose refusing arm carries the repair and the new reading so
  * the screen can re-offer rather than leaving somebody in front of a button
  * that did nothing.
  *
@@ -36,7 +36,7 @@ namespace Modules\Kernel\Api;
  */
 final readonly class Confirmed
 {
-    private function __construct(private Remedy $remedy, private Reading $against) {}
+    private function __construct(private Repair $repair, private Reading $against) {}
 
     /**
      * The one way a confirmation exists.
@@ -46,13 +46,13 @@ final readonly class Confirmed
      * `N1-R39`, and there is no half-confirmed repair to carry on with — which
      * is the same argument `Pairing::read()` makes for raising.
      */
-    public static function against(Remedy $remedy, Reading $shown): self
+    public static function against(Repair $repair, Reading $shown): self
     {
         if (! $shown->mayConfirmAnAction()) {
-            throw RepairWasConfirmedAgainstAnOldReading::of($remedy);
+            throw RepairWasConfirmedAgainstAnOldReading::of($repair);
         }
 
-        return new self($remedy, $shown);
+        return new self($repair, $shown);
     }
 
     /**
@@ -66,7 +66,7 @@ final readonly class Confirmed
     public function carriedOut(Reading $now): Carried
     {
         return $now === $this->against
-            ? Carried::out($this->remedy)
-            : Carried::refusedBecauseTheReadingMoved($this->remedy, $now);
+            ? Carried::out($this->repair)
+            : Carried::refusedBecauseTheReadingMoved($this->repair, $now);
     }
 }

@@ -21,6 +21,10 @@ return [
         'pass' => 'Geslaagd',
         'skipped' => 'Overgeslagen',
     ],
+    'undoing' => [
+        'permanent' => 'Dit kan niet ongedaan worden gemaakt',
+        'possible' => 'Dit kan daarna ongedaan worden gemaakt',
+    ],
     'overall' => [
         'broken' => 'Er is iets kapot',
         'unknown' => 'De gezondheid kon niet worden vastgesteld',

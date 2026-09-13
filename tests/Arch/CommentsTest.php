@@ -252,6 +252,32 @@ it('K1 — a comment says what is true, not what happened', function (): void {
     ));
 });
 
+/**
+ * The template parameters a file declares, which are not class names.
+ *
+ * `@return TSaid` beside `: object` is a bare identifier and says a great deal
+ * the signature cannot: which object, tied to what the caller's closure
+ * answered. Read per file rather than per docblock because a template is in
+ * scope for the method that declares it and PHPStan refuses one used anywhere
+ * else, so a wider read cannot admit a tag a narrower one would have caught.
+ *
+ * @param list<string> $lines
+ *
+ * @return list<string>
+ */
+function templatesIn(array $lines): array
+{
+    $named = [];
+
+    foreach ($lines as $line) {
+        if (preg_match('/@(?:phpstan-)?template(?:-covariant)?\s+([A-Za-z_]\w*)/', $line, $found) === 1) {
+            $named[] = $found[1];
+        }
+    }
+
+    return $named;
+}
+
 it('K2 — a docblock says what a type cannot', function (): void {
     $offenders = [];
 
@@ -260,10 +286,18 @@ it('K2 — a docblock says what a type cannot', function (): void {
             continue;
         }
 
+        $templates = templatesIn($lines);
+
         foreach ($lines as $line) {
             // A tag whose type holds no shape — no generic, no union, no key
             // type — says exactly what the signature beside it already says.
-            if (preg_match('/@(param|return|var)\s+\\\\?[A-Za-z_][A-Za-z0-9_\\\\]*(\s+\$\w+)?\s*$/', $line) === 1) {
+            // A template parameter is the exception and is why this asks what
+            // the file declares: it is a bare identifier carrying the one thing
+            // a native type has no way to write down.
+            if (
+                preg_match('/@(param|return|var)\s+\\\\?([A-Za-z_][A-Za-z0-9_\\\\]*)(\s+\$\w+)?\s*$/', $line, $found) === 1
+                && ! in_array($found[2], $templates, strict: true)
+            ) {
                 $offenders[] = sprintf('%s %s', $path, $line);
             }
 

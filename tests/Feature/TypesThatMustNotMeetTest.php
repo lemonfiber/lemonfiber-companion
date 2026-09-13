@@ -3,13 +3,16 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Credential;
+use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Held;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Interrupted;
 use Modules\Kernel\Api\Pairing;
+use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Undoing;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 
@@ -185,6 +188,23 @@ function namedByScreen(ReflectionClass $screen): array
 }
 
 /**
+ * A class by name, as something the support helpers will take.
+ *
+ * `new ReflectionClass(Repair::class)` is a `ReflectionClass<Repair>`, and
+ * `ReflectionClass`'s template is not covariant — so the analyser refuses it
+ * where a `ReflectionClass<object>` is wanted. The table above never met this
+ * because its subjects arrive as `class-string` from a return type.
+ *
+ * @param class-string $name
+ *
+ * @return ReflectionClass<object>
+ */
+function reflect(string $name): ReflectionClass
+{
+    return new ReflectionClass($name);
+}
+
+/**
  * Every class this app renders from.
  *
  * @return list<ReflectionClass<object>>
@@ -234,5 +254,53 @@ it('N2-R12 — no screen can be handed a credential', function (): void {
         . "is never part of the answer, so a surface that can hold one is a surface "
         . 'that has already gone wrong (N2-R12, N1-R15).',
         implode("\n  ", $found),
+    ));
+});
+
+it('N2-R4 — a repair cannot hand over one of its three clauses alone', function (): void {
+    // The requirement is one sentence with three clauses, and the way it gets
+    // broken is that a screen is written around `does` — the field that reads
+    // like the label — while the other two stay in the envelope. `Repair`
+    // answers that by publishing no accessor for any of them: `stated()` hands
+    // over all three together, so a screen that shows one has been given all
+    // three and discarded two, which somebody has to do on purpose.
+    //
+    // That design is worth nothing the day a getter is added for a template
+    // that needed "just the one field", so it is checked rather than written
+    // down. Two properties, because `does` is a string and cannot be told from
+    // `answers()` by its type alone.
+    $published = ApiSurface::publicMethodsOf(reflect(Repair::class));
+
+    $clauses = [];
+    $strings = [];
+
+    foreach ($published as $method) {
+        $answers = ApiSurface::namesIn($method->getReturnType());
+
+        foreach (array_intersect($answers, [Effects::class, Undoing::class]) as $clause) {
+            $clauses[] = sprintf('%s answers %s', ApiSurface::describe($method), $clause);
+        }
+
+        if (in_array('string', $answers, strict: true)) {
+            $strings[] = ApiSurface::describe($method);
+        }
+    }
+
+    expect($clauses)->toBe([], sprintf(
+        "A repair hands over a clause on its own:\n  %s\n\n"
+        . '`Effects` and `Undoing` exist only as clauses of N2-R4. A method answering '
+        . 'either is a template that can render what a repair affects without saying '
+        . "whether it can be undone, which is the omission the requirement names.\n"
+        . 'If a screen needs them, it needs all three — that is what `stated()` is.',
+        implode("\n  ", $clauses),
+    ));
+
+    expect($strings)->toBe(['Modules\Kernel\Api\Repair::answers()'], sprintf(
+        "A repair answers with a string somewhere other than `answers()`:\n  %s\n\n"
+        . '`answers()` is published alone because a check name is not something the '
+        . 'operator reads — it is how a screen files the repair under a finding, and a '
+        . 'screen holding it has learned nothing about what the repair would do. A '
+        . 'second string accessor is `does()` by another name (N2-R4).',
+        implode("\n  ", $strings),
     ));
 });
