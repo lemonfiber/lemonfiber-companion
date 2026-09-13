@@ -34,9 +34,20 @@ use Tests\Support\Tree;
  * where the other is expected fails in the most expensive way available: every
  * connection refused, against a stack that is perfectly correct.
  *
- * So closing this needs a decision rather than a patch, and it belongs with
- * `ADR-0018` rather than here. What belongs here is that nobody reaches a stack
- * in the meantime and discovers the question afterwards.
+ * **And pinning is the second wall, not the first.** `BaseUrl::fromString()`
+ * refuses every host that is not loopback, citing `C6-R1` — which says admin
+ * services bind to loopback *by default*, a statement about where a server
+ * binds rather than about what a client may address. `ADR-0018` is about
+ * reaching `192.168.1.42`. So the address is refused before any pin would be
+ * consulted, and `sdk-ts` refuses it too, for a reason of its own: a browser
+ * cannot resolve names. Loopback-only is right for both SDKs' existing
+ * consumers and the companion is the first that is not on the machine.
+ *
+ * Both are open questions in the specification rather than patches to write
+ * here — [spec#332](https://github.com/lemonfiber/spec/issues/332) for the
+ * seam, [spec#337](https://github.com/lemonfiber/spec/issues/337) for the
+ * address. What belongs here is that nobody reaches a stack in the meantime and
+ * discovers either afterwards.
  */
 
 /**
@@ -49,6 +60,16 @@ use Tests\Support\Tree;
  * Empty, and not an oversight. When the pinning adapter is written this is
  * where it gets named — one entry, so the reviewer of that change is looking at
  * this list and its reasoning at the same moment.
+ *
+ * **A map rather than a list, so an entry cannot arrive without saying why.**
+ * The failure this guards against is not somebody deciding to connect
+ * unpinned; it is somebody adding a path here because a test was red, in a
+ * change about something else. A key with no sentence beside it is a thing to
+ * type past. A key that must cite the requirement or the ADR it rests on is a
+ * question asked at the moment it matters, and the rule below refuses an answer
+ * that cites neither.
+ *
+ * @var array<string, string> path => the requirement or ADR that permits it
  */
 const MAY_REACH_A_STACK = [];
 
@@ -77,7 +98,7 @@ it('N1-R20 — nothing opens a connection to a stack without pinning its certifi
             static fn(string $path): string => str_replace(sprintf('%s/', Tree::root()), '', $path),
             $files,
         ),
-        MAY_REACH_A_STACK,
+        array_keys(MAY_REACH_A_STACK),
     ));
 
     foreach ($looking as $shown) {
@@ -105,5 +126,33 @@ it('N1-R20 — nothing opens a connection to a stack without pinning its certifi
         . 'it in MAY_REACH_A_STACK, and the reviewer will be reading why at the same '
         . 'time (N1-R18, N1-R19, N1-R20).',
         implode("\n  ", $offenders),
+    ));
+});
+
+it('N1-R20 — a file allowed to reach a stack says what permits it', function (): void {
+    // The list opens exactly once, and the moment it does is the only moment
+    // anybody will be looking at this file. An entry that cites nothing reads
+    // as settled and is how the question gets lost.
+    // Subtracted rather than looped over, for the reason the list above gives
+    // about `in_array`: an empty constant makes `foreach` provably empty to the
+    // analyser, which reports it — an error present exactly while nothing is
+    // allowed, which is the state this rule is written for.
+    $cited = array_filter(
+        MAY_REACH_A_STACK,
+        static fn(string $why): bool => preg_match('/\b(?:ADR-\d{3,4}|[A-Z]+\d*-R\d+)\b/', $why) === 1,
+    );
+
+    $bare = array_values(array_diff(array_keys(MAY_REACH_A_STACK), array_keys($cited)));
+
+    sort($bare);
+
+    expect($bare)->toBe([], sprintf(
+        "These are allowed to reach a stack and name nothing that permits it:\n  %s\n\n"
+        . 'ADR-0018 is what a pinned connection rests on, and N1-R18, N1-R19 and N1-R20 '
+        . 'are what it has to satisfy. An entry citing none of them is a path somebody '
+        . "added to make a red test green.\n"
+        . 'If the pinning adapter is written, say so here and name the ADR it implements '
+        . '(N1-R20).',
+        implode("\n  ", $bare),
     ));
 });
