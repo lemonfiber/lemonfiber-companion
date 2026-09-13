@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
+use Modules\Kernel\Api\WhatTheCheckSaid;
 
 // Named apart from WorstFirstTest's `row` and `checksIn`: a module's test files
 // share one namespace, so a second `row` here is a fatal at load rather than a
@@ -23,7 +24,7 @@ use Modules\Kernel\Api\Findings;
 
 function found(string $check, Category $category): Finding
 {
-    return Finding::of(Check::of($check), $category, 'A check that ran', Conclusion::Passed);
+    return Finding::of(Check::of($check), $category, 'A check that ran', Conclusion::Passed, WhatTheCheckSaid::nothingWrong());
 }
 
 /** @return list<string> */
@@ -77,9 +78,9 @@ it('answers with nothing where there was nothing to narrow', function (): void {
 
 it('composes with WorstFirst, in the order it is written', function (): void {
     $all = Findings::of(
-        Finding::of(Check::of('network.ports'), Category::Network, 'Ports', Conclusion::Passed),
-        Finding::of(Check::of('storage.room'), Category::Storage, 'Room', Conclusion::Failed),
-        Finding::of(Check::of('network.bindings'), Category::Network, 'Bindings', Conclusion::Failed),
+        Finding::of(Check::of('network.ports'), Category::Network, 'Ports', Conclusion::Passed, WhatTheCheckSaid::nothingWrong()),
+        Finding::of(Check::of('storage.room'), Category::Storage, 'Room', Conclusion::Failed, WhatTheCheckSaid::nothingWrong()),
+        Finding::of(Check::of('network.bindings'), Category::Network, 'Bindings', Conclusion::Failed, WhatTheCheckSaid::nothingWrong()),
     );
 
     $worstInNetwork = new WorstFirst()->over(new InCategory(Category::Network)->over($all));
