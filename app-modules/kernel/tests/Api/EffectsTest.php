@@ -39,7 +39,7 @@ it('refuses a blank effect rather than dropping it', function (): void {
 });
 
 it('trims what it keeps', function (): void {
-    expect(iterator_to_array(preserve_keys: false, iterator: Effects::of('  the library is rescanned  ')))
+    expect(iterator_to_array(iterator: Effects::of('  the library is rescanned  '), preserve_keys: false))
         ->toBe(['the library is rescanned']);
 });
 
@@ -48,5 +48,5 @@ it('survives named arguments without gaining string keys', function (): void {
     // the loop builds the list rather than passing the variadic through. Pinned
     // so a refactor back to the shorter form cannot quietly reintroduce keys
     // that everything downstream reads by position.
-    expect(iterator_to_array(preserve_keys: false, iterator: Effects::of(...['first' => 'a', 'second' => 'b'])))->toBe(['a', 'b']);
+    expect(iterator_to_array(iterator: Effects::of(...['first' => 'a', 'second' => 'b']), preserve_keys: false))->toBe(['a', 'b']);
 });
