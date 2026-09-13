@@ -43,6 +43,13 @@ use function view;
  * screen, so every accessor below reads what one asking produced rather than
  * asking again.
  *
+ * **Asking again is the operator's to decide**, which is what {@see again()}
+ * is and why there is no timer beside it. Somebody who has just gone and
+ * restarted a service wants to know whether it took, and a screen that could
+ * only be re-asked by leaving it and coming back teaches them to distrust what
+ * it says. `N1-R17` is about the app not talking to a machine unprompted; a tap
+ * is a prompt.
+ *
  * **It reads the session back rather than being handed one.** A screen given a
  * session is a screen that has to be navigated to with one, which is a session
  * in a route — and `N1-R8` keeps them out of URLs for the reason a proxy log
@@ -60,8 +67,15 @@ use function view;
 #[Concealed]
 final class HowThisStackIs extends NativeComponent
 {
-    /** What came back, once the frame has asked. */
-    private ?WhatTheStackTurnedOutToBe $answered = null;
+    /**
+     * What came back, once the frame has asked.
+     *
+     * `protected` rather than private, which is what `NativeComponent`'s
+     * property syncing needs to reach — it assigns from the parent class, so a
+     * private member of a subclass becomes a dynamic property and the screen
+     * silently stops holding what it thinks it holds.
+     */
+    protected ?WhatTheStackTurnedOutToBe $answered = null;
 
     public function __construct(
         private readonly Asking $asking,
@@ -146,6 +160,24 @@ final class HowThisStackIs extends NativeComponent
     public function signInAt(): string
     {
         return sprintf('/stacks/%s/sign-in', $this->stack()->id()->stored());
+    }
+
+    /**
+     * Ask the stack again, because the operator has just done something.
+     *
+     * Forgetting what was held rather than asking and comparing: the next read
+     * of any accessor rebuilds it, so there is one path to an answer and it is
+     * the one every other frame takes. A second path that filled the same field
+     * would be the place the two come to disagree.
+     *
+     * The session is resumed again with it, deliberately. An operator who has
+     * been on this screen a while may have had their session end underneath
+     * them, and a refresh that reused a session it never re-checked would show
+     * them a stale report under a stack they are no longer signed into.
+     */
+    public function again(): void
+    {
+        $this->answered = null;
     }
 
     /** The frame, by name. */

@@ -12,6 +12,8 @@
     @elseif ($this->met() !== '')
         <native:text class="font-bold">{{ __($this->met()) }}</native:text>
         <native:text>{{ __($this->remedy()) }}</native:text>
+
+        <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @else
         <native:text class="font-bold">{{ __($this->overall()) }}</native:text>
 
@@ -45,5 +47,10 @@
         @empty
             <native:text>{{ __('health.no_findings') }}</native:text>
         @endforelse
+
+        {{-- Under the findings rather than above them: somebody who has just
+             fixed something scrolls to the end of what was wrong, and that is
+             where they want to ask whether it took. --}}
+        <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @endunless
 </native:column>

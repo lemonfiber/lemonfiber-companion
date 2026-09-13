@@ -229,6 +229,47 @@ it('N1-R17 — asks once however many times the frame reads it', function (): vo
         ->and($asking->wasGivenASession())->toBeTrue();
 });
 
+it('N2-R1 — asks again when the operator asks it to, and not otherwise', function (): void {
+    // Somebody who has just gone and restarted a service wants to know whether
+    // it took. A screen that could only be re-asked by leaving it and coming
+    // back teaches them to distrust what it says — and one that asked on a
+    // timer would be talking to a machine over a home network unprompted, which
+    // is what `N1-R17` refuses. A tap is a prompt.
+    $asking = AStackThatWasAsked::saying(aRunWithAWarning());
+    $screen = theHealthScreen($asking);
+
+    $screen->overall();
+    $screen->findings();
+
+    expect($asking->askings())->toBe(1);
+
+    $screen->again();
+    $screen->overall();
+
+    expect($asking->askings())->toBe(2);
+});
+
+it('N1-R44 — asking again notices a session that has ended underneath them', function (): void {
+    // An operator may have been on this screen a while. A refresh that reused a
+    // session it never re-checked would show them a stale report under a stack
+    // they are no longer signed into.
+    $stack = theStackBeingLookedAt();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+    $asking = AStackThatWasAsked::saying(aRunWithAWarning());
+
+    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack));
+    $screen->setParams(['stack' => $stack->id()->stored()]);
+
+    expect($screen->isSignedIn())->toBeTrue();
+
+    $keychain->forget($stack->id());
+    $screen->again();
+
+    expect($screen->isSignedIn())->toBeFalse()
+        ->and($asking->askings())->toBe(1);
+});
+
 it('N1-R10 — says what the operator met where the stack did not answer', function (): void {
     // Every obstacle, because the screen shows whichever it was and the keys
     // are derived — so a seventh case needs no edit on this screen and must not

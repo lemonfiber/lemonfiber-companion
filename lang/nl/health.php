@@ -35,4 +35,5 @@ return [
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',
     'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',
+    'ask_again' => 'Opnieuw controleren',
 ];
