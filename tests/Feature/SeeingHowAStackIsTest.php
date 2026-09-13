@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AboutWhat;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Because;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
@@ -403,4 +405,70 @@ it('N2-R3 — a row with nothing graded carries no cost at all', function (): vo
 
     expect($screen->findings()[0]->cost)->toBe('')
         ->and($screen->findings()[0]->code)->toBe('');
+});
+
+/** A failing verdict, for the rows that exist to carry an attribution. */
+function aFailingVerdict(): WhatTheCheckSaid
+{
+    return WhatTheCheckSaid::wentWrong(
+        Code::of('VPN-3'),
+        'Your address was visible to the swarm',
+        Remedies::none(),
+        Severity::Critical,
+        Standing::Guided,
+    );
+}
+
+it('N2-R3 — a row names the service it is about, and what explains it', function (): void {
+    // The cause is shown by the other row's *title*, not by its identifier.
+    // `vpn.up` is right on a wire and jargon on a phone; "The tunnel" is what
+    // the operator is looking at two rows up.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.up'),
+            Category::Vpn,
+            'The tunnel',
+            Conclusion::Failed,
+            aFailingVerdict(),
+        )->about(AboutWhat::theService('gluetun')),
+        Finding::of(
+            Check::of('vpn.egress-match'),
+            Category::Vpn,
+            'Torrent traffic leaves through the tunnel',
+            Conclusion::Failed,
+            aFailingVerdict(),
+        )->about(AboutWhat::theService('qbittorrent'))->because(Because::theCheck(Check::of('vpn.up'))),
+    ))));
+
+    $rows = $screen->findings();
+
+    expect($rows[0]->service)->toBe('gluetun')
+        ->and($rows[0]->because)->toBe('')
+        ->and($rows[1]->service)->toBe('qbittorrent')
+        ->and($rows[1]->because)->toBe('The tunnel');
+});
+
+it('N2-R3 — a cause the report does not hold is shown as the identifier', function (): void {
+    // A report attributing a finding to a check it does not contain has a fault
+    // in it. Showing the identifier is honest rather than tidy: the operator
+    // has a string they can quote to somebody who can fix it, where a blank
+    // would leave them with a row that used to say something.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.egress-match'),
+            Category::Vpn,
+            'Torrent traffic leaves through the tunnel',
+            Conclusion::Failed,
+            aFailingVerdict(),
+        )->because(Because::theCheck(Check::of('a.check.that.did.not.run'))),
+    ))));
+
+    expect($screen->findings()[0]->because)->toBe('a.check.that.did.not.run');
+});
+
+it('N2-R3 — a row about the machine names no service', function (): void {
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+
+    expect($screen->findings()[0]->service)->toBe('')
+        ->and($screen->findings()[0]->because)->toBe('');
 });

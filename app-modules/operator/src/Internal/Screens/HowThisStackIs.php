@@ -138,10 +138,14 @@ final class HowThisStackIs extends NativeComponent
         // always holds a list, so `iterator_to_array`'s `preserve_keys` cannot
         // be wrong here — and an argument that cannot change the answer is a
         // line no test can defend.
+        $run = $this->answer()->findings;
         $rows = [];
 
-        foreach ($this->answer()->findings as $finding) {
-            $rows[] = WhatOneFindingSays::in($finding);
+        foreach ($run as $finding) {
+            // The whole run, not just the row: a finding the engine attributed
+            // to another is shown by that other one's title, and the title is
+            // only findable here.
+            $rows[] = WhatOneFindingSays::in($finding, $run);
         }
 
         return $rows;

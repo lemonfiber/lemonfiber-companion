@@ -37,6 +37,7 @@ return [
         'degraded' => 'Sommige services hebben aandacht nodig',
         'healthy' => 'Alles draait',
     ],
+    'because_of' => 'Vanwege: :title',
     'stale' => 'Laatst gecontroleerd :ago',
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',

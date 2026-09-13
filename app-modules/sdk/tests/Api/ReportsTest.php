@@ -12,6 +12,7 @@ use function iterator_to_array;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\CheckGaveNoReason;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
@@ -20,6 +21,7 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 use Modules\Sdk\Api\ReportIsUnreadable;
@@ -454,4 +456,81 @@ it('N2-R3 — refuses a remedy that is not a remedy', function (): void {
     expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
         aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
     ]))))->toThrow(ReportIsUnreadable::class);
+});
+
+it('N2-R3 — reads which service a finding is about', function (): void {
+    // Beside the title rather than inside it. The same check runs against
+    // whichever service fills a role, so a title naming one would be wrong on
+    // the next machine — and an operator with nineteen services needs the name.
+    $row = aFinding('vpn.egress-match', 'vpn', 'The tunnel', ['outcome' => 'pass']);
+    $row['service'] = 'gluetun';
+    $report = Reports::in(doctorSaying(aRun('healthy', [$row])));
+    $named = [];
+
+    foreach ($report->findings() as $finding) {
+        $named[] = $finding->whatItIsAbout()->either(
+            theMachine: static fn(): Code => Code::of('the-machine'),
+            theService: static fn(string $service): Code => Code::of($service),
+        );
+    }
+
+    expect($named[0]->shown())->toBe('gluetun');
+});
+
+it('N2-R3 — a check about the machine names no service', function (): void {
+    $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
+    $named = [];
+
+    foreach ($report->findings() as $finding) {
+        $named[] = $finding->whatItIsAbout()->either(
+            theMachine: static fn(): Code => Code::of('the-machine'),
+            theService: static fn(string $service): Code => Code::of($service),
+        );
+    }
+
+    expect($named[0]->shown())->toBe('the-machine');
+});
+
+it('N2-R3 — refuses a finding that claims a service and names none', function (): void {
+    // Different from a finding that claims none: one is a check about the
+    // machine and the other is a row with a fault in it. An operator shown a
+    // blank where a service belongs learns less than one shown nothing.
+    $row = aFinding('vpn.egress-match', 'vpn', 'The tunnel', ['outcome' => 'pass']);
+    $row['service'] = '   ';
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('healthy', [$row]))))
+        ->toThrow(ServiceIsUnnamed::class);
+});
+
+it('N2-R3 — reads which check explains a finding', function (): void {
+    // The engine sets this after the run, because a check is independent by
+    // construction and cannot see what any other found. It is the difference
+    // between an operator reading five broken things and reading one.
+    $row = aFinding('vpn.egress-match', 'vpn', 'Egress', ['outcome' => 'pass']);
+    $row['caused_by'] = 'vpn.up';
+    $report = Reports::in(doctorSaying(aRun('healthy', [$row])));
+    $explained = [];
+
+    foreach ($report->findings() as $finding) {
+        $explained[] = $finding->whatExplainsIt()->either(
+            alone: static fn(): Code => Code::of('stands-alone'),
+            explained: static fn(Check $cause): Code => Code::of($cause->shown()),
+        );
+    }
+
+    expect($explained[0]->shown())->toBe('vpn.up');
+});
+
+it('N2-R3 — a finding nothing explains stands alone', function (): void {
+    $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
+    $explained = [];
+
+    foreach ($report->findings() as $finding) {
+        $explained[] = $finding->whatExplainsIt()->either(
+            alone: static fn(): Code => Code::of('stands-alone'),
+            explained: static fn(Check $cause): Code => Code::of($cause->shown()),
+        );
+    }
+
+    expect($explained[0]->shown())->toBe('stands-alone');
 });

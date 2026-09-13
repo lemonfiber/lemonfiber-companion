@@ -10,6 +10,8 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\DoctorEnvelope;
+use Modules\Kernel\Api\AboutWhat;
+use Modules\Kernel\Api\Because;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
@@ -149,13 +151,59 @@ final readonly class Reports
         $verdict = self::verdict($row);
         $conclusion = self::conclusion($verdict);
 
-        return Finding::of(
+        $finding = Finding::of(
             Check::of(self::text($row, WireField::Check)),
             self::category(self::text($row, WireField::Category)),
             self::text($row, WireField::Title),
             $conclusion,
             self::said($verdict, $conclusion),
         );
+
+        // Set after the row is complete, which is how the engine sets them:
+        // neither is the check's own business, and a finding that names neither
+        // is the ordinary case rather than an incomplete one.
+        return $finding
+            ->about(self::about($row))
+            ->because(self::because($row));
+    }
+
+    /**
+     * Which service the row says it is about, where it says.
+     *
+     * Absent for a check about the machine rather than about something running
+     * on it, which is why this reads as an arm and not as a refusal. Present
+     * and blank *is* refused — {@see AboutWhat::theService()} does that — since
+     * a row claiming a service and naming none has a fault worth seeing here.
+     *
+     * @param array<mixed> $row
+     */
+    private static function about(array $row): AboutWhat
+    {
+        if (! array_key_exists(WireField::Service->value, $row)) {
+            return AboutWhat::theMachine();
+        }
+
+        return AboutWhat::theService(self::text($row, WireField::Service));
+    }
+
+    /**
+     * Which other check the row says explains it, where it says.
+     *
+     * The identifier is taken as a {@see Check} without asking whether the
+     * report contains it. A report naming a check it does not hold is the
+     * engine's fault and belongs on a screen as the identifier, where an
+     * operator can quote it — refusing the whole report over it would turn one
+     * wrong attribution into nine findings nobody can see.
+     *
+     * @param array<mixed> $row
+     */
+    private static function because(array $row): Because
+    {
+        if (! array_key_exists(WireField::CausedBy->value, $row)) {
+            return Because::nothingElse();
+        }
+
+        return Because::theCheck(Check::of(self::text($row, WireField::CausedBy)));
     }
 
     private static function category(string $said): Category

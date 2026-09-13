@@ -37,6 +37,7 @@ return [
         'degraded' => 'Some services need attention',
         'healthy' => 'Everything is running',
     ],
+    'because_of' => 'Because of: :title',
     'stale' => 'Last checked :ago',
     'no_findings' => 'Nothing needs attention.',
     'repair_refused' => 'The stack refused that repair: :reason',

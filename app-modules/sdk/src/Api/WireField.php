@@ -38,6 +38,9 @@ enum WireField: string
     /** Which part of the machine a check is about. */
     case Category = 'category';
 
+    /** The check whose finding explains this one, where another does. */
+    case CausedBy = 'caused_by';
+
     /** The stable identifier for the thing a check established. */
     case Check = 'check';
 
@@ -82,6 +85,9 @@ enum WireField: string
 
     /** What happened, in one plain sentence, before it is explained. */
     case Summary = 'summary';
+
+    /** The service a finding is about, where it is about one. */
+    case Service = 'service';
 
     /** What a check is called, in the core's words. */
     case Title = 'title';

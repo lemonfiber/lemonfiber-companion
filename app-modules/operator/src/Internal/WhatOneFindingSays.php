@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Finding;
+use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Severity;
 
@@ -24,6 +26,15 @@ use Modules\Kernel\Api\Severity;
  * full — Needs attention"* and not what that meant for them or what to do.
  * `N2-R3` is the requirement, and the words are the core's own rather than this
  * app's, which is why they are rendered rather than translated.
+ *
+ * **The cause is resolved to the other row's title, not shown as its id.** The
+ * engine attributes one finding to another by check identifier — `vpn.up` —
+ * which is the right thing on a wire and jargon on a phone. So the fold is
+ * given the whole run and looks the identifier up: an operator reads *because
+ * The tunnel*, not *because vpn.up*. Where the report names a check it does not
+ * contain, the identifier is shown as it arrived rather than hidden; that is
+ * the engine having a fault, and an identifier is something a person can quote
+ * to somebody who can fix it.
  *
  * **The category is carried on every row**, wrong or not. A report listing ten
  * checks in the engine's own order is a list an operator scans for the part of
@@ -65,6 +76,8 @@ final readonly class WhatOneFindingSays
      * @param string   $code     the identifier an operator quotes, or empty
      * @param string   $meaning  what it means for them, or empty
      * @param string   $cost     the key for how much it matters, or empty
+     * @param string   $service  which service this is about, or empty
+     * @param string   $because  the title of what explains this, or empty
      * @param Remedies $remedies what to try, likeliest first, empty where none
      */
     private function __construct(
@@ -74,6 +87,8 @@ final readonly class WhatOneFindingSays
         public string $code,
         public string $meaning,
         public string $cost,
+        public string $service,
+        public string $because,
         public Remedies $remedies,
     ) {}
 
@@ -83,9 +98,11 @@ final readonly class WhatOneFindingSays
      * The `either()` is answered here rather than in the screen, so a screen
      * showing findings is a loop over this and not a fold per row.
      */
-    public static function in(Finding $finding): self
+    public static function in(Finding $finding, Findings $run): self
     {
         $said = $finding->said();
+        $service = self::serviceOf($finding);
+        $because = self::becauseOf($finding, $run);
 
         return $said->either(
             nothingWrong: static fn(): self => new self(
@@ -95,6 +112,8 @@ final readonly class WhatOneFindingSays
                 code: '',
                 meaning: '',
                 cost: '',
+                service: $service,
+                because: $because,
                 remedies: Remedies::none(),
             ),
             wentWrong: static fn(
@@ -109,6 +128,8 @@ final readonly class WhatOneFindingSays
                 code: $code->shown(),
                 meaning: $meaning,
                 cost: $severity->saidOnTheScreen(),
+                service: $service,
+                because: $because,
                 // Every one of them, in the order the engine gave. `likeliest()`
                 // exists for a screen with room for one line, and this screen
                 // has room for the list — an operator whose first remedy did
@@ -127,6 +148,8 @@ final readonly class WhatOneFindingSays
                 code: '',
                 meaning: $reason,
                 cost: '',
+                service: $service,
+                because: $because,
                 remedies: $remedies,
             ),
         );
@@ -136,5 +159,42 @@ final readonly class WhatOneFindingSays
     public function explainsItself(): bool
     {
         return $this->meaning !== '';
+    }
+
+    /** Which service this row is about, or empty where it is about the machine. */
+    private static function serviceOf(Finding $finding): string
+    {
+        return $finding->whatItIsAbout()->either(
+            theMachine: static fn(): AsText => AsText::nothing(),
+            theService: static fn(string $service): AsText => AsText::of($service),
+        )->said;
+    }
+
+    /**
+     * What explains this row, named the way the operator will recognise it.
+     *
+     * The run is searched for the check the engine pointed at, and its title is
+     * what a person reads. A check the report does not hold falls back to the
+     * identifier, which is honest rather than tidy: something is wrong with the
+     * report and the operator has a string they can quote.
+     */
+    private static function becauseOf(Finding $finding, Findings $run): string
+    {
+        return $finding->whatExplainsIt()->either(
+            alone: static fn(): AsText => AsText::nothing(),
+            explained: static fn(Check $cause): AsText => AsText::of(self::titleOf($cause, $run)),
+        )->said;
+    }
+
+    /** @return string the cause's title, or its identifier where the run has no such row */
+    private static function titleOf(Check $cause, Findings $run): string
+    {
+        foreach ($run as $finding) {
+            if ($finding->check()->shown() === $cause->shown()) {
+                return $finding->title();
+            }
+        }
+
+        return $cause->shown();
     }
 }

@@ -13,18 +13,21 @@ use function trim;
  * family it belongs to, a one-line summary of what was checked, and the
  * conclusion.
  *
- * **What a warning or a failure said is not here yet, and that is deliberate.**
- * The server carries a `Problem` on those two conclusions, and this side will
- * carry it in the same shape the kernel already publishes. What decides how it
- * is read — a fold over five cases, an accessor, something else — is a
- * question a screen answers, and there is no screen. Carrying a payload
- * nothing can read would be worse than not carrying it: it would be a design
- * fixed before the thing it is for existed, and the first screen would find it
- * wrong and have to work around it.
+ * **Two more the engine sets after the run**, and they are set the way the
+ * engine sets them: a finding is made complete and then said to be about a
+ * service, or said to be explained by another check. A check is independent by
+ * construction and cannot see what any other found, so neither of those is the
+ * check's own business — which is why they are not arguments to
+ * {@see self::of()} and why a finding that names neither is the ordinary case
+ * rather than an incomplete one.
  *
- * What is here is what the module already decides with: the ordering, which is
- * `N2`'s "findings worst-first", and the counting a screen does before it
- * knows what to draw.
+ * **`said` — what the service itself last said — is still dropped.** It is the
+ * one field here with no honest place to go: log output of a length nobody can
+ * predict, and this surface has five components and no way to fold anything
+ * away. Putting it inline would push every following row off the screen, and
+ * cutting it to fit would be this app editing the machine's words. It waits for
+ * somewhere to put it, which is a different thing from waiting for a screen —
+ * the screen exists.
  */
 final readonly class Finding
 {
@@ -34,6 +37,8 @@ final readonly class Finding
         private string $title,
         private Conclusion $conclusion,
         private WhatTheCheckSaid $said,
+        private AboutWhat $about,
+        private Because $because,
     ) {}
 
     /**
@@ -57,7 +62,62 @@ final readonly class Finding
             throw FindingHasNoTitle::about($check);
         }
 
-        return new self($check, $category, $trimmed, $conclusion, $said);
+        return new self(
+            $check,
+            $category,
+            $trimmed,
+            $conclusion,
+            $said,
+            AboutWhat::theMachine(),
+            Because::nothingElse(),
+        );
+    }
+
+    /**
+     * The same finding, said to be about a particular service.
+     *
+     * Written as the engine writes it — `Finding::in_category(..).about("x")` —
+     * rather than as a sixth argument, because that is what it is: a fact added
+     * once the run knows which service a check turned out to be about, not
+     * something the check itself established.
+     *
+     * Takes the value rather than the name, because `D2` keeps a primitive out
+     * of a published signature that is not a named constructor — and because
+     * the two arms are then visible where the finding is built, rather than
+     * hidden behind a string that might be empty.
+     */
+    public function about(AboutWhat $about): self
+    {
+        return new self(
+            $this->check,
+            $this->category,
+            $this->title,
+            $this->conclusion,
+            $this->said,
+            $about,
+            $this->because,
+        );
+    }
+
+    /**
+     * The same finding, said to be explained by another check's.
+     *
+     * Set after the run for the same reason and in the same shape. The check
+     * named is one of the run's own; a report naming a check it does not
+     * contain is the engine's fault and is shown as the identifier rather than
+     * hidden, because an operator can quote an identifier to somebody.
+     */
+    public function because(Because $because): self
+    {
+        return new self(
+            $this->check,
+            $this->category,
+            $this->title,
+            $this->conclusion,
+            $this->said,
+            $this->about,
+            $because,
+        );
     }
 
     public function check(): Check
@@ -92,5 +152,28 @@ final readonly class Finding
     public function said(): WhatTheCheckSaid
     {
         return $this->said;
+    }
+
+    /**
+     * Which service this is about, where it is about one.
+     *
+     * Beside the title rather than inside it: the same check runs against
+     * whichever service fills a role, so a title naming one would be wrong on
+     * the next machine — and an operator with nineteen services needs the name.
+     */
+    public function whatItIsAbout(): AboutWhat
+    {
+        return $this->about;
+    }
+
+    /**
+     * What explains this one, where something in the same run does.
+     *
+     * The difference between an operator reading five things wrong with their
+     * machine and reading one broken thing that four services noticed.
+     */
+    public function whatExplainsIt(): Because
+    {
+        return $this->because;
     }
 }

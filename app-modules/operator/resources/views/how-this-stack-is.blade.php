@@ -19,7 +19,14 @@
 
         @forelse ($this->findings() as $finding)
             <native:column class="w-full gap-1">
-                <native:text class="text-sm">{{ __($finding->about) }}</native:text>
+                {{-- Which part of the machine, and which service under it. The
+                     same check runs against whichever service fills a role, so
+                     the title never names one — an operator with nineteen of
+                     them needs the name beside it. Rendered rather than
+                     translated: it is the stack's own name for the service. --}}
+                <native:text class="text-sm">
+                    {{ __($finding->about) }}@if ($finding->service !== '') · {{ $finding->service }}@endif
+                </native:text>
                 <native:text class="font-bold">{{ $finding->title }}</native:text>
                 {{-- The verdict and what it costs, on one line. They answer
                      different questions and a row showing only the first makes
@@ -37,6 +44,14 @@
                      machine's sentences about the machine, and putting them
                      through the catalogue would mean this app inventing a
                      line for a check it has never heard of. --}}
+                {{-- What explains this one, where the run says something does.
+                     Without it an operator reads five broken things; with it
+                     they read one broken thing and four services that noticed,
+                     which is the row they should go and fix. --}}
+                @if ($finding->because !== '')
+                    <native:text class="text-sm">{{ __('health.because_of', ['title' => $finding->because]) }}</native:text>
+                @endif
+
                 @if ($finding->explainsItself())
                     <native:text>{{ $finding->meaning }}</native:text>
                     <native:text class="text-sm">{{ $finding->code }}</native:text>
