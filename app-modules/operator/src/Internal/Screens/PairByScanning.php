@@ -137,15 +137,22 @@ final class PairByScanning extends NativeComponent
     }
 
     /**
-     * Whether the operator could grant the camera by changing a platform setting.
+     * What to do about the camera coming back empty, as a key.
      *
-     * Answered by the reason rather than by this screen, so that "open Settings"
-     * and "there is nothing here to turn on" are decided once — and are not
-     * decided at all where nothing has been refused.
+     * Answered by the reason rather than by this screen, which is where the
+     * three-into-two mistake was: a boolean choosing between "open Settings"
+     * and one generic alternative can only be wrong about the third reason,
+     * and it was — a closed scanner was told it could type the code instead
+     * rather than that it could open the camera again.
+     *
+     * The empty string where nothing came back, which is what the template
+     * branches on: there is no advice to give about a camera that has not been
+     * opened yet, and a key invented for that state would be a catalogue line
+     * for a sentence nobody should read.
      */
-    public function settingsWouldHelp(): bool
+    public function remedyForTheCamera(): string
     {
-        return $this->nothingCameBack?->settingsWouldHelp() ?? false;
+        return $this->nothingCameBack?->remedy() ?? '';
     }
 
     /**

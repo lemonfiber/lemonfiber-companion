@@ -108,7 +108,7 @@ it('says nothing about the camera before anybody has opened it', function (): vo
 
     expect($screen->nothingWasScanned())->toBeFalse()
         ->and($screen->whyNothingCameBack())->toBe('')
-        ->and($screen->settingsWouldHelp())->toBeFalse();
+        ->and($screen->remedyForTheCamera())->toBe('');
 });
 
 it('pairs the stack from what the camera read, with nothing to confirm', function (): void {
@@ -126,19 +126,27 @@ it('N4-R3 — a refused camera is told apart from one somebody closed', function
     // Three reasons, three things to do about them, and this is the screen that
     // has to say which. "Open Settings" is advice that wastes an operator's
     // time on two of the three.
-    $refused = named(scanningScreen(ACameraInMemory::answering(WhyNothingWasScanned::TheCameraIsNotPermitted)));
-    $closed = named(scanningScreen(ACameraInMemory::answering(WhyNothingWasScanned::TheOperatorClosedIt)));
-    $none = named(scanningScreen(ACameraInMemory::answering(WhyNothingWasScanned::ThereIsNoCamera)));
+    //
+    // Asserted as three distinct remedies rather than as a boolean, which is
+    // the stronger claim and the one that was wrong: a `settingsWouldHelp()`
+    // flag chose between "open Settings" and one generic alternative, so a
+    // closed scanner and a phone with no camera were answered with the same
+    // sentence — written for neither. Each reason now carries its own.
+    $said = [];
 
-    $refused->scan();
-    $closed->scan();
-    $none->scan();
+    foreach (WhyNothingWasScanned::cases() as $why) {
+        $screen = named(scanningScreen(ACameraInMemory::answering($why)));
+        $screen->scan();
 
-    expect($refused->settingsWouldHelp())->toBeTrue()
-        ->and($closed->settingsWouldHelp())->toBeFalse()
-        ->and($none->settingsWouldHelp())->toBeFalse()
-        ->and($refused->nothingWasScanned())->toBeTrue()
-        ->and($refused->went())->toBe(HowThePairingWent::NotYet);
+        expect($screen->nothingWasScanned())->toBeTrue($why->value)
+            ->and($screen->went())->toBe(HowThePairingWent::NotYet, $why->value)
+            ->and(__($screen->remedyForTheCamera()))
+            ->not->toBe($screen->remedyForTheCamera(), $why->value);
+
+        $said[] = $screen->remedyForTheCamera();
+    }
+
+    expect($said)->toHaveCount(count(array_unique($said)));
 });
 
 it('says something about every way the camera can come back empty, and it is a real sentence', function (): void {

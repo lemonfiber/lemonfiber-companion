@@ -71,6 +71,7 @@ function everyDerivedKey(): array
 
     foreach (WhyNothingWasScanned::cases() as $why) {
         $derived[WhyNothingWasScanned::class][] = $why->saidOnTheScreen();
+        $derived[WhyNothingWasScanned::class][] = $why->remedy();
     }
 
     foreach (WhereTheCodeGot::cases() as $got) {
@@ -130,6 +131,7 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
     }
 
     foreach (WhyNothingWasScanned::cases() as $why) {
-        expect($why->saidOnTheScreen())->toBe(sprintf('connection.%s', $why->value), $why->name);
+        expect($why->saidOnTheScreen())->toBe(sprintf('connection.%s', $why->value), $why->name)
+            ->and($why->remedy())->toBe(sprintf('connection.%s_action', $why->value), $why->name);
     }
 });
