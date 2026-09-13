@@ -15,9 +15,10 @@ use Tests\Support\Tree;
 //
 // The failure is the same one `L2` is written about and it is worse, because it
 // survives a locale sweep: Laravel looks the key up, misses, falls back, misses
-// again, and renders the key. `notifications.plain.titel` appears on somebody's
-// phone as those words. Nothing in the type system, the analyser or the suite
-// sees a string.
+// again, and renders the key. `notifications.plain.heading` appears on
+// somebody's phone as those words, because the line is called
+// `notifications.plain.title`. Nothing in the type system, the analyser or the
+// suite sees a string.
 //
 // Read over the text of the sources rather than by resolving anything at
 // runtime, because the point is the keys nothing ever reaches: a branch that
