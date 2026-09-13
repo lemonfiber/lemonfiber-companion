@@ -5,7 +5,24 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Attempted;
 use Tests\Support\Module;
 
-// N1-R41 — the app does not retain an undelivered action, and cannot present one
+// N1-R41 and N3-R12 — the app does not retain an undelivered action, and cannot
+// present one.
+//
+// Two requirements, one guarantee, and they are cited together here on purpose.
+// N1-R41 says the operator's app must not retain an undelivered action, replay
+// one on reconnecting, or present one as pending. N3-R12 says that while the
+// stack is unreachable, a household member asking for something new must be
+// declined rather than queued.
+//
+// They are the same sentence about two surfaces. Whoever reads N3-R12 next
+// should find this rather than write a second queue-refusing check for the
+// household module — which would be one fact in two places, and the copy that
+// gets corrected is whichever the next person happens to open.
+//
+// What N3-R12 adds is who is looking: a member is told no by an app they did not
+// configure and cannot diagnose, so the refusal has to be a sentence rather than
+// a silence. `Attempted` carries a `Problem` on its refusing arm for exactly
+// that, and has no third arm to fall through to.
 // as pending.
 //
 // `ADR-0020` spends its length rejecting the obvious kindness: hold the action
