@@ -27,16 +27,15 @@ use function str_contains;
  * refusal messages an operator reads on a phone, and a message whose shape is
  * spread across four operands is one nobody rereads before shipping.
  *
- * **A chain of pure literals is refused too, in the code that ships.** This
- * used to be exempt on the reasoning that `'a' . 'b'` is one string written
- * across two lines for width and that Pint's `no_useless_concat_operator` has
- * an opinion about it. Pint does not — it collapses a join on one line and
- * leaves a wrapped one alone — and the exemption cost a mutation gate: every
- * `.` between two literals is three mutants, drop the left, drop the right,
- * swap them, and each survives unless a test asserts the whole sentence word
- * for word. A message asserted by the phrase that matters, which is the only
- * kind of assertion that survives somebody improving the wording, kills none of
- * them.
+ * **A chain of pure literals is refused too, in the code that ships**, and it
+ * is the shape that matters most rather than an edge of the rule. Pint's
+ * `no_useless_concat_operator` collapses a join written on one line and leaves
+ * a wrapped one alone, so nothing else in this toolchain holds it. Meanwhile
+ * every `.` between two literals is three mutants — drop the left, drop the
+ * right, swap them — and each survives unless a test asserts the whole sentence
+ * word for word. A message asserted by the phrase that carries its meaning,
+ * which is the only kind of assertion that survives somebody improving the
+ * wording, kills none of them.
  *
  * So a message is one literal. Nothing to drop, nothing to swap, and the
  * sentence is readable in the one place somebody would go to change it. It is
