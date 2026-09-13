@@ -124,15 +124,27 @@ jobs:
             # Every mirrored pair, found rather than listed: a rule added
             # tomorrow with only one half written is exactly what this exists to
             # catch, and a hand-kept list would not know about it.
+            #
+            # Both trees are globbed, and that is the whole point. Walking only
+            # the Kotlin one meant a Swift suite with no Kotlin counterpart was
+            # never looked at — the file was not in `pairs`, so nothing compared
+            # it and nothing said it was alone. A check that reports agreement
+            # by not looking is the failure its own error message describes.
+            kotlin = {
+                p.stem.removesuffix("Test")
+                for p in Path("native/android/src/test/kotlin").glob("*Test.kt")
+            }
+            swift = {
+                p.parent.name.removesuffix("Tests")
+                for p in Path("native/ios/Tests").glob("*Tests/*Tests.swift")
+            }
+
             pairs = [
                 (
                     Path("native/android/src/test/kotlin") / f"{name}Test.kt",
                     Path("native/ios/Tests") / f"{name}Tests" / f"{name}Tests.swift",
                 )
-                for name in sorted(
-                    p.stem.removesuffix("Test")
-                    for p in Path("native/android/src/test/kotlin").glob("*Test.kt")
-                )
+                for name in sorted(kotlin | swift)
             ]
 
             missing = [str(p) for pair in pairs for p in pair if not p.exists()]
