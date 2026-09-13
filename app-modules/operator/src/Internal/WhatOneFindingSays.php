@@ -36,6 +36,14 @@ use Modules\Kernel\Api\Remedies;
  * remedy to offer, and inventing a sentence for one would be this app writing
  * words the machine did not say.
  *
+ * **A row with no answer carries a sentence and no code.** `unverified` and
+ * `skipped` are checks that produced no verdict, so there is nothing to quote
+ * and nothing to grade — but there is a reason, and for an unverified check
+ * something to do about it. Those go in the same two fields a failure uses,
+ * because an operator reading a row wants to know what it means and what to do
+ * about it whichever outcome produced it. The empty code is the difference, and
+ * it is a true one: there is no identifier to search for.
+ *
  * `Internal` because it is a detail of how this surface reads one value, and
  * `E2`'s promise is that anything here can be renamed without reading another
  * module.
@@ -88,6 +96,17 @@ final readonly class WhatOneFindingSays
                 // exists for a screen with room for one line, and this screen
                 // has room for the list — an operator whose first remedy did
                 // not work would otherwise have nowhere to find the second.
+                remedies: $remedies,
+            ),
+            couldNotSay: static fn(string $reason, Remedies $remedies): self => new self(
+                title: $finding->title(),
+                about: $finding->category()->saidOnTheScreen(),
+                verdict: $finding->conclusion()->saidOnTheScreen(),
+                // No code, because these outcomes carry none. The template
+                // branches on the meaning rather than on this, so a row with a
+                // reason and no identifier still explains itself.
+                code: '',
+                meaning: $reason,
                 remedies: $remedies,
             ),
         );

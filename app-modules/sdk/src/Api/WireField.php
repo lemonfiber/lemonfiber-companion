@@ -59,6 +59,12 @@ enum WireField: string
     /** What a whole run came to, in the run's own judgement. */
     case Overall = 'overall';
 
+    /** Why a check has no answer, on the arms that produced none. */
+    case Reason = 'reason';
+
+    /** The single thing to do about an unverified check. Singular on the wire. */
+    case Remedy = 'remedy';
+
     /** What to do about a problem, likeliest first. Plural on the wire. */
     case Remedies = 'remedies';
 

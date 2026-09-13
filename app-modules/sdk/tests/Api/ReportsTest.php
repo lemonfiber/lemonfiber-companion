@@ -12,6 +12,7 @@ use function iterator_to_array;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\CheckGaveNoReason;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\EnvelopeIsNotRead;
@@ -262,6 +263,9 @@ it('N2-R3 — reads the code, the meaning and the remedies off a failing verdict
                 $meaning,
                 $remedies->count(),
             )),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+            ),
         );
     }
 
@@ -288,6 +292,9 @@ it('N2-R3 — reads how much it matters and where it stands, off the same verdic
                 Severity $severity,
                 Standing $standing,
             ): Code => Code::of(sprintf('%s|%s', $severity->value, $standing->value)),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+            ),
         );
     }
 
@@ -329,10 +336,81 @@ it('N2-R3 — a check that passed carries none of it', function (): void {
                 $meaning,
                 $remedies->count(),
             )),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+            ),
         );
     }
 
     expect($said[0]->shown())->toBe('nothing-wrong');
+});
+
+it('N2-R3 — a check that could not run carries why, and what to do to get an answer', function (): void {
+    // This read as a passing check until the reader stopped sniffing for a
+    // `code` key. `unverified` carries neither a code nor a severity, so the
+    // presence test put it on the arm that means nothing is wrong — which is
+    // the one mistake `Conclusion` splits its cases to prevent, made in the
+    // reader instead of on the screen.
+    $verdict = [
+        'outcome' => 'unverified',
+        'reason' => 'The container engine did not answer, so egress could not be established',
+        'remedy' => ['action' => 'Start the container engine and check again'],
+    ];
+    $report = Reports::in(doctorSaying(aRun('broken', [aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict)])));
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(): Code => Code::of('went-wrong'),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('%s|%d', $reason, $remedies->count()),
+            ),
+        );
+    }
+
+    expect($said[0]->shown())
+        ->toBe('The container engine did not answer, so egress could not be established|1');
+});
+
+it('N2-R3 — a skipped check carries why, and nothing to do about it', function (): void {
+    // No remedy on the wire and none invented here. A prerequisite that was
+    // absent is a fact about the machine, not something the core is asking
+    // anybody to go and fix, and an empty list says so without a sentence.
+    $verdict = ['outcome' => 'skipped', 'reason' => 'No VPN is configured, so there was nothing to check'];
+    $report = Reports::in(doctorSaying(aRun('healthy', [aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict)])));
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(): Code => Code::of('went-wrong'),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('%s|%d', $reason, $remedies->count()),
+            ),
+        );
+    }
+
+    expect($said[0]->shown())->toBe('No VPN is configured, so there was nothing to check|0');
+});
+
+it('N2-R3 — refuses a check that could not run and said nothing about why', function (): void {
+    // The same refusal a failure with no meaning gets, and for a sharper
+    // reason: the row already says there is no answer, so a blank sentence
+    // leaves an operator with a line that reads as a check that found nothing.
+    $verdict = ['outcome' => 'unverified', 'reason' => '   ', 'remedy' => ['action' => 'Try again']];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(CheckGaveNoReason::class);
+});
+
+it('N2-R3 — refuses a remedy on an unverified check that is not a remedy', function (): void {
+    $verdict = ['outcome' => 'unverified', 'reason' => 'The engine did not answer', 'remedy' => 'start it'];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(ReportIsUnreadable::class, 'remedy');
 });
 
 it('N2-R3 — a failure the core offered nothing for carries no remedies', function (): void {
@@ -349,6 +427,9 @@ it('N2-R3 — a failure the core offered nothing for carries no remedies', funct
             nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
             wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): Code => Code::of(
                 sprintf('%d', $remedies->count()),
+            ),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
             ),
         );
     }

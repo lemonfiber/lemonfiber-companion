@@ -32,15 +32,17 @@ use Modules\Sdk\Internal\Wire;
  * this module, so this is where a diagnostic run stops being a shape the wire
  * describes and becomes one the screens do.
  *
- * **The verdict's payload is dropped, and that is the health module's decision
- * being carried out rather than restated.** On the wire a verdict is a tagged
- * union — `pass` may carry a note, `warn` and `fail` carry a whole problem,
- * `unverified` and `skipped` carry a reason. `Finding` takes the tag and
- * nothing else, because what a warning *said* is read differently on every
- * screen and there is no screen yet. A translation that quietly kept the
- * payload would fix that design before the thing it is for exists.
+ * **The verdict is a tagged union, and every arm's words are read.** `pass` may
+ * carry a note, `warn` and `fail` carry a whole problem, `unverified` and
+ * `skipped` carry a reason. This once took the tag and nothing else, on the
+ * argument that what a warning *said* is read differently on every screen and
+ * there was no screen yet. `HowThisStackIs` is that screen, and the argument
+ * expired with it: the words crossed the wire and stopped here, so an operator
+ * saw that a check failed and nothing about what or what to do.
  *
- * `caused_by`, `said` and `service` go the same way, for the same reason and
+ * The `pass` note is still dropped, and deliberately — `N2-R3` is about what a
+ * finding must carry when something is wrong, and a note on a passing check is
+ * the core being chatty. `caused_by`, `said` and `service` go the same way,
  * with the same note in `Finding`.
  *
  * **A row it cannot read fails the whole report.** Half a report is the shape
@@ -144,12 +146,15 @@ final readonly class Reports
     /** @param array<mixed> $row */
     private static function finding(array $row): Finding
     {
+        $verdict = self::verdict($row);
+        $conclusion = self::conclusion($verdict);
+
         return Finding::of(
             Check::of(self::text($row, WireField::Check)),
             self::category(self::text($row, WireField::Category)),
             self::text($row, WireField::Title),
-            self::conclusion(self::verdict($row)),
-            self::said(self::verdict($row)),
+            $conclusion,
+            self::said($verdict, $conclusion),
         );
     }
 
@@ -177,21 +182,57 @@ final readonly class Reports
      * would be the same rule written twice, with the copy unreachable — which
      * is what `Pairing` learned when a sign check duplicated `Instant`'s.
      *
+     * Takes the conclusion too, rather than working out which arm this is from
+     * whether a `code` key happens to be present. It is a *tagged* union and
+     * `outcome` is the tag; sniffing for a field instead read `unverified` and
+     * `skipped` as passing checks, because neither carries a code either. The
+     * match is over the enum so that an outcome added later is a type error
+     * here rather than a row that quietly lands on the passing arm.
+     *
      * @param array<mixed> $verdict
      */
-    private static function said(array $verdict): WhatTheCheckSaid
+    private static function said(array $verdict, Conclusion $conclusion): WhatTheCheckSaid
     {
-        if (! array_key_exists(WireField::Code->value, $verdict)) {
-            return WhatTheCheckSaid::nothingWrong();
+        return match ($conclusion) {
+            Conclusion::Passed => WhatTheCheckSaid::nothingWrong(),
+            Conclusion::Warned, Conclusion::Failed => WhatTheCheckSaid::wentWrong(
+                Code::of(self::text($verdict, WireField::Code)),
+                self::text($verdict, WireField::Meaning),
+                self::remedies($verdict),
+                self::severity(self::text($verdict, WireField::Severity)),
+                self::standing(self::text($verdict, WireField::State)),
+            ),
+            Conclusion::Unverified, Conclusion::Skipped => WhatTheCheckSaid::couldNotSay(
+                self::text($verdict, WireField::Reason),
+                self::remedy($verdict),
+            ),
+        };
+    }
+
+    /**
+     * The single remedy an `unverified` verdict offers, as a list of one.
+     *
+     * Singular on the wire and plural here, because a screen showing what to do
+     * about a row should not care which outcome produced the row. `skipped`
+     * carries none, which is the honest answer rather than an omission: a
+     * prerequisite that was absent is a fact about the machine, not something
+     * the core is asking anybody to go and fix.
+     *
+     * @param array<mixed> $verdict
+     */
+    private static function remedy(array $verdict): Remedies
+    {
+        if (! array_key_exists(WireField::Remedy->value, $verdict)) {
+            return Remedies::none();
         }
 
-        return WhatTheCheckSaid::wentWrong(
-            Code::of(self::text($verdict, WireField::Code)),
-            self::text($verdict, WireField::Meaning),
-            self::remedies($verdict),
-            self::severity(self::text($verdict, WireField::Severity)),
-            self::standing(self::text($verdict, WireField::State)),
-        );
+        $offered = $verdict[WireField::Remedy->value];
+
+        if (! is_array($offered)) {
+            throw ReportIsUnreadable::missing(WireField::Remedy);
+        }
+
+        return Remedies::of(Remedy::of(self::text($offered, WireField::Action)));
     }
 
     /**

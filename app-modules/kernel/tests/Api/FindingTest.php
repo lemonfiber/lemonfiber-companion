@@ -93,6 +93,9 @@ it('N2-R3 — a finding carries the code, the meaning and the remedy the core pr
                 iterator_to_array($remedies->likeliest(), preserve_keys: false),
             )),
         )),
+        couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+            sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+        ),
     );
 
     expect($shown->shown())->toBe(
@@ -118,6 +121,9 @@ it('N2-R3 — a check that passed carries none of it, and says so in its own arm
             $meaning,
             $remedies->count(),
         )),
+        couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+            sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+        ),
     );
 
     expect($shown->shown())->toBe('nothing-wrong');

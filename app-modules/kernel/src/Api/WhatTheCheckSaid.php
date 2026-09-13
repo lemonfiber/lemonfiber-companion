@@ -23,15 +23,21 @@ use Closure;
  * crossed the wire, and stopped at the reader. A screen could show that
  * something failed and nothing about what or what to do.
  *
- * **Two arms, because a check that passed has none of it.** The wire says so
- * too: the passing arm of the verdict carries an optional note and no code, no
- * meaning, no remedies. A type with three nullable fields would make a screen
- * ask three questions to find out which situation it is in, and the screen that
- * asks two of them renders a passing check as a failure with blank text.
+ * **Three arms, because the wire has three situations and not two.** The
+ * passing arm carries an optional note and no code, no meaning, no remedies.
+ * The failing arms carry a whole problem. And `unverified` and `skipped` carry
+ * a reason and no judgement at all — a check that could not run is its own
+ * outcome rather than a level of severity, so that it is never mistaken for one
+ * that passed, and an arm that folded it into either of the others would undo
+ * that distinction here.
+ *
+ * A type with nullable fields would make a screen ask several questions to find
+ * out which situation it is in, and the screen that asks all but one renders a
+ * passing check as a failure with blank text.
  */
 final readonly class WhatTheCheckSaid
 {
-    private function __construct(private ?WentWrong $wrong) {}
+    private function __construct(private WentWrong|CouldNotSay|null $said) {}
 
     /**
      * The check passed, so there is nothing to explain and nothing to do.
@@ -65,26 +71,48 @@ final readonly class WhatTheCheckSaid
     }
 
     /**
+     * The check produced no verdict, and this is why.
+     *
+     * Both outcomes that reach here — `unverified` and `skipped` — arrive with
+     * words this app read and threw away for as long as the docblock above
+     * said the payload was dropped. See {@see CouldNotSay} for why they share
+     * an arm and why the reason may not be blank.
+     */
+    public static function couldNotSay(string $reason, Remedies $remedies): self
+    {
+        return new self(CouldNotSay::of($reason, $remedies));
+    }
+
+    /**
      * @template TNothingWrong of object
      * @template TWentWrong of object
+     * @template TCouldNotSay of object
      *
      * @param  Closure(): TNothingWrong  $nothingWrong
      * @param  Closure(Code, string, Remedies, Severity, Standing): TWentWrong  $wentWrong
-     * @return TNothingWrong|TWentWrong
+     * @param  Closure(string, Remedies): TCouldNotSay  $couldNotSay
+     * @return TNothingWrong|TWentWrong|TCouldNotSay
      */
-    public function either(Closure $nothingWrong, Closure $wentWrong): object
+    public function either(Closure $nothingWrong, Closure $wentWrong, Closure $couldNotSay): object
     {
-        // Read off the failure, the way `Kept` does: the arm with something to
-        // explain is the one the type is written around, and a fall-through is
-        // how a branch becomes the one nobody tested.
-        return $this->wrong instanceof WentWrong
-            ? $wentWrong(
-                $this->wrong->code(),
-                $this->wrong->meaning(),
-                $this->wrong->remedies(),
-                $this->wrong->severity(),
-                $this->wrong->standing(),
-            )
-            : $nothingWrong();
+        // Read off the arms that carry something, the way `Kept` does. The
+        // fall-through is the one arm holding nothing, so a situation this type
+        // gains later cannot silently land on it — that would be a check with
+        // no answer rendered as a check that found nothing wrong, which is the
+        // one mistake `Conclusion` splits its cases to prevent.
+        return match (true) {
+            $this->said instanceof WentWrong => $wentWrong(
+                $this->said->code(),
+                $this->said->meaning(),
+                $this->said->remedies(),
+                $this->said->severity(),
+                $this->said->standing(),
+            ),
+            $this->said instanceof CouldNotSay => $couldNotSay(
+                $this->said->reason(),
+                $this->said->remedies(),
+            ),
+            default => $nothingWrong(),
+        };
     }
 }
