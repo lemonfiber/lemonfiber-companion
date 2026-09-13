@@ -7,7 +7,7 @@ namespace Tests\Support;
 /**
  * How a rule is shown to refuse its own violation.
  *
- * The four that can be driven each need a different machine, and the fifth is
+ * The five that can be driven each need a different machine, and the sixth is
  * the honest answer for a rule whose enforcement is a number rather than a
  * check — a coverage floor has no single snippet that breaks it, and inventing
  * one would be the same pretending this whole harness exists to stop.
@@ -48,6 +48,22 @@ enum Proof: string
      */
     case Edit = 'edit';
 
+    /**
+     * The rule's own judgement, called with the violation instead of finding it.
+     *
+     * For a rule whose subject is this harness. The violation is a state of the
+     * run doing the reading — a rule documented with nothing planted under it, a
+     * root that answers with somewhere else — so there is no file to drop in
+     * beside the others, because the run that read it would be this run.
+     *
+     * `NotDrivable` was the answer here for a long time, and it was wrong for
+     * exactly the reason it was wrong before `Edit` existed: what could not be
+     * done was the planting, not the breaking. Split the judgement from the
+     * reading and it can be handed the violation directly, on every run, which
+     * is the whole of what a planted file buys.
+     */
+    case Direct = 'direct';
+
     /** Nothing a snippet can break; the reason is recorded instead. */
     case NotDrivable = 'not-drivable';
 
@@ -61,7 +77,7 @@ enum Proof: string
     {
         return match ($this) {
             self::Suite, self::Edit => true,
-            self::Analyser, self::IsolatedSuite, self::NotDrivable => false,
+            self::Analyser, self::IsolatedSuite, self::Direct, self::NotDrivable => false,
         };
     }
 }

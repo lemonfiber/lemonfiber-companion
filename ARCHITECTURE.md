@@ -529,6 +529,32 @@ manifest is itself what went missing. The earliest record for a path wins, so
 two fixtures editing one file still restore it to what was there before the run
 began.
 
+**Some violations are the run itself.** R2's own violation is a documented rule
+with nothing planted under it — and planting that would mean leaving a rule
+uncovered in this repository, where the run that reads it is this run. There is
+no file, and there was no edit either, so R2 was recorded as *nothing can break
+this* for the same reason the paragraph above was wrong: what could not be done
+was the planting, not the breaking.
+
+`Fixture::direct` is the answer. Split the judgement from the reading around it
+— `rulesWithNoFixture` takes the claims and the coverage as arguments rather
+than going and finding them — and it can be handed the violation on every run,
+which is the whole of what a planted file buys. The test that does so asserts
+the empty answer *and* a non-empty one, because everything a check says about
+the clean case is equally true of a function that returns nothing whatever it is
+asked.
+
+`Q-R66 (discovery)` is the same shape and the worse failure. Every path here is
+built from `Tree::root()`, which is `dirname(__DIR__, 2)` — correct for exactly
+as long as that file stays two directories down. A root that has drifted cannot
+be planted against, because the fixture would have to be written to a tree the
+harness could no longer find; and it does not announce itself either, since
+`filesUnder` answers `[]` for a directory that is not there and every rule built
+on it then reads no files and reports nothing wrong. `Tree::isTheRepository`
+is the judgement taken out of `root()`, so it can be asked about the parent
+directory — which is precisely what a file moved one level down would produce —
+and watched refusing it on every run.
+
 **The `Guards` suite runs alone.** `composer test` is `pest --parallel` with
 `Guards` excluded; `composer test:guards` runs it by itself. The harness plants
 a violation of every rule into the working tree, so a process reading that tree

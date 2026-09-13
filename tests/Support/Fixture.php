@@ -106,6 +106,18 @@ final readonly class Fixture
         return new self($rule, Proof::Edit, $path, $code, $marker, $evidence, $replacing);
     }
 
+    /**
+     * A rule whose own judgement is called with the violation.
+     *
+     * `$how` says what is handed to it, because there is no file to point at:
+     * the whole of this fixture is the test that drives it, and a reader with
+     * neither has to be told where to look.
+     */
+    public static function direct(string $rule, string $how): self
+    {
+        return new self($rule, Proof::Direct, '', '', $how, '');
+    }
+
     /** A rule with no snippet that breaks it, and why. */
     public static function notDrivable(string $rule, string $reason): self
     {

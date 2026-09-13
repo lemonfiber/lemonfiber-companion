@@ -98,20 +98,10 @@ it('puts back what a killed run wrote over', function (): void {
 });
 
 it('has a fixture for every rule that claims to be enforced', function (): void {
-    $covered = array_map(static fn(Fixture $f): string => $f->rule, Fixtures::all());
-    $missing = [];
-
-    foreach (documentedRules() as $id => $claim) {
-        // A rule nobody has built yet has nothing to violate. The ratchet in
-        // TheRulesAreRealTest is what keeps that honest.
-        if ($claim === 'planned') {
-            continue;
-        }
-
-        if (! in_array($id, $covered, strict: true)) {
-            $missing[] = sprintf('%s (claims "%s")', $id, $claim);
-        }
-    }
+    $missing = rulesWithNoFixture(
+        documentedRules(),
+        array_map(static fn(Fixture $f): string => $f->rule, Fixtures::all()),
+    );
 
     expect($missing)->toBe([], sprintf(
         "These rules have never been shown to refuse anything:\n  %s\n\n"
@@ -122,6 +112,31 @@ it('has a fixture for every rule that claims to be enforced', function (): void 
         . 'rather than a gap.',
         implode("\n  ", $missing),
     ));
+});
+
+it('names an enforced rule nothing is planted under', function (): void {
+    // R2's violation, handed to R2. There is no file that could carry it: the
+    // subject is this run, so planting it would mean documenting a rule and
+    // leaving it uncovered here — and the run that read that would be this one.
+    $claims = [
+        'A1' => 'test: the Arch suite',
+        'A2' => 'planned',
+        'A3' => 'test: the Arch suite',
+    ];
+
+    expect(rulesWithNoFixture($claims, ['A1', 'A3']))->toBe([]);
+    expect(rulesWithNoFixture($claims, ['A1']))
+        ->toBe(['A3 (claims "test: the Arch suite")']);
+
+    // A rule still being planned is not yet a claim to enforce anything, and
+    // naming it here would make a gap in the roadmap read as a gap in the
+    // harness. TheRulesAreRealTest is what keeps *that* honest.
+    expect(rulesWithNoFixture(['A2' => 'planned'], []))->toBe([]);
+
+    // And the empty answer is not the only one it can give. Everything above
+    // holds just as well for a function that returns `[]` whatever it is asked,
+    // which is the shape of every vacuous check this harness exists to refuse.
+    expect(rulesWithNoFixture($claims, []))->toHaveCount(2);
 });
 
 it('the analyser reports every rule it is supposed to', function (): void {
@@ -221,19 +236,82 @@ it('the suite fails every rule it is supposed to', function (): void {
 });
 
 it('reports the rules nothing can be planted under', function (): void {
-    $undrivable = array_values(array_filter(
-        Fixtures::all(),
-        static fn(Fixture $f): bool => $f->proof === Proof::NotDrivable,
+    $named = static function (Proof $proof): string {
+        $rules = array_map(
+            static fn(Fixture $f): string => $f->rule,
+            array_values(array_filter(
+                Fixtures::all(),
+                static fn(Fixture $f): bool => $f->proof === $proof,
+            )),
+        );
+
+        return sprintf('%d (%s)', count($rules), implode(', ', $rules));
+    };
+
+    // An answer without a reason is a gap wearing an answer's clothes, so what
+    // is asserted here is that every rule on either line says why it is there.
+    // Both kinds carry the reason in `marker`, having no file to point at.
+    $silent = array_map(
+        static fn(Fixture $f): string => $f->rule,
+        array_values(array_filter(
+            Fixtures::all(),
+            static fn(Fixture $f): bool => in_array(
+                $f->proof,
+                [Proof::Direct, Proof::NotDrivable],
+                strict: true,
+            ) && trim($f->marker) === '',
+        )),
+    );
+
+    expect($silent)->toBe([], sprintf(
+        "These rules are answered with neither a fixture nor a reason:\n  %s\n\n"
+        . 'Both kinds are read by nobody but a person, and a person given a rule '
+        . 'and no reason has been told nothing at all.',
+        implode("\n  ", $silent),
     ));
 
-    expect($undrivable)->toBeArray();
-
+    // Two answers to one question, and the difference is the point: the first
+    // group is checked on every run and the second is checked when somebody
+    // remembers. A rule moving from the second line to the first is the work.
     fwrite(STDOUT, sprintf(
-        "\n  rules proven by hand rather than by fixture: %d (%s)\n",
-        count($undrivable),
-        implode(', ', array_map(static fn(Fixture $f): string => $f->rule, $undrivable)),
+        "\n  rules driven by calling their own judgement: %s"
+        . "\n  rules proven by hand rather than by fixture: %s\n",
+        $named(Proof::Direct),
+        $named(Proof::NotDrivable),
     ));
 });
+
+/**
+ * The enforced rules nothing has been planted under.
+ *
+ * Split out of the test above it because this is R2's own judgement, and a
+ * judgement that has only ever run against a document where the answer is
+ * "none" is one whose failure nobody has seen. Given the claims and the
+ * coverage directly, it can be watched naming a rule — which is what every
+ * other rule here gets from a file dropped in beside the real ones.
+ *
+ * @param  array<string,string>  $claims  rule identifier => how it is enforced
+ * @param  list<string>  $covered  rule identifiers something is planted under
+ * @return list<string>
+ */
+function rulesWithNoFixture(array $claims, array $covered): array
+{
+    $missing = [];
+
+    foreach ($claims as $id => $claim) {
+        // A rule nobody has built yet has nothing to violate. The ratchet in
+        // TheRulesAreRealTest is what keeps that honest.
+        if ($claim === 'planned') {
+            continue;
+        }
+
+        if (! in_array($id, $covered, strict: true)) {
+            $missing[] = sprintf('%s (claims "%s")', $id, $claim);
+        }
+    }
+
+    return $missing;
+}
 
 /**
  * Every analyser finding, by the path it was reported against.

@@ -71,9 +71,15 @@ it('Q-R66 — the root is this repository rather than wherever the run started',
     // built from `Tree::root()`, so a root pointing somewhere plausible-but-wrong
     // — a parent directory, a sibling worktree — produces file lists that are
     // non-empty and about the wrong tree.
-    expect(Tree::at('composer.json'))->toBeFile();
-    expect(Tree::at('phpstan.neon'))->toBeFile();
-    expect(Tree::at('app-modules'))->toBeDirectory();
+    expect(Tree::isTheRepository(Tree::root()))->toBeTrue();
+
+    // And the judgement is watched refusing, on the directory it would actually
+    // be handed: the parent, which is what `dirname(__DIR__, 2)` answers if this
+    // file ever moves one level down. Asserting only the line above would hold
+    // just as well for a check that says yes to everything, which is the failure
+    // every rule in this file is about.
+    expect(Tree::isTheRepository(dirname(Tree::root())))->toBeFalse();
+    expect(Tree::isTheRepository(sys_get_temp_dir()))->toBeFalse();
 });
 
 it('Q-R66 — the templates the Blade rules read are found', function (): void {
