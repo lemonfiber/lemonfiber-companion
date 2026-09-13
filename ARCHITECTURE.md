@@ -668,7 +668,7 @@ reachable from production is a fake (`G4`).
 | H2 | No `Interface`/`Abstract` affixes on type names | arch |
 | H3 | Caps: methods per class, lines per method, constructor parameters, cognitive complexity | phpstan + arch |
 | H4 | A test file mirrors its source file's location | arch: an orphan test fails, a class without one does not |
-| H5 | A string with a value in it is built with `sprintf` — never `.`, never interpolation | phpstan: own rule, one per node type |
+| H5 | A string with a value in it is built with `sprintf` — never `.`, never interpolation — and a message is one literal, never two joined by a dot | phpstan: own rule, one per node type |
 | H6 | An exception is named for what happened, not for being an exception | arch |
 | H7 | A test is named and described for the behaviour it pins | arch |
 | H8 | A method returns from at most three places | phpstan: own rule |

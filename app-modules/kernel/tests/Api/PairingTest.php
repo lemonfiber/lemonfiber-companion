@@ -121,6 +121,49 @@ it('lets the address and the fingerprint refuse in their own words', function ()
         ->toThrow(FingerprintIsNotAFingerprint::class);
 });
 
+it('N1-R48 — material promising a certificate for an unencrypted address is refused', function (): void {
+    // The material contradicts itself. N1-R48 calls the fingerprint "the
+    // certificate that address will present", and an `http://` address presents
+    // none — so the digest would be pinned against a connection with nothing to
+    // compare it to, and N1-R19's "validate every subsequent connection against
+    // it" could never be kept for this stack.
+    //
+    // Refused here rather than at the first connection, which is the only
+    // other place it can be caught: `BaseUrl::pinned()` raises a configuration
+    // problem from inside the transport, by which point the stack is written
+    // down and the operator has been told they are paired. This is the one
+    // moment the material is in front of somebody who can go and get better
+    // material.
+    expect(fn(): Pairing => Pairing::read(
+        material(address: 'http://192.168.1.42'),
+        HowItWasRead::Scanned,
+        whenItIsRead(),
+    ))->toThrow(PairingIsNotReadable::class);
+});
+
+it('refuses it for what it is, rather than as a malformed address', function (): void {
+    // `http://192.168.1.42` is a perfectly good address and `Address` accepts
+    // it. What is wrong is the pair: this address, with that fingerprint. So
+    // the refusal has to name the contradiction rather than send somebody to
+    // look for a typo in something that has none.
+    $said = 'nothing was refused at all';
+
+    try {
+        Pairing::read(material(address: 'http://192.168.1.42'), HowItWasRead::Typed, whenItIsRead());
+    } catch (PairingIsNotReadable $refused) {
+        $said = $refused->getMessage();
+    }
+
+    // Every clause of the sentence, because the sentence is the refusal. A
+    // message built in pieces is a message a mutation can take a piece out of
+    // while the assertions still pass — which is exactly what this one did
+    // until it became a single literal.
+    expect($said)->toContain('unencrypted address')
+        ->and($said)->toContain('presents no certificate')
+        ->and($said)->toContain('fingerprint')
+        ->and($said)->toContain('typed');
+});
+
 it('N1-R6 — says which failure is worth simply retrying', function (): void {
     // "Try again" is advice somebody has already taken if they typed sixty-four
     // characters. A camera can be re-pointed; a transcription needs showing

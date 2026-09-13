@@ -762,6 +762,23 @@ final readonly class Fixtures
                 }
                 PHP, 'H5 —'),
 
+            Fixture::analyser('H5', 'Plain/JoinsTwoLiterals.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class JoinsTwoLiterals
+                {
+                    public function said(): string
+                    {
+                        return 'This stack is not answering, '
+                            . 'and nothing here can say why.';
+                    }
+                }
+                PHP, 'H5 —'),
+
             Fixture::analyser('H5', 'Plain/Interpolates.php', <<<'PHP'
                 <?php
 

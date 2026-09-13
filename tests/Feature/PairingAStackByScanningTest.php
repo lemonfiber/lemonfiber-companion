@@ -173,6 +173,23 @@ it('tells a code it could not read apart from a camera that came back empty', fu
         ->and($screen->went())->toBe(HowThePairingWent::NotYet);
 });
 
+it('refuses a scanned code naming an address that presents no certificate', function (): void {
+    // Both roads parse through the same named constructor, so the refusal is
+    // true of both. Worth asserting on this one anyway: a camera reading a
+    // stack's own screen is the road somebody assumes is safe by construction,
+    // which is exactly why it needs the assertion rather than the assumption.
+    $screen = named(scanningScreen(ACameraInMemory::reading((string) json_encode([
+        'address' => 'http://192.168.1.42',
+        'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
+        'expires' => 2_000,
+    ]))));
+
+    $screen->scan();
+
+    expect($screen->codeWasUnreadable())->toBeTrue()
+        ->and($screen->went())->toBe(HowThePairingWent::NotYet);
+});
+
 it('N1-R49 — an expired code is refused on this road too', function (): void {
     // Both roads parse through the same named constructor, which is what keeps
     // the expiry true of both. A second parser here would be the one that

@@ -58,6 +58,31 @@ final class PairingIsNotReadable extends InvalidArgumentException
     }
 
     /**
+     * It named an address that presents no certificate (`N1-R48`, `ADR-0018`).
+     *
+     * Material carrying a fingerprint for an `http://` address contradicts
+     * itself: `N1-R48` says the fingerprint is "the certificate **that address
+     * will present**", and an unencrypted address presents none. The digest
+     * would be pinned against a connection that never offers one to compare it
+     * to, so `N1-R19`'s "validate every subsequent connection against it" could
+     * never be kept.
+     *
+     * **Refused here rather than at the first connection**, which is where it
+     * used to land: pairing succeeded, the stack was written down, and the
+     * first read raised a configuration problem from inside the transport — on
+     * a device, after the operator had been told they were paired. This is the
+     * moment the material is in front of somebody who can go and get better
+     * material.
+     */
+    public static function withAnAddressThatPresentsNothing(HowItWasRead $how): self
+    {
+        return new self(sprintf(
+            'The pairing material read by %s names an unencrypted address, which presents no certificate for its fingerprint to match.',
+            $how->value,
+        ));
+    }
+
+    /**
      * It carried something the format does not define (`N1-R48`).
      *
      * The requirement says material must not carry a credential, and the
