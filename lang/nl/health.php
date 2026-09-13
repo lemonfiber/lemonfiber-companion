@@ -39,6 +39,7 @@ return [
     ],
     'because_of' => 'Vanwege: :title',
     'stale' => 'Laatst gecontroleerd :ago',
+    'family_and_count' => ':family (:count)',
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',
     'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',

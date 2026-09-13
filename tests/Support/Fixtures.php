@@ -746,6 +746,34 @@ final readonly class Fixtures
                 }
                 PHP, 'F4 —'),
 
+            // A screen that walks a run without naming `WorstFirst`, which is
+            // the whole of the violation: the type is imported, the rows come
+            // out in the order they went in, and nothing anywhere says so.
+            Fixture::suite('F8', 'app-modules/operator/src/Internal/Screens/Fixtures/ShowsWhateverArrived.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Operator\Internal\Screens\Fixtures;
+
+                use Modules\Kernel\Api\Findings;
+
+                final readonly class ShowsWhateverArrived
+                {
+                    /** @return list<string> */
+                    public function rows(Findings $findings): array
+                    {
+                        $rows = [];
+
+                        foreach ($findings as $finding) {
+                            $rows[] = $finding->title();
+                        }
+
+                        return $rows;
+                    }
+                }
+                PHP, 'F8 —', 'ShowsWhateverArrived'),
+
             Fixture::analyser('H5', 'Plain/Concatenates.php', <<<'PHP'
                 <?php
 

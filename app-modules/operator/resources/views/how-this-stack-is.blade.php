@@ -17,6 +17,39 @@
     @else
         <native:text class="font-bold">{{ __($this->overall()) }}</native:text>
 
+        {{-- N2-R9: the families this run has something to say about, so that a
+             stuck queue or a provider gone quiet is one tap away rather than
+             eight rows of scrolling. Only the families with findings are
+             offered — a control leading to a blank screen teaches an operator
+             that the row is not worth reading — and the one being read is also
+             the way back out, so there is no separate "all" to go and find. --}}
+        <native:column class="w-full gap-2">
+            @forelse ($this->families() as $family)
+                <native:column class="w-full gap-1">
+                    <native:button
+                        label="{{ __('health.family_and_count', ['family' => __($family->said), 'count' => $family->howMany]) }}"
+                        @tap="read('{{ $family->family }}')"
+                    />
+
+                    {{-- The accent is a fill, a bar, a selected state, and
+                         never text (DES-R15). Written as its own element with
+                         a static class rather than as a colour chosen inside a
+                         ternary: the vocabulary check drops any class token
+                         holding a runtime expression, and an EDGE class it
+                         cannot read is one a typo turns into nothing at all,
+                         silently, on a device. --}}
+                    @if ($family->isOpen)
+                        <native:column class="w-full h-1 bg-theme-accent" />
+                    @endif
+                </native:column>
+            @empty
+                {{-- Deliberately nothing. No family has anything to say only
+                     where the run found nothing at all, and the list below
+                     says so — a second sentence here would be this app filling
+                     space with a line somebody has to translate. --}}
+            @endforelse
+        </native:column>
+
         @forelse ($this->findings() as $finding)
             <native:column class="w-full gap-1">
                 {{-- Which part of the machine, and which service under it. The

@@ -300,6 +300,21 @@ automatic and the operator never sees the question.
 | F6 | Every list has an empty state | `tests/Templates` |
 | F7 | No template reads a value that has one destination — a session, a credential, a stack address | `tests/Templates`, from the same table F2's surface rule counts against |
 | F4 | A screen that takes a port carries `#[Lazy]`; one whose content changes while open carries `#[Poll]` | arch for the first; review for the second |
+| F8 | A screen shows findings in the order a capability decided, never the order they arrived | arch: a screen that names findings names `WorstFirst` |
+
+**Why F8 is a rule rather than a note on the screen.** `WorstFirst` is the one
+decision `health` makes about a report, and for two commits nothing called it. A
+query nothing calls passes its own test forever — so the sorter was green, the
+first findings screen rendered the envelope, and `N2-R2` was held by a test
+rather than by anything an operator could see. What that produces is a list that
+looks ordered: the rows are right, the words are right, and on any report whose
+worst finding happened to run first the order is right as well. There is no
+wrong pixel, no exception and no log line; the next report is simply in the
+wrong order on somebody's phone, with a full disk above a leaking tunnel. So the
+gate is on the screen rather than on the query — a screen under `Internal/Screens`
+that names findings at all names `WorstFirst` too. Read over the text, because
+what has to be caught is a screen that names it nowhere, and an absence has no
+call site to follow to.
 
 EDGE styling is **Tailwind-shaped and is not Tailwind**. There is no CSS build,
 no JIT and no stylesheet to come up short. An unrecognised class is parsed,

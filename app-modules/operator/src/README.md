@@ -73,12 +73,27 @@ no equivalent type here.
 
 > Findings MUST be ordered by severity, worst first.
 
-`Modules\Health\Api\Queries\WorstFirst` does this and is tested. What is not
-checked is that a screen showing findings uses it, because there is no such
-screen yet. A list rendered straight from the envelope arrives in the order the
-checks ran, which looks ordered and is not — the failure is invisible on any
-report whose worst finding happens to have run first.
+`Modules\Health\Api\Queries\WorstFirst` makes the decision and `HowThisStackIs`
+asks for it. The order is applied on the screen rather than trusted to arrive:
+the envelope carries findings in the order the checks ran, which looks ordered
+and is not — and the failure is invisible on any report whose worst finding
+happens to have run first.
 
-The gate to write alongside the first findings screen is that nothing renders
-`Findings` it did not take from `WorstFirst`. Recorded here rather than left to
-be noticed, because a sorter nothing calls passes its own test forever.
+### The gate
+
+`F8`. A class under `Internal/Screens` that names findings at all names
+`WorstFirst` too, checked over the text of the file. Text rather than a call
+graph because the violation is a screen that names the query *nowhere*, and an
+absence has no call site to follow to.
+
+It is on the screen rather than on the query for the same reason it had to be
+written the day a findings screen existed: a sorter nothing calls passes its own
+test forever, so `WorstFirstTest` would have stayed green through every screen
+that never asked.
+
+### Narrowing composes with it, and the order is not reversible
+
+`InCategory` narrows and deliberately does not reorder, so the screen narrows
+and then sorts. The other way round would sort rows that are about to be thrown
+away, and a query that both filtered and ordered would leave no way to say which
+happened first.

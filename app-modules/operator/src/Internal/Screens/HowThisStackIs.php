@@ -8,9 +8,13 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Health\Api\Queries\InCategory;
+use Modules\Health\Api\Queries\WorstFirst;
 use Modules\Kernel\Api\Asking;
+use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Finding;
+use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\SecureStorage;
@@ -20,6 +24,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\WhatOneFindingSays;
 use Modules\Operator\Internal\WhatTheStackTurnedOutToBe;
+use Modules\Operator\Internal\WhichFamilyToRead;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -73,6 +78,24 @@ final class HowThisStackIs extends NativeComponent
      * silently stops holding what it thinks it holds.
      */
     protected ?WhatTheStackTurnedOutToBe $answered = null;
+
+    /**
+     * Which family of checks the operator is reading, or empty for all of them.
+     *
+     * `N2-R9` asks that stuck downloads, provider health, disk pressure and
+     * VPN verification each be *reachable*. They are all in the list already,
+     * which is reachable in the sense that scrolling is reachable — and an
+     * operator who opened the app because the household said nothing was
+     * downloading should not have to read past eight families to find the
+     * queue.
+     *
+     * A key rather than a {@see Category}, because this
+     * is a screen's own state and `NativeComponent` reflects over what it can
+     * serialise. The narrowing turns it back into a case, and a value that is
+     * not one is read as no narrowing at all — a tap that lands wrong shows the
+     * whole report rather than nothing.
+     */
+    protected string $reading = '';
 
     public function __construct(
         private readonly Asking $asking,
@@ -138,7 +161,13 @@ final class HowThisStackIs extends NativeComponent
         // always holds a list, so `iterator_to_array`'s `preserve_keys` cannot
         // be wrong here — and an argument that cannot change the answer is a
         // line no test can defend.
-        $run = $this->answer()->findings;
+        // `N2-R2` — worst first, and ordered *here* rather than trusted to
+        // arrive that way. A list rendered straight from the envelope comes in
+        // the order the checks ran, which looks ordered and is not: the failure
+        // is invisible on any report whose worst finding happens to have run
+        // first. `operator/src/README.md` recorded this gate against the day a
+        // findings screen existed, and this is the day.
+        $run = new WorstFirst()->over($this->narrowed($this->answer()->findings));
         $rows = [];
 
         foreach ($run as $finding) {
@@ -151,10 +180,54 @@ final class HowThisStackIs extends NativeComponent
         return $rows;
     }
 
-    /** How many there are, which is what the empty state asks. */
+    /** How many are shown, which is what the empty state asks. */
     public function howMany(): int
     {
-        return $this->answer()->findings->count();
+        return $this->narrowed($this->answer()->findings)->count();
+    }
+
+    /**
+     * The families this run has something to say about, in the engine's order.
+     *
+     * Only the ones with findings. A row of nine chips where six are empty is
+     * six taps that lead to a blank screen, and an operator learns from the
+     * first one that the row is not worth reading.
+     *
+     * @return list<WhichFamilyToRead>
+     */
+    public function families(): array
+    {
+        $families = [];
+
+        foreach (Category::cases() as $family) {
+            $found = new InCategory($family)->over($this->answer()->findings);
+
+            if ($found->count() === 0) {
+                continue;
+            }
+
+            $families[] = WhichFamilyToRead::of($family, $found->count(), $this->reading === $family->value);
+        }
+
+        return $families;
+    }
+
+    /** Whether the operator is reading one family rather than the whole run. */
+    public function isNarrowed(): bool
+    {
+        return $this->narrowing() instanceof Category;
+    }
+
+    /**
+     * Read one family, or read all of them again by naming the one in view.
+     *
+     * Tapping the family already being read widens back out, which is the
+     * gesture somebody makes without being told: there is no separate "all"
+     * chip to find, and the way back is the way in.
+     */
+    public function read(string $family): void
+    {
+        $this->reading = $this->reading === $family ? '' : $family;
     }
 
     /**
@@ -192,6 +265,35 @@ final class HowThisStackIs extends NativeComponent
     public function render(): View
     {
         return view('operator::how-this-stack-is');
+    }
+
+    /**
+     * The findings this screen is showing, narrowed where the operator asked.
+     *
+     * `InCategory` narrows and deliberately does not reorder, so this composes
+     * with {@see WorstFirst} in the order it reads: narrow, then sort. Doing it
+     * the other way would sort rows that are about to be thrown away.
+     */
+    private function narrowed(Findings $findings): Findings
+    {
+        $family = $this->narrowing();
+
+        return $family instanceof Category
+            ? new InCategory($family)->over($findings)
+            : $findings;
+    }
+
+    /**
+     * The family being read, as a case, or nothing.
+     *
+     * A stored value that names no case is read as no narrowing. The screen's
+     * own state is the only thing that writes it, but `tryFrom` is what makes
+     * that a fact rather than a hope — and the failure it prevents is a blank
+     * report where the operator expected a report.
+     */
+    private function narrowing(): ?Category
+    {
+        return Category::tryFrom($this->reading);
     }
 
     /**
