@@ -14,6 +14,7 @@ use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Api\PlatformScanner;
 use Modules\Device\Api\PlatformScreen;
+use Modules\Device\Api\PlatformShare;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
@@ -27,6 +28,7 @@ use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedClients;
@@ -35,6 +37,7 @@ use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Native\Mobile\Scanner;
 use Native\Mobile\SecureStorage as PlatformStore;
+use Native\Mobile\Share;
 
 /**
  * The composition root.
@@ -116,6 +119,17 @@ final class CompositionRoot extends ServiceProvider
         // narrow, which is a branch nothing can reach. Both classes live in
         // `modules/sdk`, so no boundary is crossed by using the real type.
         $this->app->bind(Asking::class, static fn(): Asking => new Questions(new PinnedClients()));
+
+        // Handing a diagnostic report to the operator, which is the only way
+        // one leaves this device. `N4-R13` says the app assembles and does not
+        // transmit, and both halves are structural: `Diagnostics` holds nothing
+        // that could send, and `Sharing` takes nowhere to send to.
+        //
+        // Not a singleton, for `SecureStorage`'s reason: the share sheet is a
+        // handle to something outside this process, and one held for the life
+        // of a long-running app (`I1`) is a handle to a platform state that has
+        // since moved on.
+        $this->app->bind(Sharing::class, static fn(): Sharing => PlatformShare::onTheDevice(new Share()));
 
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,

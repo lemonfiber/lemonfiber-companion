@@ -11,11 +11,13 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\StacksInMemory;
 
 /** A stack this device is already paired with. */
@@ -52,9 +54,16 @@ function aPairedStack(string $called, string $seed = 'a'): Stack
  * list says when a stack is signed into and when it is not, and every other
  * case does not care — so it defaults to a working store holding nothing.
  */
-function theLaunchScreen(Stacks $stacks, ?AKeychainInMemory $keychain = null): YourStacks
-{
-    return new YourStacks($stacks, $keychain ?? AKeychainInMemory::working());
+function theLaunchScreen(
+    Stacks $stacks,
+    ?AKeychainInMemory $keychain = null,
+    ?AShareSheetThatWasOffered $sharing = null,
+): YourStacks {
+    return new YourStacks(
+        $stacks,
+        $keychain ?? AKeychainInMemory::working(),
+        $sharing ?? AShareSheetThatWasOffered::working(),
+    );
 }
 
 it('N1-R35 — the first frame is registered, and it is this screen', function (): void {
@@ -123,6 +132,79 @@ it('N1-R2 — tapping a signed-in stack goes to the report, not back to the pass
     // built as `/stack/...` would both look right here and meet nowhere.
     expect(NativeRouter::resolve($screen->tappingGoesTo($loft)))->not->toBeNull()
         ->and(NativeRouter::resolve($screen->tappingGoesTo($shed)))->not->toBeNull();
+});
+
+it('N4-R13 — assembles a report for the operator to send, and does not send it', function (): void {
+    // Both clauses. The app hands the text to the platform's share sheet and
+    // stops; where it goes is a choice a person makes in an app this one does
+    // not know about, which is the whole difference between this and the crash
+    // reporter `N4-R12` refuses.
+    $sharing = AShareSheetThatWasOffered::working();
+    $screen = theLaunchScreen(StacksInMemory::holding(aPairedStack('The loft', 'a')), sharing: $sharing);
+
+    $screen->share();
+
+    $handed = $sharing->handed();
+
+    expect($handed)->not->toBeNull()
+        ->and($handed?->named())->toBe('lemonfiber-diagnostics.txt')
+        ->and($screen->sharingWent())->toBe('');
+});
+
+it('N4-R13 — the report carries no address, no session and no reading', function (): void {
+    // The pressure this refuses is real: a report is useful in proportion to
+    // what it contains, which is exactly what puts a token in a support bundle.
+    // `Diagnostics::assemble()` refuses in its parameter list, and this is that
+    // refusal checked against the text an operator would actually send.
+    $loft = aPairedStack('The loft', 'a');
+    $sharing = AShareSheetThatWasOffered::working();
+
+    theLaunchScreen(StacksInMemory::holding($loft), sharing: $sharing)->share();
+
+    $text = $sharing->handed()?->text() ?? '';
+
+    expect($text)->toContain($loft->id()->stored())
+        ->and($text)->not->toContain($loft->at()->forTheClient())
+        ->and($text)->not->toContain($loft->presents()->forComparingByEye())
+        ->and($text)->not->toContain('192.168');
+});
+
+it('N1-R10 — says why a report could not be handed over, and what to do', function (): void {
+    // Two refusals, and only one of them is something the operator can fix.
+    foreach (WhyNothingWasShared::cases() as $why) {
+        $screen = theLaunchScreen(
+            StacksInMemory::holding(aPairedStack('The loft', 'a')),
+            sharing: AShareSheetThatWasOffered::refusing($why),
+        );
+
+        $screen->share();
+
+        expect($screen->sharingWent())->toBe($why->saidOnTheScreen(), $why->value)
+            ->and($screen->sharingRemedy())->toBe($why->remedy(), $why->value)
+            ->and(__($screen->sharingWent()))->not->toBe($screen->sharingWent(), $why->value);
+    }
+});
+
+it('clears the refusal once a later attempt works', function (): void {
+    // A screen that kept the last failure would tell an operator their report
+    // could not be sent while the sheet was open in front of them.
+    $screen = theLaunchScreen(
+        StacksInMemory::holding(aPairedStack('The loft', 'a')),
+        sharing: AShareSheetThatWasOffered::refusing(WhyNothingWasShared::NowhereToWriteIt),
+    );
+
+    $screen->share();
+
+    expect($screen->sharingWent())->not->toBe('');
+
+    $working = theLaunchScreen(
+        StacksInMemory::holding(aPairedStack('The loft', 'a')),
+        sharing: AShareSheetThatWasOffered::working(),
+    );
+    $working->share();
+
+    expect($working->sharingWent())->toBe('')
+        ->and($working->sharingRemedy())->toBe('');
 });
 
 it('N1-R11 — a stack in the list leads to that stack and no other', function (): void {

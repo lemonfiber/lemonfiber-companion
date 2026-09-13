@@ -4,11 +4,23 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use function array_map;
+
 use Illuminate\View\View;
+
+use function iterator_to_array;
+
 use Modules\Kernel\Api\Configured;
+use Modules\Kernel\Api\Diagnostics;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Shape;
+use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Kernel\Api\WireVersion;
+use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -76,9 +88,15 @@ use function view;
 #[Lazy]
 final class YourStacks extends NativeComponent
 {
+    /** What became of the last attempt to hand a report over, as a key. */
+    protected string $sharingWent = '';
+
+    /** What to do about it, beside {@see sharingWent()}. */
+    protected string $sharingRemedy = '';
     public function __construct(
         private readonly Stacks $stacks,
         private readonly SecureStorage $storage,
+        private readonly Sharing $sharing,
     ) {}
 
     /**
@@ -174,6 +192,63 @@ final class YourStacks extends NativeComponent
         return $this->isSignedInto($stack)
             ? sprintf('/stacks/%s', $stack->id()->stored())
             : $this->signInAt($stack);
+    }
+
+    /** What became of the last attempt to hand a report over. */
+    public function sharingWent(): string
+    {
+        return $this->sharingWent;
+    }
+
+    /** What to do about it. */
+    public function sharingRemedy(): string
+    {
+        return $this->sharingRemedy;
+    }
+
+    /**
+     * Assemble what can be said about this app, and hand it to the operator.
+     *
+     * `N4-R13`: a diagnostic report is assembled for the operator to send, and
+     * the app does not send it. {@see Diagnostics} holds nothing that could
+     * transmit and {@see Sharing} takes nowhere to transmit to, so *send it
+     * somewhere* has no spelling on either side of this call.
+     *
+     * On this screen because it is the one an operator reaches from anywhere
+     * and the one that works when nothing else does — a stack that cannot be
+     * reached is exactly when somebody needs to ask for help, and a control
+     * behind a reachable stack would be missing precisely then.
+     *
+     * The identifiers rather than the stacks, which is
+     * {@see Diagnostics::assemble()}'s signature refusing rather than this
+     * screen remembering: a `Stack` carries an address, and where on somebody's
+     * network a machine lives is not something a support thread needs.
+     */
+    public function share(): void
+    {
+        $ids = array_map(
+            static fn(Stack $stack): StackId => $stack->id(),
+            iterator_to_array($this->configured(), preserve_keys: false),
+        );
+
+        $handed = $this->sharing->hand(
+            Diagnostics::assemble(Shape::current(), WireVersion::newest(), ...$ids),
+        );
+
+        $handed->either(
+            over: function (): WhatTheSharingDid {
+                $this->sharingWent = '';
+                $this->sharingRemedy = '';
+
+                return new WhatTheSharingDid();
+            },
+            refused: function (WhyNothingWasShared $why): WhatTheSharingDid {
+                $this->sharingWent = $why->saidOnTheScreen();
+                $this->sharingRemedy = $why->remedy();
+
+                return new WhatTheSharingDid();
+            },
+        );
     }
 
     /**

@@ -16,6 +16,7 @@ use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
+use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\StacksInMemory;
 
 // A3 — a screen is built through the container, so it can be given a port.
@@ -310,7 +311,11 @@ function screensBuiltNormally(): ScreenRouter
 /** The one screen this application has, built as the router would build it. */
 function aScreen(): YourStacks
 {
-    return new YourStacks(StacksInMemory::working(), AKeychainInMemory::working());
+    return new YourStacks(
+        StacksInMemory::working(),
+        AKeychainInMemory::working(),
+        AShareSheetThatWasOffered::working(),
+    );
 }
 
 /**
