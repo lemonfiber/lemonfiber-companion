@@ -13,19 +13,26 @@ use Modules\Kernel\Api\Severity;
 use function usort;
 
 /**
- * The findings, worst first — which is the order `N2` asks a screen to show.
+ * The findings, worst first — which is the order `N2-R2` asks a screen to show.
  *
  * The one decision this module makes about a report that the server has not
  * already made for it. The server sends `overall` and it sends the findings in
  * the order the checks ran; what it does not send is the order a person should
  * read them in, because that is a decision about a screen.
  *
- * **The verdict first, then how much it costs.** Two checks that both failed
- * are not equally urgent, and the engine says which is worse: a `critical` puts
- * data or something outside the machine at risk where an `error` is a broken
- * thing. Read as a second key rather than a first, because a failure that is
- * merely an error still outranks a warning that is critical — the verdict is
- * whether the thing works and severity is what the answer costs.
+ * **How much it costs first, then the verdict.** `N2-R2` orders findings by
+ * severity and names nothing else, and the requirement is right about which
+ * side decides: severity is the engine's own grading of what a finding puts at
+ * risk, and a screen ranking the verdict above that grading would be this app
+ * deciding a judgement already made does not count. A warning graded `critical`
+ * is the engine saying data or something outside the machine is at risk; a
+ * failure graded `advisory` is a broken thing that costs nothing. An operator
+ * reading down the list meets them in that order.
+ *
+ * **The verdict breaks the tie**, because two findings the engine graded alike
+ * are still not the same thing — one that failed is not working where one that
+ * warned is working badly — and `Conclusion`'s declaration order already says
+ * which of those belongs higher.
  *
  * The words are the engine's, not this module's. A screen working severity out
  * for itself would be a second opinion about a judgement already made, which is
@@ -72,10 +79,10 @@ final readonly class WorstFirst
     private function whichComesFirst(Finding $one, Finding $other): int
     {
         return match (true) {
-            $one->conclusion()->isWorseThan($other->conclusion()) => self::BEFORE,
-            $other->conclusion()->isWorseThan($one->conclusion()) => self::AFTER,
             $this->costOf($one)->isWorseThan($this->costOf($other)) => self::BEFORE,
             $this->costOf($other)->isWorseThan($this->costOf($one)) => self::AFTER,
+            $one->conclusion()->isWorseThan($other->conclusion()) => self::BEFORE,
+            $other->conclusion()->isWorseThan($one->conclusion()) => self::AFTER,
             default => self::TOGETHER,
         };
     }
@@ -85,10 +92,13 @@ final readonly class WorstFirst
      *
      * `Advisory` for the two arms that carry no severity, which is the honest
      * floor rather than a guess: a check that passed has nothing to cost, and
-     * one that could not run has no judgement to report. Neither can be reached
-     * across a conclusion boundary anyway — this is only ever asked of two
-     * findings the verdict already tied — so the value is a floor rather than a
-     * ranking of something that was never graded.
+     * one that could not run has no judgement to report.
+     *
+     * The floor is load-bearing now that this is the first key, and it is
+     * right at the bottom: a check nobody graded must not be sorted above one
+     * the engine graded as mattering. Where two ungraded findings meet, they
+     * tie here and the verdict separates them, which is the only thing left
+     * that can.
      */
     private function costOf(Finding $finding): Severity
     {
