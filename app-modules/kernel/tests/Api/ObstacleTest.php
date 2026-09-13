@@ -14,7 +14,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 
-it('is the five an operator must be able to tell apart', function (): void {
+it('is the six an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
     // being proposed and keeps belonging elsewhere, while `N4-R17` asked for
     // the permission case by name — and it should be made against a failing
@@ -25,6 +25,7 @@ it('is the five an operator must be able to tell apart', function (): void {
         Obstacle::StackDidNotAnswer,
         Obstacle::StackIsNotTheOnePaired,
         Obstacle::CredentialWasRefused,
+        Obstacle::TooManyAttempts,
     ]);
 });
 
@@ -45,13 +46,18 @@ it('names each one differently in the identifier an operator searches for', func
         'COMPANION-NO-ANSWER',
         'COMPANION-CERTIFICATE-CHANGED',
         'COMPANION-CREDENTIAL-REFUSED',
+        'COMPANION-TOO-MANY-ATTEMPTS',
     ]);
 });
 
-it('calls no network a warning and the other two errors', function (): void {
+it('calls a condition that clears itself a warning, and a fault an error', function (): void {
     // Nothing is broken when a phone is somewhere without a signal; it will
-    // leave. The other two mean something that is supposed to work does not,
-    // and `Severity::demandsAttention` is what a screen reads off this.
+    // leave. Nothing is broken either when a door has stopped listening after
+    // too many wrong passwords — not the stack, not the app, not the password —
+    // and that condition clears itself too. The others mean something that is
+    // supposed to work does not, and `Severity::demandsAttention` is what a
+    // screen reads off this.
+    expect(Obstacle::TooManyAttempts->severity())->toBe(Severity::Warning);
     expect(Obstacle::DeviceHasNoNetwork->severity())->toBe(Severity::Warning);
     expect(Obstacle::LocalNetworkIsNotPermitted->severity())->toBe(Severity::Error);
     expect(Obstacle::StackDidNotAnswer->severity())->toBe(Severity::Error);

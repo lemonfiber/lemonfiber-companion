@@ -17,6 +17,7 @@ use Modules\Device\Api\PlatformScreen;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
+use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
+use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
@@ -89,6 +91,19 @@ final class CompositionRoot extends ServiceProvider
         // `NothingReachesAStackUnpinnedTest` refuses any other file that names
         // its transport. This line is where those two facts meet the container.
         $this->app->bind(Reaching::class, static fn(): Reaching => new PinnedClients());
+
+        // The one place a credential is offered to a stack, bound beside the
+        // client for the same reason: `modules/sdk` is the only manifest that
+        // requires the SDK, so the two adapters that name its doors are the two
+        // lines here that come from it.
+        //
+        // Bound rather than a singleton, and this one matters more than the
+        // client's. A door is opened for one stack with one credential; an
+        // instance held across two would be an object that has already been
+        // handed a password, which is the shape `N1-R7`'s second clause exists
+        // to prevent. It holds no state today — the binding is what keeps that
+        // true of whatever it grows into.
+        $this->app->bind(Admitting::class, static fn(): Admitting => new Admissions());
 
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,
