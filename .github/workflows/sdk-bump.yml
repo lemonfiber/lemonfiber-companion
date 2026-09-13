@@ -270,11 +270,19 @@ jobs:
             # resolver's own explanation where there is one — the paragraph
             # after "could not be resolved" is the part that names the packages
             # — and to the last lines otherwise.
-            said="$(sed -n '/could not be resolved/,$p' composer-said.txt 2>/dev/null | head -20)"
+            #
+            # `grep -A` rather than a sed range to the last line. That range
+            # needs sed's last-line address inside single quotes, and shellcheck
+            # reads it as a variable that will not expand — correctly, because
+            # the two are written identically. This says the same thing in a
+            # spelling neither of them can misread.
+            said="$(grep -A20 'could not be resolved' composer-said.txt 2>/dev/null || true)"
             if [ -z "$said" ]; then
               said="$(tail -20 composer-said.txt 2>/dev/null || echo 'composer wrote nothing this workflow kept.')"
             fi
-            verdict="$(printf '%s\n\n```\n%s\n```' \
+            # Double-quoted, so shellcheck can see that `\n` and the fences are
+            # meant literally rather than as something that failed to expand.
+            verdict="$(printf "%s\n\n\`\`\`\n%s\n\`\`\`" \
               "**Nothing was checked against this client.** \`composer update\` did not complete, so neither the analyser nor the suite ran and **\`Q-R68\` was not enforced on this run**. That is this workflow's problem or the registry's, not a verdict on the client, and what composer said is below rather than summarised — an earlier version of this step named HTTP 401 whatever had happened, which sent readers to a registry that was working." \
               "${said}")"
           elif [ "$CLEAN" = "success" ]; then
