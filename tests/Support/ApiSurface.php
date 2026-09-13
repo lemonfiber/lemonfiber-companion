@@ -15,6 +15,7 @@ use ReflectionClass;
 use ReflectionIntersectionType;
 use ReflectionMethod;
 use ReflectionNamedType;
+use ReflectionProperty;
 use ReflectionType;
 use ReflectionUnionType;
 
@@ -53,6 +54,76 @@ final readonly class ApiSurface
      * them would be a rule about PHP rather than about this codebase.
      */
     private const array SHAPED_BY_PHP = ['__debugInfo', '__serialize', '__unserialize', '__sleep'];
+
+    /**
+     * Everything a class names, against where it names it.
+     *
+     * Methods and properties both. A rule that reads only methods is a rule a
+     * field walks past — and a promoted property is found by the constructor
+     * while a plain typed one is not, so the two shapes have to be asked for
+     * separately.
+     *
+     * Every method, not only the published ones: a private helper handed a type
+     * is a type the class can reach, whoever may call it.
+     *
+     * @param ReflectionClass<object> $class
+     *
+     * @return list<array{string, list<string>}>
+     */
+    public static function namedBy(ReflectionClass $class): array
+    {
+        $named = [];
+
+        foreach ($class->getMethods() as $method) {
+            $types = self::namesIn($method->getReturnType());
+
+            foreach ($method->getParameters() as $parameter) {
+                $types = [...$types, ...self::namesIn($parameter->getType())];
+            }
+
+            $named[] = [self::describe($method), $types];
+        }
+
+        foreach ($class->getProperties() as $property) {
+            $named[] = [
+                sprintf('%s::$%s', $class->getName(), $property->getName()),
+                self::namesIn($property->getType()),
+            ];
+        }
+
+        return $named;
+    }
+
+    /**
+     * Everything a class *answers with*, against where it answers it.
+     *
+     * Return types and readable public properties, and no parameters. The
+     * distinction is the whole of some rules: `Repair::offered()` takes an
+     * `Effects` and that is how one is built, while a method *answering* an
+     * `Effects` is a clause handed out on its own. Merging the two makes the
+     * constructor look like the leak.
+     *
+     * @param ReflectionClass<object> $class
+     *
+     * @return list<array{string, list<string>}>
+     */
+    public static function answeredBy(ReflectionClass $class): array
+    {
+        $answers = [];
+
+        foreach (self::publicMethodsOf($class) as $method) {
+            $answers[] = [self::describe($method), self::namesIn($method->getReturnType())];
+        }
+
+        foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            $answers[] = [
+                sprintf('%s::$%s', $class->getName(), $property->getName()),
+                self::namesIn($property->getType()),
+            ];
+        }
+
+        return $answers;
+    }
 
     /**
      * A class by name, as the helpers here will take it.

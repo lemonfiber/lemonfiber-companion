@@ -30,7 +30,9 @@ use Tests\Support\ApiSurface;
 it('N1-R9, N2-R13 — the value is reachable only by saying what happens either way', function (): void {
     $reachable = [];
 
-    foreach (ApiSurface::publicMethodsOf(ApiSurface::reflect(Reading::class)) as $method) {
+    $class = ApiSurface::reflect(Reading::class);
+
+    foreach (ApiSurface::publicMethodsOf($class) as $method) {
         if (! in_array('object', ApiSurface::namesIn($method->getReturnType()), strict: true)) {
             continue;
         }
@@ -46,6 +48,14 @@ it('N1-R9, N2-R13 — the value is reachable only by saying what happens either 
 
         if (! $asks) {
             $reachable[] = ApiSurface::describe($method);
+        }
+    }
+
+    // A public property holding the value asks for nothing at all, so it can
+    // never be the shape this requires and is reported without looking.
+    foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        if (in_array('object', ApiSurface::namesIn($property->getType()), strict: true)) {
+            $reachable[] = sprintf('%s::$%s', Reading::class, $property->getName());
         }
     }
 

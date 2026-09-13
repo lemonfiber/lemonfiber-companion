@@ -96,6 +96,16 @@ function answeringAString(ReflectionClass $class): array
         }
     }
 
+    // A public property is read without a call, so it answers too. Kept apart
+    // from the loop above rather than merged through a helper: what a member is
+    // called is the thing this compares, and recovering it from a formatted
+    // description is a parse nobody should have to read.
+    foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        if (in_array('string', ApiSurface::namesIn($property->getType()), strict: true)) {
+            $found[] = sprintf('$%s', $property->getName());
+        }
+    }
+
     sort($found);
 
     return $found;
