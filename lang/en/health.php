@@ -31,11 +31,8 @@ return [
         'degraded' => 'Some services need attention',
         'healthy' => 'Everything is running',
     ],
-    'unreachable' => 'This stack cannot be reached from here.',
-    'unreachable_action' => 'Check that the stack is on and on the same network.',
     'stale' => 'Last checked :ago',
     'no_findings' => 'Nothing needs attention.',
-    'nothing_to_report' => 'Every check passed.',
     'repair_refused' => 'The stack refused that repair: :reason',
     'nothing_to_try' => 'The stack did not suggest anything to try for this.',
 ];

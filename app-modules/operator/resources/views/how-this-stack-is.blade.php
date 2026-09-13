@@ -43,7 +43,7 @@
                 @endif
             </native:column>
         @empty
-            <native:text>{{ __('health.nothing_to_report') }}</native:text>
+            <native:text>{{ __('health.no_findings') }}</native:text>
         @endforelse
     @endunless
 </native:column>
