@@ -162,3 +162,44 @@ it('N1-R11 — one stack\'s verdict is not another\'s', function (): void {
     expect($screen->lastKnownOf($loft)->said)->toBe(Overall::Broken->saidOnTheScreen())
         ->and($screen->lastKnownOf($shed)->said)->toBe(Overall::Healthy->saidOnTheScreen());
 });
+
+it('N2-R13 — a reading from the future counts as nothing, not as a negative', function (): void {
+    // The rendered phrase cannot prove this: nought seconds and one second land
+    // in the same band and read the same. Only the number separates a floor
+    // that holds from one that is off by one, and being off by one here means
+    // the screen says a reading was taken before it was — which is the shape
+    // `HowLongAgo::secondsBetween()` exists to refuse.
+    $stack = aStackToOpenOn();
+    $verdicts = VerdictsInMemory::working()
+        ->lastSeen($stack->id(), Overall::Healthy, Instant::atEpochSeconds(NOW + 10_800));
+
+    expect(theOpeningScreen($stack, $verdicts)->lastKnownOf($stack)->agoCount)->toBe(0);
+});
+
+it('a stack with nothing held carries no words at all, not merely no flag', function (): void {
+    // The row is drawn from these three, so asserting only `isKnown` leaves the
+    // template free to render whatever the others hold. A verdict key here
+    // would put a word on a stack that has never been asked.
+    $stack = aStackToOpenOn();
+
+    $nothing = theOpeningScreen($stack)->lastKnownOf($stack);
+
+    expect($nothing->isKnown)->toBeFalse()
+        ->and($nothing->said)->toBe('')
+        ->and($nothing->agoSaid)->toBe('')
+        ->and($nothing->agoCount)->toBe(0);
+});
+
+it('N1-R33 — a held value that is not a verdict opens on no verdict', function (): void {
+    // The port answers `Reading`, whose retained arm is typed `object` — it
+    // carries whatever was put in it, which for a store is whatever the last
+    // build wrote. A screen that took it on trust would call
+    // `saidOnTheScreen()` on something that has no such method, at launch, in
+    // front of the operator. The guard is what makes that a row with no
+    // verdict instead.
+    $stack = aStackToOpenOn();
+    $verdicts = VerdictsInMemory::working()
+        ->lastSeenAsSomethingElse($stack->id(), Instant::atEpochSeconds(NOW - 60));
+
+    expect(theOpeningScreen($stack, $verdicts)->lastKnownOf($stack)->isKnown)->toBeFalse();
+});

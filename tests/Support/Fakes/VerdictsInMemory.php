@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Showing;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Verdicts;
+use stdClass;
 
 /**
  * Verdicts a test states, rather than a store a test has to set up.
@@ -51,6 +52,22 @@ final class VerdictsInMemory implements Verdicts
     public function lastSeen(StackId $stack, Overall $overall, Instant $at): self
     {
         $this->held[$stack->stored()] = Showing::holding(Reading::retained($overall, $at));
+
+        return $this;
+    }
+
+    /**
+     * State that a stack holds something that is not a verdict at all.
+     *
+     * What a store written by another build of this app looks like from in
+     * here: `Reading`'s retained arm is typed `object`, so it carries whatever
+     * was put in it. The adapter refuses such a record before it becomes a
+     * `Reading` — this is how a screen's own guard against the same thing gets
+     * a case to be driven by, since nothing else can produce one.
+     */
+    public function lastSeenAsSomethingElse(StackId $stack, Instant $at): self
+    {
+        $this->held[$stack->stored()] = Showing::holding(Reading::retained(new stdClass(), $at));
 
         return $this;
     }

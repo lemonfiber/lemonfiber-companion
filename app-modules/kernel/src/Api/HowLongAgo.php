@@ -7,7 +7,6 @@ namespace Modules\Kernel\Api;
 use function array_find;
 use function array_reverse;
 use function intdiv;
-use function max;
 use function sprintf;
 
 /**
@@ -101,14 +100,24 @@ enum HowLongAgo: string
     /**
      * How long ago a reading was taken, never less than nothing.
      *
-     * The floor is what turns a clock that disagrees with itself into *moments
-     * ago*: a device whose clock moved backwards, or a stack whose clock is
-     * ahead, produces a reading in the future. This app knows such a reading is
-     * not old and does not know enough to say anything else — where the raw
-     * subtraction would put *in three hours* on somebody's screen.
+     * A clock that disagrees with itself — a device whose own has moved
+     * backwards, or a stack whose clock is ahead — produces a reading in the
+     * future. This app knows such a reading is not old and does not know enough
+     * to say anything else, so it is treated as taken now: *moments ago*, where
+     * the raw subtraction would put *in three hours* on somebody's screen.
+     *
+     * **The moment is clamped, not the difference.** `max($now - $read, 0)`
+     * says the same thing and says it with a number written into the method,
+     * which `D6` refuses — and says it unobservably, because every band here
+     * divides by at least sixty: clamping to nought, to one or to minus one
+     * produces the same count, and no test can tell the three apart. Taking the
+     * earlier of the two moments has no constant to be wrong about, and getting
+     * the comparison backwards is a negative count a test can name.
      */
     private static function secondsBetween(Instant $read, Instant $now): int
     {
-        return max($now->epochSeconds() - $read->epochSeconds(), 0);
+        $taken = $read->isAfter($now) ? $now : $read;
+
+        return $now->epochSeconds() - $taken->epochSeconds();
     }
 }
