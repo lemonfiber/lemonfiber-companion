@@ -18,7 +18,9 @@ use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Stacks;
 use Modules\Vault\Api\PlatformKeychain;
+use Modules\Vault\Api\PlatformStacks;
 use Native\Mobile\Edge\TailwindParser;
 use Native\Mobile\SecureStorage as PlatformStore;
 
@@ -66,6 +68,18 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             SecureStorage::class,
             static fn(): SecureStorage => new PlatformKeychain(new PlatformStore()),
+        );
+
+        // The paired machines, in the same store and bound for the same reason.
+        // A separate port from the one above rather than a second method on it,
+        // because the two have opposite obligations: a session is what this app
+        // may hold and must not spread (`N1-R23`, `N4-R5`), and a stack is what
+        // it must retain and `N1-R34` refuses to let a discard take with it. One
+        // port for both would be the place where the first piece of code to
+        // write one out takes the other with it.
+        $this->app->bind(
+            Stacks::class,
+            static fn(): Stacks => new PlatformStacks(new PlatformStore()),
         );
 
         // Bound, not a singleton, for the same reason the store above is not:
