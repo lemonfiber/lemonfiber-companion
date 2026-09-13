@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
@@ -9,6 +10,7 @@ use Modules\Kernel\Api\Held;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Interrupted;
 use Modules\Kernel\Api\Pairing;
+use Modules\Kernel\Api\Reach;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -60,6 +62,28 @@ function typesThatMustNotMeet(): array
             . 'carried across a gap by eye or by camera and is public in the sense that '
             . 'matters, so a path from it to a session is a path from a photograph in a camera '
             . 'roll to an admitted app.',
+        ],
+        [
+            Session::class,
+            [Address::class, Reach::class],
+            'N1-R14',
+            'The app talks to a stack over the LAN today and over an overlay later, and '
+            . 'neither change may require a change to how it authenticates. What makes '
+            . 'that true is that admission does not know where the stack is: a session is '
+            . 'a token for a header (N1-R8), and a token that could be handed an address '
+            . 'is one somebody scopes to an address the first time two stacks are '
+            . 'reachable at once — which is a change to authentication, made for a '
+            . 'transport reason, exactly as the requirement forbids.',
+        ],
+        [
+            Credential::class,
+            [Address::class, Reach::class],
+            'N1-R14',
+            'The same argument one step earlier. A credential is exchanged for a session '
+            . 'and is spent doing it (N1-R7); where that exchange happened is the '
+            . "transport's business. A credential that could name an address is the "
+            . 'beginning of an exchange that means something different over an overlay '
+            . 'than over the LAN.',
         ],
         [
             SecureStorage::class,
