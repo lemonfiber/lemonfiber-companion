@@ -21,6 +21,12 @@ return [
         'pass' => 'Geslaagd',
         'skipped' => 'Overgeslagen',
     ],
+    'severity' => [
+        'critical' => 'Gegevens of iets buiten deze machine loopt gevaar',
+        'error' => 'Kapot',
+        'warning' => 'Verminderd',
+        'advisory' => 'Goed om te weten',
+    ],
     'undoing' => [
         'permanent' => 'Dit kan niet ongedaan worden gemaakt',
         'possible' => 'Dit kan daarna ongedaan worden gemaakt',

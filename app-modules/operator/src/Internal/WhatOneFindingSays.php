@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Remedies;
+use Modules\Kernel\Api\Severity;
 
 /**
  * One row of a report, flattened for a template to read.
@@ -30,6 +31,13 @@ use Modules\Kernel\Api\Remedies;
  * to group them — reordering would be this app second-guessing the engine about
  * which finding matters most. Saying which part each is about does the same
  * work without taking that decision.
+ *
+ * **How much it costs is shown beside the verdict, not instead of it.** They
+ * answer different questions — the verdict is whether the check passed and the
+ * severity is what the answer costs — and two failed checks where one puts data
+ * at risk must not read the same. It is also the second key
+ * {@see \Modules\Health\Api\Queries\WorstFirst} orders by, so a row that is
+ * higher up for a reason says what that reason was.
  *
  * **A row with nothing wrong carries neither**, and the empty strings are what
  * the template branches on. A passing check has no meaning to explain and no
@@ -56,6 +64,7 @@ final readonly class WhatOneFindingSays
      * @param string   $verdict  the key for what the verdict is called
      * @param string   $code     the identifier an operator quotes, or empty
      * @param string   $meaning  what it means for them, or empty
+     * @param string   $cost     the key for how much it matters, or empty
      * @param Remedies $remedies what to try, likeliest first, empty where none
      */
     private function __construct(
@@ -64,6 +73,7 @@ final readonly class WhatOneFindingSays
         public string $verdict,
         public string $code,
         public string $meaning,
+        public string $cost,
         public Remedies $remedies,
     ) {}
 
@@ -84,14 +94,21 @@ final readonly class WhatOneFindingSays
                 verdict: $finding->conclusion()->saidOnTheScreen(),
                 code: '',
                 meaning: '',
+                cost: '',
                 remedies: Remedies::none(),
             ),
-            wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): self => new self(
+            wentWrong: static fn(
+                Code $code,
+                string $meaning,
+                Remedies $remedies,
+                Severity $severity,
+            ): self => new self(
                 title: $finding->title(),
                 about: $finding->category()->saidOnTheScreen(),
                 verdict: $finding->conclusion()->saidOnTheScreen(),
                 code: $code->shown(),
                 meaning: $meaning,
+                cost: $severity->saidOnTheScreen(),
                 // Every one of them, in the order the engine gave. `likeliest()`
                 // exists for a screen with room for one line, and this screen
                 // has room for the list — an operator whose first remedy did
@@ -102,11 +119,14 @@ final readonly class WhatOneFindingSays
                 title: $finding->title(),
                 about: $finding->category()->saidOnTheScreen(),
                 verdict: $finding->conclusion()->saidOnTheScreen(),
-                // No code, because these outcomes carry none. The template
-                // branches on the meaning rather than on this, so a row with a
-                // reason and no identifier still explains itself.
+                // No code and no cost, because these outcomes carry neither.
+                // Nothing was graded — a check that could not run produced no
+                // judgement, and a word here would be this app inventing one.
+                // The template branches on the meaning, so a row with a reason
+                // and neither of the others still explains itself.
                 code: '',
                 meaning: $reason,
+                cost: '',
                 remedies: $remedies,
             ),
         );

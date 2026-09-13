@@ -375,3 +375,32 @@ it('refuses a route parameter that is not text', function (): void {
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
+
+it('N2-R3 — a row says what it costs, beside what the verdict was', function (): void {
+    // The two are not the same question, and a screen showing only the verdict
+    // makes a critical failure and an ordinary one look identical. `WorstFirst`
+    // already puts the costlier one higher; this is the row saying why.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+
+    expect($screen->findings()[0]->cost)->toBe(Severity::Critical->saidOnTheScreen())
+        ->and(__($screen->findings()[0]->cost))->not->toBe($screen->findings()[0]->cost);
+});
+
+it('N2-R3 — a row with nothing graded carries no cost at all', function (): void {
+    // A passing check was never graded, so there is no word for how much it
+    // costs and none is invented. The template branches on the empty key.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(
+        Report::of(Overall::Healthy, Findings::of(
+            Finding::of(
+                Check::of('storage.room'),
+                Category::Storage,
+                'Room to grow',
+                Conclusion::Passed,
+                WhatTheCheckSaid::nothingWrong(),
+            ),
+        )),
+    ));
+
+    expect($screen->findings()[0]->cost)->toBe('')
+        ->and($screen->findings()[0]->code)->toBe('');
+});

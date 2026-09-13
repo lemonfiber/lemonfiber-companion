@@ -21,7 +21,16 @@
             <native:column class="w-full gap-1">
                 <native:text class="text-sm">{{ __($finding->about) }}</native:text>
                 <native:text class="font-bold">{{ $finding->title }}</native:text>
+                {{-- The verdict and what it costs, on one line. They answer
+                     different questions and a row showing only the first makes
+                     two failures look alike where one puts data at risk. A row
+                     with nothing graded — a pass, or a check that could not run
+                     — carries no cost and shows the verdict alone. --}}
                 <native:text>{{ __($finding->verdict) }}</native:text>
+
+                @if ($finding->cost !== '')
+                    <native:text class="text-sm font-bold">{{ __($finding->cost) }}</native:text>
+                @endif
 
                 {{-- N2-R3: what the core said about it, in the core's own
                      words. Rendered rather than translated — these are the

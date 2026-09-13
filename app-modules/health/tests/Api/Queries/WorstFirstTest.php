@@ -12,14 +12,36 @@ use function iterator_to_array;
 use Modules\Health\Api\Queries\WorstFirst;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
+use Modules\Kernel\Api\Remedies;
+use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 
 function row(string $check, Conclusion $conclusion): Finding
 {
     return Finding::of(Check::of($check), Category::Vpn, 'A check that ran', $conclusion, WhatTheCheckSaid::nothingWrong());
+}
+
+/** A failing row that also says how much it costs, which is the second key. */
+function costing(string $check, Severity $severity, Conclusion $conclusion = Conclusion::Failed): Finding
+{
+    return Finding::of(
+        Check::of($check),
+        Category::Vpn,
+        'A check that ran',
+        $conclusion,
+        WhatTheCheckSaid::wentWrong(
+            Code::of('VPN-3'),
+            'Your address was visible to the swarm',
+            Remedies::none(),
+            $severity,
+            Standing::Guided,
+        ),
+    );
 }
 
 /** @return list<string> */
@@ -89,6 +111,43 @@ it('keeps ties in order across a reordering that moves other rows', function ():
         'passed.one',
         'passed.two',
     ]);
+});
+
+it('puts the costlier of two failures first, which the verdict cannot tell apart', function (): void {
+    // Both failed, so the first key ties. The engine said one of them puts data
+    // at risk and the other is a broken thing, and an operator reading down the
+    // list should meet them in that order.
+    $ordered = new WorstFirst()->over(Findings::of(
+        costing('an-error', Severity::Error),
+        costing('a-critical', Severity::Critical),
+        costing('a-warning-severity', Severity::Warning),
+    ));
+
+    expect(checksIn($ordered))->toBe(['a-critical', 'an-error', 'a-warning-severity']);
+});
+
+it('does not let severity outrank the verdict', function (): void {
+    // A warning that is critical is still a warning. The verdict is whether the
+    // thing works and severity is what the answer costs, so reading them the
+    // other way round would put a degraded service above a broken one.
+    $ordered = new WorstFirst()->over(Findings::of(
+        costing('a-critical-warning', Severity::Critical, Conclusion::Warned),
+        costing('an-advisory-failure', Severity::Advisory),
+    ));
+
+    expect(checksIn($ordered))->toBe(['an-advisory-failure', 'a-critical-warning']);
+});
+
+it('leaves a check with no severity where the verdict put it', function (): void {
+    // A passing check is not graded and a check that could not run has no
+    // judgement to report, so neither is ranked against the other. Both tie,
+    // and a tie keeps the order the checks ran in.
+    $ordered = new WorstFirst()->over(Findings::of(
+        row('passed-second', Conclusion::Passed),
+        row('passed-first', Conclusion::Passed),
+    ));
+
+    expect(checksIn($ordered))->toBe(['passed-second', 'passed-first']);
 });
 
 it('answers with nothing where a run found nothing', function (): void {

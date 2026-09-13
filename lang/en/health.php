@@ -21,6 +21,12 @@ return [
         'pass' => 'Passed',
         'skipped' => 'Skipped',
     ],
+    'severity' => [
+        'critical' => 'Data or something outside this machine is at risk',
+        'error' => 'Broken',
+        'warning' => 'Degraded',
+        'advisory' => 'Worth knowing',
+    ],
     'undoing' => [
         'permanent' => 'This cannot be undone',
         'possible' => 'This can be undone afterwards',

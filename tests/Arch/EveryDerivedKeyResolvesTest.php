@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Tests\Support\Catalogue;
 
@@ -87,6 +88,10 @@ function everyDerivedKey(): array
         Conclusion::class => aPairPerCase(
             Conclusion::cases(),
             static fn(Conclusion $conclusion): array => [$conclusion->saidOnTheScreen()],
+        ),
+        Severity::class => aPairPerCase(
+            Severity::cases(),
+            static fn(Severity $severity): array => [$severity->saidOnTheScreen()],
         ),
         Overall::class => aPairPerCase(
             Overall::cases(),
