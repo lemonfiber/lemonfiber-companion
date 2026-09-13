@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function sprintf;
+
 /**
  * Something the platform will not let the app do until somebody says yes.
  *
@@ -53,5 +55,39 @@ enum Permission: string
         return match ($this) {
             self::LocalNetwork, self::Notifications, self::Camera => true,
         };
+    }
+
+    /**
+     * The key for what this permission is for, in the app's own words (`N4-R2`).
+     *
+     * **Derived rather than written, and that is the whole point of it being
+     * here.** The key was spelled twice — once by `PermissionsAreExplainedTest`,
+     * which builds it to check the catalogue holds a line, and once by whoever
+     * reads the line. The second spelling is a literal in a method body: nothing
+     * searches for it from the catalogue side, nothing notices when it is wrong,
+     * and a mistyped key renders as the key itself on somebody's screen.
+     *
+     * With it here there is one spelling, and the arch test that proves every
+     * case has a sentence in every locale is proving it about *this* string.
+     * A reader who wants the line asks the case for it.
+     */
+    public function reason(): string
+    {
+        return sprintf('device.%s_reason', $this->value);
+    }
+
+    /**
+     * The key for what still works without it (`N4-R3`).
+     *
+     * Only meaningful where {@see self::hasAnAlternative()} is true, and it does
+     * not guard against being asked otherwise: a case answering false would have
+     * no line in the catalogue, so the key comes back unresolved and says so on
+     * the screen rather than silently reading as something else. The guard that
+     * matters is the arch test, which refuses a case claiming an alternative it
+     * never names.
+     */
+    public function alternative(): string
+    {
+        return sprintf('device.%s_alternative', $this->value);
     }
 }

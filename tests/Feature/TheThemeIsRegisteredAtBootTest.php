@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Bootstrap\Composition\NativePHP\TheTheme;
 use Modules\Design\Api\ThemeToken;
 use Native\Mobile\Edge\TailwindParser;
 use Tests\Support\Edge;
@@ -30,8 +31,7 @@ it('G8 — every asserted token resolves once the application has booted', funct
         . 'A dropped class is not an error anywhere — it is parsed, found to mean '
         . 'nothing, and discarded, so the screen renders without its accent and says '
         . 'nothing. It means no theme resolver reached the parser: check that '
-        . 'CompositionRoot::boot() still calls TailwindParser::setThemeResolver() '
-        . '(G8, F3).',
+        . "CompositionRoot::boot() still registers TheTheme::paint() (G8, F3).",
         implode("\n  ", $dropped),
     ));
 });
@@ -62,4 +62,34 @@ it('DES-R24 — the accent paints the brand colour, not merely something', funct
     // parser emits one only when a dark resolver is registered, and ink on
     // lemon measures 10.9:1 whichever way the reader has their phone set.
     expect($parsed['dark'] ?? null)->toBeNull();
+});
+
+it('DES-R24 — the palette is still ours after another package sets its own', function (): void {
+    // The assertion above was decided by luck until `nativephp/mobile-ui`
+    // arrived. That package sets a light resolver *and* a dark one in its own
+    // boot; `TailwindParser` holds one of each and keeps whichever was set
+    // last; and provider discovery order is not something either package
+    // chooses — it differs between a fresh `composer install` and an
+    // incremental one. The assertion above passed locally and failed in CI on
+    // the same commit, which is what that looks like from the outside.
+    //
+    // So this plants the rival rather than hoping to be second. A foreign
+    // resolver answering for every token would make the whole application paint
+    // somebody else's palette, and a foreign *dark* resolver is worse than it
+    // sounds: it is additive, so every `bg-theme-*` silently gains a companion
+    // nothing here measured.
+    // Answering for every token, which is what a rival resolver does: the
+    // parser hands it a bare name and it decides. Naming the parameter and not
+    // reading it is the point — the hex comes back whatever was asked.
+    TailwindParser::setThemeResolver(static fn(): string => '#ff00ff');
+    TailwindParser::setThemeDarkResolver(static fn(): string => '#00ff00');
+    TailwindParser::clearCache();
+
+    TheTheme::paint();
+    TailwindParser::clearCache();
+
+    $parsed = TailwindParser::parse(sprintf('bg-theme-%s', ThemeToken::Accent->value));
+
+    expect($parsed['bg'] ?? null)->toBe(ThemeToken::Accent->hex())
+        ->and($parsed['dark'] ?? null)->toBeNull();
 });

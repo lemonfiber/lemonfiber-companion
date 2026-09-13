@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\View;
 use Modules\Operator\Internal\Screens\NoStackYet;
+use Modules\Operator\Internal\Screens\PairByScanning;
+use Modules\Operator\Internal\Screens\PairByTyping;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\StacksInMemory;
 
@@ -32,6 +34,36 @@ it('N1-R35 — the first frame is registered, and it is this screen', function (
     );
 
     expect($resolved['class'] ?? null)->toBe(NoStackYet::class);
+});
+
+it('N1-R6 — both roads into pairing are registered, and each is its own screen', function (): void {
+    // The requirement is that scanning and typed entry both exist, and a route
+    // that is never registered is a road that does not. Each is asserted by the
+    // screen behind it rather than by a count: two routes both resolving to the
+    // scanning screen would satisfy a count and leave a device with no camera
+    // unable to pair at all, which is the case N4-R3 is about.
+    //
+    // They are separate screens rather than one with a switch because ADR-0018
+    // puts a software comparison on the scanned road and N1-R50 puts a person on
+    // the typed one — so one of them has a confirmation step and the other must
+    // not be able to reach one.
+    $roads = [
+        '/pair/scanned' => PairByScanning::class,
+        '/pair/typed' => PairByTyping::class,
+    ];
+
+    foreach ($roads as $uri => $screen) {
+        $resolved = NativeRouter::resolve($uri);
+
+        expect($resolved)->not->toBeNull(sprintf(
+            'Nothing is registered for `%s`, so that road into pairing does not exist. '
+            . 'N1-R6 requires both, and N4-R3 requires the typed one specifically: it is '
+            . 'what an operator with no camera, or one who declined it, has left.',
+            $uri,
+        ));
+
+        expect($resolved['class'] ?? null)->toBe($screen);
+    }
 });
 
 it('resolves the screen\'s view name to the surface\'s own template', function (): void {

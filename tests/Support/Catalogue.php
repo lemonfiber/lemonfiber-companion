@@ -16,11 +16,14 @@ use Illuminate\Contracts\Translation\Translator;
 
 use function is_array;
 use function is_string;
+use function mb_strlen;
+use function mb_substr;
 
 use Modules\Device\Internal\Words;
 use RuntimeException;
 
 use function sprintf;
+use function str_replace;
 
 /**
  * One locale's translations for one module, read off disk.
@@ -81,7 +84,7 @@ final readonly class Catalogue
     public static function of(string $locale, string $group): array
     {
         /** @var mixed $rows */
-        $rows = require Tree::at(sprintf('lang/%s/%s.php', $locale, $group));
+        $rows = require Tree::at(sprintf('lang/%s/%s.php', $locale, str_replace('.', '/', $group)));
 
         return self::flatten($group, $rows);
     }
@@ -98,9 +101,10 @@ final readonly class Catalogue
     public static function all(string $locale): array
     {
         $said = [];
+        $under = Tree::at(sprintf('lang/%s', $locale));
 
-        foreach (Tree::filesUnder(Tree::at(sprintf('lang/%s', $locale)), '.php') as $file) {
-            $said = [...$said, ...self::of($locale, basename($file, '.php'))];
+        foreach (Tree::filesUnder($under, '.php') as $file) {
+            $said = [...$said, ...self::of($locale, self::groupOf($under, $file))];
         }
 
         return $said;
@@ -151,6 +155,33 @@ final readonly class Catalogue
     public static function words(): Words
     {
         return new Words(app(Translator::class));
+    }
+
+    /**
+     * The group name a catalogue file answers to, path and all.
+     *
+     * `basename()` was what this used, and it is wrong for any file below the
+     * locale directory: `lang/en/onboarding/pairing.php` came back as
+     * `pairing`, {@see self::of()} required `lang/en/pairing.php`, and the
+     * missing file took down every rule that reads the catalogue — with
+     * `Failed opening required`, from inside a rule that is about something
+     * else entirely.
+     *
+     * It is not hypothetical and it is not only about a subdirectory somebody
+     * might add: the `L2` fixture plants `lang/en/Fixtures/planted.php`, so the
+     * whole of the Guards run had every catalogue rule erroring rather than
+     * failing, and each of them matched its fixture on the name alone. A rule
+     * that errors for the wrong reason still looks red, which is how this stayed
+     * invisible.
+     *
+     * Laravel's own translator resolves a nested file as a dotted group, so
+     * this is also what it actually answers to.
+     */
+    private static function groupOf(string $under, string $file): string
+    {
+        $relative = str_replace(sprintf('%s/', $under), '', $file);
+
+        return str_replace('/', '.', mb_substr($relative, 0, -mb_strlen('.php')));
     }
 
     /** @return array<string, string> */

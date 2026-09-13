@@ -130,6 +130,17 @@ parameters:
                 # Likewise the base test case: booting the application is the
                 # whole reason Tests\TestCase exists.
                 - Illuminate\Foundation\Testing\TestCase
+                # The plugin's scanner builder, so a suite can run the scanner
+                # adapter at all. `PendingScanner::scan()` reaches
+                # `nativephp_call()`, which is a no-op off a handset — so the
+                # adapter would register two callbacks and neither would ever
+                # fire, and every assertion about what it does with an answer
+                # would be about a callback nobody called. G1 refuses a mock of
+                # a type we do not own; a subclass with the methods written out
+                # fails to compile when the real class changes, which a mock
+                # does not. Same reason ANotificationCentre extends the
+                # notification plugin's own centre.
+                - Native\Mobile\PendingScanner
                 # NativePHP components are extended by the framework's own
                 # contract; a component that did not extend it is not a screen.
                 - Native\Mobile\Edge\NativeComponent
@@ -811,6 +822,15 @@ services:
             - phpstan.rules.rule
     -
         class: Lemonfiber\Companion\PHPStan\Rules\NoNestedTernaryRule
+        tags:
+            - phpstan.rules.rule
+
+    # H8 — a method leaves by at most three doors. SonarCloud's S1142 found the
+    # first one, on a pull request, which is after the work is finished and
+    # where the author has stopped looking. Same argument as D6 below: a rule
+    # that only fails in review is a rule people meet too late to act on.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoManyReturnsRule
         tags:
             - phpstan.rules.rule
 

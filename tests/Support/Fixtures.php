@@ -1225,6 +1225,34 @@ final readonly class Fixtures
                 }
                 PHP, 'C7 —'),
 
+            Fixture::analyser('H8', 'Plain/LeavesByFourDoors.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class LeavesByFourDoors
+                {
+                    public function verdict(int $findings, bool $reachable): string
+                    {
+                        if (! $reachable) {
+                            return 'unreachable';
+                        }
+
+                        if ($findings === 0) {
+                            return 'healthy';
+                        }
+
+                        if ($findings === 1) {
+                            return 'one finding';
+                        }
+
+                        return 'several findings';
+                    }
+                }
+                PHP, 'H8 —'),
+
             Fixture::analyser('C9', 'Plain/NestsTernaries.php', <<<'PHP'
                 <?php
 
@@ -2040,6 +2068,26 @@ final readonly class Fixtures
                 'shown',
             ),
 
+            // A key the catalogue does not hold, in a template, which is where
+            // one is least visible: Blade is not PHP any analyser reads, so
+            // nothing else in this repository can see a string here at all.
+            // `L2` cannot either — it compares the two catalogues against each
+            // other, and they agree perfectly about a key neither of them has.
+            //
+            // Drift rather than a misspelling, which is the commoner way this
+            // happens and the one a spell-checker cannot help with: the line was
+            // renamed in `lang/` and the template that reads it was not. A
+            // planted misspelling would also make the typos gate red, for a
+            // word that is deliberately wrong.
+            Fixture::edit(
+                'L7',
+                'app-modules/operator/resources/views/no-stack-yet.blade.php',
+                "{{ __('connection.setup_is_at_the_machine') }}",
+                "{{ __('connection.setup_happens_at_the_machine') }}",
+                'L7 —',
+                'connection.setup_happens_at_the_machine',
+            ),
+
             // Nothing to drop in: a listener is only a listener once something
             // has registered it, and the dispatcher is what this rule reads.
             // Neither class needs to exist — `getRawListeners()` hands back the
@@ -2048,14 +2096,14 @@ final readonly class Fixtures
             Fixture::edit(
                 'E5',
                 'bootstrap/Composition/CompositionRoot.php',
-                '        TailwindParser::setThemeResolver(Theme::resolver());',
+                '        $this->app->booted(TheTheme::paint(...));',
                 <<<'PHP'
                             \Illuminate\Support\Facades\Event::listen(
                                 'Modules\Backups\Api\Events\ArchiveWritten',
                                 'Modules\Health\Internal\ListensAcrossAKind@handle',
                             );
 
-                            TailwindParser::setThemeResolver(Theme::resolver());
+                            $this->app->booted(TheTheme::paint(...));
                     PHP,
                 'E5 — no listener reacts to an event its module may not name',
                 'ListensAcrossAKind',

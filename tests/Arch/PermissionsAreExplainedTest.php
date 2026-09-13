@@ -23,6 +23,11 @@ use Tests\Support\Manifests;
 // Both are asked over `Permission::cases()` rather than over the catalogue, so
 // the day a fourth permission is added the failure names it. Adding a case and
 // leaving the sentences for later is exactly the commit this refuses.
+//
+// The keys come from the case rather than being built here, so that this file
+// and whichever adapter reads the line are spelling the same string. A rule that
+// builds its own copy of a key is a rule that can pass while the screen shows
+// the key itself.
 
 it('N4-R2 — every permission is explained in the app\'s own words', function (): void {
     $missing = [];
@@ -31,7 +36,7 @@ it('N4-R2 — every permission is explained in the app\'s own words', function (
         $lines = Catalogue::all($locale);
 
         foreach (Permission::cases() as $permission) {
-            $key = sprintf('device.%s_reason', $permission->value);
+            $key = $permission->reason();
 
             if (($lines[$key] ?? '') === '') {
                 $missing[] = sprintf('%s — %s', $key, $locale);
@@ -62,7 +67,7 @@ it('N4-R3 — every permission says what still works without it', function (): v
                 continue;
             }
 
-            $key = sprintf('device.%s_alternative', $permission->value);
+            $key = $permission->alternative();
 
             if (($lines[$key] ?? '') === '') {
                 $missing[] = sprintf('%s — %s', $key, $locale);

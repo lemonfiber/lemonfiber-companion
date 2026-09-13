@@ -268,12 +268,48 @@ jobs:
       - run: composer test:report
       - run: composer test:floors
 
+  # Which modules are worth mutating, asked of the same script that mutates
+  # them. A list written here would be a second source of truth that goes stale
+  # the day a module gains its first class — silently, because the run still
+  # passes, over less.
+  mutation-scope:
+    name: what to mutate
+    needs: tests
+    if: ${{ !cancelled() && needs.tests.result == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.list.outputs.modules }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+      - id: list
+        run: echo "modules=$(php scripts/mutation.php --list)" >> "$GITHUB_OUTPUT"
+
   # The most expensive gate in the repository, so it is the most guarded: only
   # on a pull request, only once the tests have passed, and only over the app's
   # own logic. Mutating code whose tests are already failing measures nothing.
+  #
+  # A runner per module, because this is the one gate whose work genuinely
+  # separates: a floor of 100 admits no offsetting between modules, so each is
+  # already judged alone and running them in one process only made the wall
+  # clock the sum of them. It was several minutes and the longest thing in the
+  # repository; now it is the slowest single module.
+  #
+  # `fail-fast: false` because the point of a shard is to learn about all of
+  # them: cancelling eleven runners over one escaped mutant means a second push
+  # to find the next one.
   mutation:
-    name: mutation testing
-    needs: tests
+    name: mutation
+    needs: [tests, mutation-scope]
+    if: ${{ !cancelled() && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.modules != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJson(needs.mutation-scope.outputs.modules) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -284,4 +320,47 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - run: composer test:mutation
+      - run: composer test:mutation -- --module=${{ matrix.module }}
+
+  # The check branch protection actually names.
+  #
+  # A matrix job reports one check per entry — `mutation (kernel)`,
+  # `mutation (operator)` — and none of them is called `mutation testing`. That
+  # required check would simply never report, and a required check that never
+  # reports blocks a pull request forever with nothing anywhere naming the
+  # cause. It is the same hole `sonar.yml`'s gate exists to close, and it is
+  # reached here by renaming rather than by a failure.
+  #
+  # So this job keeps the name and answers for the shards. `!cancelled()` rather
+  # than `always()`: a cancelled run is somebody pressing stop.
+  #
+  # It asks the results rather than depending on them, for the reason every
+  # other gate in this file does: `needs` alone makes a job disappear when what
+  # it needs fails, which turns a red gate into a missing one.
+  mutation-gate:
+    name: mutation testing
+    needs: [tests, mutation-scope, mutation]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: every module that was mutated passed
+        env:
+          TESTS: ${{ needs.tests.result }}
+          SCOPE: ${{ needs.mutation-scope.result }}
+          SHARDS: ${{ needs.mutation.result }}
+        run: |
+          # `skipped` is a pass here and only here: the shards are skipped when
+          # no module holds code yet, which `mutation-scope` reports as an empty
+          # list. Every other reason a shard does not run — a failure upstream,
+          # a cancelled run — is already covered by the two results above it.
+          echo "tests=$TESTS scope=$SCOPE shards=$SHARDS"
+
+          if [ "$TESTS" != success ] || [ "$SCOPE" != success ]; then
+            echo "::error::Mutation did not run: the tests or the module list did not pass."
+            exit 1
+          fi
+
+          if [ "$SHARDS" != success ] && [ "$SHARDS" != skipped ]; then
+            echo "::error::A module's mutation run did not pass. Open the mutation (<module>) job that is red."
+            exit 1
+          fi

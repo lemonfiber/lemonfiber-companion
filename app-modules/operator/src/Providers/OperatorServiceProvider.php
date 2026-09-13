@@ -7,6 +7,8 @@ namespace Modules\Operator\Providers;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\Screens\NoStackYet;
+use Modules\Operator\Internal\Screens\PairByScanning;
+use Modules\Operator\Internal\Screens\PairByTyping;
 
 /**
  * The operator surface, declaring its own screens.
@@ -69,6 +71,19 @@ final class OperatorServiceProvider extends ServiceProvider
         // it fails.
         $this->app->booted(static function (): void {
             Router::native('/', NoStackYet::class);
+            // The two roads N1-R6 requires, each its own URI rather than a
+            // mode of the entry screen: the navigation stack is what lets an
+            // operator back out of one, and a screen that pairs is one
+            // #[Concealed] has to be able to name — which it cannot do for half
+            // of another screen.
+            //
+            // Two screens rather than one with a switch, because they are not
+            // the same flow with a different input widget. ADR-0018 puts a
+            // software comparison on the scanned road and N1-R50 puts a person
+            // on the typed one, so one of them has a confirmation step and the
+            // other must not be able to reach one.
+            Router::native('/pair/scanned', PairByScanning::class);
+            Router::native('/pair/typed', PairByTyping::class);
         });
     }
 }
