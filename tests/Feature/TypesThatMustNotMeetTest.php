@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Held;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Interrupted;
 use Modules\Kernel\Api\Pairing;
@@ -67,6 +68,50 @@ function typesThatMustNotMeet(): array
         ],
     ];
 }
+
+it('N1-R38 — what a screen kept cannot be handed anything that could refetch it', function (): void {
+    // The requirement's second clause: returning to a screen must not re-read
+    // the stack solely to rebuild it. The easy way to satisfy the first clause
+    // is to re-run whatever built the screen, which looks correct and — on a
+    // desk, with a stack on the same subnet — is indistinguishable from
+    // correct. What it does is discard the operator's half-finished work and
+    // replace it with whatever the stack says now.
+    //
+    // Named types are listed in the table above; this one is a shape. Any
+    // interface is a port or a collaborator that can be asked something, so a
+    // `Held` that could be handed one is a `Held` that could refetch. Written
+    // as a shape rather than a list because the list would need editing every
+    // time a port is added, and the edit that gets forgotten is the one that
+    // matters.
+    $reachable = [];
+
+    // Every method, not only the published ones: a private helper handed a
+    // port is a port the type can reach, whoever may call it.
+    foreach (new ReflectionClass(Held::class)->getMethods() as $method) {
+        $named = ApiSurface::namesIn($method->getReturnType());
+
+        foreach ($method->getParameters() as $parameter) {
+            $named = [...$named, ...ApiSurface::namesIn($parameter->getType())];
+        }
+
+        foreach ($named as $type) {
+            if (interface_exists($type) && $type !== Closure::class) {
+                $reachable[] = sprintf('%s takes or answers %s', ApiSurface::describe($method), $type);
+            }
+        }
+    }
+
+    expect(array_values(array_unique($reachable)))->toBe([], sprintf(
+        "What a screen kept can reach something it could ask:\n  %s\n\n"
+        . 'N1-R38 forbids re-reading the stack to rebuild a screen. An interface here is '
+        . 'a port or a collaborator that can be asked, so a `Held` that could be handed '
+        . "one is a `Held` that could refetch — and refetching is how the operator's "
+        . 'half-finished work gets replaced by whatever the stack says now, after a wait '
+        . "they did not ask for.\nWhat a screen keeps is a value. If it needs something "
+        . 'asked, that happened before it was kept (N1-R38).',
+        implode("\n  ", $reachable),
+    ));
+});
 
 it('a type that must not reach another cannot name it in any signature', function (): void {
     $found = [];
