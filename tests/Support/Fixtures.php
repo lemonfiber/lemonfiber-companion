@@ -1901,10 +1901,7 @@ final readonly class Fixtures
      * Each of these was driven by hand when it was written, which proves it once
      * and on one machine. Here it is proved on every run, which is what the
      * harness is for.
-     *
-     * `N3-R9` is not here. Its fixture has to be a class in a module that holds
-     * no code, and this harness cannot carry that one — see the entry for it
-     * below, which says what happens rather than why.
+
      *
      * @return list<Fixture>
      */
@@ -1929,6 +1926,24 @@ final readonly class Fixtures
                 }
                 PHP, 'N2-R12 — no screen can be handed a credential'),
 
+            Fixture::suite('N3-R9', 'app-modules/household/src/Fixtures/ShowsAReport.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Household\Fixtures;
+
+                use Modules\Kernel\Api\Report;
+
+                final readonly class ShowsAReport
+                {
+                    public function threeLinesFrom(Report $report): string
+                    {
+                        return '';
+                    }
+                }
+                PHP, 'N3-R9 — nothing on a member surface can be handed'),
+
             Fixture::suite('N3-R8', 'native/resources/android/PlaysMedia.kt', <<<'KOTLIN'
                 package app.lemonfiber.native
 
@@ -1949,18 +1964,6 @@ final readonly class Fixtures
     private static function notDrivable(): array
     {
         return [
-            Fixture::notDrivable(
-                'N3-R9',
-                'A fixture for this has to be a class in `app-modules/household`, which holds '
-                . 'no code — and planting one makes this harness report every other suite '
-                . 'fixture as silent, seventeen rules that are not involved. The same file, '
-                . 'planted by hand, fails `N3-R9` alone and nothing else; the same plant and '
-                . 'the same nested command, run outside this harness, fail eighty-eight tests '
-                . 'with `N3-R9` among them. So the fixture is right and the harness is what '
-                . 'cannot carry it, and what that is has not been established. Driven by hand '
-                . 'instead: `Summarises::threeLinesFrom(Report)` and `Tells::why(WentWrong)`, '
-                . 'each refused by name.',
-            ),
             Fixture::notDrivable(
                 'N1-R7, N1-R8, N1-R15',
                 'The violation is a second accessor on `Session`, `Credential` or `Address` '
