@@ -89,6 +89,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
+            "App\\Providers\\": "bootstrap/Composition/NativePHP/Admitting/",
             "Bootstrap\\Composition\\": "bootstrap/Composition/"
         }
     },
