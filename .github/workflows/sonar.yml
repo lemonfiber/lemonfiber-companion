@@ -119,6 +119,22 @@ jobs:
     # for a comment the scan has not been started to produce yet and spends its
     # whole timeout waiting for one.
     needs: sonar
+    # Ordering only, though. `needs` on its own also makes this job disappear
+    # when the scan fails, and a required check that never reports blocks a pull
+    # request with no line anywhere saying by what — the very hole the comment
+    # above says this file exists to close, reopened from the other side. On
+    # 2026-09-13 SonarCloud answered 503 for over an hour and every pull request
+    # in the organisation sat on `MISSING: gate / gate`, while the job written to
+    # explain exactly that was never scheduled to say it.
+    #
+    # Nothing is loosened by running it anyway: a failed scan leaves `sonar` red,
+    # and `sonar` is a required check in its own right, so the pull request stays
+    # blocked for the reason it should be. The gate then does what it always did
+    # with no summary to read — warns, says Q-R64 went unenforced, and passes.
+    #
+    # `!cancelled()` rather than `always()`: a cancelled run is somebody pressing
+    # stop, and finishing the job they stopped serves nobody.
+    if: ${{ !cancelled() }}
     permissions:
       contents: read
       pull-requests: write
