@@ -2059,6 +2059,39 @@ final readonly class Fixtures
                 'E5 — no listener reacts to an event its module may not name',
                 'ListensAcrossAKind',
             ),
+
+            // The shape half: an accessor that asks for no closure hands over
+            // the value with the age left behind, which is the requirement
+            // broken by omission rather than by anything anybody wrote down.
+            Fixture::edit(
+                'N1-R9, N2-R13',
+                'app-modules/kernel/src/Api/Reading.php',
+                '    /** Held from an earlier session, and this is when it was read. */',
+                <<<'PHP'
+                        /** What it holds, with nothing said about when it was read. */
+                        public function valueWithoutItsAge(): object
+                        {
+                            return $this->value;
+                        }
+
+                        /** Held from an earlier session, and this is when it was read. */
+                    PHP,
+                'N1-R9, N2-R13 — the value is reachable only by saying what happens either way',
+                'valueWithoutItsAge',
+            ),
+
+            // The annotation half, which the shape rule cannot see: `either()`
+            // keeps both closures and stops promising the retained one the
+            // moment it was read. A screen is written against the annotation,
+            // so the annotation is what is checked.
+            Fixture::edit(
+                'N1-R9',
+                'app-modules/kernel/src/Api/Reading.php',
+                '     * @param Closure(object, Instant): TRetained $retained',
+                '     * @param Closure(object): TRetained $retained',
+                'N1-R9 — the retained arm is handed the moment it was read',
+                'Closure(object, Instant): TRetained',
+            ),
         ];
     }
 
@@ -2070,14 +2103,6 @@ final readonly class Fixtures
     private static function notDrivable(): array
     {
         return [
-            Fixture::notDrivable(
-                'N1-R9, N2-R13',
-                'The violation is a `value()` on `Reading`, and the second half is an '
-                . '`@param` on `either()` that stops handing the retained arm the moment it '
-                . 'was read. Both are edits to one existing file. Driven by hand: the '
-                . 'accessor refused by name, and the annotation change refused as a missing '
-                . 'retained parameter.',
-            ),
             Fixture::notDrivable(
                 'N1-R13',
                 'The violation is a contract that moved, which means editing the generated '
