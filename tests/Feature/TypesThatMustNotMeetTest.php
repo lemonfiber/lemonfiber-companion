@@ -146,21 +146,12 @@ it('a type that must not reach another cannot name it in any signature', functio
     $found = [];
 
     foreach (typesThatMustNotMeet() as [$subject, $forbidden, $requirement, $why]) {
-        $class = new ReflectionClass($subject);
-        $methods = [...ApiSurface::publicMethodsOf($class), ...$class->getMethods()];
-
-        foreach ($methods as $method) {
-            $named = ApiSurface::namesIn($method->getReturnType());
-
-            foreach ($method->getParameters() as $parameter) {
-                $named = [...$named, ...ApiSurface::namesIn($parameter->getType())];
-            }
-
+        foreach (ApiSurface::namedBy(ApiSurface::reflect($subject)) as [$where, $named]) {
             foreach (array_intersect($named, $forbidden) as $reached) {
                 $found[] = sprintf(
                     "%s — %s names %s\n    %s",
                     $requirement,
-                    ApiSurface::describe($method),
+                    $where,
                     $reached,
                     $why,
                 );
@@ -176,41 +167,6 @@ it('a type that must not reach another cannot name it in any signature', functio
         implode("\n  ", $found),
     ));
 });
-
-/**
- * Every type a screen names, against where it names it.
- *
- * Properties as well as signatures. A promoted one is both and is found by the
- * constructor, but a screen can also declare a plain typed property, and a rule
- * that read only methods would be a rule a field walks past.
- *
- * @param ReflectionClass<object> $screen
- *
- * @return list<array{string, list<string>}>
- */
-function namedByScreen(ReflectionClass $screen): array
-{
-    $named = [];
-
-    foreach ($screen->getMethods() as $method) {
-        $types = ApiSurface::namesIn($method->getReturnType());
-
-        foreach ($method->getParameters() as $parameter) {
-            $types = [...$types, ...ApiSurface::namesIn($parameter->getType())];
-        }
-
-        $named[] = [ApiSurface::describe($method), $types];
-    }
-
-    foreach ($screen->getProperties() as $property) {
-        $named[] = [
-            sprintf('%s::$%s', $screen->getName(), $property->getName()),
-            ApiSurface::namesIn($property->getType()),
-        ];
-    }
-
-    return $named;
-}
 
 /**
  * Every class this app renders from.
@@ -265,7 +221,7 @@ it('N2-R12 — no screen can be handed a credential', function (): void {
     $found = [];
 
     foreach (screens() as $screen) {
-        foreach (namedByScreen($screen) as [$where, $types]) {
+        foreach (ApiSurface::namedBy($screen) as [$where, $types]) {
             if (in_array(Credential::class, $types, strict: true)) {
                 $found[] = $where;
             }
@@ -294,20 +250,16 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
     // that needed "just the one field", so it is checked rather than written
     // down. Two properties, because `does` is a string and cannot be told from
     // `answers()` by its type alone.
-    $published = ApiSurface::publicMethodsOf(ApiSurface::reflect(Repair::class));
-
     $clauses = [];
     $strings = [];
 
-    foreach ($published as $method) {
-        $answers = ApiSurface::namesIn($method->getReturnType());
-
+    foreach (ApiSurface::answeredBy(ApiSurface::reflect(Repair::class)) as [$where, $answers]) {
         foreach (array_intersect($answers, [Effects::class, Undoing::class]) as $clause) {
-            $clauses[] = sprintf('%s answers %s', ApiSurface::describe($method), $clause);
+            $clauses[] = sprintf('%s answers %s', $where, $clause);
         }
 
         if (in_array('string', $answers, strict: true)) {
-            $strings[] = ApiSurface::describe($method);
+            $strings[] = $where;
         }
     }
 
