@@ -1551,6 +1551,50 @@ final readonly class Fixtures
                     }
                 }
                 PHP, 'S3 —'),
+
+            // The literal is the easy half. A verification flag read from
+            // configuration arrives as a string or through a variable, and the
+            // rule used to read the node rather than ask the analyser — so
+            // `'0'`, `''`, `null` and anything one line away all passed.
+            Fixture::analyser('S3', 'Plain/WeakensTlsFromAVariable.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class WeakensTlsFromAVariable
+                {
+                    /** @return array<string, mixed> */
+                    public function options(): array
+                    {
+                        $verify = '0';
+
+                        return ['verify' => $verify, 'timeout' => 5];
+                    }
+                }
+                PHP, 'S3 —'),
+
+            // The polarity half. `verify_expiry` asks for the expiry to be
+            // checked, so `false` is the spelling that waives it — and while
+            // this name sat in the off-when-true list the analyser refused
+            // `true` and passed exactly this.
+            Fixture::analyser('S3', 'Plain/WaivesTheExpiryCheck.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Fixtures\Plain;
+
+                final class WaivesTheExpiryCheck
+                {
+                    /** @return array<string, mixed> */
+                    public function options(): array
+                    {
+                        return ['verify_expiry' => false, 'timeout' => 5];
+                    }
+                }
+                PHP, 'S3 —'),
         ];
     }
 

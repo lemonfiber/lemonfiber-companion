@@ -8,8 +8,8 @@ use function in_array;
 
 use PhpParser\Node;
 use PhpParser\Node\ArrayItem;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IdentifierRuleError;
@@ -55,6 +55,7 @@ final class NoWeakenedTlsRule implements Rule
     private const array OFF_WHEN_FALSE = [
         'verify', 'verify_peer', 'verify_peer_name', 'verify_host',
         'verify_ssl', 'verify_tls', 'verify_cert', 'ssl_verify', 'tls_verify',
+        'verify_expiry',
         'curlopt_ssl_verifypeer', 'curlopt_ssl_verifyhost', 'ssl_verifypeer', 'ssl_verifyhost',
     ];
 
@@ -66,9 +67,15 @@ final class NoWeakenedTlsRule implements Rule
      * reader skims past one. Same list, opposite polarity, and getting the
      * polarity wrong would make this rule refuse the safe spelling and pass the
      * dangerous one.
+     *
+     * Which is what happened. `verify_expiry` sat here, and it reads like every
+     * name in the other list: `verify_expiry => true` asks for the expiry to be
+     * checked and `=> false` waives it. So this refused the spelling that is
+     * safe and passed the spelling that is not — the failure the paragraph
+     * above describes, in the list the paragraph is attached to. It has moved.
      */
     private const array OFF_WHEN_TRUE = [
-        'allow_self_signed', 'verify_expiry', 'insecure', 'skip_verify', 'no_verify',
+        'allow_self_signed', 'insecure', 'skip_verify', 'no_verify',
     ];
 
     public function getNodeType(): string
@@ -85,8 +92,8 @@ final class NoWeakenedTlsRule implements Rule
             return [];
         }
 
-        $weakens = (in_array($key, self::OFF_WHEN_FALSE, strict: true) && $this->isFalsy($node->value))
-            || (in_array($key, self::OFF_WHEN_TRUE, strict: true) && $this->isTruthy($node->value));
+        $weakens = (in_array($key, self::OFF_WHEN_FALSE, strict: true) && $this->isFalsy($node->value, $scope))
+            || (in_array($key, self::OFF_WHEN_TRUE, strict: true) && $this->isTruthy($node->value, $scope));
 
         if (! $weakens) {
             return [];
@@ -119,21 +126,29 @@ final class NoWeakenedTlsRule implements Rule
         return $item->key instanceof ConstFetch ? strtolower($item->key->name->toString()) : null;
     }
 
-    private function isFalsy(Node $value): bool
+    /**
+     * Whether every value this expression can have is falsy.
+     *
+     * Asked of the analyser rather than of the literal. Reading the node
+     * directly saw `false` and `0` and nothing else: `'0'`, `''` and `null` are
+     * each falsy to every client here and each passed, as did `$off = false`
+     * one line above the array and a class constant holding the same. None of
+     * those is a contrived spelling — a verification flag read from
+     * configuration arrives as a string, and `'0'` is what a `.env` holds.
+     *
+     * `yes()` rather than `maybe()`, so a value the analyser cannot pin down is
+     * not reported. A `bool` of unknown value is the ordinary case for a flag
+     * that is genuinely configurable, and refusing it would make this rule the
+     * one somebody switches off.
+     */
+    private function isFalsy(Expr $value, Scope $scope): bool
     {
-        if ($value instanceof Int_) {
-            return $value->value === 0;
-        }
-
-        return $value instanceof ConstFetch && strtolower($value->name->toString()) === 'false';
+        return $scope->getType($value)->toBoolean()->isFalse()->yes();
     }
 
-    private function isTruthy(Node $value): bool
+    /** Whether every value this expression can have is truthy. */
+    private function isTruthy(Expr $value, Scope $scope): bool
     {
-        if ($value instanceof Int_) {
-            return $value->value === 1;
-        }
-
-        return $value instanceof ConstFetch && strtolower($value->name->toString()) === 'true';
+        return $scope->getType($value)->toBoolean()->isTrue()->yes();
     }
 }
