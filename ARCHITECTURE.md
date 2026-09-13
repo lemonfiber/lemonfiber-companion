@@ -20,7 +20,9 @@ Blade template; neither reads the lock file. The overlap is the point.
 ## The shape
 
 ```
-app/                      the composition root — the ONLY place a port meets an adapter
+bootstrap/Composition/    the composition root — the ONLY place a port meets an adapter
+  NativePHP/              what exists only because of one package, including the
+                          plugin allow-list NativePHP names by class
 app-modules/
   kernel/                 ports, values, outcomes.            depends on NOTHING
   design/                 EDGE components + theme tokens
@@ -82,7 +84,7 @@ and had to be undone.
 ```
 surface ──calls──▶ capability ──asks──▶ port (Modules\Kernel\Api)
                                           ▲
-                                          │ bound once, in app/
+                                          │ bound once, in bootstrap/Composition/
                                           │
                                        adapter (modules/sdk, modules/device, …)
 ```
@@ -460,9 +462,13 @@ replacing one path segment. A file in the wrong place is a file the rules
 governing its neighbours do not reach — and nothing says so, because a rule that
 finds no files reports a green tick.
 
-`app/` is the sharpest case. The permission to name both a port and an adapter is
-granted by path, along with an exemption from A2, A3 and A4, so a class put there
-acquires all of it without anyone deciding it should.
+`bootstrap/Composition/` is the sharpest case. The permission to name both a port
+and an adapter is granted by path, along with an exemption from A2, A3 and A4, so
+a class put there acquires all of it without anyone deciding it should. `W1` is
+what keeps the rest of `bootstrap/` free of classes, and there is no `app/`: the
+one class NativePHP names as `App\Providers\NativeServiceProvider` is mapped
+into `bootstrap/Composition/NativePHP/Admitting/` by PSR-4, because the vendor
+fixes the class name and not the path.
 
 ### The rules about the rules
 

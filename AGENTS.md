@@ -49,7 +49,8 @@ this app holds no permission model of its own (`N3-R2`).
 This is the question that gets asked most, so it has one answer.
 
 ```
-app/                    the composition root, and nothing else
+bootstrap/Composition/  the composition root, and nothing else
+  NativePHP/            what exists only because of that one package
 app-modules/
   kernel/               ports, values, outcomes — depends on nothing
   design/               EDGE components and theme tokens
