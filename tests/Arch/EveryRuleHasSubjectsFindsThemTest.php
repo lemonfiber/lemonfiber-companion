@@ -1,0 +1,76 @@
+<?php
+
+declare(strict_types=1);
+
+use Tests\Support\ApiSurface;
+use Tests\Support\Module;
+use Tests\Support\Tree;
+
+// Q-R66 — a rule that found nothing is not a rule that passed.
+//
+// Most rules here discover what they judge: every module, every published
+// class, every comment line, every test file. Discovery has one failure mode
+// that looks exactly like success — it finds nothing, there is nothing to
+// refuse, and the rule reports a pass. Nobody sees it happen, because a green
+// tick is what a rule looks like when it is working.
+//
+// It is not hypothetical here. `Module::all()` reads the composer manifests, and
+// a worktree with a stale autoloader has already made module discovery answer
+// wrong once in this project; a mistaken `Tree::root()` would silence every rule
+// resting on it in the same instant. What makes that the dangerous case rather
+// than an annoying one is the breadth: not one rule going quiet, but all of them
+// together, in a run that says 500 tests passed.
+//
+// So the foundation is asserted directly. This proves nothing about any
+// individual rule's own filter — a rule narrowing to a namespace nobody uses is
+// still silent, and each of those is its own business — but it does mean the
+// ground underneath them is never silently empty.
+//
+// Counted rather than merely non-empty where a number is known and stable
+// enough to mean something. A floor rather than an exact count: an exact count
+// is a number somebody edits to make a red run green.
+
+it('Q-R66 — the modules a rule judges are found', function (): void {
+    // `Module::all()` is under `ModuleApiTest`, `ModuleBoundariesTest`,
+    // `WhereThingsGoTest`, `TestsMirrorSourceTest`, `PerModuleFloorsTest` and
+    // the composition-root rules. Empty, every one of them passes.
+    expect(Module::all())->not->toBe([]);
+    expect(Module::populated())->not->toBe([]);
+    expect(Module::namespaces())->not->toBe([]);
+});
+
+it('Q-R66 — a populated module answers with the classes it declares', function (): void {
+    // The second half, and the one a stale autoloader breaks: modules are found
+    // and each reports no classes, so every rule about published surfaces holds
+    // vacuously.
+    $declaring = array_filter(
+        Module::populated(),
+        static fn(Module $module): bool => $module->classNames() !== [],
+    );
+
+    expect($declaring)->not->toBe([]);
+});
+
+it('Q-R66 — the published surface the API rules judge is found', function (): void {
+    expect(ApiSurface::classesIn())->not->toBe([]);
+});
+
+it('Q-R66 — the trees the file rules read are found', function (): void {
+    // `Tree::root()` resolving wrong takes every one of these at once, which is
+    // why they are asserted together rather than beside the rules that use them.
+    expect(Tree::filesUnder(Tree::at('app-modules'), '.php'))->not->toBe([]);
+    expect(Tree::filesUnder(Tree::at('tests'), '.php'))->not->toBe([]);
+    expect(Tree::filesUnder(Tree::at('native/resources'), '.kt'))->not->toBe([]);
+    expect(Tree::filesUnder(Tree::at('native/resources'), '.swift'))->not->toBe([]);
+    expect(Tree::testFiles())->not->toBe([]);
+});
+
+it('Q-R66 — the root is this repository rather than wherever the run started', function (): void {
+    // The one that makes the rest of this file meaningful. Every path above is
+    // built from `Tree::root()`, so a root pointing somewhere plausible-but-wrong
+    // — a parent directory, a sibling worktree — produces file lists that are
+    // non-empty and about the wrong tree.
+    expect(Tree::at('composer.json'))->toBeFile();
+    expect(Tree::at('phpstan.neon'))->toBeFile();
+    expect(Tree::at('app-modules'))->toBeDirectory();
+});
