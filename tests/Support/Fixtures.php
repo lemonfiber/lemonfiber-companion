@@ -1686,6 +1686,18 @@ final readonly class Fixtures
                     expect(true)->toBeTrue();
                 });
                 PHP, 'W4 —', 'BorrowedTest'),
+
+            Fixture::suite('W5', 'app-modules/health/tests/Fixtures/SaysNothingTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use Closure;
+
+                it('imports a name into the namespace it is already in', function (): void {
+                    expect(Closure::class)->toBe('Closure');
+                });
+                PHP, 'W5 —', 'SaysNothingTest'),
         ];
     }
 
