@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function trim;
-
 /**
  * One machine this app has been introduced to.
  *
@@ -34,20 +32,14 @@ final readonly class Stack
 {
     private function __construct(
         private StackId $id,
-        private string $name,
+        private StackName $name,
         private Address $at,
         private Fingerprint $presents,
     ) {}
 
-    public static function of(StackId $id, string $name, Address $at, Fingerprint $presents): self
+    public static function of(StackId $id, StackName $name, Address $at, Fingerprint $presents): self
     {
-        $called = trim($name);
-
-        if ($called === '') {
-            throw StackIsNotNamed::afterPairing();
-        }
-
-        return new self($id, $called, $at, $presents);
+        return new self($id, $name, $at, $presents);
     }
 
     public function id(): StackId
@@ -56,7 +48,7 @@ final readonly class Stack
     }
 
     /** What the operator calls it. */
-    public function name(): string
+    public function name(): StackName
     {
         return $this->name;
     }

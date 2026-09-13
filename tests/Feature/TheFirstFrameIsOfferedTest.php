@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\View;
 use Modules\Operator\Internal\Screens\NoStackYet;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\StacksInMemory;
 
 // N1-R35 — a launch with no stack configured reaches a screen, not an empty
 // surface.
@@ -63,5 +64,13 @@ it('draws the frame the surface registered, by name', function (): void {
     // and worth knowing: `tests/Pest.php` boots the application for `Feature`,
     // `Templates` and `Contract` only. A capability is pure and needs no
     // application; a screen is the opposite of that.
-    expect(new NoStackYet()->render()->name())->toBe('operator::no-stack-yet');
+    // Constructed here rather than resolved, because a test body is a closure
+    // and `make()` raises a checked exception — which is the same rule that
+    // put the container behind a method in the composition root.
+    //
+    // A fake rather than the adapter: what this asserts is the frame's name,
+    // and a screen that had to reach a keychain to answer it would be a
+    // different test failing for a different reason.
+    expect(new NoStackYet(StacksInMemory::working())->render()->name())
+        ->toBe('operator::no-stack-yet');
 });

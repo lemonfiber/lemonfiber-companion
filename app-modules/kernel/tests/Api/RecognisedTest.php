@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Recognised;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
 use ReflectionMethod;
 
@@ -26,7 +27,7 @@ function theLoft(string $presenting = WHAT_IT_PRESENTED): Stack
 {
     return Stack::of(
         StackId::of(Nonce::of('a1b2c3d4e5f60718')),
-        'the loft',
+        StackName::of('the loft'),
         Address::of('https://stack.local'),
         Fingerprint::of($presenting),
     );
