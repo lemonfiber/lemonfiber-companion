@@ -1478,7 +1478,7 @@ final readonly class Fixtures
 
                     public function render(): View
                     {
-                        return view('operator::no-stack-yet');
+                        return view('operator::your-stacks');
                     }
                 }
                 PHP, 'N1-R39 —', 'ShowsSomebodysStack'),
@@ -1500,7 +1500,7 @@ final readonly class Fixtures
 
                     public function render(): View
                     {
-                        return view('operator::no-stack-yet');
+                        return view('operator::your-stacks');
                     }
                 }
                 PHP, 'N4-R18 —', 'ShowsASessionOpenly'),
@@ -2068,6 +2068,20 @@ final readonly class Fixtures
                 'shown',
             ),
 
+            // A stack's address on the glass, which is what somebody with two
+            // stacks reaches for to tell them apart — and is the one thing on a
+            // stack that must never reach a screen. Nothing else in this
+            // repository can see it: PHPStan does not read Blade, and the
+            // architecture rules reflect over classes.
+            Fixture::edit(
+                'F7',
+                'app-modules/operator/resources/views/your-stacks.blade.php',
+                '{{ $stack->name()->shown() }}',
+                '{{ $stack->at()->forTheClient() }}',
+                'F7 —',
+                'forTheClient',
+            ),
+
             // A key the catalogue does not hold, in a template, which is where
             // one is least visible: Blade is not PHP any analyser reads, so
             // nothing else in this repository can see a string here at all.
@@ -2081,7 +2095,7 @@ final readonly class Fixtures
             // word that is deliberately wrong.
             Fixture::edit(
                 'L7',
-                'app-modules/operator/resources/views/no-stack-yet.blade.php',
+                'app-modules/operator/resources/views/your-stacks.blade.php',
                 "{{ __('connection.setup_is_at_the_machine') }}",
                 "{{ __('connection.setup_happens_at_the_machine') }}",
                 'L7 —',

@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use Modules\Kernel\Api\Address;
-use Modules\Kernel\Api\Credential;
-use Modules\Kernel\Api\Session;
 use Tests\Support\ApiSurface;
+use Tests\Support\OneDestination;
 
 /**
  * Values that may be read for one purpose, and are held to it by their surface.
@@ -23,49 +21,19 @@ use Tests\Support\ApiSurface;
  * and six months later a different caller uses it to build a URL. The rule that
  * the name is the guard is only a rule while there is one name.
  *
+ * The table itself lives in {@see OneDestination}, because a second rule needs
+ * the same three facts: this one asks whether a second accessor has appeared
+ * beside the one, and `NothingSecretReachesAScreenTest` asks whether a template
+ * calls the one. Two copies would go stale separately, and a template rule
+ * naming an accessor that had since been renamed would find nothing and report
+ * a clean run.
+ *
  * So the surface is counted rather than trusted. A method whose signature an
  * interface dictates is not counted: `jsonSerialize` answers a string because
  * `JsonSerializable` says it must, and the string it answers here is
  * `(a session, hidden)`. That is the same argument {@see ApiSurface} makes about
  * the magic methods PHP shapes.
  */
-
-/**
- * The types, the one accessor each may publish, and what that buys.
- *
- * @return list<array{class-string, string, string, string}>
- */
-function valuesWithOneDestination(): array
-{
-    return [
-        [
-            Session::class,
-            'forTheHeader',
-            'N1-R8',
-            'The session is carried in the credential header the API defines and must never '
-            . 'reach a URL or a query parameter. A query string is written to every proxy '
-            . 'log and every browser history between here and the stack, so a second '
-            . 'accessor is not a tidiness question — it is the one that ends up in a log.',
-        ],
-        [
-            Credential::class,
-            'forTheExchange',
-            'N1-R7',
-            'A credential is exchanged once and must not be retained for re-sending. '
-            . '`forTheExchange()` forgets before it answers, which is what makes "once" a '
-            . 'fact about the object; a second accessor added beside it would answer '
-            . 'without forgetting and the guarantee would be gone with nothing to notice.',
-        ],
-        [
-            Address::class,
-            'forTheClient',
-            'N1-R15',
-            'A stack address must not be logged, transmitted or put in a diagnostic report. '
-            . 'One accessor named for the transport is what makes a second use read wrong '
-            . 'where it is written, which is the only place anybody would catch it.',
-        ],
-    ];
-}
 
 /**
  * Whether an interface this class implements is what dictates the signature.
@@ -114,7 +82,7 @@ function answeringAString(ReflectionClass $class): array
 it('a value with one destination publishes one way to reach it', function (): void {
     $wrong = [];
 
-    foreach (valuesWithOneDestination() as [$subject, $accessor, $requirement, $why]) {
+    foreach (OneDestination::all() as [$subject, $accessor, $requirement, $why]) {
         $answering = answeringAString(reflectValue($subject));
 
         if ($answering !== [$accessor]) {

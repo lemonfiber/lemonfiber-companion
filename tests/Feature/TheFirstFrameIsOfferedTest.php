@@ -3,11 +3,28 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\View;
-use Modules\Operator\Internal\Screens\NoStackYet;
+use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
+use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\StacksInMemory;
+
+/** A stack this device is already paired with. */
+function aPairedStack(string $called, string $seed = 'a'): Stack
+{
+    return Stack::of(
+        StackId::of(Nonce::of(str_repeat($seed, Nonce::SHORTEST))),
+        StackName::of($called),
+        Address::of('https://192.168.1.42'),
+        Fingerprint::of(str_repeat($seed, Fingerprint::CHARACTERS)),
+    );
+}
 
 // N1-R35 — a launch with no stack configured reaches a screen, not an empty
 // surface.
@@ -33,7 +50,47 @@ it('N1-R35 — the first frame is registered, and it is this screen', function (
         . "module's provider is discovered and that its booted callback ran.",
     );
 
-    expect($resolved['class'] ?? null)->toBe(NoStackYet::class);
+    expect($resolved['class'] ?? null)->toBe(YourStacks::class);
+});
+
+it('N1-R36 — a launch with stacks configured names them rather than offering to pair', function (): void {
+    // What this screen did until pairing existed: it answered the empty case
+    // and only the empty case, so an operator who had just paired a stack was
+    // told on the next launch that nothing was paired. A screen named for one
+    // of its two states is a claim, and nothing checks a claim in a class name.
+    //
+    // It reads no stack to do it. N1-R36 asks for a usable frame without
+    // waiting for a reading, and the cheapest way to keep that is to have
+    // nothing to wait for — what is shown is retained configuration.
+    $screen = new YourStacks(StacksInMemory::holding(aPairedStack('The loft')));
+
+    expect($screen->nothingIsPairedYet())->toBeFalse();
+
+    $named = [];
+
+    foreach ($screen->configured() as $stack) {
+        $named[] = $stack->name()->shown();
+    }
+
+    expect($named)->toBe(['The loft']);
+});
+
+it('N1-R11 — every configured stack is named, in the order they were paired', function (): void {
+    // More than one stack is the requirement, and the order is what an operator
+    // recognises their list by. `Configured` keeps it; this is what proves the
+    // screen does not rearrange it on the way out.
+    $screen = new YourStacks(StacksInMemory::holding(
+        aPairedStack('The loft'),
+        aPairedStack('The shed', seed: 'b'),
+    ));
+
+    $named = [];
+
+    foreach ($screen->configured() as $stack) {
+        $named[] = $stack->name()->shown();
+    }
+
+    expect($named)->toBe(['The loft', 'The shed']);
 });
 
 it('N1-R6 — both roads into pairing are registered, and each is its own screen', function (): void {
@@ -82,8 +139,8 @@ it('resolves the screen\'s view name to the surface\'s own template', function (
     // `tests/Templates` — the vocabulary, the logic and L1's refusal of an
     // English sentence. None of that is repeated here, and none of it fires if
     // the name never reaches the file.
-    expect(View::getFinder()->find('operator::no-stack-yet'))
-        ->toEndWith('app-modules/operator/resources/views/no-stack-yet.blade.php');
+    expect(View::getFinder()->find('operator::your-stacks'))
+        ->toEndWith('app-modules/operator/resources/views/your-stacks.blade.php');
 });
 
 it('draws the frame the surface registered, by name', function (): void {
@@ -103,6 +160,6 @@ it('draws the frame the surface registered, by name', function (): void {
     // A fake rather than the adapter: what this asserts is the frame's name,
     // and a screen that had to reach a keychain to answer it would be a
     // different test failing for a different reason.
-    expect(new NoStackYet(StacksInMemory::working())->render()->name())
-        ->toBe('operator::no-stack-yet');
+    expect(new YourStacks(StacksInMemory::working())->render()->name())
+        ->toBe('operator::your-stacks');
 });

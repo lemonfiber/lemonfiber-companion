@@ -37,6 +37,25 @@ final class StacksInMemory implements Stacks
         return new self(null);
     }
 
+    /**
+     * A device that already knows these, as a launch after pairing finds it.
+     *
+     * Built through `remember()` rather than by assigning the record, so a fake
+     * cannot be put into a state the port could not produce — `Configured`
+     * collapses a repeated identifier and keeps the order, and a test that
+     * bypassed that would be testing a list this application never holds.
+     */
+    public static function holding(Stack ...$stacks): self
+    {
+        $device = new self(null);
+
+        foreach ($stacks as $stack) {
+            $device->remember($stack);
+        }
+
+        return $device;
+    }
+
     /** A device that cannot write one down, and says which nothing stopped it. */
     public static function refusing(WhyAStackCannotBeRemembered $why): self
     {

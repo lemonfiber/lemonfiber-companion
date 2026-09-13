@@ -6,9 +6,9 @@ namespace Modules\Operator\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
-use Modules\Operator\Internal\Screens\NoStackYet;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
+use Modules\Operator\Internal\Screens\YourStacks;
 
 /**
  * The operator surface, declaring its own screens.
@@ -35,7 +35,7 @@ final class OperatorServiceProvider extends ServiceProvider
     {
         // The views are not registered here. `internachi/modular` already
         // registers each module's `resources/views` under the module's own name,
-        // so `operator::no-stack-yet` resolves without this provider doing
+        // so `operator::your-stacks` resolves without this provider doing
         // anything — and a `loadViewsFrom` beside it looks like the thing that
         // makes the screen work while making no difference at all.
         //
@@ -70,7 +70,7 @@ final class OperatorServiceProvider extends ServiceProvider
         // case here and exactly the case where the difference is invisible until
         // it fails.
         $this->app->booted(static function (): void {
-            Router::native('/', NoStackYet::class);
+            Router::native('/', YourStacks::class);
             // The two roads N1-R6 requires, each its own URI rather than a
             // mode of the entry screen: the navigation stack is what lets an
             // operator back out of one, and a screen that pairs is one

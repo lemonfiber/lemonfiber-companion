@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Stacks;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -12,14 +13,34 @@ use Native\Mobile\Edge\NativeComponent;
 use function view;
 
 /**
- * What the operator sees on a launch with nothing paired.
+ * The screen a launch lands on: the machines this device knows, or an
+ * invitation to introduce one.
  *
- * `N1-R35` refuses the obvious thing here — an empty operator surface with a
- * button somewhere in it. On a launch with no stack configured the app has to
- * say that setup happens at the machine, and `N1-R4` adds *and why*, rather
- * than omitting it silently. Somebody who installed a companion app reasonably
- * expects to set the thing up from their phone, and a screen that simply offers
- * nothing teaches them the app is broken.
+ * **Two states, one screen, because `/` is one route.** `N1-R35` is the empty
+ * one and `N1-R36` is the other, and a screen that answered only the first is
+ * what this was until pairing existed — it told an operator who had just paired
+ * a stack that nothing was paired. That is the failure mode of a screen named
+ * for one of its states: the name stops being a description and starts being a
+ * claim, and nothing checks a claim in a class name.
+ *
+ * `N1-R35` refuses the obvious thing for the empty case — an empty operator
+ * surface with a button somewhere in it. On a launch with no stack configured
+ * the app has to say that setup happens at the machine, and `N1-R4` adds *and
+ * why*, rather than omitting it silently. Somebody who installed a companion
+ * app reasonably expects to set the thing up from their phone, and a screen
+ * that simply offers nothing teaches them the app is broken.
+ *
+ * **`N1-R15` is why a row is a name and nothing else.** A stack's address is
+ * the one thing on it that must never reach a screen, and a list is exactly
+ * where somebody would put it to tell two entries apart. `N1-R11` already says
+ * what tells them apart: the name the operator chose, which is the only part of
+ * a stack they picked.
+ *
+ * **It reads no stack.** `N1-R36` asks for a usable frame without waiting for a
+ * reading, and the cheapest way to keep that is to have nothing to wait for:
+ * what this shows is retained configuration, which is on the device. Reaching
+ * a stack belongs to the screen for one stack, which is a different screen and
+ * needs a session this app does not have yet.
  *
  * **It carries `#[Lazy]`, and the reason it does is worth keeping.** This file
  * used to say the attribute was unnecessary because the screen reached no
@@ -49,7 +70,7 @@ use function view;
  * here can be renamed without reading another module.
  */
 #[Lazy]
-final class NoStackYet extends NativeComponent
+final class YourStacks extends NativeComponent
 {
     public function __construct(private readonly Stacks $stacks) {}
 
@@ -63,7 +84,25 @@ final class NoStackYet extends NativeComponent
      */
     public function nothingIsPairedYet(): bool
     {
-        return $this->stacks->configured()->isEmpty();
+        return $this->configured()->isEmpty();
+    }
+
+    /**
+     * The machines this device knows, in the order they were paired.
+     *
+     * Answers {@see Configured} rather than a list of names, which is what
+     * keeps `N1-R11`'s guarantees with the value: it holds no current stack,
+     * refuses one it does not know, and collapses a repeated identifier to the
+     * later entry. A list of strings would leave each of those with the
+     * template.
+     *
+     * Asked once per frame, like {@see nothingIsPairedYet()} and for the same
+     * reason. A screen returned to after a pairing that held its list would
+     * show the one it was built with.
+     */
+    public function configured(): Configured
+    {
+        return $this->stacks->configured();
     }
 
     /**
@@ -77,6 +116,6 @@ final class NoStackYet extends NativeComponent
      */
     public function render(): View
     {
-        return view('operator::no-stack-yet');
+        return view('operator::your-stacks');
     }
 }
