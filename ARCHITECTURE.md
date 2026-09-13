@@ -555,6 +555,15 @@ is the judgement taken out of `root()`, so it can be asked about the parent
 directory — which is precisely what a file moved one level down would produce —
 and watched refusing it on every run.
 
+`G11` is the third, and it shows the shape is not rare. The rule reads
+`phpunit.xml` for the attributes that make a diagnostic fail the run, and the
+settings it reads belong to the run doing the reading — so taking one out to
+plant a violation changes *that* run rather than a fixture. `notTurnedOn` was
+already a pure function taking the declared settings and the wanted list; it had
+simply never been asked about a file where something was missing. Now it is,
+including the two shapes PHPUnit treats alike and a reader does not: an attribute
+deleted, and an attribute switched off on purpose.
+
 **The `Guards` suite runs alone.** `composer test` is `pest --parallel` with
 `Guards` excluded; `composer test:guards` runs it by itself. The harness plants
 a violation of every rule into the working tree, so a process reading that tree

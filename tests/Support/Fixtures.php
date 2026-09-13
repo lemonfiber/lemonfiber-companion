@@ -2110,6 +2110,18 @@ final readonly class Fixtures
     {
         return [
             Fixture::direct(
+                'G11',
+                '`notTurnedOn` in the Arch suite handed a settings list with one attribute '
+                . 'missing, one present but "false", and one element carrying nothing at '
+                . 'all — and asked to name each. Nothing could be planted: the settings '
+                . 'live in the `phpunit.xml` of the run doing the reading, so taking an '
+                . 'attribute out changes that run rather than a fixture, and what the '
+                . 'settings produce is an exit code the JUnit report this harness reads '
+                . 'records as a test that passed. That second half is still checked by '
+                . 'hand: delete `.env.testing` and watch `composer test:mutation` exit 1 '
+                . 'where it exited 0.',
+            ),
+            Fixture::direct(
                 'Q-R66 (discovery)',
                 '`Tree::isTheRepository` handed the parent of the root — which is what '
                 . '`dirname(__DIR__, 2)` answers if the file computing it ever moves one '
@@ -2151,18 +2163,6 @@ final readonly class Fixtures
                 . 'means installing a vulnerable package on purpose in order to watch '
                 . 'resolution refuse it. roave/security-advisories is conflict-only and '
                 . 'carries no code, so there is nothing to call either.',
-            ),
-            Fixture::notDrivable(
-                'G11',
-                'The violation is an attribute taken off an element of phpunit.xml, which '
-                . '`Fixture::edit` could do — and editing that file would change the run '
-                . 'doing the editing, which is the half that has not gone away. The second '
-                . 'half is worse: what the settings produce is a non-zero exit code, and the '
-                . 'harness reads a JUnit report, which records a test that triggered a '
-                . 'warning as a test that passed. Driven by hand instead, both ways: take '
-                . 'an attribute out and watch the arch rule name it, then delete '
-                . '`.env.testing` and watch `composer test:mutation` exit 1 where it '
-                . 'exited 0.',
             ),
             Fixture::notDrivable(
                 'G4',
