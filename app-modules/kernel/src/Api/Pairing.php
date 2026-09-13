@@ -95,8 +95,26 @@ final readonly class Pairing
         // well-formed material is that type's refusal to explain, not this
         // one's — and wrapping it would replace a message naming the problem
         // with one naming the envelope.
+        $at = Address::of(self::halfOf($found, WhatPairingMaterialSays::Address, $how));
+
+        // Material that promises a certificate for an address presenting none.
+        // `N1-R48` calls the fingerprint "the certificate that address will
+        // present", and an unencrypted address presents nothing — so the digest
+        // would be pinned against a connection with nothing to compare, and
+        // `N1-R19` could never be kept for this stack.
+        //
+        // Here rather than at the first connection, which is where it landed:
+        // pairing succeeded, the stack was written down, and `BaseUrl::pinned()`
+        // raised a configuration problem from inside the transport, on a device,
+        // after the operator had been told they were paired. This is the one
+        // moment the material is in front of somebody who can go and get
+        // better material.
+        if (! $at->isEncrypted()) {
+            throw PairingIsNotReadable::withAnAddressThatPresentsNothing($how);
+        }
+
         return new self(
-            Address::of(self::halfOf($found, WhatPairingMaterialSays::Address, $how)),
+            $at,
             Fingerprint::of(self::halfOf($found, WhatPairingMaterialSays::Fingerprint, $how)),
             $how,
         );

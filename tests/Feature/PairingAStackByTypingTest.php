@@ -99,6 +99,22 @@ it('refuses to offer pairing for a machine the operator has not named', function
         ->and($screen->mayPair())->toBeFalse();
 });
 
+it('reads a code naming an unencrypted address as one it cannot use', function (): void {
+    // The whole road, end to end, for material that promises a certificate an
+    // `http://` address will never present. It reaches the operator as a code
+    // that does not work, which is the only point at which they can do
+    // anything about it — the alternative is a stack that pairs and is then
+    // unreachable, discovered on a device after they were told otherwise.
+    $screen = typedInto(pairingScreen(), (string) json_encode([
+        'address' => 'http://192.168.1.42',
+        'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
+        'expires' => 2_000,
+    ]));
+
+    expect($screen->isUnreadable())->toBeTrue()
+        ->and($screen->mayPair())->toBeFalse();
+});
+
 it('tells an expired code apart from one that was mistyped', function (): void {
     // N1-R49. Checking the characters is wasted effort on a code that was typed
     // perfectly, and the only way forward is a new one from the stack.
