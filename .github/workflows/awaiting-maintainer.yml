@@ -28,7 +28,14 @@
 name: awaiting-maintainer
 on:
   workflow_run:
-    workflows: [ci, sonar, sdk-drift]
+  # `codeql` is here because of what its `alerts` job does rather than because a
+  # required context comes from it. That job refuses a branch an open alert
+  # stands against; a gating workflow left out of this list can be the last one
+  # to finish, with nothing afterwards to notice the pull request became
+  # mergeable — the flag never goes up and nothing says why. Naming it costs one
+  # more evaluation and means the list is already right on the day it is
+  # required.
+    workflows: [ci, sonar, sdk-drift, codeql]
     types: [completed]
   pull_request_review:
     types: [submitted]
