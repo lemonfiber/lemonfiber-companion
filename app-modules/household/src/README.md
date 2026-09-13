@@ -41,6 +41,21 @@ What can be checked mechanically will be, the moment there is a shape to check
 rather than a sentence to match. Until then this file is where the requirement
 is, in front of whoever adds the first class.
 
+## `N3-R8` is held, and not from here
+
+> The app MUST NOT play media; it MUST hand off to a household client.
+
+Enforced in `tests/Arch/NothingPlaysMediaHereTest.php`, which reads the platform
+sources rather than the PHP — playing media is a platform capability and this
+side can only ask for it, so a rule reading `app-modules` would be looking where
+the thing it forbids cannot happen. Eleven symbols across Android and iOS.
+
+Worth knowing before the first screen is written here: the temptation is not to
+build a player, it is that a member taps a title, there is nowhere to send them
+yet, and playing it right there is four lines. What that costs is a second
+implementation of transcoding, resume points, subtitles and what a member may
+watch — which is `N3-R11`'s argument about limits, applied to playback.
+
 ## `N3-R12` is already held
 
 > While the stack is unreachable, asking for something new MUST be declined
