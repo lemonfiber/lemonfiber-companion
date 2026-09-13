@@ -56,7 +56,7 @@ use function view;
  * **`#[Lazy]` because two of the three things it is handed are ports.** The
  * store this reaches on pairing is a keychain, and a keychain read is a call
  * across a process boundary that can wait on a locked store — `F4`'s argument,
- * and the same one {@see NoStackYet} carries.
+ * and the same one {@see YourStacks} carries.
  */
 #[Lazy]
 #[Concealed]

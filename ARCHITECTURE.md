@@ -287,6 +287,7 @@ automatic and the operator never sees the question.
 | F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | `tests/Templates`, against the installed parser and registries |
 | F5 | Every interactive element announces itself to a screen reader | `tests/Templates` |
 | F6 | Every list has an empty state | `tests/Templates` |
+| F7 | No template reads a value that has one destination — a session, a credential, a stack address | `tests/Templates`, from the same table F2's surface rule counts against |
 | F4 | A screen that takes a port carries `#[Lazy]`; one whose content changes while open carries `#[Poll]` | arch for the first; review for the second |
 
 EDGE styling is **Tailwind-shaped and is not Tailwind**. There is no CSS build,

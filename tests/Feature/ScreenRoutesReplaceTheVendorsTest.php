@@ -11,7 +11,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 use Modules\Kernel\Api\Stacks;
-use Modules\Operator\Internal\Screens\NoStackYet;
+use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
@@ -39,7 +39,7 @@ it('A3 — the macro registered is ours, not the package\'s', function (): void 
     // with, and the route it registers is where that is observable.
     expect(Route::hasMacro('native'))->toBeTrue();
 
-    Route::native('/a-screen-for-this-test', NoStackYet::class);
+    Route::native('/a-screen-for-this-test', YourStacks::class);
 
     expect(NativeRouter::resolve('/a-screen-for-this-test'))
         ->not->toBeNull('our macro must still register with the navigation stack');
@@ -58,7 +58,7 @@ it('answers a request for a screen through the runloop it was given', function (
     $entered = new ARunloopThatOnlyRemembers();
 
     new ScreenRoutes(aBuildThatKnows(), $entered)->declare();
-    Route::native('/a-screen-answered-in-this-test', NoStackYet::class);
+    Route::native('/a-screen-answered-in-this-test', YourStacks::class);
 
     ranTheRouteAt('/a-screen-answered-in-this-test');
 
@@ -70,7 +70,7 @@ it('answers a request for a screen through the runloop it was given', function (
     // wrong thing.
     $ran = $entered->whatItRan();
 
-    expect($ran['screen'])->toBe(NoStackYet::class)
+    expect($ran['screen'])->toBe(YourStacks::class)
         ->and($ran['path'])->toBe('/')
         ->and($ran['params'])->toBe([]);
 });
@@ -86,7 +86,7 @@ it('serves the route this application actually registered', function (): void {
 
     $said = $answered instanceof Response ? (string) $answered->getContent() : '';
 
-    expect($said)->toContain(NoStackYet::class);
+    expect($said)->toContain(YourStacks::class);
 });
 
 it('takes no parameters from a path the navigation stack does not know', function (): void {
@@ -97,7 +97,7 @@ it('takes no parameters from a path the navigation stack does not know', functio
     $entered = new ARunloopThatOnlyRemembers();
 
     new ScreenRoutes(aBuildThatKnows(), $entered)->declare();
-    Route::native('/a-screen-for-an-unknown-path', NoStackYet::class);
+    Route::native('/a-screen-for-an-unknown-path', YourStacks::class);
 
     servingARequestFor('/nothing-is-registered-here');
 
@@ -115,7 +115,7 @@ it('resolves the parameters the navigation stack holds, not the router\'s', func
     $entered = new ARunloopThatOnlyRemembers();
 
     new ScreenRoutes(aBuildThatKnows(), $entered)->declare();
-    Route::native('/a-stack/{stack}', NoStackYet::class);
+    Route::native('/a-stack/{stack}', YourStacks::class);
 
     ranTheRouteAt('/a-stack/{stack}');
 
@@ -129,7 +129,7 @@ it('answers a request for a screen with the harness where there is no device', f
     // is wrong.
     $answered = new TheHarnessInstead()->enter(
         aBuildThatKnows(),
-        NoStackYet::class,
+        YourStacks::class,
         [],
         '/',
     );
@@ -138,19 +138,19 @@ it('answers a request for a screen with the harness where there is no device', f
 
     $said = $answered instanceof Response ? (string) $answered->getContent() : '';
 
-    expect($said)->toContain(NoStackYet::class)
+    expect($said)->toContain(YourStacks::class)
         ->and($said)->toContain('Native::test()')
         ->and($answered instanceof Response ? $answered->getStatusCode() : 0)->toBe(200);
 });
 
 it('builds a screen through the container, with what it asked for', function (): void {
     // The whole of the fix, and the assertion is about the argument rather than
-    // the object: `NoStackYet` takes a `Stacks`, and `new NoStackYet` — which
+    // the object: `YourStacks` takes a `Stacks`, and `new YourStacks` — which
     // is what the package does — is a fatal about a missing argument. That it
     // exists at all is the proof.
     $screen = aScreen();
 
-    expect($screen)->toBeInstanceOf(NoStackYet::class)
+    expect($screen)->toBeInstanceOf(YourStacks::class)
         ->and($screen->nothingIsPairedYet())->toBeTrue();
 });
 
@@ -160,7 +160,7 @@ it('hands the screen its router, its parameters and its data, as the package doe
     // nothing else in this application would notice.
     $router = screensBuiltNormally();
 
-    $component = withCreateComponent($router, NoStackYet::class, ['id' => '7'], ['from' => 'a test']);
+    $component = withCreateComponent($router, YourStacks::class, ['id' => '7'], ['from' => 'a test']);
 
     expect($component->param('id'))->toBe('7')
         ->and($component->data('from'))->toBe('a test');
@@ -231,7 +231,7 @@ it('the package\'s own macro would not have used ours', function (): void {
  */
 function aBuildThatKnows(): Closure
 {
-    $screens = [NoStackYet::class => aScreen(...)];
+    $screens = [YourStacks::class => aScreen(...)];
 
     return static fn(string $class): mixed => ($screens[$class] ?? static fn(): string => 'no such screen')();
 }
@@ -307,9 +307,9 @@ function screensBuiltNormally(): ScreenRouter
 }
 
 /** The one screen this application has, built as the router would build it. */
-function aScreen(): NoStackYet
+function aScreen(): YourStacks
 {
-    return new NoStackYet(StacksInMemory::working());
+    return new YourStacks(StacksInMemory::working());
 }
 
 /**
