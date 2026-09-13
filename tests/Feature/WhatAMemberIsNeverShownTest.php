@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Problem;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\WentWrong;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 
@@ -31,6 +32,16 @@ use Tests\Support\Module;
  * refuse — when they arrive, they belong in the list below rather than in a
  * second rule.
  *
+ * `WentWrong` is on the list for `N3-R10` rather than for this requirement. A
+ * member whose request failed on a stack fault is told it did not work and that
+ * the operator has been told, and is **not** shown the fault — and `WentWrong`
+ * is exactly the fault, the code and meaning and remedies the core gave.
+ *
+ * {@see Obstacle} is deliberately absent. A stack that cannot be reached is not
+ * a fault being shown to a member: `N3-R12` has them told plainly that asking
+ * for something new is declined while it is unreachable, which needs the reason
+ * rather than hides it.
+ *
  * The refusal is on the module rather than on its screens, and that is
  * deliberate. A member's surface is not only what renders: a presenter that
  * takes a `Report` to pick three lines out of it has already brought the whole
@@ -46,6 +57,7 @@ const NEVER_SHOWN_TO_A_MEMBER = [
     Problem::class => 'diagnostics',
     Overall::class => 'diagnostics',
     Conclusion::class => 'diagnostics',
+    WentWrong::class => 'the fault behind a failed request',
     Credential::class => 'credentials',
     Session::class => 'credentials',
 ];
