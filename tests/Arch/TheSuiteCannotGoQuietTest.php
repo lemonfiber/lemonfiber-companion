@@ -98,6 +98,38 @@ function notTurnedOn(array $declared, array $required): array
     return $found;
 }
 
+it('G11 — the reading that decides both of those can say no', function (): void {
+    // The two rules below have only ever been asked about a file where the answer
+    // is "nothing missing", and everything they demonstrate in that state is
+    // equally true of a function that answers `[]` whatever it is handed. There is
+    // no file to plant: the settings live in the `phpunit.xml` of the run doing the
+    // reading, and taking an attribute out of it changes that run rather than a
+    // fixture. So the judgement is handed the violation directly.
+    $wanted = ['failOnWarning', 'failOnDeprecation'];
+
+    expect(notTurnedOn(['failOnWarning' => 'true', 'failOnDeprecation' => 'true'], $wanted))
+        ->toBe([]);
+
+    // Missing outright, and present but switched off. PHPUnit treats those the
+    // same and so does the rule, but they are different mistakes — one is a
+    // deletion, the other is somebody turning a gate off on purpose — so the
+    // message says which.
+    expect(notTurnedOn(['failOnWarning' => 'true'], $wanted))
+        ->toBe(['failOnDeprecation is not declared']);
+    expect(notTurnedOn(['failOnWarning' => 'true', 'failOnDeprecation' => 'false'], $wanted))
+        ->toBe(['failOnDeprecation is "false"']);
+
+    // Every one of them, when the element carries nothing at all — which is what a
+    // `<phpunit>` tag stripped of its attributes looks like.
+    expect(notTurnedOn([], $wanted))->toHaveCount(2);
+
+    // And a setting nothing asked about is not a finding. The two rules below pass
+    // different lists on purpose, and a reading that reported everything it saw
+    // would make each of them fail on the other's settings.
+    expect(notTurnedOn(['failOnSkipped' => 'false'], ['failOnWarning']))
+        ->toBe(['failOnWarning is not declared']);
+});
+
 it('G11 — a reported diagnostic ends the run', function (): void {
     // Everything PHPUnit can be told to act on that this suite treats as a
     // defect. `failOnSkipped` and `failOnIncomplete` are deliberately absent:
