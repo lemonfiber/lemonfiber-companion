@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
-use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
@@ -31,6 +30,18 @@ use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 // fake is given the answer that response should produce, and every assertion
 // below is written about the `Admitted` they hand back rather than about how
 // either got there.
+//
+// **This is the one place in the application that names the SDK's transport,
+// and it is a test.** `saloonphp/saloon` is a dev dependency for this file
+// alone: driving the adapter means scripting what the far end said, and the far
+// end is reached through Saloon. Declared rather than used transitively, which
+// the deps gate asks for and is right to — a package used and not named is one
+// that disappears the day the SDK swaps its client.
+//
+// It does not weaken `N1-R16`. Nothing in `app-modules/` or `bootstrap/` may
+// name it, `NothingReachesAStackUnpinnedTest` is what refuses that, and a test
+// that could not script an answer would be a test asserting the fake against
+// itself.
 //
 // What is deliberately not asserted here: which endpoint is called, what is in
 // the body, and that the address was pinned. The fake dials nothing, so a
@@ -95,6 +106,13 @@ function everyDoor(MockResponse $answered, ?Obstacle $why = null): array
             ? ADoorThatWasKnockedOn::refusing($why)
             : ADoorThatWasKnockedOn::opening(theSessionOpened(), Instant::atEpochSeconds(UNTIL_TEN)),
         'the adapter' => static function () use ($answered): Admitting {
+            // Destroyed first, because `global()` does **not** replace a global
+            // mock that is already set — it leaves the one that is there, whose
+            // single response the previous case has already spent. A test that
+            // drives a table of answers then passes on its first row and fails
+            // on the rest with "Saloon was unable to guess a mock response",
+            // which reads like the adapter calling an address nobody mocked.
+            MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
             return new Admissions();
