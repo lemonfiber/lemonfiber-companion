@@ -213,6 +213,30 @@ final class PairByTyping extends NativeComponent
         );
     }
 
+    /**
+     * The headline: what this screen is for, or what became of the pairing.
+     *
+     * The two keys spelled here are this screen's own, and they are the only
+     * two it spells. Everything after the operator has confirmed something is
+     * {@see HowThePairingWent}'s to name, derived from the case — so a fourth
+     * outcome needs no edit here and no branch in the template.
+     *
+     * **The waiting pair cannot come off the outcome.** What a screen says
+     * before anything has happened is what that screen is *for*, and the two
+     * pairing roads are for different things: this one and its sibling share
+     * every outcome and share neither opening line.
+     */
+    public function headline(): string
+    {
+        return $this->went->isNotYet() ? 'connection.type_the_code' : $this->went->said();
+    }
+
+    /** The line under it: how to get started, or what to do about what happened. */
+    public function supporting(): string
+    {
+        return $this->went->isNotYet() ? 'connection.type_the_code_action' : $this->went->remedy();
+    }
+
     /** The frame, by name. */
     public function render(): View
     {

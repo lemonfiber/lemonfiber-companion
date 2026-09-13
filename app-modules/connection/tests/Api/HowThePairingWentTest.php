@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Tests\Api;
 
+use function array_unique;
+use function count;
 use function expect;
 use function it;
 
@@ -14,8 +16,7 @@ it('opens having neither paired nor refused', function (): void {
     $notYet = HowThePairingWent::NotYet;
 
     expect($notYet->isPaired())->toBeFalse()
-        ->and($notYet->hasNowhereToWriteItDown())->toBeFalse()
-        ->and($notYet->couldNotOpenTheStore())->toBeFalse();
+        ->and($notYet->isNotYet())->toBeTrue();
 });
 
 it('says a stack is paired only when it was written down', function (): void {
@@ -35,9 +36,24 @@ it('tells a device with no store apart from a store that would not open', functi
 });
 
 it('answers each refusal with a sentence of its own', function (): void {
-    expect(HowThePairingWent::NoStoreOnThisDevice->hasNowhereToWriteItDown())->toBeTrue()
-        ->and(HowThePairingWent::NoStoreOnThisDevice->couldNotOpenTheStore())->toBeFalse()
-        ->and(HowThePairingWent::TheStoreWouldNotOpen->couldNotOpenTheStore())->toBeTrue()
-        ->and(HowThePairingWent::TheStoreWouldNotOpen->hasNowhereToWriteItDown())->toBeFalse()
+    // Two refusals, two pairs of keys, and no two the same — which is what the
+    // distinction above is *for*. Asserted as the keys rather than as booleans
+    // because the keys are what a screen shows: a pair of accessors returning
+    // true and false proves the cases differ and not that they say anything
+    // different to the operator.
+    $keys = [];
+
+    foreach (HowThePairingWent::cases() as $went) {
+        if ($went->isNotYet()) {
+            continue;
+        }
+
+        $keys[] = $went->said();
+        $keys[] = $went->remedy();
+    }
+
+    expect($keys)->toHaveCount(count(array_unique($keys)))
+        ->and(HowThePairingWent::NoStoreOnThisDevice->said())
+        ->not->toBe(HowThePairingWent::TheStoreWouldNotOpen->said())
         ->and(HowThePairingWent::NoStoreOnThisDevice->isPaired())->toBeFalse();
 });

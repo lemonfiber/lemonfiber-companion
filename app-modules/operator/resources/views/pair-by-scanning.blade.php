@@ -1,17 +1,8 @@
 <native:column class="w-full gap-4 p-6">
-    @if ($this->went()->isPaired())
-        <native:text class="text-lg font-bold">{{ __('connection.paired', ['stack' => $this->called()]) }}</native:text>
-        <native:text>{{ __('connection.paired_action') }}</native:text>
-    @elseif ($this->went()->hasNowhereToWriteItDown())
-        <native:text class="text-lg font-bold">{{ __('connection.no_store_on_this_device') }}</native:text>
-        <native:text>{{ __('connection.no_store_on_this_device_action') }}</native:text>
-    @elseif ($this->went()->couldNotOpenTheStore())
-        <native:text class="text-lg font-bold">{{ __('connection.store_would_not_open') }}</native:text>
-        <native:text>{{ __('connection.store_would_not_open_action') }}</native:text>
-    @else
-        <native:text class="text-lg font-bold">{{ __('connection.scan_the_code') }}</native:text>
-        <native:text>{{ __('connection.scan_the_code_action') }}</native:text>
+    <native:text class="text-lg font-bold">{{ __($this->headline(), ['stack' => $this->called()]) }}</native:text>
+    <native:text>{{ __($this->supporting()) }}</native:text>
 
+    @unless ($this->went()->isPaired())
         <native:outlined-text-input
             native:model="called"
             label="{{ __('connection.name_label') }}"
@@ -38,5 +29,5 @@
             :disabled="! $this->mayScan()"
             @tap="scan()"
         />
-    @endif
+    @endunless
 </native:column>

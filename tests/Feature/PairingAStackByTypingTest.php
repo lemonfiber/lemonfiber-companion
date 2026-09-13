@@ -199,3 +199,28 @@ it('says something under the code field in every state, and it is a real sentenc
 it('renders the frame its template names', function (): void {
     expect(pairingScreen()->render()->name())->toBe('operator::pair-by-typing');
 });
+
+it('says what this screen is for until there is an outcome, then what happened', function (): void {
+    // The headline and the line under it are one pair rather than four
+    // branches. Before the operator confirms anything, what a screen says is
+    // what that screen is *for* — and the two pairing roads are for different
+    // things, so the screen answers rather than the outcome. After, the outcome
+    // answers, derived from its own case, so a fourth one needs no edit here.
+    $waiting = typedInto(pairingScreen(), typedCode());
+
+    expect($waiting->headline())->toBe('connection.type_the_code')
+        ->and($waiting->supporting())->toBe('connection.type_the_code_action');
+
+    $waiting->confirm();
+
+    expect($waiting->headline())->toBe('connection.paired')
+        ->and($waiting->supporting())->toBe('connection.paired_action');
+
+    // And a refusal says its own pair rather than the paired one, which is the
+    // whole of why a pairing that was not written down is not a pairing.
+    $shut = typedInto(pairingScreen(WhyAStackCannotBeRemembered::StoreWouldNotOpen), typedCode());
+    $shut->confirm();
+
+    expect($shut->headline())->toBe('connection.store_would_not_open')
+        ->and($shut->supporting())->toBe('connection.store_would_not_open_action');
+});

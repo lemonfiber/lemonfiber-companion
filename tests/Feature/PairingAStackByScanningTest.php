@@ -242,3 +242,20 @@ it('renders the frame its template names', function (): void {
     expect(scanningScreen(ACameraInMemory::reading(scannedCode()))->render()->name())
         ->toBe('operator::pair-by-scanning');
 });
+
+it('says what this screen is for until there is an outcome, then what happened', function (): void {
+    // The same pair as the typed road, and deliberately not the same opening
+    // sentence: this screen points a camera and its sibling takes dictation, so
+    // an outcome cannot answer for both. Everything after the confirmation is
+    // shared, derived from the outcome's own case.
+    $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
+
+    expect($screen->headline())->toBe('connection.scan_the_code')
+        ->and($screen->supporting())->toBe('connection.scan_the_code_action')
+        ->and($screen->headline())->not->toBe('connection.type_the_code');
+
+    $screen->scan();
+
+    expect($screen->headline())->toBe('connection.paired')
+        ->and($screen->supporting())->toBe('connection.paired_action');
+});

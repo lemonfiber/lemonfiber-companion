@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Kernel\Api\WhyNothingWasScanned;
@@ -39,13 +40,33 @@ use Tests\Support\Catalogue;
  */
 function everyDerivedKey(): array
 {
-    $derived = [];
+    // Every key is named before any is filled in, so a reader sees the whole
+    // table at once and the analyser sees an array that always exists.
+    $derived = [
+        HowTheSignInWent::class => [],
+        HowThePairingWent::class => [],
+        WhyNothingWasScanned::class => [],
+        WhereTheCodeGot::class => [],
+    ];
 
     foreach (HowTheSignInWent::cases() as $went) {
         // Two per case, because `N1-R10` asks for what happened *and* what to do
         // about it, and a state with one of the pair is a screen half-written.
         $derived[HowTheSignInWent::class][] = $went->said();
         $derived[HowTheSignInWent::class][] = $went->remedy();
+    }
+
+    foreach (HowThePairingWent::cases() as $went) {
+        // `NotYet` is skipped and only here: what a screen says before anything
+        // has happened is what that screen is *for*, and the two pairing roads
+        // are for different things — so each screen spells its own opening pair
+        // and this enum answers only once there is an outcome.
+        if ($went->isNotYet()) {
+            continue;
+        }
+
+        $derived[HowThePairingWent::class][] = $went->said();
+        $derived[HowThePairingWent::class][] = $went->remedy();
     }
 
     foreach (WhyNothingWasScanned::cases() as $why) {
@@ -92,6 +113,18 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
     // other than its own value — a `match`, a second table, a transformation —
     // and then be exactly the two-spellings-of-one-name this pattern removes.
     foreach (HowTheSignInWent::cases() as $went) {
+        expect($went->said())->toBe(sprintf('connection.%s', $went->value), $went->name)
+            ->and($went->remedy())->toBe(sprintf('connection.%s_action', $went->value), $went->name);
+    }
+
+    foreach (HowThePairingWent::cases() as $went) {
+        // `NotYet` is exempt for the reason the table above gives: an outcome
+        // cannot say what a screen is for, so it has no key and must not be
+        // asked for one.
+        if ($went->isNotYet()) {
+            continue;
+        }
+
         expect($went->said())->toBe(sprintf('connection.%s', $went->value), $went->name)
             ->and($went->remedy())->toBe(sprintf('connection.%s_action', $went->value), $went->name);
     }
