@@ -61,15 +61,21 @@ foreach ($manifests as $manifest) {
     $floor = declaredFloor(is_string($raw) ? $raw : '');
 
     if ($floor === null) {
-        fwrite(STDERR, sprintf(
-            "%s declares no mutation floor.\n\n"
-            . "Add it beside the kind in the module's own manifest:\n"
-            . "    \"extra\": { \"lemonfiber\": { \"floors\": { \"mutation\": 100 } } }\n\n"
-            . "There is no default on purpose — a module that inherits one is exempt from\n"
-            . "the decision rather than held to it. G7 reports the same omission in the\n"
-            . "test suite, so this should already have failed there.\n",
-            $module,
-        ));
+        // A nowdoc rather than lines joined with `.`, which is `H5`: every join
+        // between two literals is three mutants nothing can kill, and paragraphs
+        // this shape cannot honestly be one line. It also takes the escaping
+        // away — the braces below are what a manifest actually looks like.
+        fwrite(STDERR, sprintf(<<<'SAID'
+            %s declares no mutation floor.
+
+            Add it beside the kind in the module's own manifest:
+                "extra": { "lemonfiber": { "floors": { "mutation": 100 } } }
+
+            There is no default on purpose — a module that inherits one is exempt from
+            the decision rather than held to it. G7 reports the same omission in the
+            test suite, so this should already have failed there.
+
+            SAID, $module));
 
         exit(1);
     }
@@ -128,13 +134,14 @@ if ($listing) {
 }
 
 if ($asked !== null && $byFloor === []) {
-    fwrite(STDERR, sprintf(
-        "There is no module called %s with code to mutate.\n\n"
-        . "A shard naming one that is gone is a shard that passes having done nothing,\n"
-        . "which is the whole failure this gate exists to prevent. The matrix is built\n"
-        . "from `--list` on the same commit, so this means the two disagree.\n",
-        $asked,
-    ));
+    fwrite(STDERR, sprintf(<<<'SAID'
+        There is no module called %s with code to mutate.
+
+        A shard naming one that is gone is a shard that passes having done nothing,
+        which is the whole failure this gate exists to prevent. The matrix is built
+        from `--list` on the same commit, so this means the two disagree.
+
+        SAID, $asked));
 
     exit(1);
 }
@@ -165,8 +172,7 @@ foreach ($byFloor as $floor => $paths) {
     // never reached a run at all, so the invocation was unexercised until the
     // first one did.
     $command = sprintf(
-        '%s/vendor/bin/pest --mutate --covered-only --ignore-min-score-on-zero-mutations '
-        . '--exclude-testsuite=Guards,Floors --min=%d --path=%s',
+        '%s/vendor/bin/pest --mutate --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s',
         escapeshellarg($root),
         $floor,
         escapeshellarg(implode(',', $paths)),

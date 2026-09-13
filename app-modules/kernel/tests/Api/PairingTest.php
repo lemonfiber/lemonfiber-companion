@@ -154,8 +154,13 @@ it('refuses it for what it is, rather than as a malformed address', function ():
         $said = $refused->getMessage();
     }
 
-    expect($said)->toContain('not encrypted')
+    // Every clause of the sentence, because the sentence is the refusal. A
+    // message built in pieces is a message a mutation can take a piece out of
+    // while the assertions still pass — which is exactly what this one did
+    // until it became a single literal.
+    expect($said)->toContain('unencrypted address')
         ->and($said)->toContain('presents no certificate')
+        ->and($said)->toContain('fingerprint')
         ->and($said)->toContain('typed');
 });
 

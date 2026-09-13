@@ -77,10 +77,7 @@ final class PairingIsNotReadable extends InvalidArgumentException
     public static function withAnAddressThatPresentsNothing(HowItWasRead $how): self
     {
         return new self(sprintf(
-            'The pairing material read by %s names an address that is not encrypted, and a '
-            . 'fingerprint of the certificate that address will present. An unencrypted '
-            . 'address presents no certificate, so nothing could ever be compared against '
-            . 'that fingerprint.',
+            'The pairing material read by %s names an unencrypted address, which presents no certificate for its fingerprint to match.',
             $how->value,
         ));
     }
