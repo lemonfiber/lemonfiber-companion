@@ -564,6 +564,18 @@ simply never been asked about a file where something was missing. Now it is,
 including the two shapes PHPUnit treats alike and a reader does not: an attribute
 deleted, and an attribute switched off on purpose.
 
+`N1-R13` is the fourth, and it is the one where the split found something. The
+rule compares five enums against the unions the generated envelope declares, and
+the envelope is somebody else's file in `vendor/` — restored by composer rather
+than by this harness, so a fixture that failed to clean up would leave the
+installed SDK wrong. `unionIn` and `outcomesIn` now take the text rather than
+going and finding it, and what that exposed was a `[]` nobody had watched them
+return: a field declared twice with unions that disagree is a question the reader
+cannot answer, and it answers by finding nothing rather than by taking whichever
+came first. That path is the difference between comparing an enum against half a
+contract and refusing to compare at all, and until now it had only ever been
+described in a comment.
+
 **The `Guards` suite runs alone.** `composer test` is `pest --parallel` with
 `Guards` excluded; `composer test:guards` runs it by itself. The harness plants
 a violation of every rule into the working tree, so a process reading that tree
