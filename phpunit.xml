@@ -111,6 +111,26 @@
             -->
             <directory>native/src</directory>
         </include>
+
+        <!-- The code a device runs and a suite cannot.
+             Named one file at a time, never a directory, and each with the
+             reason it is here — because "hard to cover" and "cannot be covered"
+             look identical from inside a file, and only the second belongs in
+             this list. `TheDeviceOnlyListIsShortTest` reads these entries back
+             and fails on one that carries no reason or names a file that is
+             gone, so the list cannot quietly grow or outlive what it excuses.
+             -->
+        <exclude>
+            <!-- Entering NativePHP's navigation runloop. `start()` blocks
+                 against the real bridge — with a live session that is a minute
+                 and a half of reconnect spinning per request — so a suite that
+                 reached it would hang rather than fail, which is the worst way
+                 for a test to go wrong. Two statements and no branch of its
+                 own: it is the adapter behind the `Runloop` seam, and
+                 everything that decides anything sits in ScreenRoutes on the
+                 other side of that seam, where it is driven. -->
+            <file>bootstrap/Composition/NativePHP/TheRunloop.php</file>
+        </exclude>
     </source>
 
     <!-- The whole environment a test runs in, and the only place it is written.
