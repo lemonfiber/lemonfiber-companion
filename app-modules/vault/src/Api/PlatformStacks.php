@@ -129,23 +129,40 @@ final readonly class PlatformStacks implements Stacks
      */
     private function read(string $written): Configured
     {
-        $found = json_decode($written, associative: true);
+        $rows = $this->rowsIn(json_decode($written, associative: true));
 
+        return $rows === null ? Configured::none() : $this->rebuilt($rows);
+    }
+
+    /**
+     * The stack rows a record holds, where it is a record this build wrote.
+     *
+     * Separated from reading them because the two decide different things: this
+     * one is about the envelope — is this our shape, does it hold a list — and
+     * {@see rebuilt()} is about what is inside. Together they were one method
+     * with four ways out, which is the shape SonarCloud names `S1142` and is
+     * right to: a reader counting the exits is a reader who has lost the thread.
+     *
+     * Answers the rows or nothing, rather than a `bool` beside a second read of
+     * the same array. `C2` is about a published signature; this is private, and
+     * a predicate here would narrow nothing for the analyser, so the caller
+     * would re-check what this had just established.
+     *
+     * @return list<mixed>|null
+     */
+    private function rowsIn(mixed $found): ?array
+    {
         if (! is_array($found) || ! array_key_exists('shape', $found) || $found['shape'] !== self::SHAPE) {
-            return Configured::none();
+            return null;
         }
 
         if (! array_key_exists('stacks', $found)) {
-            return Configured::none();
+            return null;
         }
 
         $rows = $found['stacks'];
 
-        if (! is_array($rows) || ! array_is_list($rows)) {
-            return Configured::none();
-        }
-
-        return $this->rebuilt($rows);
+        return is_array($rows) && array_is_list($rows) ? $rows : null;
     }
 
     /**
