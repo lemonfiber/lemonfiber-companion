@@ -3102,17 +3102,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "e939bd2adfd9bfb4ee48e220fb8cc5959e0bd4b6"
+                "reference": "2da544fc1601d170269be7628720b632f2a67f5a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/e939bd2adfd9bfb4ee48e220fb8cc5959e0bd4b6",
-                "reference": "e939bd2adfd9bfb4ee48e220fb8cc5959e0bd4b6",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/2da544fc1601d170269be7628720b632f2a67f5a",
+                "reference": "2da544fc1601d170269be7628720b632f2a67f5a",
                 "shasum": ""
             },
             "require": {
                 "ext-filter": "*",
                 "ext-json": "*",
+                "guzzlehttp/guzzle": "^8.2",
                 "php": "^8.5",
                 "psr/http-message": "^2.0",
                 "saloonphp/saloon": "^4.0"
@@ -3124,7 +3125,7 @@
                 "ergebnis/phpstan-rules": "^2.13",
                 "ext-curl": "*",
                 "ext-tokenizer": "*",
-                "guzzlehttp/psr7": "^2.13",
+                "guzzlehttp/psr7": "^3.1",
                 "laravel/pint": "^1.30",
                 "pestphp/pest": "^5.1",
                 "pestphp/pest-plugin-arch": "^5.0",
@@ -3225,7 +3226,7 @@
                     "name": "NightWorks.io"
                 }
             ],
-            "description": "PHP client for lemonfiber's local HTTP API: envelope reading, loopback-only transport, and a live event stream that never presents stale values as current.",
+            "description": "PHP client for lemonfiber's HTTP API: envelope reading, a transport that leaves this machine only for a pinned certificate, and a live event stream that never presents stale values as current.",
             "keywords": [
                 "api-client",
                 "lemonfiber",
@@ -3237,7 +3238,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-09-13T12:19:26+00:00"
+            "time": "2026-09-13T14:38:01+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
