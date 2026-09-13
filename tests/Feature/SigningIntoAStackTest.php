@@ -209,6 +209,33 @@ it('says what happened and what to do about it, for every state it has', functio
     }
 });
 
+it('offers the password field only where typing one could help', function (): void {
+    // Two states say no for opposite reasons: somebody already signed in has
+    // nothing to type, and somebody the door has stopped listening to would be
+    // typing into a control that cannot help — and, on a stack counting
+    // attempts, one that makes the wait longer. Every other state keeps the
+    // field, because its remedy is something the operator does and then comes
+    // straight back here.
+    // Pairs rather than a keyed table: an enum cannot key a PHP array, and the
+    // count below is what turns this from a list of examples into a statement
+    // about every state there is.
+    $offered = [
+        [HowTheSignInWent::NotYet, true],
+        [HowTheSignInWent::SignedIn, false],
+        [HowTheSignInWent::CredentialWasRefused, true],
+        [HowTheSignInWent::TooManyAttempts, false],
+        [HowTheSignInWent::StackDidNotAnswer, true],
+        [HowTheSignInWent::NoStoreOnThisDevice, true],
+        [HowTheSignInWent::TheStoreWouldNotOpen, true],
+    ];
+
+    expect($offered)->toHaveCount(count(HowTheSignInWent::cases()));
+
+    foreach ($offered as [$went, $keepsTheField]) {
+        expect($went->mayTry())->toBe($keepsTheField, $went->value);
+    }
+});
+
 it('refuses a route naming a stack this device does not hold', function (): void {
     // A launch-time fault rather than a screen state: the URI names something
     // that has been forgotten, and there is no screen to draw for it.

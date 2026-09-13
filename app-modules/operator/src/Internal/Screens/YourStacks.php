@@ -6,10 +6,12 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Kernel\Api\Configured;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stacks;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
+use function sprintf;
 use function view;
 
 /**
@@ -103,6 +105,24 @@ final class YourStacks extends NativeComponent
     public function configured(): Configured
     {
         return $this->stacks->configured();
+    }
+
+    /**
+     * Where tapping a stack goes.
+     *
+     * Built here rather than in the template so the URI has one spelling — the
+     * template renders it, this decides it, and the route declaration in the
+     * module's provider is the only other place it is written.
+     *
+     * {@see StackId::stored()} rather than the name, which is `N1-R11` in the
+     * address bar such as it is: a name is what the operator chose and two
+     * machines may share one, while the identifier is what this device minted
+     * and they cannot. It is not a secret and it is not shown — a URI is how
+     * the navigation stack addresses a screen, not something on the glass.
+     */
+    public function signInAt(Stack $stack): string
+    {
+        return sprintf('/stacks/%s/sign-in', $stack->id()->stored());
     }
 
     /**

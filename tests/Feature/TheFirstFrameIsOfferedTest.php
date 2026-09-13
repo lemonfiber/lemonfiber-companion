@@ -53,6 +53,33 @@ it('N1-R35 — the first frame is registered, and it is this screen', function (
     expect($resolved['class'] ?? null)->toBe(YourStacks::class);
 });
 
+it('N1-R11 — a stack in the list leads to that stack and no other', function (): void {
+    // A screen nothing navigates to is a screen nobody reaches, and the route
+    // is where `N1-R11` is either kept or quietly broken: two stacks in the
+    // list must lead to two URIs, and each must name the identifier this device
+    // minted rather than the name an operator chose, since two machines may
+    // share a name and cannot share an identifier.
+    // Distinct seeds, because that is what makes them two stacks: the helper
+    // derives the identifier from the seed rather than from the name, so two
+    // stacks named differently and seeded the same are one machine twice.
+    $loft = aPairedStack('The loft', 'a');
+    $shed = aPairedStack('The shed', 'b');
+    $screen = new YourStacks(StacksInMemory::holding($loft, $shed));
+
+    expect($screen->signInAt($loft))->toBe(sprintf('/stacks/%s/sign-in', $loft->id()->stored()))
+        ->and($screen->signInAt($shed))->not->toBe($screen->signInAt($loft));
+
+    // And the URI it builds is one the navigation stack actually knows, which
+    // is the half a string comparison cannot see: a route declared as
+    // `/stacks/{stack}/sign-in` and a link built as `/stack/...` would both
+    // look right here and meet nowhere.
+    expect(NativeRouter::resolve($screen->signInAt($loft)))->not->toBeNull(
+        'The list links to a URI the navigation stack does not know, so tapping a '
+        . 'stack would reach nothing. Check the route declared in the operator '
+        . "module's provider against what `signInAt()` builds.",
+    );
+});
+
 it('N1-R36 — a launch with stacks configured names them rather than offering to pair', function (): void {
     // What this screen did until pairing existed: it answered the empty case
     // and only the empty case, so an operator who had just paired a stack was

@@ -132,6 +132,12 @@ final class SignIntoAStack extends NativeComponent
         );
     }
 
+    /** Whether the password field belongs on the screen in this state. */
+    public function mayTry(): bool
+    {
+        return $this->went->mayTry();
+    }
+
     /**
      * Whether the control that offers the password may be tapped at all.
      *

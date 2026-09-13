@@ -110,14 +110,17 @@ enum HowTheSignInWent: string
      * belongs. The keys are spelled here and nowhere else, so the catalogue
      * parity check has one place to compare against.
      *
-     * The two states that are not refusals answer with the sentence a screen
-     * opens on. A method that returned nothing for them would put the `@if`
-     * back in the template, which is the branch this exists to remove.
+     * **Every case answers, including the two that are not refusals**, which is
+     * what lets a template show one headline and one line of advice with no
+     * branch at all. A method that answered for some states and not others
+     * would put those branches back — and an arm no template ever reaches is an
+     * arm no test can hold to being right.
      */
     public function said(): string
     {
         return match ($this) {
-            self::NotYet, self::SignedIn => 'connection.sign_in_to',
+            self::NotYet => 'connection.sign_in_to',
+            self::SignedIn => 'connection.signed_in',
             self::CredentialWasRefused => 'connection.password_was_refused',
             self::TooManyAttempts => 'connection.too_many_attempts',
             self::StackDidNotAnswer => 'connection.no_answer',
@@ -137,13 +140,35 @@ enum HowTheSignInWent: string
     public function remedy(): string
     {
         return match ($this) {
-            self::NotYet, self::SignedIn => 'connection.sign_in_action',
+            self::NotYet => 'connection.sign_in_action',
+            self::SignedIn => 'connection.signed_in_action',
             self::CredentialWasRefused => 'connection.password_was_refused_action',
             self::TooManyAttempts => 'connection.too_many_attempts_action',
             self::StackDidNotAnswer => 'connection.no_answer_action',
             self::NoStoreOnThisDevice => 'connection.no_store_for_a_session_action',
             self::TheStoreWouldNotOpen => 'connection.session_would_not_keep_action',
         };
+    }
+
+    /**
+     * Whether offering a password is worth putting in front of them at all.
+     *
+     * Two states say no, for opposite reasons. Somebody already signed in has
+     * nothing to type; somebody the door has stopped listening to would be
+     * typing into a control that cannot help and, on a stack that counts
+     * attempts, makes the wait longer. That second one is {@see Obstacle}'s
+     * `Guided` standing arriving on a screen: the remedy is a sentence, not a
+     * button.
+     *
+     * A store that would not open keeps the field, because *unlock the phone
+     * and try again* is advice somebody acts on and then comes straight back to
+     * this screen. So does a device with nowhere to keep a session: setting a
+     * screen lock is the remedy, and returning to a screen with no way to
+     * proceed would be the app forgetting what they came to do.
+     */
+    public function mayTry(): bool
+    {
+        return $this !== self::SignedIn && $this !== self::TooManyAttempts;
     }
 
     /** What a surface shows for each thing the operator met at the door. */
