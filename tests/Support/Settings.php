@@ -10,6 +10,9 @@ use function is_file;
 use function is_string;
 use function mb_strtolower;
 use function preg_match;
+
+use RuntimeException;
+
 use function scandir;
 use function sprintf;
 use function str_contains;
@@ -73,8 +76,23 @@ final readonly class Settings
     private static function keys(): array
     {
         $found = [];
+        $sources = [...Tree::filesUnder(Tree::at('config'), '.php'), ...self::environmentFiles()];
 
-        foreach ([...Tree::filesUnder(Tree::at('config'), '.php'), ...self::environmentFiles()] as $path) {
+        // Refused rather than answered empty, the way `Coverage` refuses a
+        // report that is not there. Every rule resting on this asks whether a
+        // setting *exists*, so an empty read and a clean repository give the
+        // same answer — and one of them is `N1-R21` going quiet about every
+        // environment file at once.
+        if ($sources === []) {
+            throw new RuntimeException(sprintf(
+                'No configuration or environment file was found under %s. These rules ask '
+                . 'whether a setting exists, so reading nothing and finding nothing are the '
+                . 'same answer here — and only one of them is true.',
+                Tree::root(),
+            ));
+        }
+
+        foreach ($sources as $path) {
             $source = file_get_contents($path);
 
             if (! is_string($source)) {
