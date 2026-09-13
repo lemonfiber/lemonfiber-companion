@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function sprintf;
+
 /**
  * Why the camera came back without a pairing code.
  *
@@ -65,19 +67,22 @@ enum WhyNothingWasScanned: string
      * A key rather than a sentence, because `L1` puts the words in the
      * catalogue and `A4` keeps the translator out of a class that did not ask
      * for one. On the enum rather than on a screen for the reason `D4` gives
-     * about closed sets: three reasons, three sentences, and a `match` with no
-     * default arm makes a fourth reason a failure here rather than a screen
-     * with nothing on it.
+     * about closed sets: three reasons, three sentences, and a reason added
+     * here has a key by existing rather than by somebody remembering to add a
+     * `match` arm for it.
+     *
+     * **Built from the case rather than listed against it**, which is
+     * {@see Permission::reason()}'s shape. A `match` naming a key per case
+     * spells every stem twice — once as the case's value and once as the string
+     * beside it — and two spellings of one name drift. Here they were already
+     * identical, which is the drift not yet having happened rather than a
+     * reason to keep two copies.
      *
      * `L7` is what proves each of these is a line the catalogue holds. A key
      * spelled as a literal at a call site is one nothing checks.
      */
     public function saidOnTheScreen(): string
     {
-        return match ($this) {
-            self::TheOperatorClosedIt => 'connection.the_scanner_was_closed',
-            self::TheCameraIsNotPermitted => 'connection.the_camera_is_not_permitted',
-            self::ThereIsNoCamera => 'connection.there_is_no_camera',
-        };
+        return sprintf('connection.%s', $this->value);
     }
 }

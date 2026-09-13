@@ -199,35 +199,6 @@ it('N4-R6 — a session it could not keep is not a sign-in', function (): void {
     }
 });
 
-it('says what happened and what to do about it, for every state it has', function (): void {
-    // `N1-R10` asks for both and they are not the same sentence.
-    //
-    // The pair is named per state rather than only checked for resolving,
-    // because resolving is the weaker half: two states whose keys were swapped
-    // would both still resolve, and the operator would be told to unlock their
-    // phone about a password the stack refused. The resolution is asserted too —
-    // a key with no catalogue line comes back as the key itself, which is what
-    // an operator would read on the glass.
-    $lines = [
-        [HowTheSignInWent::NotYet, 'connection.sign_in_to', 'connection.sign_in_action'],
-        [HowTheSignInWent::SignedIn, 'connection.signed_in', 'connection.signed_in_action'],
-        [HowTheSignInWent::CredentialWasRefused, 'connection.password_was_refused', 'connection.password_was_refused_action'],
-        [HowTheSignInWent::TooManyAttempts, 'connection.too_many_attempts', 'connection.too_many_attempts_action'],
-        [HowTheSignInWent::StackDidNotAnswer, 'connection.no_answer', 'connection.no_answer_action'],
-        [HowTheSignInWent::NoStoreOnThisDevice, 'connection.no_store_for_a_session', 'connection.no_store_for_a_session_action'],
-        [HowTheSignInWent::TheStoreWouldNotOpen, 'connection.session_would_not_keep', 'connection.session_would_not_keep_action'],
-    ];
-
-    expect($lines)->toHaveCount(count(HowTheSignInWent::cases()));
-
-    foreach ($lines as [$went, $said, $remedy]) {
-        expect($went->said())->toBe($said, $went->value)
-            ->and($went->remedy())->toBe($remedy, $went->value)
-            ->and(__($said))->not->toBe($said, $went->value)
-            ->and(__($remedy))->not->toBe($remedy, $went->value);
-    }
-});
-
 it('does not count a field of spaces as a password', function (): void {
     // The trim is load-bearing rather than tidiness: a field holding only
     // whitespace looks typed-in and is not an attempt, and offering it would

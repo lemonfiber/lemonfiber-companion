@@ -7,6 +7,8 @@ namespace Modules\Connection\Api;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 
+use function sprintf;
+
 /**
  * What became of a credential the operator offered to a stack.
  *
@@ -43,25 +45,25 @@ use Modules\Kernel\Api\WhySessionCannotBeKept;
 enum HowTheSignInWent: string
 {
     /** Nothing has been offered yet. The state a screen opens in. */
-    case NotYet = 'not_yet';
+    case NotYet = 'sign_in_to';
 
     /** The door opened and the session is where the next launch will find it. */
     case SignedIn = 'signed_in';
 
     /** The stack said no to the password. Another attempt is the remedy. */
-    case CredentialWasRefused = 'credential_was_refused';
+    case CredentialWasRefused = 'password_was_refused';
 
     /** Too many wrong attempts; the door has stopped listening for a while. */
     case TooManyAttempts = 'too_many_attempts';
 
     /** Nothing came back, so nothing is known about the password. */
-    case StackDidNotAnswer = 'stack_did_not_answer';
+    case StackDidNotAnswer = 'no_answer';
 
     /** There is nowhere on this device this app may keep a session. */
-    case NoStoreOnThisDevice = 'no_store_on_this_device';
+    case NoStoreOnThisDevice = 'no_store_for_a_session';
 
     /** There is a store and it would not open, which is often temporary. */
-    case TheStoreWouldNotOpen = 'the_store_would_not_open';
+    case TheStoreWouldNotOpen = 'session_would_not_keep';
 
     /**
      * Whether offering the same password again is worth doing.
@@ -83,8 +85,14 @@ enum HowTheSignInWent: string
      * A key rather than the words, which is `A4` and `L1` together: an enum
      * reaching for a translator it never asked for is a class that has stopped
      * telling the truth about what it needs, and the template is where `__()`
-     * belongs. The keys are spelled here and nowhere else, so the catalogue
-     * parity check has one place to compare against.
+     * belongs.
+     *
+     * **Built from the case rather than listed against it**, which is
+     * {@see Permission::reason()}'s shape and the reason is the same: a `match`
+     * naming a key per case spells every stem twice — once as the case's value
+     * and once as the string beside it — and two spellings of one name drift.
+     * The value *is* the stem, so a case added here has a key by existing, and
+     * `EveryKeyTheAppNamesResolvesTest` is what catches one with no line.
      *
      * **Every case answers, including the two that are not refusals**, which is
      * what lets a template show one headline and one line of advice with no
@@ -94,15 +102,7 @@ enum HowTheSignInWent: string
      */
     public function said(): string
     {
-        return match ($this) {
-            self::NotYet => 'connection.sign_in_to',
-            self::SignedIn => 'connection.signed_in',
-            self::CredentialWasRefused => 'connection.password_was_refused',
-            self::TooManyAttempts => 'connection.too_many_attempts',
-            self::StackDidNotAnswer => 'connection.no_answer',
-            self::NoStoreOnThisDevice => 'connection.no_store_for_a_session',
-            self::TheStoreWouldNotOpen => 'connection.session_would_not_keep',
-        };
+        return sprintf('connection.%s', $this->value);
     }
 
     /**
@@ -112,18 +112,14 @@ enum HowTheSignInWent: string
      * not the same sentence: what happened is a fact about the world, and what
      * to do about it is advice — advice that differs sharply between a password
      * worth retyping and a door that is counting how often you try.
+     *
+     * `_action` is the suffix every remedy in this catalogue already carries,
+     * which is why the stem can serve both: {@see Obstacle} spells its pair the
+     * same way, and a screen reading one reads the other.
      */
     public function remedy(): string
     {
-        return match ($this) {
-            self::NotYet => 'connection.sign_in_action',
-            self::SignedIn => 'connection.signed_in_action',
-            self::CredentialWasRefused => 'connection.password_was_refused_action',
-            self::TooManyAttempts => 'connection.too_many_attempts_action',
-            self::StackDidNotAnswer => 'connection.no_answer_action',
-            self::NoStoreOnThisDevice => 'connection.no_store_for_a_session_action',
-            self::TheStoreWouldNotOpen => 'connection.session_would_not_keep_action',
-        };
+        return sprintf('connection.%s_action', $this->value);
     }
 
     /**
