@@ -74,13 +74,7 @@ function valuesWithOneDestination(): array
  */
 function dictatedByAnInterface(ReflectionClass $class, string $method): bool
 {
-    foreach ($class->getInterfaces() as $interface) {
-        if ($interface->hasMethod($method)) {
-            return true;
-        }
-    }
-
-    return false;
+    return array_any($class->getInterfaces(), fn(ReflectionClass $interface): bool => $interface->hasMethod($method));
 }
 
 /**
