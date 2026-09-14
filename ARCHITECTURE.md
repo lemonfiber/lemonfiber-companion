@@ -302,6 +302,7 @@ automatic and the operator never sees the question.
 | F4 | A screen that takes a port carries `#[Lazy]`; one whose content changes while open carries `#[Poll]` | arch for the first; review for the second |
 | F8 | A screen shows findings in the order a capability decided, never the order they arrived | arch: a screen that names findings names `WorstFirst` |
 | F9 | A class list is written out, never decided at runtime | arch: over the text of every template |
+| F10 | Every method a template calls is one its screen has, and every screen that renders is paired | `tests/Templates` |
 
 **Why F9 exists, given F3.** Every rule about a class list is handed the answer
 of one function, `Template::classStrings()`, and that function drops any token
