@@ -28,6 +28,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWouldMend;
+use Tests\Support\Fakes\SequencedEntropy;
 
 // The Mending contract, run against the adapter and against the fake.
 //
@@ -197,7 +198,7 @@ function everyWayOfMending(MockResponse $answered, Closure $fake): array
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Menders(new PinnedClients());
+            return new Menders(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -298,7 +299,7 @@ it('N1-R10 — an answer this app cannot read is the machine, not the session', 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('not json at all')]);
 
-    expect(whatStartingSaid(new Menders(new PinnedClients())))
+    expect(whatStartingSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe(Obstacle::StackDidNotAnswer->value);
 });
 
@@ -310,7 +311,7 @@ it('N1-R10 — a refused session while reading a handle is still a refused sessi
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('{"error":"no"}', 401)]);
 
-    expect(whatTheHandleSaid(new Menders(new PinnedClients())))
+    expect(whatTheHandleSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe(Obstacle::CredentialWasRefused->value);
 });
 
@@ -318,7 +319,7 @@ it('a handle that answers with something unreadable is the machine', function ()
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('not json at all')]);
 
-    expect(whatTheHandleSaid(new Menders(new PinnedClients())))
+    expect(whatTheHandleSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe(Obstacle::StackDidNotAnswer->value);
 });
 
@@ -514,7 +515,7 @@ it('N1-R10 — a refused agreement is a refused session, not a broken machine', 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('{"error":"no"}', 401)]);
 
-    $said = new Menders(new PinnedClients())
+    $said = new Menders(new PinnedClients(), SequencedEntropy::counting())
         ->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())
         ->either(
             started: static fn(Job $job): WhatTheRepairTurnedOutToSay
@@ -530,7 +531,7 @@ it('an agreement the far end answers unreadably is the machine', function (): vo
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('not json at all')]);
 
-    $said = new Menders(new PinnedClients())
+    $said = new Menders(new PinnedClients(), SequencedEntropy::counting())
         ->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())
         ->either(
             started: static fn(Job $job): WhatTheRepairTurnedOutToSay
@@ -554,7 +555,7 @@ it('N1-R10 — reading what was done can meet an obstacle of its own', function 
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
 
-        expect(whatWasDone(new Menders(new PinnedClients())))->toBe($why->value, $why->value);
+        expect(whatWasDone(new Menders(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->value, $why->value);
     }
 });
 

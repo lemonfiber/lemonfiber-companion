@@ -28,6 +28,7 @@ use Modules\Sdk\Api\Supervisors;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatSupervises;
+use Tests\Support\Fakes\SequencedEntropy;
 
 // The Supervising contract, run against the adapter and against the fake.
 //
@@ -157,7 +158,7 @@ function everyWayOfSupervising(MockResponse $answered, ?Obstacle $why = null): a
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Supervisors(new PinnedClients());
+            return new Supervisors(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }

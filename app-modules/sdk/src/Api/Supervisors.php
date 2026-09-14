@@ -10,6 +10,8 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -50,10 +52,20 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * reason: it means this app is holding a stack it should never have written
  * down, and catching it would turn a fault in retained state into an ordinary
  * screen about an unreachable machine.
+ *
+ * **The key that names an attempt is minted here and nowhere else.** `N1-R42`
+ * wants one on every action that changes a stack, and wants it to serve the
+ * retry inside a single attempt rather than a replay across a reconnection.
+ * Those are the same sentence read twice: a key is only safe while it names
+ * the attempt it was made for, so this asks {@see Entropy} for a fresh one at
+ * the moment of sending and keeps nothing. {@see Supervising} deliberately
+ * does not take one — a port that accepted a key is a port a caller can hand
+ * the same key to twice, which is the replay `ADR-0020` argues at length
+ * against, arriving through the one door built to prevent it.
  */
 final readonly class Supervisors implements Supervising
 {
-    public function __construct(private PinnedClients $clients) {}
+    public function __construct(private PinnedClients $clients, private Entropy $entropy) {}
 
     public function running(Stack $stack, Session $session): WhatIsRunning
     {
@@ -79,7 +91,15 @@ final readonly class Supervisors implements Supervising
         $client = $this->clients->client($stack, $session);
 
         try {
-            $envelope = $client->act(Api::action($agreed->doing()->asked()), $this->about($agreed));
+            $envelope = $client->act(
+                Api::action($agreed->doing()->asked()),
+                $this->about($agreed),
+                // Built inline rather than into a variable. A key held for the
+                // length of a method is a key a second statement can reach, and
+                // this method's whole obligation is that no second send ever
+                // sees the first one's name.
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            );
 
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {
