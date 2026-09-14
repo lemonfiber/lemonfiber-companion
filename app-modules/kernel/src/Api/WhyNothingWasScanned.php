@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function sprintf;
+
 /**
  * Why the camera came back without a pairing code.
  *
@@ -47,16 +49,24 @@ enum WhyNothingWasScanned: string
     case ThereIsNoCamera = 'there_is_no_camera';
 
     /**
-     * Whether the operator could grant this by changing a platform setting.
+     * What to do about it, as a key the template resolves.
      *
-     * The one thing a screen needs to decide between "open Settings" and
-     * "there is nothing to turn on here", and it is answered once rather than
-     * at each call site. The closed scanner answers false for a third reason
-     * again — nothing was refused, so there is nothing to un-refuse.
+     * Beside {@see saidOnTheScreen()} and derived the same way, because
+     * `N1-R10` asks for both and they are not the same sentence: what happened
+     * is a fact, and what to do about it is advice.
+     *
+     * **This replaced a `settingsWouldHelp()` boolean and a template branch.**
+     * That pair chose between "open Settings" and one generic alternative, so
+     * two of the three reasons were answered with a sentence written for none
+     * of them — a closed scanner was told *"you can type the pairing code
+     * instead"* where the useful advice is *"open it again when you are ready,
+     * or type the code instead"*. Three reasons have three remedies in the
+     * catalogue already; a screen that picks between two of them can only be
+     * wrong about the third.
      */
-    public function settingsWouldHelp(): bool
+    public function remedy(): string
     {
-        return $this === self::TheCameraIsNotPermitted;
+        return sprintf('connection.%s_action', $this->value);
     }
 
     /**
@@ -65,19 +75,22 @@ enum WhyNothingWasScanned: string
      * A key rather than a sentence, because `L1` puts the words in the
      * catalogue and `A4` keeps the translator out of a class that did not ask
      * for one. On the enum rather than on a screen for the reason `D4` gives
-     * about closed sets: three reasons, three sentences, and a `match` with no
-     * default arm makes a fourth reason a failure here rather than a screen
-     * with nothing on it.
+     * about closed sets: three reasons, three sentences, and a reason added
+     * here has a key by existing rather than by somebody remembering to add a
+     * `match` arm for it.
+     *
+     * **Built from the case rather than listed against it**, which is
+     * {@see Permission::reason()}'s shape. A `match` naming a key per case
+     * spells every stem twice — once as the case's value and once as the string
+     * beside it — and two spellings of one name drift. Here they were already
+     * identical, which is the drift not yet having happened rather than a
+     * reason to keep two copies.
      *
      * `L7` is what proves each of these is a line the catalogue holds. A key
      * spelled as a literal at a call site is one nothing checks.
      */
     public function saidOnTheScreen(): string
     {
-        return match ($this) {
-            self::TheOperatorClosedIt => 'connection.the_scanner_was_closed',
-            self::TheCameraIsNotPermitted => 'connection.the_camera_is_not_permitted',
-            self::ThereIsNoCamera => 'connection.there_is_no_camera',
-        };
+        return sprintf('connection.%s', $this->value);
     }
 }

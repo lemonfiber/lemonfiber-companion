@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function sprintf;
+
 /**
  * What stood between the app and a stack, told apart rather than summarised.
  *
@@ -104,6 +106,59 @@ enum Obstacle: string
     case CredentialWasRefused = 'credential_refused';
 
     /**
+     * The stack has stopped answering password attempts for a while.
+     *
+     * Told apart from {@see self::CredentialWasRefused} because the remedy is
+     * the opposite one: a refused credential is answered by offering another
+     * attempt, and this is answered by waiting — and by *not* attempting again,
+     * since another attempt is what extends the wait. An app that reported both
+     * as "wrong password" would have the operator typing carefully into a door
+     * that is not listening, and lengthening the wait each time.
+     *
+     * `N1-R10` is about three conditions and this is a fourth of the same kind:
+     * a thing the operator meets, which needs its own sentence because its
+     * remedy is its own.
+     */
+    case TooManyAttempts = 'too_many_attempts';
+
+    /**
+     * The key for what stood in the way.
+     *
+     * The value *is* the stem, so a case added here has a sentence by existing
+     * and `EveryKeyTheAppNamesResolvesTest` is what catches one with no line.
+     * Derived rather than spelled for the reason `L1` gives: a key written out
+     * at a call site is a key that survives its case being renamed, and it goes
+     * on resolving to a line about something else.
+     *
+     * Here rather than in the folds that render it, because two of them were
+     * spelling this themselves and a third would have spelled it again. An
+     * obstacle knows its own sentence; a screen that has to know it as well is
+     * a screen that can disagree with another screen.
+     */
+    public function said(): string
+    {
+        return sprintf('connection.%s', $this->value);
+    }
+
+    /**
+     * The key for what to do about it.
+     *
+     * Separate from {@see said()} because `N1-R10` asks for both and they are
+     * not the same sentence: what happened is a fact about the world, and what
+     * to do about it is advice. The advice is what differs most between these —
+     * a router and a cupboard are not the same errand — which is why a screen
+     * showing one summary for all six would be useless even with six summaries.
+     *
+     * `_action` is the suffix every remedy in this catalogue carries, which is
+     * why one stem serves both: {@see \Modules\Connection\Api\HowTheSignInWent}
+     * spells its pair the same way, and a screen reading one reads the other.
+     */
+    public function remedy(): string
+    {
+        return sprintf('connection.%s_action', $this->value);
+    }
+
+    /**
      * The identifier an operator can search for.
      *
      * The app's own, not the server's. `Code` says codes are declared beside
@@ -121,6 +176,7 @@ enum Obstacle: string
             self::StackDidNotAnswer => 'COMPANION-NO-ANSWER',
             self::StackIsNotTheOnePaired => 'COMPANION-CERTIFICATE-CHANGED',
             self::CredentialWasRefused => 'COMPANION-CREDENTIAL-REFUSED',
+            self::TooManyAttempts => 'COMPANION-TOO-MANY-ATTEMPTS',
         });
     }
 
@@ -129,12 +185,15 @@ enum Obstacle: string
      *
      * Having no network is a `Warning` rather than an `Error` because nothing
      * is broken — the device is somewhere without a signal, which it will leave.
-     * The other two mean a thing that is supposed to work does not.
+     * A door that has stopped listening is a `Warning` for the same reason and
+     * it is the sharper case: nothing is wrong with the stack, the app or the
+     * password, and the condition clears itself. Reporting it as an error would
+     * have the operator looking for a fault that is not there.
      */
     public function severity(): Severity
     {
         return match ($this) {
-            self::DeviceHasNoNetwork => Severity::Warning,
+            self::DeviceHasNoNetwork, self::TooManyAttempts => Severity::Warning,
             self::LocalNetworkIsNotPermitted,
             self::StackDidNotAnswer,
             self::CredentialWasRefused => Severity::Error,
@@ -155,7 +214,12 @@ enum Obstacle: string
     public function standing(): Standing
     {
         return match ($this) {
-            self::DeviceHasNoNetwork, self::StackDidNotAnswer => Standing::Guided,
+            self::DeviceHasNoNetwork,
+            self::StackDidNotAnswer,
+            // Waiting is the whole remedy, and it is not a thing the app can
+            // offer to do: a button here would either do nothing or make the
+            // wait longer, which is the one outcome worse than no button.
+            self::TooManyAttempts => Standing::Guided,
             self::LocalNetworkIsNotPermitted,
             self::CredentialWasRefused,
             self::StackIsNotTheOnePaired => Standing::Actionable,

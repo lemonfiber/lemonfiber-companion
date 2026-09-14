@@ -746,6 +746,34 @@ final readonly class Fixtures
                 }
                 PHP, 'F4 —'),
 
+            // A screen that walks a run without naming `WorstFirst`, which is
+            // the whole of the violation: the type is imported, the rows come
+            // out in the order they went in, and nothing anywhere says so.
+            Fixture::suite('F8', 'app-modules/operator/src/Internal/Screens/Fixtures/ShowsWhateverArrived.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Operator\Internal\Screens\Fixtures;
+
+                use Modules\Kernel\Api\Findings;
+
+                final readonly class ShowsWhateverArrived
+                {
+                    /** @return list<string> */
+                    public function rows(Findings $findings): array
+                    {
+                        $rows = [];
+
+                        foreach ($findings as $finding) {
+                            $rows[] = $finding->title();
+                        }
+
+                        return $rows;
+                    }
+                }
+                PHP, 'F8 —', 'ShowsWhateverArrived'),
+
             Fixture::analyser('H5', 'Plain/Concatenates.php', <<<'PHP'
                 <?php
 
@@ -1789,6 +1817,30 @@ final readonly class Fixtures
                     expect(Closure::class)->toBe('Closure');
                 });
                 PHP, 'W5 —', 'SaysNothingTest'),
+
+            // A source file, not a test: C10 exempts tests deliberately, so a
+            // fixture planted under `tests/` would prove the rule green while
+            // refusing nothing.
+            Fixture::suite('C10', 'app-modules/health/src/Api/Queries/Fixtures/KeepsKeys.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Api\Queries\Fixtures;
+
+                use Modules\Kernel\Api\Findings;
+
+                use function iterator_to_array;
+
+                final readonly class KeepsKeys
+                {
+                    /** @return list<object> */
+                    public function over(Findings $findings): array
+                    {
+                        return iterator_to_array($findings, preserve_keys: false);
+                    }
+                }
+                PHP, 'C10 —', 'KeepsKeys.php'),
         ];
     }
 
@@ -1842,6 +1894,17 @@ final readonly class Fixtures
                     <native:text>{{ __('health.overall.healthy') }}</native:text>
                 </native:column>
                 BLADE, 'names no literal colour', 'literal-colour'),
+
+            // The one every other fixture here is invisible to. A class token
+            // holding an echo is dropped unread, so the three rules above go
+            // quiet together: this file names an unknown utility, a literal
+            // colour and the accent set as text, and F3, DES-R24 and DES-R15
+            // all pass it.
+            Fixture::suite('F9', sprintf('%s/runtime-class.blade.php', $views), <<<'BLADE'
+                <native:column class="{{ $open ? 'bg-theme-accnt' : 'bg-red-500' }}">
+                    <native:text class="{{ $open ? 'text-theme-accent' : '' }}">{{ __('health.overall.healthy') }}</native:text>
+                </native:column>
+                BLADE, 'F9 —', 'runtime-class'),
 
             Fixture::suite('F5', sprintf('%s/silent-control.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">

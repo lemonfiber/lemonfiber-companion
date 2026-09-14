@@ -21,6 +21,12 @@ return [
         'pass' => 'Geslaagd',
         'skipped' => 'Overgeslagen',
     ],
+    'severity' => [
+        'critical' => 'Gegevens of iets buiten deze machine loopt gevaar',
+        'error' => 'Kapot',
+        'warning' => 'Verminderd',
+        'advisory' => 'Goed om te weten',
+    ],
     'undoing' => [
         'permanent' => 'Dit kan niet ongedaan worden gemaakt',
         'possible' => 'Dit kan daarna ongedaan worden gemaakt',
@@ -31,9 +37,17 @@ return [
         'degraded' => 'Sommige services hebben aandacht nodig',
         'healthy' => 'Alles draait',
     ],
-    'unreachable' => 'Deze stack is hiervandaan niet bereikbaar.',
-    'unreachable_action' => 'Controleer of de stack aan staat en op hetzelfde netwerk zit.',
+    'because_of' => 'Vanwege: :title',
+    'ago' => [
+        'minutes' => '{0} zojuist|{1} een minuut geleden|[2,*] :count minuten geleden',
+        'hours' => '{1} een uur geleden|[2,*] :count uur geleden',
+        'days' => '{1} een dag geleden|[2,*] :count dagen geleden',
+    ],
     'stale' => 'Laatst gecontroleerd :ago',
+    'family_and_count' => ':family (:count)',
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',
+    'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',
+    'ask_again' => 'Opnieuw controleren',
+    'see_how_it_is' => 'Bekijk hoe deze stack het doet',
 ];

@@ -6,8 +6,10 @@ namespace Modules\Operator\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
+use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\YourStacks;
 
 /**
@@ -84,6 +86,22 @@ final class OperatorServiceProvider extends ServiceProvider
             // other must not be able to reach one.
             Router::native('/pair/scanned', PairByScanning::class);
             Router::native('/pair/typed', PairByTyping::class);
+
+            // The stack in the URI rather than in the screen, because `N1-R11`
+            // keeps each stack's session separate and a screen that chose its
+            // own stack is the place two of them come to share one. It is also
+            // what makes the navigation stack correct: an operator backing out
+            // of this screen returns to the list they picked from, and a second
+            // stack signed into later is a second entry rather than the same
+            // screen re-pointed.
+            Router::native('/stacks/{stack}/sign-in', SignIntoAStack::class);
+
+            // What the whole application is for: one stack, and whether it is
+            // doing what it should. A screen of its own rather than a section
+            // of the list, because `N1-R17` says the app asks a machine once
+            // per screen — a list that reported on every stack would ask every
+            // machine on the network to draw one frame.
+            Router::native('/stacks/{stack}', HowThisStackIs::class);
         });
     }
 }

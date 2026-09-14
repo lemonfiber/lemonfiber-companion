@@ -5,11 +5,32 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\Opening;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
+use Modules\Kernel\Api\Diagnostics;
+use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Launch;
+use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Reading;
+use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Shape;
+use Modules\Kernel\Api\Sharing;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Verdicts;
+use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Kernel\Api\WireVersion;
+use Modules\Operator\Internal\HowAStackLastWas;
+use Modules\Operator\Internal\WhatTheLaunchWas;
+use Modules\Operator\Internal\WhatTheSharingDid;
+use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
+use function sprintf;
 use function view;
 
 /**
@@ -72,7 +93,57 @@ use function view;
 #[Lazy]
 final class YourStacks extends NativeComponent
 {
-    public function __construct(private readonly Stacks $stacks) {}
+    /** What became of the last attempt to hand a report over, as a key. */
+    protected ?Launch $launched = null;
+
+    protected string $sharingWent = '';
+
+    /** What to do about it, beside {@see sharingWent()}. */
+    protected string $sharingRemedy = '';
+    public function __construct(
+        private readonly Stacks $stacks,
+        private readonly SecureStorage $storage,
+        private readonly Sharing $sharing,
+        private readonly Verdicts $verdicts,
+        private readonly Clock $clock,
+        private readonly Opening $opening,
+    ) {}
+
+    /**
+     * Whether the app is shut until the operator proves who they are.
+     *
+     * `N4-R19` wants the device's own authentication on a cold start, and
+     * {@see Opening} is where the order that requirement cares about is
+     * decided — locked is asked before anything reads retained state or touches
+     * a network. This screen only renders the answer.
+     *
+     * **Held rather than asked per accessor**, because asking twice would
+     * prompt twice: the platform's unlock is a system dialog, and a frame that
+     * drew it once per field would put four of them in front of somebody. It is
+     * asked when the frame is built, which is the same shape
+     * {@see HowThisStackIs} uses for its one read of a stack.
+     */
+    public function isLocked(): bool
+    {
+        return $this->howItOpened()->isLocked;
+    }
+
+    /**
+     * Ask the device again, because the operator said they were ready.
+     *
+     * Forgetting what was held rather than re-asking and comparing, which is
+     * {@see HowThisStackIs::again()}'s shape: the next read rebuilds it, so
+     * there is one path to an answer and it is the one every frame takes.
+     *
+     * There is a button for this rather than an automatic retry because `N4-R4`
+     * refuses to ask again for something that was declined: an operator who
+     * dismissed the prompt meant it, and a screen that immediately asked again
+     * is the behaviour that teaches people to turn a feature off.
+     */
+    public function tryToUnlock(): void
+    {
+        $this->launched = null;
+    }
 
     /**
      * Whether this device has been introduced to anything.
@@ -106,6 +177,212 @@ final class YourStacks extends NativeComponent
     }
 
     /**
+     * Whether this device is already signed into that stack.
+     *
+     * Asked per stack rather than once, because `N1-R11` keeps each one's
+     * session separate: an operator signed into the loft and not the shed needs
+     * to see exactly that, and a single answer for the list would be wrong for
+     * whichever stack it was not about.
+     *
+     * Read on every frame rather than held. A screen returned to after signing
+     * in would otherwise still be showing what it knew when it was built, which
+     * is the same argument {@see nothingIsPairedYet()} makes and the same rule
+     * — `N1-R38` keeps what the *operator* did on a screen, and what this
+     * device holds for a stack is not that.
+     *
+     * **The session itself does not come out of here.** `Resumed::either()` is
+     * answered with a boolean and the session is dropped, so the one thing this
+     * screen learns is whether to say *signed in* or *sign in*. `N1-R15` will
+     * not let a session reach a screen, and the shortest way to keep that true
+     * is for the screen never to hold one.
+     */
+    public function isSignedInto(Stack $stack): bool
+    {
+        return $this->storage->resume($stack->id())->either(
+            held: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIs(),
+            notHeld: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIsNot(),
+        )->held;
+    }
+
+    /**
+     * What this stack last came to, with when it was read.
+     *
+     * `N2-R1` — the app opens on the overall verdict. The ordering `N2` calls
+     * its whole design is *is anything wrong*, then *what*, then *may I fix it
+     * from here*, and until this existed the first screen answered none of
+     * them: a list of machines and the names their owner gave them, with the
+     * verdict two taps and a network round trip away behind whichever stack
+     * they guessed at first.
+     *
+     * **Held, never asked.** This screen opens the app and opening the app is
+     * not a reason to talk to four machines — `N1-R17` says a screen is not a
+     * poller and `F4` says a frame is not where a socket is opened. So the word
+     * comes out of the store, which makes every one of them a retained reading
+     * and is exactly why `N1-R24` permits it: it may open a screen, and it
+     * carries when it was read.
+     *
+     * The age cannot be dropped on the way here. `Reading::either()` hands the
+     * verdict and the moment to the same arm, so a row showing a word without
+     * an age would have to have been given the age and thrown it away.
+     */
+    public function lastKnownOf(Stack $stack): HowAStackLastWas
+    {
+        // Read once here rather than inside the fold, so every row on one frame
+        // is aged against the same moment. Two rows a second apart in wall time
+        // would otherwise be aged against two different *nows*, which is a
+        // difference nobody can see and a test cannot pin.
+        $now = $this->clock->now();
+
+        return $this->verdicts->lastKnownOf($stack->id())->either(
+            waiting: static fn(): HowAStackLastWas => HowAStackLastWas::notYetKnown(),
+            holding: static fn(Reading $reading): HowAStackLastWas => $reading->either(
+                // A live reading cannot arrive here: everything this port
+                // answers came out of a store. Answered rather than refused
+                // because the arm is the type's, not this screen's — and the
+                // honest answer for a word read just now is the word with no
+                // age, which is what `notYetKnown` renders as no verdict.
+                live: static fn(): HowAStackLastWas => HowAStackLastWas::notYetKnown(),
+                retained: static fn(object $overall, Instant $at): HowAStackLastWas
+                    => $overall instanceof Overall
+                        ? HowAStackLastWas::read($overall, $at, $now)
+                        : HowAStackLastWas::notYetKnown(),
+            ),
+        );
+    }
+
+    /**
+     * Where tapping a stack goes.
+     *
+     * Built here rather than in the template so the URI has one spelling — the
+     * template renders it, this decides it, and the route declaration in the
+     * module's provider is the only other place it is written.
+     *
+     * {@see StackId::stored()} rather than the name, which is `N1-R11` in the
+     * address bar such as it is: a name is what the operator chose and two
+     * machines may share one, while the identifier is what this device minted
+     * and they cannot. It is not a secret and it is not shown — a URI is how
+     * the navigation stack addresses a screen, not something on the glass.
+     */
+    public function signInAt(Stack $stack): string
+    {
+        return sprintf('/stacks/%s/sign-in', $stack->id()->stored());
+    }
+
+    /**
+     * Where tapping a stack actually goes.
+     *
+     * Straight to the report where this device still holds a session, and to
+     * the sign-in screen where it does not. That is the whole of what the list
+     * is *for*: an operator who is signed in wants to see their machine, not to
+     * be asked for a password they already gave.
+     *
+     * Decided here rather than in the template, so the two URIs have one
+     * spelling each and the branch is somewhere a test can drive it.
+     */
+    public function tappingGoesTo(Stack $stack): string
+    {
+        return $this->isSignedInto($stack)
+            ? sprintf('/stacks/%s', $stack->id()->stored())
+            : $this->signInAt($stack);
+    }
+
+    /**
+     * What stood between this launch and the machine it is paired with.
+     *
+     * Empty where nothing did, which is every launch that is locked, unpaired
+     * or ready — the three of the four that are not an obstacle. The template
+     * reads it the way {@see HowThisStackIs::met()} is read, because it is the
+     * same question one screen earlier and an operator should not have to learn
+     * two shapes for *what is wrong* in one application.
+     *
+     * `N1-R37` is only half satisfied by producing the answer. A launch that
+     * decided *no network* and then drew the machine names and a stale verdict
+     * would leave somebody tapping a stack their phone cannot reach, and the
+     * distinction the type refuses to collapse would be discarded by the one
+     * surface that was supposed to show it.
+     */
+    public function whatStoppedIt(): string
+    {
+        return $this->howItOpened()->met;
+    }
+
+    /**
+     * What to do about it, beside {@see whatStoppedIt()}.
+     *
+     * Its own sentence rather than part of the one above, because `N1-R10`
+     * asks for both: what happened is a fact about the world, and what to do
+     * about it is advice. For a launch the advice is the whole value — the fact
+     * is that a phone has no signal, which its owner can usually see.
+     */
+    public function remedyFor(): string
+    {
+        return $this->howItOpened()->remedy;
+    }
+
+    /** What became of the last attempt to hand a report over. */
+    public function sharingWent(): string
+    {
+        return $this->sharingWent;
+    }
+
+    /** What to do about it. */
+    public function sharingRemedy(): string
+    {
+        return $this->sharingRemedy;
+    }
+
+    /**
+     * Assemble what can be said about this app, and hand it to the operator.
+     *
+     * `N4-R13`: a diagnostic report is assembled for the operator to send, and
+     * the app does not send it. {@see Diagnostics} holds nothing that could
+     * transmit and {@see Sharing} takes nowhere to transmit to, so *send it
+     * somewhere* has no spelling on either side of this call.
+     *
+     * On this screen because it is the one an operator reaches from anywhere
+     * and the one that works when nothing else does — a stack that cannot be
+     * reached is exactly when somebody needs to ask for help, and a control
+     * behind a reachable stack would be missing precisely then.
+     *
+     * The identifiers rather than the stacks, which is
+     * {@see Diagnostics::assemble()}'s signature refusing rather than this
+     * screen remembering: a `Stack` carries an address, and where on somebody's
+     * network a machine lives is not something a support thread needs.
+     */
+    public function share(): void
+    {
+        // Collected by hand rather than with `iterator_to_array`, for the
+        // reason `WorstFirst` writes out: `Configured` always holds a list, so
+        // its `preserve_keys` argument cannot be wrong here and either value
+        // produces the same array. An argument that cannot change the answer is
+        // a line no test can defend.
+        $ids = [];
+
+        foreach ($this->configured() as $stack) {
+            $ids[] = $stack->id();
+        }
+
+        $handed = $this->sharing->hand(
+            Diagnostics::assemble(Shape::current(), WireVersion::newest(), ...$ids),
+        );
+
+        $handed->either(
+            over: function (): WhatTheSharingDid {
+                $this->sharingWent = '';
+                $this->sharingRemedy = '';
+
+                return new WhatTheSharingDid();
+            },
+            refused: function (WhyNothingWasShared $why): WhatTheSharingDid {
+                $this->sharingWent = $why->saidOnTheScreen();
+                $this->sharingRemedy = $why->remedy();
+
+                return new WhatTheSharingDid();
+            },
+        );
+    }
+
+    /**
      * The frame, by name.
      *
      * A `View` rather than an `Element`: the base class accepts either, and a
@@ -117,5 +394,30 @@ final class YourStacks extends NativeComponent
     public function render(): View
     {
         return view('operator::your-stacks');
+    }
+
+    /**
+     * The launch, folded once into the shape a template can read.
+     *
+     * Held rather than asked per accessor, because asking twice would prompt
+     * twice: the platform's unlock is a system dialog, and a frame that drew it
+     * once per field would put several in front of somebody.
+     *
+     * Every arm is named even though each reader takes one field. That is
+     * `Launch`'s design working rather than four arms saying one thing: an
+     * optional arm would be a default, and a default is where two of the four
+     * quietly become the same answer — which is what `N1-R37` refuses. Saying
+     * it four times is the cost of never being able to forget one.
+     */
+    private function howItOpened(): WhatTheLaunchWas
+    {
+        $this->launched ??= $this->opening->found();
+
+        return $this->launched->either(
+            locked: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::locked(),
+            unpaired: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::unpaired(),
+            blocked: static fn(Obstacle $why): WhatTheLaunchWas => WhatTheLaunchWas::blockedBy($why),
+            ready: static fn(StackId $stack): WhatTheLaunchWas => WhatTheLaunchWas::readyFor($stack),
+        );
     }
 }

@@ -5,10 +5,12 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\Screens\PairByScanning;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACameraInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\SequencedEntropy;
@@ -108,7 +110,7 @@ it('says nothing about the camera before anybody has opened it', function (): vo
 
     expect($screen->nothingWasScanned())->toBeFalse()
         ->and($screen->whyNothingCameBack())->toBe('')
-        ->and($screen->settingsWouldHelp())->toBeFalse();
+        ->and($screen->remedyForTheCamera())->toBe('');
 });
 
 it('pairs the stack from what the camera read, with nothing to confirm', function (): void {
@@ -126,19 +128,27 @@ it('N4-R3 — a refused camera is told apart from one somebody closed', function
     // Three reasons, three things to do about them, and this is the screen that
     // has to say which. "Open Settings" is advice that wastes an operator's
     // time on two of the three.
-    $refused = named(scanningScreen(ACameraInMemory::answering(WhyNothingWasScanned::TheCameraIsNotPermitted)));
-    $closed = named(scanningScreen(ACameraInMemory::answering(WhyNothingWasScanned::TheOperatorClosedIt)));
-    $none = named(scanningScreen(ACameraInMemory::answering(WhyNothingWasScanned::ThereIsNoCamera)));
+    //
+    // Asserted as three distinct remedies rather than as a boolean, which is
+    // the stronger claim and the one that was wrong: a `settingsWouldHelp()`
+    // flag chose between "open Settings" and one generic alternative, so a
+    // closed scanner and a phone with no camera were answered with the same
+    // sentence — written for neither. Each reason now carries its own.
+    $said = [];
 
-    $refused->scan();
-    $closed->scan();
-    $none->scan();
+    foreach (WhyNothingWasScanned::cases() as $why) {
+        $screen = named(scanningScreen(ACameraInMemory::answering($why)));
+        $screen->scan();
 
-    expect($refused->settingsWouldHelp())->toBeTrue()
-        ->and($closed->settingsWouldHelp())->toBeFalse()
-        ->and($none->settingsWouldHelp())->toBeFalse()
-        ->and($refused->nothingWasScanned())->toBeTrue()
-        ->and($refused->went())->toBe(HowThePairingWent::NotYet);
+        expect($screen->nothingWasScanned())->toBeTrue($why->value)
+            ->and($screen->went())->toBe(HowThePairingWent::NotYet, $why->value)
+            ->and(__($screen->remedyForTheCamera()))
+            ->not->toBe($screen->remedyForTheCamera(), $why->value);
+
+        $said[] = $screen->remedyForTheCamera();
+    }
+
+    expect($said)->toHaveCount(count(array_unique($said)));
 });
 
 it('says something about every way the camera can come back empty, and it is a real sentence', function (): void {
@@ -241,4 +251,36 @@ it('says the pairing did not happen where the stack could not be written down', 
 it('renders the frame its template names', function (): void {
     expect(scanningScreen(ACameraInMemory::reading(scannedCode()))->render()->name())
         ->toBe('operator::pair-by-scanning');
+});
+
+it('says what this screen is for until there is an outcome, then what happened', function (): void {
+    // The same pair as the typed road, and deliberately not the same opening
+    // sentence: this screen points a camera and its sibling takes dictation, so
+    // an outcome cannot answer for both. Everything after the confirmation is
+    // shared, derived from the outcome's own case.
+    $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
+
+    expect($screen->headline())->toBe(HowItWasRead::Scanned->askedFor())
+        ->and($screen->supporting())->toBe(HowItWasRead::Scanned->howToStart())
+        ->and($screen->headline())->not->toBe(HowItWasRead::Typed->askedFor());
+
+    $screen->scan();
+
+    expect($screen->headline())->toBe('connection.paired')
+        ->and($screen->supporting())->toBe('connection.paired_action');
+});
+
+it('N1-R2 — a paired stack leads to signing into it, rather than to a sentence about where it is', function (): void {
+    // The same onward step as the typed road, and for the same reason: pairing
+    // introduces a machine and leaves this device holding no session for it.
+    $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
+
+    $screen->scan();
+
+    expect($screen->went())->toBe(HowThePairingWent::Paired)
+        ->and($screen->onwardsTo())->toStartWith('/stacks/')
+        ->and($screen->onwardsTo())->toEndWith('/sign-in')
+        ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull(
+            'Pairing leads to a URI the navigation stack does not know.',
+        );
 });

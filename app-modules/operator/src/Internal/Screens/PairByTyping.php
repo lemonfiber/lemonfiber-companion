@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
+use function sprintf;
 use function trim;
 use function view;
 
@@ -86,6 +87,17 @@ final class PairByTyping extends NativeComponent
 
     /** What became of the pairing, once they have confirmed one. */
     protected HowThePairingWent $went = HowThePairingWent::NotYet;
+
+    /**
+     * Which stack was paired, so the screen can lead to it.
+     *
+     * Written at the moment the stack is made rather than read back from the
+     * store afterwards, which would be asking *which one did I just add* of a
+     * list that does not say. `protected` for `NativeComponent`'s property
+     * syncing, and the identifier rather than the {@see Stack} because a screen
+     * that held a stack would be holding an address (`N1-R15`).
+     */
+    protected string $paired = '';
 
     public function __construct(
         private readonly Introducing $introducing,
@@ -213,6 +225,43 @@ final class PairByTyping extends NativeComponent
         );
     }
 
+    /**
+     * The headline: what this screen is for, or what became of the pairing.
+     *
+     * The two keys spelled here are this screen's own, and they are the only
+     * two it spells. Everything after the operator has confirmed something is
+     * {@see HowThePairingWent}'s to name, derived from the case — so a fourth
+     * outcome needs no edit here and no branch in the template.
+     *
+     * **The waiting pair cannot come off the outcome.** What a screen says
+     * before anything has happened is what that screen is *for*, and the two
+     * pairing roads are for different things: this one and its sibling share
+     * every outcome and share neither opening line.
+     */
+    public function headline(): string
+    {
+        return $this->went->isNotYet() ? HowItWasRead::Typed->askedFor() : $this->went->said();
+    }
+
+    /** The line under it: how to get started, or what to do about what happened. */
+    public function supporting(): string
+    {
+        return $this->went->isNotYet() ? HowItWasRead::Typed->howToStart() : $this->went->remedy();
+    }
+
+    /**
+     * Where an operator who has just paired a stack goes next.
+     *
+     * The sign-in screen for the stack they paired, because pairing is not
+     * signing in: they have introduced the machine and hold no session for it.
+     * Until this existed the screen said *"you can reach it from the main
+     * screen"* and left them to go and do it.
+     */
+    public function onwardsTo(): string
+    {
+        return sprintf('/stacks/%s/sign-in', $this->paired);
+    }
+
     /** The frame, by name. */
     public function render(): View
     {
@@ -237,6 +286,7 @@ final class PairByTyping extends NativeComponent
     private function remembered(Pairing $said, FingerprintWasConfirmed $by): HowThePairingWent
     {
         $stack = $this->introducing->confirmed($said, StackName::of($this->called), $by);
+        $this->paired = $stack->id()->stored();
 
         return $this->stacks->remember($stack)->either(
             remembered: static fn(): HowThePairingWent => HowThePairingWent::Paired,

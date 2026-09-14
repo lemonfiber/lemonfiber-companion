@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\Waiting;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 use Tests\Support\Tree;
@@ -44,6 +45,26 @@ function theGeneratedDoctorEnvelope(): string
 {
     $said = file_get_contents(
         Tree::at('vendor/lemonfiber/sdk-php/src/Generated/DoctorEnvelope.php'),
+    );
+
+    return is_string($said) ? $said : '';
+}
+
+/**
+ * The generated envelope that carries the household, as text.
+ *
+ * A second file rather than a search across `src/Generated`, and deliberately.
+ * `state` is declared in both this envelope and the doctor one, with different
+ * unions — a problem's standing and a request's — so a reader that swept every
+ * generated file would find two occurrences that disagree and answer nothing,
+ * which is `unionIn`'s honest refusal applied to a question that is not really
+ * ambiguous. The ambiguity is in the wire's choice of name, not in the contract,
+ * and naming the envelope is how this side says which `state` it means.
+ */
+function theGeneratedHouseholdEnvelope(): string
+{
+    $said = file_get_contents(
+        Tree::at('vendor/lemonfiber/sdk-php/src/Generated/HouseholdEnvelope.php'),
     );
 
     return is_string($said) ? $said : '';
@@ -189,6 +210,18 @@ it('N1-R13 — a field declared twice with different unions is refused', functio
     expect(unionIn($agreeing, 'category'))->toBe(['network', 'storage']);
 });
 
+it('N1-R13 — every request standing the contract describes has a case', function (): void {
+    // The contract calls this `state` too, in a different envelope and with a
+    // different union — a problem's standing and a request's. Read from the
+    // household envelope by name rather than by sweeping the generated files,
+    // because a sweep would find two occurrences that disagree and honestly
+    // answer nothing about either.
+    $union = unionIn(theGeneratedHouseholdEnvelope(), 'state');
+
+    expect($union)->not->toBe([], 'no request state union was found in the generated envelope');
+    expect(valuesOf(Waiting::cases()))->toBe($union);
+});
+
 it('N1-R13 — the verdict outcomes are collected across arms', function (): void {
     // `outcome` is read as single literals rather than as a union, because the
     // verdict is a union of object shapes and each arm fixes it to one value of
@@ -261,6 +294,11 @@ const CHECKED_AGAINST_THE_WIRE = [
     Overall::class => 'overall',
     Severity::class => 'severity',
     Standing::class => 'state',
+
+    // `state` twice, and that is the wire's name rather than a mistake here:
+    // a problem's standing and a household request's are different unions in
+    // different envelopes. Each has a rule above naming which envelope it reads.
+    Waiting::class => 'state',
 ];
 
 /**

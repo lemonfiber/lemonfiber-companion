@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Tests\Api;
 
+use function array_map;
 use function array_unique;
 use function count;
 use function expect;
@@ -29,14 +30,22 @@ it('tells a mistyped code apart from one that expired', function (): void {
     // perfectly, so sending its operator to check the characters sends them
     // looking for a mistake that is not there.
     expect(WhereTheCodeGot::Unreadable->saidUnderTheField())
-        ->toBe('connection.typed_code_is_unreadable_action')
-        ->and(WhereTheCodeGot::Expired->saidUnderTheField())
-        ->toBe('connection.pairing_expired_action');
+        ->not->toBe(WhereTheCodeGot::Expired->saidUnderTheField());
 });
 
 it('has something to say about a field nobody has typed in', function (): void {
     // A field with nothing under it is how an operator learns the app has
     // nothing to tell them, which is the state they are in longest.
-    expect(WhereTheCodeGot::Waiting->saidUnderTheField())->toBe('connection.type_the_code_hint')
-        ->and(WhereTheCodeGot::Comparing->saidUnderTheField())->toBe('connection.code_reads_as_a_stack');
+    //
+    // Every state, and every one different: the key is built from the case, so
+    // what this asserts is that four states are four sentences rather than
+    // restating the four stems a second time. `EveryDerivedKeyResolvesTest`
+    // holds that each of them is a line the catalogue actually has.
+    $said = array_map(
+        static fn(WhereTheCodeGot $got): string => $got->saidUnderTheField(),
+        WhereTheCodeGot::cases(),
+    );
+
+    expect($said)->toHaveCount(count(array_unique($said)))
+        ->and($said)->not->toContain('');
 });

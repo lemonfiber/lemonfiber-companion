@@ -200,6 +200,17 @@ $clock = new FrozenClock(Instant::parse('2026-09-11T12:00:00Z'));
 | C7 | No `empty()` | phpstan: own rule |
 | C8 | No `?->` in `kernel` or a capability | phpstan: own rule, scoped by path |
 | C9 | No nested ternary, and no `??` on an array subscript | phpstan: own rule |
+| C10 | No argument that cannot change the answer | arch: no `preserve_keys` on `iterator_to_array` in a source tree |
+
+**Why C10 exists at all.** `iterator_to_array($findings, preserve_keys: false)`
+is correct, and over a collection of ours it is also unobservable: every one of
+them holds a list, so both values of the argument produce the same array. It is
+written to satisfy PHPStan, which wants a `list` and gets `array<int, T>` from
+the default — so it is a line that exists for one checker and is invisible to
+every other. Mutation testing is what finds it, and did: `FalseToTrue` survived
+at two sites on the same afternoon, neither of them a bug and both of them a
+line that could have become one. `WorstFirst::over()` collects by hand and says
+why; this is that decision stopping being a convention.
 
 **Why C7 is absolute.** `empty()` is true for `null`, `false`, `0`, `'0'`, `''`
 and `[]`, and this application turns on exactly the distinctions it erases. A
@@ -289,6 +300,47 @@ automatic and the operator never sees the question.
 | F6 | Every list has an empty state | `tests/Templates` |
 | F7 | No template reads a value that has one destination — a session, a credential, a stack address | `tests/Templates`, from the same table F2's surface rule counts against |
 | F4 | A screen that takes a port carries `#[Lazy]`; one whose content changes while open carries `#[Poll]` | arch for the first; review for the second |
+| F8 | A screen shows findings in the order a capability decided, never the order they arrived | arch: a screen that names findings names `WorstFirst` |
+| F9 | A class list is written out, never decided at runtime | arch: over the text of every template |
+
+**Why F9 exists, given F3.** Every rule about a class list is handed the answer
+of one function, `Template::classStrings()`, and that function drops any token
+holding a runtime expression rather than guessing at it. It has to: with the
+echo deleted, `bg-{{ $tone }}` is `bg-`, an unknown utility nobody wrote. But
+what gets dropped from `class="{{ $open ? 'bg-theme-accent' : '' }}"` is the
+whole attribute, and the class names inside it are then read by nothing at all.
+
+Three rules go quiet together, because all three read that one answer. F3 stops
+seeing an unknown utility, DES-R24 stops seeing a literal colour, and DES-R15
+stops seeing the accent set as text. A template whose ternaries hold
+`bg-theme-accnt`, `bg-red-500` and `text-theme-accent` passes every rule in
+`tests/Templates` — and EDGE agrees, because it parses each of those in turn,
+finds it means nothing and drops it. No error, no warning, no failed build: the
+screen renders wrong on a device and says nothing about why. That is the exact
+failure the vocabulary check exists to catch, so a hole in it is a rule rather
+than a note.
+
+The cure is to draw a state that changes rather than to colour it.
+`how-this-stack-is.blade.php` puts the selected bar in an element of its own
+under an `@if`, with a static class every check can read. The two forms that
+never reach `classStrings()` at all are refused alongside — a bound `:class`,
+whose value is PHP rather than a class list, and `@class([...])`, which is not
+an attribute for the expression to match — because a class name hidden in either
+is hidden the same way and costs the same thing.
+
+**Why F8 is a rule rather than a note on the screen.** `WorstFirst` is the one
+decision `health` makes about a report, and for two commits nothing called it. A
+query nothing calls passes its own test forever — so the sorter was green, the
+first findings screen rendered the envelope, and `N2-R2` was held by a test
+rather than by anything an operator could see. What that produces is a list that
+looks ordered: the rows are right, the words are right, and on any report whose
+worst finding happened to run first the order is right as well. There is no
+wrong pixel, no exception and no log line; the next report is simply in the
+wrong order on somebody's phone, with a full disk above a leaking tunnel. So the
+gate is on the screen rather than on the query — a screen under `Internal/Screens`
+that names findings at all names `WorstFirst` too. Read over the text, because
+what has to be caught is a screen that names it nowhere, and an absence has no
+call site to follow to.
 
 EDGE styling is **Tailwind-shaped and is not Tailwind**. There is no CSS build,
 no JIT and no stylesheet to come up short. An unrecognised class is parsed,
@@ -334,7 +386,7 @@ ever sees.
 |---|---|---|
 | L1 | Text a person reads comes from the translator | phpstan: own rule, scoped to presenters, view models and screens |
 | L2 | Every locale carries the same keys, none empty and none equal to its key | test |
-| L7 | Every catalogue key the application names is a key the catalogue holds | test |
+| L7 | Every catalogue key the application names is a key the catalogue holds — the literal ones read out of the sources, the derived ones asked of each enum that builds them — and every line the catalogue holds is one something shows | test: three, one per direction plus one for derived keys |
 
 **The line between the two kinds of text.** A refusal on screen, an empty state,
 a notification body — a person reads these, so they are keys in

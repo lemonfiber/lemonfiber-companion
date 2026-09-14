@@ -7,6 +7,7 @@ namespace Tests\Support\Fakes;
 use function array_key_exists;
 
 use Modules\Kernel\Api\Kept;
+use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
@@ -68,6 +69,22 @@ final class AKeychainInMemory implements SecureStorage
         unset($this->kept[$stack->stored()]);
 
         return Kept::safely();
+    }
+
+    public function resume(StackId $stack): Resumed
+    {
+        // A refusing store answers `notHeld()` rather than what it is holding,
+        // which matches the adapter: a keychain that will not open is a
+        // keychain with no session in it as far as resuming goes. A fake that
+        // handed the session back anyway would make a launch against a locked
+        // store pass here and fail on a phone.
+        if ($this->refusing instanceof WhySessionCannotBeKept) {
+            return Resumed::notHeld();
+        }
+
+        $held = $this->kept[$stack->stored()] ?? null;
+
+        return $held instanceof Session ? Resumed::with($held) : Resumed::notHeld();
     }
 
     /** Whether this store is holding a session for that stack — for a test to ask. */

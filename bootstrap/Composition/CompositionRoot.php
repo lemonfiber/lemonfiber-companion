@@ -11,27 +11,37 @@ use Bootstrap\Composition\NativePHP\TheTheme;
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Screen;
 use Modules\Device\Api\PlatformAuth;
+use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Api\PlatformScanner;
 use Modules\Device\Api\PlatformScreen;
+use Modules\Device\Api\PlatformShare;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
+use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Verdicts;
+use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\Questions;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
+use Modules\Vault\Api\PlatformVerdicts;
+use Native\Mobile\Network as PlatformNetworkFacade;
 use Native\Mobile\Scanner;
 use Native\Mobile\SecureStorage as PlatformStore;
-
 /**
  * The composition root.
  *
@@ -47,6 +57,8 @@ use Native\Mobile\SecureStorage as PlatformStore;
  * is what makes a capability module testable without a device, a network or a
  * stack to talk to.
  */
+use Native\Mobile\Share;
+
 final class CompositionRoot extends ServiceProvider
 {
     public function register(): void
@@ -90,6 +102,40 @@ final class CompositionRoot extends ServiceProvider
         // its transport. This line is where those two facts meet the container.
         $this->app->bind(Reaching::class, static fn(): Reaching => new PinnedClients());
 
+        // The one place a credential is offered to a stack, bound beside the
+        // client for the same reason: `modules/sdk` is the only manifest that
+        // requires the SDK, so the two adapters that name its doors are the two
+        // lines here that come from it.
+        //
+        // Bound rather than a singleton, and this one matters more than the
+        // client's. A door is opened for one stack with one credential; an
+        // instance held across two would be an object that has already been
+        // handed a password, which is the shape `N1-R7`'s second clause exists
+        // to prevent. It holds no state today — the binding is what keeps that
+        // true of whatever it grows into.
+        $this->app->bind(Admitting::class, static fn(): Admitting => new Admissions());
+
+        // Asking a stack how it is, which is what a session is opened for.
+        //
+        // Bound rather than a singleton, and taking the client factory rather
+        // than the `Reaching` port it implements: the port answers `object` so
+        // that the kernel never names the SDK's client, which is what the port
+        // is for — and a caller needing to call a method on one would have to
+        // narrow, which is a branch nothing can reach. Both classes live in
+        // `modules/sdk`, so no boundary is crossed by using the real type.
+        $this->app->bind(Asking::class, static fn(): Asking => new Questions(new PinnedClients()));
+
+        // Handing a diagnostic report to the operator, which is the only way
+        // one leaves this device. `N4-R13` says the app assembles and does not
+        // transmit, and both halves are structural: `Diagnostics` holds nothing
+        // that could send, and `Sharing` takes nowhere to send to.
+        //
+        // Not a singleton, for `SecureStorage`'s reason: the share sheet is a
+        // handle to something outside this process, and one held for the life
+        // of a long-running app (`I1`) is a handle to a platform state that has
+        // since moved on.
+        $this->app->bind(Sharing::class, static fn(): Sharing => PlatformShare::onTheDevice(new Share()));
+
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,
         // because the two have opposite obligations: a session is what this app
@@ -100,6 +146,28 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             Stacks::class,
             static fn(): Stacks => new PlatformStacks(new PlatformStore()),
+        );
+
+        // The last word each stack came to, in the same store and bound the
+        // same way. A third port rather than a method on either of the two
+        // above, because what it holds has obligations neither of theirs does:
+        // it is the only retained value this app *shows*, so `N1-R9` applies to
+        // it and to nothing else here — which is why it answers `Showing` and
+        // they answer collections. Folding it into `Stacks` would put a value
+        // that must carry its age behind a port whose other answers must not.
+        $this->app->bind(
+            Verdicts::class,
+            static fn(): Verdicts => new PlatformVerdicts(new PlatformStore()),
+        );
+
+        // Whether this device is on a network at all, which is the one question
+        // about reaching a stack that can be answered without sending anything.
+        // Bound rather than a singleton for the reason the store above is: the
+        // facade is a handle to something outside this process, and a phone
+        // changes network while the app is open.
+        $this->app->bind(
+            Networking::class,
+            static fn(): Networking => new PlatformNetwork(new PlatformNetworkFacade()),
         );
 
         // Bound, not a singleton, for the same reason the store above is not:

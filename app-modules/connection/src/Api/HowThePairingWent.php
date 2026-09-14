@@ -6,6 +6,8 @@ namespace Modules\Connection\Api;
 
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 
+use function sprintf;
+
 /**
  * What became of a pairing the operator confirmed.
  *
@@ -40,7 +42,7 @@ enum HowThePairingWent: string
     case NoStoreOnThisDevice = 'no_store_on_this_device';
 
     /** There is a store and it would not open, which is often temporary. */
-    case TheStoreWouldNotOpen = 'the_store_would_not_open';
+    case TheStoreWouldNotOpen = 'store_would_not_open';
 
     /** Whether the stack is paired and written down. */
     public function isPaired(): bool
@@ -48,16 +50,43 @@ enum HowThePairingWent: string
         return $this === self::Paired;
     }
 
-    /** Whether this device offers nowhere for a stack to be written down. */
-    public function hasNowhereToWriteItDown(): bool
+    /** Whether the operator has confirmed anything yet. */
+    public function isNotYet(): bool
     {
-        return $this === self::NoStoreOnThisDevice;
+        return $this === self::NotYet;
     }
 
-    /** Whether there is a store and it would not open, which often passes. */
-    public function couldNotOpenTheStore(): bool
+    /**
+     * The key for the sentence naming what became of the pairing.
+     *
+     * **Built from the case rather than listed against it**, which is
+     * {@see \Modules\Kernel\Api\Permission::reason()}'s shape and
+     * {@see HowTheSignInWent}'s: a `match` naming a key per case spells every
+     * stem twice — once as the case's value and once as the string beside it —
+     * and two spellings of one name drift.
+     *
+     * **{@see self::NotYet} has no key here and must not be asked.** What a
+     * screen says before anything has happened is what *that screen is for*,
+     * and the two pairing roads are for different things — one points a camera,
+     * the other takes dictation. An outcome cannot answer for them, so each
+     * screen answers for itself and asks this only once there is an outcome.
+     * `EveryDerivedKeyResolvesTest` holds the pairs that do exist.
+     */
+    public function said(): string
     {
-        return $this === self::TheStoreWouldNotOpen;
+        return sprintf('connection.%s', $this->value);
+    }
+
+    /**
+     * The key for what to do about it.
+     *
+     * Separate from {@see said()} because `N1-R10` asks for both and they are
+     * not the same sentence: what happened is a fact, and what to do about it
+     * is advice. `_action` is the suffix every remedy in this catalogue carries.
+     */
+    public function remedy(): string
+    {
+        return sprintf('connection.%s_action', $this->value);
     }
 
     /** What a surface shows for each reason the stack could not be written down. */

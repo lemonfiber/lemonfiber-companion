@@ -16,7 +16,13 @@ return [
     'camera_reason' => 'The camera is used once, to read the pairing code on your stack.',
     'camera_alternative' => 'You can type the pairing code instead.',
     'notifications_reason' => 'Notifications tell you when a stack needs attention.',
+    'unlock' => 'Unlock',
     'unlock_reason' => 'Unlock lemonfiber to see your stacks.',
     'notifications_alternative' => 'Without them, open lemonfiber to see what a notification would have said.',
     'permission_refused' => 'That permission was refused, and this screen still works without it.',
+    'nowhere_to_write_it' => 'This phone has no room to prepare the report.',
+    'nowhere_to_write_it_action' => 'Free up some space and try again.',
+    'the_device_would_not_offer' => 'This phone would not offer a way to send it.',
+    'the_device_would_not_offer_action' => 'The report is on the screen above; you can copy it by hand.',
+    'share_diagnostics' => 'Send a report to someone helping you',
 ];

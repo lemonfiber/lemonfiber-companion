@@ -10,6 +10,8 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\DoctorEnvelope;
+use Modules\Kernel\Api\AboutWhat;
+use Modules\Kernel\Api\Because;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
@@ -20,6 +22,8 @@ use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Sdk\Internal\Wire;
 
@@ -30,15 +34,17 @@ use Modules\Sdk\Internal\Wire;
  * this module, so this is where a diagnostic run stops being a shape the wire
  * describes and becomes one the screens do.
  *
- * **The verdict's payload is dropped, and that is the health module's decision
- * being carried out rather than restated.** On the wire a verdict is a tagged
- * union — `pass` may carry a note, `warn` and `fail` carry a whole problem,
- * `unverified` and `skipped` carry a reason. `Finding` takes the tag and
- * nothing else, because what a warning *said* is read differently on every
- * screen and there is no screen yet. A translation that quietly kept the
- * payload would fix that design before the thing it is for exists.
+ * **The verdict is a tagged union, and every arm's words are read.** `pass` may
+ * carry a note, `warn` and `fail` carry a whole problem, `unverified` and
+ * `skipped` carry a reason. This once took the tag and nothing else, on the
+ * argument that what a warning *said* is read differently on every screen and
+ * there was no screen yet. `HowThisStackIs` is that screen, and the argument
+ * expired with it: the words crossed the wire and stopped here, so an operator
+ * saw that a check failed and nothing about what or what to do.
  *
- * `caused_by`, `said` and `service` go the same way, for the same reason and
+ * The `pass` note is still dropped, and deliberately — `N2-R3` is about what a
+ * finding must carry when something is wrong, and a note on a passing check is
+ * the core being chatty. `caused_by`, `said` and `service` go the same way,
  * with the same note in `Finding`.
  *
  * **A row it cannot read fails the whole report.** Half a report is the shape
@@ -57,10 +63,10 @@ final readonly class Reports
         $data = self::payload(Wire::checked($envelope));
 
         if (! is_array($data)) {
-            throw ReportIsUnreadable::missing('data');
+            throw ReportIsUnreadable::missing(WireField::Data);
         }
 
-        return Report::of(self::overall(self::text($data, 'overall')), self::findings($data));
+        return Report::of(self::overall(self::text($data, WireField::Overall)), self::findings($data));
     }
 
     /**
@@ -82,13 +88,13 @@ final readonly class Reports
      *
      * @param array<mixed> $data
      */
-    private static function text(array $data, string $field): string
+    private static function text(array $data, WireField $field): string
     {
-        if (! array_key_exists($field, $data)) {
+        if (! array_key_exists($field->value, $data)) {
             throw ReportIsUnreadable::missing($field);
         }
 
-        $said = $data[$field];
+        $said = $data[$field->value];
 
         if (! is_string($said)) {
             throw ReportIsUnreadable::missing($field);
@@ -114,11 +120,11 @@ final readonly class Reports
      */
     private static function findings(array $data): Findings
     {
-        if (! array_key_exists('findings', $data)) {
-            throw ReportIsUnreadable::missing('findings');
+        if (! array_key_exists(WireField::Findings->value, $data)) {
+            throw ReportIsUnreadable::missing(WireField::Findings);
         }
 
-        $rows = $data['findings'];
+        $rows = $data[WireField::Findings->value];
 
         if (! is_array($rows)) {
             throw ReportIsUnreadable::finding(0);
@@ -142,13 +148,62 @@ final readonly class Reports
     /** @param array<mixed> $row */
     private static function finding(array $row): Finding
     {
-        return Finding::of(
-            Check::of(self::text($row, 'check')),
-            self::category(self::text($row, 'category')),
-            self::text($row, 'title'),
-            self::conclusion(self::verdict($row)),
-            self::said(self::verdict($row)),
+        $verdict = self::verdict($row);
+        $conclusion = self::conclusion($verdict);
+
+        $finding = Finding::of(
+            Check::of(self::text($row, WireField::Check)),
+            self::category(self::text($row, WireField::Category)),
+            self::text($row, WireField::Title),
+            $conclusion,
+            self::said($verdict, $conclusion),
         );
+
+        // Set after the row is complete, which is how the engine sets them:
+        // neither is the check's own business, and a finding that names neither
+        // is the ordinary case rather than an incomplete one.
+        return $finding
+            ->about(self::about($row))
+            ->because(self::because($row));
+    }
+
+    /**
+     * Which service the row says it is about, where it says.
+     *
+     * Absent for a check about the machine rather than about something running
+     * on it, which is why this reads as an arm and not as a refusal. Present
+     * and blank *is* refused — {@see AboutWhat::theService()} does that — since
+     * a row claiming a service and naming none has a fault worth seeing here.
+     *
+     * @param array<mixed> $row
+     */
+    private static function about(array $row): AboutWhat
+    {
+        if (! array_key_exists(WireField::Service->value, $row)) {
+            return AboutWhat::theMachine();
+        }
+
+        return AboutWhat::theService(self::text($row, WireField::Service));
+    }
+
+    /**
+     * Which other check the row says explains it, where it says.
+     *
+     * The identifier is taken as a {@see Check} without asking whether the
+     * report contains it. A report naming a check it does not hold is the
+     * engine's fault and belongs on a screen as the identifier, where an
+     * operator can quote it — refusing the whole report over it would turn one
+     * wrong attribution into nine findings nobody can see.
+     *
+     * @param array<mixed> $row
+     */
+    private static function because(array $row): Because
+    {
+        if (! array_key_exists(WireField::CausedBy->value, $row)) {
+            return Because::nothingElse();
+        }
+
+        return Because::theCheck(Check::of(self::text($row, WireField::CausedBy)));
     }
 
     private static function category(string $said): Category
@@ -175,19 +230,87 @@ final readonly class Reports
      * would be the same rule written twice, with the copy unreachable — which
      * is what `Pairing` learned when a sign check duplicated `Instant`'s.
      *
+     * Takes the conclusion too, rather than working out which arm this is from
+     * whether a `code` key happens to be present. It is a *tagged* union and
+     * `outcome` is the tag; sniffing for a field instead read `unverified` and
+     * `skipped` as passing checks, because neither carries a code either. The
+     * match is over the enum so that an outcome added later is a type error
+     * here rather than a row that quietly lands on the passing arm.
+     *
      * @param array<mixed> $verdict
      */
-    private static function said(array $verdict): WhatTheCheckSaid
+    private static function said(array $verdict, Conclusion $conclusion): WhatTheCheckSaid
     {
-        if (! array_key_exists('code', $verdict)) {
-            return WhatTheCheckSaid::nothingWrong();
+        return match ($conclusion) {
+            Conclusion::Passed => WhatTheCheckSaid::nothingWrong(),
+            Conclusion::Warned, Conclusion::Failed => WhatTheCheckSaid::wentWrong(
+                Code::of(self::text($verdict, WireField::Code)),
+                self::text($verdict, WireField::Meaning),
+                self::remedies($verdict),
+                self::severity(self::text($verdict, WireField::Severity)),
+                self::standing(self::text($verdict, WireField::State)),
+            ),
+            Conclusion::Unverified, Conclusion::Skipped => WhatTheCheckSaid::couldNotSay(
+                self::text($verdict, WireField::Reason),
+                self::remedy($verdict),
+            ),
+        };
+    }
+
+    /**
+     * The single remedy an `unverified` verdict offers, as a list of one.
+     *
+     * Singular on the wire and plural here, because a screen showing what to do
+     * about a row should not care which outcome produced the row. `skipped`
+     * carries none, which is the honest answer rather than an omission: a
+     * prerequisite that was absent is a fact about the machine, not something
+     * the core is asking anybody to go and fix.
+     *
+     * @param array<mixed> $verdict
+     */
+    private static function remedy(array $verdict): Remedies
+    {
+        if (! array_key_exists(WireField::Remedy->value, $verdict)) {
+            return Remedies::none();
         }
 
-        return WhatTheCheckSaid::wentWrong(
-            Code::of(self::text($verdict, 'code')),
-            self::text($verdict, 'meaning'),
-            self::remedies($verdict),
-        );
+        $offered = $verdict[WireField::Remedy->value];
+
+        if (! is_array($offered)) {
+            throw ReportIsUnreadable::missing(WireField::Remedy);
+        }
+
+        return Remedies::of(Remedy::of(self::text($offered, WireField::Action)));
+    }
+
+    /**
+     * How much a problem matters, as the engine judged it.
+     *
+     * Refused rather than defaulted where the word is not one this app knows:
+     * a verdict whose severity reads as advisory because it could not be parsed
+     * is a fault shown quietly, and quiet is the one thing a critical finding
+     * must not be. `D4`'s argument, and {@see self::category()} makes the same
+     * one about a check's family.
+     *
+     * @throws ReportIsUnreadable
+     */
+    private static function severity(string $said): Severity
+    {
+        return Severity::tryFrom($said) ?? throw ReportIsUnreadable::severity($said);
+    }
+
+    /**
+     * Where a problem stands with respect to being fixed.
+     *
+     * Refused the same way and for a sharper reason: the distinction between
+     * `Actionable` and `Guided` decides whether a screen offers a button, so a
+     * word this app cannot read must not become the arm that offers one.
+     *
+     * @throws ReportIsUnreadable
+     */
+    private static function standing(string $said): Standing
+    {
+        return Standing::tryFrom($said) ?? throw ReportIsUnreadable::standing($said);
     }
 
     /**
@@ -202,24 +325,24 @@ final readonly class Reports
      */
     private static function remedies(array $verdict): Remedies
     {
-        if (! array_key_exists('remedies', $verdict)) {
+        if (! array_key_exists(WireField::Remedies->value, $verdict)) {
             return Remedies::none();
         }
 
-        $offered = $verdict['remedies'];
+        $offered = $verdict[WireField::Remedies->value];
 
         if (! is_array($offered)) {
-            throw ReportIsUnreadable::missing('remedies');
+            throw ReportIsUnreadable::missing(WireField::Remedies);
         }
 
         $read = [];
 
         foreach ($offered as $one) {
             if (! is_array($one)) {
-                throw ReportIsUnreadable::missing('remedies');
+                throw ReportIsUnreadable::missing(WireField::Remedies);
             }
 
-            $read[] = Remedy::of(self::text($one, 'action'));
+            $read[] = Remedy::of(self::text($one, WireField::Action));
         }
 
         return Remedies::of(...$read);
@@ -243,14 +366,14 @@ final readonly class Reports
      */
     private static function verdict(array $row): array
     {
-        if (! array_key_exists('verdict', $row)) {
-            throw ReportIsUnreadable::missing('verdict');
+        if (! array_key_exists(WireField::Verdict->value, $row)) {
+            throw ReportIsUnreadable::missing(WireField::Verdict);
         }
 
-        $verdict = $row['verdict'];
+        $verdict = $row[WireField::Verdict->value];
 
         if (! is_array($verdict)) {
-            throw ReportIsUnreadable::missing('verdict');
+            throw ReportIsUnreadable::missing(WireField::Verdict);
         }
 
         return $verdict;
@@ -266,7 +389,7 @@ final readonly class Reports
      */
     private static function conclusion(array $verdict): Conclusion
     {
-        $said = self::text($verdict, 'outcome');
+        $said = self::text($verdict, WireField::Outcome);
 
         return Conclusion::tryFrom($said) ?? throw ReportIsUnreadable::outcome($said);
     }

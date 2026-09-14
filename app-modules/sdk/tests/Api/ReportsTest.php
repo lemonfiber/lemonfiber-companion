@@ -12,6 +12,8 @@ use function iterator_to_array;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\CheckGaveNoReason;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\EnvelopeIsNotRead;
@@ -19,6 +21,9 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\ServiceIsUnnamed;
+use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
 use Modules\Sdk\Api\ReportIsUnreadable;
 use Modules\Sdk\Api\Reports;
 
@@ -260,10 +265,64 @@ it('N2-R3 — reads the code, the meaning and the remedies off a failing verdict
                 $meaning,
                 $remedies->count(),
             )),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+            ),
         );
     }
 
     expect($said[0]->shown())->toBe('VPN-3|Your address was visible|1');
+});
+
+it('N2-R3 — reads how much it matters and where it stands, off the same verdict', function (): void {
+    // Both cross the wire beside the code, and both were dropped for as long as
+    // this app had nowhere to put them. Severity is taken as sent rather than
+    // worked out from the conclusion: a screen deciding for itself would be a
+    // second opinion about a judgement the engine already made, and the engine
+    // is the side that knows whether a failed check costs an afternoon or a
+    // library.
+    $report = Reports::in(doctorSaying(aRun('broken', [aFailure()])));
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(
+                Code $code,
+                string $meaning,
+                Remedies $remedies,
+                Severity $severity,
+                Standing $standing,
+            ): Code => Code::of(sprintf('%s|%s', $severity->value, $standing->value)),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+            ),
+        );
+    }
+
+    expect($said[0]->shown())->toBe('critical|guided');
+});
+
+it('N2-R3 — refuses a severity this app cannot read rather than calling it advisory', function (): void {
+    // The quiet arm is the wrong place to land. A critical finding whose word
+    // did not parse would be shown as informational, and quiet is the one thing
+    // it must not be — `D4`'s argument, and the same one the category makes.
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'urgent', 'state' => 'guided', 'meaning' => 'Visible'];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(ReportIsUnreadable::class, 'urgent');
+});
+
+it('N2-R3 — refuses a standing this app cannot read rather than offering a button', function (): void {
+    // Sharper than the severity case: the distinction between `actionable` and
+    // `guided` decides whether a screen offers to do something, so a word this
+    // app cannot read must not become the arm that offers one.
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'error', 'state' => 'pending', 'meaning' => 'Visible'];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(ReportIsUnreadable::class, 'pending');
 });
 
 it('N2-R3 — a check that passed carries none of it', function (): void {
@@ -279,10 +338,81 @@ it('N2-R3 — a check that passed carries none of it', function (): void {
                 $meaning,
                 $remedies->count(),
             )),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+            ),
         );
     }
 
     expect($said[0]->shown())->toBe('nothing-wrong');
+});
+
+it('N2-R3 — a check that could not run carries why, and what to do to get an answer', function (): void {
+    // This read as a passing check until the reader stopped sniffing for a
+    // `code` key. `unverified` carries neither a code nor a severity, so the
+    // presence test put it on the arm that means nothing is wrong — which is
+    // the one mistake `Conclusion` splits its cases to prevent, made in the
+    // reader instead of on the screen.
+    $verdict = [
+        'outcome' => 'unverified',
+        'reason' => 'The container engine did not answer, so egress could not be established',
+        'remedy' => ['action' => 'Start the container engine and check again'],
+    ];
+    $report = Reports::in(doctorSaying(aRun('broken', [aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict)])));
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(): Code => Code::of('went-wrong'),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('%s|%d', $reason, $remedies->count()),
+            ),
+        );
+    }
+
+    expect($said[0]->shown())
+        ->toBe('The container engine did not answer, so egress could not be established|1');
+});
+
+it('N2-R3 — a skipped check carries why, and nothing to do about it', function (): void {
+    // No remedy on the wire and none invented here. A prerequisite that was
+    // absent is a fact about the machine, not something the core is asking
+    // anybody to go and fix, and an empty list says so without a sentence.
+    $verdict = ['outcome' => 'skipped', 'reason' => 'No VPN is configured, so there was nothing to check'];
+    $report = Reports::in(doctorSaying(aRun('healthy', [aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict)])));
+    $said = [];
+
+    foreach ($report->findings() as $finding) {
+        $said[] = $finding->said()->either(
+            nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
+            wentWrong: static fn(): Code => Code::of('went-wrong'),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('%s|%d', $reason, $remedies->count()),
+            ),
+        );
+    }
+
+    expect($said[0]->shown())->toBe('No VPN is configured, so there was nothing to check|0');
+});
+
+it('N2-R3 — refuses a check that could not run and said nothing about why', function (): void {
+    // The same refusal a failure with no meaning gets, and for a sharper
+    // reason: the row already says there is no answer, so a blank sentence
+    // leaves an operator with a line that reads as a check that found nothing.
+    $verdict = ['outcome' => 'unverified', 'reason' => '   ', 'remedy' => ['action' => 'Try again']];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(CheckGaveNoReason::class);
+});
+
+it('N2-R3 — refuses a remedy on an unverified check that is not a remedy', function (): void {
+    $verdict = ['outcome' => 'unverified', 'reason' => 'The engine did not answer', 'remedy' => 'start it'];
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
+    ]))))->toThrow(ReportIsUnreadable::class, 'remedy');
 });
 
 it('N2-R3 — a failure the core offered nothing for carries no remedies', function (): void {
@@ -290,7 +420,7 @@ it('N2-R3 — a failure the core offered nothing for carries no remedies', funct
     // same way on purpose: both mean there is nothing to offer, and a screen
     // that told them apart would be showing the difference between the core
     // having no suggestion and the core saying so.
-    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Your address was visible'];
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'critical', 'state' => 'guided', 'meaning' => 'Your address was visible'];
     $report = Reports::in(doctorSaying(aRun('broken', [aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict)])));
     $counted = [];
 
@@ -300,6 +430,9 @@ it('N2-R3 — a failure the core offered nothing for carries no remedies', funct
             wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): Code => Code::of(
                 sprintf('%d', $remedies->count()),
             ),
+            couldNotSay: static fn(string $reason, Remedies $remedies): Code => Code::of(
+                sprintf('could-not-say|%s|%d', $reason, $remedies->count()),
+            ),
         );
     }
 
@@ -307,7 +440,7 @@ it('N2-R3 — a failure the core offered nothing for carries no remedies', funct
 });
 
 it('N2-R3 — refuses remedies that are not a list', function (): void {
-    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Visible', 'remedies' => 'restart it'];
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'error', 'state' => 'guided', 'meaning' => 'Visible', 'remedies' => 'restart it'];
 
     expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
         aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
@@ -318,9 +451,86 @@ it('N2-R3 — refuses a remedy that is not a remedy', function (): void {
     // A list of strings where a list of objects belongs. The core producing
     // this is a fault worth seeing where the payload is read, rather than as a
     // type error on somebody's screen.
-    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'meaning' => 'Visible', 'remedies' => ['restart it']];
+    $verdict = ['outcome' => 'fail', 'code' => 'VPN-3', 'severity' => 'error', 'state' => 'guided', 'meaning' => 'Visible', 'remedies' => ['restart it']];
 
     expect(fn(): Report => Reports::in(doctorSaying(aRun('broken', [
         aFinding('vpn.egress-match', 'vpn', 'Egress', $verdict),
     ]))))->toThrow(ReportIsUnreadable::class);
+});
+
+it('N2-R3 — reads which service a finding is about', function (): void {
+    // Beside the title rather than inside it. The same check runs against
+    // whichever service fills a role, so a title naming one would be wrong on
+    // the next machine — and an operator with nineteen services needs the name.
+    $row = aFinding('vpn.egress-match', 'vpn', 'The tunnel', ['outcome' => 'pass']);
+    $row['service'] = 'gluetun';
+    $report = Reports::in(doctorSaying(aRun('healthy', [$row])));
+    $named = [];
+
+    foreach ($report->findings() as $finding) {
+        $named[] = $finding->whatItIsAbout()->either(
+            theMachine: static fn(): Code => Code::of('the-machine'),
+            theService: static fn(string $service): Code => Code::of($service),
+        );
+    }
+
+    expect($named[0]->shown())->toBe('gluetun');
+});
+
+it('N2-R3 — a check about the machine names no service', function (): void {
+    $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
+    $named = [];
+
+    foreach ($report->findings() as $finding) {
+        $named[] = $finding->whatItIsAbout()->either(
+            theMachine: static fn(): Code => Code::of('the-machine'),
+            theService: static fn(string $service): Code => Code::of($service),
+        );
+    }
+
+    expect($named[0]->shown())->toBe('the-machine');
+});
+
+it('N2-R3 — refuses a finding that claims a service and names none', function (): void {
+    // Different from a finding that claims none: one is a check about the
+    // machine and the other is a row with a fault in it. An operator shown a
+    // blank where a service belongs learns less than one shown nothing.
+    $row = aFinding('vpn.egress-match', 'vpn', 'The tunnel', ['outcome' => 'pass']);
+    $row['service'] = '   ';
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('healthy', [$row]))))
+        ->toThrow(ServiceIsUnnamed::class);
+});
+
+it('N2-R3 — reads which check explains a finding', function (): void {
+    // The engine sets this after the run, because a check is independent by
+    // construction and cannot see what any other found. It is the difference
+    // between an operator reading five broken things and reading one.
+    $row = aFinding('vpn.egress-match', 'vpn', 'Egress', ['outcome' => 'pass']);
+    $row['caused_by'] = 'vpn.up';
+    $report = Reports::in(doctorSaying(aRun('healthy', [$row])));
+    $explained = [];
+
+    foreach ($report->findings() as $finding) {
+        $explained[] = $finding->whatExplainsIt()->either(
+            alone: static fn(): Code => Code::of('stands-alone'),
+            explained: static fn(Check $cause): Code => Code::of($cause->shown()),
+        );
+    }
+
+    expect($explained[0]->shown())->toBe('vpn.up');
+});
+
+it('N2-R3 — a finding nothing explains stands alone', function (): void {
+    $report = Reports::in(doctorSaying(aRun('healthy', [aPass()])));
+    $explained = [];
+
+    foreach ($report->findings() as $finding) {
+        $explained[] = $finding->whatExplainsIt()->either(
+            alone: static fn(): Code => Code::of('stands-alone'),
+            explained: static fn(Check $cause): Code => Code::of($cause->shown()),
+        );
+    }
+
+    expect($explained[0]->shown())->toBe('stands-alone');
 });

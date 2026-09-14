@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function sprintf;
+
 /**
  * Which of the two ways the operator got the pairing material in.
  *
@@ -49,5 +51,33 @@ enum HowItWasRead: string
     public function isWorthSimplyRetrying(): bool
     {
         return $this === self::Scanned;
+    }
+
+    /**
+     * The key for what the screen on this road is for.
+     *
+     * On the road rather than on the screen, and that is the whole point: a
+     * screen spelling `connection.scan_the_code` is a literal, and a literal is
+     * the shape `L7` names as the thing to cure. The road is a closed set with
+     * two members and each has one opening sentence, so the key is built from
+     * the case the way {@see Permission::reason()} builds
+     * its own.
+     *
+     * **Why the road answers and the outcome does not.** What a screen says
+     * once something has happened is the outcome's to name — a pairing that was
+     * written down says so identically on both roads. What it says *before*
+     * anything has happened is what that screen is *for*, and the two roads are
+     * for different things: one points a camera and the other takes dictation.
+     * An outcome cannot tell them apart; this can.
+     */
+    public function askedFor(): string
+    {
+        return sprintf('connection.%s_the_code', $this->value);
+    }
+
+    /** The line under it: how to get started on this road. */
+    public function howToStart(): string
+    {
+        return sprintf('connection.%s_the_code_action', $this->value);
     }
 }

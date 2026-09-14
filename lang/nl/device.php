@@ -8,7 +8,13 @@ return [
     'camera_reason' => 'De camera wordt één keer gebruikt, om de koppelingscode op je stack te lezen.',
     'camera_alternative' => 'Je kunt de koppelingscode ook intypen.',
     'notifications_reason' => 'Meldingen laten je weten wanneer een stack aandacht nodig heeft.',
+    'unlock' => 'Ontgrendelen',
     'unlock_reason' => 'Ontgrendel lemonfiber om je stacks te zien.',
     'notifications_alternative' => 'Zonder meldingen open je lemonfiber om te zien wat een melding zou hebben gezegd.',
     'permission_refused' => 'Die toestemming is geweigerd, en dit scherm werkt ook zonder.',
+    'nowhere_to_write_it' => 'Deze telefoon heeft geen ruimte om het rapport klaar te zetten.',
+    'nowhere_to_write_it_action' => 'Maak wat ruimte vrij en probeer het opnieuw.',
+    'the_device_would_not_offer' => 'Deze telefoon bood geen manier aan om het te versturen.',
+    'the_device_would_not_offer_action' => 'Het rapport staat hierboven; je kunt het met de hand overnemen.',
+    'share_diagnostics' => 'Stuur een rapport naar wie je helpt',
 ];

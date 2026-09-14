@@ -73,12 +73,85 @@ no equivalent type here.
 
 > Findings MUST be ordered by severity, worst first.
 
-`Modules\Health\Api\Queries\WorstFirst` does this and is tested. What is not
-checked is that a screen showing findings uses it, because there is no such
-screen yet. A list rendered straight from the envelope arrives in the order the
-checks ran, which looks ordered and is not — the failure is invisible on any
-report whose worst finding happens to have run first.
+`Modules\Health\Api\Queries\WorstFirst` makes the decision and `HowThisStackIs`
+asks for it. The order is applied on the screen rather than trusted to arrive:
+the envelope carries findings in the order the checks ran, which looks ordered
+and is not — and the failure is invisible on any report whose worst finding
+happens to have run first.
 
-The gate to write alongside the first findings screen is that nothing renders
-`Findings` it did not take from `WorstFirst`. Recorded here rather than left to
-be noticed, because a sorter nothing calls passes its own test forever.
+### The gate
+
+`F8`. A class under `Internal/Screens` that names findings at all names
+`WorstFirst` too, checked over the text of the file. Text rather than a call
+graph because the violation is a screen that names the query *nowhere*, and an
+absence has no call site to follow to.
+
+It is on the screen rather than on the query for the same reason it had to be
+written the day a findings screen existed: a sorter nothing calls passes its own
+test forever, so `WorstFirstTest` would have stayed green through every screen
+that never asked.
+
+### Narrowing composes with it, and the order is not reversible
+
+`InCategory` narrows and deliberately does not reorder, so the screen narrows
+and then sorts. The other way round would sort rows that are about to be thrown
+away, and a query that both filtered and ordered would leave no way to say which
+happened first.
+
+## `N2-R4`, `N2-R5`, `N2-R7` — every action arrives as a job
+
+> Where the core offers a repair, the app MUST offer it, and MUST state what it
+> does, what else it affects, and whether it can be undone, before asking for
+> confirmation.
+
+The types for this are built and tested — `Repair` states all three clauses,
+`Repairs` and `Offer` hold a listing a yes can quote, `Confirmed` is a yes that
+rendering a finding cannot produce, and `Carried` is the refusal that re-offers.
+What is not built is the port, and this is why.
+
+### The offer and the yes are one request, read twice
+
+`POST /api/actions/repair` takes `confirm`, `offer` and `agreed`. Unconfirmed it
+says what each repair would do and changes nothing; confirmed, and naming the
+listing it answers, it carries out what was agreed to. `N2-R5` is the
+requirement that those stay two things, and the engine's `Consent::Given`
+carries the listing's name so `N2-R6` can be settled where the machine can be
+seen.
+
+The SDK names that endpoint as of `Lemonfiber\Sdk\Repair`, and the two refused
+consent arrangements are unrepresentable there rather than refused at runtime.
+
+### What is missing is the answer, not the asking
+
+`answering()` in `lemonfiber-api` has no arm for `Command::Repair`, so it falls
+to `Answering::Later`: the action answers **202 with the `job` envelope**, for
+the offer half as well as the acting half. The `repair` envelope — the one
+carrying `offered`, which is what `N2-R4` needs an operator to read — arrives
+through `GET /api/jobs/{job}`, which the SDK does not yet name.
+
+That is not a detail of plumbing. It changes the shape of the port: asking what
+a stack would repair is not a question with an answer, it is a question with a
+handle, and the answer is three states across two statuses — still running,
+finished with the envelope, and *ended* rather than finished. A port that
+collapsed the third into either of the others would either spin forever or
+report a working machine as unreachable.
+
+It also runs into `N1-R41`, which says the app must not retain an undelivered
+action, must not replay one on reconnecting, and must not present an action as
+pending. A job handle is very close to a pending action, and the distinction is
+real rather than semantic: a job the stack acknowledged *did* happen, and asking
+after it is a read. Replaying an action it never received would be inventing one.
+
+So the port waits for the job reading rather than being written against a shape
+that would have to change. `N2-R7`'s start, stop and restart are in exactly the
+same position, for the same reason — every action on this surface is a job.
+
+### One asymmetry worth knowing
+
+`Restore { consent: RestoreConsent::List }` *is* `Answering::Now`. The listing
+form of restore answers immediately and the listing form of repair does not,
+though neither changes anything — the core refuses `disruptive` to the offer
+half by name, on the ground that a run disturbing something to say what it
+*would* do has already done it. Whether that asymmetry is deliberate is the
+core's to say; it is recorded here because it is the one thing that would let
+`N2-R4` be answered without a job at all.

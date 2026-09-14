@@ -55,6 +55,7 @@
         "phpstan/phpstan-strict-rules": "^2.0",
         "rector/rector": "^2.6",
         "roave/security-advisories": "dev-latest",
+        "saloonphp/saloon": "^4.0",
         "shipmonk/composer-dependency-analyser": "^1.8",
         "shipmonk/phpstan-rules": "^4.4",
         "spaze/phpstan-disallowed-calls": "^4.14",

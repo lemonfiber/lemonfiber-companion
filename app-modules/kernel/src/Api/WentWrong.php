@@ -24,6 +24,8 @@ final readonly class WentWrong
         private Code $code,
         private string $meaning,
         private Remedies $remedies,
+        private Severity $severity,
+        private Standing $standing,
     ) {}
 
     /**
@@ -32,15 +34,50 @@ final readonly class WentWrong
      * and cannot search for, and a core producing one has a fault worth seeing
      * where the payload is read rather than on somebody's screen.
      */
-    public static function of(Code $code, string $meaning, Remedies $remedies): self
-    {
+    public static function of(
+        Code $code,
+        string $meaning,
+        Remedies $remedies,
+        Severity $severity,
+        Standing $standing,
+    ): self {
         $said = trim($meaning);
 
         if ($said === '') {
             throw CheckSaidNothing::under($code);
         }
 
-        return new self($code, $said, $remedies);
+        return new self($code, $said, $remedies, $severity, $standing);
+    }
+
+    /**
+     * How much this matters, in the engine's own judgement.
+     *
+     * Taken as sent rather than derived from the verdict, for the reason
+     * {@see Overall} gives about a run's own word: a screen working it out from
+     * what it can see would be a second opinion about a judgement the engine
+     * already made, and the two would disagree the first time a check was added
+     * that only one of them knew how to weigh.
+     */
+    public function severity(): Severity
+    {
+        return $this->severity;
+    }
+
+    /**
+     * Where it stands with respect to being fixed.
+     *
+     * The distinction {@see Standing} exists for is `Actionable` against
+     * `Guided` — one puts a button on a screen and the other puts instructions
+     * on it. A screen that guessed would offer to do something it cannot do.
+     *
+     * `Remediable` is the case this makes reachable and nothing yet reads: it
+     * means lemonfiber can fix the thing itself, which is what `N2-R4`'s repair
+     * flow is about offering.
+     */
+    public function standing(): Standing
+    {
+        return $this->standing;
     }
 
     /** The code an operator can search for, and quote to somebody. */

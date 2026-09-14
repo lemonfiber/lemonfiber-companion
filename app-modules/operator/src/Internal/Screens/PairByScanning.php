@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhyNothingWasScanned;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
+use function sprintf;
 use function trim;
 use function view;
 
@@ -89,6 +90,17 @@ final class PairByScanning extends NativeComponent
     /** What became of the pairing, once a scan has completed one. */
     protected HowThePairingWent $went = HowThePairingWent::NotYet;
 
+    /**
+     * Which stack was paired, so the screen can lead to it.
+     *
+     * Written at the moment the stack is made rather than read back from the
+     * store afterwards, which would be asking *which one did I just add* of a
+     * list that does not say. `protected` for `NativeComponent`'s property
+     * syncing, and the identifier rather than the {@see Stack} because a screen
+     * that held a stack would be holding an address (`N1-R15`).
+     */
+    protected string $paired = '';
+
     /** Whether what the camera read could not be used as pairing material. */
     protected bool $codeWasUnreadable = false;
 
@@ -137,15 +149,22 @@ final class PairByScanning extends NativeComponent
     }
 
     /**
-     * Whether the operator could grant the camera by changing a platform setting.
+     * What to do about the camera coming back empty, as a key.
      *
-     * Answered by the reason rather than by this screen, so that "open Settings"
-     * and "there is nothing here to turn on" are decided once — and are not
-     * decided at all where nothing has been refused.
+     * Answered by the reason rather than by this screen, which is where the
+     * three-into-two mistake was: a boolean choosing between "open Settings"
+     * and one generic alternative can only be wrong about the third reason,
+     * and it was — a closed scanner was told it could type the code instead
+     * rather than that it could open the camera again.
+     *
+     * The empty string where nothing came back, which is what the template
+     * branches on: there is no advice to give about a camera that has not been
+     * opened yet, and a key invented for that state would be a catalogue line
+     * for a sentence nobody should read.
      */
-    public function settingsWouldHelp(): bool
+    public function remedyForTheCamera(): string
     {
-        return $this->nothingCameBack?->settingsWouldHelp() ?? false;
+        return $this->nothingCameBack?->remedy() ?? '';
     }
 
     /**
@@ -181,6 +200,43 @@ final class PairByScanning extends NativeComponent
         $this->codeWasUnreadable = false;
 
         $this->camera->forAPairingCode($this->read(...));
+    }
+
+    /**
+     * The headline: what this screen is for, or what became of the pairing.
+     *
+     * The two keys spelled here are this screen's own, and they are the only
+     * two it spells. Everything after the operator has confirmed something is
+     * {@see HowThePairingWent}'s to name, derived from the case — so a fourth
+     * outcome needs no edit here and no branch in the template.
+     *
+     * **The waiting pair cannot come off the outcome.** What a screen says
+     * before anything has happened is what that screen is *for*, and the two
+     * pairing roads are for different things: this one and its sibling share
+     * every outcome and share neither opening line.
+     */
+    public function headline(): string
+    {
+        return $this->went->isNotYet() ? HowItWasRead::Scanned->askedFor() : $this->went->said();
+    }
+
+    /** The line under it: how to get started, or what to do about what happened. */
+    public function supporting(): string
+    {
+        return $this->went->isNotYet() ? HowItWasRead::Scanned->howToStart() : $this->went->remedy();
+    }
+
+    /**
+     * Where an operator who has just paired a stack goes next.
+     *
+     * The sign-in screen for the stack they paired, because pairing is not
+     * signing in: they have introduced the machine and hold no session for it.
+     * Until this existed the screen said *"you can reach it from the main
+     * screen"* and left them to go and do it.
+     */
+    public function onwardsTo(): string
+    {
+        return sprintf('/stacks/%s/sign-in', $this->paired);
     }
 
     /** The frame, by name. */
@@ -250,6 +306,7 @@ final class PairByScanning extends NativeComponent
     private function remembered(Pairing $said): HowThePairingWent
     {
         $stack = $this->introducing->stack($said, StackName::of($this->called));
+        $this->paired = $stack->id()->stored();
 
         return $this->stacks->remember($stack)->either(
             remembered: static fn(): HowThePairingWent => HowThePairingWent::Paired,

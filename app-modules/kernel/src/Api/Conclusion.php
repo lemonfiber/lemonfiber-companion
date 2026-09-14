@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 use function array_find;
+use function sprintf;
 
 /**
  * How a check turned out, as one word, worst first.
@@ -56,5 +57,24 @@ enum Conclusion: string
         );
 
         return $first === $this && $this !== $other;
+    }
+
+    /**
+     * What this verdict is called on a screen, as a key.
+     *
+     * Built from the case rather than listed against it, which is
+     * {@see Permission::reason()}'s shape: a `match` naming a key per case
+     * spells every stem twice — once as the case's value and once as the string
+     * beside it — and two spellings of one name drift.
+     *
+     * A key rather than the words, because `L1` puts the words in the catalogue
+     * and `A4` keeps the translator out of a class that did not ask for one.
+     * Under `health.conclusion.` because that group already exists and already
+     * holds a line per case — this is the derivation catching up with a table
+     * somebody wrote by hand, not a new one beside it.
+     */
+    public function saidOnTheScreen(): string
+    {
+        return sprintf('health.conclusion.%s', $this->value);
     }
 }

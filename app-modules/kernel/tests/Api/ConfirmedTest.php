@@ -12,9 +12,12 @@ use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Offer;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Repair;
+use Modules\Kernel\Api\Repairs;
 use Modules\Kernel\Api\RepairWasConfirmedAgainstAnOldReading;
+use Modules\Kernel\Api\RepairWasNotInThatOffer;
 use Modules\Kernel\Api\Undoing;
 
 use function sprintf;
@@ -28,6 +31,18 @@ function theRepair(): Repair
         effects: Effects::of('downloads pause for about a minute'),
         undoing: Undoing::Possible,
     );
+}
+
+/**
+ * The listing that repair was offered in.
+ *
+ * Takes the repair rather than building its own, because `N2-R6` turns on the
+ * two being the same object: a listing holding an equal-looking repair is a
+ * different listing about a different moment.
+ */
+function theOfferHolding(Repair $repair): Offer
+{
+    return Offer::of('a-listing-the-engine-named', Repairs::of($repair));
 }
 
 /**
@@ -57,8 +72,10 @@ it('N2-R5 — a repair is carried out only with a confirmation, not with a view'
     // the repair and the reading together.
     $shown = Reading::live(Code::of('the-indexer-is-down'));
 
-    expect(foldCarried(Confirmed::against(theRepair(), $shown)->carriedOut($shown))->shown())
-        ->toBe('out:indexer-reachable');
+    $repair = theRepair();
+
+    expect(foldCarried(Confirmed::against($repair, theOfferHolding($repair), $shown)->carriedOut($shown))->shown())
+    ->toBe('out:indexer-reachable');
 });
 
 it('N2-R6 — a repair confirmed against one reading is refused against another', function (): void {
@@ -69,8 +86,10 @@ it('N2-R6 — a repair confirmed against one reading is refused against another'
     $shown = Reading::live(Code::of('the-indexer-is-down'));
     $now = Reading::live(Code::of('the-indexer-is-down'));
 
-    expect(foldCarried(Confirmed::against(theRepair(), $shown)->carriedOut($now))->shown())
-        ->toBe('refused:indexer-reachable:live');
+    $repair = theRepair();
+
+    expect(foldCarried(Confirmed::against($repair, theOfferHolding($repair), $shown)->carriedOut($now))->shown())
+    ->toBe('refused:indexer-reachable:live');
 });
 
 it('N2-R6 — a re-read that says the same thing is still a different reading', function (): void {
@@ -82,8 +101,10 @@ it('N2-R6 — a re-read that says the same thing is still a different reading', 
     $shown = Reading::live($value);
     $sameValueAgain = Reading::live($value);
 
-    expect(foldCarried(Confirmed::against(theRepair(), $shown)->carriedOut($sameValueAgain))->shown())
-        ->toStartWith('refused:');
+    $repair = theRepair();
+
+    expect(foldCarried(Confirmed::against($repair, theOfferHolding($repair), $shown)->carriedOut($sameValueAgain))->shown())
+    ->toStartWith('refused:');
 });
 
 it('N2-R6 — the refusal carries what is needed to re-offer', function (): void {
@@ -93,8 +114,10 @@ it('N2-R6 — the refusal carries what is needed to re-offer', function (): void
     $shown = Reading::live(Code::of('was'));
     $now = Reading::retained(Code::of('is'), Instant::atEpochSeconds(1_757_808_000));
 
-    expect(foldCarried(Confirmed::against(theRepair(), $shown)->carriedOut($now))->shown())
-        ->toBe('refused:indexer-reachable:retained');
+    $repair = theRepair();
+
+    expect(foldCarried(Confirmed::against($repair, theOfferHolding($repair), $shown)->carriedOut($now))->shown())
+    ->toBe('refused:indexer-reachable:retained');
 });
 
 it('N1-R39 — a retained reading cannot confirm a repair at all', function (): void {
@@ -103,6 +126,41 @@ it('N1-R39 — a retained reading cannot confirm a repair at all', function (): 
     // with.
     $old = Reading::retained(Code::of('the-indexer-is-down'), Instant::atEpochSeconds(1_757_808_000));
 
-    expect(fn(): Confirmed => Confirmed::against(theRepair(), $old))
-        ->toThrow(RepairWasConfirmedAgainstAnOldReading::class);
+    $repair = theRepair();
+
+    expect(fn(): Confirmed => Confirmed::against($repair, theOfferHolding($repair), $old))
+    ->toThrow(RepairWasConfirmedAgainstAnOldReading::class);
+});
+
+it('N2-R6 — refuses a yes that quotes a listing the repair was never in', function (): void {
+    // Not defensive. The repair and the listing arrive together, so a screen
+    // reaching this has lost track of which listing a button belonged to — and
+    // the engine would see a listing it recognises and a repair it was asked
+    // for, and carry out something the operator agreed to under a different set
+    // of consequences.
+    $repair = theRepair();
+    $elsewhere = theRepair();
+
+    expect(fn(): Confirmed => Confirmed::against(
+        $repair,
+        theOfferHolding($elsewhere),
+        Reading::live(theRepair()),
+    ))->toThrow(RepairWasNotInThatOffer::class, 'indexer-reachable');
+});
+
+it('N2-R6 — quotes the listing it was agreed to, for the engine to check', function (): void {
+    // The word is carried out of here and nowhere else reads it. The engine is
+    // where `N2-R6` is finally settled, because it can see whether the machine
+    // has moved and this app cannot.
+    $repair = theRepair();
+
+    expect(Confirmed::against($repair, theOfferHolding($repair), Reading::live($repair))->quoting())
+        ->toBe('a-listing-the-engine-named');
+});
+
+it('names the repair it was agreed to, for asking the engine about it', function (): void {
+    $repair = theRepair();
+
+    expect(Confirmed::against($repair, theOfferHolding($repair), Reading::live($repair))->repair())
+        ->toBe($repair);
 });

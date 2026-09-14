@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Kept;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
@@ -122,6 +123,108 @@ it('N1-R11 — two stacks do not share one session', function (): void {
     $keychain->forget($other);
 
     expect($keychain->isHolding(aStackThatIsPaired()))->toBeTrue();
+});
+
+/** Which session came back, or the word for none — whichever arm answered. */
+function whatWasResumed(Resumed $resumed): string
+{
+    return $resumed->either(
+        held: static fn(Session $session): Code => Code::of($session->forTheHeader()),
+        notHeld: static fn(): Code => Code::of('nothing'),
+    )->shown();
+}
+
+/**
+ * Both stores, each holding a session for the paired stack.
+ *
+ * A plain function rather than a Pest dataset, matching the other contract
+ * suites: a dataset whose value is a closure is resolved by Pest and handed back
+ * as one argument, so a pair returns as an array where the test wanted two
+ * parameters.
+ *
+ * @return array<string, SecureStorage>
+ */
+function everyStoreHolding(): array
+{
+    $fake = AKeychainInMemory::working();
+    $adapter = new PlatformKeychain(APlatformStore::working());
+
+    foreach ([$fake, $adapter] as $store) {
+        $store->keep(aStackThatIsPaired(), Session::of(THE_TOKEN));
+    }
+
+    return ['the fake' => $fake, 'the adapter' => $adapter];
+}
+
+it('N1-R7 — gives back the session it was keeping, so nothing asks twice', function (): void {
+    // The whole point of keeping one. `N1-R7` exchanges the password once, and
+    // "once" is only true if the next launch finds what the first one kept.
+    foreach (everyStoreHolding() as $which => $store) {
+        expect(whatWasResumed($store->resume(aStackThatIsPaired())))->toBe(THE_TOKEN, $which);
+    }
+});
+
+it('has nothing for a stack it was never given one for', function (): void {
+    $never = StackId::of(Nonce::of('b2c3d4e5f6071829'));
+
+    foreach (everyStoreHolding() as $which => $store) {
+        expect(whatWasResumed($store->resume($never)))->toBe('nothing', $which);
+    }
+});
+
+it('N1-R11 — resumes each stack its own session, never the other one', function (): void {
+    // The failure this would hide is the worst one in the file: a reader keyed
+    // loosely hands stack B the session stack A opened, and every request after
+    // that is attributed to the wrong machine.
+    $other = StackId::of(Nonce::of('b2c3d4e5f6071829'));
+
+    foreach (everyStoreHolding() as $which => $store) {
+        $store->keep($other, Session::of('another-session-not-a-secret'));
+
+        expect(whatWasResumed($store->resume(aStackThatIsPaired())))->toBe(THE_TOKEN, $which)
+            ->and(whatWasResumed($store->resume($other)))->toBe('another-session-not-a-secret', $which);
+    }
+});
+
+it('has nothing once the session has been forgotten', function (): void {
+    foreach (everyStoreHolding() as $which => $store) {
+        $store->forget(aStackThatIsPaired());
+
+        expect(whatWasResumed($store->resume(aStackThatIsPaired())))->toBe('nothing', $which);
+    }
+});
+
+it('N4-R6 — a store that will not open has no session rather than a fault', function (): void {
+    // Both refusals answer the same way here, which is the one place this port
+    // does *not* tell them apart. A keychain that cannot be read is a keychain
+    // with no session in it as far as resuming goes: the operator is asked for
+    // the password, which is the honest outcome and the only useful one. A
+    // screen saying something went wrong would have nothing to offer them.
+    $stores = [
+        'the fake with no store' => AKeychainInMemory::withNowhereSafe(),
+        'the fake that will not open' => AKeychainInMemory::thatWillNotOpen(),
+        'the adapter with no store' => new PlatformKeychain(APlatformStore::absent()),
+        'the adapter that will not open' => new PlatformKeychain(APlatformStore::refusing()),
+    ];
+
+    foreach ($stores as $which => $store) {
+        expect(whatWasResumed($store->resume(aStackThatIsPaired())))->toBe('nothing', $which);
+    }
+});
+
+it('reads a store that answered Found with nothing as holding nothing', function (): void {
+    // The adapter's own case: `Session::of()` refuses a blank, and a store that
+    // says `Found` and hands back an empty string has lost the value rather
+    // than kept a session. Letting that raise would put a fatal on the launch
+    // screen; the operator is offered the password instead.
+    //
+    // Only the adapter can be asked — the fake holds `Session` objects, which
+    // cannot be blank, so this is the branch a contract run against both would
+    // never reach.
+    $store = APlatformStore::working();
+    $store->set(sprintf('lemonfiber.session.%s', A_PAIRED_STACK), '');
+
+    expect(whatWasResumed(new PlatformKeychain($store)->resume(aStackThatIsPaired())))->toBe('nothing');
 });
 
 it('PlatformKeychain answers the same port', function (): void {

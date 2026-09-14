@@ -29,7 +29,7 @@ use function sprintf;
  */
 final class ProblemIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(string $field): self
+    public static function missing(WireField $field): self
     {
         // One literal rather than a concatenation. A message split across lines
         // is a string built at runtime, and every join in it is a decision no
@@ -37,13 +37,13 @@ final class ProblemIsUnreadable extends InvalidArgumentException
         // nothing fail.
         return new self(sprintf(
             'The error envelope has no `%s`, or it is not text. Every error the contract describes carries one, so this answer did not come from a lemonfiber of a version this app can read.',
-            $field,
+            $field->value,
         ));
     }
 
     public static function severity(string $said): self
     {
-        return self::word('severity', $said, array_map(
+        return self::word(WireField::Severity->value, $said, array_map(
             static fn(Severity $severity): string => $severity->value,
             Severity::cases(),
         ));
@@ -51,7 +51,7 @@ final class ProblemIsUnreadable extends InvalidArgumentException
 
     public static function standing(string $said): self
     {
-        return self::word('state', $said, array_map(
+        return self::word(WireField::State->value, $said, array_map(
             static fn(Standing $standing): string => $standing->value,
             Standing::cases(),
         ));
@@ -70,7 +70,8 @@ final class ProblemIsUnreadable extends InvalidArgumentException
     {
         // The accepted list comes from the enum rather than from a sentence
         // written here, so a case added to the contract cannot leave this
-        // message describing the old vocabulary.
+        // message describing the old vocabulary. The field's own name comes
+        // from `WireField` for the same reason, one level up.
         return new self(sprintf(
             'The error envelope says its %s is `%s`, and this app reads %s. Guessing which of them was meant is how a critical failure gets shown as an advisory.',
             $field,
