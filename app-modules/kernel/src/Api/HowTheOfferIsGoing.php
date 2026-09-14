@@ -33,22 +33,31 @@ use Closure;
  */
 final readonly class HowTheOfferIsGoing
 {
+    /**
+     * Every field defaults, and each constructor says only its own state.
+     *
+     * `met()` writing `running: false` is a value nothing can ever read —
+     * {@see self::either()} consults the obstacle first, so on that arm the
+     * flag is never reached — and a value nothing reads is one no test can hold
+     * to being right. Mutation testing measured that as a survivor; the cure is
+     * {@see Size}'s, which is to leave the meaningless value unwritten.
+     */
     private function __construct(
-        private ?Offer $offered,
-        private ?Obstacle $met,
-        private bool $running,
+        private ?Offer $offered = null,
+        private ?Obstacle $met = null,
+        private bool $running = false,
     ) {}
 
     /** The stack is still working out what it would do. */
     public static function stillRunning(): self
     {
-        return new self(offered: null, met: null, running: true);
+        return new self(running: true);
     }
 
     /** It finished, and this is what it would put right. */
     public static function offering(Offer $offer): self
     {
-        return new self(offered: $offer, met: null, running: false);
+        return new self(offered: $offer);
     }
 
     /**
@@ -61,13 +70,13 @@ final readonly class HowTheOfferIsGoing
      */
     public static function ended(): self
     {
-        return new self(offered: null, met: null, running: false);
+        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */
     public static function met(Obstacle $why): self
     {
-        return new self(offered: null, met: $why, running: false);
+        return new self(met: $why);
     }
 
     /**

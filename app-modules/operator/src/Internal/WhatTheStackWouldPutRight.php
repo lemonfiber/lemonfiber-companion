@@ -38,27 +38,37 @@ final readonly class WhatTheStackWouldPutRight
      * @param list<WhatOneRepairSays> $repairs   what it would put right, in the order offered
      * @param string                 $met        the key for what stood in the way, or empty where nothing did
      * @param string                 $remedy     the key for what to do about it, or empty where nothing did
+     *
+     * **Every field but the first has a default, and each factory supplies only
+     * what its own state means.** A constructor demanding all seven made
+     * `signedOut()` say `isWorking: false, hasEnded: false, named: '',
+     * repairs: [], met: '', remedy: ''` — six values that are no part of what
+     * *signed out* is, that nothing reads in that state, and that no test could
+     * ever hold to being right. Mutation testing measured it: eighteen mutants
+     * across five factories, and the only ones that died were the fields that
+     * discriminate. The cure is {@see \Modules\Kernel\Api\Size}'s — make the
+     * meaningless value unwritable, so there is no literal left to flip.
      */
     private function __construct(
-        public bool $isSignedIn,
-        public bool $isWorking,
-        public bool $hasEnded,
-        public string $named,
-        public array $repairs,
-        public string $met,
-        public string $remedy,
+        public bool $isSignedIn = true,
+        public bool $isWorking = false,
+        public bool $hasEnded = false,
+        public string $named = '',
+        public array $repairs = [],
+        public string $met = '',
+        public string $remedy = '',
     ) {}
 
     /** No session for that stack, so nothing was asked (`N1-R44`). */
     public static function signedOut(): self
     {
-        return new self(isSignedIn: false, isWorking: false, hasEnded: false, named: '', repairs: [], met: '', remedy: '');
+        return new self(isSignedIn: false);
     }
 
     /** The stack is still working out what it would do. */
     public static function stillWorkingItOut(): self
     {
-        return new self(isSignedIn: true, isWorking: true, hasEnded: false, named: '', repairs: [], met: '', remedy: '');
+        return new self(isWorking: true);
     }
 
     /** It finished, and this is the listing. */
@@ -74,34 +84,18 @@ final readonly class WhatTheStackWouldPutRight
         // `N2-R6` has a yes quote the listing it was given, and the screen that
         // will offer that yes reads it from here — a fold that dropped it would
         // have to ask the stack again to agree to what it is already showing.
-        return new self(
-            isSignedIn: true,
-            isWorking: false,
-            hasEnded: false,
-            named: $offer->named(),
-            repairs: $rows,
-            met: '',
-            remedy: '',
-        );
+        return new self(named: $offer->named(), repairs: $rows);
     }
 
     /** The stack has no outcome for that job any more. */
     public static function ended(): self
     {
-        return new self(isSignedIn: true, isWorking: false, hasEnded: true, named: '', repairs: [], met: '', remedy: '');
+        return new self(hasEnded: true);
     }
 
     /** The machine could not be reached, and this is what the operator met. */
     public static function met(Obstacle $why): self
     {
-        return new self(
-            isSignedIn: true,
-            isWorking: false,
-            hasEnded: false,
-            named: '',
-            repairs: [],
-            met: $why->said(),
-            remedy: $why->remedy(),
-        );
+        return new self(met: $why->said(), remedy: $why->remedy());
     }
 }

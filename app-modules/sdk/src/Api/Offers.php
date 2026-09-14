@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
-use function array_values;
 use function is_array;
 use function is_bool;
 use function is_string;
@@ -214,7 +213,7 @@ final readonly class Offers
      * A list under a named field.
      *
      * @param  array<mixed> $data
-     * @return list<mixed>
+     * @return array<mixed>
      */
     private static function rows(array $data, WireField $field): array
     {
@@ -228,7 +227,12 @@ final readonly class Offers
             throw OfferIsUnreadable::missing($field);
         }
 
-        return array_values($rows);
+        // No `array_values` here, unlike a collection's own constructor: every
+        // caller walks this with `foreach` and counts its own position, so the
+        // keys never escape and reindexing is a line nothing could observe.
+        // `Requested::of` and `Repairs::of` keep theirs because those arrays are
+        // *stored* and handed out through an iterator. Walked, not kept.
+        return $rows;
     }
 
     /**

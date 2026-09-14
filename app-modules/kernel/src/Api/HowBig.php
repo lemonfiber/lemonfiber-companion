@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function array_find;
-use function array_reverse;
 use function round;
 
 /**
@@ -21,24 +19,24 @@ use function round;
  * crosses into a module in exactly one place, where it is checked and given a
  * name; {@see SizeUnit} takes no numbers at all and answers only about itself.
  *
- * **The band is chosen by the raw figure rather than by the rounded one**, and
- * that is the half worth defending: *largest unit whose rounded figure is at
- * least one* reads 600 MB as `1 GB`, which overstates a download by two thirds.
- * An operator deciding whether something fits is the last person who should be
+ * **The unit is the smallest one whose figure stays under a thousand.** That
+ * is `L5` as a rule rather than as an aspiration: a separator written into a
+ * source file is wrong in one locale by construction, so no figure that leaves
+ * here may need one. Walking up rather than picking a band and correcting it
+ * afterwards means there is one decision and one boundary.
+ *
+ * **It does not overstate.** 600 MB stays `600 MB` rather than becoming `1 GB`,
+ * because the walk only moves up when staying would need four figures — and an
+ * operator deciding whether something fits is the last person who should be
  * told a thing is bigger than it is.
  *
- * **Then one escape, because rounding can leave the band it was chosen in.** A
- * size of 999.6 GB is below a terabyte, so the band is gigabytes — and rounds
- * to `1000 GB`, a four-figure number in a band that was supposed to make one
- * impossible, and one carrying a separator `L5` refuses to write. Where that
- * happens the unit above is the answer and the figure there is exactly one.
- * Every band below the largest can do it, and the window is half a per cent
- * wide at the top of each: narrow enough to survive a long time, and certain to
- * be met eventually.
- *
- * The escape lives beside the rounding rather than in {@see SizeUnit}, so the
- * band and the figure are decided together. Split across two calls they are two
- * decisions that have to agree, which is the shape this type exists to remove.
+ * **The largest band has no ceiling, because there is nothing above it.** A
+ * size past a thousand terabytes is shown with four figures and a separator
+ * this file cannot get right. That is stated rather than hidden: it is nine
+ * petabytes of television, which is not a request a household makes, and the
+ * alternative is a fourth unit nobody would recognise on a phone. Every band
+ * that *has* one above it is guaranteed, and the test derives its cases from
+ * exactly that set so a fourth unit could not arrive without one.
  */
 final readonly class HowBig
 {
@@ -51,19 +49,34 @@ final readonly class HowBig
      */
     private function __construct(public int $figure, public string $said) {}
 
-    /** The one place a number of bytes becomes something a person reads. */
+    /**
+     * The one place a number of bytes becomes something a person reads.
+     *
+     * **One mechanism, walked upwards.** Start in the smallest unit and move up
+     * while the figure would reach a thousand. A size below a megabyte says
+     * nought of them, which is honest for a request that really is that small
+     * and is the only band where that can happen — a stack does not offer to
+     * fetch nothing.
+     *
+     * This replaced a band chosen by `$bytes >= $unit->bytes()` with the step-up
+     * kept as a separate escape, and the pair turned out to be one decision
+     * spelled twice: at exactly a boundary the comparison picked the upper unit
+     * directly, and without it the lower unit's figure reached a thousand and
+     * the escape arrived at the same answer by the other road. Mutation testing
+     * found it — the `>=` was unobservable, over two hundred thousand inputs,
+     * because the escape subsumed it. Two mechanisms for one situation is the
+     * shape {@see SizeUnit} was introduced to remove, and it had grown back
+     * here.
+     */
     public static function of(int $bytes): self
     {
-        $filled = array_find(
-            array_reverse(SizeUnit::cases()),
-            static fn(SizeUnit $unit): bool => $bytes >= $unit->bytes(),
-        ) ?? SizeUnit::Megabytes;
+        $unit = SizeUnit::Megabytes;
 
-        $figure = self::inside($bytes, $filled);
+        while (self::inside($bytes, $unit) >= self::A_THOUSAND && $unit->next() !== $unit) {
+            $unit = $unit->next();
+        }
 
-        return $figure < self::A_THOUSAND
-            ? new self($figure, $filled->saidOnTheScreen())
-            : new self(self::inside($bytes, $filled->next()), $filled->next()->saidOnTheScreen());
+        return new self(self::inside($bytes, $unit), $unit->saidOnTheScreen());
     }
 
     /**
