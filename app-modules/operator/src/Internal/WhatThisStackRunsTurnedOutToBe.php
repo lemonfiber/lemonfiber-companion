@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Obstacle;
 
 /**
@@ -49,6 +50,7 @@ final readonly class WhatThisStackRunsTurnedOutToBe
         public array $forms,
         public string $overall,
         public bool $isSettling,
+        public ?Disturbances $disturbs,
     ) {}
 
     /**
@@ -68,6 +70,7 @@ final readonly class WhatThisStackRunsTurnedOutToBe
             forms: [],
             overall: '',
             isSettling: false,
+            disturbs: null,
         );
     }
 
@@ -101,6 +104,7 @@ final readonly class WhatThisStackRunsTurnedOutToBe
             forms: $forms,
             overall: $daemons->running()->saidOnTheScreen(),
             isSettling: $settling,
+            disturbs: $daemons->disturbs(),
         );
     }
 
@@ -134,6 +138,7 @@ final readonly class WhatThisStackRunsTurnedOutToBe
             forms: [],
             overall: '',
             isSettling: false,
+            disturbs: null,
         );
     }
 }

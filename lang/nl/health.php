@@ -178,6 +178,7 @@ return [
     'go_ahead' => 'Doe maar',
     'never_mind' => 'Laat maar',
     'awaiting' => [
-        'downloads' => 'alles wat nog binnenkomt klaar is',
+        'downloads' => 'Totdat alles wat nog binnenkomt klaar is',
     ],
+    'for_at_most' => 'Maximaal :seconds seconden',
 ];

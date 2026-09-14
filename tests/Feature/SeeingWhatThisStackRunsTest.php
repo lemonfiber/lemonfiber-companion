@@ -590,3 +590,54 @@ it('renders its own view', function (): void {
 
     expect($screen->render()->name())->toBe('operator::what-this-stack-runs');
 });
+
+it('N2-R8 — the confirmation says how long the verb takes it away for', function (): void {
+    // The sentence this screen could not say until lemonfiber reported it, and
+    // the number is the stack's: a length worked out here would be a guess at
+    // something the stack knows, which is what `N2-R14` refuses.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+
+    expect($screen->whatItTakesAway()?->said)->toBe('health.for_at_most')
+        ->and($screen->whatItTakesAway()?->seconds)->toBe(10);
+});
+
+it('N2-R8 — a stop and a restart are not held to the same clock', function (): void {
+    // Two verbs, two numbers, read off the same listing. A screen that stated
+    // one length for every verb would be stating a number that nothing honours
+    // for every verb but one.
+    //
+    // A start is not among them, because a start is not asked about at all —
+    // which is why the pair compared here is the pair that is.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+    $stopping = $screen->whatItTakesAway()?->seconds;
+
+    $screen->neverMind();
+    $screen->wouldYouLike(WhatToDoWithIt::Restart->value, 'sonarr');
+    $restarting = $screen->whatItTakesAway()?->seconds;
+
+    expect($stopping)->toBe(10)
+        ->and($restarting)->toBe(180);
+});
+
+it('N2-R8 — a start states no length, because it is never asked about', function (): void {
+    // Not a gap in the reading: the stack reports a length for starting and
+    // this screen holds it. There is simply no question to put it on, because
+    // a start takes nothing away and confirming one would teach an operator to
+    // tap past the confirmations that matter.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value, 'sonarr');
+
+    expect($screen->asking())->toBeNull()
+        ->and($screen->whatItTakesAway())->toBeNull();
+});
+
+it('N2-R8 — nothing is stated where nothing is being asked', function (): void {
+    // Absent because there is no question, not because the stack said nothing.
+    // A screen that answered here would be answering about a verb nobody named.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+
+    expect($screen->whatItTakesAway())->toBeNull();
+});

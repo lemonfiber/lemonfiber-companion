@@ -178,6 +178,7 @@ return [
     'go_ahead' => 'Go ahead',
     'never_mind' => 'Never mind',
     'awaiting' => [
-        'downloads' => 'everything still coming down has finished',
+        'downloads' => 'Until everything still coming down has finished',
     ],
+    'for_at_most' => 'For up to :seconds seconds',
 ];
