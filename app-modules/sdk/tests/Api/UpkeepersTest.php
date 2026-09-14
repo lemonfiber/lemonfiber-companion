@@ -35,6 +35,8 @@ use Saloon\Http\PendingRequest;
 
 use function str_repeat;
 
+use Tests\Support\WhatTheContractAccepts;
+
 /**
  * What the adapter puts on the wire, and what it does with an answer it cannot use.
  *
@@ -101,12 +103,28 @@ function whatTakingItMade(MockResponse $answer): Underway
     );
 }
 
+/**
+ * The payload a stack sends where it took an update on.
+ *
+ * Both fields, because the contract requires both. A `job` payload short of
+ * its `action` is a sample of an acknowledgement no stack sends, and a reader
+ * tested only against it has been tested against nothing.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackTakingAnUpdateSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'job',
+        'data' => ['action' => 'update', 'job' => 'an-update'],
+    ];
+}
+
 /** What the far end would say to a taking. */
 function aTakingWasStarted(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => 'an-update']]),
-    );
+    return MockResponse::make((string) json_encode(whatAStackTakingAnUpdateSends()));
 }
 
 /**
@@ -163,10 +181,13 @@ it('N2-R14 — a payload this side cannot read is an obstacle, not an exception'
     // The case the fake cannot be asked about, because it has no payload to be
     // short of. An operator meets the same thing either way: the stack said
     // something, and this app cannot act on it.
+    // Payloads no stack would send, which is the whole of what this asks: each
+    // is a different way for the far end to answer with something this side
+    // cannot act on, and the operator meets the same thing every time.
     $unreadable = [
         'not an envelope at all',
-        (string) json_encode(['api_version' => 1, 'kind' => 'status', 'data' => []]),
-        (string) json_encode(['api_version' => 1, 'kind' => 'update', 'data' => ['state' => 'nearly']]),
+        (string) json_encode(anEnvelopeOfTheWrongKind()),
+        (string) json_encode(anUpdateNobodyCanRead()),
     ];
 
     foreach ($unreadable as $said) {
@@ -247,6 +268,26 @@ function whatWasSentAgreeing(MockClient $mock): array
     return $said;
 }
 
+/**
+ * An envelope answering about something else entirely.
+ *
+ * @return array<string, mixed>
+ */
+function anEnvelopeOfTheWrongKind(): array
+{
+    return ['api_version' => 1, 'kind' => 'status', 'data' => []];
+}
+
+/**
+ * An `update` envelope whose state is a word this side has no case for.
+ *
+ * @return array<string, mixed>
+ */
+function anUpdateNobodyCanRead(): array
+{
+    return ['api_version' => 1, 'kind' => 'update', 'data' => ['state' => 'nearly']];
+}
+
 /** One answer carried out of an `either()` arm, which hands back objects. */
 final readonly class WhatTheTakingTurnedOutToBe
 {
@@ -263,3 +304,12 @@ function whatBecameOfTheTaking(Underway $underway): string
             => new WhatTheTakingTurnedOutToBe($why->name),
     )->said;
 }
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    // Only the acknowledgement. The two above it are payloads a stack cannot
+    // send, deliberately — they are what this suite exists to watch the adapter
+    // refuse, and holding them to the contract would be asking them to stop
+    // being the thing under test.
+    expect(WhatTheContractAccepts::complaintsAbout('JobEnvelope', whatAStackTakingAnUpdateSends()))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});

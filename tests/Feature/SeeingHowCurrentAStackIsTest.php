@@ -26,6 +26,7 @@ use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheKeychainStillHolds;
 
 // N2-R15 — where a stack stands on being up to date is reachable.
 //
@@ -399,6 +400,7 @@ it('renders the template it is paired with', function (): void {
     expect($screen->render()->name())->toBe('operator::how-current-this-stack-is');
 });
 
+
 it('N1-R46 — lets go of a session the stack refused', function (): void {
     // Not only reported. A phone holding a credential the stack has refused
     // would go on offering to ask again with it, and every ask would fail the
@@ -408,7 +410,7 @@ it('N1-R46 — lets go of a session the stack refused', function (): void {
 
     $screen->answer();
 
-    expect(whetherItStillHolds($keychain))->toBeFalse();
+    expect(WhatTheKeychainStillHolds::forThe($keychain, theStackWhoseUpkeepIsRead()->id())->held)->toBeFalse();
 });
 
 it('keeps a session the stack merely could not answer with', function (): void {
@@ -420,7 +422,7 @@ it('keeps a session the stack merely could not answer with', function (): void {
 
     $screen->answer();
 
-    expect(whetherItStillHolds($keychain))->toBeTrue();
+    expect(WhatTheKeychainStillHolds::forThe($keychain, theStackWhoseUpkeepIsRead()->id())->held)->toBeTrue();
 });
 
 it('N2-R17 — a version it never showed does not clear the question it is holding', function (): void {
@@ -449,30 +451,6 @@ it('refuses a route that named no stack it can identify', function (): void {
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-/** Whether a keychain still holds a session, carried out of an `either()` arm. */
-final readonly class WhatTheKeychainStillHolds
-{
-    public function __construct(public bool $held) {}
-
-    public static function yes(): self
-    {
-        return new self(held: true);
-    }
-
-    public static function no(): self
-    {
-        return new self(held: false);
-    }
-}
-
-/** Whether this device still holds a session for the stack under test. */
-function whetherItStillHolds(AKeychainInMemory $keychain): bool
-{
-    return $keychain->resume(theStackWhoseUpkeepIsRead()->id())->either(
-        held: static fn(): WhatTheKeychainStillHolds => WhatTheKeychainStillHolds::yes(),
-        notHeld: static fn(): WhatTheKeychainStillHolds => WhatTheKeychainStillHolds::no(),
-    )->held;
-}
 
 it('N1-R44 — a signed-out screen states nothing about the stack at all', function (): void {
     // Every field, not just the two the template branches on. A fold that left

@@ -379,13 +379,6 @@ it('an answer this app cannot read is a stack that did not answer', function ():
             'api_version' => 1,
             'kind' => 'status',
             'data' => [
-                'disturbs' => [
-                    'starting' => ['bound' => 'bounded', 'seconds' => 180],
-                    'stopping' => ['bound' => 'bounded', 'seconds' => 10],
-                    'restarting' => ['bound' => 'bounded', 'seconds' => 180],
-                    'stopping_after_downloads' => ['bound' => 'open-ended', 'until' => 'downloads'],
-                    'switching' => ['bound' => 'bounded', 'seconds' => 180],
-                ],
                 'condition' => 'active',
                 'disturbs' => howLongEachVerbTakesIt(),
                 'forms' => ['media'],
