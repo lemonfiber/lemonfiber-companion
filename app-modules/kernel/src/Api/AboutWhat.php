@@ -24,11 +24,18 @@ use function trim;
  * Two arms rather than a nullable string, for `C2`'s reason. The blank refusal
  * lives here rather than at the call site, as {@see Check} does it: a service
  * named as whitespace is a name nobody can read and the engine producing one
- * has a fault.
+ * has a fault — and it keeps its own sentence rather than deferring to
+ * {@see ServiceId::called()}, because *a finding named no service* and *a
+ * caller asked for the logs of nothing* are different faults.
+ *
+ * **The arm hands over a {@see ServiceId} rather than the string.** A finding's
+ * service and the service a log window is read for are the same name for the
+ * same thing, and a screen that sent an operator from one to the other used to
+ * do it by passing a bare string — which is exactly the mistake `D2` names.
  */
 final readonly class AboutWhat
 {
-    private function __construct(private ?string $service) {}
+    private function __construct(private ?ServiceId $service) {}
 
     /** The machine itself, rather than anything running on it. */
     public static function theMachine(): self
@@ -39,13 +46,11 @@ final readonly class AboutWhat
     /** One of the services, named as the stack names it. */
     public static function theService(string $service): self
     {
-        $named = trim($service);
-
-        if ($named === '') {
+        if (trim($service) === '') {
             throw ServiceIsUnnamed::onAFinding();
         }
 
-        return new self($named);
+        return new self(ServiceId::called($service));
     }
 
     /**
@@ -53,13 +58,13 @@ final readonly class AboutWhat
      * @template TService of object
      *
      * @param  Closure(): TMachine  $theMachine
-     * @param  Closure(string): TService  $theService
+     * @param  Closure(ServiceId): TService  $theService
      * @return TMachine|TService
      */
     public function either(Closure $theMachine, Closure $theService): object
     {
-        return $this->service === null
-            ? $theMachine()
-            : $theService($this->service);
+        return $this->service instanceof ServiceId
+            ? $theService($this->service)
+            : $theMachine();
     }
 }

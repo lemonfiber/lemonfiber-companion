@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Remedies;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Severity;
 
 /**
@@ -166,7 +167,7 @@ final readonly class WhatOneFindingSays
     {
         return $finding->whatItIsAbout()->either(
             theMachine: static fn(): AsText => AsText::nothing(),
-            theService: static fn(string $service): AsText => AsText::of($service),
+            theService: static fn(ServiceId $service): AsText => AsText::of($service->named()),
         )->said;
     }
 

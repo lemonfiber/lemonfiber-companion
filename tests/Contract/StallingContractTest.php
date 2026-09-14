@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -120,8 +121,8 @@ function everythingStuckIn(Stalling $stalling): string
 
             foreach ($stalled as $one) {
                 $rows[] = $one->stated(
-                    static fn(string $title, string $service, Stage $stage): WhatTheStallTurnedOutToSay
-                        => new WhatTheStallTurnedOutToSay(sprintf('%s/%s/%s', $title, $service, $stage->value)),
+                    static fn(string $title, ServiceId $service, Stage $stage): WhatTheStallTurnedOutToSay
+                        => new WhatTheStallTurnedOutToSay(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
                 )->said;
             }
 
