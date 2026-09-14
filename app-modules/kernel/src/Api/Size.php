@@ -24,10 +24,29 @@ use Closure;
  * request nothing has sized yet, and that is neither a measurement nor a guess.
  * Folding it into a guess of zero would put *0 bytes* on a screen beside a
  * request for a nineteen-season procedural, which is worse than saying nothing.
+ *
+ * That third state answers *neither* question, which is why it carries neither
+ * figure nor flag rather than carrying both with one of them made up. A
+ * constructor that obliged it to say whether it was measured would take an
+ * arbitrary value — two answers equally right, which is the signature of a
+ * field that means nothing here — and nothing this class exposes could ever
+ * tell the two apart.
  */
 final readonly class Size
 {
-    private function __construct(private ?int $bytes, private bool $measured) {}
+    /**
+     * @param ?bool $measured whether anybody measured it, absent where nothing sized it
+     *
+     * Three states over two fields, and the third one answers neither question.
+     * `$measured` is therefore optional rather than a boolean every state has
+     * to supply a value for: *was it measured* has no answer for a size nobody
+     * took, and a constructor that demanded one would make the caller invent
+     * it. Both inventions read the same on screen and neither is observable
+     * through anything this class exposes — which is to say the class would
+     * carry a value no test could hold it to, and mutation testing is what
+     * says so out loud.
+     */
+    private function __construct(private ?int $bytes, private ?bool $measured = null) {}
 
     /** Somebody measured it, so the figure stands on its own. */
     public static function measured(int $bytes): self
@@ -50,7 +69,7 @@ final readonly class Size
      */
     public static function unknown(): self
     {
-        return new self(null, measured: false);
+        return new self(null);
     }
 
     /**
@@ -73,7 +92,7 @@ final readonly class Size
         // a request nobody has sized as one somebody measured.
         return match (true) {
             $this->bytes === null => $unknown(),
-            $this->measured => $measured($this->bytes),
+            $this->measured === true => $measured($this->bytes),
             default => $guessed($this->bytes),
         };
     }
