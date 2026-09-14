@@ -37,13 +37,6 @@ use function usort;
  */
 final readonly class NotArrivedFirst
 {
-    /** What `usort` wants back, named so that the comparison reads as English. */
-    private const int BEFORE = -1;
-
-    private const int TOGETHER = 0;
-
-    private const int AFTER = 1;
-
     public function over(HowServicesTookIt $went): HowServicesTookIt
     {
         // Collected by hand rather than with `iterator_to_array`, which wants a
@@ -65,12 +58,22 @@ final readonly class NotArrivedFirst
         return HowServicesTookIt::these(...$ordered);
     }
 
+    /**
+     * Which of two services is read first.
+     *
+     * The comparison is the whole of it: `false <=> true` is negative, so a
+     * service that did not arrive sorts above one that did, and two alike
+     * compare equal and keep the order they came in.
+     *
+     * Written as the comparison rather than as named `BEFORE` and `AFTER`
+     * constants, which {@see \Modules\Health\Api\Queries\WorstFirst} has and
+     * earns — it compares on two keys and the names are what make the ladder
+     * readable. One key needs no ladder, and constants here would be three
+     * numbers whose magnitude nothing reads and which nothing could be wrong
+     * about.
+     */
     private function whichComesFirst(HowAServiceTookIt $one, HowAServiceTookIt $other): int
     {
-        return match (true) {
-            ! $one->ending()->arrived() && $other->ending()->arrived() => self::BEFORE,
-            $one->ending()->arrived() && ! $other->ending()->arrived() => self::AFTER,
-            default => self::TOGETHER,
-        };
+        return $one->ending()->arrived() <=> $other->ending()->arrived();
     }
 }
