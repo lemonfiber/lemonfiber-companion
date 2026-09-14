@@ -28,8 +28,14 @@ use Tests\Support\Tree;
 //
 // Read as tokens rather than as prose, in files a generator does not write.
 
-/** What a screen must call to state its cadence, spelled once. */
-const THE_CADENCE_ACCESSOR = 'cadenceSaid(';
+/**
+ * What a screen must publish, and a template must call, to state its cadence.
+ *
+ * Spelled once because it is read against two files. The accessor hands out the
+ * `HowOften` case rather than a key and a count, so the screen names the cadence
+ * it keeps in one place and the sentence reads what it needs off the case.
+ */
+const THE_CADENCE_ACCESSOR = 'cadence()';
 
 /**
  * Every source file in the application that declares a poll.

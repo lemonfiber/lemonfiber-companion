@@ -24,7 +24,7 @@
 
         {{-- The same cadence, on the other state the stack works through. --}}
         <native:text class="text-sm">
-            {{ __($this->cadenceSaid(), ['count' => $this->cadenceSeconds()]) }}
+            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
         </native:text>
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @elseif ($this->offer()->hasEnded)
@@ -47,7 +47,7 @@
                  tell a second-old answer from a minute-old one, and whether
                  something has changed is the only reason they are looking. --}}
             <native:text class="text-sm">
-                {{ __($this->cadenceSaid(), ['count' => $this->cadenceSeconds()]) }}
+                {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
             </native:text>
             <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
         @elseif ($this->done()->met !== '')

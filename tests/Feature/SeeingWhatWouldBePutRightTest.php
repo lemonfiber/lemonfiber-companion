@@ -615,6 +615,6 @@ it('N1-R27 — the cadence the screen states is the one the attribute keeps', fu
 
     expect($polls)->toHaveCount(1)
         ->and($polls[0]->newInstance()->ms)->toBe(HowOften::WhileWorkRuns->milliseconds())
-        ->and($screen->cadenceSeconds() * 1_000)->toBe($polls[0]->newInstance()->ms)
-        ->and($screen->cadenceSaid())->toBe(HowOften::WhileWorkRuns->saidOnTheScreen());
+        ->and($screen->cadence()->seconds() * 1_000)->toBe($polls[0]->newInstance()->ms)
+        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
 });
