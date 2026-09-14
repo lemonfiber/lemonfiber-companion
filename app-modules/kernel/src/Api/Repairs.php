@@ -43,9 +43,16 @@ final readonly class Repairs implements IteratorAggregate
 
     public static function of(Repair ...$repairs): self
     {
-        // Values rather than the variadic as given, for `Remedies`' reason: a
-        // variadic collected from named arguments has string keys, and a
-        // collection that is not a list breaks anything that reads by position.
+        // Values rather than the variadic as given. `Remedies` does the same and
+        // says it is because `likeliest()` slices by position; nothing here
+        // reads by position, so that is not the reason and saying it would be
+        // borrowing a justification.
+        //
+        // The reason here is the type. A variadic collected from named
+        // arguments has string keys, and `Repairs::of(first: $a, then: $b)` is
+        // a legal call — so without this the field is not the `array<int,
+        // Repair>` it is declared as, and every reader that trusts the
+        // declaration is trusting something that is not true.
         return new self(array_values($repairs));
     }
 
