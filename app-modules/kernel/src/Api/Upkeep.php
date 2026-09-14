@@ -33,13 +33,13 @@ final readonly class Upkeep
     /**
      * What one reading of the stack's upkeep said.
      *
-     * Variadic rather than an array, so the list is one by the language's
-     * guarantee instead of by a reindex nothing could ever observe — a caller
-     * cannot hand this string keys to be stripped of.
+     * Reindexed rather than taken as it arrives: a variadic collected from
+     * named arguments carries their names as keys, so being variadic is not
+     * the same claim as being a list.
      */
     public static function reported(HowCurrent $how, ?Release $running, Release ...$releases): self
     {
-        return new self($how, $running, $releases);
+        return new self($how, $running, array_values($releases));
     }
 
     public function how(): HowCurrent
