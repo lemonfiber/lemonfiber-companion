@@ -9,6 +9,7 @@ use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACameraInMemory;
@@ -283,4 +284,19 @@ it('N1-R2 — a paired stack leads to signing into it, rather than to a sentence
         ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull(
             'Pairing leads to a URI the navigation stack does not know.',
         );
+});
+
+it('offers a way out of pairing at any point', function (): void {
+    // On a first run the list is empty and the two roads into pairing are the
+    // only things on it, so a person who starts and changes their mind has
+    // nowhere to go. Offered whatever happened — before the camera, after a
+    // refusal, and after pairing worked — because changing your mind is not a
+    // failure state.
+    $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
+
+    expect($screen->theListIsAt())->toBe(AScreenWithoutAStack::TheList->value);
+
+    $screen->scan();
+
+    expect($screen->theListIsAt())->toBe(AScreenWithoutAStack::TheList->value);
 });

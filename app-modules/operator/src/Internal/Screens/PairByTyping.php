@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -260,6 +261,18 @@ final class PairByTyping extends NativeComponent
     public function onwardsTo(): string
     {
         return WhereAStackIs::rememberedAs($this->paired)->signIn();
+    }
+
+    /**
+     * Where the list of machines is.
+     *
+     * Read off the case the provider registers from, for the reason every
+     * other route here is: a rename cannot leave this button pointing at
+     * nothing.
+     */
+    public function theListIsAt(): string
+    {
+        return AScreenWithoutAStack::TheList->value;
     }
 
     /** The frame, by name. */
