@@ -332,3 +332,15 @@ it('refuses a route parameter that is not text', function (): void {
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
+
+it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
+    // The action an obstacle must not take away.
+    $wanting = AHouseholdThatAsked::met(Obstacle::DeviceHasNoNetwork);
+    $screen = theRequestsScreen($wanting);
+
+    $screen->howMany();
+    $screen->again();
+    $screen->howMany();
+
+    expect($wanting->askings())->toBe(2);
+});

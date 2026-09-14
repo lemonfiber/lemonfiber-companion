@@ -287,3 +287,32 @@ it('renders its own view', function (): void {
     expect(theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()))->render()->name())
         ->toBe('operator::what-this-service-said');
 });
+
+it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
+    // The action an obstacle must not take away. Counted rather than asserted
+    // by absence of an error, because a screen that kept its held window would
+    // hand back the same lines and leave somebody tapping a button that changes
+    // nothing.
+    $saying = AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork);
+    $screen = theLogScreen($saying);
+
+    $screen->lines();
+    $screen->again();
+    $screen->lines();
+
+    expect($saying->askings())->toBe(2);
+});
+
+it('asking again forgets the window, so a search is not run against stale lines', function (): void {
+    // The half no other screen here has. The window is held precisely so
+    // searching does not re-ask; an *ask again* that kept it would be a button
+    // that reports success and shows yesterday's tail.
+    $saying = AServiceThatSpoke::saying(aWindowWorthReading());
+    $screen = theLogScreen($saying);
+
+    $screen->lines();
+    $screen->again();
+    $screen->lines();
+
+    expect($saying->askings())->toBe(2);
+});

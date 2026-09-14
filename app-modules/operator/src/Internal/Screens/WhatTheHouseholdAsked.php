@@ -146,6 +146,24 @@ final class WhatTheHouseholdAsked extends NativeComponent
     }
 
     /**
+     * Ask the stack again (`N1-R3`).
+     *
+     * The action an obstacle must not take away. `N1-R3` says a control is not
+     * hidden because the stack is unreachable — the app offers it and reports
+     * the failure — and an obstacle screen with nothing on it does exactly what
+     * the rule forbids: the only way back is leaving and returning, which
+     * `N1-R27` names separately as the thing a screen must not rely on.
+     *
+     * Forgetting what came back rather than re-reading here, so the next
+     * accessor asks. That keeps this one act and keeps `N1-R17` true: one
+     * asking per frame, and a frame that starts when somebody taps.
+     */
+    public function again(): void
+    {
+        $this->answered = null;
+    }
+
+    /**
      * Where this machine's screens are.
      *
      * One accessor rather than one per destination, and {@see WhereAStackIs}

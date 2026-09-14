@@ -10,6 +10,11 @@
              describe a condition differently from the one next to it. --}}
         <native:text class="font-bold">{{ __($this->offer()->met) }}</native:text>
         <native:text>{{ __($this->offer()->remedy) }}</native:text>
+
+        {{-- N1-R3: the action stays on the screen and the failure is reported
+             beside it. An obstacle branch with nothing on it leaves an operator
+             whose stack woke up two seconds later with no way to find out. --}}
+        <native:button label="{{ __('health.ask_again') }}" @tap="lookAgain()" />
     @elseif ($this->offer()->isWorking)
         {{-- N2-R7: the unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
@@ -36,6 +41,12 @@
         @elseif ($this->done()->met !== '')
             <native:text class="font-bold">{{ __($this->done()->met) }}</native:text>
             <native:text>{{ __($this->done()->remedy) }}</native:text>
+
+            {{-- N1-R3 again, and the sharper half of it: this obstacle stands
+                 between the operator and the answer to *did it work*. Taking
+                 the action away leaves them with a machine they told to change
+                 something and no way to ask what happened. --}}
+            <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
         @elseif ($this->done()->hasEnded)
             {{-- The one state where *it failed* is certainly the wrong word.
                  The operator does not know what happened to their machine, and

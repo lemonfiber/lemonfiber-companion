@@ -227,3 +227,17 @@ it('renders its own view', function (): void {
 
     expect($screen->render()->name())->toBe('operator::what-stopped-coming-in');
 });
+
+it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
+    // The action an obstacle must not take away. A stack that was asleep when
+    // the screen opened may be awake now, and leaving and returning is what
+    // `N1-R27` refuses by name.
+    $stalling = AStackThatStalled::met(Obstacle::DeviceHasNoNetwork);
+    $screen = theStalledScreen($stalling);
+
+    $screen->howMany();
+    $screen->again();
+    $screen->howMany();
+
+    expect($stalling->askings())->toBe(2);
+});

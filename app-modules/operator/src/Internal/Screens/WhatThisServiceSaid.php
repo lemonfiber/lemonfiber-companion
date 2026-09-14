@@ -192,6 +192,25 @@ final class WhatThisServiceSaid extends NativeComponent
     }
 
     /**
+     * Read the tail again (`N1-R3`).
+     *
+     * The action an obstacle must not take away. `N1-R3` says a control is not
+     * hidden because the stack is unreachable — the app offers it and reports
+     * the failure — and an obstacle screen with nothing on it does exactly what
+     * the rule forbids: the only way back is leaving and returning, which
+     * `N1-R27` names separately as the thing a screen must not rely on.
+     *
+     * It forgets the window as well as the fold, which the other screens have
+     * no equivalent of. A held window is what lets this one search without
+     * re-asking; keeping it through an *ask again* would hand back the same
+     * lines and leave an operator tapping a button that changes nothing.
+     */
+    public function again(): void
+    {
+        $this->held = null;
+    }
+
+    /**
      * Where this machine's screens are.
      *
      * One accessor rather than one per destination, and {@see WhereAStackIs} is
