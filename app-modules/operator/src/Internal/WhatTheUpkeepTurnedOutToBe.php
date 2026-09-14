@@ -102,8 +102,8 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             remedy: '',
             howSaid: $upkeep->how()->saidOnTheScreen(),
             running: $upkeep->running(
-                on: static fn(Release $release): WhatOneReleaseSays => WhatOneReleaseSays::of($release),
-                unstated: static fn(): WhatOneReleaseSays => WhatOneReleaseSays::of(Release::called('—', noticeable: false, withdrawn: false)),
+                on: static fn(Release $release): WhatTheStackIsOn => WhatTheStackIsOn::of($release),
+                unstated: static fn(): WhatTheStackIsOn => WhatTheStackIsOn::notNamed(),
             )->version,
             runningWasWithdrawn: $upkeep->runningAWithdrawnRelease(),
             waiting: $waiting,
