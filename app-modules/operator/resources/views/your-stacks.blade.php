@@ -1,4 +1,16 @@
 <native:column class="w-full gap-4 p-6">
+    @if ($this->isLocked())
+        {{-- N4-R19: the device's own authentication on a cold start, asked
+             before anything reads retained state or touches a network. Nothing
+             below is drawn — not the machine names, not a verdict, not the
+             diagnostics control — because all of it is what the lock is for. --}}
+        <native:text class="text-lg font-bold">{{ __('device.unlock_reason') }}</native:text>
+
+        {{-- N4-R4: a button rather than an automatic retry. An operator who
+             dismissed the prompt meant it, and a screen that asked again
+             immediately is what teaches people to turn a feature off. --}}
+        <native:button label="{{ __('device.unlock') }}" @tap="tryToUnlock()" />
+    @else
     @forelse ($this->configured() as $stack)
         <native:column class="w-full gap-1">
             <native:button
@@ -47,4 +59,5 @@
          one that works when nothing else does — a stack that cannot be reached
          is exactly when somebody needs to ask for help. --}}
     <native:button label="{{ __('device.share_diagnostics') }}" @tap="share()" />
+    @endif
 </native:column>

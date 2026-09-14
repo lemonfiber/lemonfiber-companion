@@ -16,6 +16,7 @@ return [
     'camera_reason' => 'The camera is used once, to read the pairing code on your stack.',
     'camera_alternative' => 'You can type the pairing code instead.',
     'notifications_reason' => 'Notifications tell you when a stack needs attention.',
+    'unlock' => 'Unlock',
     'unlock_reason' => 'Unlock lemonfiber to see your stacks.',
     'notifications_alternative' => 'Without them, open lemonfiber to see what a notification would have said.',
     'permission_refused' => 'That permission was refused, and this screen still works without it.',

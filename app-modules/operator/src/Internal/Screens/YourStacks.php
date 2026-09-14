@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Launch;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\SecureStorage;
@@ -21,6 +24,7 @@ use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\HowAStackLastWas;
+use Modules\Operator\Internal\WhatTheLaunchWas;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
@@ -90,6 +94,8 @@ use function view;
 final class YourStacks extends NativeComponent
 {
     /** What became of the last attempt to hand a report over, as a key. */
+    protected ?Launch $launched = null;
+
     protected string $sharingWent = '';
 
     /** What to do about it, beside {@see sharingWent()}. */
@@ -100,7 +106,56 @@ final class YourStacks extends NativeComponent
         private readonly Sharing $sharing,
         private readonly Verdicts $verdicts,
         private readonly Clock $clock,
+        private readonly Opening $opening,
     ) {}
+
+    /**
+     * Whether the app is shut until the operator proves who they are.
+     *
+     * `N4-R19` wants the device's own authentication on a cold start, and
+     * {@see Opening} is where the order that requirement cares about is
+     * decided — locked is asked before anything reads retained state or touches
+     * a network. This screen only renders the answer.
+     *
+     * **Held rather than asked per accessor**, because asking twice would
+     * prompt twice: the platform's unlock is a system dialog, and a frame that
+     * drew it once per field would put four of them in front of somebody. It is
+     * asked when the frame is built, which is the same shape
+     * {@see HowThisStackIs} uses for its one read of a stack.
+     */
+    public function isLocked(): bool
+    {
+        $this->launched ??= $this->opening->found();
+
+        // Every arm named, and the three that are not locked answer alike. That
+        // is `Launch`'s design working rather than four arms saying one thing:
+        // an optional arm would be a default, and a default is where two of the
+        // four quietly become the same answer — which is what `N1-R37` refuses.
+        // Saying it four times is the cost of never being able to forget one.
+        return $this->launched->either(
+            locked: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::locked(),
+            unpaired: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::unpaired(),
+            blocked: static fn(Obstacle $why): WhatTheLaunchWas => WhatTheLaunchWas::blockedBy($why),
+            ready: static fn(StackId $stack): WhatTheLaunchWas => WhatTheLaunchWas::readyFor($stack),
+        )->isLocked;
+    }
+
+    /**
+     * Ask the device again, because the operator said they were ready.
+     *
+     * Forgetting what was held rather than re-asking and comparing, which is
+     * {@see HowThisStackIs::again()}'s shape: the next read rebuilds it, so
+     * there is one path to an answer and it is the one every frame takes.
+     *
+     * There is a button for this rather than an automatic retry because `N4-R4`
+     * refuses to ask again for something that was declined: an operator who
+     * dismissed the prompt meant it, and a screen that immediately asked again
+     * is the behaviour that teaches people to turn a feature off.
+     */
+    public function tryToUnlock(): void
+    {
+        $this->launched = null;
+    }
 
     /**
      * Whether this device has been introduced to anything.

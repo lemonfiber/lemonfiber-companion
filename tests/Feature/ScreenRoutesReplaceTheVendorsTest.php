@@ -10,11 +10,13 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
+use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -320,6 +322,7 @@ function aScreen(): YourStacks
         AShareSheetThatWasOffered::working(),
         VerdictsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
+        new Opening(ADeviceThatKnowsYou::willing(), StacksInMemory::working()),
     );
 }
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\View;
+use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
@@ -17,6 +18,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\FrozenClock;
@@ -63,6 +65,7 @@ function theLaunchScreen(
     ?AShareSheetThatWasOffered $sharing = null,
     ?VerdictsInMemory $verdicts = null,
     ?FrozenClock $clock = null,
+    ?Opening $opening = null,
 ): YourStacks {
     return new YourStacks(
         $stacks,
@@ -70,6 +73,7 @@ function theLaunchScreen(
         $sharing ?? AShareSheetThatWasOffered::working(),
         $verdicts ?? VerdictsInMemory::working(),
         $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
+        $opening ?? new Opening(ADeviceThatKnowsYou::willing(), $stacks),
     );
 }
 
@@ -350,4 +354,69 @@ it('draws the frame the surface registered, by name', function (): void {
     // different test failing for a different reason.
     expect(theLaunchScreen(StacksInMemory::working())->render()->name())
         ->toBe('operator::your-stacks');
+});
+
+it('N4-R19 — a device that will not open holds the whole screen shut', function (): void {
+    // Not a banner above the list. Everything below the lock is what the lock
+    // is for: the machine names, the verdicts, and the control that assembles a
+    // diagnostic report about somebody's house.
+    $stacks = StacksInMemory::holding(aPairedStack('The loft'));
+    $screen = theLaunchScreen(
+        $stacks,
+        opening: new Opening(ADeviceThatKnowsYou::refusing(), $stacks),
+    );
+
+    expect($screen->isLocked())->toBeTrue();
+});
+
+it('N4-R19 — an unlocked device shows the stacks', function (): void {
+    $stacks = StacksInMemory::holding(aPairedStack('The loft'));
+    $screen = theLaunchScreen(
+        $stacks,
+        opening: new Opening(ADeviceThatKnowsYou::willing(), $stacks),
+    );
+
+    expect($screen->isLocked())->toBeFalse();
+});
+
+it('N4-R3 — a device with no screen lock is not a locked one', function (): void {
+    // Refusing to open would be this app requiring something the platform does
+    // not have, on a device where the operator has already decided.
+    $stacks = StacksInMemory::holding(aPairedStack('The loft'));
+    $screen = theLaunchScreen(
+        $stacks,
+        opening: new Opening(ADeviceThatKnowsYou::withNoScreenLock(), $stacks),
+    );
+
+    expect($screen->isLocked())->toBeFalse();
+});
+
+it('N4-R19 — the device is asked once for the frame, not once per field', function (): void {
+    // The platform's unlock is a system dialog. A frame that asked per accessor
+    // would put four of them in front of somebody, which is the behaviour that
+    // teaches people the app is broken.
+    $device = ADeviceThatKnowsYou::refusing();
+    $stacks = StacksInMemory::holding(aPairedStack('The loft'));
+    $screen = theLaunchScreen($stacks, opening: new Opening($device, $stacks));
+
+    $screen->isLocked();
+    $screen->isLocked();
+    $screen->isLocked();
+
+    expect($device->asked())->toBe(1);
+});
+
+it('N4-R4 — asking again is the operator saying they are ready', function (): void {
+    // A button rather than an automatic retry: somebody who dismissed the
+    // prompt meant it. Forgetting what was held is how the next read rebuilds
+    // it, so there is one path to an answer.
+    $device = ADeviceThatKnowsYou::refusing();
+    $stacks = StacksInMemory::holding(aPairedStack('The loft'));
+    $screen = theLaunchScreen($stacks, opening: new Opening($device, $stacks));
+
+    $screen->isLocked();
+    $screen->tryToUnlock();
+    $screen->isLocked();
+
+    expect($device->asked())->toBe(2);
 });

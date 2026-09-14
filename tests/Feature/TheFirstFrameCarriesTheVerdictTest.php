@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowLongAgo;
@@ -12,6 +13,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\FrozenClock;
@@ -49,12 +51,15 @@ function aStackToOpenOn(string $called = 'The loft', string $seed = 'a'): Stack
 /** The launch screen, over stacks and verdicts a test states. */
 function theOpeningScreen(Stack $stack, ?VerdictsInMemory $verdicts = null, int $now = NOW): YourStacks
 {
+    $stacks = StacksInMemory::holding($stack);
+
     return new YourStacks(
-        StacksInMemory::holding($stack),
+        $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
         $verdicts ?? VerdictsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds($now)),
+        new Opening(ADeviceThatKnowsYou::willing(), $stacks),
     );
 }
 
@@ -157,6 +162,7 @@ it('N1-R11 — one stack\'s verdict is not another\'s', function (): void {
         AShareSheetThatWasOffered::working(),
         $verdicts,
         FrozenClock::at(Instant::atEpochSeconds(NOW)),
+        new Opening(ADeviceThatKnowsYou::willing(), StacksInMemory::holding($loft, $shed)),
     );
 
     expect($screen->lastKnownOf($loft)->said)->toBe(Overall::Broken->saidOnTheScreen())
