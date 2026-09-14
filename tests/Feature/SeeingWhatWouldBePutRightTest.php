@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
 use Modules\Operator\Internal\AStacksScreen;
@@ -261,4 +262,42 @@ it('renders its own view', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()));
 
     expect($screen->render()->name())->toBe('operator::what-would-be-put-right');
+});
+
+it('refuses a route parameter that is not text', function (): void {
+    // A parameter arrives as `mixed`, because the navigation stack's own
+    // parameter array is untyped. Anything that is not a string names no stack,
+    // which is the same situation as a route with nothing in that segment.
+    //
+    // Asserted rather than assumed, because the narrowing is a branch and a
+    // branch nothing drives is one that can quietly become the other. The empty
+    // string it falls back to is what raises the refusal, so a fallback that
+    // stopped being empty would hand `StackId` a name and open whatever machine
+    // happened to answer to it. The three screens either side of this one make
+    // the same assertion about the same shape.
+    $screen = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
+});
+
+it('N1-R17 — asking again before the first frame has read anything asks once', function (): void {
+    // *Ask again* is an action, and an action can arrive before any accessor
+    // has run — a frame that has been built and not yet resolved is a real
+    // state, not a hypothetical one. Nothing has been read, so there is no
+    // handle to decide about, and the screen has to survive being asked that
+    // question anyway.
+    //
+    // The count is the assertion rather than the absence of an error: a screen
+    // that treated the empty state as work in progress would keep a handle it
+    // never had, and the read after it would be the second asking rather than
+    // the first.
+    $mending = AStackThatWouldMend::offering(aListingWorthReading());
+    $screen = theRepairsScreen($mending);
+
+    $screen->again();
+    $screen->howMany();
+
+    expect($mending->askings())->toBe(1)
+        ->and($mending->readings())->toBe(1);
 });

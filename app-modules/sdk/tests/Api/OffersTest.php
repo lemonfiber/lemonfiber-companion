@@ -255,3 +255,35 @@ it('refuses a listing whose agreement is there and is not text', function (): vo
         'offered' => [],
     ])))->toThrow(OfferIsUnreadable::class, 'agreement');
 });
+
+it('names the position of the row it refused rather than always the first', function (): void {
+    // Every other case in this file refuses the only row there is, and `Repair
+    // 0` is also what a counter that never moved would say — so none of them
+    // can tell the counter going up from the counter going anywhere else.
+    //
+    // `effects()` already argues for this case in prose: "a listing of six
+    // whose fourth is missing its consequences", where the position is the one
+    // thing that makes it findable. A good row followed by a bad one is the
+    // shortest listing that asks it.
+    //
+    // Both refusal sites, because they count from the same variable and only
+    // one of them is on the path a wrong type takes.
+    $each = [
+        'a row that is not a repair at all' => 'a sentence where a repair belongs',
+        'a repair with its consequences missing' => [
+            'check' => 'storage.one-filesystem',
+            'does' => 'Move it',
+            'reversible' => true,
+        ],
+    ];
+
+    foreach ($each as $second => $row) {
+        expect(fn(): object => Offers::offerIn(repairSaying([
+            'acted' => false,
+            'agreement' => 'agreement-a-test-can-name',
+            'beyond' => [],
+            'mended' => [],
+            'offered' => [anOfferedRepair(), $row],
+        ])))->toThrow(OfferIsUnreadable::class, 'Repair 1', sprintf('second row: %s', $second));
+    }
+});
