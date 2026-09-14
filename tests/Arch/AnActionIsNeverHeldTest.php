@@ -37,10 +37,23 @@ use Tests\Support\Module;
 // kindness gets re-implemented, one screen at a time, by somebody who has not
 // read the ADR.
 //
-// Deliberately narrow. It cannot tell a queue of actions from a queue of
-// anything else, so it asks about the types this application would queue — the
-// ones whose presence in a collection means an action is waiting for a network
-// that is not there.
+// Deliberately narrow in what it names and deliberately wide in where it looks.
+// It cannot tell a queue of actions from a queue of anything else, so it asks
+// about the types this application would queue — the ones whose presence in a
+// collection means an action is waiting for a network that is not there.
+//
+// **Where a class says it holds many is not one place, and the first two it was
+// asked about were the two this codebase does not use.** A property typed
+// `array` with a `@var` above it is the shape the rule was written against;
+// every collection here is written the other way, as a promoted constructor
+// parameter whose shape is on the constructor's `@param` — `Findings` is, and
+// so is everything modelled on it. A queue built that way had no `@var`
+// anywhere and no property the reading recognised, so the rule read the class
+// and found nothing. `@implements IteratorAggregate<int, Attempted>` is the
+// third, and it is the one a typed collection of them leads with.
+//
+// So all three are read, and the question asked of each is the same: does this
+// class write down that it holds many of a type that must never be waiting.
 
 /** Types that must never be found waiting in a collection. */
 const NEVER_QUEUED = [
@@ -48,29 +61,62 @@ const NEVER_QUEUED = [
     'IdempotencyKey',
 ];
 
+/**
+ * Everywhere a class writes down what it holds.
+ *
+ * The class's own block for `@implements`, the constructor's for the promoted
+ * parameters that are this codebase's collections, and each property's for one
+ * declared the long way. A line at a time, because one tag is one claim and a
+ * pattern spanning a whole block would read the end of one tag against the
+ * start of the next.
+ *
+ * @param ReflectionClass<object> $class
+ *
+ * @return list<string>
+ */
+function everywhereAClassSaysWhatItHolds(ReflectionClass $class): array
+{
+    $blocks = [$class->getDocComment(), $class->getConstructor()?->getDocComment()];
+
+    foreach ($class->getProperties() as $property) {
+        $blocks[] = $property->getDocComment();
+    }
+
+    $lines = [];
+
+    foreach ($blocks as $block) {
+        if (is_string($block)) {
+            $lines = [...$lines, ...explode("\n", $block)];
+        }
+    }
+
+    return $lines;
+}
+
+/**
+ * Whether one documented line says the class holds many of that type.
+ *
+ * The generic's name is what makes it many — `Attempted` alone is one answer to
+ * one action, which is the shape every verb in this application returns and not
+ * a queue of anything.
+ */
+function saysItHoldsManyOf(string $line, string $held): bool
+{
+    return preg_match(
+        sprintf('/\b(?:list|array|iterable|Traversable|IteratorAggregate|Generator)\s*<.*\b%s\b/', $held),
+        $line,
+    ) === 1;
+}
+
 it('N1-R41 — nothing holds a collection of actions waiting to be sent', function (): void {
     $queues = [];
 
     foreach (Module::all() as $module) {
         foreach ($module->classNames() as $name) {
-            $class = new ReflectionClass($name);
-
-            foreach ($class->getProperties() as $property) {
-                $type = $property->getType();
-
-                if (! $type instanceof ReflectionNamedType || $type->getName() !== 'array') {
-                    continue;
-                }
-
-                $doc = $property->getDocComment();
-
-                if ($doc === false) {
-                    continue;
-                }
-
+            foreach (everywhereAClassSaysWhatItHolds(new ReflectionClass($name)) as $line) {
                 foreach (NEVER_QUEUED as $held) {
-                    if (preg_match(sprintf('/@var\s+(list|array)<[^>]*\b%s\b/', $held), $doc) === 1) {
-                        $queues[] = sprintf('%s::$%s holds %s', $name, $property->getName(), $held);
+                    if (saysItHoldsManyOf($line, $held)) {
+                        $queues[] = sprintf('%s holds many %s — %s', $name, $held, trim($line, " *\t"));
                     }
                 }
             }
@@ -88,6 +134,23 @@ it('N1-R41 — nothing holds a collection of actions waiting to be sent', functi
         . 'button again when they choose to (N1-R41).',
         implode("\n  ", $queues),
     ));
+});
+
+it('N1-R41 — the reading finds a holding wherever the class wrote it down', function (): void {
+    // The judgement, handed each of the three spellings. A fixture can only be
+    // written one way at a time, and the two that were missing are the two this
+    // codebase actually uses — so which one a fixture happens to pick is
+    // exactly what must not decide whether the rule holds.
+    expect(saysItHoldsManyOf('     * @var list<Attempted> $waiting', 'Attempted'))->toBeTrue();
+    expect(saysItHoldsManyOf('     * @param array<int, Attempted> $waiting', 'Attempted'))->toBeTrue();
+    expect(saysItHoldsManyOf(' * @implements IteratorAggregate<int, Attempted>', 'Attempted'))->toBeTrue();
+    expect(saysItHoldsManyOf('     * @var array<string, list<IdempotencyKey>>', 'IdempotencyKey'))->toBeTrue();
+
+    // And one of them is not many. Every verb in this application answers with
+    // a single `Attempted`, so a reading that counted that would fire on the
+    // whole surface and be turned off within the week.
+    expect(saysItHoldsManyOf('     * @param Attempted $answered', 'Attempted'))->toBeFalse();
+    expect(saysItHoldsManyOf('     * @var list<Finding> $found', 'Attempted'))->toBeFalse();
 });
 
 it('N1-R41 — an attempt has no arm meaning "pending"', function (): void {

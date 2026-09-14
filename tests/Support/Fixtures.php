@@ -2184,6 +2184,42 @@ final readonly class Fixtures
                 }
                 PHP, 'N3-R9 — nothing on a member surface can be handed'),
 
+            // The queue `ADR-0020` spends its length rejecting, written the way
+            // every collection in this repository is written: a promoted
+            // constructor parameter with its shape on the constructor's
+            // `@param`, and the element type led with by an `@implements`.
+            // `Findings` is the model it copies, which is what makes this the
+            // spelling a queue would actually arrive in.
+            Fixture::suite('N1-R41', 'app-modules/health/src/Fixtures/HoldsUndelivered.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                use ArrayIterator;
+                use IteratorAggregate;
+                use Modules\Kernel\Api\Attempted;
+                use Traversable;
+
+                /** @implements IteratorAggregate<int, Attempted> */
+                final readonly class HoldsUndelivered implements IteratorAggregate
+                {
+                    /** @param array<int, Attempted> $waiting */
+                    private function __construct(private array $waiting) {}
+
+                    public static function of(Attempted ...$waiting): self
+                    {
+                        return new self(array_values($waiting));
+                    }
+
+                    public function getIterator(): Traversable
+                    {
+                        return new ArrayIterator($this->waiting);
+                    }
+                }
+                PHP, 'N1-R41 — nothing holds a collection of actions', 'HoldsUndelivered'),
+
             Fixture::suite('N3-R8', 'native/resources/android/PlaysMedia.kt', <<<'KOTLIN'
                 package app.lemonfiber.native
 
