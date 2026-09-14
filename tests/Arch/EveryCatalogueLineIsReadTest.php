@@ -70,7 +70,6 @@ function writtenBeforeItsScreen(): array
 
         // `N2-R2`: how old a reading is. The report carries no timestamp today,
         // so this waits on the wire as much as on a screen.
-        'health.stale' => 'a report that says when it was taken',
     ];
 }
 
@@ -189,5 +188,38 @@ it('L7 — every line the catalogue holds is one the application can show', func
         . "its screen, which is deliberate. So is a line named in `writtenBeforeItsScreen()`, \n"
         . "which costs one sentence saying which screen is coming for it (L7).\n",
         implode("\n  ", $orphans),
+    ));
+});
+
+it('L7 — no line waits for a screen that has already arrived', function (): void {
+    // The exemption list cannot be allowed to go stale, for the reason
+    // `composer-dependency-analyser.php` writes out about its own: an ignore
+    // that no longer applies is a dead line somebody has to wonder about, and
+    // the day it stops applying is the only day anybody could tell.
+    //
+    // Here the cost is worse than a dead line. Every entry is a promise that a
+    // screen is coming; an entry whose screen arrived is a promise nobody can
+    // tell from one still outstanding, so the list stops being readable as the
+    // thing it is. `health.stale` was the first to arrive — written for a
+    // report that says when it was taken, and read by the launch screen the day
+    // it started opening on a held verdict.
+    $said = everythingTheAppSays();
+    $reachable = everyKeyADerivationCouldBuild($said);
+
+    $arrived = array_values(array_filter(
+        array_keys(writtenBeforeItsScreen()),
+        static fn(string $key): bool => str_contains($said, sprintf("'%s'", $key))
+            || in_array($key, $reachable, strict: true),
+    ));
+
+    sort($arrived);
+
+    expect($arrived)->toBe([], sprintf(
+        "These lines are named in `writtenBeforeItsScreen()` and something now reads them:\n  %s\n\n"
+        . 'The screen each was waiting for has arrived, so the entry has done its job and '
+        . "should go.\n"
+        . 'Left in, it is indistinguishable from an entry still waiting — and a list where '
+        . "the two read alike stops being evidence of anything.\n",
+        implode("\n  ", $arrived),
     ));
 });
