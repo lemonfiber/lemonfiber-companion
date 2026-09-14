@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function array_any;
 use function basename;
 use function explode;
 use function file_get_contents;
@@ -12,6 +13,7 @@ use function in_array;
 use function is_dir;
 use function is_string;
 use function preg_match;
+use function preg_quote;
 
 use RuntimeException;
 
@@ -124,6 +126,54 @@ function treeSources(): array
     }
 
     return $found;
+}
+
+/**
+ * Where each kind of mechanism a rule can claim actually lives.
+ *
+ * The join in {@see enforcementSources()} is the identifier anywhere at all,
+ * which is right for *is this enforced* and too loose for *is it enforced the
+ * way the row says*. A row naming three mechanisms needs one of them to mention
+ * it, so a clause with nothing behind it passes on the strength of a comment
+ * somewhere else.
+ *
+ * Two kinds, because two are unambiguous: a word in the claim that names a
+ * directory this repository has. `test` is deliberately not one of them — it
+ * appears in *every* arch claim by way of the file the rule lives in, so it
+ * would say nothing.
+ *
+ * @return array<string, list<string>>
+ */
+function whereEachKindOfRuleLives(): array
+{
+    return [
+        'arch' => phpFilesUnder(Tree::at('tests/Arch')),
+        'phpstan' => [...phpFilesUnder(Tree::at('phpstan')), theConfiguration('phpstan.neon')],
+    ];
+}
+
+/**
+ * Whether any of those sources names that rule.
+ *
+ * Bounded on both sides, so `H1` is not found inside `H10` and a hyphenated
+ * spec identifier is not read as a repository one — tokens rather than text,
+ * which is the same reading `K1` had to be taught.
+ *
+ * @param list<string> $sources
+ */
+function carriesTheRule(string $id, array $sources): bool
+{
+    $token = sprintf('/(?<![-A-Za-z0-9])%s(?![0-9A-Za-z])/', preg_quote($id, '/'));
+
+    return array_any($sources, static fn(string $source): bool => preg_match($token, $source) === 1);
+}
+
+/** One configuration file, as text, or nothing where it cannot be read. */
+function theConfiguration(string $file): string
+{
+    $contents = file_get_contents(Tree::at($file));
+
+    return is_string($contents) ? $contents : '';
 }
 
 /**

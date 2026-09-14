@@ -15,6 +15,7 @@ use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
+use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\YourStacks;
 
@@ -121,6 +122,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // a contradiction, and folding this into health would put the two
             // under one verdict that has to be about one of them.
             Router::native(AStacksScreen::Stuck->value, WhatStoppedComingIn::class);
+
+            // What this machine is running, and the three verbs about it
+            // (`N2-R7`). A screen of its own rather than a section of health:
+            // health answers *is anything wrong*, and this answers *what is on
+            // and what do I want on*, which an operator opens the app for even
+            // when every check passes.
+            Router::native(AStacksScreen::Services->value, WhatThisStackRuns::class);
 
             // What one service has been saying (`N2-R10`). Two placeholders,
             // which no other route here has: the service is in the path rather

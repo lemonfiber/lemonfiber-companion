@@ -293,7 +293,7 @@ automatic and the operator never sees the question.
 
 | | Rule | Enforced by |
 |---|---|---|
-| F1 | Components are thin: hold state, delegate decisions | phpstan cognitive complexity + arch size cap |
+| F1 | Components are thin: hold state, delegate decisions | phpstan: `cognitive_complexity` + `H3`'s method cap |
 | F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor |
 | F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | `tests/Templates`, against the installed parser and registries |
 | F5 | Every interactive element announces itself to a screen reader | `tests/Templates` |
@@ -302,6 +302,7 @@ automatic and the operator never sees the question.
 | F4 | A screen that takes a port carries `#[Lazy]`; one whose content changes while open carries `#[Poll]` | arch for the first; review for the second |
 | F8 | A screen shows findings in the order a capability decided, never the order they arrived | arch: a screen that names findings names `WorstFirst` |
 | F9 | A class list is written out, never decided at runtime | arch: over the text of every template |
+| F10 | Every method a template calls is one its screen has, and every screen that renders is paired | `tests/Templates` |
 
 **Why F9 exists, given F3.** Every rule about a class list is handed the answer
 of one function, `Template::classStrings()`, and that function drops any token
@@ -684,7 +685,7 @@ there, and neither is read as a description of the current code.
 |---|---|---|
 | G1 | No mocking types you do not own — hand-written fakes for our ports | arch: no Mockery on foreign namespaces |
 | G2 | Every port has one contract test, run against the real adapter **and** its fake | test: the ports, their implementations and the contract file, compared |
-| G3 | No test reaches the network | `Http::preventStrayRequests()` + arch |
+| G3 | No test reaches the network | `Http::preventStrayRequests()` + an empty global `MockClient` + test |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
 | G6 | No committed `->only(`, and no `->skip()` without a reason | arch |
@@ -718,12 +719,35 @@ reachable from production is a fake (`G4`).
 |---|---|---|
 | H1 | No `Manager`, `Helper`, `Util`, `Service`, `Data`, `Info` suffixes | arch |
 | H2 | No `Interface`/`Abstract` affixes on type names | arch |
-| H3 | Caps: methods per class, lines per method, constructor parameters, cognitive complexity | phpstan + arch |
+| H3 | Caps: methods per class (20), cognitive complexity | phpstan: own rule + `cognitive_complexity` |
 | H4 | A test file mirrors its source file's location | arch: an orphan test fails, a class without one does not |
 | H5 | A string with a value in it is built with `sprintf` — never `.`, never interpolation — and a message is one literal, never two joined by a dot | phpstan: own rule, one per node type |
 | H6 | An exception is named for what happened, not for being an exception | arch |
 | H7 | A test is named and described for the behaviour it pins | arch |
 | H8 | A method returns from at most three places | phpstan: own rule |
+
+**What `H3` does not cap, and why.** This row read *methods per class, lines
+per method, constructor parameters, cognitive complexity* for a long time, and
+only the last of the four had anything counting it — so a class could pass here
+and be refused by SonarCloud under `Q-R64`, which is how `WhatWouldBePutRight`
+reached twenty-one methods before anybody heard about it. The method count now
+has a rule of its own, at SonarCloud's own number so the two cannot disagree.
+
+The other two were dropped from the sentence rather than given mechanisms,
+because both would refuse code that is right as it is. A cap on method length
+would name `CompositionRoot::register` and `OperatorServiceProvider::boot`,
+which are lists of bindings with a paragraph each on why — length is what a
+reader wants there, and what makes a long method hard to follow is already
+capped as cognitive complexity. A cap on constructor parameters would name the
+row carriers: `WhatOneServiceSays` takes ten because a service has ten facts a
+template renders, and `D1` refuses the array that would hide them behind one.
+Splitting a row in half to satisfy a count makes two halves a template has to
+join back up.
+
+A rule whose sentence is wider than its mechanism is worse than a narrow rule
+honestly described: the table reports green and a reader stops checking, which
+is strictly worse than an unchecked area, because an unchecked area gets
+reviewed by a person.
 
 **Why the floors are per module.** One percentage across twelve modules is an
 average, and an average is true about what it covered and silent about what it

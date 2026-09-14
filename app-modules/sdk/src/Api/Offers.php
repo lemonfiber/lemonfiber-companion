@@ -10,10 +10,8 @@ use function is_bool;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
-use Lemonfiber\Sdk\Generated\JobEnvelope;
 use Lemonfiber\Sdk\Generated\RepairEnvelope;
 use Modules\Kernel\Api\Effects;
-use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\Mended;
 use Modules\Kernel\Api\Offer;
@@ -27,12 +25,12 @@ use Modules\Sdk\Internal\Wire;
 use function trim;
 
 /**
- * The `job` and `repair` envelopes, as the handle and the listing.
+ * The `repair` envelope, as the listing and as the record of what was done.
  *
- * Two folds in one class because they are two halves of one exchange: asking
- * what a stack would put right answers a handle, and the handle answers the
- * listing. Splitting them would put the two readings of a single round trip in
- * different files with nothing saying they belong together.
+ * Two folds in one class because they are two readings of one payload: what a
+ * stack would put right, and what came of agreeing to it. The handle between
+ * them is {@see Handles}' — the `job` envelope belongs to every action that
+ * reaches the services rather than to this one.
  *
  * Written the way {@see Reports} and {@see Households} are — static, reading
  * through {@see WireField} so no field name is spelled twice, and refusing
@@ -46,22 +44,6 @@ use function trim;
  */
 final readonly class Offers
 {
-    /**
-     * The handle a stack answered an action with.
-     *
-     * @param Envelope<mixed> $envelope the `job` envelope, as the client returned it
-     */
-    public static function handleIn(Envelope $envelope): Job
-    {
-        $data = self::handedBack(Wire::checked($envelope));
-
-        if (! is_array($data)) {
-            throw OfferIsUnreadable::missing(WireField::Data);
-        }
-
-        return Job::named(self::text($data, WireField::Job));
-    }
-
     /**
      * What a stack said it would put right, and the name of the listing.
      *
@@ -118,20 +100,6 @@ final readonly class Offers
         }
 
         return WhatWasMended::of(...$mended);
-    }
-
-    /**
-     * The `job` payload, as it actually arrived.
-     *
-     * `mixed` deliberately, for {@see Reports::payload()}'s reason: the
-     * generated envelope asserts its shape without checking it, and that
-     * assertion is not a fact about the socket.
-     *
-     * @param Envelope<mixed> $envelope
-     */
-    private static function handedBack(Envelope $envelope): mixed
-    {
-        return JobEnvelope::in($envelope)->data;
     }
 
     /**

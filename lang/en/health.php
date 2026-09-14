@@ -122,4 +122,59 @@ return [
     'every' => [
         'while_work_runs' => 'Looking again every :count seconds while this runs.',
     ],
+
+    // N2-R7 — what is running, and how much each one matters. The state is
+    // where a service stands now; how much it matters is what it would cost if
+    // that went wrong, which is a property of the machine's design.
+    'service' => [
+        'failed' => 'Fell over',
+        'crash-looping' => 'Falling over and starting again',
+        'unhealthy' => 'Up, and answering badly',
+        'absent' => 'Expected, and not there',
+        'stopped' => 'Turned off',
+        'starting' => 'Starting',
+        'running' => 'Running',
+        'healthy' => 'Running well',
+        'host-managed' => 'Run by the machine, not by this stack',
+    ],
+    'matters' => [
+        'critical' => 'Nothing else works without it',
+        'core' => 'Part of the stack itself',
+        'important' => 'The house would notice today',
+        'enhancing' => 'The house would notice eventually',
+        'optional' => 'Nobody would notice',
+    ],
+    'running' => [
+        'inactive' => 'Nothing is running',
+        'degraded' => 'Running, with something wrong',
+        'partial' => 'Some of it is running',
+        'active' => 'Everything is running',
+    ],
+    'do' => [
+        'start' => 'Start it',
+        'stop' => 'Stop it',
+        'restart' => 'Restart it',
+    ],
+
+    'what_it_runs' => 'What it is running',
+
+    // N2-R7's screen. The verbs above are the buttons; these are the sentences
+    // around them — what a row says about itself, and what a stop is stated to
+    // disturb before anybody agrees to it.
+    'in_form' => 'Part of :form',
+    'it_exited' => 'It ended with :code',
+    'host_runs_it' => 'This machine runs it, not the stack',
+    'read_its_logs' => 'Read what it has been saying',
+    'nothing_is_running' => 'Nothing is running on this machine',
+    'no_forms_at_all' => 'Nothing has been set up on this machine yet',
+    'by_form' => 'Or a whole form at once',
+
+    // N2-R8. Said before the yes and not after it.
+    'about_to' => 'About to change :what',
+    'about_to_form' => 'This is every service in that form, not just one of them.',
+    'would_not_help' => 'It is already restarting over and over. Another restart joins the queue.',
+    'leaning_on_it' => 'These will not work while it is off:',
+    'nothing_leans_on_it' => 'Nothing else in the stack depends on it.',
+    'go_ahead' => 'Go ahead',
+    'never_mind' => 'Never mind',
 ];

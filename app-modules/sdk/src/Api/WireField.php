@@ -164,6 +164,27 @@ enum WireField: string
     /** How a single check turned out, as a tagged union. */
     case Verdict = 'verdict';
 
+    /** What the whole stack amounts to, over the services listed beside it. */
+    case Condition = 'condition';
+
+    /** The forms a stack has, whether or not anything in them is running. */
+    case Forms = 'forms';
+
+    /** The services a stack has, each with its own state. */
+    case Services = 'services';
+
+    /** How much a household loses when one service is not running. */
+    case Criticality = 'criticality';
+
+    /** The services one service will not work without. */
+    case DependsOn = 'depends_on';
+
+    /** Which form a service belongs to. */
+    case Profile = 'profile';
+
+    /** What a service that has ended exited with. Absent while it runs. */
+    case Exit = 'exit';
+
     /**
      * This field's name as a path, where it is read off another field's value.
      *

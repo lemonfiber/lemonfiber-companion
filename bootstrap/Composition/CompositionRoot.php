@@ -35,6 +35,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
+use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Sdk\Api\Admissions;
@@ -44,6 +45,7 @@ use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Stalls;
+use Modules\Sdk\Api\Supervisors;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
@@ -194,6 +196,16 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Stalling::class, static fn(): Stalling => new Stalls(new PinnedClients()));
 
         $this->app->bind(Saying::class, static fn(): Saying => new Scrollbacks(new PinnedClients()));
+
+        // What a stack is running, and the three verbs `N2-R7` offers about it.
+        // The one binding that both reads and writes, which is the shape the
+        // port argues for: an operator reads a listing, picks a row and says a
+        // verb, and a second port for the verb would be a second place a client
+        // could be reached for.
+        $this->app->bind(
+            Supervising::class,
+            static fn(): Supervising => new Supervisors(new PinnedClients()),
+        );
 
         $this->app->bind(
             Networking::class,

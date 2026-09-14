@@ -48,6 +48,9 @@ enum AStacksScreen: string
     case Stuck = '/stacks/{stack}/stuck';
 
 
+    /** What this machine is running, and the verbs about it (`N2-R7`). */
+    case Services = '/stacks/{stack}/services';
+
     /** What one of this machine's services has been saying (`N2-R10`). */
     case Logs = '/stacks/{stack}/logs/{service}';
 

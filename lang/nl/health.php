@@ -122,4 +122,59 @@ return [
     'every' => [
         'while_work_runs' => 'Kijkt elke :count seconden opnieuw zolang dit loopt.',
     ],
+
+    // N2-R7 — wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
+    // een dienst nu staat; hoeveel het uitmaakt is wat het zou kosten als dat
+    // misging, en dat hoort bij hoe de machine is opgezet.
+    'service' => [
+        'failed' => 'Omgevallen',
+        'crash-looping' => 'Valt om en start steeds opnieuw',
+        'unhealthy' => 'Draait, en antwoordt slecht',
+        'absent' => 'Verwacht, en er niet',
+        'stopped' => 'Uitgezet',
+        'starting' => 'Start op',
+        'running' => 'Draait',
+        'healthy' => 'Draait goed',
+        'host-managed' => 'Wordt door de machine gedraaid, niet door deze stack',
+    ],
+    'matters' => [
+        'critical' => 'Zonder dit werkt niets anders',
+        'core' => 'Hoort bij de stack zelf',
+        'important' => 'Het huishouden merkt het vandaag',
+        'enhancing' => 'Het huishouden merkt het op den duur',
+        'optional' => 'Niemand merkt het',
+    ],
+    'running' => [
+        'inactive' => 'Er draait niets',
+        'degraded' => 'Draait, met iets mis',
+        'partial' => 'Een deel draait',
+        'active' => 'Alles draait',
+    ],
+    'do' => [
+        'start' => 'Starten',
+        'stop' => 'Stoppen',
+        'restart' => 'Opnieuw starten',
+    ],
+
+    'what_it_runs' => 'Wat er draait',
+
+    // N2-R7's screen. The verbs above are the buttons; these are the sentences
+    // around them — what a row says about itself, and what a stop is stated to
+    // disturb before anybody agrees to it.
+    'in_form' => 'Onderdeel van :form',
+    'it_exited' => 'Gestopt met :code',
+    'host_runs_it' => 'Deze machine draait hem, niet de stack',
+    'read_its_logs' => 'Lees wat hij gezegd heeft',
+    'nothing_is_running' => 'Er draait niets op deze machine',
+    'no_forms_at_all' => 'Er is nog niets ingericht op deze machine',
+    'by_form' => 'Of een heel formulier tegelijk',
+
+    // N2-R8. Said before the yes and not after it.
+    'about_to' => 'Op het punt :what te wijzigen',
+    'about_to_form' => 'Dit is elke dienst in dat formulier, niet alleen die ene.',
+    'would_not_help' => 'Hij start al keer op keer opnieuw. Nog een herstart komt in de rij.',
+    'leaning_on_it' => 'Deze werken niet zolang hij uit staat:',
+    'nothing_leans_on_it' => 'Niets anders in de stack heeft hem nodig.',
+    'go_ahead' => 'Doe maar',
+    'never_mind' => 'Laat maar',
 ];

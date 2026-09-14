@@ -34,9 +34,12 @@ use function trim;
  * nothing about what the analyser can see and only narrows what a debugger
  * prints.
  *
- * **What this does not close, and cannot:** `print_r` and `var_export` read
- * private properties directly and no method intercepts them. That is worth
- * writing down rather than implying a guarantee this type does not give. What
+ * **What this does not close, and cannot:** `var_export` reads private
+ * properties directly and no method intercepts it. `var_dump` and `print_r` do
+ * consult `__debugInfo()` and are covered — naming them here as well would send
+ * the next reader to defend a door that is already shut, which is how a real
+ * hole gets lost among three imaginary ones. That is worth writing down rather
+ * than implying a guarantee this type does not give. What
  * actually closes it is the thing that assembles a diagnostic report refusing
  * to walk a `Session` at all (`N4-R13`), and there is no report assembler yet.
  * This narrows the surface; it does not seal it.

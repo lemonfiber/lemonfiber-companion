@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stage;
@@ -58,6 +61,12 @@ function theGeneratedStuckEnvelope(): string
 function theGeneratedLogEnvelope(): string
 {
     return theGeneratedEnvelope('LogEnvelope');
+}
+
+/** The generated envelope that carries what the whole stack is doing, as text. */
+function theGeneratedStatusEnvelope(): string
+{
+    return theGeneratedEnvelope('StatusEnvelope');
 }
 
 /**
@@ -304,6 +313,27 @@ it('N1-R13 — every stream the contract describes has a case', function (): voi
     expect(valuesOf(Stream::cases()))->toBe($streams);
 });
 
+it('N1-R13 — every way a service can be running has a case', function (): void {
+    $states = unionIn(theGeneratedStatusEnvelope(), 'state');
+
+    expect($states)->not->toBe([], 'no service state union was found in the generated envelope');
+    expect(valuesOf(HowAServiceRuns::cases()))->toBe($states);
+});
+
+it('N1-R13 — every criticality the contract describes has a case', function (): void {
+    $matters = unionIn(theGeneratedStatusEnvelope(), 'criticality');
+
+    expect($matters)->not->toBe([], 'no criticality union was found in the generated envelope');
+    expect(valuesOf(HowMuchItMatters::cases()))->toBe($matters);
+});
+
+it('N1-R13 — every condition the whole stack can be in has a case', function (): void {
+    $conditions = unionIn(theGeneratedStatusEnvelope(), 'condition');
+
+    expect($conditions)->not->toBe([], 'no condition union was found in the generated envelope');
+    expect(valuesOf(HowTheStackIsRunning::cases()))->toBe($conditions);
+});
+
 it('N1-R13 — every standing the contract describes has a case', function (): void {
     // The contract calls this `state`. The enum is named for what it says about
     // a problem rather than for the field it arrives in, which is why the two
@@ -345,6 +375,9 @@ const CHECKED_AGAINST_THE_WIRE = [
     Conclusion::class => 'outcome',
     Overall::class => 'overall',
     Severity::class => 'severity',
+    HowAServiceRuns::class => 'state',
+    HowMuchItMatters::class => 'criticality',
+    HowTheStackIsRunning::class => 'condition',
     Stage::class => 'stage',
     Standing::class => 'state',
     Stream::class => 'stream',

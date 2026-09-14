@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Operator\Internal\AScreenNeedsMoreThanAStack;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\AStacksScreen;
@@ -138,6 +139,52 @@ it('the builder and the router agree about which machine a path names', function
     $params = is_array($resolved) && is_array($resolved['params'] ?? null) ? $resolved['params'] : [];
 
     expect($params['stack'] ?? null)->toBe($named);
+});
+
+it('every way this app asks where a machine is hands back a path the router knows', function (): void {
+    // `WhereAStackIs` is the one place a stack's routes are spelled, and each
+    // accessor on it is a single line — which is exactly the line that gets
+    // added and never called from a test, because a template calls it and a
+    // template is not executed here. `services()` arrived that way.
+    //
+    // Read off the type rather than listed, so the next destination is covered
+    // without anybody remembering this file — the argument
+    // `everyPathAScreenHandsOut()` makes about the enum, made about the type
+    // that hands the enum's paths out.
+    $where = WhereAStackIs::rememberedAs(aStackInTheUri());
+    $unknown = [];
+    $asked = 0;
+
+    foreach (new ReflectionClass(WhereAStackIs::class)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        if ($method->isStatic() || $method->getNumberOfParameters() > 0) {
+            continue;
+        }
+
+        $asked++;
+
+        $path = $method->invoke($where);
+
+        // `is_string` as well as resolvable: an accessor that handed back
+        // anything else is a `@navigate` with an array in it, which the router
+        // cannot be asked about at all.
+        if (! is_string($path) || NativeRouter::resolve($path) === null) {
+            $unknown[] = sprintf('%s() hands back a path the router does not know', $method->getName());
+        }
+    }
+
+    // The one that needs a service, which the sweep cannot call blind.
+    if (NativeRouter::resolve($where->logsOf(ServiceId::called('gluetun'))) === null) {
+        $unknown[] = 'logsOf() hands back a path the router does not know';
+    }
+
+    expect($asked)->toBeGreaterThan(1, 'no accessor was read off `WhereAStackIs`, so this rule read nothing');
+
+    expect($unknown)->toBe([], sprintf(
+        "These hand out a path nothing is registered under:\n  %s\n\n"
+        . 'Every one of them is a button on a handset, and a path the router does not know is a '
+        . "button that does nothing with no error anywhere.\n",
+        implode("\n  ", $unknown),
+    ));
 });
 
 it('a screen that needs a service refuses to be asked for with only a stack', function (): void {
