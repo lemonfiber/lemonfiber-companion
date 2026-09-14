@@ -784,6 +784,44 @@ it('N2-R10 — a finding about a service offers what that service said', functio
         ->and(NativeRouter::resolve($screen->logsOf($rows[0]->service)))->not->toBeNull();
 });
 
+it('N2-R10 — a finding about the machine has no log to go to, and asking for one comes away quietly', function (): void {
+    // `WhatOneFindingSays::$service` is documented as the service *or empty*, and
+    // a finding about the machine is the empty one. The template does not draw
+    // the button for those rows — but this is a public method on a screen, and a
+    // client can call it with anything it likes. Safety that rests on a template
+    // remembering is the shape `N3-R3` refuses one level up.
+    //
+    // So it answers this machine's own screen: a button leading back to where the
+    // operator already is leads nowhere wrong, where building the value object
+    // first put a raise on a tap.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('disk.space'),
+            Category::Storage,
+            'The disk',
+            Conclusion::Failed,
+            aFailingVerdict(),
+        ),
+    ))));
+
+    $rows = $screen->findings();
+
+    expect($rows[0]->service)->toBe('')
+        ->and($screen->logsOf($rows[0]->service))->toBe($screen->goes()->health())
+        ->and(NativeRouter::resolve($screen->logsOf($rows[0]->service)))->not->toBeNull();
+});
+
+it('a name that is only whitespace is no name either', function (): void {
+    // The trim is the whole of the difference, and a guard comparing the
+    // untrimmed string would let every one of these reach `ServiceId::called()`,
+    // which raises on exactly the same set.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+
+    foreach ([' ', '   ', "\t", "\n"] as $blank) {
+        expect($screen->logsOf($blank))->toBe($screen->goes()->health(), sprintf('logsOf(%s)', var_export($blank, return: true)));
+    }
+});
+
 it('N3-R13 — a credential the stack refused signs this device out', function (): void {
     // Not one of the six sentences about a machine. The stack answered and said
     // no, so whatever this device is holding is not a session any more — the
