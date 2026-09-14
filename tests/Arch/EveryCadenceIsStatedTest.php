@@ -64,18 +64,47 @@ function everyFileThatPolls(): array
     return $found;
 }
 
+/**
+ * What each `#[Poll]` in a source was given, in the order they are written.
+ *
+ * The attribute is found inside the brackets rather than as the whole of them.
+ * PHP lets a group carry several — `#[Lazy, Poll(HowOften::WHILE_WORK_RUNS_MS)]`
+ * is one `#[` and two attributes — and an expression that required `)]` to
+ * follow the arguments reads that as no poll at all. The file still counts as
+ * one that polls, so the rule below examines it, finds no interval to judge and
+ * passes: the one half of `N1-R27` a number could break, gone, on a screen that
+ * is visibly refreshing.
+ *
+ * @return list<string>
+ */
+function everyPollIntervalIn(string $source): array
+{
+    preg_match_all('/#\[[^\]]*?\bPoll\(([^)]*)\)/', $source, $found);
+
+    return array_map(trim(...), $found[1]);
+}
+
 it('N1-R27 — every cadence is one `HowOften` declares, never a number at the attribute', function (): void {
     $written = [];
 
     foreach (everyFileThatPolls() as $path) {
-        preg_match_all('/#\[Poll\(([^)]*)\)\]/', (string) file_get_contents($path), $intervals);
+        $intervals = everyPollIntervalIn((string) file_get_contents($path));
 
-        foreach ($intervals[1] as $said) {
-            if (str_starts_with(trim($said), 'HowOften::')) {
+        // A file that declares a poll and hands this nothing to read is a
+        // finding rather than a pass. It is how the rule went quiet before:
+        // silence here is indistinguishable from a cadence that is correct.
+        if ($intervals === []) {
+            $written[] = sprintf('%s — declares a poll whose interval this rule cannot read', basename($path));
+
+            continue;
+        }
+
+        foreach ($intervals as $said) {
+            if (str_starts_with($said, 'HowOften::')) {
                 continue;
             }
 
-            $written[] = sprintf('%s — #[Poll(%s)]', basename($path), trim($said));
+            $written[] = sprintf('%s — #[Poll(%s)]', basename($path), $said);
         }
     }
 
@@ -86,6 +115,20 @@ it('N1-R27 — every cadence is one `HowOften` declares, never a number at the a
         . "each interval once, and the sentence counts on the same constant.\n",
         implode("\n  ", $written),
     ));
+});
+
+it('N1-R27 — the reading finds a poll however the attributes were grouped', function (): void {
+    // The judgement, handed both spellings. Planting the grouped one would mean
+    // rewriting a real screen's attributes for the length of a run, and what
+    // would be proven is the same thing this asserts in one line.
+    expect(everyPollIntervalIn('#[Poll(HowOften::WHILE_WORK_RUNS_MS)]'))->toBe(['HowOften::WHILE_WORK_RUNS_MS']);
+    expect(everyPollIntervalIn('#[Lazy, Poll(HowOften::WHILE_WORK_RUNS_MS)]'))->toBe(['HowOften::WHILE_WORK_RUNS_MS']);
+    expect(everyPollIntervalIn('#[Poll(30_000), Lazy]'))->toBe(['30_000']);
+
+    // And a mention of the attribute is not a use of it: every screen that
+    // carries one explains it in a docblock first, and a docblock is where a
+    // reading that matched the bare name would find its subjects.
+    expect(everyPollIntervalIn(' * **`#[Poll]`** because the answer moves while it is open.'))->toBe([]);
 });
 
 it('N1-R27 — every screen that refreshes says how often', function (): void {

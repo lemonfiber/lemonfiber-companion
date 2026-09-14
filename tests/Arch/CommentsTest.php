@@ -80,6 +80,17 @@ function commentedFiles(): array
 /**
  * Every comment line in those files.
  *
+ * PHP is read as tokens, and everything else by line, because a line scan
+ * cannot reach the placement a note left behind actually takes. A comment
+ * opened at the end of a line of code sits on a line that begins with the code,
+ * so an expression anchored at the start of the line reads the whole file,
+ * finds nothing and passes — and this repository writes eight of them. Tokens
+ * also stop an attribute reading as a hash comment and a `*` inside a heredoc
+ * reading as a docblock, neither of which is a note anybody left.
+ *
+ * A comment token spanning several lines is handed back one line at a time,
+ * keeping its own numbering, because K2 asks its questions of a line.
+ *
  * @return array<string, list<string>> path => comment lines
  */
 function commentLines(): array
@@ -87,18 +98,61 @@ function commentLines(): array
     $found = [];
 
     foreach (commentedFiles() as $path => $contents) {
-        $comments = [];
-
-        foreach (explode("\n", $contents) as $number => $line) {
-            $trimmed = ltrim($line);
-
-            if (preg_match('{^(//|\*|/\*|#)}', $trimmed) === 1) {
-                $comments[] = sprintf('%d: %s', $number + 1, trim($trimmed));
-            }
-        }
+        $comments = str_ends_with($path, '.php') && ! str_ends_with($path, '.blade.php')
+            ? commentTokensIn($contents)
+            : commentLinesIn($contents);
 
         if ($comments !== []) {
             $found[$path] = $comments;
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * The comments PHP itself found, split back into lines.
+ *
+ * @return list<string>
+ */
+function commentTokensIn(string $contents): array
+{
+    $found = [];
+
+    foreach (token_get_all($contents) as $token) {
+        if (! is_array($token) || ! in_array($token[0], [T_COMMENT, T_DOC_COMMENT], strict: true)) {
+            continue;
+        }
+
+        foreach (explode("\n", $token[1]) as $offset => $line) {
+            $said = trim($line);
+
+            if ($said !== '') {
+                $found[] = sprintf('%d: %s', $token[2] + $offset, $said);
+            }
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * The same, for a file PHP does not parse.
+ *
+ * `phpstan.neon` carries rule identifiers in comments above the settings they
+ * explain, and a Blade template is not a token stream either.
+ *
+ * @return list<string>
+ */
+function commentLinesIn(string $contents): array
+{
+    $found = [];
+
+    foreach (explode("\n", $contents) as $number => $line) {
+        $trimmed = ltrim($line);
+
+        if (preg_match('{^(//|\*|/\*|#)}', $trimmed) === 1) {
+            $found[] = sprintf('%d: %s', $number + 1, trim($trimmed));
         }
     }
 

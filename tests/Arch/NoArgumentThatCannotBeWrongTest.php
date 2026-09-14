@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\Calls;
 use Tests\Support\Tree;
 
 // C10 — an argument that cannot change the answer is a line no test can defend.
@@ -27,6 +28,37 @@ use Tests\Support\Tree;
 // argument written *because* the checker asked, which is the only form it takes
 // in this repository — `preserve_keys: false` against a collection of ours.
 
+/**
+ * Whether a source hands `preserve_keys` to `iterator_to_array`.
+ *
+ * Read as a call rather than as a pattern, and the argument this rule is about
+ * is the reason. The only call worth writing it on takes a collection, and a
+ * collection arrives as `$this->findings()` at least as often as it arrives as
+ * `$findings` — so a pattern stopping at the first `)` reads the second
+ * spelling and walks past the first. The shape the rule exists for is a query
+ * handing its own collection over, which is exactly the shape with a `)` inside
+ * the call.
+ */
+function handsOverAKeyArgument(string $source): bool
+{
+    $tokens = token_get_all($source);
+
+    return array_any($tokens, fn(string|array $token, int $at): bool => Calls::isNamed($token, 'iterator_to_array') && namesTheKeyArgument(Calls::argumentsAt($tokens, $at)));
+}
+
+/**
+ * Whether one of those arguments is `preserve_keys:`.
+ *
+ * @param list<list<array{int, string, int}|string>> $arguments
+ */
+function namesTheKeyArgument(array $arguments): bool
+{
+    return array_any(
+        $arguments,
+        static fn(array $argument): bool => Calls::isNamedArgument($argument, 'preserve_keys'),
+    );
+}
+
 it('C10 — nothing passes an argument that cannot change the answer', function (): void {
     $offenders = [];
 
@@ -43,12 +75,12 @@ it('C10 — nothing passes an argument that cannot change the answer', function 
             continue;
         }
 
-        $said = (string) file_get_contents($path);
-
-        if (preg_match('/iterator_to_array\([^)]*preserve_keys:/', $said) === 1) {
+        if (handsOverAKeyArgument((string) file_get_contents($path))) {
             $offenders[] = str_replace(sprintf('%s/', Tree::root()), '', $path);
         }
     }
+
+    sort($offenders);
 
     expect($offenders)->toBe([], sprintf(
         "These pass `preserve_keys` to `iterator_to_array` over a collection that holds a list, "
@@ -56,4 +88,19 @@ it('C10 — nothing passes an argument that cannot change the answer', function 
         . 'Collect by hand instead, as `WorstFirst::over()` does, and say why where you do it.',
         implode("\n  ", $offenders),
     ));
+});
+
+it('C10 — the reading finds the argument wherever in the call it was written', function (): void {
+    // The judgement, handed both spellings. A collection reaching the call as
+    // its own accessor puts a `)` between the function name and the argument,
+    // and that is the spelling a rule anchored on the opening bracket cannot
+    // see — so it is asserted here rather than left to whichever of the two a
+    // fixture happens to use.
+    expect(handsOverAKeyArgument('<?php iterator_to_array($findings, preserve_keys: false);'))->toBeTrue();
+    expect(handsOverAKeyArgument('<?php iterator_to_array($this->findings(), preserve_keys: false);'))->toBeTrue();
+
+    // And the answer is not yes to everything. The call without the argument is
+    // ordinary, and the argument outside a call is somebody else's word.
+    expect(handsOverAKeyArgument('<?php iterator_to_array($findings);'))->toBeFalse();
+    expect(handsOverAKeyArgument('<?php $preserve_keys = false;'))->toBeFalse();
 });
