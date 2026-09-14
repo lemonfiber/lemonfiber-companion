@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_intersect;
 use function array_map;
 use function array_unique;
 use function count;
@@ -84,4 +85,24 @@ it('offers a button only where the app can press it', function (): void {
 
     expect(Obstacle::CredentialWasRefused->standing()->offersAButton())->toBeTrue();
     expect(Obstacle::StackDidNotAnswer->standing()->offersAButton())->toBeFalse();
+});
+
+it('N1-R10 — gives each one its own sentence and its own advice', function (): void {
+    // Derived from the case rather than spelled, so a case added here has both
+    // by existing and cannot be given a sentence at one call site that
+    // disagrees with another's. Two of these sharing a key would be the
+    // collapse `N1-R10` refuses, rebuilt in the catalogue after the enum had
+    // refused it.
+    $said = array_map(static fn(Obstacle $why): string => $why->said(), Obstacle::cases());
+    $remedies = array_map(static fn(Obstacle $why): string => $why->remedy(), Obstacle::cases());
+
+    expect(count(array_unique($said)))->toBe(count($said))
+        ->and(count(array_unique($remedies)))->toBe(count($remedies));
+
+    // What happened and what to do about it are not the same sentence, which
+    // is the other half of what `N1-R10` asks for.
+    expect(array_intersect($said, $remedies))->toBe([]);
+
+    expect(Obstacle::DeviceHasNoNetwork->said())->toBe('connection.no_network')
+        ->and(Obstacle::DeviceHasNoNetwork->remedy())->toBe('connection.no_network_action');
 });

@@ -8,8 +8,6 @@ use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 
-use function sprintf;
-
 /**
  * One frame's worth of answer, flattened for a template to read.
  *
@@ -81,8 +79,8 @@ final readonly class WhatTheStackTurnedOutToBe
         return new self(
             isSignedIn: true,
             overall: '',
-            met: sprintf('connection.%s', $why->value),
-            remedy: sprintf('connection.%s_action', $why->value),
+            met: $why->said(),
+            remedy: $why->remedy(),
             findings: Findings::none(),
         );
     }

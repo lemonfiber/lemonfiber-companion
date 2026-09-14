@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function sprintf;
+
 /**
  * What stood between the app and a stack, told apart rather than summarised.
  *
@@ -118,6 +120,43 @@ enum Obstacle: string
      * remedy is its own.
      */
     case TooManyAttempts = 'too_many_attempts';
+
+    /**
+     * The key for what stood in the way.
+     *
+     * The value *is* the stem, so a case added here has a sentence by existing
+     * and `EveryKeyTheAppNamesResolvesTest` is what catches one with no line.
+     * Derived rather than spelled for the reason `L1` gives: a key written out
+     * at a call site is a key that survives its case being renamed, and it goes
+     * on resolving to a line about something else.
+     *
+     * Here rather than in the folds that render it, because two of them were
+     * spelling this themselves and a third would have spelled it again. An
+     * obstacle knows its own sentence; a screen that has to know it as well is
+     * a screen that can disagree with another screen.
+     */
+    public function said(): string
+    {
+        return sprintf('connection.%s', $this->value);
+    }
+
+    /**
+     * The key for what to do about it.
+     *
+     * Separate from {@see said()} because `N1-R10` asks for both and they are
+     * not the same sentence: what happened is a fact about the world, and what
+     * to do about it is advice. The advice is what differs most between these —
+     * a router and a cupboard are not the same errand — which is why a screen
+     * showing one summary for all six would be useless even with six summaries.
+     *
+     * `_action` is the suffix every remedy in this catalogue carries, which is
+     * why one stem serves both: {@see \Modules\Connection\Api\HowTheSignInWent}
+     * spells its pair the same way, and a screen reading one reads the other.
+     */
+    public function remedy(): string
+    {
+        return sprintf('connection.%s_action', $this->value);
+    }
 
     /**
      * The identifier an operator can search for.
