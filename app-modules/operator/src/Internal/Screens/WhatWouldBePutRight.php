@@ -132,7 +132,16 @@ final class WhatWouldBePutRight extends NativeComponent
     /** Whether this device still holds a session for it (`N1-R44`). */
     public function isSignedIn(): bool
     {
-        return $this->answer()->isSignedIn;
+        if (! $this->answer()->isSignedIn) {
+            return false;
+        }
+
+        // `N3-R13`: the outcome read can meet a refused credential after the
+        // offer read succeeded, and one frame of a screen showing what it
+        // loaded a moment ago under a session the stack has stopped
+        // recognising is exactly what the requirement forbids. Both folds are
+        // asked, so whichever one met it is the one that answers.
+        return ! $this->agreed || ! $this->done()->isSignedOut;
     }
 
     /**
@@ -389,11 +398,43 @@ final class WhatWouldBePutRight extends NativeComponent
                     done: static fn(WhatWasMended $mended): WhatThisStackPutRight
                         => WhatThisStackPutRight::these($mended),
                     ended: static fn(): WhatThisStackPutRight => WhatThisStackPutRight::ended(),
-                    met: static fn(Obstacle $why): WhatThisStackPutRight
-                        => WhatThisStackPutRight::met($why),
+                    met: function (Obstacle $why) use ($stack): WhatThisStackPutRight {
+                        $this->letGoOfTheSession($why, $stack);
+
+                        return WhatThisStackPutRight::met($why);
+                    },
                 ),
             notHeld: static fn(): WhatThisStackPutRight => WhatThisStackPutRight::ended(),
         );
+    }
+
+    /**
+     * Stop holding a session the stack has just refused (`N3-R13`).
+     *
+     * The half of the requirement that is an effect rather than a value. The
+     * folds already render a refused credential as a signed-out app, so nothing
+     * already loaded reaches the screen — but a fold cannot forget anything,
+     * and a session left in the store is resumed on the next frame and refused
+     * again. The operator would be looking at a sign-in prompt over a device
+     * that still believes it is signed in.
+     *
+     * Whether an obstacle means that is {@see Obstacle::meansWeAreSignedOut()}'s
+     * decision, asked here rather than answered again, so this screen cannot
+     * come to disagree with the folds it hands the same obstacle to.
+     *
+     * **It also drops the handle.** This screen is the one that holds a job
+     * between frames, and a handle is only redeemable with the session it was
+     * taken out under — keeping it would have the next frame ask about work on
+     * behalf of somebody the stack has stopped recognising.
+     */
+    private function letGoOfTheSession(Obstacle $why, Stack $stack): void
+    {
+        if (! $why->meansWeAreSignedOut()) {
+            return;
+        }
+
+        $this->handle = null;
+        $this->storage->forget($stack->id());
     }
 
     /** What came back, asked once per frame. */
@@ -445,7 +486,11 @@ final class WhatWouldBePutRight extends NativeComponent
 
                 return $this->became($stack, $session, $job);
             },
-            met: static fn(Obstacle $why): WhatTheStackWouldPutRight => WhatTheStackWouldPutRight::met($why),
+            met: function (Obstacle $why) use ($stack): WhatTheStackWouldPutRight {
+                $this->letGoOfTheSession($why, $stack);
+
+                return WhatTheStackWouldPutRight::met($why);
+            },
         );
     }
 

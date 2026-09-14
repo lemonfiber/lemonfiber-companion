@@ -38,6 +38,7 @@ final readonly class WhatThisStackPutRight
      * @param int                      $changed   how many of them changed anything on the machine
      * @param string                   $met       the key for what stood in the way, or empty
      * @param string                   $remedy    the key for what to do about it, or empty
+     * @param bool                     $isSignedOut whether the stack refused this device's session
      */
     private function __construct(
         public bool $isWorking = false,
@@ -46,6 +47,7 @@ final readonly class WhatThisStackPutRight
         public int $changed = 0,
         public string $met = '',
         public string $remedy = '',
+        public bool $isSignedOut = false,
     ) {}
 
     /** The stack is still carrying out what it was agreed to. */
@@ -79,6 +81,14 @@ final readonly class WhatThisStackPutRight
     /** The machine could not be reached, and this is what the operator met. */
     public static function met(Obstacle $why): self
     {
+        // `N3-R13`: a refused credential is a signed-out app rather than a
+        // sentence about a machine, and the screen must not go on rendering
+        // what it loaded before. Said as a flag rather than by returning an
+        // empty outcome, because the outcome is not the thing that changed —
+        // this device's standing with the stack is.
+        if ($why->meansWeAreSignedOut()) {
+            return new self(isSignedOut: true);
+        }
         return new self(met: $why->said(), remedy: $why->remedy());
     }
 }

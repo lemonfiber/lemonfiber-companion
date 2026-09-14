@@ -241,3 +241,21 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
 
     expect($stalling->askings())->toBe(2);
 });
+
+it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+    // The stalled screen makes the same two moves the others do, and it has to
+    // make them itself: a fold cannot forget anything, and a session left in
+    // the store is resumed on the next frame and refused again.
+    $keychain = AKeychainInMemory::working();
+    $screen = theStalledScreen(AStackThatStalled::met(Obstacle::CredentialWasRefused), $keychain);
+
+    expect($keychain->isHolding(theStackWhoseStallIsRead()->id()))->toBeTrue();
+
+    expect($screen->isSignedIn())->toBeFalse()
+        // Nothing about a machine, because this is not about the machine — and
+        // nothing already loaded, which `N3-R13` names separately.
+        ->and($screen->met())->toBe('')
+        ->and($screen->howMany())->toBe(0)
+        ->and($screen->howMuchIsShown())->toBe('')
+        ->and($keychain->isHolding(theStackWhoseStallIsRead()->id()))->toBeFalse();
+});

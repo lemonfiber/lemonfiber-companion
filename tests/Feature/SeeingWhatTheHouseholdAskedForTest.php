@@ -383,3 +383,21 @@ it('a refusal the stack did not time carries the reason and no moment', function
     expect($rows[0]->refusedReason)->toBe('Not this week')
         ->and($rows[0]->refusedAt)->toBe('');
 });
+
+it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+    // The requests screen makes the same two moves the health screen does, and
+    // it has to make them itself: a fold cannot forget anything, and a session
+    // left in the store is resumed on the next frame and refused again.
+    $keychain = AKeychainInMemory::working();
+    $screen = theRequestsScreen(
+        AHouseholdThatAsked::met(Obstacle::CredentialWasRefused),
+        $keychain,
+    );
+
+    expect($keychain->isHolding(theStackWhoseHouseholdIsRead()->id()))->toBeTrue();
+
+    expect($screen->isSignedIn())->toBeFalse()
+        ->and($screen->met())->toBe('')
+        ->and($screen->howMany())->toBe(0)
+        ->and($keychain->isHolding(theStackWhoseHouseholdIsRead()->id()))->toBeFalse();
+});

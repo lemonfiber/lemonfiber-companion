@@ -48,6 +48,13 @@ final readonly class WhatTheStackWouldPutRight
      * across five factories, and the only ones that died were the fields that
      * discriminate. The cure is {@see \Modules\Kernel\Api\Size}'s — make the
      * meaningless value unwritable, so there is no literal left to flip.
+
+     * **A credential the stack refused is a signed-out app, not an obstacle.**
+     * `N3-R13` says an identity removed from the household results in a
+     * signed-out app at the next refused call and that nothing already loaded
+     * goes on being rendered. {@see Obstacle::meansWeAreSignedOut()} draws that
+     * line once, so this fold and the four beside it cannot come to disagree
+     * about whether somebody is signed in.
      */
     private function __construct(
         public bool $isSignedIn = true,
@@ -96,6 +103,10 @@ final readonly class WhatTheStackWouldPutRight
     /** The machine could not be reached, and this is what the operator met. */
     public static function met(Obstacle $why): self
     {
+        if ($why->meansWeAreSignedOut()) {
+            return self::signedOut();
+        }
+
         return new self(met: $why->said(), remedy: $why->remedy());
     }
 }

@@ -352,12 +352,39 @@ final class HowThisStackIs extends NativeComponent
         );
     }
 
+    /**
+     * Stop holding a session the stack has just refused (`N3-R13`).
+     *
+     * The half of the requirement that is an effect rather than a value. The
+     * fold already renders a refused credential as a signed-out app, so nothing
+     * already loaded reaches the screen — but a fold cannot forget anything,
+     * and a session left in the store is resumed on the next frame and refused
+     * again. The operator would be looking at a sign-in prompt over a device
+     * that still believes it is signed in.
+     *
+     * Whether an obstacle means that is {@see Obstacle::meansWeAreSignedOut()}'s
+     * decision, asked here rather than answered again, so this screen cannot
+     * come to disagree with the fold it hands the same obstacle to.
+     */
+    private function letGoOfTheSession(Obstacle $why, Stack $stack): void
+    {
+        if (! $why->meansWeAreSignedOut()) {
+            return;
+        }
+
+        $this->storage->forget($stack->id());
+    }
+
     /** What the stack said, or what the operator met instead. */
     private function asked(Stack $stack, Session $session): WhatTheStackTurnedOutToBe
     {
         return $this->asking->about($stack, $session)->either(
             said: static fn(Report $report): WhatTheStackTurnedOutToBe => WhatTheStackTurnedOutToBe::said($report),
-            met: static fn(Obstacle $why): WhatTheStackTurnedOutToBe => WhatTheStackTurnedOutToBe::met($why),
+            met: function (Obstacle $why) use ($stack): WhatTheStackTurnedOutToBe {
+                $this->letGoOfTheSession($why, $stack);
+
+                return WhatTheStackTurnedOutToBe::met($why);
+            },
         );
     }
 }

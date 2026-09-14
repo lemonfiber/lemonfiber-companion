@@ -79,9 +79,10 @@ function theRepairsScreen(
     AStackThatWouldMend $mending,
     ?string $named = null,
     bool $signedIn = true,
+    ?AKeychainInMemory $keychain = null,
 ): WhatWouldBePutRight {
     $stack = theStackBeingOfferedRepairs();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
@@ -617,4 +618,39 @@ it('N1-R27 — the cadence the screen states is the one the attribute keeps', fu
         ->and($polls[0]->newInstance()->ms)->toBe(HowOften::WhileWorkRuns->milliseconds())
         ->and($screen->cadence()->seconds() * 1_000)->toBe($polls[0]->newInstance()->ms)
         ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+});
+
+it('N3-R13 — a refused credential on the outcome read signs this device out', function (): void {
+    // The case the offer read cannot cover. A screen that read an offer
+    // successfully and then met a refusal while asking what became of the work
+    // would, for one frame, render what it loaded a moment ago under a session
+    // the stack has stopped recognising — which is the half of `N3-R13` that is
+    // about rendering rather than about storage.
+    $mending = AStackThatWouldMend::goneAfterAgreeing(
+        aListingWorthReading(),
+        Obstacle::CredentialWasRefused,
+    );
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect($screen->isSignedIn())->toBeFalse();
+});
+
+it('N3-R13 — and the session is let go of, handle and all', function (): void {
+    // This screen is the one that holds a job between frames, and a handle is
+    // only redeemable with the session it was taken out under — keeping it
+    // would have the next frame ask about work on behalf of somebody the stack
+    // has stopped recognising.
+    $keychain = AKeychainInMemory::working();
+    $mending = AStackThatWouldMend::met(Obstacle::CredentialWasRefused);
+    $screen = theRepairsScreen($mending, keychain: $keychain);
+
+    expect($keychain->isHolding(theStackBeingOfferedRepairs()->id()))->toBeTrue();
+
+    $screen->offer();
+
+    expect($keychain->isHolding(theStackBeingOfferedRepairs()->id()))->toBeFalse()
+        ->and($screen->isSignedIn())->toBeFalse();
 });

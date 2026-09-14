@@ -288,10 +288,21 @@ it('N1-R44 — asking again notices a session that has ended underneath them', f
 });
 
 it('N1-R10 — says what the operator met where the stack did not answer', function (): void {
-    // Every obstacle, because the screen shows whichever it was and the keys
-    // are derived — so a seventh case needs no edit on this screen and must not
-    // arrive without a catalogue line.
-    foreach (Obstacle::cases() as $why) {
+    // Every obstacle that leaves the session standing, because the screen shows
+    // whichever it was and the keys are derived — so a seventh case needs no
+    // edit on this screen and must not arrive without a catalogue line.
+    //
+    // The one that does not leave it standing is asked about on its own below.
+    // Asked here off the enum rather than listed, so a case that starts or
+    // stops ending a session moves between the two cases by itself.
+    $standing = array_values(array_filter(
+        Obstacle::cases(),
+        static fn(Obstacle $why): bool => ! $why->meansWeAreSignedOut(),
+    ));
+
+    expect($standing)->not->toBe([], 'every obstacle now ends a session, which cannot be right');
+
+    foreach ($standing as $why) {
         $screen = theHealthScreen(AStackThatWasAsked::met($why));
 
         expect($screen->met())->toBe(sprintf('connection.%s', $why->value), $why->value)
@@ -771,4 +782,50 @@ it('N2-R10 — a finding about a service offers what that service said', functio
             'gluetun',
         ))
         ->and(NativeRouter::resolve($screen->logsOf($rows[0]->service)))->not->toBeNull();
+});
+
+it('N3-R13 — a credential the stack refused signs this device out', function (): void {
+    // Not one of the six sentences about a machine. The stack answered and said
+    // no, so whatever this device is holding is not a session any more — the
+    // identity was removed, the password changed, or the stack rebuilt.
+    $keychain = AKeychainInMemory::working();
+    $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::CredentialWasRefused), $keychain);
+
+    expect($screen->isSignedIn())->toBeFalse()
+        // Nothing about a machine, because this is not about the machine.
+        ->and($screen->met())->toBe('')
+        ->and($screen->remedy())->toBe('')
+        // And nothing already loaded: `N3-R13` names that half separately.
+        ->and($screen->howMany())->toBe(0)
+        ->and($screen->overall())->toBe('');
+});
+
+it('N3-R13 — and the session is let go of, not merely hidden', function (): void {
+    // The half a fold cannot do. A session left in the store is resumed on the
+    // next frame and refused again, so the operator would be looking at a
+    // sign-in prompt over a device that still believes it is signed in.
+    $keychain = AKeychainInMemory::working();
+    $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::CredentialWasRefused), $keychain);
+
+    expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeTrue();
+
+    $screen->isSignedIn();
+
+    expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeFalse();
+});
+
+it('N3-R13 — no other obstacle throws the session away', function (): void {
+    // A walk out of wifi must not look like being thrown out of the house. The
+    // five that leave a session standing are asked off the enum, so a case that
+    // starts ending one moves itself into the case above.
+    foreach (Obstacle::cases() as $why) {
+        if ($why->meansWeAreSignedOut()) {
+            continue;
+        }
+
+        $keychain = AKeychainInMemory::working();
+        theHealthScreen(AStackThatWasAsked::met($why), $keychain)->isSignedIn();
+
+        expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeTrue($why->value);
+    }
 });
