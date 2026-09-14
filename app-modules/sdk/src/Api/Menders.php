@@ -12,8 +12,10 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Repair as Asking;
 use Modules\Kernel\Api\Confirmed;
+use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheOfferIsGoing;
 use Modules\Kernel\Api\HowTheRepairIsGoing;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
@@ -43,6 +45,15 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * would spin on a handle nothing will ever answer for. It becomes
  * {@see HowTheOfferIsGoing::ended()}, whose remedy is to ask again.
  *
+ * **The yes carries a key; the question does not.** `N1-R42` puts one on every
+ * action that changes a stack, and {@see self::agreeTo()} is this class's only
+ * one. {@see self::wouldPutRight()} travels the same door and changes nothing:
+ * `Repair::offer()` asks what *would* be done and carries out none of it, so a
+ * key there would name an attempt at nothing and invite a stack to one day
+ * answer a fresh question with an old answer. The line is the requirement's own
+ * — *every action that changes a stack* — rather than every request that
+ * happens to be a `POST`.
+ *
  * **A {@see \Modules\Kernel\Api\JobHasNoName} is not caught**, and the asymmetry is deliberate. It means
  * a stack acknowledged an action and named it with nothing — the one state
  * `N1-R41` has no answer for, since the action *was* delivered and so must not
@@ -52,7 +63,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Menders implements Mending
 {
-    public function __construct(private PinnedClients $clients) {}
+    public function __construct(private PinnedClients $clients, private Entropy $entropy) {}
 
     public function wouldPutRight(Stack $stack, Session $session): Underway
     {
@@ -79,7 +90,12 @@ final readonly class Menders implements Mending
             // without naming the listing it came from.
             $asked = Asking::agreedTo($confirmed->quoting(), $confirmed->repair()->answers());
 
-            return Underway::as(Handles::in($client->repair($asked)));
+            // The key is built inline, as {@see Supervisors::told()} builds
+            // its own. A name for this attempt that outlived the statement
+            // making it is a name a later attempt could be sent under.
+            return Underway::as(Handles::in(
+                $client->repair($asked, IdempotencyKey::from($this->entropy->nonce())->sent()),
+            ));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable) {
