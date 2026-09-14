@@ -294,7 +294,7 @@ automatic and the operator never sees the question.
 | | Rule | Enforced by |
 |---|---|---|
 | F1 | Components are thin: hold state, delegate decisions | phpstan: `cognitive_complexity` + `H3`'s method cap |
-| F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor |
+| F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor, over a set the same rule asserts it found |
 | F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | `tests/Templates`, against the installed parser and registries |
 | F5 | Every interactive element announces itself to a screen reader | `tests/Templates` |
 | F6 | Every list has an empty state | `tests/Templates` |
@@ -503,6 +503,7 @@ app-modules/<name>/
   src/Api/Queries/        one public method each, never returning Outcome
   src/Internal/           unreachable from anywhere else
   src/Internal/Presenters/   pure: data in, view model out
+  src/Internal/ViewModels/   what a template reads, deciding nothing
   resources/views/        the screens this module navigates to
   tests/                  mirroring src/, one directory level for one
 lang/<locale>/<module>.php   every sentence a person reads
@@ -889,7 +890,15 @@ the decisions are.
 
 ### View model
 
-`final readonly`, no behaviour, named for the screen it dresses.
+`final readonly`, named for the screen it dresses. It carries what a template
+reads and folds nothing: every value on it was decided by the presenter beside
+it, which is what keeps those decisions somewhere a mutation run can reach.
+
+**No behaviour means no decisions, not no methods.** Asking a view model about
+what it already holds — whether a field is set, whether an identity matches the
+one a screen is acting on — is reading. The line is the fold: a method that
+takes a domain value and works out what to show is a presenter's, wherever it
+happens to be written.
 
 ### Outcome
 

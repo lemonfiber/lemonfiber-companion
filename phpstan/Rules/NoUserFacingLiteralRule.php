@@ -77,6 +77,20 @@ final class NoUserFacingLiteralRule implements Rule
 
     private function rendersToAScreen(string $file): bool
     {
+        // A test writes prose on purpose — the sentence a case is about, the
+        // payload it stands a stack in with — and a rule that read those would
+        // be answered by exempting it everywhere, which is how a rule stops
+        // being read at all.
+        //
+        // Said as *not a test* rather than as *must be under `src/`*, because
+        // the two are not the same set and the difference is silent. Requiring
+        // `src/` excuses every rendering path that happens to sit somewhere
+        // else, which is the whole of `.rule-fixtures/` — so the fixture that
+        // exists to prove this rule fires was the one thing it could not see.
+        if (str_contains($file, '/tests/')) {
+            return false;
+        }
+
         foreach (self::RENDERING_PATHS as $path) {
             if (str_contains($file, $path)) {
                 return true;

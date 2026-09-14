@@ -22,7 +22,10 @@ use Tests\Support\Tree;
 // over data it loaded a moment ago — which is the sentence `N3-R13` names.
 //
 // So this asks for both, of every place that has one. Read as tokens: a fold by
-// its `met(Obstacle` constructor, a screen by its `resume(` call.
+// its `met(Obstacle` method, a screen by its `resume(` call. The declaration
+// rather than the return type, because what a fold answers with is the view
+// model it dresses — a different class per screen — and a rule keyed to any one
+// of those names would find one fold and call it all of them.
 //
 // **Only the surface's own folds, not the kernel's answer types.** `WhatIsStuck`
 // and `WhatWasWanted` also take an obstacle and must not ask this: they are what
@@ -58,7 +61,7 @@ function whatHandlesARefusal(): array
 
         $source = (string) file_get_contents($path);
 
-        if (str_contains($path, '/operator/src/Internal/') && str_contains($source, 'met(Obstacle $why): self')) {
+        if (str_contains($path, '/operator/src/Internal/') && str_contains($source, 'function met(Obstacle $why)')) {
             $folds[] = $path;
         }
 
@@ -91,7 +94,7 @@ it('N3-R13 — every fold that renders an obstacle asks whether it ended the ses
     expect($silent)->toBe([], sprintf(
         "These render an obstacle without asking whether it ended the session:\n  %s\n\n"
         . '`N3-R13` says a refused credential is a signed-out app rather than a sentence '
-        . 'about a machine. `Obstacle::meansWeAreSignedOut()` draws that line once so five '
+        . 'about a machine. `Obstacle::meansWeAreSignedOut()` draws that line once so the '
         . "folds cannot disagree about whether somebody is signed in.\n",
         implode("\n  ", $silent),
     ));
