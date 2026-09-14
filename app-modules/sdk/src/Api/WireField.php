@@ -44,6 +44,9 @@ enum WireField: string
     /** The stable identifier for the thing a check established. */
     case Check = 'check';
 
+    /** The name a stack gives one listing of repairs, quoted back on a yes. */
+    case Agreement = 'agreement';
+
     /** The stable identifier for a kind of problem, quotable and searchable. */
     case Code = 'code';
 
@@ -55,6 +58,21 @@ enum WireField: string
 
     /** The rows of a diagnostic run, in the order the checks produced them. */
     case Findings = 'findings';
+
+    /** What one repair would do, said in the stack's own words. */
+    case Does = 'does';
+
+    /** What else that repair touches on its way. */
+    case Effects = 'effects';
+
+    /** The name a stack gave a piece of work it agreed to do. */
+    case Job = 'job';
+
+    /** The repairs a stack says it would carry out. */
+    case Offered = 'offered';
+
+    /** Whether a repair can be taken back afterwards. */
+    case Reversible = 'reversible';
 
     /** The figure inside an estimate. */
     case Bytes = 'bytes';
