@@ -22,6 +22,21 @@ use Tests\Support\Tree;
 // reasonable.
 //
 // An entry is removed by answering its requirement, never by deleting the row.
+//
+// **Name an envelope only where the field could not land anywhere else.** A row
+// that names one is searched in that one alone, so a guess about *where* an
+// answer will arrive becomes a condition for noticing that it has. The `N2-R8`
+// row below named `LifecycleEnvelope` on good reasoning — that is where what an
+// operation touched already arrives — and the bound landed on the status
+// reading instead, because it is worth having before the verb runs rather than
+// after. Had the row kept the name, the gap would have closed and this suite
+// would have gone on passing, which is the one failure a register cannot
+// survive: it would have been a note explaining why a requirement was
+// reasonably unanswered, attached to a requirement that was answerable.
+//
+// Leaving the envelope null costs a wider search and the odd false positive.
+// A false positive sends somebody to read a row; a false negative is the
+// register quietly becoming decoration.
 
 /**
  * Every requirement this app is holding, and what it is waiting for.
@@ -35,10 +50,16 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
     [
         'requirement' => 'N2-R8',
         'asks' => 'the bound on what a start, stop or restart disturbs, or that the stack reported none',
-        // Named, because the `lifecycle` envelope is where a bound would
-        // arrive: it already carries what an operation touched — `plan`,
-        // `switched`, `services` — and has no field for how long for.
-        'envelope' => 'LifecycleEnvelope',
+        // Unnamed on purpose, and this row is the reason the rule above the
+        // list says so. It named `LifecycleEnvelope` once, reasoning that a
+        // bound would arrive where what an operation touched already arrives.
+        // The reasoning was good and the guess was wrong: the bound is worth
+        // having *before* the verb runs, and `lifecycle` is what an operation
+        // says once it has. Naming the envelope turned a prediction about
+        // where into a condition for firing, so the right answer landing
+        // anywhere else would have left this green with the gap closed —
+        // which is the one failure a register cannot survive.
+        'envelope' => null,
         'field' => 'bound',
         'shape' => null,
         'raised' => 'B2-R16 already requires the stack to state it before it acts, and `disturbing_for()` '

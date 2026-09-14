@@ -60,12 +60,19 @@ use function view;
  *
  * **It does not say how long a stop lasts, and that is deliberate.** `N2-R8`
  * asks for the bound the stack reported or for the fact that it reported none,
- * and the contract carries neither for a lifecycle verb — there is no field on
- * the `lifecycle` envelope for it and no unconfirmed form of these three to ask
- * through. `N2-R14` says the app must not substitute one, and *the stack
- * reported none* would be substituting: nothing asked it. The gap is held by
- * `WhatTheContractDoesNotCarryTest`, which fails the day lemonfiber carries the
- * field, and the sentence belongs here when it does.
+ * and no payload on this wire carries either. `N2-R14` says the app must not
+ * substitute one, and *the stack reported none* would be substituting: nothing
+ * asked it. The gap is held by `WhatTheContractDoesNotCarryTest`, which fails
+ * the day lemonfiber carries the field, and the sentence belongs here when it
+ * does.
+ *
+ * That row used to name the `lifecycle` envelope, on the reasoning that a bound
+ * would arrive where what an operation touched already arrives. It is worth
+ * knowing why that was wrong, because the sentence this screen is waiting for
+ * would have arrived without anything saying so: a bound is only any use
+ * *before* the verb runs, and `lifecycle` is what an operation says once it
+ * has. So the answer belongs on the reading this screen already takes every
+ * frame, and the row now watches for the field wherever it lands.
  *
  * **It polls only while something is settling** (`N1-R27`). A service that is
  * starting becomes a running one on its own, and *ask again* as the only road
