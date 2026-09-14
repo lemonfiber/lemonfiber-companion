@@ -121,6 +121,23 @@ it('D7-R3 — the figure is whole and under a thousand, in a unit named by a key
         ->and($rows[1]->sizeUnit)->toBe('household.megabytes');
 });
 
+it('D7-R3 — a figure too big for its unit moves up rather than grows', function (): void {
+    // What the ladder is for, and not tidiness. Four terabytes said in
+    // gigabytes is `4000` — a four-figure number, which cannot be read without
+    // a separator, which `L5` says nothing leaving the fold may carry because
+    // one written here is wrong in some locale by construction. Moving up a
+    // unit is how the figure stays readable without one.
+    $wanted = Requested::of(
+        Wanted::of(44, 'Robin', 'Every season at once', Size::measured(4_000_000_000_000), Waiting::Getting),
+    );
+
+    $row = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->requests()[0];
+
+    expect($row->sizeFigure)->toBe(4)
+        ->and($row->sizeUnit)->toBe('household.terabytes')
+        ->and($row->sizeFigure)->toBeLessThan(1000);
+});
+
 it('D7-R3 — a request nobody has sized says so rather than showing nothing', function (): void {
     $wanted = Requested::of(
         Wanted::of(43, 'Sam', 'Something nobody has sized', Size::unknown(), Waiting::ForApproval),
@@ -222,4 +239,9 @@ it('the way back from the requests screen is a route as well', function (): void
 
     expect(NativeRouter::resolve($screen->healthIsAt()))->not->toBeNull()
         ->and(NativeRouter::resolve($screen->signInAt()))->not->toBeNull();
+});
+
+it('renders the frame it is named for', function (): void {
+    expect(theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->render()->name())
+        ->toBe('operator::what-the-household-asked');
 });
