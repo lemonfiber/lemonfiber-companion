@@ -12,12 +12,19 @@
 #              shared-files, typos}, security / {gitleaks, osv-scanner},
 #              checks, rules, the rules refuse violations,
 #              tests and coverage, mutation testing
-#   sonar      gate / gate
+#   sonar      gate / gate, sonarcloud
 #   sdk-drift  sdk-drift
 #
-# `SonarCloud Code Analysis` is required too and is posted by the SonarCloud app
-# rather than by a workflow, so it cannot be waited for by name; `gate / gate`
-# reads that summary and cannot succeed before it exists.
+# `sonarcloud` is there in place of `SonarCloud Code Analysis`, which the
+# SonarCloud app posts rather than a workflow. That tick cannot appear at all on
+# a Dependabot pull request — such a run reads the Dependabot secret store, has
+# no `SONAR_TOKEN`, and so produces no analysis for the app to have an opinion
+# about — and a required check that can never report blocked every dependency
+# update this repository opened. `sonarcloud` is the job this repository owns: it
+# reports on every pull request, it goes red when a scan genuinely fails, and
+# being a workflow it can be waited for by name. The app still posts its tick and
+# it is still worth reading; it is no longer the thing holding the branch.
+# `gate / gate` is what enforces Q-R64 either way.
 #
 # `sdk-drift` is the one this repository has that its siblings do not, and it is
 # the reason this file could not simply be copied from one of them: a flag raised
