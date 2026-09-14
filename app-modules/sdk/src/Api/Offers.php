@@ -14,11 +14,17 @@ use Lemonfiber\Sdk\Generated\JobEnvelope;
 use Lemonfiber\Sdk\Generated\RepairEnvelope;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\LeftBehind;
+use Modules\Kernel\Api\Mended;
 use Modules\Kernel\Api\Offer;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\Repairs;
 use Modules\Kernel\Api\Undoing;
+use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatWasMended;
 use Modules\Sdk\Internal\Wire;
+
+use function trim;
 
 /**
  * The `job` and `repair` envelopes, as the handle and the listing.
@@ -78,6 +84,43 @@ final readonly class Offers
     }
 
     /**
+     * What became of every repair in a listing the operator agreed to.
+     *
+     * The same envelope as {@see self::offerIn()}, read for its other half: the
+     * contract carries `offered` and `mended` on one shape, and which of them
+     * is worth reading is decided by what was asked rather than by anything on
+     * the wire. So this is a second reader over one payload rather than a
+     * branch inside the first — a reader that chose for itself would be
+     * deciding whether the operator had agreed to anything, which is a fact
+     * only the caller holds.
+     *
+     * @param Envelope<mixed> $envelope the `repair` envelope, as the job answered it
+     */
+    public static function mendedIn(Envelope $envelope): WhatWasMended
+    {
+        $data = self::listed(Wire::checked($envelope));
+
+        if (! is_array($data)) {
+            throw OfferIsUnreadable::missing(WireField::Data);
+        }
+
+        $rows = self::rows($data, WireField::Mended);
+        $mended = [];
+        $position = 0;
+
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                throw OfferIsUnreadable::outcome($position);
+            }
+
+            $mended[] = self::outcome($row, $position);
+            $position++;
+        }
+
+        return WhatWasMended::of(...$mended);
+    }
+
+    /**
      * The `job` payload, as it actually arrived.
      *
      * `mixed` deliberately, for {@see Reports::payload()}'s reason: the
@@ -99,6 +142,72 @@ final readonly class Offers
     private static function listed(Envelope $envelope): mixed
     {
         return RepairEnvelope::in($envelope)->data;
+    }
+
+    /**
+     * One record: which repair, what became of it, and what it left.
+     *
+     * @param array<mixed> $row
+     */
+    private static function outcome(array $row, int $position): Mended
+    {
+        $about = self::under($row, WireField::Repair);
+
+        if (! is_array($about)) {
+            throw OfferIsUnreadable::outcome($position);
+        }
+
+        $repair = self::repair($about, $position);
+        $outcome = self::under($row, WireField::Outcome);
+
+        if (! is_array($outcome)) {
+            throw OfferIsUnreadable::outcome($position);
+        }
+
+        $became = self::became($outcome, $position);
+
+        return $became === WhatBecameOfIt::Stopped
+            ? Mended::stopped($repair, self::left($outcome))
+            : Mended::went($repair, $became);
+    }
+
+    /**
+     * Which of the five this outcome is.
+     *
+     * The word is nested under its own key on the wire — `outcome.outcome` —
+     * because the shape carries `leaving` beside it for the one case that has
+     * something to leave. Refused rather than defaulted where it is a word this
+     * app does not know: guessing is how a repair that overwrote nothing gets
+     * shown as one that worked.
+     *
+     * @param array<mixed> $outcome
+     */
+    private static function became(array $outcome, int $position): WhatBecameOfIt
+    {
+        $said = self::under($outcome, WireField::Outcome);
+
+        if (! is_string($said)) {
+            throw OfferIsUnreadable::outcome($position);
+        }
+
+        return WhatBecameOfIt::tryFrom($said) ?? throw OfferIsUnreadable::word($said);
+    }
+
+    /**
+     * What a stopped repair left, where it said.
+     *
+     * An absent `leaving` is {@see LeftBehind::nothing()} rather than a
+     * refusal, which is the one optional field here with a real answer: a
+     * repair that stopped and left nothing can be agreed to again without a
+     * thought, and that is worth saying rather than refusing to say.
+     *
+     * @param array<mixed> $outcome
+     */
+    private static function left(array $outcome): LeftBehind
+    {
+        $said = self::under($outcome, WireField::Leaving);
+
+        return is_string($said) && trim($said) !== '' ? LeftBehind::of($said) : LeftBehind::nothing();
     }
 
     /**
@@ -207,6 +316,32 @@ final readonly class Offers
         }
 
         return $said ? Undoing::Possible : Undoing::Permanent;
+    }
+
+    /**
+     * One field of a row, whatever it holds, or `null` where it is absent.
+     *
+     * `C9` refuses `??` on a subscript because it reads as a default when it is
+     * really an admission that nobody knows whether the key is there. Here
+     * nobody does — the contract marks several of these optional — so the
+     * absence is answered once, in one place, and every caller decides for
+     * itself what it means. Most refuse; `leaving` answers
+     * {@see LeftBehind::nothing()}, which is the distinction a shared `??`
+     * would have flattened. The same helper {@see Households} carries, for the
+     * same reason.
+     *
+     * @param array<mixed> $row
+     */
+    private static function under(array $row, WireField $field): mixed
+    {
+        // A guard rather than a ternary: rector rewrites
+        // `array_key_exists(...) ? $row[...] : null` to `??`, which `C9` then
+        // refuses. Both gates are right about what they see.
+        if (! array_key_exists($field->value, $row)) {
+            return null;
+        }
+
+        return $row[$field->value];
     }
 
     /**

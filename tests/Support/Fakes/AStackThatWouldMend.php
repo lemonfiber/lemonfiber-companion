@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Closure;
+use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\HowTheOfferIsGoing;
+use Modules\Kernel\Api\HowTheRepairIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
@@ -13,6 +15,7 @@ use Modules\Kernel\Api\Offer;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhatWasMended;
 
 /**
  * A stack that would put something right, and remembers being asked.
@@ -50,11 +53,22 @@ final class AStackThatWouldMend implements Mending
     /** Whether the session it was handed carried anything — for a test to ask. */
     private bool $carried = false;
 
+    /** What the operator agreed to, or nothing where they never did. */
+    private ?Confirmed $agreed = null;
+
+    /** How many times an agreement was sent, which must never be twice. */
+    private int $agreements = 0;
+
     /**
-     * @param Closure(): Underway           $started
-     * @param Closure(): HowTheOfferIsGoing $became
+     * @param Closure(): Underway            $started
+     * @param Closure(): HowTheOfferIsGoing  $became
+     * @param Closure(): HowTheRepairIsGoing $did
      */
-    private function __construct(private readonly Closure $started, private readonly Closure $became) {}
+    private function __construct(
+        private readonly Closure $started,
+        private readonly Closure $became,
+        private readonly Closure $did,
+    ) {}
 
     /** A stack that takes the question on and answers with this listing. */
     public static function offering(Offer $offer): self
@@ -62,6 +76,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::done(WhatWasMended::none()),
         );
     }
 
@@ -71,6 +86,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::stillRunning(),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
         );
     }
 
@@ -86,6 +102,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::ended(),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::ended(),
         );
     }
 
@@ -95,6 +112,7 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::met($why),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::met($why),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::met($why),
         );
     }
 
@@ -110,6 +128,58 @@ final class AStackThatWouldMend implements Mending
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
             static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::met($why),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::met($why),
+        );
+    }
+
+    /**
+     * A stack that carries out what it is agreed to, and reports these.
+     *
+     * The offer half answers a listing of one so a test can walk from *what
+     * would you do* to *what did you do* without building two fakes — which is
+     * the journey `N2-R4` and `N2-R5` describe between them.
+     */
+    public static function carryingOut(Offer $offer, WhatWasMended $mended): self
+    {
+        return new self(
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::done($mended),
+        );
+    }
+
+    /**
+     * A stack that offers a listing and is still carrying out what it took on.
+     *
+     * The two halves answer differently, which the single-answer constructors
+     * above cannot express — and it is the ordinary middle of this screen: the
+     * listing has been read, the operator has agreed, and the machine is
+     * working. Reaching it needs a fake that gives a listing *and* reports a
+     * run in progress.
+     */
+    public static function carryingOutStill(Offer $offer): self
+    {
+        return new self(
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
+        );
+    }
+
+    /**
+     * A stack that offers a listing and then cannot be reached about the run.
+     *
+     * Time passes between agreeing and reading, which is exactly where a phone
+     * leaves the house or a session ends underneath somebody. A fake that met
+     * the obstacle on *both* halves could never get as far as agreeing, so this
+     * is the only way to drive the state.
+     */
+    public static function goneAfterAgreeing(Offer $offer, Obstacle $why): self
+    {
+        return new self(
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::met($why),
         );
     }
 
@@ -150,6 +220,44 @@ final class AStackThatWouldMend implements Mending
         $this->readSession($session);
 
         return ($this->started)();
+    }
+
+    /** What the operator agreed to, or nothing where they never did. */
+    public function agreedTo(): ?Confirmed
+    {
+        return $this->agreed;
+    }
+
+    /**
+     * How many agreements were sent.
+     *
+     * The count that matters most on this port. `N1-R41` refuses to replay an
+     * action, and an agreement sent twice is a repair carried out twice — which
+     * for a fix that moves a library is not the same as doing it once.
+     */
+    public function agreements(): int
+    {
+        return $this->agreements;
+    }
+
+    public function agreeTo(Stack $stack, Session $session, Confirmed $confirmed): Underway
+    {
+        $this->askedAbout = $stack;
+        $this->agreed = $confirmed;
+        $this->agreements++;
+        $this->readSession($session);
+
+        return ($this->started)();
+    }
+
+    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing
+    {
+        $this->askedAbout = $stack;
+        $this->askedAfter = $job;
+        $this->readings++;
+        $this->readSession($session);
+
+        return ($this->did)();
     }
 
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheOfferIsGoing

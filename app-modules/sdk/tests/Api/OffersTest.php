@@ -10,8 +10,11 @@ use function it;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\JobHasNoName;
+use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\OfferHasNoName;
+use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\Undoing;
+use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Sdk\Api\OfferIsUnreadable;
 use Modules\Sdk\Api\Offers;
 
@@ -285,5 +288,165 @@ it('names the position of the row it refused rather than always the first', func
             'mended' => [],
             'offered' => [anOfferedRepair(), $row],
         ])))->toThrow(OfferIsUnreadable::class, 'Repair 1', sprintf('second row: %s', $second));
+    }
+});
+
+/**
+ * One record of what became of a repair.
+ *
+ * @param array<string, mixed> $outcome
+ *
+ * @return array<string, mixed>
+ */
+function anOutcomeOf(array $outcome): array
+{
+    return ['repair' => anOfferedRepair(), 'outcome' => $outcome];
+}
+
+/**
+ * A whole record around one thing in the mended list.
+ *
+ * Takes `mixed` rather than an array because half of what this file drives
+ * through it is not an array at all — that is the point of those cases.
+ *
+ * @return array<string, mixed>
+ */
+function aRunOf(mixed $one): array
+{
+    return [
+        'acted' => true,
+        'agreement' => 'agreement-a-test-can-name',
+        'beyond' => [],
+        'offered' => [],
+        'mended' => [$one],
+    ];
+}
+
+it('N2-R5 — reads what became of a repair, and what a stopped one left', function (): void {
+    $run = Offers::mendedIn(repairSaying(aRunOf(anOutcomeOf([
+        'outcome' => 'stopped',
+        'leaving' => 'Half of it on the old disk',
+    ]))));
+
+    $said = '';
+
+    foreach ($run as $one) {
+        $said = $one->said(
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): Envelope => new Envelope(
+                1,
+                'x',
+                $left->either(
+                    something: static fn(string $what): Envelope => new Envelope(1, 'x', sprintf('%s/%s', $became->value, $what)),
+                    nothing: static fn(): Envelope => new Envelope(1, 'x', $became->value),
+                )->data,
+            ),
+        )->data;
+    }
+
+    expect($said)->toBe('stopped/Half of it on the old disk')
+        ->and($run->count())->toBe(1)
+        ->and($run->changed())->toBe(0);
+});
+
+it('reads a stopped repair that left nothing as having left nothing', function (): void {
+    // The one optional field here with a real answer: a repair that stopped and
+    // left nothing can be agreed to again without a thought, and that is worth
+    // saying rather than refusing to say.
+    $run = Offers::mendedIn(repairSaying(aRunOf(anOutcomeOf(['outcome' => 'stopped']))));
+
+    foreach ($run as $one) {
+        $said = $one->said(
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): Envelope => new Envelope(
+                1,
+                'x',
+                $left->either(
+                    something: static fn(string $what): Envelope => new Envelope(1, 'x', sprintf('left %s', $what)),
+                    nothing: static fn(): Envelope => new Envelope(1, 'x', 'left nothing'),
+                )->data,
+            ),
+        )->data;
+
+        expect($said)->toBe('left nothing');
+    }
+});
+
+it('refuses a run with no mended list at all', function (): void {
+    expect(fn(): object => Offers::mendedIn(repairSaying([
+        'acted' => true,
+        'agreement' => 'named',
+        'beyond' => [],
+        'offered' => [],
+    ])))->toThrow(OfferIsUnreadable::class, 'mended');
+});
+
+it('refuses a record that is not a record of a repair', function (): void {
+    // Told apart from an unreadable *offer*: one is a listing nobody has agreed
+    // to yet, and this is a report of what a machine already did. A reader who
+    // cannot tell which cannot tell whether anything happened.
+    $each = [
+        'a sentence where a record belongs',
+        ['outcome' => ['outcome' => 'fixed']],
+        ['repair' => anOfferedRepair()],
+        ['repair' => 'not a repair', 'outcome' => ['outcome' => 'fixed']],
+        ['repair' => anOfferedRepair(), 'outcome' => 'not an outcome'],
+        ['repair' => anOfferedRepair(), 'outcome' => ['outcome' => 41]],
+    ];
+
+    foreach ($each as $at => $one) {
+        expect(fn(): object => Offers::mendedIn(repairSaying(aRunOf($one))))
+            ->toThrow(OfferIsUnreadable::class, 'Outcome 0', sprintf('case %d', $at));
+    }
+});
+
+it('refuses an outcome word this app does not read', function (): void {
+    // Guessing is how a repair that overwrote nothing gets shown as one that
+    // worked.
+    expect(fn(): object => Offers::mendedIn(repairSaying(aRunOf(anOutcomeOf(['outcome' => 'mostly'])))))
+        ->toThrow(OfferIsUnreadable::class, 'mostly');
+});
+
+it('names which record it could not read, rather than the envelope', function (): void {
+    // The second one, so the position has to be carried to pass — the same
+    // argument the offered listing makes one method over.
+    $run = [
+        'acted' => true,
+        'agreement' => 'named',
+        'beyond' => [],
+        'offered' => [],
+        'mended' => [anOutcomeOf(['outcome' => 'fixed']), 'not a record'],
+    ];
+
+    expect(fn(): object => Offers::mendedIn(repairSaying($run)))
+        ->toThrow(OfferIsUnreadable::class, 'Outcome 1');
+});
+
+it('refuses a run whose payload is not a shape at all', function (): void {
+    expect(fn(): object => Offers::mendedIn(new Envelope(1, 'repair', 'a sentence')))
+        ->toThrow(OfferIsUnreadable::class, 'data');
+});
+
+it('reads a description of what was left that says nothing as nothing', function (): void {
+    // Trimmed rather than taken at its word: a `leaving` of spaces renders as a
+    // line of nothing under a heading saying something was left, which is worse
+    // than the heading alone — and `LeftBehind::of()` would refuse it, turning
+    // a readable answer into an unreadable envelope.
+    $run = Offers::mendedIn(repairSaying(aRunOf(anOutcomeOf([
+        'outcome' => 'stopped',
+        'leaving' => '   ',
+    ]))));
+
+    foreach ($run as $one) {
+        $said = $one->said(
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): Envelope => new Envelope(
+                1,
+                'x',
+                $left->either(
+                    something: static fn(string $what): Envelope => new Envelope(1, 'x', sprintf('left %s', $what)),
+                    nothing: static fn(): Envelope => new Envelope(1, 'x', 'left nothing'),
+                )->data,
+            ),
+        )->data;
+
+        expect($said)->toBe('left nothing');
     }
 });

@@ -6,6 +6,7 @@ namespace Modules\Operator\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
@@ -75,7 +76,7 @@ final class OperatorServiceProvider extends ServiceProvider
         // case here and exactly the case where the difference is invisible until
         // it fails.
         $this->app->booted(static function (): void {
-            Router::native('/', YourStacks::class);
+            Router::native(AScreenWithoutAStack::TheList->value, YourStacks::class);
             // The two roads N1-R6 requires, each its own URI rather than a
             // mode of the entry screen: the navigation stack is what lets an
             // operator back out of one, and a screen that pairs is one
@@ -87,8 +88,8 @@ final class OperatorServiceProvider extends ServiceProvider
             // software comparison on the scanned road and N1-R50 puts a person
             // on the typed one, so one of them has a confirmation step and the
             // other must not be able to reach one.
-            Router::native('/pair/scanned', PairByScanning::class);
-            Router::native('/pair/typed', PairByTyping::class);
+            Router::native(AScreenWithoutAStack::PairByScanning->value, PairByScanning::class);
+            Router::native(AScreenWithoutAStack::PairByTyping->value, PairByTyping::class);
 
             // The stack in the URI rather than in the screen, because `N1-R11`
             // keeps each stack's session separate and a screen that chose its

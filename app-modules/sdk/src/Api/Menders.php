@@ -11,7 +11,9 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Repair as Asking;
+use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\HowTheOfferIsGoing;
+use Modules\Kernel\Api\HowTheRepairIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
@@ -65,6 +67,37 @@ final readonly class Menders implements Mending
         }
     }
 
+    public function agreeTo(Stack $stack, Session $session, Confirmed $confirmed): Underway
+    {
+        $client = $this->clients->client($stack, $session);
+
+        try {
+            // The listing's name and the repair's check, which is exactly what
+            // `Confirmed` publishes and nothing else. `N2-R6` has the yes quote
+            // the listing it was given, and the SDK's signature is that
+            // requirement in a parameter list: there is no way to name a repair
+            // without naming the listing it came from.
+            $asked = Asking::agreedTo($confirmed->quoting(), $confirmed->repair()->answers());
+
+            return Underway::as(Offers::handleIn($client->repair($asked)));
+        } catch (RequestFailed $why) {
+            return Underway::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable) {
+            return Underway::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
+    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing
+    {
+        try {
+            return $this->outcome($stack, $session, $job);
+        } catch (RequestFailed $why) {
+            return HowTheRepairIsGoing::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable) {
+            return HowTheRepairIsGoing::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheOfferIsGoing
     {
         try {
@@ -96,6 +129,28 @@ final readonly class Menders implements Mending
             return $this->reading($stack, $session, $job);
         } catch (NoSuchJob) {
             return HowTheOfferIsGoing::ended();
+        }
+    }
+
+    /**
+     * What the stack says about a job that was carrying something out.
+     *
+     * `NoSuchJob` is caught here for {@see self::standing()}'s reason, and it
+     * matters more on this side: a job that ended after an agreement means the
+     * operator does not know what happened to their machine, which is a thing
+     * to say rather than a failure to report.
+     */
+    private function outcome(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing
+    {
+        try {
+            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+                stillRunning: static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
+                finished: static fn(Envelope $envelope): HowTheRepairIsGoing
+                    => HowTheRepairIsGoing::done(Offers::mendedIn($envelope)),
+                ended: static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::ended(),
+            );
+        } catch (NoSuchJob) {
+            return HowTheRepairIsGoing::ended();
         }
     }
 

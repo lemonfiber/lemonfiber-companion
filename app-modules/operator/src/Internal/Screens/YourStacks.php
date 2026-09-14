@@ -23,6 +23,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\HowAStackLastWas;
 use Modules\Operator\Internal\WhatTheLaunchWas;
 use Modules\Operator\Internal\WhatTheSharingDid;
@@ -317,6 +318,25 @@ final class YourStacks extends NativeComponent
     public function remedyFor(): string
     {
         return $this->howItOpened()->remedy;
+    }
+
+    /**
+     * Where the camera road into pairing is.
+     *
+     * Read off {@see AScreenWithoutAStack} rather than spelled in the template, for the
+     * reason every other route here is: the provider registers from the same
+     * case, so a rename cannot leave this button pointing at nothing. On a
+     * first run these two are the only way out of this screen.
+     */
+    public function scanningIsAt(): string
+    {
+        return AScreenWithoutAStack::PairByScanning->value;
+    }
+
+    /** Where the typed road is, for a camera that is refused or absent. */
+    public function typingIsAt(): string
+    {
+        return AScreenWithoutAStack::PairByTyping->value;
     }
 
     /** What became of the last attempt to hand a report over. */

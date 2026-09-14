@@ -322,8 +322,11 @@ it('refuses a route parameter that is not text', function (): void {
     // which is the same situation as a route with nothing in that segment —
     // asserted rather than assumed, because the narrowing is a branch and a
     // branch nothing drives is a branch that can quietly become the other one.
-    // `SeeingHowAStackIsTest` and `SigningIntoAStackTest` make the same
-    // assertion about the same shape, one screen over each way.
+    // Every screen that reads a stack out of the route makes this assertion,
+    // because every one of them has the same branch. Named that way rather than
+    // listed: a comment naming two of them was written when there were three,
+    // and there are four now — which is the shape `everyDerivedKey()` decayed
+    // as, one layer down.
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
     $screen->setParams(['stack' => 42]);
 

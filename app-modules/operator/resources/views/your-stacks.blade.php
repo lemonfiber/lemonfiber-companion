@@ -68,8 +68,8 @@
         <native:text>{{ __($this->sharingRemedy()) }}</native:text>
     @endif
 
-    <native:button label="{{ __('connection.pair') }}" @navigate='/pair/scanned' />
-    <native:button label="{{ __('connection.pair_by_typing') }}" @navigate='/pair/typed' />
+    <native:button label="{{ __('connection.pair') }}" @navigate="{{ $this->scanningIsAt() }}" />
+    <native:button label="{{ __('connection.pair_by_typing') }}" @navigate="{{ $this->typingIsAt() }}" />
 
     {{-- N4-R13: assembled for the operator to send, and not sent by the app.
          On this screen because it is the one reachable from anywhere and the
