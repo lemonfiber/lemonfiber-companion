@@ -148,6 +148,23 @@ it('N1-R17 — asking again while the work runs reads the same job, and starts n
         ->and($mending->readings())->toBe(2);
 });
 
+it('asking again after a finished listing asks the stack afresh', function (): void {
+    // The whole of what makes the button mean something. A finished job answers
+    // the same listing however often it is read, so an operator who has just
+    // changed something on their machine and taps *ask again* would be shown
+    // what is already on the screen — and would reasonably conclude the fix did
+    // not take. A second asking is the only way to learn otherwise.
+    $mending = AStackThatWouldMend::offering(aListingWorthReading());
+    $screen = theRepairsScreen($mending);
+
+    $screen->howMany();
+    $screen->again();
+    $screen->howMany();
+
+    expect($mending->askings())->toBe(2)
+        ->and($mending->readings())->toBe(2);
+});
+
 it('a job the stack forgot is its own state, and asking again starts a new one', function (): void {
     // Not a fault and not an answer. There is nothing left to read, so this is
     // the one case where asking again has to be a fresh asking — a screen that

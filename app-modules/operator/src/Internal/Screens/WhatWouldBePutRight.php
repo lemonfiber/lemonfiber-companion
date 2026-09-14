@@ -155,13 +155,21 @@ final class WhatWouldBePutRight extends NativeComponent
      *
      * Forgetting what was held rather than comparing, which is
      * {@see HowThisStackIs::again()}'s shape: the next read rebuilds it, so
-     * there is one path to an answer. The handle is kept where the work is
-     * still going and dropped where it is not — so *ask again* reads the same
-     * job while it runs, and starts a new one once there is nothing to read.
+     * there is one path to an answer.
+     *
+     * **The handle is kept only while the work is still going.** That is the
+     * whole of what makes this button mean something. A job that has finished
+     * answers the same listing however often it is read, so keeping its handle
+     * would make *ask again* re-render what is already on the screen — and the
+     * operator tapping it has just changed something on their machine and wants
+     * to know whether it took. A job that ended has nothing to read at all. In
+     * both cases the next frame starts fresh; only a run still in progress is
+     * worth returning to, because reading it again is the only way to learn it
+     * has finished.
      */
     public function again(): void
     {
-        if ($this->answered instanceof WhatTheStackWouldPutRight && $this->answered->hasEnded) {
+        if ($this->answered?->isWorking !== true) {
             $this->handle = null;
         }
 
