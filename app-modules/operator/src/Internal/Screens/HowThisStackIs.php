@@ -135,30 +135,6 @@ final class HowThisStackIs extends NativeComponent
         );
     }
 
-    /** Whether this device still holds a session for it (`N1-R44`). */
-    public function isSignedIn(): bool
-    {
-        return $this->answer()->isSignedIn;
-    }
-
-    /** What the run amounts to, as a key, or the empty string where it did not run. */
-    public function overall(): string
-    {
-        return $this->answer()->overall;
-    }
-
-    /** What the operator met instead, as a key, or the empty string where they did not. */
-    public function met(): string
-    {
-        return $this->answer()->met;
-    }
-
-    /** What to do about it, beside {@see met()}. */
-    public function remedy(): string
-    {
-        return $this->answer()->remedy;
-    }
-
     /**
      * Each finding, as a row a template can read, in the order they were made.
      *
@@ -315,6 +291,26 @@ final class HowThisStackIs extends NativeComponent
     }
 
     /**
+     * What came back, asked once and held.
+     *
+     * The asking happens here rather than in a constructor because a
+     * constructor runs before the route parameter is set — {@see Stack()} would
+     * have nothing to read. Held rather than recomputed because a screen that
+     * asked per reader would open six connections to render one frame.
+     *
+     * One accessor handing out the value rather than one per field, which is
+     * {@see WhatThisStackRuns::answer()}'s shape and its argument: a method per
+     * field is a method this class spends on saying nothing, and at twenty the
+     * next fact the template needs costs one it does not have. The template
+     * reads `->met` and `->overall` off what one asking produced, which is also
+     * the only thing that could be true of them together.
+     */
+    public function answer(): WhatTheStackTurnedOutToBe
+    {
+        return $this->answered ??= $this->ask();
+    }
+
+    /**
      * The findings this screen is showing, narrowed where the operator asked.
      *
      * `InCategory` narrows and deliberately does not reorder, so this composes
@@ -344,20 +340,6 @@ final class HowThisStackIs extends NativeComponent
     }
 
     /**
-     * What came back, asked once and held.
-     *
-     * The asking happens here rather than in a constructor because a
-     * constructor runs before the route parameter is set — {@see Stack()} would
-     * have nothing to read. Held rather than recomputed because every accessor
-     * above calls this, and a screen that asked per accessor would open six
-     * connections to render one frame.
-     */
-    private function answer(): WhatTheStackTurnedOutToBe
-    {
-        return $this->answered ??= $this->ask();
-    }
-
-    /**
      * Resume the session, ask the stack, and flatten what came back.
      *
      * Split from {@see answer()} because the two are different questions — when
@@ -373,7 +355,6 @@ final class HowThisStackIs extends NativeComponent
             notHeld: static fn(): WhatTheStackTurnedOutToBe => WhatTheStackTurnedOutToBe::signedOut(),
         );
     }
-
 
     /** What the stack said, or what the operator met instead. */
     private function asked(Stack $stack, Session $session): WhatTheStackTurnedOutToBe

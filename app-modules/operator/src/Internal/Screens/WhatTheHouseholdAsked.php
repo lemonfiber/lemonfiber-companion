@@ -20,7 +20,6 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Wanting;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
-use Modules\Operator\Internal\WhatOneRequestSays;
 use Modules\Operator\Internal\WhatTheHouseholdTurnedOutToWant;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -95,57 +94,10 @@ final class WhatTheHouseholdAsked extends NativeComponent
         );
     }
 
-    /** Whether this device still holds a session for it (`N1-R44`). */
-    public function isSignedIn(): bool
-    {
-        return $this->answer()->isSignedIn;
-    }
-
-    /** What the operator met instead, as a key, or the empty string where they did not. */
-    public function met(): string
-    {
-        return $this->answer()->met;
-    }
-
-    /** What to do about it, beside {@see met()}. */
-    public function remedy(): string
-    {
-        return $this->answer()->remedy;
-    }
-
-    /**
-     * Every request the house has made, as rows a template can read.
-     *
-     * In the stack's own order and not reordered here. Putting what is waiting
-     * first is tempting and wrong for this list: the order the stack lists them
-     * in is the order they were asked for, which is how the person who asked
-     * remembers theirs — and an operator scanning for *the thing my daughter
-     * asked about on Tuesday* is looking for a position, not a priority.
-     *
-     * @return list<WhatOneRequestSays>
-     */
-    public function requests(): array
-    {
-        return $this->answer()->requests;
-    }
-
     /** How many are shown, which is what the empty state asks. */
     public function howMany(): int
     {
         return count($this->answer()->requests);
-    }
-
-    /**
-     * How many are waiting on the operator, which is what `N2-R11` is about.
-     *
-     * Counted by {@see Requested::waiting()} rather than
-     * here, so the line between waiting and not is drawn once — by
-     * {@see \Modules\Kernel\Api\Waiting::wantsADecision()} — and this screen
-     * cannot come to disagree with another about what is waiting.
-     */
-    public function howManyWaiting(): int
-    {
-        return $this->answer()->waiting;
     }
 
     /**
@@ -184,8 +136,17 @@ final class WhatTheHouseholdAsked extends NativeComponent
         return view('operator::what-the-household-asked');
     }
 
-    /** What came back, asked once per frame. */
-    private function answer(): WhatTheHouseholdTurnedOutToWant
+    /**
+     * What came back, asked once per frame.
+     *
+     * One accessor handing out the value rather than one per field, which is
+     * {@see WhatThisStackRuns::answer()}'s shape and its argument: a method per
+     * field is a method this class spends on saying nothing, and the next fact
+     * the template needs then costs one it does not have. The template reads
+     * the fields off what one asking produced, which is also the only thing
+     * that could be true of them together.
+     */
+    public function answer(): WhatTheHouseholdTurnedOutToWant
     {
         return $this->answered ??= $this->ask();
     }
@@ -206,7 +167,6 @@ final class WhatTheHouseholdAsked extends NativeComponent
             notHeld: static fn(): WhatTheHouseholdTurnedOutToWant => WhatTheHouseholdTurnedOutToWant::signedOut(),
         );
     }
-
 
     /** What the stack said, or what the operator met instead. */
     private function asked(Stack $stack, Session $session): WhatTheHouseholdTurnedOutToWant

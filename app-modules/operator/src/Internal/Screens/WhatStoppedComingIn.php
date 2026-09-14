@@ -20,7 +20,6 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
-use Modules\Operator\Internal\WhatOneStalledItemSays;
 use Modules\Operator\Internal\WhatStoppedTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -100,55 +99,10 @@ final class WhatStoppedComingIn extends NativeComponent
         );
     }
 
-    /** Whether this device still holds a session for it (`N1-R44`). */
-    public function isSignedIn(): bool
-    {
-        return $this->answer()->isSignedIn;
-    }
-
-    /** What the operator met instead, as a key, or the empty string where they did not. */
-    public function met(): string
-    {
-        return $this->answer()->met;
-    }
-
-    /** What to do about it, beside {@see met()}. */
-    public function remedy(): string
-    {
-        return $this->answer()->remedy;
-    }
-
-    /**
-     * Everything that stopped, as rows a template can read.
-     *
-     * In the stack's own order and not reordered here. The order is the one the
-     * work was queued in, and the oldest thing stuck is usually the one that
-     * has been wrong longest — which is what an operator is looking for.
-     *
-     * @return list<WhatOneStalledItemSays>
-     */
-    public function stalled(): array
-    {
-        return $this->answer()->stalled;
-    }
-
     /** How many are shown, which is what the empty state asks. */
     public function howMany(): int
     {
         return count($this->answer()->stalled);
-    }
-
-    /**
-     * The key for how much of what the stack holds this is.
-     *
-     * Empty where there is no listing to say it about — a signed-out device and
-     * an obstacle both have nothing to be complete about — so the template
-     * renders the line where there is one rather than branching on a boolean it
-     * would have to interpret.
-     */
-    public function howMuchIsShown(): string
-    {
-        return $this->answer()->shownSaid;
     }
 
     /**
@@ -187,9 +141,17 @@ final class WhatStoppedComingIn extends NativeComponent
         return view('operator::what-stopped-coming-in');
     }
 
-
-    /** What came back, asked once per frame. */
-    private function answer(): WhatStoppedTurnedOutToBe
+    /**
+     * What came back, asked once per frame.
+     *
+     * One accessor handing out the value rather than one per field, which is
+     * {@see WhatThisStackRuns::answer()}'s shape and its argument: a method per
+     * field is a method this class spends on saying nothing, and the next fact
+     * the template needs then costs one it does not have. The template reads
+     * the fields off what one asking produced, which is also the only thing
+     * that could be true of them together.
+     */
+    public function answer(): WhatStoppedTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
     }

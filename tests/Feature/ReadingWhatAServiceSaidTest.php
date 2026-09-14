@@ -104,7 +104,7 @@ function everyLineOnTheScreen(WhatThisServiceSaid $screen): string
 {
     $rows = [];
 
-    foreach ($screen->lines() as $line) {
+    foreach ($screen->answer()->lines as $line) {
         $rows[] = sprintf('%s/%s', $line->streamSaid, $line->line);
     }
 
@@ -119,12 +119,12 @@ it('N2-R10 — shows the lines, oldest first, with the mouth each came out of', 
         Stream::Stdout->saidOnTheScreen(),
         Stream::Stderr->saidOnTheScreen(),
         Stream::Stdout->saidOnTheScreen(),
-    ))->and($screen->met())->toBe('')
-        ->and($screen->isSignedIn())->toBeTrue()
+    ))->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->isSignedIn)->toBeTrue()
         // A read that worked leaves no obstacle and so nothing to do about one.
         // Asserted beside `met()` because the two are written together and only
         // one of them was read back, which is how a remedy for nothing survives.
-        ->and($screen->remedy())->toBe('');
+        ->and($screen->answer()->remedy)->toBe('');
 });
 
 it('N2-R10 — a line the service timed carries the moment, and one it did not says so', function (): void {
@@ -133,7 +133,7 @@ it('N2-R10 — a line the service timed carries the moment, and one it did not s
     // a fold that set the flag from nothing, or set it the same way on both
     // arms, renders identically on every line that does carry a time — and the
     // lines without one are exactly where nobody looks.
-    $rows = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()))->lines();
+    $rows = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()))->answer()->lines;
 
     expect($rows[0]->at)->toBe('2026-09-14T04:00:00Z')
         ->and($rows[0]->hasAMoment)->toBeTrue()
@@ -157,9 +157,9 @@ it('N2-R10 — names the service it is about, from the route', function (): void
 it('N2-R10 — states the bound and whether the view stops at it', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
 
-    expect($screen->bound())->toBe(3)
-        ->and($screen->howManyArrived())->toBe(3)
-        ->and($screen->isAWindow())->toBeTrue();
+    expect($screen->answer()->bound)->toBe(3)
+        ->and($screen->answer()->arrived)->toBe(3)
+        ->and($screen->answer()->isAWindow)->toBeTrue();
 });
 
 it('N2-R10 — a read the bound did not cut says so, and claims nothing more', function (): void {
@@ -170,7 +170,7 @@ it('N2-R10 — a read the bound did not cut says so, and claims nothing more', f
         Said::whenever('tunnel up', $service, Stream::Stdout),
     );
 
-    expect(theLogScreen(AServiceThatSpoke::saying($short))->isAWindow())->toBeFalse();
+    expect(theLogScreen(AServiceThatSpoke::saying($short))->answer()->isAWindow)->toBeFalse();
 });
 
 it('N2-R10 — searching narrows what is shown and not what was read', function (): void {
@@ -183,9 +183,9 @@ it('N2-R10 — searching narrows what is shown and not what was read', function 
         // The claim about the edge survives the search, which is the whole
         // point: a search that covered twelve of two hundred lines must not
         // report that it covered everything the service ever said.
-        ->and($screen->howManyArrived())->toBe(3)
-        ->and($screen->isAWindow())->toBeTrue()
-        ->and($screen->isSearching())->toBeTrue();
+        ->and($screen->answer()->arrived)->toBe(3)
+        ->and($screen->answer()->isAWindow)->toBeTrue()
+        ->and($screen->answer()->isSearching)->toBeTrue();
 });
 
 it('N1-R17 — narrowing does not ask the stack again', function (): void {
@@ -195,11 +195,11 @@ it('N1-R17 — narrowing does not ask the stack again', function (): void {
     $saying = AServiceThatSpoke::saying(aWindowWorthReading());
     $screen = theLogScreen($saying);
 
-    $screen->lines();
+    $screen->answer();
     typedIntoTheSearch($screen, 'timed');
-    $screen->lines();
+    $screen->answer();
     typedIntoTheSearch($screen, 'retry');
-    $screen->lines();
+    $screen->answer();
 
     expect($saying->askings())->toBe(1);
 });
@@ -210,25 +210,25 @@ it('widening the search again shows the lines it had hidden', function (): void 
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
 
     typedIntoTheSearch($screen, 'timed');
-    $screen->lines();
+    $screen->answer();
     typedIntoTheSearch($screen, '');
 
     expect($screen->howMany())->toBe(3)
-        ->and($screen->isSearching())->toBeFalse();
+        ->and($screen->answer()->isSearching)->toBeFalse();
 });
 
 it('an empty box is not a search', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
     typedIntoTheSearch($screen, '   ');
 
-    expect($screen->isSearching())->toBeFalse()
+    expect($screen->answer()->isSearching)->toBeFalse()
         ->and($screen->howMany())->toBe(3)
         ->and($screen->looking())->toBe('   ');
 });
 
 it('N2-R10 — asks for as much as a phone shows, and for this service', function (): void {
     $saying = AServiceThatSpoke::saying(aWindowWorthReading());
-    theLogScreen($saying)->lines();
+    theLogScreen($saying)->answer();
 
     expect($saying->askedFor()?->named())->toBe('gluetun')
         ->and($saying->askedWith()?->figure())->toBe(HowManyLines::ON_A_PHONE)
@@ -244,36 +244,36 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
         // was answered. Reporting otherwise would put the sign-in screen in
         // front of an operator whose session works, and `N1-R44`'s branch comes
         // first in the template — so which of the six was met is never reached.
-        ->and($screen->isSignedIn())->toBeTrue()
-        ->and($screen->met())->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($screen->remedy())->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+        ->and($screen->answer()->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($screen->answer()->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
         // Nothing to be a window over, so no claim is made about an edge.
-        ->and($screen->isAWindow())->toBeFalse()
-        ->and($screen->bound())->toBe(0)
+        ->and($screen->answer()->isAWindow)->toBeFalse()
+        ->and($screen->answer()->bound)->toBe(0)
         // Nothing arrived, and nothing was being looked for. Both are counted
         // and rendered beside the rows, so a state with no rows that claimed
         // either would put a count over an empty screen.
-        ->and($screen->howManyArrived())->toBe(0)
-        ->and($screen->isSearching())->toBeFalse();
+        ->and($screen->answer()->arrived)->toBe(0)
+        ->and($screen->answer()->isSearching)->toBeFalse();
 });
 
 it('N1-R44 — a device with no session for that stack is not asked to wait for one', function (): void {
     $saying = AServiceThatSpoke::saying(aWindowWorthReading());
     $screen = theLogScreen($saying, signedIn: false);
 
-    expect($screen->isSignedIn())->toBeFalse()
+    expect($screen->answer()->isSignedIn)->toBeFalse()
         ->and($screen->howMany())->toBe(0)
         // Nothing was met, because the app never got as far as asking — and a
         // remedy beside no obstacle would be an instruction about nothing.
-        ->and($screen->met())->toBe('')
-        ->and($screen->remedy())->toBe('')
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('')
         // Every claim a window makes is a claim about a read that happened.
         // This state is the one where none did, so each of them is the empty
         // answer rather than a number carried over from a state it is not in.
-        ->and($screen->howManyArrived())->toBe(0)
-        ->and($screen->bound())->toBe(0)
-        ->and($screen->isAWindow())->toBeFalse()
-        ->and($screen->isSearching())->toBeFalse()
+        ->and($screen->answer()->arrived)->toBe(0)
+        ->and($screen->answer()->bound)->toBe(0)
+        ->and($screen->answer()->isAWindow)->toBeFalse()
+        ->and($screen->answer()->isSearching)->toBeFalse()
         ->and($saying->askings())->toBe(0);
 });
 
@@ -341,9 +341,9 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
     $saying = AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork);
     $screen = theLogScreen($saying);
 
-    $screen->lines();
+    $screen->answer();
     $screen->again();
-    $screen->lines();
+    $screen->answer();
 
     expect($saying->askings())->toBe(2);
 });
@@ -355,9 +355,9 @@ it('asking again forgets the window, so a search is not run against stale lines'
     $saying = AServiceThatSpoke::saying(aWindowWorthReading());
     $screen = theLogScreen($saying);
 
-    $screen->lines();
+    $screen->answer();
     $screen->again();
-    $screen->lines();
+    $screen->answer();
 
     expect($saying->askings())->toBe(2);
 });
@@ -371,17 +371,17 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 
-    expect($screen->isSignedIn())->toBeFalse()
+    expect($screen->answer()->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine — and
         // nothing already loaded, which `N3-R13` names separately. A window is
         // the thing this screen most obviously has to drop: an operator reading
         // a service's log under *this stack refused the pairing of this app* is
         // reading lines the stack has just said it will not answer for.
-        ->and($screen->met())->toBe('')
-        ->and($screen->remedy())->toBe('')
-        ->and($screen->lines())->toBe([])
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->lines)->toBe([])
         ->and($screen->howMany())->toBe(0)
-        ->and($screen->isAWindow())->toBeFalse()
+        ->and($screen->answer()->isAWindow)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeFalse();
 });
 
@@ -393,7 +393,7 @@ it('N3-R13 — an obstacle that is not a refused credential leaves the session a
     $keychain = AKeychainInMemory::working();
     $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork), keychain: $keychain);
 
-    expect($screen->isSignedIn())->toBeTrue()
-        ->and($screen->met())->toBe(Obstacle::DeviceHasNoNetwork->said())
+    expect($screen->answer()->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 });

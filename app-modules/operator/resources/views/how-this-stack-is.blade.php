@@ -1,7 +1,7 @@
 <native:column class="w-full gap-4 p-6">
     <native:text class="text-lg font-bold">{{ $this->stack()->name()->shown() }}</native:text>
 
-    @unless ($this->isSignedIn())
+    @unless ($this->answer()->isSignedIn)
         {{-- N1-R44: the session has ended, so nothing was asked and there is
              nothing to report. The remedy is a screen rather than a sentence. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
@@ -9,13 +9,13 @@
             label="{{ __('connection.sign_in') }}"
             @navigate="{{ $this->goes()->signIn() }}"
         />
-    @elseif ($this->met() !== '')
-        <native:text class="font-bold">{{ __($this->met()) }}</native:text>
-        <native:text>{{ __($this->remedy()) }}</native:text>
+    @elseif ($this->answer()->met !== '')
+        <native:text class="font-bold">{{ __($this->answer()->met) }}</native:text>
+        <native:text>{{ __($this->answer()->remedy) }}</native:text>
 
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @else
-        <native:text class="font-bold">{{ __($this->overall()) }}</native:text>
+        <native:text class="font-bold">{{ __($this->answer()->overall) }}</native:text>
 
         {{-- N2-R9: the families this run has something to say about, so that a
              stuck queue or a provider gone quiet is one tap away rather than

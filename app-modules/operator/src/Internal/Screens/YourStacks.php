@@ -111,25 +111,6 @@ final class YourStacks extends NativeComponent
     ) {}
 
     /**
-     * Whether the app is shut until the operator proves who they are.
-     *
-     * `N4-R19` wants the device's own authentication on a cold start, and
-     * {@see Opening} is where the order that requirement cares about is
-     * decided — locked is asked before anything reads retained state or touches
-     * a network. This screen only renders the answer.
-     *
-     * **Held rather than asked per accessor**, because asking twice would
-     * prompt twice: the platform's unlock is a system dialog, and a frame that
-     * drew it once per field would put four of them in front of somebody. It is
-     * asked when the frame is built, which is the same shape
-     * {@see HowThisStackIs} uses for its one read of a stack.
-     */
-    public function isLocked(): bool
-    {
-        return $this->howItOpened()->isLocked;
-    }
-
-    /**
      * Ask the device again, because the operator said they were ready.
      *
      * Forgetting what was held rather than re-asking and comparing, which is
@@ -288,39 +269,6 @@ final class YourStacks extends NativeComponent
     }
 
     /**
-     * What stood between this launch and the machine it is paired with.
-     *
-     * Empty where nothing did, which is every launch that is locked, unpaired
-     * or ready — the three of the four that are not an obstacle. The template
-     * reads it the way {@see HowThisStackIs::met()} is read, because it is the
-     * same question one screen earlier and an operator should not have to learn
-     * two shapes for *what is wrong* in one application.
-     *
-     * `N1-R37` is only half satisfied by producing the answer. A launch that
-     * decided *no network* and then drew the machine names and a stale verdict
-     * would leave somebody tapping a stack their phone cannot reach, and the
-     * distinction the type refuses to collapse would be discarded by the one
-     * surface that was supposed to show it.
-     */
-    public function whatStoppedIt(): string
-    {
-        return $this->howItOpened()->met;
-    }
-
-    /**
-     * What to do about it, beside {@see whatStoppedIt()}.
-     *
-     * Its own sentence rather than part of the one above, because `N1-R10`
-     * asks for both: what happened is a fact about the world, and what to do
-     * about it is advice. For a launch the advice is the whole value — the fact
-     * is that a phone has no signal, which its owner can usually see.
-     */
-    public function remedyFor(): string
-    {
-        return $this->howItOpened()->remedy;
-    }
-
-    /**
      * Where the camera road into pairing is.
      *
      * Read off {@see AScreenWithoutAStack} rather than spelled in the template, for the
@@ -419,17 +367,36 @@ final class YourStacks extends NativeComponent
     /**
      * The launch, folded once into the shape a template can read.
      *
-     * Held rather than asked per accessor, because asking twice would prompt
-     * twice: the platform's unlock is a system dialog, and a frame that drew it
-     * once per field would put several in front of somebody.
+     * Held rather than asked again, because asking twice would prompt twice:
+     * the platform's unlock is a system dialog, and a frame that drew it once
+     * per field would put several in front of somebody. `N4-R19` wants the
+     * device's own authentication on a cold start and {@see Opening} is where
+     * that order is decided — locked is asked before anything reads retained
+     * state or touches a network. This screen renders the answer.
+     *
+     * One accessor handing out the value rather than one per field, which is
+     * {@see WhatThisStackRuns::answer()}'s shape and its argument: a method per
+     * field is a method this class spends on saying nothing, and the next fact
+     * the template needs then costs one it does not have.
      *
      * Every arm is named even though each reader takes one field. That is
      * `Launch`'s design working rather than four arms saying one thing: an
      * optional arm would be a default, and a default is where two of the four
      * quietly become the same answer — which is what `N1-R37` refuses. Saying
      * it four times is the cost of never being able to forget one.
+     *
+     * `N1-R37` is only half satisfied by producing the answer, which is why the
+     * template branches on `->met` before it draws anything else. A launch that
+     * decided *no network* and then drew the machine names and a stale verdict
+     * would leave somebody tapping a stack their phone cannot reach, and the
+     * distinction the type refuses to collapse would be discarded by the one
+     * surface that was supposed to show it. `->remedy` is stated beside it
+     * rather than folded into it, because `N1-R10` asks for both: what happened
+     * is a fact about the world and what to do about it is advice, and for a
+     * launch the advice is the whole value — the fact is that a phone has no
+     * signal, which its owner can usually see.
      */
-    private function howItOpened(): WhatTheLaunchWas
+    public function howItOpened(): WhatTheLaunchWas
     {
         $this->launched ??= $this->opening->found();
 

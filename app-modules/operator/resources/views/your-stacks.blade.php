@@ -1,5 +1,5 @@
 <native:column class="w-full gap-4 p-6">
-    @if ($this->isLocked())
+    @if ($this->howItOpened()->isLocked)
         {{-- N4-R19: the device's own authentication on a cold start, asked
              before anything reads retained state or touches a network. Nothing
              below is drawn — not the machine names, not a verdict, not the
@@ -23,9 +23,9 @@
          at the bottom is the one thing that still works when nothing else does.
          N1-R10 wants the remedy too: what happened is a fact about the world,
          and what to do about it is advice. --}}
-    @if ($this->whatStoppedIt() !== '')
-        <native:text class="text-lg font-bold">{{ __($this->whatStoppedIt()) }}</native:text>
-        <native:text>{{ __($this->remedyFor()) }}</native:text>
+    @if ($this->howItOpened()->met !== '')
+        <native:text class="text-lg font-bold">{{ __($this->howItOpened()->met) }}</native:text>
+        <native:text>{{ __($this->howItOpened()->remedy) }}</native:text>
     @endif
 
     @forelse ($this->configured() as $stack)

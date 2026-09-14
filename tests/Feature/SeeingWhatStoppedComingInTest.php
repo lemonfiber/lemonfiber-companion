@@ -87,12 +87,12 @@ it('N2-R9 — shows what stopped, where it stopped, and who has it', function ()
         // template's first branch, so a fold reporting otherwise here would put
         // `N1-R44`'s sign-in prompt in front of an operator whose session is
         // working and the rows would never be reached at all.
-        ->and($screen->isSignedIn())->toBeTrue()
+        ->and($screen->answer()->isSignedIn)->toBeTrue()
         // Neither of the obstacle's two keys, because nothing was met.
-        ->and($screen->met())->toBe('')
-        ->and($screen->remedy())->toBe('');
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('');
 
-    $rows = $screen->stalled();
+    $rows = $screen->answer()->stalled;
 
     expect($rows[0]->title)->toBe('A film nobody has seen')
         ->and($rows[0]->service)->toBe('radarr')
@@ -106,7 +106,7 @@ it('keeps the stack\'s order rather than putting the hopeless ones first', funct
     // Tempting and wrong. The order is the one the work was queued in, and the
     // oldest thing stuck is usually the one that has been wrong longest — which
     // is what an operator scanning this is looking for.
-    $rows = theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()))->stalled();
+    $rows = theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()))->answer()->stalled;
 
     expect($rows[0]->stillMoving)->toBeTrue()
         ->and($rows[1]->stillMoving)->toBeFalse();
@@ -121,9 +121,9 @@ it('N2-R9 — says how much of what the stack holds this is', function (): void 
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
     );
 
-    expect(theStalledScreen(AStackThatStalled::with($partial))->howMuchIsShown())
+    expect(theStalledScreen(AStackThatStalled::with($partial))->answer()->shownSaid)
         ->toBe(HowMuchIsShown::SomeOfIt->saidOnTheScreen())
-        ->and(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()))->howMuchIsShown())
+        ->and(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()))->answer()->shownSaid)
         ->toBe(HowMuchIsShown::AllOfIt->saidOnTheScreen());
 });
 
@@ -133,8 +133,8 @@ it('nothing stuck is an answer, and not the same one as a stack that would not s
     $quiet = theStalledScreen(AStackThatStalled::withNothingStuck());
 
     expect($quiet->howMany())->toBe(0)
-        ->and($quiet->met())->toBe('')
-        ->and($quiet->howMuchIsShown())->toBe(HowMuchIsShown::AllOfIt->saidOnTheScreen());
+        ->and($quiet->answer()->met)->toBe('')
+        ->and($quiet->answer()->shownSaid)->toBe(HowMuchIsShown::AllOfIt->saidOnTheScreen());
 });
 
 it('N1-R10 — a stack that could not be asked says which of the six it met', function (): void {
@@ -144,27 +144,27 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
         // Meeting an obstacle is not losing the session either: the device
         // asked and was answered. Reporting otherwise would hide which of the
         // six was met behind a sign-in screen for a session that is fine.
-        ->and($screen->isSignedIn())->toBeTrue()
-        ->and($screen->met())->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($screen->remedy())->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+        ->and($screen->answer()->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($screen->answer()->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
         // Nothing to be complete about, so the line is not rendered at all
         // rather than claiming a listing that was never read.
-        ->and($screen->howMuchIsShown())->toBe('');
+        ->and($screen->answer()->shownSaid)->toBe('');
 });
 
 it('N1-R44 — a device with no session for that stack is not asked to wait for one', function (): void {
     $stalling = AStackThatStalled::with(aWeekOfStalledDownloads());
     $screen = theStalledScreen($stalling, signedIn: false);
 
-    expect($screen->isSignedIn())->toBeFalse()
+    expect($screen->answer()->isSignedIn)->toBeFalse()
         ->and($screen->howMany())->toBe(0)
         // Nothing was met, because the app never got as far as asking — and a
         // remedy beside no obstacle would be an instruction about nothing.
-        ->and($screen->met())->toBe('')
-        ->and($screen->remedy())->toBe('')
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('')
         // Nothing to be complete about either, so the line the listing branch
         // always renders is not rendered here at all.
-        ->and($screen->howMuchIsShown())->toBe('')
+        ->and($screen->answer()->shownSaid)->toBe('')
         ->and($stalling->askings())->toBe(0);
 });
 
@@ -173,9 +173,9 @@ it('N1-R17 — asks once however many accessors a frame reads', function (): voi
     $screen = theStalledScreen($stalling);
 
     $screen->howMany();
-    $screen->stalled();
-    $screen->howMuchIsShown();
-    $screen->met();
+    $screen->answer();
+    $screen->answer();
+    $screen->answer();
 
     expect($stalling->askings())->toBe(1);
 });
@@ -251,11 +251,11 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($keychain->isHolding(theStackWhoseStallIsRead()->id()))->toBeTrue();
 
-    expect($screen->isSignedIn())->toBeFalse()
+    expect($screen->answer()->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine — and
         // nothing already loaded, which `N3-R13` names separately.
-        ->and($screen->met())->toBe('')
+        ->and($screen->answer()->met)->toBe('')
         ->and($screen->howMany())->toBe(0)
-        ->and($screen->howMuchIsShown())->toBe('')
+        ->and($screen->answer()->shownSaid)->toBe('')
         ->and($keychain->isHolding(theStackWhoseStallIsRead()->id()))->toBeFalse();
 });

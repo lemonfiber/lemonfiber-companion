@@ -390,7 +390,7 @@ it('N4-R19 — a device that will not open holds the whole screen shut', functio
         opening: new Opening(ADeviceThatKnowsYou::refusing(), $stacks, ADeviceOnANetwork::connected()),
     );
 
-    expect($screen->isLocked())->toBeTrue();
+    expect($screen->howItOpened()->isLocked)->toBeTrue();
 });
 
 it('N4-R19 — an unlocked device shows the stacks', function (): void {
@@ -400,7 +400,7 @@ it('N4-R19 — an unlocked device shows the stacks', function (): void {
         opening: new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
     );
 
-    expect($screen->isLocked())->toBeFalse();
+    expect($screen->howItOpened()->isLocked)->toBeFalse();
 });
 
 it('N4-R3 — a device with no screen lock is not a locked one', function (): void {
@@ -412,7 +412,7 @@ it('N4-R3 — a device with no screen lock is not a locked one', function (): vo
         opening: new Opening(ADeviceThatKnowsYou::withNoScreenLock(), $stacks, ADeviceOnANetwork::connected()),
     );
 
-    expect($screen->isLocked())->toBeFalse();
+    expect($screen->howItOpened()->isLocked)->toBeFalse();
 });
 
 it('N4-R19 — the device is asked once for the frame, not once per field', function (): void {
@@ -423,9 +423,9 @@ it('N4-R19 — the device is asked once for the frame, not once per field', func
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
     $screen = theLaunchScreen($stacks, opening: new Opening($device, $stacks, ADeviceOnANetwork::connected()));
 
-    $screen->isLocked();
-    $screen->isLocked();
-    $screen->isLocked();
+    $screen->howItOpened();
+    $screen->howItOpened();
+    $screen->howItOpened();
 
     expect($device->asked())->toBe(1);
 });
@@ -438,9 +438,9 @@ it('N4-R4 — asking again is the operator saying they are ready', function (): 
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
     $screen = theLaunchScreen($stacks, opening: new Opening($device, $stacks, ADeviceOnANetwork::connected()));
 
-    $screen->isLocked();
+    $screen->howItOpened();
     $screen->tryToUnlock();
-    $screen->isLocked();
+    $screen->howItOpened();
 
     expect($device->asked())->toBe(2);
 });
@@ -461,8 +461,8 @@ it('N1-R37 — a launch with no network says so, and says what to do', function 
         ),
     );
 
-    expect($screen->whatStoppedIt())->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($screen->remedyFor())->toBe(Obstacle::DeviceHasNoNetwork->remedy());
+    expect($screen->howItOpened()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($screen->howItOpened()->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy());
 });
 
 it('N1-R37 — the stacks are still shown to a device with no network', function (): void {
@@ -482,7 +482,7 @@ it('N1-R37 — the stacks are still shown to a device with no network', function
         ),
     );
 
-    expect($screen->isLocked())->toBeFalse()
+    expect($screen->howItOpened()->isLocked)->toBeFalse()
         ->and($screen->nothingIsPairedYet())->toBeFalse()
         ->and($screen->configured()->isEmpty())->toBeFalse();
 });
@@ -496,8 +496,8 @@ it('N1-R36 — a launch that is ready has nothing standing in the way', function
         opening: new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
     );
 
-    expect($screen->whatStoppedIt())->toBe('')
-        ->and($screen->remedyFor())->toBe('');
+    expect($screen->howItOpened()->met)->toBe('')
+        ->and($screen->howItOpened()->remedy)->toBe('');
 });
 
 it('N1-R35 — a first run has nothing standing in the way either', function (): void {
@@ -509,6 +509,6 @@ it('N1-R35 — a first run has nothing standing in the way either', function ():
         opening: new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
     );
 
-    expect($screen->whatStoppedIt())->toBe('')
-        ->and($screen->remedyFor())->toBe('');
+    expect($screen->howItOpened()->met)->toBe('')
+        ->and($screen->howItOpened()->remedy)->toBe('');
 });

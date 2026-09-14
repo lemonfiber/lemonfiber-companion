@@ -83,16 +83,16 @@ it('N2-R11 — shows what the house asked for, and how much of it wants deciding
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
 
     expect($screen->howMany())->toBe(2)
-        ->and($screen->howManyWaiting())->toBe(1)
+        ->and($screen->answer()->waiting)->toBe(1)
         // Neither of the obstacle's two keys, because nothing was met. The
         // template branches on these being empty, so a word here would put an
         // error above a list that arrived perfectly well.
-        ->and($screen->met())->toBe('')
-        ->and($screen->remedy())->toBe('');
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('');
 });
 
 it('D7-R7 — every row says who asked, so a decline can reach them', function (): void {
-    $rows = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->requests();
+    $rows = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->answer()->requests;
 
     expect($rows[0]->by)->toBe('Sam')
         ->and($rows[0]->title)->toBe('A film nobody has seen')
@@ -104,7 +104,7 @@ it('D7-R4 — an estimate is labelled as one, and a measurement is not', functio
     // word would render both of these identically, which is the failure the
     // requirement is about — and the number renders either way, so nobody
     // would notice.
-    $rows = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->requests();
+    $rows = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->answer()->requests;
 
     expect($rows[0]->sizeSaid)->toBe('household.size_guessed')
         ->and($rows[1]->sizeSaid)->toBe('household.size_measured')
@@ -116,7 +116,7 @@ it('D7-R3 — the figure is whole and under a thousand, in a unit named by a key
     // construction, so nothing that leaves the fold has one. Four gigabytes is
     // `4` and `household.gigabytes`; nine hundred megabytes stays in megabytes
     // rather than becoming nought point nine of anything.
-    $rows = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->requests();
+    $rows = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->answer()->requests;
 
     expect($rows[0]->sizeFigure)->toBe(4)
         ->and($rows[0]->sizeUnit)->toBe('household.gigabytes')
@@ -142,7 +142,7 @@ it('D7-R3 — a figure too big for its unit moves up rather than grows', functio
         Wanted::of(46, 'Robin', 'A terabyte exactly', Size::measured(1_000_000_000_000), Waiting::Getting),
     );
 
-    $rows = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->requests();
+    $rows = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->answer()->requests;
 
     expect([$rows[0]->sizeFigure, $rows[0]->sizeUnit])->toBe([1, 'household.megabytes'])
         ->and([$rows[1]->sizeFigure, $rows[1]->sizeUnit])->toBe([1, 'household.gigabytes'])
@@ -167,7 +167,7 @@ it('D7-R3 — a figure between two whole ones is rounded rather than trimmed', f
         Wanted::of(52, 'Robin', 'Just over, in terabytes', Size::measured(4_600_000_000_000), Waiting::Getting),
     );
 
-    $rows = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->requests();
+    $rows = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->answer()->requests;
 
     expect([$rows[0]->sizeFigure, $rows[1]->sizeFigure])->toBe([900, 901])
         ->and([$rows[2]->sizeFigure, $rows[3]->sizeFigure])->toBe([4, 5])
@@ -179,7 +179,7 @@ it('D7-R3 — a request nobody has sized says so rather than showing nothing', f
         Wanted::of(43, 'Sam', 'Something nobody has sized', Size::unknown(), Waiting::ForApproval),
     );
 
-    $row = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->requests()[0];
+    $row = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->answer()->requests[0];
 
     // Not a zero and not a blank. The key says *we do not know*, and it names
     // no placeholder — so the figure beside it can never reach the glass.
@@ -201,17 +201,17 @@ it('a quiet week is an answer, and is not the same as a stack that did not answe
     $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::StackDidNotAnswer));
 
     expect($quiet->howMany())->toBe(0)
-        ->and($quiet->met())->toBe('')
+        ->and($quiet->answer()->met)->toBe('')
         ->and($unreachable->howMany())->toBe(0)
-        ->and($unreachable->met())->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($unreachable->remedy())->toBe(Obstacle::StackDidNotAnswer->remedy());
+        ->and($unreachable->answer()->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($unreachable->answer()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy());
 });
 
 it('N1-R44 — a device with no session for that stack is not asked to reach it', function (): void {
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting, signedIn: false);
 
-    expect($screen->isSignedIn())->toBeFalse()
+    expect($screen->answer()->isSignedIn)->toBeFalse()
         ->and($screen->howMany())->toBe(0)
         // The stack was never asked. A screen that reached out and then noticed
         // it had no session would have sent a request with nothing behind it.
@@ -223,9 +223,9 @@ it('N1-R17 — asks once per frame however many fields are read', function (): v
     $screen = theRequestsScreen($wanting);
 
     $screen->howMany();
-    $screen->howManyWaiting();
-    $screen->requests();
-    $screen->met();
+    $screen->answer();
+    $screen->answer();
+    $screen->answer();
 
     // By identifier rather than by instance: the screen reads its stack out of
     // the list the device holds, so the object it hands the port is that one
@@ -296,11 +296,11 @@ it('N1-R44 — a signed-out frame carries no sentence and nothing waiting behind
     // guard it.
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()), signedIn: false);
 
-    expect($screen->isSignedIn())->toBeFalse()
-        ->and($screen->met())->toBe('')
-        ->and($screen->remedy())->toBe('')
-        ->and($screen->requests())->toBe([])
-        ->and($screen->howManyWaiting())->toBe(0);
+    expect($screen->answer()->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->requests)->toBe([])
+        ->and($screen->answer()->waiting)->toBe(0);
 });
 
 it('a stack that could not be reached is still a signed-in screen', function (): void {
@@ -312,9 +312,9 @@ it('a stack that could not be reached is still a signed-in screen', function ():
     $answered = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
     $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::StackDidNotAnswer));
 
-    expect($answered->isSignedIn())->toBeTrue()
-        ->and($unreachable->isSignedIn())->toBeTrue()
-        ->and($unreachable->howManyWaiting())->toBe(0);
+    expect($answered->answer()->isSignedIn)->toBeTrue()
+        ->and($unreachable->answer()->isSignedIn)->toBeTrue()
+        ->and($unreachable->answer()->waiting)->toBe(0);
 });
 
 it('refuses a route parameter that is not text', function (): void {
@@ -361,7 +361,7 @@ it('N3-R7 — a refused request shows the reason on the row', function (): void 
         Wanted::of(42, 'Robin', 'A series somebody has', Size::unknown(), Waiting::Here),
     )));
 
-    $rows = $screen->requests();
+    $rows = $screen->answer()->requests;
 
     expect($rows[0]->refusedReason)->toBe('The disk is nearly full')
         ->and($rows[0]->refusedAt)->toBe('2026-09-14T04:00:00Z')
@@ -378,7 +378,7 @@ it('a refusal the stack did not time carries the reason and no moment', function
         Wanted::turnedDown(41, 'Sam', 'A film', Size::unknown(), TurnedDown::because('Not this week')),
     )));
 
-    $rows = $screen->requests();
+    $rows = $screen->answer()->requests;
 
     expect($rows[0]->refusedReason)->toBe('Not this week')
         ->and($rows[0]->refusedAt)->toBe('');
@@ -396,8 +396,8 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($keychain->isHolding(theStackWhoseHouseholdIsRead()->id()))->toBeTrue();
 
-    expect($screen->isSignedIn())->toBeFalse()
-        ->and($screen->met())->toBe('')
+    expect($screen->answer()->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->met)->toBe('')
         ->and($screen->howMany())->toBe(0)
         ->and($keychain->isHolding(theStackWhoseHouseholdIsRead()->id()))->toBeFalse();
 });
