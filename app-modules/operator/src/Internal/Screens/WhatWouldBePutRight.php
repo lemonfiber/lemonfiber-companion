@@ -22,10 +22,10 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\WhatOneRepairSays;
 use Modules\Operator\Internal\WhatTheStackWouldPutRight;
+use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
-use function sprintf;
 use function view;
 
 /**
@@ -176,16 +176,17 @@ final class WhatWouldBePutRight extends NativeComponent
         $this->answered = null;
     }
 
-    /** Where the screen about this machine's health is. */
-    public function healthIsAt(): string
+    /**
+     * Where this machine's screens are.
+     *
+     * One accessor rather than one per destination, and {@see WhereAStackIs}
+     * is the only place that knows a stack's routes — six classes were each
+     * spelling `/stacks/%s/sign-in` for themselves, so a rename had to be found
+     * in all six and the one that was missed would be a button leading nowhere.
+     */
+    public function goes(): WhereAStackIs
     {
-        return sprintf('/stacks/%s', $this->stack()->id()->stored());
-    }
-
-    /** Where signing in again happens (`N1-R44`). */
-    public function signInAt(): string
-    {
-        return sprintf('/stacks/%s/sign-in', $this->stack()->id()->stored());
+        return WhereAStackIs::of($this->stack()->id());
     }
 
     public function render(): View

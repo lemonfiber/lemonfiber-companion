@@ -24,11 +24,11 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\WhatOneFindingSays;
 use Modules\Operator\Internal\WhatTheStackTurnedOutToBe;
+use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichFamilyToRead;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
-use function sprintf;
 use function view;
 
 /**
@@ -241,19 +241,6 @@ final class HowThisStackIs extends NativeComponent
     }
 
     /**
-     * Where a session that has ended is answered.
-     *
-     * Built here rather than in the template so the URI has one spelling, the
-     * same way {@see YourStacks::signInAt()} builds it for the list — and built
-     * from the stack this screen is already about, so it cannot lead to another
-     * machine's sign-in.
-     */
-    public function signInAt(): string
-    {
-        return sprintf('/stacks/%s/sign-in', $this->stack()->id()->stored());
-    }
-
-    /**
      * Ask the stack again, because the operator has just done something.
      *
      * Forgetting what was held rather than asking and comparing: the next read
@@ -271,31 +258,19 @@ final class HowThisStackIs extends NativeComponent
         $this->answered = null;
     }
 
-    /** The frame, by name. */
     /**
-     * Where what the house asked for is read.
+     * Where this machine's screens are.
      *
-     * On this screen rather than on the list, because `N2-R11`'s requests
-     * belong to one machine and the list is about several — and because an
-     * operator who has come to look at a stack is already holding the question
-     * the household asks them.
+     * One accessor rather than one per destination. {@see WhereAStackIs} is the
+     * only place that knows a stack's routes, and it is built from the stack
+     * this screen is already about, so none of them can lead to another
+     * machine's. Three separate `somethingAreAt()` methods took this class to
+     * the twenty-method ceiling `Q-R64` refuses; the next destination the hub
+     * links to now costs no method here at all.
      */
-    public function requestsAreAt(): string
+    public function goes(): WhereAStackIs
     {
-        return sprintf('/stacks/%s/requests', $this->stack()->id()->stored());
-    }
-
-    /**
-     * Where what this machine would put right is read.
-     *
-     * `N2-R4` has the three statements made before confirmation is asked for,
-     * so the way in is a screen rather than a button beside a finding — a
-     * listing reached from one finding would show the operator the repairs for
-     * all of them under a heading naming one.
-     */
-    public function repairsAreAt(): string
-    {
-        return sprintf('/stacks/%s/repairs', $this->stack()->id()->stored());
+        return WhereAStackIs::of($this->stack()->id());
     }
 
     public function render(): View

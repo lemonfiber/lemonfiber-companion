@@ -16,6 +16,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
+use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -238,10 +239,9 @@ it('N1-R11 — a route naming a stack this device has forgotten is refused', fun
 });
 
 it('N2-R4 — the screen is registered under the route that reaches it', function (): void {
-    $resolved = NativeRouter::resolve(sprintf(
-        '/stacks/%s/repairs',
-        theStackBeingOfferedRepairs()->id()->stored(),
-    ));
+    $resolved = NativeRouter::resolve(
+        AStacksScreen::Repairs->forTheStack(theStackBeingOfferedRepairs()->id()->stored()),
+    );
 
     expect($resolved)->not->toBeNull(
         'Nothing is registered for the repairs route, so the button on the stack screen leads nowhere.',
@@ -253,8 +253,8 @@ it('N2-R4 — the screen is registered under the route that reaches it', functio
 it('the way back to the machine is a route as well', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()));
 
-    expect(NativeRouter::resolve($screen->healthIsAt()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->signInAt()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->signIn()))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

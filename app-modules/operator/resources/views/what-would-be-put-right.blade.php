@@ -4,7 +4,7 @@
     @unless ($this->isSignedIn())
         {{-- N1-R44: the session has ended, so nothing was asked. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
-        <native:button label="{{ __('connection.sign_in') }}" @navigate="{{ $this->signInAt() }}" />
+        <native:button label="{{ __('connection.sign_in') }}" @navigate="{{ $this->goes()->signIn() }}" />
     @elseif ($this->met() !== '')
         {{-- N1-R10: both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
@@ -51,5 +51,5 @@
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @endunless
 
-    <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="{{ $this->healthIsAt() }}" />
+    <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="{{ $this->goes()->health() }}" />
 </native:column>

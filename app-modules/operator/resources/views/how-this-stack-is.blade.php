@@ -7,7 +7,7 @@
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
         <native:button
             label="{{ __('connection.sign_in') }}"
-            @navigate="{{ $this->signInAt() }}"
+            @navigate="{{ $this->goes()->signIn() }}"
         />
     @elseif ($this->met() !== '')
         <native:text class="font-bold">{{ __($this->met()) }}</native:text>
@@ -116,14 +116,14 @@
              machine is already holding the question the household asks them. --}}
         <native:button
             label="{{ __('household.asked_for') }}"
-            @navigate="{{ $this->requestsAreAt() }}"
+            @navigate="{{ $this->goes()->requests() }}"
         />
 
         {{-- N2-R4: what this machine would put right, stated in full before
              anybody is asked to agree to any of it. --}}
         <native:button
             label="{{ __('health.would_put_right') }}"
-            @navigate="{{ $this->repairsAreAt() }}"
+            @navigate="{{ $this->goes()->repairs() }}"
         />
     @endunless
 </native:column>
