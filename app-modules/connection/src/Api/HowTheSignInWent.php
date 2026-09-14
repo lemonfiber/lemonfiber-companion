@@ -67,6 +67,22 @@ enum HowTheSignInWent: string
     case TheStoreWouldNotOpen = 'session_would_not_keep';
 
     /**
+     * This device will not let the app onto the network the stack is on.
+     *
+     * `N4-R17` says a refused local-network permission is reported as a
+     * condition **distinct** from an unreachable stack. It used to arrive here
+     * as `StackDidNotAnswer`, which is the collapse the requirement names: the
+     * two are indistinguishable at the socket — both are a request that goes
+     * nowhere — and telling them apart is the only thing standing between an
+     * operator and an afternoon spent on a machine that is working perfectly.
+     *
+     * The remedy is different in kind, not only in wording. Every other
+     * obstacle here sends somebody to look at their stack; this one sends them
+     * to Settings on the phone in their hand.
+     */
+    case TheNetworkIsNotPermitted = 'local_network_refused';
+
+    /**
      * Whether the operator is in, with a session that will survive the launch.
      *
      * Deleted once as unused and back with a caller: the screen shows the way
@@ -165,6 +181,13 @@ enum HowTheSignInWent: string
             self::SignedIn => Standing::Suppressed,
             self::TooManyAttempts, self::StackDidNotAnswer => Standing::Guided,
             self::NoStoreOnThisDevice, self::TheStoreWouldNotOpen => Standing::Actionable,
+            // `Guided` rather than `Actionable`, which is the distinction that
+            // makes `N4-R17` worth having: the operator must act, and not here.
+            // Offering a password field over a network the app is not allowed
+            // onto would be the screen offering to do something it cannot do —
+            // and the remedy is one screen further away than any other state
+            // here, in the phone's own settings rather than on the machine.
+            self::TheNetworkIsNotPermitted => Standing::Guided,
         };
     }
 
@@ -206,9 +229,13 @@ enum HowTheSignInWent: string
         return match ($why) {
             Obstacle::CredentialWasRefused => self::CredentialWasRefused,
             Obstacle::TooManyAttempts => self::TooManyAttempts,
+            // `N4-R17` — its own state rather than folded in with a stack that
+            // did not answer. They look alike at the socket and are opposite
+            // everywhere that matters: one is a machine to go and check, the
+            // other is a switch on the phone the operator is holding.
+            Obstacle::LocalNetworkIsNotPermitted => self::TheNetworkIsNotPermitted,
             Obstacle::StackDidNotAnswer,
             Obstacle::DeviceHasNoNetwork,
-            Obstacle::LocalNetworkIsNotPermitted,
             Obstacle::StackIsNotTheOnePaired => self::StackDidNotAnswer,
         };
     }

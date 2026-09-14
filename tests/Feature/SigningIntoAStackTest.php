@@ -159,12 +159,12 @@ it('N1-R10 — tells the three things the operator can meet at a door apart', fu
 });
 
 it('answers a stack that cannot be reached as one that did not answer', function (): void {
-    // Three of `Obstacle`'s six describe something that happened before any
-    // credential was offered. On this screen they are all the same situation:
-    // the operator did not get in and nothing about their password is known.
+    // Two of `Obstacle`'s six describe something that happened before any
+    // credential was offered and that the operator answers at the machine. On
+    // this screen they are the same situation: they did not get in, nothing
+    // about their password is known, and the thing to look at is the stack.
     foreach ([
         Obstacle::DeviceHasNoNetwork,
-        Obstacle::LocalNetworkIsNotPermitted,
         Obstacle::StackIsNotTheOnePaired,
     ] as $met) {
         $screen = typedPassword(
@@ -176,6 +176,33 @@ it('answers a stack that cannot be reached as one that did not answer', function
 
         expect($screen->went())->toBe(HowTheSignInWent::StackDidNotAnswer, $met->value);
     }
+});
+
+it('N4-R17 — a network the app is not allowed onto is not a stack that is off', function (): void {
+    // The requirement says *distinct*, and this screen used to fold the two
+    // together. They are indistinguishable at the socket — both are a request
+    // that goes nowhere — and opposite everywhere that matters: one is a
+    // machine to go and check, the other is a switch on the phone in the
+    // operator's hand. Folded in, somebody spends an afternoon on a stack that
+    // is working perfectly.
+    $screen = typedPassword(
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::LocalNetworkIsNotPermitted)),
+        'the-operators-password',
+    );
+
+    $screen->offer();
+
+    expect($screen->went())->toBe(HowTheSignInWent::TheNetworkIsNotPermitted)
+        ->and($screen->went()->said())->toBe('connection.local_network_refused')
+        ->and(__($screen->went()->said()))->not->toBe($screen->went()->said())
+        ->and(__($screen->went()->remedy()))->not->toBe($screen->went()->remedy());
+});
+
+it('N4-R17 — it offers no password field, because the remedy is elsewhere', function (): void {
+    // `Guided` rather than `Actionable`. A password field over a network the
+    // app is not allowed onto is the screen offering to do something it cannot
+    // do, which is the failure `Standing` exists to prevent.
+    expect(HowTheSignInWent::TheNetworkIsNotPermitted->mayTry())->toBeFalse();
 });
 
 it('N4-R6 — a session it could not keep is not a sign-in', function (): void {
@@ -231,6 +258,9 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::StackDidNotAnswer, false, true],
         [HowTheSignInWent::NoStoreOnThisDevice, true, false],
         [HowTheSignInWent::TheStoreWouldNotOpen, true, false],
+        // No field and no way back: the remedy is in the phone's settings, so
+        // both controls this screen could offer would do nothing (`N4-R17`).
+        [HowTheSignInWent::TheNetworkIsNotPermitted, false, true],
     ];
 
     expect($offered)->toHaveCount(count(HowTheSignInWent::cases()));
