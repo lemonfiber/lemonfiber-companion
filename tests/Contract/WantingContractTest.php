@@ -20,6 +20,7 @@ use Modules\Sdk\Api\Requests;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AHouseholdThatAsked;
+use Tests\Support\WhatTheContractAccepts;
 
 // The Wanting contract, run against the adapter and against the fake.
 //
@@ -63,47 +64,85 @@ function theSameRequests(): Requested
     );
 }
 
+/**
+ * The payload a stack sends where the house has asked for those two.
+ *
+ * Separate from the response so the rule at the foot of this file reads the
+ * same array the adapter is given. A fixture checked in one place and sent in
+ * another is a fixture that can drift from itself.
+ *
+ * Every member carries what they may reach, which nothing on this side reads.
+ * It is written out anyway, because a fixture holding only what the reader
+ * happens to want is a sample of a payload no stack sends — and `access` is the
+ * field a screen about what a household may do would be written against next.
+ *
+ * @return array<string, mixed>
+ */
+function whatAHouseholdThatAskedSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'household',
+        'data' => [
+            'available' => true,
+            'findings' => [],
+            'members' => [
+                [
+                    'name' => 'Sam',
+                    'access' => whatAMemberMayReach(),
+                    'claimed' => true,
+                    'to_hand_over' => [],
+                    'requests' => [[
+                        'id' => 41,
+                        'title' => 'A film nobody has seen',
+                        'state' => 'waiting-for-approval',
+                        'estimate' => ['bytes' => 4_000_000_000, 'measured' => false],
+                    ]],
+                ],
+                [
+                    'name' => 'Robin',
+                    'access' => whatAMemberMayReach(everyLibrary: false),
+                    'claimed' => true,
+                    'to_hand_over' => [],
+                    // No estimate at all, which the contract permits and
+                    // which `D7-R3` answers with *we do not know* rather
+                    // than a guess of nothing.
+                    'requests' => [[
+                        'id' => 42,
+                        'title' => 'A series somebody has',
+                        'state' => 'here',
+                    ]],
+                ],
+            ],
+        ],
+    ];
+}
+
+/**
+ * What one member may reach, as a stack states it.
+ *
+ * Both members carry one rather than sharing it, because the two answers differ
+ * and a fixture where every member may reach everything would not tell a reader
+ * written later that they can differ at all.
+ *
+ * @return array<string, mixed>
+ */
+function whatAMemberMayReach(bool $everyLibrary = true): array
+{
+    return [
+        'administrator' => false,
+        'disabled' => false,
+        'every_library' => $everyLibrary,
+        'libraries' => $everyLibrary ? [] : ['films'],
+        'restriction' => $everyLibrary ? 'unrestricted' : 'library-limited',
+        'unrated' => 'let-through',
+    ];
+}
+
 /** What the far end answers where the house has asked for those two. */
 function aHouseholdAnswer(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'household',
-            'data' => [
-                'available' => true,
-                'findings' => [],
-                'members' => [
-                    [
-                        'name' => 'Sam',
-                        'access' => [],
-                        'claimed' => true,
-                        'to_hand_over' => [],
-                        'requests' => [[
-                            'id' => 41,
-                            'title' => 'A film nobody has seen',
-                            'state' => 'waiting-for-approval',
-                            'estimate' => ['bytes' => 4_000_000_000, 'measured' => false],
-                        ]],
-                    ],
-                    [
-                        'name' => 'Robin',
-                        'access' => [],
-                        'claimed' => true,
-                        'to_hand_over' => [],
-                        // No estimate at all, which the contract permits and
-                        // which `D7-R3` answers with *we do not know* rather
-                        // than a guess of nothing.
-                        'requests' => [[
-                            'id' => 42,
-                            'title' => 'A series somebody has',
-                            'state' => 'here',
-                        ]],
-                    ],
-                ],
-            ],
-        ]),
-    );
+    return MockResponse::make((string) json_encode(whatAHouseholdThatAskedSends()));
 }
 
 /**
@@ -223,4 +262,9 @@ it('N1-R17 — asks once, because a screen is not a poller', function (): void {
     expect($wanting->askedAbout())->toBe($stack)
         ->and($wanting->askings())->toBe(1)
         ->and($wanting->wasGivenASession())->toBeTrue();
+});
+
+it('stands in for a household with a payload the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', whatAHouseholdThatAskedSends()))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

@@ -35,6 +35,7 @@ use Saloon\Http\PendingRequest;
 use function str_repeat;
 
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\WhatTheContractAccepts;
 
 /**
  * What the repairs adapter puts on the wire, which the contract cannot ask.
@@ -85,17 +86,28 @@ function theRepairAgreedTo(): Confirmed
     throw new RuntimeException('theListingAgreedTo() holds one repair, so this is unreachable.');
 }
 
+/**
+ * The payload a stack sends when it takes a repair on.
+ *
+ * Separate from the response so the rule at the foot of this file reads the
+ * same array the adapter is given. A fixture checked in one place and sent in
+ * another is a fixture that can drift from itself.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackTakingARepairOnSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'job',
+        'data' => ['action' => 'repair', 'job' => 'a-job'],
+    ];
+}
+
 /** What a stack answers when it takes a repair on. */
 function aRepairTakenOn(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'job',
-            'data' => ['action' => 'repair', 'job' => 'a-job'],
-        ]),
-        202,
-    );
+    return MockResponse::make((string) json_encode(whatAStackTakingARepairOnSends()), 202);
 }
 
 /**
@@ -172,4 +184,9 @@ it('N1-R42 — asking what would be put right names no attempt, since it changes
         ->wouldPutRight(theMendingStack(), Session::of('a-session-not-a-secret'));
 
     expect($mock->getLastPendingRequest()?->headers()->get(Api::IDEMPOTENCY_HEADER))->toBeNull();
+});
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('JobEnvelope', whatAStackTakingARepairOnSends()))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

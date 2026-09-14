@@ -29,9 +29,11 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 
+use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\WhatTheContractAccepts;
 
 /**
  * What the adapter puts on the wire, which the contract cannot ask about.
@@ -58,12 +60,56 @@ function theSupervisedStack(): Stack
     );
 }
 
+/**
+ * The payload a stack sends when it takes a verb on.
+ *
+ * Separate from the response so the rule at the foot of this file reads the
+ * same array the adapter is given. A fixture checked in one place and sent in
+ * another is a fixture that can drift from itself.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackTakingAVerbSends(): array
+{
+    return ['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'down', 'job' => 'a-job']];
+}
+
+/**
+ * The payload a stack sends where it is running nothing at all.
+ *
+ * Nothing running and every field present, which are different facts: the empty
+ * lists are what this case is about, and `disturbs` and `undeclared` are what
+ * every stack sends whether or not anything is running. A fixture short of them
+ * is a sample of a payload no stack sends, and the reader that gets written
+ * against it next would be written against a shape that does not exist.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackRunningNothingSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'status',
+        'data' => [
+            'condition' => 'inactive',
+            'disturbs' => [
+                'restarting' => ['bound' => 'bounded', 'seconds' => 30],
+                'starting' => ['bound' => 'bounded', 'seconds' => 45],
+                'stopping' => ['bound' => 'bounded', 'seconds' => 20],
+                'stopping_after_downloads' => ['bound' => 'open-ended', 'until' => 'downloads'],
+                'switching' => ['bound' => 'bounded', 'seconds' => 60],
+            ],
+            'forms' => [],
+            'services' => [],
+            'undeclared' => [],
+        ],
+    ];
+}
+
 /** What a stack answers a verb with. */
 function anAcknowledgement(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'down', 'job' => 'a-job']]),
-    );
+    return MockResponse::make((string) json_encode(whatAStackTakingAVerbSends()));
 }
 
 /** The request the adapter actually sent, having said that. */
@@ -217,15 +263,23 @@ it('N2-R7 — asks for a start at the same door as a stop', function (): void {
 
 it('N1-R17 — reads what is running at the one endpoint for it', function (): void {
     MockClient::destroyGlobal();
-    $mock = MockClient::global([MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'status',
-            'data' => ['condition' => 'inactive', 'forms' => [], 'services' => []],
-        ]),
-    )]);
+    $mock = MockClient::global([MockResponse::make((string) json_encode(whatAStackRunningNothingSends()))]);
 
     new Supervisors(new PinnedClients(), SequencedEntropy::counting())->running(theSupervisedStack(), Session::of('a-session-not-a-secret'));
 
     expect($mock->getLastPendingRequest()?->getUrl())->toEndWith('/api/status');
+});
+
+it('stands in for a stack with payloads the contract would accept', function (): void {
+    $payloads = [
+        'the handle' => ['JobEnvelope', whatAStackTakingAVerbSends()],
+        'the listing' => ['StatusEnvelope', whatAStackRunningNothingSends()],
+    ];
+
+    foreach ($payloads as $which => [$envelope, $payload]) {
+        expect(WhatTheContractAccepts::complaintsAbout($envelope, $payload))->toBe(
+            [],
+            sprintf("The payload this suite stands in for a stack with is not one a stack would send: %s.\n", $which),
+        );
+    }
 });

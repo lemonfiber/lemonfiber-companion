@@ -153,6 +153,31 @@ function whereEachKindOfRuleLives(): array
 }
 
 /**
+ * Whether one claim names a kind of mechanism.
+ *
+ * Read as a word rather than as text found anywhere in the claim, which is the
+ * same reading {@see carriesTheRule()} needed on the other side of this join.
+ * A substring match cannot tell a claim from a mention: a row whose prose says
+ * *architecture* would claim an arch mechanism by spelling, and one naming the
+ * generated `@phpstan-type` line as what an arch rule reads would claim a
+ * PHPStan rule it never had. Both borrow a mechanism, and a borrowed mechanism
+ * is exactly the row this checker exists to refuse.
+ *
+ * Hyphens are excluded on both sides rather than only before, which plain word
+ * boundaries would not do: `@phpstan-type` has a boundary after `phpstan`, so
+ * `\b` alone reads the tag as the tool.
+ *
+ * Every clause is searched rather than the first, because a row may name two
+ * mechanisms and put the second one last — `composer + arch` and `review, plus
+ * an arch check` are both claims to an arch rule, and reading only the head
+ * would quietly stop asking them for one.
+ */
+function claimsTheKind(string $claim, string $kind): bool
+{
+    return preg_match(sprintf('/(?<![-\w])%s(?![-\w])/i', preg_quote($kind, '/')), $claim) === 1;
+}
+
+/**
  * Whether any of those sources names that rule.
  *
  * Bounded on both sides, so `H1` is not found inside `H10` and a hyphenated
