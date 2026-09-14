@@ -39,11 +39,17 @@ it('holds the forms a stack declared, in the order it declared them', function (
 });
 
 it('reads by position, whatever keys the variadic arrived with', function (): void {
-    $named = [];
+    // Named arguments give a variadic string keys, and this collection hands its
+    // items out again through its iterator — so the keys escape, and everything
+    // downstream reads by position. The keys are what has to be read back:
+    // `foreach` yields insertion order whatever they are, so a collection that
+    // had kept `first` and `second` iterates identically to one that reindexed.
+    //
+    // Which is what the assertion below used to miss. It read the form names, collected
+    // through a `foreach`, and passed with the reindex deleted — an assertion
+    // about its own accumulator. `Scrollback` and `Stalled` read the keys for
+    // exactly this reason.
+    $forms = Forms::these(first: Form::called('media'), second: Form::called('network'));
 
-    foreach (Forms::these(first: Form::called('media'), second: Form::called('network')) as $form) {
-        $named[] = $form->named();
-    }
-
-    expect($named)->toBe(['media', 'network']);
+    expect(array_keys(iterator_to_array($forms, preserve_keys: true)))->toBe([0, 1]);
 });

@@ -94,6 +94,16 @@ it('a stack that runs nothing is a state rather than a missing list', function (
 });
 
 it('reads by position, whatever keys the variadic arrived with', function (): void {
+    // Named arguments give a variadic string keys, and this collection hands its
+    // items out again through its iterator — so the keys escape, and everything
+    // downstream reads by position. The keys are what has to be read back:
+    // `foreach` yields insertion order whatever they are, so a collection that
+    // had kept `first` and `second` iterates identically to one that reindexed.
+    //
+    // Which is what the assertion below used to miss. It read `everythingItRuns()`, collected
+    // through a `foreach`, and passed with the reindex deleted — an assertion
+    // about its own accumulator. `Scrollback` and `Stalled` read the keys for
+    // exactly this reason.
     $daemons = Daemons::of(
         running: HowTheStackIsRunning::Active,
         forms: Forms::none(),
@@ -101,5 +111,5 @@ it('reads by position, whatever keys the variadic arrived with', function (): vo
         second: oneItRuns('radarr'),
     );
 
-    expect(everythingItRuns($daemons))->toBe('sonarr | radarr');
+    expect(array_keys(iterator_to_array($daemons, preserve_keys: true)))->toBe([0, 1]);
 });
