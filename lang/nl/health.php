@@ -177,4 +177,8 @@ return [
     'nothing_leans_on_it' => 'Niets anders in de stack heeft hem nodig.',
     'go_ahead' => 'Doe maar',
     'never_mind' => 'Laat maar',
+    'awaiting' => [
+        'downloads' => 'Totdat alles wat nog binnenkomt klaar is',
+    ],
+    'for_at_most' => 'Maximaal :seconds seconden',
 ];

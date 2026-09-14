@@ -94,6 +94,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Services->forTheStack($this->stored);
     }
 
+    /** Where this machine stands on being up to date (`N2-R15`). */
+    public function updates(): string
+    {
+        return AStacksScreen::Updates->forTheStack($this->stored);
+    }
+
     /** What one of this machine's services has been saying (`N2-R10`). */
     public function logsOf(ServiceId $service): string
     {

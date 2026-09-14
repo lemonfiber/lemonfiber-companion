@@ -5,15 +5,19 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
+use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Permission;
@@ -94,6 +98,22 @@ function everyDerivedKey(): array
         WhereTheCodeGot::class => aPairPerCase(
             WhereTheCodeGot::cases(),
             static fn(WhereTheCodeGot $got): array => [$got->saidUnderTheField()],
+        ),
+        Awaiting::class => aPairPerCase(
+            Awaiting::cases(),
+            static fn(Awaiting $awaiting): array => [$awaiting->saidOnTheScreen()],
+        ),
+        HowCurrent::class => aPairPerCase(
+            HowCurrent::cases(),
+            static fn(HowCurrent $how): array => [$how->saidOnTheScreen()],
+        ),
+        HowItEnded::class => aPairPerCase(
+            HowItEnded::cases(),
+            static fn(HowItEnded $ending): array => [$ending->saidOnTheScreen()],
+        ),
+        HowToUndoIt::class => aPairPerCase(
+            HowToUndoIt::cases(),
+            static fn(HowToUndoIt $undo): array => [$undo->saidOnTheScreen()],
         ),
         Conclusion::class => aPairPerCase(
             Conclusion::cases(),

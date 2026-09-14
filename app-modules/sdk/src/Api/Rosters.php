@@ -20,6 +20,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatLeansOnIt;
+use Modules\Sdk\Internal\Costs;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -61,7 +62,12 @@ final readonly class Rosters
             throw RosterIsUnreadable::missing(WireField::Data);
         }
 
-        return Daemons::of(self::condition($data), self::forms($data), ...self::services($data));
+        return Daemons::of(
+            self::condition($data),
+            self::forms($data),
+            Costs::in($data),
+            ...self::services($data),
+        );
     }
 
     /**

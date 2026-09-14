@@ -157,5 +157,15 @@
             label="{{ __('health.what_it_runs') }}"
             @navigate="{{ $this->goes()->services() }}"
         />
+
+        {{-- N2-R15: where this machine stands on being up to date. Beside what
+             it runs rather than under the verdict, for that one's reason turned
+             around: every check can pass on a machine with an update waiting,
+             and being out of date is not a finding — it is a decision somebody
+             makes on an evening they choose. --}}
+        <native:button
+            label="{{ __('updates.how_current') }}"
+            @navigate="{{ $this->goes()->updates() }}"
+        />
     @endunless
 </native:column>

@@ -709,8 +709,8 @@ reader looks for a field at a path the contract has not got and the payload
 obliges, both sides pass and the application is broken against every real
 machine.
 
-That is not a hypothetical. A reader of the `update` payload took `state` and
-`running` off the top of it; the contract puts the first under `changelog` and
+That is not a hypothetical. `Standings` read `state` and `running` off the top
+of the `update` payload; the contract puts the first under `changelog` and
 gives the top-level one another meaning. Three rules passed, and the screen
 would have refused every stack with an update waiting. So the payload is now
 read against the generated types instead of against the reader — a key the
