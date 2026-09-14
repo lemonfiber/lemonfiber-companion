@@ -30,14 +30,20 @@ use Modules\Sdk\Api\Supervisors;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatSupervises;
+use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\WhatTheContractAccepts;
 
 /** What a stack reports its verbs cost, as this suite's stacks report them. */
 function whatTheSupervisedVerbsCost(): Disturbances
 {
+    // The same numbers {@see howLongEachVerbTakesIt()} puts on the wire, and
+    // three different ones: a reader that took the first and used it everywhere
+    // would be right about a start and wrong about the other two, which is
+    // exactly what a contract suite comparing the two implementations is for.
     return Disturbances::of(
-        starting: WhatItTakesAway::atMost(180),
-        stopping: WhatItTakesAway::atMost(10),
-        restarting: WhatItTakesAway::atMost(180),
+        starting: WhatItTakesAway::atMost(45),
+        stopping: WhatItTakesAway::atMost(20),
+        restarting: WhatItTakesAway::atMost(30),
     );
 }
 
@@ -105,57 +111,109 @@ function theSameRunning(): Daemons
     );
 }
 
+/**
+ * The payload a stack sends where those two are what it runs.
+ *
+ * Separate from the response so the rule at the foot of this file reads the
+ * same array the adapter is given. A fixture checked in one place and sent in
+ * another is a fixture that can drift from itself.
+ *
+ * Four fields here are sent by every stack and read by nothing on this side:
+ * `describes` on each service, and `disturbs` and `undeclared` beside them. They
+ * are written out anyway, because a fixture holding only what the reader happens
+ * to want is a sample of a payload no stack sends — and the next reader to be
+ * written against it would be written against a shape that does not exist.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackRunningSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'status',
+        'data' => [
+            'condition' => 'degraded',
+            'disturbs' => howLongEachVerbTakesIt(),
+            'forms' => ['media', 'downloads'],
+            'services' => [
+                [
+                    'id' => 'jellyfin',
+                    'name' => 'Jellyfin',
+                    'describes' => 'The library everybody watches from',
+                    'profile' => 'media',
+                    'state' => 'healthy',
+                    'criticality' => 'core',
+                    'depends_on' => [],
+                ],
+                [
+                    'id' => 'sonarr',
+                    'name' => 'Sonarr',
+                    'describes' => 'Fetches the series somebody is following',
+                    'profile' => 'downloads',
+                    'state' => 'failed',
+                    'criticality' => 'important',
+                    'depends_on' => ['jellyfin'],
+                    'exit' => 137,
+                ],
+            ],
+            // A container the machine is running that this stack's own
+            // configuration does not declare. Every stack sends the field, so
+            // the fixture carries it — and it is one rather than none because
+            // an empty list would not tell a reader written later that the
+            // rows have a shape of their own.
+            'undeclared' => [[
+                'id' => 'a-container-somebody-started',
+                'describes' => 'Something running beside the stack',
+                'state' => 'running',
+            ]],
+        ],
+    ];
+}
+
+/**
+ * How long each verb takes the stack away for, as a stack states it.
+ *
+ * Every one of the five, because the contract requires all five and a payload
+ * short of one is a payload no stack sends. Two shapes between them, so a
+ * reader written against this cannot be written against only the simpler.
+ *
+ * @return array<string, mixed>
+ */
+function howLongEachVerbTakesIt(): array
+{
+    return [
+        'restarting' => ['bound' => 'bounded', 'seconds' => 30],
+        'starting' => ['bound' => 'bounded', 'seconds' => 45],
+        'stopping' => ['bound' => 'bounded', 'seconds' => 20],
+        'stopping_after_downloads' => ['bound' => 'open-ended', 'until' => 'downloads'],
+        'switching' => ['bound' => 'bounded', 'seconds' => 60],
+    ];
+}
+
+/**
+ * The payload a stack sends where it took a verb on.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackTakingAVerbSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'job',
+        'data' => ['action' => 'down', 'job' => AStackThatSupervises::THE_JOB],
+    ];
+}
+
 /** What the far end answers where those two are what it runs. */
 function aRunningAnswer(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'status',
-            'data' => [
-                'disturbs' => [
-                    'starting' => ['bound' => 'bounded', 'seconds' => 180],
-                    'stopping' => ['bound' => 'bounded', 'seconds' => 10],
-                    'restarting' => ['bound' => 'bounded', 'seconds' => 180],
-                    'stopping_after_downloads' => ['bound' => 'open-ended', 'until' => 'downloads'],
-                    'switching' => ['bound' => 'bounded', 'seconds' => 180],
-                ],
-                'condition' => 'degraded',
-                'forms' => ['media', 'downloads'],
-                'services' => [
-                    [
-                        'id' => 'jellyfin',
-                        'name' => 'Jellyfin',
-                        'profile' => 'media',
-                        'state' => 'healthy',
-                        'criticality' => 'core',
-                        'depends_on' => [],
-                    ],
-                    [
-                        'id' => 'sonarr',
-                        'name' => 'Sonarr',
-                        'profile' => 'downloads',
-                        'state' => 'failed',
-                        'criticality' => 'important',
-                        'depends_on' => ['jellyfin'],
-                        'exit' => 137,
-                    ],
-                ],
-            ],
-        ]),
-    );
+    return MockResponse::make((string) json_encode(whatAStackRunningSends()));
 }
 
 /** What the far end answers where it took a verb on. */
 function aStartedAnswer(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'job',
-            'data' => ['action' => 'down', 'job' => AStackThatSupervises::THE_JOB],
-        ]),
-    );
+    return MockResponse::make((string) json_encode(whatAStackTakingAVerbSends()));
 }
 
 /**
@@ -177,7 +235,7 @@ function everyWayOfSupervising(MockResponse $answered, ?Obstacle $why = null): a
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Supervisors(new PinnedClients());
+            return new Supervisors(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -311,6 +369,11 @@ it('an answer this app cannot read is a stack that did not answer', function ():
     // refuses it, and the refusal has to reach the screen as an obstacle rather
     // than as a raise. A listing one row short is a service nobody can turn off
     // from the phone, with nothing on the screen to say so.
+    //
+    // One field away from what a stack sends, and no further: everything else
+    // here is what the contract asks for, so the refusal below can only be the
+    // missing `state`. A fixture short of five fields would pass this case on a
+    // reader that refused it for any of them.
     $answered = MockResponse::make(
         (string) json_encode([
             'api_version' => 1,
@@ -324,14 +387,17 @@ it('an answer this app cannot read is a stack that did not answer', function ():
                     'switching' => ['bound' => 'bounded', 'seconds' => 180],
                 ],
                 'condition' => 'active',
+                'disturbs' => howLongEachVerbTakesIt(),
                 'forms' => ['media'],
                 'services' => [[
                     'id' => 'jellyfin',
                     'name' => 'Jellyfin',
+                    'describes' => 'The library everybody watches from',
                     'profile' => 'media',
                     'criticality' => 'core',
                     'depends_on' => [],
                 ]],
+                'undeclared' => [],
             ],
         ]),
     );
@@ -386,4 +452,18 @@ it('N2-R8 — nothing reaches the stack until a verb is agreed to', function ():
     );
 
     expect($supervising->whatItWasToldToDo())->toHaveCount(1);
+});
+
+it('stands in for a stack with payloads the contract would accept', function (): void {
+    $payloads = [
+        'the listing' => ['StatusEnvelope', whatAStackRunningSends()],
+        'the handle' => ['JobEnvelope', whatAStackTakingAVerbSends()],
+    ];
+
+    foreach ($payloads as $which => [$envelope, $payload]) {
+        expect(WhatTheContractAccepts::complaintsAbout($envelope, $payload))->toBe(
+            [],
+            sprintf("The payload this suite stands in for a stack with is not one a stack would send: %s.\n", $which),
+        );
+    }
 });

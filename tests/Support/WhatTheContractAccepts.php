@@ -26,34 +26,35 @@ use function str_starts_with;
  *
  * That is not hypothetical. {@see \Modules\Sdk\Api\Standings} read `state` and
  * `running` off the top of the `update` payload, where the contract puts the
- * first under `changelog` and gives the top-level one a different meaning
- * entirely. The fixture put them where the reader looked, three rules passed,
- * and the screen would have refused every stack with an update waiting.
+ * first under `changelog` and calls the top-level one something else entirely.
+ * The fixture put them where the reader looked, three rules passed, and the
+ * screen would have refused every stack with an update waiting.
  *
  * So the fixture is checked against the contract rather than against the
- * reader. Three directions, because each catches a mistake the others cannot:
- * a key the contract has not got at that path, a key it requires that the
- * payload leaves out, and a word outside a closed set it declares.
+ * reader. What is asserted is both directions: a key the contract does not have
+ * at that path, and a key it requires that the payload leaves out. The second
+ * matters as much as the first — a fixture short of a required field is a
+ * sample of a payload no stack sends, and a reader tested only against it has
+ * been tested against nothing.
  *
- * The third is what names a defect rather than a symptom. A reader looking in
- * the wrong place often finds a field that *exists* there under another
- * meaning, so nothing is unknown and nothing is missing — only the word is
- * wrong.
+ * Only the shapes matter. What a field *says* is the reader's business and the
+ * suites assert it; this asks whether the field is one the stack would send.
  */
 final readonly class WhatTheContractAccepts
 {
     /**
      * Everything about a payload the contract would not recognise.
      *
-     * The body as it goes on the wire rather than its `data` alone, so a suite
-     * hands over exactly what it hands the client.
+     * The body as it goes on the wire, so the `kind` is checked too: a fixture
+     * carrying one envelope's payload under another's name is a sample of a
+     * conversation that cannot happen.
      *
      * @param  array<array-key, mixed>  $body
      * @return list<string>
      */
     public static function complaintsAbout(string $envelope, array $body): array
     {
-        $shape = WhatTheContractDeclares::of($envelope);
+        $shape = WhatTheContractDeclares::shapeOf($envelope);
 
         if ($shape === '') {
             return [sprintf('The contract has no envelope called `%s`.', $envelope)];
@@ -133,45 +134,22 @@ final readonly class WhatTheContractAccepts
         $said = [];
 
         foreach ($value as $name => $held) {
-            $at = sprintf('%s.%s', $path, $name);
-
             if (! array_key_exists((string) $name, $fields)) {
-                $said[] = sprintf('`%s` is not a field the contract has there.', $at);
+                $said[] = sprintf('`%s.%s` is not a field the contract has there.', $path, $name);
 
                 continue;
             }
 
-            $against = $fields[(string) $name][1];
-
-            $said = [...$said, ...(is_array($held)
-                ? self::against($against, $held, $at)
-                : self::said($against, $held, $at))];
+            $said = [...$said, ...self::held(
+                $fields[(string) $name][1],
+                $held,
+                sprintf('%s.%s', $path, $name),
+            )];
         }
-
-        return [...$said, ...self::shortOf($fields, $value, $path)];
-    }
-
-    /**
-     * The fields a stack always sends that this payload does not.
-     *
-     * A payload short of one is a sample of something no stack sends, and a
-     * reader tested only against it has been tested against nothing.
-     *
-     * @param  array<string, array{0: bool, 1: string}>  $fields
-     * @param  array<array-key, mixed>  $value
-     * @return list<string>
-     */
-    private static function shortOf(array $fields, array $value, string $path): array
-    {
-        $said = [];
 
         foreach ($fields as $name => [$optional]) {
             if (! $optional && ! array_key_exists($name, $value)) {
-                $said[] = sprintf(
-                    '`%s.%s` is a field every stack sends and this payload leaves out.',
-                    $path,
-                    $name,
-                );
+                $said[] = sprintf('`%s.%s` is a field every stack sends and this payload leaves out.', $path, $name);
             }
         }
 
@@ -179,7 +157,31 @@ final readonly class WhatTheContractAccepts
     }
 
     /**
+     * One field's value, read against its type by whichever half applies.
+     *
+     * The two halves ask different questions — a shape has fields and a scalar
+     * has a vocabulary — and which one a value belongs to is decided by the
+     * value rather than by the type, because a payload is what is in doubt.
+     *
+     * @return list<string>
+     */
+    private static function held(string $against, mixed $value, string $path): array
+    {
+        return is_array($value)
+            ? self::against($against, $value, $path)
+            : self::said($against, $value, $path);
+    }
+
+    /**
      * A value that is not an array, read against a type that may be a closed set.
+     *
+     * The half a shape check cannot do without, and the half that names the
+     * defect rather than a symptom of it. `Standings` read the `update`
+     * payload's top-level `state` for the *current, pending, stale* triple,
+     * which the contract puts under `changelog`; the top-level field exists and
+     * answers a different question, so no key was unknown and no key was
+     * missing there. What was wrong was the word: `pending` is not one of the
+     * five the contract allows at that path.
      *
      * Only closed sets are checked. A field typed `string` or `int` accepts
      * whatever a fixture wants to say, and what it says is the reader's business

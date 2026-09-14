@@ -21,6 +21,7 @@ use Modules\Sdk\Api\Scrollbacks;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AServiceThatSpoke;
+use Tests\Support\WhatTheContractAccepts;
 
 // The Saying contract, run against the adapter and against the fake.
 //
@@ -80,10 +81,22 @@ function theSameScrollback(): Scrollback
     );
 }
 
-/** What the far end answers: one `log` document a line, as the read renders it. */
-function aScrollbackAnswer(): MockResponse
+/**
+ * The payloads a service that spoke sends: one `log` document a line.
+ *
+ * Separate from the response so the rule at the foot of this file reads the
+ * same arrays the adapter is given. A fixture checked in one place and sent in
+ * another is a fixture that can drift from itself.
+ *
+ * A document each rather than one document holding the lines, because that is
+ * what the endpoint streams — a fixture that gathered them into an array would
+ * be a sample of a read this app never performs.
+ *
+ * @return list<array<string, mixed>>
+ */
+function whatAServiceThatSpokeSends(): array
 {
-    $lines = [
+    return [
         ['api_version' => 1, 'kind' => 'log', 'data' => [
             'at' => '2026-09-14T04:00:00Z', 'line' => 'tunnel up', 'service' => 'gluetun', 'stream' => 'stdout',
         ]],
@@ -94,10 +107,14 @@ function aScrollbackAnswer(): MockResponse
             'at' => '2026-09-14T04:00:02Z', 'line' => 'retrying', 'service' => 'gluetun', 'stream' => 'stdout',
         ]],
     ];
+}
 
+/** What the far end answers: one `log` document a line, as the read renders it. */
+function aScrollbackAnswer(): MockResponse
+{
     $body = '';
 
-    foreach ($lines as $line) {
+    foreach (whatAServiceThatSpokeSends() as $line) {
         $body .= sprintf("%s\n", (string) json_encode($line));
     }
 
@@ -237,5 +254,17 @@ it('a line this app cannot read is a stack that did not answer', function (): vo
 
     foreach (everyWayOfReadingAService($answered, Obstacle::StackDidNotAnswer) as $which => $make) {
         expect(everyLineOf($make()))->toBe(Obstacle::StackDidNotAnswer->value, $which);
+    }
+});
+
+it('stands in for a service with payloads the contract would accept', function (): void {
+    // Every line, not the first: a stream is read a document at a time, and the
+    // one a fixture gets wrong is the one that carries the field the others
+    // leave at its usual value — here, the line with no timestamp.
+    foreach (whatAServiceThatSpokeSends() as $at => $line) {
+        expect(WhatTheContractAccepts::complaintsAbout('LogEnvelope', $line))->toBe(
+            [],
+            sprintf("The payload this suite stands in for a service with is not one a stack would send: line %d.\n", $at),
+        );
     }
 });

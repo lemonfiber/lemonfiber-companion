@@ -24,6 +24,7 @@ use Modules\Sdk\Api\Questions;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\WhatTheContractAccepts;
 
 // The Asking contract, run against the adapter and against the fake.
 //
@@ -80,36 +81,48 @@ function theSameReport(): Report
     ));
 }
 
+/**
+ * The payload a stack sends where the checks ran and found that.
+ *
+ * Separate from the response so the rule at the foot of this file reads the
+ * same array the adapter is given. A fixture checked in one place and sent in
+ * another is a fixture that can drift from itself.
+ *
+ * @return array<string, mixed>
+ */
+function whatADegradedStackSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'doctor',
+        'data' => [
+            'overall' => 'degraded',
+            'findings' => [[
+                'check' => 'disk.space',
+                'category' => 'storage',
+                'title' => 'The disk is nearly full',
+                // `outcome` rather than `kind`, which is the wire's own
+                // spelling for a verdict's tag — a fixture that invented a
+                // shape no stack sends is a test that passes against an
+                // adapter which could not read a real answer.
+                'verdict' => [
+                    'outcome' => 'warn',
+                    'code' => 'DISK-1',
+                    'severity' => 'warning',
+                    'state' => 'guided',
+                    'summary' => 'Nearly full',
+                    'meaning' => 'New downloads will start failing soon',
+                    'remedies' => [['action' => 'Make room, or add a disk']],
+                ],
+            ]],
+        ],
+    ];
+}
+
 /** What the far end answers where the checks ran and found that. */
 function aDegradedAnswer(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'doctor',
-            'data' => [
-                'overall' => 'degraded',
-                'findings' => [[
-                    'check' => 'disk.space',
-                    'category' => 'storage',
-                    'title' => 'The disk is nearly full',
-                    // `outcome` rather than `kind`, which is the wire's own
-                    // spelling for a verdict's tag — a fixture that invented a
-                    // shape no stack sends is a test that passes against an
-                    // adapter which could not read a real answer.
-                    'verdict' => [
-                        'outcome' => 'warn',
-                        'code' => 'DISK-1',
-                        'severity' => 'warning',
-                        'state' => 'guided',
-                        'summary' => 'Nearly full',
-                        'meaning' => 'New downloads will start failing soon',
-                        'remedies' => [['action' => 'Make room, or add a disk']],
-                    ],
-                ]],
-            ],
-        ]),
-    );
+    return MockResponse::make((string) json_encode(whatADegradedStackSends()));
 }
 
 /**
@@ -217,4 +230,9 @@ it('N1-R17 — asks once, because a screen is not a poller', function (): void {
 
     expect($asking->askedAbout())->toBe($stack)
         ->and($asking->askings())->toBe(1);
+});
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('DoctorEnvelope', whatADegradedStackSends()))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

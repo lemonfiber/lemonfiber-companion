@@ -112,6 +112,30 @@ final class AStackThatSupervises implements Supervising
     }
 
     /**
+     * A stack that answers once and then stops.
+     *
+     * The window a screen holding a question across frames actually meets: the
+     * listing was read, somebody tapped, and by the next frame the machine is
+     * not answering. What the screen then holds is a question about a reading
+     * it no longer has — which is where the guards on anything derived from
+     * both of them earn their place, and which no fake answering the same thing
+     * forever can produce.
+     */
+    public static function thenMeeting(Daemons $first, Obstacle $why): self
+    {
+        $reading = 0;
+
+        return new self(
+            static function () use ($first, $why, &$reading): WhatIsRunning {
+                $reading++;
+
+                return $reading === 1 ? WhatIsRunning::these($first) : WhatIsRunning::met($why);
+            },
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+        );
+    }
+
+    /**
      * A stack whose listing changes between one frame and the next.
      *
      * The first reading, then the second, and the second from then on. A screen

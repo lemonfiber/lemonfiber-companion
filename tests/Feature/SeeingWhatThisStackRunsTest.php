@@ -641,3 +641,25 @@ it('N2-R8 — nothing is stated where nothing is being asked', function (): void
 
     expect($screen->whatItTakesAway())->toBeNull();
 });
+
+it('N2-R8 — states no length once the reading it came from is gone', function (): void {
+    // The window a screen holding a question across frames actually meets: the
+    // listing was read, somebody tapped, and by the next frame the stack is not
+    // answering. The question survives and the lengths do not, so a screen
+    // deriving one from both has to say nothing rather than reach into a
+    // reading that is no longer there.
+    //
+    // `N2-R14` is why it says nothing rather than falling back: a length this
+    // side invented would be a guess at something only the stack knows, offered
+    // at the exact moment the stack has stopped saying anything.
+    $screen = theServicesScreen(AStackThatSupervises::thenMeeting(
+        aStackRunningTwoThings(),
+        Obstacle::StackDidNotAnswer,
+    ));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+    $screen->again();
+
+    expect($screen->asking())->not->toBeNull()
+        ->and($screen->whatItTakesAway())->toBeNull();
+});

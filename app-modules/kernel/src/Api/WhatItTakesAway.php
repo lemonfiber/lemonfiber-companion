@@ -20,21 +20,28 @@ use Closure;
  */
 final readonly class WhatItTakesAway
 {
-    private function __construct(
-        private int $seconds,
-        private ?Awaiting $until,
-    ) {}
+    /**
+     * One field, because this is one of two things rather than two things one
+     * of which is absent.
+     *
+     * Two nullable fields would need a number in the unbounded case, and there
+     * is no number: whatever went there — nought, minus one — would be a value
+     * nothing can read and nothing can be wrong about, which is how a
+     * placeholder outlives the reason for it. A union holds exactly the two
+     * states this has and leaves nowhere to put a third.
+     */
+    private function __construct(private int|Awaiting $held) {}
 
     /** It ends, and this is the longest the run is held to. */
     public static function atMost(int $seconds): self
     {
-        return new self($seconds, null);
+        return new self($seconds);
     }
 
     /** Nothing bounds it, and this is what it waits for. */
     public static function until(Awaiting $awaiting): self
     {
-        return new self(0, $awaiting);
+        return new self($awaiting);
     }
 
     /**
@@ -54,8 +61,8 @@ final readonly class WhatItTakesAway
      */
     public function either(Closure $bounded, Closure $openEnded): object
     {
-        return $this->until instanceof Awaiting
-            ? $openEnded($this->until)
-            : $bounded($this->seconds);
+        return $this->held instanceof Awaiting
+            ? $openEnded($this->held)
+            : $bounded($this->held);
     }
 }

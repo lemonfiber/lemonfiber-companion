@@ -28,6 +28,8 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatWouldMend;
+use Tests\Support\Fakes\SequencedEntropy;
+use Tests\Support\WhatTheContractAccepts;
 
 // The Mending contract, run against the adapter and against the fake.
 //
@@ -82,61 +84,76 @@ function theSameOffer(): Offer
     ));
 }
 
+/**
+ * The payload a stack sends when it takes an action on.
+ *
+ * Separate from the response so the rule at the foot of this file reads the
+ * same array the adapter is given. A fixture checked in one place and sent in
+ * another is a fixture that can drift from itself.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackNamingAJobSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'job',
+        'data' => ['action' => 'repair', 'job' => AStackThatWouldMend::THE_JOB],
+    ];
+}
+
 /** What a stack answers when it takes an action on. */
 function anAcknowledgement(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'job',
-            'data' => ['action' => 'repair', 'job' => AStackThatWouldMend::THE_JOB],
-        ]),
-        202,
-    );
+    return MockResponse::make((string) json_encode(whatAStackNamingAJobSends()), 202);
+}
+
+/**
+ * The payload a stack sends where the offer is finished and nothing was acted on.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackOffering(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'repair',
+        'data' => [
+            'acted' => false,
+            'agreement' => 'agreement-a-test-can-name',
+            // Empty rather than absent: a stack that found nothing beyond what
+            // it can put right still sends the field, and a fixture leaving it
+            // out would let a reader that never looks at it pass.
+            'beyond' => [],
+            'mended' => [],
+            'offered' => [
+                [
+                    'check' => 'storage.one-filesystem',
+                    'does' => 'Move the library onto the larger disk',
+                    'effects' => ['Downloads pause while it moves'],
+                    'reversible' => true,
+                ],
+                [
+                    'check' => 'credentials.expired',
+                    'does' => 'Forget the expired credential',
+                    'effects' => [],
+                    'reversible' => false,
+                ],
+            ],
+        ],
+    ];
 }
 
 /** What a finished offer looks like on the wire. */
 function anOfferedListing(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'repair',
-            'data' => [
-                'acted' => false,
-                'agreement' => 'agreement-a-test-can-name',
-                'beyond' => [],
-                'mended' => [],
-                'offered' => [
-                    [
-                        'check' => 'storage.one-filesystem',
-                        'does' => 'Move the library onto the larger disk',
-                        'effects' => ['Downloads pause while it moves'],
-                        'reversible' => true,
-                    ],
-                    [
-                        'check' => 'credentials.expired',
-                        'does' => 'Forget the expired credential',
-                        'effects' => [],
-                        'reversible' => false,
-                    ],
-                ],
-            ],
-        ]),
-    );
+    return MockResponse::make((string) json_encode(whatAStackOffering()));
 }
 
 /** What a stack answers while the work is still going. */
 function stillGoing(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'job',
-            'data' => ['action' => 'repair', 'job' => AStackThatWouldMend::THE_JOB],
-        ]),
-        202,
-    );
+    return MockResponse::make((string) json_encode(whatAStackNamingAJobSends()), 202);
 }
 
 /** One word carried out of an `either()` arm. */
@@ -197,7 +214,7 @@ function everyWayOfMending(MockResponse $answered, Closure $fake): array
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Menders(new PinnedClients());
+            return new Menders(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
@@ -298,7 +315,7 @@ it('N1-R10 — an answer this app cannot read is the machine, not the session', 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('not json at all')]);
 
-    expect(whatStartingSaid(new Menders(new PinnedClients())))
+    expect(whatStartingSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe(Obstacle::StackDidNotAnswer->value);
 });
 
@@ -310,7 +327,7 @@ it('N1-R10 — a refused session while reading a handle is still a refused sessi
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('{"error":"no"}', 401)]);
 
-    expect(whatTheHandleSaid(new Menders(new PinnedClients())))
+    expect(whatTheHandleSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe(Obstacle::CredentialWasRefused->value);
 });
 
@@ -318,7 +335,7 @@ it('a handle that answers with something unreadable is the machine', function ()
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('not json at all')]);
 
-    expect(whatTheHandleSaid(new Menders(new PinnedClients())))
+    expect(whatTheHandleSaid(new Menders(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe(Obstacle::StackDidNotAnswer->value);
 });
 
@@ -337,41 +354,49 @@ function theSameYes(): Confirmed
     throw new RuntimeException('theSameOffer() holds two repairs, so this is unreachable.');
 }
 
+/**
+ * The payload a stack sends once it has carried the agreement out.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackThatActedSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'repair',
+        'data' => [
+            'acted' => true,
+            'agreement' => 'agreement-a-test-can-name',
+            'beyond' => [],
+            'offered' => [],
+            'mended' => [
+                [
+                    'repair' => [
+                        'check' => 'storage.one-filesystem',
+                        'does' => 'Move the library onto the larger disk',
+                        'effects' => ['Downloads pause while it moves'],
+                        'reversible' => true,
+                    ],
+                    'outcome' => ['outcome' => 'fixed'],
+                ],
+                [
+                    'repair' => [
+                        'check' => 'credentials.expired',
+                        'does' => 'Forget the expired credential',
+                        'effects' => [],
+                        'reversible' => false,
+                    ],
+                    'outcome' => ['outcome' => 'stopped', 'leaving' => 'Half of the library on the old disk'],
+                ],
+            ],
+        ],
+    ];
+}
+
 /** What a stack answers once it has carried the agreement out. */
 function aRecordOfWhatWasDone(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'repair',
-            'data' => [
-                'acted' => true,
-                'agreement' => 'agreement-a-test-can-name',
-                'beyond' => [],
-                'offered' => [],
-                'mended' => [
-                    [
-                        'repair' => [
-                            'check' => 'storage.one-filesystem',
-                            'does' => 'Move the library onto the larger disk',
-                            'effects' => ['Downloads pause while it moves'],
-                            'reversible' => true,
-                        ],
-                        'outcome' => ['outcome' => 'fixed'],
-                    ],
-                    [
-                        'repair' => [
-                            'check' => 'credentials.expired',
-                            'does' => 'Forget the expired credential',
-                            'effects' => [],
-                            'reversible' => false,
-                        ],
-                        'outcome' => ['outcome' => 'stopped', 'leaving' => 'Half of the library on the old disk'],
-                    ],
-                ],
-            ],
-        ]),
-    );
+    return MockResponse::make((string) json_encode(whatAStackThatActedSends()));
 }
 
 /** What both implementations say a run came to. */
@@ -514,7 +539,7 @@ it('N1-R10 — a refused agreement is a refused session, not a broken machine', 
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('{"error":"no"}', 401)]);
 
-    $said = new Menders(new PinnedClients())
+    $said = new Menders(new PinnedClients(), SequencedEntropy::counting())
         ->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())
         ->either(
             started: static fn(Job $job): WhatTheRepairTurnedOutToSay
@@ -530,7 +555,7 @@ it('an agreement the far end answers unreadably is the machine', function (): vo
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make('not json at all')]);
 
-    $said = new Menders(new PinnedClients())
+    $said = new Menders(new PinnedClients(), SequencedEntropy::counting())
         ->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())
         ->either(
             started: static fn(Job $job): WhatTheRepairTurnedOutToSay
@@ -554,7 +579,7 @@ it('N1-R10 — reading what was done can meet an obstacle of its own', function 
         MockClient::destroyGlobal();
         MockClient::global([$answered]);
 
-        expect(whatWasDone(new Menders(new PinnedClients())))->toBe($why->value, $why->value);
+        expect(whatWasDone(new Menders(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->value, $why->value);
     }
 });
 
@@ -563,5 +588,20 @@ it('work still going on an agreement is its own answer', function (): void {
 
     foreach ($ways as $which => $make) {
         expect(whatWasDone($make()))->toBe('still running', $which);
+    }
+});
+
+it('stands in for a stack with payloads the contract would accept', function (): void {
+    $payloads = [
+        'the handle' => ['JobEnvelope', whatAStackNamingAJobSends()],
+        'the offer' => ['RepairEnvelope', whatAStackOffering()],
+        'the record' => ['RepairEnvelope', whatAStackThatActedSends()],
+    ];
+
+    foreach ($payloads as $which => [$envelope, $payload]) {
+        expect(WhatTheContractAccepts::complaintsAbout($envelope, $payload))->toBe(
+            [],
+            sprintf("The payload this suite stands in for a stack with is not one a stack would send: %s.\n", $which),
+        );
     }
 });

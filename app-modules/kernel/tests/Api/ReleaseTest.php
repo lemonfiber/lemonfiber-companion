@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
@@ -73,3 +76,72 @@ it('says when an update would leave the stack alone', function (): void {
         ->and(TakingAnUpdate::agreed($release, Services::these(ServiceId::called('jellyfin')))
             ->changesNothing())->toBeFalse();
 });
+
+it('hands out a list however it was built', function (): void {
+    // A PHP variadic is **not** a list. Named arguments carry their names
+    // through as keys, so a collection that took what arrived would hand out a
+    // map — and a template indexing `[0]` would find nothing while `count()`
+    // said there was something there.
+    $releases = Releases::these(
+        newest: Release::called('4.1.0', noticeable: true, withdrawn: false),
+        older: Release::called('4.0.16', noticeable: false, withdrawn: false),
+    );
+
+    expect(keysOf($releases))->toBe([0, 1]);
+});
+
+it('hands out a list after narrowing one', function (): void {
+    // `array_filter` keeps the keys it was given, so dropping the first entry
+    // would leave a collection whose first index is 1. The same failure as
+    // above, arrived at from the other direction.
+    $releases = Releases::these(
+        Release::called('4.0.17', noticeable: true, withdrawn: true),
+        Release::called('4.1.0', noticeable: true, withdrawn: false),
+    )->worthOffering();
+
+    expect(keysOf($releases))->toBe([0]);
+});
+
+it('hands out a list of services however it was built', function (): void {
+    expect(keysOf(Services::these(
+        first: ServiceId::called('jellyfin'),
+        second: ServiceId::called('sonarr'),
+    )))->toBe([0, 1]);
+});
+
+it('hands out a list of applied services however it was built', function (): void {
+    expect(keysOf(HowServicesTookIt::these(
+        first: HowAServiceTookIt::of(ServiceId::called('jellyfin'), HowItEnded::Updated, HowToUndoIt::Rollback),
+        second: HowAServiceTookIt::of(ServiceId::called('sonarr'), HowItEnded::NotStarted, HowToUndoIt::Restore),
+    )))->toBe([0, 1]);
+});
+
+it('hands out a list after narrowing the applied services', function (): void {
+    $went = HowServicesTookIt::these(
+        HowAServiceTookIt::of(ServiceId::called('jellyfin'), HowItEnded::Updated, HowToUndoIt::Rollback),
+        HowAServiceTookIt::of(ServiceId::called('sonarr'), HowItEnded::NotStarted, HowToUndoIt::Restore),
+    )->thatDidNotArrive();
+
+    expect(keysOf($went))->toBe([0]);
+});
+
+/**
+ * The keys a collection actually hands out.
+ *
+ * Read off the iterator rather than off a count, because a count is the one
+ * thing a map and a list agree about.
+ *
+ * @param iterable<array-key, mixed> $collection
+ *
+ * @return list<array-key>
+ */
+function keysOf(iterable $collection): array
+{
+    $keys = [];
+
+    foreach ($collection as $key => $held) {
+        $keys[] = $key;
+    }
+
+    return $keys;
+}

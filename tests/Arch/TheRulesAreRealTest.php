@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use function Tests\Support\carriesTheRule;
+use function Tests\Support\claimsTheKind;
 use function Tests\Support\documentedRules;
 use function Tests\Support\enforcementSources;
 use function Tests\Support\whereEachKindOfRuleLives;
@@ -72,7 +73,7 @@ it('enforces every rule by the kind of mechanism it claims', function (): void {
         }
 
         foreach (whereEachKindOfRuleLives() as $kind => $sources) {
-            if (! str_contains(strtolower($claim), $kind)) {
+            if (! claimsTheKind($claim, $kind)) {
                 continue;
             }
 
@@ -89,6 +90,25 @@ it('enforces every rule by the kind of mechanism it claims', function (): void {
         . "mechanism the row names, or name the one that is really there.\n",
         implode("\n  ", $wrong),
     ));
+});
+
+it('reads a claimed mechanism as a word, so a row cannot borrow one by spelling', function (): void {
+    // The two confusions this cost, both of which passed as claims. Reading the
+    // claim as text made *architecture* a claim to an arch rule by spelling,
+    // and made a row naming the generated `@phpstan-type` line — the thing an
+    // arch rule reads — a claim to a PHPStan rule. Each was then asked for its
+    // identifier somewhere it had never promised to be, and a row that names
+    // two mechanisms needs only one of them to answer.
+    //
+    // The three true cases are here beside them because the obvious fix is
+    // narrower than the bug: reading only the word that opens a claim would
+    // refuse *architecture* correctly and quietly stop asking the rows that
+    // name their second mechanism last.
+    expect(claimsTheKind('arch: over the suites that write a wire body', 'arch'))->toBeTrue()
+        ->and(claimsTheKind('composer + arch', 'arch'))->toBeTrue()
+        ->and(claimsTheKind('review, plus an arch check for the obvious markers', 'arch'))->toBeTrue()
+        ->and(claimsTheKind('test: the architecture of a screen, compared', 'arch'))->toBeFalse()
+        ->and(claimsTheKind('arch: the `@phpstan-type` line, read off the envelope', 'phpstan'))->toBeFalse();
 });
 
 it('documents every rule the codebase enforces', function (): void {

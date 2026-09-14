@@ -186,7 +186,10 @@ final class CompositionRoot extends ServiceProvider
         // `Repair::offer()` is the unconfirmed form and the SDK makes the two
         // refused consent arrangements unrepresentable, so nothing bound here
         // can turn the question into an instruction.
-        $this->app->bind(Mending::class, static fn(): Mending => new Menders(new PinnedClients()));
+        //
+        // The agreement half of it does change a stack, so it is handed the
+        // randomness a key for one attempt is minted from (`B2`).
+        $this->app->bind(Mending::class, $this->mending(...));
 
         // What has stopped coming in, which is the first of `N2-R9`'s four.
 
@@ -204,10 +207,11 @@ final class CompositionRoot extends ServiceProvider
         // port argues for: an operator reads a listing, picks a row and says a
         // verb, and a second port for the verb would be a second place a client
         // could be reached for.
-        $this->app->bind(
-            Supervising::class,
-            static fn(): Supervising => new Supervisors(new PinnedClients()),
-        );
+        //
+        // Handed randomness for the same reason the repairs adapter is: a verb
+        // changes a stack, and an action that changes one names the attempt it
+        // is part of (`B2`).
+        $this->app->bind(Supervising::class, $this->supervising(...));
 
         // Where a stack stands on being up to date, and taking one. Both halves
         // on one binding for the reason supervising is: an operator reads what
@@ -320,6 +324,30 @@ final class CompositionRoot extends ServiceProvider
         $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop();
 
         new ScreenRoutes($this->screen(...), $runloop)->declare();
+    }
+
+    /**
+     * What a stack is running, and the three verbs said about it.
+     *
+     * A method rather than the closure it replaces, for {@see self::theScanner()}'s
+     * reason: `Container::make()` raises a checked exception and the analyser
+     * refuses one raised inside a closure. The port is resolved rather than an
+     * adapter named, so what randomness *is* stays decided in one line above.
+     */
+    private function supervising(): Supervising
+    {
+        return new Supervisors(new PinnedClients(), $this->app->make(Entropy::class));
+    }
+
+    /**
+     * What a stack would put right, and the yes to some of it.
+     *
+     * A method for {@see self::supervising()}'s reason, and handed the same
+     * source of randomness.
+     */
+    private function mending(): Mending
+    {
+        return new Menders(new PinnedClients(), $this->app->make(Entropy::class));
     }
 
     /**

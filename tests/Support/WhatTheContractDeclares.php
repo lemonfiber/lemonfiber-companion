@@ -4,25 +4,27 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function file_exists;
 use function file_get_contents;
-use function is_file;
 use function preg_match;
 use function sprintf;
+use function str_split;
 use function strlen;
 use function substr;
 use function trim;
 
 /**
- * The generated contract's payload types, read as data rather than as prose.
+ * The shape a generated envelope declares, read as the notation it is written
+ * in rather than as the payload it describes.
  *
- * The types the vendored package declares are PHPStan docblocks, which makes
- * them a schema nobody can run. This is the part that makes them one: a
- * balanced-bracket reader over the `@phpstan-type Data` line, so a test can ask
- * what fields a payload may have and which of them a stack always sends.
+ * The half of {@see WhatTheContractAccepts} that never looks at a payload. One
+ * class knows what `array{a: 'x'|'y', b?: list<…>}` means and the other knows
+ * what to do about a fixture that disagrees with it, and keeping them apart is
+ * what stops a change to either being a change to both — the notation is the
+ * SDK generator's, and what a suite does about a mismatch is this repository's.
  *
- * Split from {@see WhatTheContractAccepts} — the pair reads as one sentence — because reading a type and judging a
- * payload against one are different jobs, and together they were more than a
- * class is allowed to hold.
+ * Nothing here is specific to a contract. It is a type-notation reader, which
+ * is why none of its methods mention a stack, a fixture or a complaint.
  */
 final readonly class WhatTheContractDeclares
 {
@@ -32,21 +34,23 @@ final readonly class WhatTheContractDeclares
     /**
      * The payload shape one envelope declares, as text.
      *
-     * The `@phpstan-type Data` line and nothing else, for the reason the gap
-     * register gives about its own reading: every docblock in that package
-     * quotes field names in prose, so anything wider reads an explanation as a
-     * declaration.
+     * The `@phpstan-type Data` line and nothing else, for the reason
+     * {@see \thePayloadShapeOf()} gives about the gap register: every docblock
+     * in that package quotes field names in prose, so anything wider reads an
+     * explanation as a declaration.
      *
-     * An empty string where the contract has no such envelope, which the caller
-     * reports — a missing type is a test naming an envelope that does not
-     * exist, and silently accepting every payload is the one answer that must
-     * not come out of this.
+     * An envelope this repository does not vendor answers with nothing rather
+     * than raising, because the caller has a sentence for that and no sentence
+     * for a raise coming out of an expectation.
      */
-    public static function of(string $envelope): string
+    public static function shapeOf(string $envelope): string
     {
         $path = sprintf('%s/%s.php', Tree::at(self::GENERATED), $envelope);
 
-        if (! is_file($path)) {
+        // Asked before it is read rather than read under `@`. Suppression is
+        // refused here for `G11`'s reason: a warning raised under it is dropped
+        // before the result sees it, so the run prints it and still exits zero.
+        if (! file_exists($path)) {
             return '';
         }
 
@@ -118,16 +122,8 @@ final readonly class WhatTheContractDeclares
         $held = '';
         $depth = 0;
 
-        for ($at = 0; $at < strlen($type); ++$at) {
-            $character = $type[$at];
-
-            if ($character === '{' || $character === '<') {
-                ++$depth;
-            }
-
-            if ($character === '}' || $character === '>') {
-                --$depth;
-            }
+        foreach (str_split($type) as $character) {
+            $depth += self::deeper($character);
 
             if ($character === $on && $depth === 0) {
                 $parts[] = trim($held);
@@ -142,5 +138,21 @@ final readonly class WhatTheContractDeclares
         $parts[] = trim($held);
 
         return $parts;
+    }
+
+    /**
+     * What one character does to the depth, counting both kinds as one.
+     *
+     * Both kinds together rather than a count each, because the contract nests
+     * them through each other and nothing here asks which bracket it is inside
+     * — only whether it is inside one.
+     */
+    private static function deeper(string $character): int
+    {
+        return match ($character) {
+            '{', '<' => 1,
+            '}', '>' => -1,
+            default => 0,
+        };
     }
 }

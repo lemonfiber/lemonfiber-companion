@@ -17,6 +17,7 @@ use Modules\Sdk\Api\Admissions;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
+use Tests\Support\WhatTheContractAccepts;
 
 // The Admitting contract, run against the adapter and against the fake.
 //
@@ -81,12 +82,30 @@ function theSessionOpened(): Session
 /** When it stops being one: the stamp below, read as a count of seconds. */
 const UNTIL_TEN = 1789380000;
 
+/**
+ * The payload a door sends where the exchange worked.
+ *
+ * Separate from the response, and an array rather than the text it goes as, so
+ * the rule at the foot of this file reads the same payload the adapter is
+ * given. Hand-written text is the one shape a fixture can be wrong in without
+ * anything reading it — a misspelled key in a string is a key, and the reader
+ * that agreed with the misspelling would pass.
+ *
+ * @return array<string, mixed>
+ */
+function whatADoorThatOpenedSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'admission',
+        'data' => ['token' => 'a-session-not-a-secret', 'until' => '2026-09-14T10:00:00'],
+    ];
+}
+
 /** What the far end answered, for an exchange that worked. */
 function anOpening(): MockResponse
 {
-    return MockResponse::make(
-        '{"api_version":1,"kind":"admission","data":{"token":"a-session-not-a-secret","until":"2026-09-14T10:00:00"}}',
-    );
+    return MockResponse::make((string) json_encode(whatADoorThatOpenedSends()));
 }
 
 /**
@@ -214,4 +233,9 @@ it('knocks on the stack it was handed, which is the half a screen cannot check',
 
     expect($door->knockedOn())->toBe($stack)
         ->and($door->knocks())->toBe(1);
+});
+
+it('stands in for a door with a payload the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('AdmissionEnvelope', whatADoorThatOpenedSends()))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

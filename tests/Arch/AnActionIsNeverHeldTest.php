@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Attempted;
+use Modules\Kernel\Api\IdempotencyKey;
+use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 
 // N1-R41 and N3-R12 — the app does not retain an undelivered action, and cannot
@@ -151,6 +153,57 @@ it('N1-R41 — the reading finds a holding wherever the class wrote it down', fu
     // whole surface and be turned off within the week.
     expect(saysItHoldsManyOf('     * @param Attempted $answered', 'Attempted'))->toBeFalse();
     expect(saysItHoldsManyOf('     * @var list<Finding> $found', 'Attempted'))->toBeFalse();
+});
+
+it('N1-R42 — nothing holds the key that names one attempt', function (): void {
+    // The rule above reads a queue, and a queue is not the only way a key
+    // survives. A property typed `IdempotencyKey` is not an array and carries
+    // no `@var`, so it walks past that check entirely — and one is enough: a
+    // key kept past the statement that made it is a name a later send can be
+    // given, which is the replay `N1-R42` refuses in the same sentence that
+    // asks for the key at all.
+    //
+    // A key serves the retry *inside* one attempt. Across a reconnection the
+    // stack has moved on and the operator is not there to see what lands, which
+    // is the whole of what `ADR-0020` spends its length on.
+    //
+    // `IdempotencyKey::__serialize()` already refuses to write one down, which
+    // closes the way out of this process. This closes the one inside it: a key
+    // that is minted where it is sent and assigned to nothing cannot be sent
+    // twice, whoever writes the next screen.
+    //
+    // The shape between the two checks — an `array` property with no `@var` on
+    // it, which the rule above cannot read and this one cannot see the type of
+    // — has no third rule, and needs none. The analyser refuses it as
+    // `missingType.iterableValue`, so the file does not compile past the gate
+    // it would have to pass first. Checked by planting one, not assumed.
+    $held = [];
+
+    foreach (Module::all() as $module) {
+        foreach ($module->classNames() as $name) {
+            foreach (new ReflectionClass($name)->getProperties() as $property) {
+                $names = ApiSurface::namesIn($property->getType());
+
+                if (! in_array(IdempotencyKey::class, $names, strict: true)) {
+                    continue;
+                }
+
+                $held[] = sprintf('%s::$%s', $name, $property->getName());
+            }
+        }
+    }
+
+    sort($held);
+
+    expect($held)->toBe([], sprintf(
+        "These hold the key that names one attempt:\n  %s\n\n"
+        . 'A key makes a retry free within the attempt it was minted for. Held in a '
+        . 'property it outlives that attempt, and whatever sends the next action has a '
+        . 'name the stack has already answered — so a change the operator asked for once '
+        . "is applied under a yes they gave to something else.\n"
+        . 'Ask `Entropy` for one where the action is sent, and keep nothing (N1-R42).',
+        implode("\n  ", $held),
+    ));
 });
 
 it('N1-R41 — an attempt has no arm meaning "pending"', function (): void {

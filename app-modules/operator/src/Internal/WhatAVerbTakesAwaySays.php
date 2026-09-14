@@ -17,9 +17,13 @@ use Modules\Kernel\Api\WhatItTakesAway;
  */
 final readonly class WhatAVerbTakesAwaySays
 {
+    /**
+     * @param string   $said    the catalogue key for the shape this arrived in
+     * @param int|null $seconds how long for, where the shape has a length at all
+     */
     private function __construct(
         public string $said,
-        public int $seconds,
+        public ?int $seconds,
     ) {}
 
     public static function of(WhatItTakesAway $takes): self
@@ -34,7 +38,11 @@ final readonly class WhatAVerbTakesAwaySays
             // is not fighting a phrase this side assembled.
             openEnded: static fn(Awaiting $awaiting): self => new self(
                 said: $awaiting->saidOnTheScreen(),
-                seconds: 0,
+                // No number, rather than a nought. The line this names carries
+                // no `:seconds`, so a number here would be one nothing reads —
+                // and a nought that reached a line that did read it would say
+                // *nought seconds*, which is `N2-R14`'s worst answer.
+                seconds: null,
             ),
         );
     }

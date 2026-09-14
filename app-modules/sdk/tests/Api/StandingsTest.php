@@ -357,3 +357,33 @@ it('refuses a service name that is not a word', function (): void {
         'changes' => [['service' => 7, 'refused' => false]],
     ])))->toThrow(UpkeepIsUnreadable::class, 'Change 1');
 });
+
+it('N2-R17 — goes on reading after a change the stack refused', function (): void {
+    // A refused change is skipped, not stopped at. A reader that broke out of
+    // the loop would silently drop every service named after the first refusal,
+    // and the confirmation would name fewer services than the update changes —
+    // which is the same false promise from the other direction.
+    $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
+        ['service' => 'sonarr', 'refused' => true],
+        ['service' => 'jellyfin', 'refused' => false],
+        ['service' => 'radarr', 'refused' => false],
+    ]]));
+
+    $named = [];
+
+    foreach ($upkeep->changing() as $service) {
+        $named[] = $service->named();
+    }
+
+    expect($named)->toBe(['jellyfin', 'radarr']);
+});
+
+it('counts a refused change when it names where a later one sat', function (): void {
+    // The position is what a refusal has instead of a name, so it has to count
+    // the rows it skipped. Reported as row three here, which is where it is.
+    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
+        ['service' => 'sonarr', 'refused' => true],
+        ['service' => 'jellyfin', 'refused' => false],
+        ['refused' => false],
+    ]])))->toThrow(UpkeepIsUnreadable::class, 'Change 3');
+});

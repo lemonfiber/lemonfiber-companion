@@ -971,6 +971,24 @@ final readonly class Fixtures
                 });
                 PHP, 'G5 —'),
 
+            // Planted under `tests/Support`, which `Tree::testFiles()` reads and
+            // no testsuite loads — `G10`'s trick, for a different reason. A real
+            // G12 violation is an ordinary suite that passes: it stands a
+            // payload in for a stack and never asks whether a stack could send
+            // it. Planted anywhere a testsuite collects, it would run green
+            // beside the rule reporting it and prove nothing about either.
+            Fixture::suite('G12', 'tests/Support/Fixtures/StandsInForAStackTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                it('takes a stack at a payload nothing read against the contract', function (): void {
+                    $body = ['api_version' => 1, 'kind' => 'doctor', 'data' => ['overall' => 'healthy']];
+
+                    expect($body['kind'])->toBe('doctor');
+                });
+                PHP, 'G12 —'),
+
             Fixture::suite('H1', 'app-modules/health/src/Fixtures/RepairManager.php', <<<'PHP'
                 <?php
 

@@ -6,6 +6,8 @@ namespace Modules\Sdk\Tests\Api;
 
 use function afterEach;
 use function expect;
+use function is_array;
+use function is_string;
 use function it;
 use function json_encode;
 
@@ -25,6 +27,7 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Upkeepers;
+use Modules\Sdk\Api\WireField;
 use RuntimeException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -171,6 +174,26 @@ it('N2-R14 — a payload this side cannot read is an obstacle, not an exception'
     }
 });
 
+it('N2-R17 — sends the services that were agreed to, by name', function (): void {
+    // The other half of the confirmation. `N2-R17` has the question name the
+    // services it would change, and a request that named none of them — or the
+    // wrong ones — would have the operator agree to one evening and the stack
+    // carry out another.
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([aTakingWasStarted()]);
+
+    new Upkeepers(new PinnedClients())->take(
+        theStackWhoseUpkeepTheAdapterAsksAfter(),
+        Session::of('a-session-not-a-secret'),
+        TakingAnUpdate::agreed(
+            Release::called('4.1.0', noticeable: true, withdrawn: false),
+            Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+        ),
+    );
+
+    expect(whatWasSentAgreeing($mock))->toBe(['jellyfin', 'sonarr']);
+});
+
 it('N2-R17 — carries the agreement through to the job the stack started', function (): void {
     // The started arm, named by the job the stack handed back, so a case
     // meaning to assert an evening is under way cannot pass by meeting an
@@ -199,6 +222,30 @@ it('N2-R14 — an acknowledgement this side cannot read is an obstacle too', fun
 
     expect(whatBecameOfTheTaking($unreadable))->toBe(Obstacle::StackDidNotAnswer->name);
 });
+
+/**
+ * The services a taking actually named on the wire.
+ *
+ * @return list<string>
+ */
+function whatWasSentAgreeing(MockClient $mock): array
+{
+    $sent = $mock->getLastPendingRequest();
+
+    if (! $sent instanceof PendingRequest) {
+        throw new RuntimeException('The adapter sent nothing, so this case read nothing.');
+    }
+
+    $body = $sent->body()?->all();
+    $named = is_array($body) ? ($body[WireField::Services->value] ?? []) : [];
+    $said = [];
+
+    foreach (is_array($named) ? $named : [] as $service) {
+        $said[] = is_string($service) ? $service : '';
+    }
+
+    return $said;
+}
 
 /** One answer carried out of an `either()` arm, which hands back objects. */
 final readonly class WhatTheTakingTurnedOutToBe

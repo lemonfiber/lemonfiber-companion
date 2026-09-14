@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
@@ -396,4 +397,138 @@ it('renders the template it is paired with', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
 
     expect($screen->render()->name())->toBe('operator::how-current-this-stack-is');
+});
+
+it('N1-R46 — lets go of a session the stack refused', function (): void {
+    // Not only reported. A phone holding a credential the stack has refused
+    // would go on offering to ask again with it, and every ask would fail the
+    // same way — so the session is dropped and the next frame offers a sign-in.
+    $keychain = AKeychainInMemory::working();
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::CredentialWasRefused), $keychain);
+
+    $screen->answer();
+
+    expect(whetherItStillHolds($keychain))->toBeFalse();
+});
+
+it('keeps a session the stack merely could not answer with', function (): void {
+    // The other half, and the reason the first is not simply *forget on any
+    // obstacle*: a stack that is switched off has refused nothing, and dropping
+    // the session would make somebody sign in again to fix a router.
+    $keychain = AKeychainInMemory::working();
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::StackDidNotAnswer), $keychain);
+
+    $screen->answer();
+
+    expect(whetherItStillHolds($keychain))->toBeTrue();
+});
+
+it('N2-R17 — a version it never showed does not clear the question it is holding', function (): void {
+    // The guard is not decoration. Without it a second tap on something this
+    // screen never offered would replace a live confirmation with nothing, and
+    // the operator would watch their question disappear.
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+
+    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike('9.9.9');
+
+    expect($screen->asking()?->release()->version())->toBe('4.1.0');
+});
+
+it('refuses a route that named no stack it can identify', function (): void {
+    // A route parameter that is not a name becomes the blank one rather than
+    // whatever it happened to be, so the refusal says *retained state named a
+    // stack with a blank identifier* — the honest complaint — instead of *no
+    // such stack*, which would send somebody looking for a machine.
+    //
+    // Named rather than `Throwable`: both this and a placeholder that was not
+    // blank would throw something, and only one of them says the right thing.
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
+    $screen->setParams(['stack' => ['not', 'a', 'name']]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
+});
+
+/** Whether a keychain still holds a session, carried out of an `either()` arm. */
+final readonly class WhatTheKeychainStillHolds
+{
+    public function __construct(public bool $held) {}
+
+    public static function yes(): self
+    {
+        return new self(held: true);
+    }
+
+    public static function no(): self
+    {
+        return new self(held: false);
+    }
+}
+
+/** Whether this device still holds a session for the stack under test. */
+function whetherItStillHolds(AKeychainInMemory $keychain): bool
+{
+    return $keychain->resume(theStackWhoseUpkeepIsRead()->id())->either(
+        held: static fn(): WhatTheKeychainStillHolds => WhatTheKeychainStillHolds::yes(),
+        notHeld: static fn(): WhatTheKeychainStillHolds => WhatTheKeychainStillHolds::no(),
+    )->held;
+}
+
+it('N1-R44 — a signed-out screen states nothing about the stack at all', function (): void {
+    // Every field, not just the two the template branches on. A fold that left
+    // a version, a count or a flag behind would have a phone whose session
+    // ended report a house it can no longer see — and the one that matters most
+    // is `canTakeOne`: a signed-out screen offering to apply an update is an
+    // offer nothing can honour.
+    $answer = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting(), signedIn: false)->answer();
+
+    expect($answer->isSignedIn)->toBeFalse()
+        ->and($answer->met)->toBe('')
+        ->and($answer->remedy)->toBe('')
+        ->and($answer->howSaid)->toBe('')
+        ->and($answer->running)->toBe('')
+        ->and($answer->runningWasWithdrawn)->toBeFalse()
+        ->and($answer->waiting)->toBe([])
+        ->and($answer->changing->isEmpty())->toBeTrue()
+        ->and($answer->applied)->toBe([])
+        ->and($answer->didNotArrive)->toBe(0)
+        ->and($answer->anythingUnanswered)->toBeFalse()
+        ->and($answer->canTakeOne)->toBeFalse();
+});
+
+it('N1-R10 — an obstacle states what stood in the way and nothing about the stack', function (): void {
+    // The same completeness, one state over. An obstacle means nothing was
+    // read, so anything this carried about the stack would be left over from a
+    // reading that did not happen.
+    $answer = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::StackDidNotAnswer))->answer();
+
+    expect($answer->isSignedIn)->toBeTrue()
+        ->and($answer->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+        ->and($answer->howSaid)->toBe('')
+        ->and($answer->running)->toBe('')
+        ->and($answer->runningWasWithdrawn)->toBeFalse()
+        ->and($answer->waiting)->toBe([])
+        ->and($answer->changing->isEmpty())->toBeTrue()
+        ->and($answer->applied)->toBe([])
+        ->and($answer->didNotArrive)->toBe(0)
+        ->and($answer->anythingUnanswered)->toBeFalse()
+        ->and($answer->canTakeOne)->toBeFalse();
+});
+
+it('N2-R15 — a stack that named no release in use says so rather than showing a blank', function (): void {
+    // The dash is the fold's, not the stack's, and it is here so a template
+    // reading `running` in every state has something to draw. A screen silent
+    // about the version teaches an operator to read silence, and silence is
+    // also what a screen that forgot the field produces.
+    $answer = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+        HowCurrent::Stale,
+        Releases::none(),
+        Services::none(),
+        HowServicesTookIt::none(),
+    )))->answer();
+
+    expect($answer->running)->toBe('—')
+        ->and($answer->howSaid)->toBe(HowCurrent::Stale->saidOnTheScreen())
+        ->and($answer->runningWasWithdrawn)->toBeFalse();
 });
