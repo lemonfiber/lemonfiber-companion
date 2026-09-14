@@ -385,7 +385,7 @@ ever sees.
 
 | | Rule | Enforced by |
 |---|---|---|
-| L1 | Text a person reads comes from the translator | phpstan: own rule, scoped to presenters, view models and screens |
+| L1 | Text a person reads comes from the translator | phpstan: own rule, over everything on the way to a screen that is not a refusal |
 | L2 | Every locale carries the same keys, none empty and none equal to its key | test |
 | L7 | Every catalogue key the application names is a key the catalogue holds — the literal ones read out of the sources, the derived ones asked of each enum that builds them — and every line the catalogue holds is one something shows | test: three, one per direction plus one for derived keys |
 
