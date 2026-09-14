@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use Lemonfiber\Companion\PHPStan\Rules\NoManyMethodsRule;
+
 use function sprintf;
 
 /**
@@ -709,6 +711,13 @@ final readonly class Fixtures
         return [
             Fixture::analyser('F1', 'Plain/Tangled.php', self::tangledMethod(), 'Cognitive complexity'),
             Fixture::analyser('H3', 'Plain/AlsoTangled.php', self::tangledMethod(), 'Cognitive complexity'),
+
+            // H3's second cap, and its own fixture rather than a second
+            // assertion on the one above: the row names four caps and each has
+            // a different mechanism, so a fixture proving one says nothing
+            // about the others. This is the one a screen reaches by growing an
+            // accessor per field.
+            Fixture::analyser('H3', 'Plain/Crowded.php', self::crowdedClass(), 'declares 21 methods'),
 
             Fixture::suite('F2', 'app-modules/operator/src/Internal/Presenters/Fixtures/Presenter.php', <<<'PHP'
                 <?php
@@ -2353,6 +2362,27 @@ final readonly class Fixtures
                 . 'faking a violation would mean installing a package in order to not use it.',
             ),
         ];
+    }
+
+    /**
+     * A class with one method more than the cap allows.
+     *
+     * Built rather than written out, so the count and the cap cannot drift
+     * apart in a file somebody edits — the number here is the rule's own plus
+     * one, and a reader can see that it is.
+     */
+    private static function crowdedClass(): string
+    {
+        $methods = '';
+
+        for ($answer = 1; $answer <= NoManyMethodsRule::THE_MOST_METHODS + 1; $answer++) {
+            $methods .= sprintf("\n    public function answer%d(): int\n    {\n        return %d;\n    }\n", $answer, $answer);
+        }
+
+        return sprintf(
+            "<?php\n\ndeclare(strict_types=1);\n\nnamespace Fixtures\\Plain;\n\nfinal class Crowded\n{%s}\n",
+            $methods,
+        );
     }
 
     /** A method with enough branches to pass the cognitive complexity cap. */

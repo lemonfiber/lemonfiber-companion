@@ -718,12 +718,35 @@ reachable from production is a fake (`G4`).
 |---|---|---|
 | H1 | No `Manager`, `Helper`, `Util`, `Service`, `Data`, `Info` suffixes | arch |
 | H2 | No `Interface`/`Abstract` affixes on type names | arch |
-| H3 | Caps: methods per class, lines per method, constructor parameters, cognitive complexity | phpstan + arch |
+| H3 | Caps: methods per class (20), cognitive complexity | phpstan: own rule + `cognitive_complexity` |
 | H4 | A test file mirrors its source file's location | arch: an orphan test fails, a class without one does not |
 | H5 | A string with a value in it is built with `sprintf` — never `.`, never interpolation — and a message is one literal, never two joined by a dot | phpstan: own rule, one per node type |
 | H6 | An exception is named for what happened, not for being an exception | arch |
 | H7 | A test is named and described for the behaviour it pins | arch |
 | H8 | A method returns from at most three places | phpstan: own rule |
+
+**What `H3` does not cap, and why.** This row read *methods per class, lines
+per method, constructor parameters, cognitive complexity* for a long time, and
+only the last of the four had anything counting it — so a class could pass here
+and be refused by SonarCloud under `Q-R64`, which is how `WhatWouldBePutRight`
+reached twenty-one methods before anybody heard about it. The method count now
+has a rule of its own, at SonarCloud's own number so the two cannot disagree.
+
+The other two were dropped from the sentence rather than given mechanisms,
+because both would refuse code that is right as it is. A cap on method length
+would name `CompositionRoot::register` and `OperatorServiceProvider::boot`,
+which are lists of bindings with a paragraph each on why — length is what a
+reader wants there, and what makes a long method hard to follow is already
+capped as cognitive complexity. A cap on constructor parameters would name the
+row carriers: `WhatOneServiceSays` takes ten because a service has ten facts a
+template renders, and `D1` refuses the array that would hide them behind one.
+Splitting a row in half to satisfy a count makes two halves a template has to
+join back up.
+
+A rule whose sentence is wider than its mechanism is worse than a narrow rule
+honestly described: the table reports green and a reader stops checking, which
+is strictly worse than an unchecked area, because an unchecked area gets
+reviewed by a person.
 
 **Why the floors are per module.** One percentage across twelve modules is an
 average, and an average is true about what it covered and silent about what it

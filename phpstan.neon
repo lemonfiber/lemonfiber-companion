@@ -849,6 +849,15 @@ services:
         tags:
             - phpstan.rules.rule
 
+    # H3 — a class answers at most twenty questions. The other half of that
+    # row's sentence, which named methods per class and had nothing counting
+    # them until a screen went over and SonarCloud said so. Same number as
+    # S1448 on purpose: a class that passes here must not fail there.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoManyMethodsRule
+        tags:
+            - phpstan.rules.rule
+
     # D6 — a number in a method body has a name. SonarCloud reports this too,
     # which makes it a backstop rather than the gate: a rule that only fails in
     # review is a rule people meet after they have finished.
