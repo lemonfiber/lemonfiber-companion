@@ -122,4 +122,32 @@ return [
     'every' => [
         'while_work_runs' => 'Looking again every :count seconds while this runs.',
     ],
+
+    // N2-R7 — what is running, and how much each one matters. The state is
+    // where a service stands now; how much it matters is what it would cost if
+    // that went wrong, which is a property of the machine's design.
+    'service' => [
+        'failed' => 'Fell over',
+        'crash-looping' => 'Falling over and starting again',
+        'unhealthy' => 'Up, and answering badly',
+        'absent' => 'Expected, and not there',
+        'stopped' => 'Turned off',
+        'starting' => 'Starting',
+        'running' => 'Running',
+        'healthy' => 'Running well',
+        'host-managed' => 'Run by the machine, not by this stack',
+    ],
+    'matters' => [
+        'critical' => 'Nothing else works without it',
+        'core' => 'Part of the stack itself',
+        'important' => 'The house would notice today',
+        'enhancing' => 'The house would notice eventually',
+        'optional' => 'Nobody would notice',
+    ],
+    'running' => [
+        'inactive' => 'Nothing is running',
+        'degraded' => 'Running, with something wrong',
+        'partial' => 'Some of it is running',
+        'active' => 'Everything is running',
+    ],
 ];

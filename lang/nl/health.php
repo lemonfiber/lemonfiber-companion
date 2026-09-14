@@ -122,4 +122,32 @@ return [
     'every' => [
         'while_work_runs' => 'Kijkt elke :count seconden opnieuw zolang dit loopt.',
     ],
+
+    // N2-R7 — wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
+    // een dienst nu staat; hoeveel het uitmaakt is wat het zou kosten als dat
+    // misging, en dat hoort bij hoe de machine is opgezet.
+    'service' => [
+        'failed' => 'Omgevallen',
+        'crash-looping' => 'Valt om en start steeds opnieuw',
+        'unhealthy' => 'Draait, en antwoordt slecht',
+        'absent' => 'Verwacht, en er niet',
+        'stopped' => 'Uitgezet',
+        'starting' => 'Start op',
+        'running' => 'Draait',
+        'healthy' => 'Draait goed',
+        'host-managed' => 'Wordt door de machine gedraaid, niet door deze stack',
+    ],
+    'matters' => [
+        'critical' => 'Zonder dit werkt niets anders',
+        'core' => 'Hoort bij de stack zelf',
+        'important' => 'Het huishouden merkt het vandaag',
+        'enhancing' => 'Het huishouden merkt het op den duur',
+        'optional' => 'Niemand merkt het',
+    ],
+    'running' => [
+        'inactive' => 'Er draait niets',
+        'degraded' => 'Draait, met iets mis',
+        'partial' => 'Een deel draait',
+        'active' => 'Alles draait',
+    ],
 ];
