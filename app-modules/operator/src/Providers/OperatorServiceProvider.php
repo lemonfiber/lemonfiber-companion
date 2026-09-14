@@ -11,6 +11,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\YourStacks;
 
 /**
@@ -103,6 +104,12 @@ final class OperatorServiceProvider extends ServiceProvider
             // matches in registration order, and a bare `{stack}` registered
             // first would swallow every path under it.
             Router::native('/stacks/{stack}/requests', WhatTheHouseholdAsked::class);
+
+            // What the machine would put right, stated before anybody is asked
+            // to agree (`N2-R4`). A screen rather than a dialog behind a
+            // button: a sentence an operator has to tap to reveal is one they
+            // will agree without reading.
+            Router::native('/stacks/{stack}/repairs', WhatWouldBePutRight::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

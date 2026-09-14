@@ -118,5 +118,12 @@
             label="{{ __('household.asked_for') }}"
             @navigate="{{ $this->requestsAreAt() }}"
         />
+
+        {{-- N2-R4: what this machine would put right, stated in full before
+             anybody is asked to agree to any of it. --}}
+        <native:button
+            label="{{ __('health.would_put_right') }}"
+            @navigate="{{ $this->repairsAreAt() }}"
+        />
     @endunless
 </native:column>

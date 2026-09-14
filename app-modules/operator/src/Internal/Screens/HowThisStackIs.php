@@ -285,6 +285,19 @@ final class HowThisStackIs extends NativeComponent
         return sprintf('/stacks/%s/requests', $this->stack()->id()->stored());
     }
 
+    /**
+     * Where what this machine would put right is read.
+     *
+     * `N2-R4` has the three statements made before confirmation is asked for,
+     * so the way in is a screen rather than a button beside a finding — a
+     * listing reached from one finding would show the operator the repairs for
+     * all of them under a heading naming one.
+     */
+    public function repairsAreAt(): string
+    {
+        return sprintf('/stacks/%s/repairs', $this->stack()->id()->stored());
+    }
+
     public function render(): View
     {
         return view('operator::how-this-stack-is');

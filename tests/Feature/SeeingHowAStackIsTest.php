@@ -721,3 +721,16 @@ it('N2-R11 — what the household asked for is one tap from the machine it is ab
         ->toBe(sprintf('/stacks/%s/requests', theStackBeingLookedAt()->id()->stored()))
         ->and(NativeRouter::resolve($screen->requestsAreAt()))->not->toBeNull();
 });
+
+it('N2-R4 — what this machine would put right is one tap from the machine', function (): void {
+    // The link's half of the pair. `SeeingWhatWouldBePutRightTest` asserts that
+    // something is registered under that route; this asserts that the screen an
+    // operator is looking at points at it. A screen rather than a button beside
+    // one finding, because a listing reached from one finding would show the
+    // repairs for all of them under a heading naming one.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+
+    expect($screen->repairsAreAt())
+        ->toBe(sprintf('/stacks/%s/repairs', theStackBeingLookedAt()->id()->stored()))
+        ->and(NativeRouter::resolve($screen->repairsAreAt()))->not->toBeNull();
+});
