@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function count;
-
 use Illuminate\View\View;
 
 use function is_string;
 
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
+use Modules\Kernel\Api\Reading;
+use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
-use Modules\Operator\Internal\WhatOneRepairSays;
+use Modules\Kernel\Api\WhatWasMended;
 use Modules\Operator\Internal\WhatTheStackWouldPutRight;
+use Modules\Operator\Internal\WhatThisStackPutRight;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -73,6 +75,9 @@ final class WhatWouldBePutRight extends NativeComponent
      */
     protected ?WhatTheStackWouldPutRight $answered = null;
 
+    /** What the stack did about the agreement, once it has been asked. */
+    protected ?WhatThisStackPutRight $carriedOut = null;
+
     /**
      * The handle, while there is one.
      *
@@ -82,6 +87,24 @@ final class WhatWouldBePutRight extends NativeComponent
      * action presented as pending, and a job name on the glass is exactly that.
      */
     protected ?string $handle = null;
+
+    /**
+     * The listing, while there is one to agree to.
+     *
+     * Held as the value rather than as the fold, because {@see Confirmed} can
+     * only be made against the {@see Offer} itself — `N2-R6` has the yes quote
+     * the listing it was given, and a flattened copy is not that listing.
+     */
+    protected ?Offer $offered = null;
+
+    /**
+     * Whether the operator has agreed to something.
+     *
+     * Which of the two readings a frame takes. Not a convenience: the answers
+     * are different things, and a screen asking the wrong one would render a
+     * listing of what a machine *would* do as a record of what it *did*.
+     */
+    protected bool $agreed = false;
 
     public function __construct(
         private readonly Mending $mending,
@@ -110,65 +133,94 @@ final class WhatWouldBePutRight extends NativeComponent
         return $this->answer()->isSignedIn;
     }
 
-    /** Whether the stack is still working out what it would do. */
-    public function isWorkingItOut(): bool
+    /**
+     * What this stack said it would put right.
+     *
+     * One accessor rather than one per field, the same as {@see done()} beside
+     * it — and the symmetry is worth having for its own sake: a template asking
+     * `$this->offer()->repairs` and `$this->done()->outcomes` is asking two
+     * clearly different questions, where six flat accessors and five more would
+     * have read as one screen with eleven moods.
+     *
+     * It is also `Q-R64`'s twenty-method ceiling answered before it is met,
+     * which is the lesson from `HowThisStackIs` arriving at twenty-one.
+     */
+    public function offer(): WhatTheStackWouldPutRight
     {
-        return $this->answer()->isWorking;
+        return $this->answer();
     }
 
-    /** Whether the stack has no outcome for that asking any more. */
-    public function hasEnded(): bool
+    /** Whether the operator has agreed to something on this listing. */
+    public function wasAgreedTo(): bool
     {
-        return $this->answer()->hasEnded;
+        return $this->agreed;
     }
 
     /**
-     * Each repair, as a row a template can read.
+     * What became of what was agreed to, once anything was.
      *
-     * @return list<WhatOneRepairSays>
+     * One accessor rather than one per field, which is `Q-R64`'s twenty-method
+     * ceiling answered before it is met — and reads better anyway: a template
+     * asking `$this->done()->outcomes` is asking one question.
      */
-    public function repairs(): array
+    public function done(): WhatThisStackPutRight
     {
-        return $this->answer()->repairs;
+        if (! $this->agreed) {
+            return WhatThisStackPutRight::stillWorkingItOut();
+        }
+
+        return $this->carriedOut ??= $this->askWhatWasDone();
     }
 
-    /** How many are offered, which is what the empty state asks. */
-    public function howMany(): int
+    /**
+     * Agree to one of the repairs on offer.
+     *
+     * Takes the check rather than a position, because a position is a fact
+     * about a list this screen re-reads every frame and the check is a fact
+     * about the repair. A listing that came back in another order between the
+     * render and the tap would agree to a different repair, and the operator
+     * would have no way of knowing.
+     *
+     * Silent where there is no listing held, which is a frame that has not read
+     * one yet or one whose job ended — there is nothing to agree to, and a
+     * refusal would be a sentence about a button the template does not draw.
+     */
+    public function agreeTo(string $check): void
     {
-        return count($this->answer()->repairs);
-    }
+        $offer = $this->offered;
 
-    /** What the operator met instead, as a key, or the empty string. */
-    public function met(): string
-    {
-        return $this->answer()->met;
-    }
+        if (! $offer instanceof Offer) {
+            return;
+        }
 
-    /** What to do about it, beside {@see met()}. */
-    public function remedy(): string
-    {
-        return $this->answer()->remedy;
+        foreach ($offer->repairs() as $repair) {
+            if ($repair->answers() === $check) {
+                $this->sendTheYes($offer, $repair);
+
+                return;
+            }
+        }
     }
 
     /**
      * Ask again, because the operator said so.
      *
-     * Forgetting what was held rather than comparing, which is
-     * {@see HowThisStackIs::again()}'s shape: the next read rebuilds it, so
-     * there is one path to an answer.
-     *
-     * **The handle is kept only while the work is still going.** That is the
-     * whole of what makes this button mean something. A job that has finished
-     * answers the same listing however often it is read, so keeping its handle
-     * would make *ask again* re-render what is already on the screen — and the
-     * operator tapping it has just changed something on their machine and wants
-     * to know whether it took. A job that ended has nothing to read at all. In
-     * both cases the next frame starts fresh; only a run still in progress is
-     * worth returning to, because reading it again is the only way to learn it
-     * has finished.
+     * **The handle is kept only while the work is still going**, on either
+     * side. A job that has finished answers the same thing however often it is
+     * read, so keeping its handle would make this re-render what is already on
+     * the screen — and the operator tapping it has just changed something and
+     * wants to know whether it took. A job that ended has nothing to read at
+     * all. Only a run still in progress is worth returning to, because reading
+     * it again is the only way to learn it has finished.
      */
     public function again(): void
     {
+        if ($this->agreed) {
+            $this->carriedOut = null;
+
+            return;
+        }
+
         if ($this->answered?->isWorking !== true) {
             $this->handle = null;
         }
@@ -192,6 +244,64 @@ final class WhatWouldBePutRight extends NativeComponent
     public function render(): View
     {
         return view('operator::what-would-be-put-right');
+    }
+
+    /**
+     * Send the yes, and hold the handle it answers with.
+     *
+     * Split out because `H8` counts the doors {@see agreeTo()} would otherwise
+     * have, and because the two are different questions: which repair, and what
+     * to do about it.
+     */
+    private function sendTheYes(Offer $offer, Repair $repair): void
+    {
+        $stack = $this->stack();
+
+        $this->storage->resume($stack->id())->either(
+            held: function (Session $session) use ($stack, $offer, $repair): WhatTheStackWouldPutRight {
+                $confirmed = Confirmed::against($repair, $offer, Reading::live($offer));
+
+                return $this->mending->agreeTo($stack, $session, $confirmed)->either(
+                    started: function (Job $job): WhatTheStackWouldPutRight {
+                        $this->handle = $job->shown();
+                        $this->agreed = true;
+                        $this->carriedOut = null;
+
+                        return WhatTheStackWouldPutRight::stillWorkingItOut();
+                    },
+                    met: fn(Obstacle $why): WhatTheStackWouldPutRight
+                        => $this->answered = WhatTheStackWouldPutRight::met($why),
+                );
+            },
+            notHeld: fn(): WhatTheStackWouldPutRight
+                => $this->answered = WhatTheStackWouldPutRight::signedOut(),
+        );
+    }
+
+    /** What the stack did about it, asked once per frame. */
+    private function askWhatWasDone(): WhatThisStackPutRight
+    {
+        $held = $this->handle;
+
+        if (! is_string($held)) {
+            return WhatThisStackPutRight::ended();
+        }
+
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatThisStackPutRight
+                => $this->mending->whatWasDoneAbout($stack, $session, Job::named($held))->either(
+                    stillRunning: static fn(): WhatThisStackPutRight
+                        => WhatThisStackPutRight::stillWorkingItOut(),
+                    done: static fn(WhatWasMended $mended): WhatThisStackPutRight
+                        => WhatThisStackPutRight::these($mended),
+                    ended: static fn(): WhatThisStackPutRight => WhatThisStackPutRight::ended(),
+                    met: static fn(Obstacle $why): WhatThisStackPutRight
+                        => WhatThisStackPutRight::met($why),
+                ),
+            notHeld: static fn(): WhatThisStackPutRight => WhatThisStackPutRight::ended(),
+        );
     }
 
     /** What came back, asked once per frame. */
@@ -253,8 +363,14 @@ final class WhatWouldBePutRight extends NativeComponent
         return $this->mending->whatBecameOf($stack, $session, $job)->either(
             stillRunning: static fn(): WhatTheStackWouldPutRight
                 => WhatTheStackWouldPutRight::stillWorkingItOut(),
-            offering: static fn(Offer $offer): WhatTheStackWouldPutRight
-                => WhatTheStackWouldPutRight::offering($offer),
+            offering: function (Offer $offer): WhatTheStackWouldPutRight {
+                // Kept as the value, not only as the fold: `Confirmed` can be
+                // made against nothing else, which is `N2-R6` refusing a yes
+                // that quotes a listing it was not given.
+                $this->offered = $offer;
+
+                return WhatTheStackWouldPutRight::offering($offer);
+            },
             ended: static fn(): WhatTheStackWouldPutRight => WhatTheStackWouldPutRight::ended(),
             met: static fn(Obstacle $why): WhatTheStackWouldPutRight
                 => WhatTheStackWouldPutRight::met($why),

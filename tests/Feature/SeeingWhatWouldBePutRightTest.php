@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\LeftBehind;
+use Modules\Kernel\Api\Mended;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
@@ -17,6 +19,8 @@ use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
+use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatWasMended;
 use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Native\Mobile\Edge\NativeRouter;
@@ -92,7 +96,7 @@ it('N2-R4 — states what each repair does, affects and can undo, before any yes
     // dropping whether it can be taken back would satisfy any assertion about
     // what appeared and still leave somebody agreeing to something permanent
     // believing they could put it back.
-    $rows = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()))->repairs();
+    $rows = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()))->offer()->repairs;
 
     expect($rows[0]->does)->toBe('Move the library onto the larger disk')
         ->and($rows[0]->effects)->toBe(['Downloads pause while it moves'])
@@ -105,7 +109,7 @@ it('N2-R4 — states what each repair does, affects and can undo, before any yes
 it('N2-R4 — a permanent repair and a reversible one do not read alike', function (): void {
     // The assertion the requirement is actually about. Two rows that differed
     // only in a field nothing rendered would pass everything above.
-    $rows = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()))->repairs();
+    $rows = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()))->offer()->repairs;
 
     expect($rows[0]->undoing)->not->toBe($rows[1]->undoing);
 });
@@ -117,9 +121,9 @@ it('N2-R7 — asking costs a round trip, then a read of the handle', function ()
     $mending = AStackThatWouldMend::offering(aListingWorthReading());
     $screen = theRepairsScreen($mending);
 
-    $screen->repairs();
-    $screen->howMany();
-    $screen->isWorkingItOut();
+    $screen->offer();
+    count($screen->offer()->repairs);
+    $screen->offer();
 
     expect($mending->askings())->toBe(1)
         ->and($mending->readings())->toBe(1)
@@ -129,10 +133,10 @@ it('N2-R7 — asking costs a round trip, then a read of the handle', function ()
 it('N2-R7 — work still going is a state of the screen, not a spinner', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::stillWorkingItOut());
 
-    expect($screen->isWorkingItOut())->toBeTrue()
-        ->and($screen->hasEnded())->toBeFalse()
-        ->and($screen->howMany())->toBe(0)
-        ->and($screen->met())->toBe('');
+    expect($screen->offer()->isWorking)->toBeTrue()
+        ->and($screen->offer()->hasEnded)->toBeFalse()
+        ->and(count($screen->offer()->repairs))->toBe(0)
+        ->and($screen->offer()->met)->toBe('');
 });
 
 it('N1-R17 — asking again while the work runs reads the same job, and starts none', function (): void {
@@ -142,9 +146,9 @@ it('N1-R17 — asking again while the work runs reads the same job, and starts n
     $mending = AStackThatWouldMend::stillWorkingItOut();
     $screen = theRepairsScreen($mending);
 
-    $screen->isWorkingItOut();
+    $screen->offer();
     $screen->again();
-    $screen->isWorkingItOut();
+    $screen->offer();
 
     expect($mending->askings())->toBe(1)
         ->and($mending->readings())->toBe(2);
@@ -159,9 +163,9 @@ it('asking again after a finished listing asks the stack afresh', function (): v
     $mending = AStackThatWouldMend::offering(aListingWorthReading());
     $screen = theRepairsScreen($mending);
 
-    $screen->howMany();
+    count($screen->offer()->repairs);
     $screen->again();
-    $screen->howMany();
+    count($screen->offer()->repairs);
 
     expect($mending->askings())->toBe(2)
         ->and($mending->readings())->toBe(2);
@@ -174,12 +178,12 @@ it('a job the stack forgot is its own state, and asking again starts a new one',
     $mending = AStackThatWouldMend::thatForgotTheJob();
     $screen = theRepairsScreen($mending);
 
-    expect($screen->hasEnded())->toBeTrue()
-        ->and($screen->isWorkingItOut())->toBeFalse()
-        ->and($screen->met())->toBe('');
+    expect($screen->offer()->hasEnded)->toBeTrue()
+        ->and($screen->offer()->isWorking)->toBeFalse()
+        ->and($screen->offer()->met)->toBe('');
 
     $screen->again();
-    $screen->hasEnded();
+    $screen->offer();
 
     expect($mending->askings())->toBe(2);
 });
@@ -190,20 +194,20 @@ it('a stack with nothing to put right is not a job that ended', function (): voi
     $nothing = theRepairsScreen(AStackThatWouldMend::offering(Offer::of('named', Repairs::none())));
     $ended = theRepairsScreen(AStackThatWouldMend::thatForgotTheJob());
 
-    expect($nothing->howMany())->toBe(0)
-        ->and($nothing->hasEnded())->toBeFalse()
-        ->and($ended->howMany())->toBe(0)
-        ->and($ended->hasEnded())->toBeTrue();
+    expect(count($nothing->offer()->repairs))->toBe(0)
+        ->and($nothing->offer()->hasEnded)->toBeFalse()
+        ->and(count($ended->offer()->repairs))->toBe(0)
+        ->and($ended->offer()->hasEnded)->toBeTrue();
 });
 
 it('N1-R10 — a stack that could not be asked says so, and says what to do', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::met(Obstacle::StackDidNotAnswer));
 
-    expect($screen->met())->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($screen->remedy())->toBe(Obstacle::StackDidNotAnswer->remedy())
-        ->and($screen->howMany())->toBe(0)
-        ->and($screen->isWorkingItOut())->toBeFalse()
-        ->and($screen->hasEnded())->toBeFalse();
+    expect($screen->offer()->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($screen->offer()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+        ->and(count($screen->offer()->repairs))->toBe(0)
+        ->and($screen->offer()->isWorking)->toBeFalse()
+        ->and($screen->offer()->hasEnded)->toBeFalse();
 });
 
 it('a stack that took the question on and then went away is an obstacle too', function (): void {
@@ -213,7 +217,7 @@ it('a stack that took the question on and then went away is an obstacle too', fu
     $mending = AStackThatWouldMend::thatWentAwayAfterwards(Obstacle::StackDidNotAnswer);
     $screen = theRepairsScreen($mending);
 
-    expect($screen->met())->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->offer()->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($mending->askings())->toBe(1)
         ->and($mending->readings())->toBe(1);
 });
@@ -223,7 +227,7 @@ it('N1-R44 — a device with no session for that stack is not asked to reach it'
     $screen = theRepairsScreen($mending, signedIn: false);
 
     expect($screen->isSignedIn())->toBeFalse()
-        ->and($screen->howMany())->toBe(0)
+        ->and(count($screen->offer()->repairs))->toBe(0)
         // Never asked. A screen that reached out and then noticed it had no
         // session would have started work on a machine with nothing behind it.
         ->and($mending->askings())->toBe(0)
@@ -236,7 +240,7 @@ it('N1-R11 — a route naming a stack this device has forgotten is refused', fun
         named: str_repeat('z', Nonce::SHORTEST),
     );
 
-    expect(fn(): int => $screen->howMany())->toThrow(StackIsNotConfigured::class);
+    expect(fn(): int => count($screen->offer()->repairs))->toThrow(StackIsNotConfigured::class);
 });
 
 it('N2-R4 — the screen is registered under the route that reaches it', function (): void {
@@ -296,8 +300,157 @@ it('N1-R17 — asking again before the first frame has read anything asks once',
     $screen = theRepairsScreen($mending);
 
     $screen->again();
-    $screen->howMany();
+    $screen->offer();
 
     expect($mending->askings())->toBe(1)
         ->and($mending->readings())->toBe(1);
+});
+
+/** A run in which the first repair took and the second stopped part-way. */
+function aRunThatHalfWorked(): WhatWasMended
+{
+    $moved = Repair::offered(
+        'storage.one-filesystem',
+        'Move the library onto the larger disk',
+        Effects::of('Downloads pause while it moves'),
+        Undoing::Possible,
+    );
+
+    $forgot = Repair::offered(
+        'credentials.expired',
+        'Forget the expired credential',
+        Effects::nothingElse(),
+        Undoing::Permanent,
+    );
+
+    return WhatWasMended::of(
+        Mended::went($moved, WhatBecameOfIt::Fixed),
+        Mended::stopped($forgot, LeftBehind::of('Half of the library on the old disk')),
+    );
+}
+
+it('N2-R5 — agreeing is a second act, and the screen stops showing the offer', function (): void {
+    // The offer and the outcome are different questions with different answers,
+    // and the screen must not answer one with the other. A template reading a
+    // single value would render a listing of what a machine *would* do as a
+    // record of what it *did*.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    expect($screen->wasAgreedTo())->toBeFalse();
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect($screen->wasAgreedTo())->toBeTrue()
+        ->and($mending->agreements())->toBe(1);
+});
+
+it('N2-R6 — the yes quotes the listing the operator was shown', function (): void {
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect($mending->agreedTo()?->quoting())->toBe(aListingWorthReading()->named())
+        ->and($mending->agreedTo()?->repair()->answers())->toBe('storage.one-filesystem');
+});
+
+it('N2-R5 — a repair named by a check that is not on offer agrees to nothing', function (): void {
+    // Named by check rather than by position, so a listing that came back in
+    // another order between the render and the tap cannot agree to a different
+    // repair. A check that is not there at all is the same protection working.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('something.else-entirely');
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and($mending->agreements())->toBe(0);
+});
+
+it('N2-R5 — agreeing before a listing has been read agrees to nothing', function (): void {
+    // There is nothing to quote, so there is nothing to agree to. Silent rather
+    // than refusing: the template does not draw the button in that state, and a
+    // sentence about a button nobody can see is noise.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and($mending->agreements())->toBe(0);
+});
+
+it('N2-R5 — a finished run says what became of each repair, and what one left', function (): void {
+    // Per repair, because a listing agreed to as a whole comes apart. Reported
+    // as one word, the operator believes either that everything worked or that
+    // nothing did — and there is half a library on the old disk either way.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $done = $screen->done();
+
+    expect($done->changed)->toBe(1)
+        ->and($done->outcomes[0]->became)->toBe(WhatBecameOfIt::Fixed->saidOnTheScreen())
+        ->and($done->outcomes[0]->left)->toBe('')
+        ->and($done->outcomes[0]->worthAnotherGo)->toBeFalse()
+        ->and($done->outcomes[1]->became)->toBe(WhatBecameOfIt::Stopped->saidOnTheScreen())
+        ->and($done->outcomes[1]->left)->toBe('Half of the library on the old disk')
+        ->and($done->outcomes[1]->worthAnotherGo)->toBeTrue();
+});
+
+it('N2-R4 — an outcome still carries what the repair said it would do', function (): void {
+    // Not only the sentence. *Can this be undone* is exactly the question an
+    // operator has once a repair has worked, and what else it affected is what
+    // explains the half hour they just had.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $first = $screen->done()->outcomes[0];
+
+    expect($first->repair->does)->toBe('Move the library onto the larger disk')
+        ->and($first->repair->effects)->toBe(['Downloads pause while it moves'])
+        ->and($first->repair->undoing)->toBe(Undoing::Possible->saidOnTheScreen());
+});
+
+it('N1-R41 — asking again after agreeing reads, and never agrees twice', function (): void {
+    // An agreement sent twice is a repair carried out twice, which for a fix
+    // that moves a library is not the same as doing it once.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $screen->done();
+
+    // Measured across the second asking rather than counted from zero: the
+    // offer's own read is in the total too, and a test that hard-codes the sum
+    // is one that has to be edited every time the frame reads anything else.
+    $before = $mending->readings();
+
+    $screen->again();
+    $screen->done();
+
+    expect($mending->readings() - $before)->toBe(1)
+        ->and($mending->agreements())->toBe(1);
+});
+
+it('a job that ended after an agreement is not a run that failed', function (): void {
+    // The operator does not know what happened to their machine, and *it
+    // failed* is the one answer that is certainly wrong — it may well have
+    // worked. So the screen says nobody knows and sends them to look.
+    $mending = AStackThatWouldMend::thatForgotTheJob();
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect($screen->wasAgreedTo())->toBeFalse();
 });
