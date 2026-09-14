@@ -71,14 +71,16 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth',
-    'Beside', 'Bundle', 'Clients', 'Config', 'Credentials', 'Dashboard',
-    'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'History', 'Hosting',
-    'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
-    'Music', 'Outbound', 'Preview', 'Provenance', 'Pull', 'Quality', 'Removal',
-    'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
-    'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Trace',
-    'Undo', 'Uninstall', 'Update', 'Upgrade', 'Version', 'Watch', 'Word',
+    'Admission', 'Adoption', 'Alerts', 'Archives', 'Backup',
+    'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Config',
+    'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms',
+    'FrontDoor', 'Glossary', 'History', 'Hosting', 'Household',
+    'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
+    'Music', 'Outbound', 'Preview', 'Provenance', 'Pull', 'Quality',
+    'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed',
+    'SelfUpdate', 'Space', 'Start', 'Status', 'Step', 'StopSeeding',
+    'Stored', 'Stuck', 'Trace', 'Undo', 'Uninstall', 'Update',
+    'Upgrade', 'Version', 'Watch', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {
