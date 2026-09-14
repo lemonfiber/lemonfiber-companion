@@ -23,7 +23,14 @@ use Tests\Support\Tree;
 //
 // An entry is removed by answering its requirement, never by deleting the row.
 
-/** Every requirement this app is holding, and the field it is waiting for. */
+/**
+ * Every requirement this app is holding, and what it is waiting for.
+ *
+ * A row watches one of two things. `field` is a name that is missing from a
+ * payload and would be added to it. `shape` is a whole payload that says
+ * nothing about the subject at all, recorded as it stands — there is no field
+ * name to watch for, because what is missing is not a field.
+ */
 const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
     [
         'requirement' => 'N2-R8',
@@ -33,6 +40,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // `switched`, `services` — and has no field for how long for.
         'envelope' => 'LifecycleEnvelope',
         'field' => 'bound',
+        'shape' => null,
         'raised' => 'B2-R16 already requires the stack to state it before it acts, and `disturbing_for()` '
             . 'says it for a doctor check. No lifecycle payload carries it, so the app states what a '
             . 'verb disturbs and cannot state how long for.',
@@ -45,6 +53,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // is missing from.
         'envelope' => null,
         'field' => 'allowance',
+        'shape' => null,
         'raised' => 'C8 makes a provider out of allowance one of the things worth carrying in a pocket, '
             . 'and the wire says nothing about one. The app shows what a provider reported and cannot '
             . 'say what is left of it.',
@@ -58,9 +67,27 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // when* is the answer that leaves somebody asking again every hour.
         'envelope' => null,
         'field' => 'resets_at',
+        'shape' => null,
         'raised' => 'The wire carries no allowance and so carries no reset for one. A time worked out '
             . 'in the app would be `N2-R14` exactly — a guess at something the provider knows and '
             . 'the app does not, wrong in the cases somebody is actually waiting on.',
+    ],
+    [
+        'requirement' => 'N3-R3',
+        'asks' => 'the core to refuse a control a member is not entitled to, rather than the app omitting it',
+        // A shape rather than a field, because what is missing is not a field.
+        // The surface mints one token for the run and exchanges one password
+        // for one session, and the admission says what the session is and not
+        // who holds it — so every caller carrying it is the operator, and there
+        // is no entitlement for the core to refuse against.
+        'envelope' => 'AdmissionEnvelope',
+        'field' => null,
+        'shape' => 'array{token: string, until: string}',
+        'raised' => 'The whole household surface waits on this rather than one requirement of it: '
+            . '`N3-R1` has the app a person is given decided by the identity that signed in and '
+            . "`N3-R2` has what a member may do be the core's answer, and the wire carries neither. "
+            . 'A member surface built now would rely on having omitted the controls, which is the '
+            . 'one thing `N3-R3` names.',
     ],
 ];
 
@@ -132,8 +159,32 @@ it('N2-R14 — every gap is still a gap', function (): void {
 
     foreach (WHAT_THE_CONTRACT_DOES_NOT_CARRY as $gap) {
         $named = $gap['envelope'];
+        $shape = $gap['shape'];
+
+        // A row watching a whole payload has nothing to search for: what would
+        // close its gap is the payload saying anything it does not say now.
+        if ($shape !== null) {
+            // A shape row names its envelope by construction — the rule below
+            // refuses a row that watches neither or both, and an unnamed one
+            // would be watching nothing.
+            $said = trim(thePayloadShapeOf($named === null ? '' : $envelopes[$named] ?? ''));
+
+            if ($said !== $shape) {
+                $closed[] = sprintf(
+                    '%s waits on %s saying more than `%s`, and it now says `%s` — %s',
+                    $gap['requirement'],
+                    $named,
+                    $shape,
+                    $said,
+                    $gap['asks'],
+                );
+            }
+
+            continue;
+        }
+
         $looking = $named === null ? $envelopes : [$named => $envelopes[$named] ?? ''];
-        $field = sprintf('/\b%s\??:/', preg_quote($gap['field'], '/'));
+        $field = sprintf('/\b%s\??:/', preg_quote((string) $gap['field'], '/'));
 
         foreach ($looking as $envelope => $said) {
             if (preg_match($field, thePayloadShapeOf($said)) === 1) {
@@ -161,13 +212,23 @@ it('N2-R14 — every gap says what it asks for and where it was raised', functio
     // the only part that survives the person who wrote it. The requirement's
     // own name is not checked here: it is what every message above is written
     // around, so a row without one fails those rules first and by name.
+    //
+    // A row must also watch exactly one thing. Both would be two rules about
+    // one gap that can disagree, and neither would be a row that passes by
+    // having nothing to check — the failure this whole file exists to refuse.
     $thin = [];
 
     foreach (WHAT_THE_CONTRACT_DOES_NOT_CARRY as $gap) {
-        foreach (['asks', 'field', 'raised'] as $part) {
+        foreach (['asks', 'raised'] as $part) {
             if (trim($gap[$part]) === '') {
                 $thin[] = sprintf('%s has no %s', $gap['requirement'], $part);
             }
+        }
+    }
+
+    foreach (WHAT_THE_CONTRACT_DOES_NOT_CARRY as $gap) {
+        if (($gap['field'] === null) === ($gap['shape'] === null)) {
+            $thin[] = sprintf('%s watches neither a field nor a shape, or both', $gap['requirement']);
         }
     }
 
