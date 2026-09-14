@@ -29,6 +29,16 @@
         </native:text>
         <native:text>{{ __($this->asking()->doing()->saidOnTheScreen()) }}</native:text>
 
+        {{-- N2-R8: how long for, as the stack reported it. Said here because
+             this is the moment it is any use: *a second* and *three minutes*
+             are different decisions, and the decision is made before the verb
+             runs. N2-R14 is why there is no fallback sentence — a length this
+             app invented would be a guess at something the stack knows, wrong
+             in exactly the cases somebody most needs it, and wrong silently. --}}
+        <native:text class="text-sm">
+            {{ __($this->whatItTakesAway()->said, ['seconds' => $this->whatItTakesAway()->seconds]) }}
+        </native:text>
+
         @if ($this->asking()->isAboutAForm())
             {{-- A whole form is every service in it, which is more than the
                  operator picked and has to be said as such. --}}

@@ -7,6 +7,7 @@ namespace Tests\Support\Fakes;
 use Closure;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -14,6 +15,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatIsRunning;
+use Modules\Kernel\Api\WhatItTakesAway;
 
 /**
  * A stack where a test says what is running, and which remembers what it was
@@ -73,7 +75,11 @@ final class AStackThatSupervises implements Supervising
      */
     public static function withNothingRunning(): self
     {
-        return self::with(Daemons::none());
+        return self::with(Daemons::none(Disturbances::of(
+            starting: WhatItTakesAway::atMost(180),
+            stopping: WhatItTakesAway::atMost(10),
+            restarting: WhatItTakesAway::atMost(180),
+        )));
     }
 
     /** A stack the operator could not reach, for the reason given, either way. */
@@ -102,6 +108,30 @@ final class AStackThatSupervises implements Supervising
         return new self(
             static fn(): WhatIsRunning => WhatIsRunning::these($daemons),
             static fn(): Underway => Underway::met($why),
+        );
+    }
+
+    /**
+     * A stack that answers once and then stops.
+     *
+     * The window a screen holding a question across frames actually meets: the
+     * listing was read, somebody tapped, and by the next frame the machine is
+     * not answering. What the screen then holds is a question about a reading
+     * it no longer has — which is where the guards on anything derived from
+     * both of them earn their place, and which no fake answering the same thing
+     * forever can produce.
+     */
+    public static function thenMeeting(Daemons $first, Obstacle $why): self
+    {
+        $reading = 0;
+
+        return new self(
+            static function () use ($first, $why, &$reading): WhatIsRunning {
+                $reading++;
+
+                return $reading === 1 ? WhatIsRunning::these($first) : WhatIsRunning::met($why);
+            },
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
         );
     }
 

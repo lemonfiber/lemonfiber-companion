@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AStacksScreen;
@@ -29,6 +31,16 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
+
+/** What a stack reports its verbs cost, as this suite's stacks report them. */
+function whatTheRunningVerbsCost(): Disturbances
+{
+    return Disturbances::of(
+        starting: WhatItTakesAway::atMost(180),
+        stopping: WhatItTakesAway::atMost(10),
+        restarting: WhatItTakesAway::atMost(180),
+    );
+}
 
 // N2-R7 and N2-R8 — the three verbs, and the sentence in front of two of them.
 //
@@ -70,6 +82,7 @@ function aStackRunningTwoThings(): Daemons
     return Daemons::of(
         HowTheStackIsRunning::Active,
         Forms::these(Form::called('downloads'), Form::called('media')),
+        whatTheRunningVerbsCost(),
         aServiceRunning('sonarr', leaning: WhatLeansOnIt::these(ServiceId::called('jellyfin'))),
         aServiceRunning('jellyfin'),
     );
@@ -140,6 +153,7 @@ it('N2-R7 — a service this stack does not run is not offered a verb', function
     $running = Daemons::of(
         HowTheStackIsRunning::Partial,
         Forms::these(Form::called('media')),
+        whatTheRunningVerbsCost(),
         aServiceRunning('jellyfin', HowAServiceRuns::HostManaged),
         aServiceRunning('sonarr'),
     );
@@ -155,6 +169,7 @@ it('N2-R7 — a row says what it ended with, and says nothing where it did not',
     $running = Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::these(Form::called('downloads')),
+        whatTheRunningVerbsCost(),
         Daemon::thatExited(
             'Sonarr',
             ServiceId::called('sonarr'),
@@ -178,6 +193,7 @@ it('N2-R7 — carries the forms whether or not anything in them is running', fun
     $running = Daemons::of(
         HowTheStackIsRunning::Partial,
         Forms::these(Form::called('downloads'), Form::called('media')),
+        whatTheRunningVerbsCost(),
         aServiceRunning(),
     );
 
@@ -253,6 +269,7 @@ it('N2-R8 — says a restart will not help where it is already looping', functio
     $running = Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::these(Form::called('downloads')),
+        whatTheRunningVerbsCost(),
         aServiceRunning('sonarr', HowAServiceRuns::CrashLooping),
     );
     $screen = theServicesScreen(AStackThatSupervises::with($running));
@@ -328,6 +345,7 @@ it('N1-R27 — looks again only while something is settling', function (): void 
     $settling = Daemons::of(
         HowTheStackIsRunning::Partial,
         Forms::these(Form::called('downloads')),
+        whatTheRunningVerbsCost(),
         aServiceRunning('sonarr', HowAServiceRuns::Starting),
     );
     $supervising = AStackThatSupervises::with($settling);
@@ -477,6 +495,7 @@ it('N2-R8 — a question about a form stays about the form when a service takes 
         Daemons::of(
             HowTheStackIsRunning::Active,
             Forms::these(Form::called('downloads')),
+            whatTheRunningVerbsCost(),
             aServiceRunning('downloads', leaning: WhatLeansOnIt::these(ServiceId::called('jellyfin'))),
         ),
     ));
@@ -570,4 +589,77 @@ it('renders its own view', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
 
     expect($screen->render()->name())->toBe('operator::what-this-stack-runs');
+});
+
+it('N2-R8 — the confirmation says how long the verb takes it away for', function (): void {
+    // The sentence this screen could not say until lemonfiber reported it, and
+    // the number is the stack's: a length worked out here would be a guess at
+    // something the stack knows, which is what `N2-R14` refuses.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+
+    expect($screen->whatItTakesAway()?->said)->toBe('health.for_at_most')
+        ->and($screen->whatItTakesAway()?->seconds)->toBe(10);
+});
+
+it('N2-R8 — a stop and a restart are not held to the same clock', function (): void {
+    // Two verbs, two numbers, read off the same listing. A screen that stated
+    // one length for every verb would be stating a number that nothing honours
+    // for every verb but one.
+    //
+    // A start is not among them, because a start is not asked about at all —
+    // which is why the pair compared here is the pair that is.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+    $stopping = $screen->whatItTakesAway()?->seconds;
+
+    $screen->neverMind();
+    $screen->wouldYouLike(WhatToDoWithIt::Restart->value, 'sonarr');
+    $restarting = $screen->whatItTakesAway()?->seconds;
+
+    expect($stopping)->toBe(10)
+        ->and($restarting)->toBe(180);
+});
+
+it('N2-R8 — a start states no length, because it is never asked about', function (): void {
+    // Not a gap in the reading: the stack reports a length for starting and
+    // this screen holds it. There is simply no question to put it on, because
+    // a start takes nothing away and confirming one would teach an operator to
+    // tap past the confirmations that matter.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value, 'sonarr');
+
+    expect($screen->asking())->toBeNull()
+        ->and($screen->whatItTakesAway())->toBeNull();
+});
+
+it('N2-R8 — nothing is stated where nothing is being asked', function (): void {
+    // Absent because there is no question, not because the stack said nothing.
+    // A screen that answered here would be answering about a verb nobody named.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+
+    expect($screen->whatItTakesAway())->toBeNull();
+});
+
+it('N2-R8 — states no length once the reading it came from is gone', function (): void {
+    // The window a screen holding a question across frames actually meets: the
+    // listing was read, somebody tapped, and by the next frame the stack is not
+    // answering. The question survives and the lengths do not, so a screen
+    // deriving one from both has to say nothing rather than reach into a
+    // reading that is no longer there.
+    //
+    // `N2-R14` is why it says nothing rather than falling back: a length this
+    // side invented would be a guess at something only the stack knows, offered
+    // at the exact moment the stack has stopped saying anything.
+    $screen = theServicesScreen(AStackThatSupervises::thenMeeting(
+        aStackRunningTwoThings(),
+        Obstacle::StackDidNotAnswer,
+    ));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+    $screen->again();
+
+    expect($screen->asking())->not->toBeNull()
+        ->and($screen->whatItTakesAway())->toBeNull();
 });

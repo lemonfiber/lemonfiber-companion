@@ -12,6 +12,7 @@ use function is_string;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\WhatAVerbTakesAwaySays;
 use Modules\Operator\Internal\WhatOneServiceSays;
 use Modules\Operator\Internal\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -58,14 +60,19 @@ use function view;
  * screen that asked about a start would be teaching an operator to confirm
  * without reading, which is what makes the stop confirmation worth anything.
  *
- * **It does not say how long a stop lasts, and that is deliberate.** `N2-R8`
+ * **It says how long a stop lasts, which it could not until recently.** `N2-R8`
  * asks for the bound the stack reported or for the fact that it reported none,
- * and the contract carries neither for a lifecycle verb — there is no field on
- * the `lifecycle` envelope for it and no unconfirmed form of these three to ask
- * through. `N2-R14` says the app must not substitute one, and *the stack
- * reported none* would be substituting: nothing asked it. The gap is held by
- * `WhatTheContractDoesNotCarryTest`, which fails the day lemonfiber carries the
- * field, and the sentence belongs here when it does.
+ * and for a long time no payload carried either — the gap was held by
+ * `WhatTheContractDoesNotCarryTest`, which went red the day lemonfiber began
+ * reporting it and named this requirement to go and answer. The sentence is in
+ * the confirmation now, and the number is the stack's: `N2-R14` forbids this
+ * side inventing one, and a length worked out here would be a guess at
+ * something the stack knows, wrong in exactly the cases somebody most needs it.
+ *
+ * That row named the `lifecycle` envelope at first, on the reasoning that a
+ * bound would arrive where what an operation touched already arrives. It
+ * arrived on the reading instead, because a bound is only any use *before* the
+ * verb runs — which is why a register watches for a fact and not for a place.
  *
  * **It polls only while something is settling** (`N1-R27`). A service that is
  * starting becomes a running one on its own, and *ask again* as the only road
@@ -200,6 +207,31 @@ final class WhatThisStackRuns extends NativeComponent
     public function neverMind(): void
     {
         $this->asking = null;
+    }
+
+    /**
+     * How long the pending question would take its subject away for (`N2-R8`).
+     *
+     * Read off the same listing the question was built from, so the number an
+     * operator confirms on is the one the stack reported on the reading they
+     * are looking at — not one fetched when they tapped, and not one this app
+     * worked out. `N2-R14` forbids the second, and the first would be a
+     * different stack's answer by the time it arrived.
+     *
+     * Absent only where there is nothing being asked: a stack that answered
+     * carries a length for every verb this surface offers, and a reading short
+     * of one is refused upstream rather than arriving here as a blank.
+     */
+    public function whatItTakesAway(): ?WhatAVerbTakesAwaySays
+    {
+        $agreed = $this->asking;
+        $disturbs = $this->answer()->disturbs;
+
+        if (! $agreed instanceof AgreedTo || ! $disturbs instanceof Disturbances) {
+            return null;
+        }
+
+        return WhatAVerbTakesAwaySays::of($disturbs->forThe($agreed->doing()));
     }
 
     /**

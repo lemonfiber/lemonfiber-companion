@@ -47,6 +47,7 @@ final readonly class Daemons implements IteratorAggregate
     private function __construct(
         private HowTheStackIsRunning $running,
         private Forms $forms,
+        private Disturbances $disturbs,
         private array $daemons,
     ) {}
 
@@ -56,15 +57,27 @@ final readonly class Daemons implements IteratorAggregate
      * Not habit on the reindex: a variadic collected from named arguments has
      * string keys, and everything below reads this by position.
      */
-    public static function of(HowTheStackIsRunning $running, Forms $forms, Daemon ...$daemons): self
-    {
-        return new self($running, $forms, array_values($daemons));
+    public static function of(
+        HowTheStackIsRunning $running,
+        Forms $forms,
+        Disturbances $disturbs,
+        Daemon ...$daemons,
+    ): self {
+        return new self($running, $forms, $disturbs, array_values($daemons));
     }
 
-    /** A stack that runs nothing at all, which is a state and not a gap. */
-    public static function none(): self
+    /**
+     * A stack that runs nothing at all, which is a state and not a gap.
+     *
+     * It still says what its verbs cost. What they cost is read off how long
+     * the stack is prepared to wait, which is configuration rather than state,
+     * so a machine with nothing running answers the same as one with eight —
+     * and a shortcut that filled it in here would be this side inventing a
+     * bound, which is the whole of what `N2-R14` refuses.
+     */
+    public static function none(Disturbances $disturbs): self
     {
-        return new self(HowTheStackIsRunning::Inactive, Forms::none(), []);
+        return new self(HowTheStackIsRunning::Inactive, Forms::none(), $disturbs, []);
     }
 
     /** What the stack says it all amounts to. */
@@ -77,6 +90,19 @@ final readonly class Daemons implements IteratorAggregate
     public function forms(): Forms
     {
         return $this->forms;
+    }
+
+    /**
+     * What each verb would take away, as the stack reported it.
+     *
+     * Carried on the listing because that is where the decision is made:
+     * `N2-R8` wants the bound said before the operator confirms, and a screen
+     * that had to fetch it when somebody tapped would either ask again mid-tap
+     * or state a number from a reading it no longer holds.
+     */
+    public function disturbs(): Disturbances
+    {
+        return $this->disturbs;
     }
 
     public function count(): int

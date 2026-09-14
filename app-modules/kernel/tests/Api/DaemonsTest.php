@@ -4,13 +4,25 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
+
+/** What a stack reports its verbs cost, as this suite's stacks report them. */
+function whatTheseVerbsCost(): Disturbances
+{
+    return Disturbances::of(
+        starting: WhatItTakesAway::atMost(180),
+        stopping: WhatItTakesAway::atMost(10),
+        restarting: WhatItTakesAway::atMost(180),
+    );
+}
 
 /** One service, named so the order can be read back. */
 function oneItRuns(string $name, HowAServiceRuns $runs = HowAServiceRuns::Healthy): Daemon
@@ -44,6 +56,7 @@ it('N2-R7 — holds what the stack runs, in the order it listed them', function 
     $daemons = Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::these(Form::called('media')),
+        whatTheseVerbsCost(),
         oneItRuns('sonarr', HowAServiceRuns::Failed),
         oneItRuns('radarr'),
     );
@@ -59,6 +72,7 @@ it('carries what the stack says it all amounts to, rather than adding it up', fu
     $daemons = Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::none(),
+        whatTheseVerbsCost(),
         oneItRuns('sonarr'),
     );
 
@@ -73,6 +87,7 @@ it('N2-R7 — carries the forms beside the services, not derived from them', fun
     $daemons = Daemons::of(
         HowTheStackIsRunning::Partial,
         Forms::these(Form::called('media'), Form::called('network')),
+        whatTheseVerbsCost(),
         oneItRuns('sonarr'),
     );
 
@@ -86,7 +101,7 @@ it('N2-R7 — carries the forms beside the services, not derived from them', fun
 });
 
 it('a stack that runs nothing is a state rather than a missing list', function (): void {
-    $none = Daemons::none();
+    $none = Daemons::none(whatTheseVerbsCost());
 
     expect($none->count())->toBe(0)
         ->and($none->running())->toBe(HowTheStackIsRunning::Inactive)
@@ -106,6 +121,7 @@ it('reads by position, whatever keys the variadic arrived with', function (): vo
     $daemons = Daemons::of(
         running: HowTheStackIsRunning::Active,
         forms: Forms::none(),
+        disturbs: whatTheseVerbsCost(),
         first: oneItRuns('sonarr'),
         second: oneItRuns('radarr'),
     );
