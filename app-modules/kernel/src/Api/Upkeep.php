@@ -25,6 +25,7 @@ final readonly class Upkeep
     private function __construct(
         private HowCurrent $how,
         private Releases $releases,
+        private Services $changing,
         private ?Release $running = null,
     ) {}
 
@@ -40,15 +41,19 @@ final readonly class Upkeep
      * named arguments carries their names as keys, so being variadic is not
      * the same claim as being a list.
      */
-    public static function reported(HowCurrent $how, Releases $releases): self
+    public static function reported(HowCurrent $how, Releases $releases, Services $changing): self
     {
-        return new self($how, $releases);
+        return new self($how, $releases, $changing);
     }
 
     /** The same reading, where the stack named the release in use. */
-    public static function runningOn(HowCurrent $how, Release $running, Releases $releases): self
-    {
-        return new self($how, $releases, $running);
+    public static function runningOn(
+        HowCurrent $how,
+        Release $running,
+        Releases $releases,
+        Services $changing,
+    ): self {
+        return new self($how, $releases, $changing, $running);
     }
 
     public function how(): HowCurrent
@@ -86,6 +91,19 @@ final readonly class Upkeep
     public function waiting(): Releases
     {
         return $this->releases->worthOffering();
+    }
+
+    /**
+     * The services taking an update would change.
+     *
+     * What `N2-R17`'s confirmation names. Carried on the reading rather than
+     * asked for when the operator taps, because a list fetched after the yes is
+     * a list of whatever the stack had by then — and the confirmation is only
+     * worth anything if what was named is what gets done.
+     */
+    public function changing(): Services
+    {
+        return $this->changing;
     }
 
     /**

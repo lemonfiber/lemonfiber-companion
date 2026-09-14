@@ -34,7 +34,15 @@ final readonly class Upkeepers implements KeepingCurrent
         $client = $this->clients->client($stack, $session);
 
         try {
-            $envelope = $client->read(Api::UPDATE_ENDPOINT);
+            // Naming what this is about, because the endpoint serves two things
+            // and a request that says neither is answered in prose rather than
+            // with an envelope. This surface asks about the services; where
+            // this copy of lemonfiber stands is a different reading, a
+            // different kind, and nothing an operator's phone is for.
+            $envelope = $client->read(
+                Api::UPDATE_ENDPOINT,
+                [WireField::What->value => WireField::TheStack->value],
+            );
 
             // Inside the same `try` as the request, deliberately — the argument
             // {@see Stalls::stoppedOn()} makes. A payload the client fetched and

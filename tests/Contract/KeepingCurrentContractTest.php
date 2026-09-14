@@ -71,6 +71,10 @@ function theSameStanding(): Upkeep
             Release::called('4.0.16', noticeable: false, withdrawn: false),
             Release::called('4.0.17', noticeable: true, withdrawn: true),
         ),
+        // One service, not two. The stack has already refused the other, and a
+        // confirmation naming it would have somebody agree to a service that
+        // was never going to move.
+        Services::these(ServiceId::called('jellyfin')),
     );
 }
 
@@ -84,6 +88,13 @@ function anUpkeepAnswer(): MockResponse
             'data' => [
                 'state' => 'pending',
                 'running' => ['version' => '4.0.15', 'user_facing' => false],
+                'changes' => [
+                    ['service' => 'jellyfin', 'refused' => false],
+                    // Refused, so it is not a service an update would change and
+                    // naming it in a confirmation would have somebody agree to
+                    // one that was never going to move.
+                    ['service' => 'sonarr', 'refused' => true],
+                ],
                 'changelog' => [
                     'releases' => [
                         ['version' => '4.1.0', 'user_facing' => true],
@@ -116,6 +127,17 @@ function everyWayOfKeepingCurrent(MockResponse $answered, ?Obstacle $why = null)
             return new Upkeepers(new PinnedClients());
         },
     ];
+}
+
+/** The services an update would change, whichever implementation answered. */
+function whatItWouldChange(KeepingCurrent $keeping): Services
+{
+    return $keeping->standing(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith())->either(
+        stands: static fn(Upkeep $upkeep): Services => $upkeep->changing(),
+        // Nothing would change, because nothing was read. Which obstacle it
+        // was is what the rule above asserts; here it only has to not be a list.
+        met: static fn(): Services => Services::none(),
+    );
 }
 
 /** One word carried out of an `either()` arm. */
@@ -160,6 +182,23 @@ it('N2-R16 — leaves out the release that was taken back', function (): void {
         expect(whereItStands($build()))
             ->toEndWith('4.1.0,4.0.16', $which)
             ->and(whereItStands($build()))->not->toContain('4.0.17', $which);
+    }
+});
+
+it('N2-R17 — names only the services an update would actually change', function (): void {
+    // The rule the fake could not be wrong about on its own: what makes this
+    // worth asserting across both is that the adapter has to read `refused` off
+    // the wire and leave that row out, and the fake has to be built the same
+    // way. A confirmation that named a refused service would have somebody
+    // agree to an evening that was never going to happen.
+    foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
+        $named = [];
+
+        foreach (whatItWouldChange($build()) as $service) {
+            $named[] = $service->named();
+        }
+
+        expect($named)->toBe(['jellyfin'], $which);
     }
 });
 

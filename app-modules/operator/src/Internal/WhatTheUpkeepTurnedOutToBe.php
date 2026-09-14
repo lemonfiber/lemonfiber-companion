@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Upkeep;
 
 /**
@@ -35,6 +36,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param string                   $running    the version in use, or empty where the stack named none
      * @param bool                     $runningWasWithdrawn whether the version in use has been taken back
      * @param list<WhatOneReleaseSays> $waiting    the releases worth offering, in the stack's order
+     * @param Services                 $changing   the services taking one would change
      */
     private function __construct(
         public bool $isSignedIn,
@@ -44,6 +46,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public string $running,
         public bool $runningWasWithdrawn,
         public array $waiting,
+        public Services $changing,
     ) {}
 
     /**
@@ -62,6 +65,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             running: '',
             runningWasWithdrawn: false,
             waiting: [],
+            changing: Services::none(),
         );
     }
 
@@ -85,6 +89,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             )->version,
             runningWasWithdrawn: $upkeep->runningAWithdrawnRelease(),
             waiting: $waiting,
+            changing: $upkeep->changing(),
         );
     }
 
@@ -111,6 +116,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             running: '',
             runningWasWithdrawn: false,
             waiting: [],
+            changing: Services::none(),
         );
     }
 }

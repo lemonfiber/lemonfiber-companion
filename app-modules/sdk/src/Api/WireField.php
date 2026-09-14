@@ -113,7 +113,15 @@ enum WireField: string
     /** Why a check has no answer, on the arms that produced none. */
     case Reason = 'reason';
 
-    /** What a request's decline carried, where it was declined (`D7-R7`). */
+    /**
+     * That something was turned down, in the two places the wire says it.
+     *
+     * What a household request's decline carried (`D7-R7`), and whether the
+     * stack has already said it will not make one of an update's changes. One
+     * case because it is one word on the wire, and named here for both so the
+     * next reader does not add a second case for the meaning this docblock
+     * left out.
+     */
     case Refused = 'refused';
 
     /** The single thing to do about an unverified check. Singular on the wire. */
@@ -184,6 +192,15 @@ enum WireField: string
 
     /** What a service that has ended exited with. Absent while it runs. */
     case Exit = 'exit';
+
+    /** Which of the two things an update reading is about. */
+    case What = 'what';
+
+    /** The services, as opposed to this copy of lemonfiber. */
+    case TheStack = 'stack';
+
+    /** What taking an update would change, service by service. */
+    case Changes = 'changes';
 
     /** Where the releases a stack could be on are listed. */
     case Changelog = 'changelog';

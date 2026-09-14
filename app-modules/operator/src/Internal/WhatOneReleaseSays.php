@@ -22,10 +22,32 @@ final readonly class WhatOneReleaseSays
     private function __construct(
         public string $version,
         public bool $theHouseholdWouldNotice,
+        private Release $release,
     ) {}
 
     public static function of(Release $release): self
     {
-        return new self($release->version(), $release->theHouseholdWouldNotice());
+        return new self(
+            version: $release->version(),
+            theHouseholdWouldNotice: $release->theHouseholdWouldNotice(),
+            release: $release,
+        );
+    }
+
+    /**
+     * What this row was folded from.
+     *
+     * Kept so that a confirmation names the release that was *shown*. A screen
+     * that rebuilt one from the version string on the row would be agreeing to
+     * something assembled after the fact, and the point of the confirmation is
+     * that it is about the thing on the screen.
+     *
+     * Not read by the template, which has the fields above. `private` on the
+     * property and reached through here, so a template cannot take it by
+     * accident.
+     */
+    public function release(): Release
+    {
+        return $this->release;
     }
 }

@@ -27,6 +27,12 @@ final class UpkeepIsUnreadable extends InvalidArgumentException
         return new self(sprintf('An update reading called the stack `%s`, which is not a state.', $said));
     }
 
+    /** One of the changes an update would make, named by where it sat. */
+    public static function change(int $position): self
+    {
+        return new self(sprintf('Change %d in the update could not be read.', $position + 1));
+    }
+
     /** A release the stack listed, named by where it sat rather than by a name it lacks. */
     public static function release(int $position): self
     {

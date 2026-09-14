@@ -18,8 +18,11 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\WhatOneReleaseSays;
 use Modules\Operator\Internal\WhatTheUpkeepTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -68,6 +71,16 @@ final class HowCurrentThisStackIs extends NativeComponent
      */
     protected ?WhatTheUpkeepTurnedOutToBe $answered = null;
 
+    /**
+     * The update being asked about, while the operator decides.
+     *
+     * `protected` for the reason above, and held rather than passed through the
+     * template because what is confirmed has to be the thing that was shown —
+     * a release re-read after the yes is an update to whatever the stack had by
+     * then, agreed against a screen that is no longer true.
+     */
+    protected ?TakingAnUpdate $asking = null;
+
     public function __construct(
         private readonly KeepingCurrent $keeping,
         private readonly SecureStorage $storage,
@@ -108,6 +121,67 @@ final class HowCurrentThisStackIs extends NativeComponent
         $this->answered = null;
     }
 
+    /**
+     * Offer to take a release, and ask first (`N2-R17`).
+     *
+     * The version arrives as a string because a template can hand over nothing
+     * else, and is matched against what this screen actually read — so a
+     * release this screen never showed cannot be agreed to, whatever a template
+     * sends. That is the argument {@see WhatThisStackRuns::wouldYouLike()}
+     * makes about a service name, and it is the same one.
+     *
+     * Every update asks. There is no unconfirmed arm here the way there is for
+     * a start, because there is no update that takes nothing away: it stops
+     * services, and which ones is the whole of what the confirmation says.
+     */
+    public function wouldYouLike(string $version): void
+    {
+        $taking = $this->agreementFor($version);
+
+        if (! $taking instanceof TakingAnUpdate) {
+            return;
+        }
+
+        $this->asking = $taking;
+    }
+
+    /** Take the update that was agreed to. */
+    public function agree(): void
+    {
+        $taking = $this->asking;
+
+        if (! $taking instanceof TakingAnUpdate) {
+            return;
+        }
+
+        $this->asking = null;
+
+        $this->send($taking);
+    }
+
+    /** Leave it. */
+    public function neverMind(): void
+    {
+        $this->asking = null;
+    }
+
+    /**
+     * What is being asked about, where anything is.
+     *
+     * The template draws the confirmation off this rather than off a flag, so
+     * the thing named in the question is the thing that will be sent.
+     */
+    public function asking(): ?TakingAnUpdate
+    {
+        return $this->asking;
+    }
+
+    /** How many services the pending question would change (`N2-R17`). */
+    public function wouldChange(): int
+    {
+        return $this->asking instanceof TakingAnUpdate ? $this->asking->changing()->count() : 0;
+    }
+
     /** Where this machine's screens are. */
     public function goes(): WhereAStackIs
     {
@@ -129,6 +203,60 @@ final class HowCurrentThisStackIs extends NativeComponent
     public function answer(): WhatTheUpkeepTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /**
+     * The confirmation for a version, where this screen actually showed it.
+     *
+     * Matched against what was read rather than trusted: a release this screen
+     * never offered cannot be agreed to, whatever a template sends — and the
+     * services travel from the same reading, so the confirmation names what
+     * was on the screen rather than what the stack has by the time somebody
+     * taps.
+     */
+    private function agreementFor(string $version): ?TakingAnUpdate
+    {
+        $row = $this->row($version);
+
+        if (! $row instanceof WhatOneReleaseSays) {
+            return null;
+        }
+
+        return TakingAnUpdate::agreed($row->release(), $this->answer()->changing);
+    }
+
+    /** The release this screen showed under that version, where it showed one. */
+    private function row(string $version): ?WhatOneReleaseSays
+    {
+        foreach ($this->answer()->waiting as $release) {
+            if ($release->version === $version) {
+                return $release;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Send what was agreed to, and forget what was read.
+     *
+     * Forgetting rather than re-reading here, so the next accessor asks — the
+     * listing after an update is taken is a different listing, and a screen
+     * that kept the old one would show an evening that has already happened.
+     */
+    private function send(TakingAnUpdate $taking): void
+    {
+        $stack = $this->stack();
+
+        $this->storage->resume($stack->id())->either(
+            held: function (Session $session) use ($stack, $taking): Underway {
+                $underway = $this->keeping->take($stack, $session, $taking);
+                $this->answered = null;
+
+                return $underway;
+            },
+            notHeld: static fn(): Underway => Underway::met(Obstacle::CredentialWasRefused),
+        );
     }
 
     /**

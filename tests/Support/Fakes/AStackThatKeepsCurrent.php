@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Releases;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
@@ -56,7 +57,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
     /** A stack with nothing waiting, which is the ordinary evening. */
     public static function withNothingWaiting(): self
     {
-        return self::with(Upkeep::reported(HowCurrent::Current, Releases::none()));
+        return self::with(Upkeep::reported(HowCurrent::Current, Releases::none(), Services::none()));
     }
 
     public static function met(Obstacle $why): self

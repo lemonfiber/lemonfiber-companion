@@ -14,6 +14,8 @@ use Lemonfiber\Sdk\Generated\UpdateEnvelope;
 use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
+use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Sdk\Internal\Wire;
 
@@ -44,11 +46,12 @@ final readonly class Standings
 
         $how = self::how($data);
         $waiting = self::waiting($data);
+        $changing = self::changing($data);
         $running = self::running($data);
 
         return $running instanceof Release
-            ? Upkeep::runningOn($how, $running, $waiting)
-            : Upkeep::reported($how, $waiting);
+            ? Upkeep::runningOn($how, $running, $waiting, $changing)
+            : Upkeep::reported($how, $waiting, $changing);
     }
 
     /** @param Envelope<mixed> $envelope */
@@ -129,6 +132,89 @@ final readonly class Standings
         }
 
         return Releases::these(...$releases);
+    }
+
+    /**
+     * The services taking an update would change.
+     *
+     * A change the stack has already refused is left out. It is not something
+     * an update would do, and naming it in a confirmation would have somebody
+     * agree to a service that was never going to move — which is the same
+     * false promise `N2-R19` refuses about undoing.
+     *
+     * @param array<array-key, mixed> $data
+     */
+    private static function changing(array $data): Services
+    {
+        if (! array_key_exists(WireField::Changes->value, $data)) {
+            throw UpkeepIsUnreadable::missing(WireField::Changes);
+        }
+
+        $listed = $data[WireField::Changes->value];
+
+        if (! is_array($listed)) {
+            throw UpkeepIsUnreadable::missing(WireField::Changes);
+        }
+
+        $services = [];
+        $position = 0;
+
+        foreach ($listed as $said) {
+            if (! is_array($said)) {
+                throw UpkeepIsUnreadable::change($position);
+            }
+
+            if (self::refused($said, $position)) {
+                ++$position;
+
+                continue;
+            }
+
+            $services[] = ServiceId::called(self::named($said, $position));
+            ++$position;
+        }
+
+        return Services::these(...$services);
+    }
+
+    /** @param array<array-key, mixed> $said */
+    private static function named(array $said, int $position): string
+    {
+        if (! array_key_exists(WireField::Service->value, $said)) {
+            throw UpkeepIsUnreadable::change($position);
+        }
+
+        $service = $said[WireField::Service->value];
+
+        if (! is_string($service)) {
+            throw UpkeepIsUnreadable::change($position);
+        }
+
+        return $service;
+    }
+
+    /**
+     * Whether the stack has already said it will not make this change.
+     *
+     * Refused rather than defaulted, for the reason {@see noticeable()} gives:
+     * the reassuring default here is *it will happen*, which is the direction
+     * that puts a service in a confirmation it was never going to move for.
+     *
+     * @param array<array-key, mixed> $said
+     */
+    private static function refused(array $said, int $position): bool
+    {
+        if (! array_key_exists(WireField::Refused->value, $said)) {
+            throw UpkeepIsUnreadable::change($position);
+        }
+
+        $refused = $said[WireField::Refused->value];
+
+        if (! is_bool($refused)) {
+            throw UpkeepIsUnreadable::change($position);
+        }
+
+        return $refused;
     }
 
     /**

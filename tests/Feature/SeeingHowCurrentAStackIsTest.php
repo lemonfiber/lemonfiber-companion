@@ -9,6 +9,8 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
+use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -51,6 +53,7 @@ function anEveningWorthSpending(): Upkeep
             Release::called('4.1.0', noticeable: true, withdrawn: false),
             Release::called('4.0.16', noticeable: false, withdrawn: false),
         ),
+        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
     );
 }
 
@@ -108,6 +111,7 @@ it('N2-R16 — leaves a withdrawn release out of what is offered', function (): 
             Release::called('4.1.0', noticeable: true, withdrawn: false),
             Release::called('4.0.17', noticeable: true, withdrawn: true),
         ),
+        Services::these(ServiceId::called('jellyfin')),
     )));
 
     expect($screen->howMany())->toBe(1)
@@ -122,6 +126,7 @@ it('N2-R16 — says so where the stack is running one that was taken back', func
         HowCurrent::Pending,
         Release::called('4.0.17', noticeable: true, withdrawn: true),
         Releases::none(),
+        Services::none(),
     )));
 
     expect($screen->answer()->runningWasWithdrawn)->toBeTrue()
