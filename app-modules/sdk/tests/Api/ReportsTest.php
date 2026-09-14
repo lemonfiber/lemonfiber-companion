@@ -569,3 +569,25 @@ it('names the finding for a verdict field as well as for a finding field', funct
     expect(fn(): Report => Reports::in(doctorSaying($data)))
         ->toThrow(ReportIsUnreadable::class, 'Finding 1');
 });
+
+it('refuses a report with no overall at all, as against one it cannot read', function (): void {
+    // Told apart from a word this app does not know, which is the case above:
+    // one is a stack speaking a vocabulary this version has not learned, and
+    // this is an envelope missing the field the whole report is judged by.
+    expect(fn(): Report => Reports::in(doctorSaying(['findings' => []])))
+        ->toThrow(ReportIsUnreadable::class, 'overall');
+});
+
+it('refuses a finding whose field is there and is not text', function (): void {
+    // Present-and-wrong rather than absent. A presence check alone lets it
+    // through, and a stack of a newer version is the likeliest thing to send
+    // it — a title that became a structured object, say.
+    $data = aRun('broken', [
+        aFinding('storage.one-filesystem', 'storage', 'Disk', ['outcome' => 'pass']),
+        ['check' => 'vpn.egress-match', 'category' => 'vpn', 'title' => 41,
+            'verdict' => ['outcome' => 'pass']],
+    ]);
+
+    expect(fn(): Report => Reports::in(doctorSaying($data)))
+        ->toThrow(ReportIsUnreadable::class, 'Finding 1');
+});
