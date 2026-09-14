@@ -85,6 +85,49 @@ final class AStackThatSupervises implements Supervising
         );
     }
 
+    /**
+     * A stack that says what it is running and refuses the verb.
+     *
+     * The two halves of the port can disagree, and on one obstacle they
+     * routinely do: a session that ended between the frame and the tap is a
+     * stack that listed its services and then refused to act on one.
+     *
+     * {@see met()} cannot stand in for this. It refuses both halves, so the
+     * screen never gets a listing, never has a row to agree to, and never sends
+     * a verb — which leaves the arm that folds a refused verb unreached by any
+     * test that thinks it is testing exactly that.
+     */
+    public static function withButRefusing(Daemons $daemons, Obstacle $why): self
+    {
+        return new self(
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons),
+            static fn(): Underway => Underway::met($why),
+        );
+    }
+
+    /**
+     * A stack whose listing changes between one frame and the next.
+     *
+     * The first reading, then the second, and the second from then on. A screen
+     * holds a question across frames while the machine underneath it keeps
+     * moving, so what was agreed to and what is now listed can disagree — which
+     * a fake answering the same thing forever cannot produce, and which is
+     * where more than one guard on these screens earns its place.
+     */
+    public static function thenRunning(Daemons $first, Daemons $andThen): self
+    {
+        $reading = 0;
+
+        return new self(
+            static function () use ($first, $andThen, &$reading): WhatIsRunning {
+                $reading++;
+
+                return WhatIsRunning::these($reading === 1 ? $first : $andThen);
+            },
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+        );
+    }
+
     /** The stack it was last asked about, or nothing where it never was. */
     public function askedAbout(): ?Stack
     {

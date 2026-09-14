@@ -396,17 +396,72 @@ it('N3-R13 — a credential refused on the verb lets the session go too', functi
     // The half a read cannot reach. A stack that refuses a credential the
     // moment somebody taps stop is the same signed-out device as one that
     // refuses it on a read, and this is the call that happens on the tap.
+    //
+    // One stack, answering the reading and refusing the verb, because those are
+    // different calls and a session can end between them. Two screens over a
+    // shared keychain proved nothing: the second one refused the *read*, so the
+    // sign-out under test was the one the case above already covers and the
+    // fold behind the verb was never entered by anything in this suite.
     $keychain = AKeychainInMemory::working();
-    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()), $keychain);
+    $supervising = AStackThatSupervises::withButRefusing(
+        aStackRunningTwoThings(),
+        Obstacle::CredentialWasRefused,
+    );
+    $screen = theServicesScreen($supervising, $keychain);
 
-    // Read with a working stack so there is a listing to pick a row from, then
-    // let the stack start refusing.
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+    $screen->agree();
 
-    $refusing = theServicesScreen(AStackThatSupervises::met(Obstacle::CredentialWasRefused), $keychain);
-    $refusing->answer();
+    // Sent, and then refused — the distinction that makes this the verb's half
+    // and not the reading's.
+    expect($supervising->whatItWasToldToDo())->toHaveCount(1)
+        ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeFalse();
+});
 
-    expect($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeFalse();
+it('N2-R8 — a question about a form names no single row', function (): void {
+    // What `aboutTheService()` is for is the other services a stop disturbs,
+    // and only a row carries them. A form has none to name — its services are
+    // every row that names it, which the form's own sentence already says — so
+    // handing one row back here would put one service's dependants underneath a
+    // question about all of them.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+
+    // Nothing pending is the same answer, and for the plainer reason: there is
+    // no question for a row to be about.
+    expect($screen->aboutTheService())->toBeNull();
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'downloads');
+
+    expect($screen->asking()?->isAboutAForm())->toBeTrue()
+        ->and($screen->aboutTheService())->toBeNull();
+});
+
+it('N2-R8 — a question about a form stays about the form when a service takes its name', function (): void {
+    // Where that guard earns its place: across frames, not within one.
+    // `agreementFor()` gives a service priority over a form of the same name,
+    // so at the moment the question is asked no row can match it and the guard
+    // could be deleted without this suite noticing.
+    //
+    // What moves is the machine. The operator holds the question open, the poll
+    // comes round, and the stack has meanwhile started a service called
+    // `downloads`. Without the guard the sentence in front of them would then
+    // name one service's dependants underneath a question about the whole form,
+    // which is `N2-R8`'s failure exactly: agreeing to one thing while being
+    // shown another.
+    $screen = theServicesScreen(AStackThatSupervises::thenRunning(
+        aStackRunningTwoThings(),
+        Daemons::of(
+            HowTheStackIsRunning::Active,
+            Forms::these(Form::called('downloads')),
+            aServiceRunning('downloads', leaning: WhatLeansOnIt::these(ServiceId::called('jellyfin'))),
+        ),
+    ));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'downloads');
+    $screen->again();
+
+    expect($screen->asking()?->isAboutAForm())->toBeTrue()
+        ->and($screen->aboutTheService())->toBeNull();
 });
 
 it('N3-R13 — a machine that cannot be reached keeps its session', function (): void {
