@@ -115,11 +115,29 @@ it('refuses a name that is there and is not text', function (): void {
         ->toThrow(HouseholdIsUnreadable::class, 'name');
 });
 
-it('refuses a member with no requests key rather than reading it as a quiet week', function (): void {
-    $data = ['members' => [['name' => 'Robin']]];
+it('refuses a member whose requests it cannot find, and names the member not the envelope', function (): void {
+    // The sentence matters as much as the refusal. Read through `rows()` this
+    // said *the household envelope has no `requests`* — true of an envelope and
+    // false of a member, so a house whose second member lost their requests key
+    // reported as an answer from a lemonfiber this app cannot read, and dropped
+    // the one fact that would make it findable.
+    //
+    // The second member rather than the first, so the position has to be
+    // carried to be right: `Member 0` would pass this by accident.
+    $data = ['members' => [aMember('Robin', []), ['name' => 'Sam']]];
 
     expect(fn(): Requested => Households::in(householdSaying($data)))
-        ->toThrow(HouseholdIsUnreadable::class, 'requests');
+        ->toThrow(HouseholdIsUnreadable::class, 'Member 1');
+});
+
+it('refuses a member whose requests are not a list, for the reason a missing key is refused', function (): void {
+    // Absent and unreadable are one answer here, unlike a size: either way
+    // nothing can be said about what this person asked for, and a member shown
+    // with no requests is a member shown as having wanted nothing.
+    $data = ['members' => [aMember('Robin', []), ['name' => 'Sam', 'requests' => 'none']]];
+
+    expect(fn(): Requested => Households::in(householdSaying($data)))
+        ->toThrow(HouseholdIsUnreadable::class, 'Member 1');
 });
 
 it('refuses a request row it cannot read, naming who asked and where', function (): void {
@@ -205,4 +223,83 @@ it('D7-R3 — an estimate it cannot read is answered the same way as one that ne
             guessed: static fn(int $bytes): Code => Code::of(sprintf('guessed-%d', $bytes)),
             unknown: static fn(): Code => Code::of('unknown'),
         )->shown())->toBe('unknown');
+});
+
+it('counts requests within a member, so the refusal names the right one', function (): void {
+    // The second request rather than the first, which is what makes the count
+    // load-bearing: a position that never advanced, or advanced the wrong way,
+    // would send an operator to a request that is fine while the unreadable one
+    // sits further down the list.
+    $data = ['members' => [aMember('Robin', [
+        aRequest(1, 'A film', 'getting'),
+        'not a request',
+    ])]];
+
+    expect(fn(): Requested => Households::in(householdSaying($data)))
+        ->toThrow(HouseholdIsUnreadable::class, 'Request 1');
+});
+
+it('reads requests by position even where the wire numbered them', function (): void {
+    // A payload whose lists arrived keyed rather than as arrays still has to
+    // come out in order, because everything downstream reads by position — the
+    // refusal that names `Request 1` among them. The keys are the wire's
+    // business and are not carried past this fold.
+    $data = ['members' => [['name' => 'Robin', 'requests' => [
+        7 => aRequest(1, 'First', 'getting'),
+        3 => aRequest(2, 'Second', 'here'),
+    ]]]];
+
+    $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
+
+    expect($wanted)->toHaveCount(2)
+        ->and($wanted[0]->forWhat())->toBe('First')
+        ->and($wanted[1]->forWhat())->toBe('Second');
+});
+
+it('D7-R4 — an estimate says whether anybody measured it, and is read either way', function (): void {
+    // Both arms, because one of them alone cannot tell the fold from its
+    // opposite: a reader that answered *measured* for everything and one that
+    // answered *guessed* for everything each pass a test that only ever sends
+    // one. `D7-R4` is the requirement that the two stay distinguishable.
+    $data = ['members' => [aMember('Robin', [
+        ['id' => 1, 'title' => 'Measured', 'state' => 'getting',
+            'estimate' => ['bytes' => 4_000_000_000, 'measured' => true]],
+        ['id' => 2, 'title' => 'Guessed', 'state' => 'getting',
+            'estimate' => ['bytes' => 900_000_000, 'measured' => false]],
+    ])]];
+
+    $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
+
+    $howBig = static fn(int $at): string => $wanted[$at]->size()->either(
+        measured: static fn(int $bytes): Code => Code::of(sprintf('measured-%d', $bytes)),
+        guessed: static fn(int $bytes): Code => Code::of(sprintf('guessed-%d', $bytes)),
+        unknown: static fn(): Code => Code::of('unknown'),
+    )->shown();
+
+    expect($howBig(0))->toBe('measured-4000000000')
+        ->and($howBig(1))->toBe('guessed-900000000');
+});
+
+it('D7-R3 — an estimate half-readable is no more use than none of it', function (): void {
+    // The two halves of the check are asked separately, because a reader that
+    // dropped either one would still pass a test that only ever breaks both.
+    // A figure with no word for whether anybody measured it is a number an
+    // operator cannot weigh, which is the same position as having no figure.
+    $data = ['members' => [aMember('Robin', [
+        ['id' => 1, 'title' => 'Bytes but no word', 'state' => 'getting',
+            'estimate' => ['bytes' => 4_000_000_000, 'measured' => 'yes']],
+        ['id' => 2, 'title' => 'Word but no bytes', 'state' => 'getting',
+            'estimate' => ['bytes' => 'a lot', 'measured' => true]],
+    ])]];
+
+    $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
+
+    $howBig = static fn(int $at): string => $wanted[$at]->size()->either(
+        measured: static fn(int $bytes): Code => Code::of(sprintf('measured-%d', $bytes)),
+        guessed: static fn(int $bytes): Code => Code::of(sprintf('guessed-%d', $bytes)),
+        unknown: static fn(): Code => Code::of('unknown'),
+    )->shown();
+
+    expect($howBig(0))->toBe('unknown')
+        ->and($howBig(1))->toBe('unknown');
 });

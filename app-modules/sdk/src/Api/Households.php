@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
-use function array_values;
 use function is_array;
 use function is_bool;
 use function is_int;
@@ -80,7 +79,11 @@ final readonly class Households
     /**
      * Every request under every member, flattened.
      *
-     * @param list<mixed> $members
+     * Takes the members as they arrived rather than as a list, for
+     * {@see self::requestsOf()}'s reason: this walks them and counts its own
+     * position, so their keys are never read.
+     *
+     * @param array<mixed> $members
      */
     private static function wanted(array $members): Requested
     {
@@ -92,7 +95,7 @@ final readonly class Households
                 throw HouseholdIsUnreadable::member($position);
             }
 
-            foreach (self::askedBy($member) as $request) {
+            foreach (self::askedBy($member, $position) as $request) {
                 $wanted[] = $request;
             }
 
@@ -106,15 +109,16 @@ final readonly class Households
      * What one member asked for, with their name carried onto each row.
      *
      * @param  array<mixed> $member
+     * @param  int $at the member's place in the house, for a refusal that can be found
      * @return list<Wanted>
      */
-    private static function askedBy(array $member): array
+    private static function askedBy(array $member, int $at): array
     {
         $by = self::text($member, WireField::Name);
         $wanted = [];
         $position = 0;
 
-        foreach (self::rows($member, WireField::Requests) as $row) {
+        foreach (self::requestsOf($member, $at) as $row) {
             if (! is_array($row)) {
                 throw HouseholdIsUnreadable::request($by, $position);
             }
@@ -133,10 +137,50 @@ final readonly class Households
     }
 
     /**
+     * The requests one member made.
+     *
+     * Deliberately not {@see self::rows()}, and the difference is the sentence
+     * rather than the check. `rows()` raises the envelope-level refusal — *the
+     * household envelope has no `requests`* — which is true of an envelope and
+     * false of a member. A house of six whose fourth member has no requests key
+     * would report as an answer from a version of lemonfiber this app cannot
+     * read, and drop the one fact that would make it findable: which member.
+     *
+     * A member whose requests cannot be read is a member this app cannot read,
+     * which is what {@see HouseholdIsUnreadable::member()} already says.
+     *
+     * **Returned as it arrived, keys and all.** The caller walks it and counts
+     * its own position, so the keys are never read — and a reindexing nothing
+     * can observe is a line held in place by the annotation above it rather
+     * than by anything it does. {@see Requested::of()} keeps its own, because
+     * there the list is stored and handed out again, where the keys escape.
+     *
+     * @param  array<mixed> $member
+     * @return array<mixed>
+     */
+    private static function requestsOf(array $member, int $at): array
+    {
+        if (! array_key_exists(WireField::Requests->value, $member)) {
+            throw HouseholdIsUnreadable::member($at);
+        }
+
+        $rows = $member[WireField::Requests->value];
+
+        if (! is_array($rows)) {
+            throw HouseholdIsUnreadable::member($at);
+        }
+
+        return $rows;
+    }
+
+    /**
      * A list under a named field.
      *
+     * Returned as it arrived, for {@see self::requestsOf()}'s reason: the only
+     * caller walks it, so nothing reads the keys.
+     *
      * @param  array<mixed> $data
-     * @return list<mixed>
+     * @return array<mixed>
      */
     private static function rows(array $data, WireField $field): array
     {
@@ -150,7 +194,7 @@ final readonly class Households
             throw HouseholdIsUnreadable::missing($field);
         }
 
-        return array_values($rows);
+        return $rows;
     }
 
     /** @param array<mixed> $data */

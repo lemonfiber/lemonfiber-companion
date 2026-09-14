@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
@@ -127,15 +128,48 @@ it('D7-R3 — a figure too big for its unit moves up rather than grows', functio
     // a separator, which `L5` says nothing leaving the fold may carry because
     // one written here is wrong in some locale by construction. Moving up a
     // unit is how the figure stays readable without one.
+    //
+    // Each band is entered at exactly its boundary, because the comparison is
+    // `>=` and a value a byte above cannot tell that from `>`. Only at the
+    // boundary do the two disagree — and disagreeing means a gigabyte shown as
+    // `1000 MB`, which is the four-figure number the ladder exists to prevent,
+    // arriving at the one size that reaches each band first.
     $wanted = Requested::of(
-        Wanted::of(44, 'Robin', 'Every season at once', Size::measured(4_000_000_000_000), Waiting::Getting),
+        Wanted::of(44, 'Robin', 'A megabyte exactly', Size::measured(1_000_000), Waiting::Getting),
+        Wanted::of(45, 'Robin', 'A gigabyte exactly', Size::measured(1_000_000_000), Waiting::Getting),
+        Wanted::of(46, 'Robin', 'A terabyte exactly', Size::measured(1_000_000_000_000), Waiting::Getting),
     );
 
-    $row = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->requests()[0];
+    $rows = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->requests();
 
-    expect($row->sizeFigure)->toBe(4)
-        ->and($row->sizeUnit)->toBe('household.terabytes')
-        ->and($row->sizeFigure)->toBeLessThan(1000);
+    expect([$rows[0]->sizeFigure, $rows[0]->sizeUnit])->toBe([1, 'household.megabytes'])
+        ->and([$rows[1]->sizeFigure, $rows[1]->sizeUnit])->toBe([1, 'household.gigabytes'])
+        ->and([$rows[2]->sizeFigure, $rows[2]->sizeUnit])->toBe([1, 'household.terabytes']);
+});
+
+it('D7-R3 — a figure between two whole ones is rounded rather than trimmed', function (): void {
+    // Nearest, not toward zero and not away from it. A request of 4.6 TB shown
+    // as `4 TB` understates what the operator is about to let onto their disk,
+    // and one of 4.4 TB shown as `5 TB` overstates it — and the second is the
+    // one that gets a request refused for being bigger than it is. Both
+    // directions are asserted because a rounding that is wrong one way only
+    // looks right from the other.
+    // Asked of every band, because each divides by its own constant and a
+    // rounding that is right in terabytes is not thereby right in megabytes.
+    $wanted = Requested::of(
+        Wanted::of(47, 'Robin', 'Just under, in megabytes', Size::measured(900_400_000), Waiting::Getting),
+        Wanted::of(48, 'Robin', 'Just over, in megabytes', Size::measured(900_600_000), Waiting::Getting),
+        Wanted::of(49, 'Robin', 'Just under, in gigabytes', Size::measured(4_400_000_000), Waiting::Getting),
+        Wanted::of(50, 'Robin', 'Just over, in gigabytes', Size::measured(4_600_000_000), Waiting::Getting),
+        Wanted::of(51, 'Robin', 'Just under, in terabytes', Size::measured(4_400_000_000_000), Waiting::Getting),
+        Wanted::of(52, 'Robin', 'Just over, in terabytes', Size::measured(4_600_000_000_000), Waiting::Getting),
+    );
+
+    $rows = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->requests();
+
+    expect([$rows[0]->sizeFigure, $rows[1]->sizeFigure])->toBe([900, 901])
+        ->and([$rows[2]->sizeFigure, $rows[3]->sizeFigure])->toBe([4, 5])
+        ->and([$rows[4]->sizeFigure, $rows[5]->sizeFigure])->toBe([4, 5]);
 });
 
 it('D7-R3 — a request nobody has sized says so rather than showing nothing', function (): void {
@@ -148,7 +182,12 @@ it('D7-R3 — a request nobody has sized says so rather than showing nothing', f
     // Not a zero and not a blank. The key says *we do not know*, and it names
     // no placeholder — so the figure beside it can never reach the glass.
     expect($row->sizeSaid)->toBe('household.size_unknown')
-        ->and($row->sizeUnit)->toBe('');
+        ->and($row->sizeUnit)->toBe('')
+        // The figure is carried on this arm as well, and nothing reads it —
+        // which is exactly why it has to be nought rather than whatever was
+        // convenient: a key naming no placeholder is the only thing keeping it
+        // off the glass, and that is a property of the template, not of this.
+        ->and($row->sizeFigure)->toBe(0);
 });
 
 it('a quiet week is an answer, and is not the same as a stack that did not answer', function (): void {
@@ -244,4 +283,48 @@ it('the way back from the requests screen is a route as well', function (): void
 it('renders the frame it is named for', function (): void {
     expect(theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()))->render()->name())
         ->toBe('operator::what-the-household-asked');
+});
+
+it('N1-R44 — a signed-out frame carries no sentence and nothing waiting behind the flag', function (): void {
+    // The flag is what the template branches on, and the rest of the frame has
+    // to be empty behind it rather than merely unread. A sentence or a count
+    // surviving on a signed-out screen is a fact about somebody's house left
+    // where whoever picked the phone up can reach it — which is the whole of
+    // what this requirement is guarding, and a template is a weak place to
+    // guard it.
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()), signedIn: false);
+
+    expect($screen->isSignedIn())->toBeFalse()
+        ->and($screen->met())->toBe('')
+        ->and($screen->remedy())->toBe('')
+        ->and($screen->requests())->toBe([])
+        ->and($screen->howManyWaiting())->toBe(0);
+});
+
+it('a stack that could not be reached is still a signed-in screen', function (): void {
+    // The flag says whether this device holds a session, not whether the stack
+    // replied. Collapsing the two would send somebody to sign in again over a
+    // machine that is simply off — and asserted on both arms because a reader
+    // that answered *signed in* for everything passes a test that only ever
+    // sends one of them.
+    $answered = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
+    $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::StackDidNotAnswer));
+
+    expect($answered->isSignedIn())->toBeTrue()
+        ->and($unreachable->isSignedIn())->toBeTrue()
+        ->and($unreachable->howManyWaiting())->toBe(0);
+});
+
+it('refuses a route parameter that is not text', function (): void {
+    // A parameter arrives as `mixed`, because the navigation stack's own
+    // parameter array is untyped. Anything that is not a string names no stack,
+    // which is the same situation as a route with nothing in that segment —
+    // asserted rather than assumed, because the narrowing is a branch and a
+    // branch nothing drives is a branch that can quietly become the other one.
+    // `SeeingHowAStackIsTest` and `SigningIntoAStackTest` make the same
+    // assertion about the same shape, one screen over each way.
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
