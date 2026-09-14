@@ -11,9 +11,13 @@ use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhyNothingWasScanned;
+use Modules\Kernel\Api\WhyNothingWasShared;
 use Tests\Support\Catalogue;
+use Tests\Support\Tree;
 
 // `L7`'s blind half — the keys no regex can see.
 //
@@ -72,15 +76,9 @@ function everyDerivedKey(): array
             WhyNothingWasScanned::cases(),
             static fn(WhyNothingWasScanned $why): array => [$why->saidOnTheScreen(), $why->remedy()],
         ),
-        // Not derived on the enum itself — `HowTheSignInWent` and
-        // `WhatTheStackTurnedOutToBe` both build these from an obstacle, so the
-        // pair is held here rather than in one of the two that happens to.
         Obstacle::class => aPairPerCase(
             Obstacle::cases(),
-            static fn(Obstacle $why): array => [
-                sprintf('connection.%s', $why->value),
-                sprintf('connection.%s_action', $why->value),
-            ],
+            static fn(Obstacle $why): array => [$why->said(), $why->remedy()],
         ),
         WhereTheCodeGot::class => aPairPerCase(
             WhereTheCodeGot::cases(),
@@ -105,6 +103,23 @@ function everyDerivedKey(): array
         Category::class => aPairPerCase(
             Category::cases(),
             static fn(Category $category): array => [$category->saidOnTheScreen()],
+        ),
+        Waiting::class => aPairPerCase(
+            Waiting::cases(),
+            static fn(Waiting $standing): array => [$standing->saidOnTheScreen()],
+        ),
+        // Both found by the scan below rather than by hand, which is what the
+        // scan is for. `Permission` is also asked by
+        // `PermissionsAreExplainedTest`, which checks more than the lines
+        // existing — the duplicate costs a few assertions and removes the
+        // special case that let the other two through.
+        Permission::class => aPairPerCase(
+            Permission::cases(),
+            static fn(Permission $permission): array => [$permission->reason(), $permission->alternative()],
+        ),
+        WhyNothingWasShared::class => aPairPerCase(
+            WhyNothingWasShared::cases(),
+            static fn(WhyNothingWasShared $why): array => [$why->saidOnTheScreen(), $why->remedy()],
         ),
     ];
 }
@@ -205,4 +220,73 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
         expect($why->saidOnTheScreen())->toBe(sprintf('connection.%s', $why->value), $why->name)
             ->and($why->remedy())->toBe(sprintf('connection.%s_action', $why->value), $why->name);
     }
+});
+
+/**
+ * The one enum a source file declares, fully qualified. Named for this file.
+ *
+ * By text rather than by loading the file, because the scan below runs over
+ * every module's sources and requiring them would make a rule about catalogue
+ * keys depend on every one of them being loadable in this process.
+ */
+function theEnumDeclaredIn(string $source): ?string
+{
+    if (preg_match('/^namespace ([^;]+);/m', $source, $under) !== 1) {
+        return null;
+    }
+
+    if (preg_match('/^enum (\\w+)/m', $source, $called) !== 1) {
+        return null;
+    }
+
+    return sprintf('%s\\%s', $under[1], $called[1]);
+}
+
+it('L7 — every enum that builds a catalogue key is asked above', function (): void {
+    // The gap the table's own comment leaves open. `everyDerivedKey()` is
+    // maintained by hand for a good reason — a scan would have to guess which
+    // methods return keys — but an enum written after the table and never added
+    // to it is invisible to every rule in this suite, including the one above.
+    //
+    // `Waiting` was exactly that: seven cases each building `household.<value>`
+    // against a catalogue file that did not exist, passing the whole suite. So
+    // the scan does not try to guess *which* keys an enum builds — that is what
+    // the table is for — it only asks whether an enum that plainly builds one
+    // has been written down at all.
+    $stems = array_map(
+        static fn(string $file): string => basename($file, '.php'),
+        Tree::filesUnder(Tree::at(sprintf('lang/%s', Catalogue::locales()[0])), '.php'),
+    );
+
+    $building = sprintf("/sprintf\\(\n?\\s*'(%s)\\.%%s/", implode('|', array_map(preg_quote(...), $stems)));
+    $asked = array_keys(everyDerivedKey());
+    $missing = [];
+
+    foreach (Tree::filesUnder(Tree::at('app-modules'), '.php') as $file) {
+        $source = file_get_contents($file);
+
+        if ($source === false || preg_match('/^enum \w+/m', $source) !== 1) {
+            continue;
+        }
+
+        if (preg_match($building, $source) !== 1) {
+            continue;
+        }
+
+        $name = theEnumDeclaredIn($source);
+
+        if ($name !== null && ! in_array($name, $asked, strict: true)) {
+            $missing[] = $name;
+        }
+    }
+
+    sort($missing);
+
+    expect($missing)->toBe([], sprintf(
+        "These enums build a catalogue key and are not in `everyDerivedKey()`:\n  %s\n\n"
+        . 'Until one is listed there, nothing checks that the lines it names exist — it '
+        . 'can ship with no catalogue entry at all and the operator is shown the key. '
+        . "Add an entry naming every key each case builds.\n",
+        implode("\n  ", $missing),
+    ));
 });

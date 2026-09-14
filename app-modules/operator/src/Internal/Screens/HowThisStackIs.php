@@ -272,6 +272,19 @@ final class HowThisStackIs extends NativeComponent
     }
 
     /** The frame, by name. */
+    /**
+     * Where what the house asked for is read.
+     *
+     * On this screen rather than on the list, because `N2-R11`'s requests
+     * belong to one machine and the list is about several — and because an
+     * operator who has come to look at a stack is already holding the question
+     * the household asks them.
+     */
+    public function requestsAreAt(): string
+    {
+        return sprintf('/stacks/%s/requests', $this->stack()->id()->stored());
+    }
+
     public function render(): View
     {
         return view('operator::how-this-stack-is');

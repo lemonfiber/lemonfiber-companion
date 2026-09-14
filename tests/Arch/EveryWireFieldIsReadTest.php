@@ -28,12 +28,17 @@ use Tests\Support\Tree;
  */
 function readersOfTheWire(): array
 {
-    return [
-        Tree::at('app-modules/sdk/src/Api/Reports.php'),
-        Tree::at('app-modules/sdk/src/Api/Problems.php'),
-        Tree::at('app-modules/sdk/src/Api/ReportIsUnreadable.php'),
-        Tree::at('app-modules/sdk/src/Api/ProblemIsUnreadable.php'),
-    ];
+    // The whole module rather than four names. A list written out here is a
+    // list that goes stale the day a fifth reader arrives — silently, and in
+    // the direction that matters: a field read only by the unlisted file reads
+    // as a field nobody reads, and the rule asks for the case to be deleted.
+    // `Households` and `HouseholdIsUnreadable` were exactly that on the day
+    // they were written.
+    //
+    // Reading every file in the module over-approximates, which is the safe
+    // direction for this rule: it refuses a *case*, so seeing more files means
+    // refusing fewer cases rather than more.
+    return Tree::filesUnder(Tree::at('app-modules/sdk/src'), '.php');
 }
 
 it('reads every field it names, so a case is never a field nobody reads', function (): void {

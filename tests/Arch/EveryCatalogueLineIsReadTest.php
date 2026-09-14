@@ -130,8 +130,14 @@ function everyKeyADerivationCouldBuild(string $said): array
     // One pattern for both shapes a derivation takes — `connection.%s` and
     // `connection.the_code_is_%s` — because what matters is the text either
     // side of the case's value, and where the dot falls in it does not.
-    preg_match_all("/'([a-z][a-z0-9_.]*\\.[a-z0-9_]*)%s([a-z0-9_]*)'/", $said, $shapes, PREG_SET_ORDER);
-    preg_match_all("/case \\w+ = '([a-z0-9_]+)'/", $said, $cases);
+    // Hyphens on both sides of this. A case value may carry one — `Waiting`
+    // spells `waiting-for-approval`, because the wire does — and a character
+    // class that left it out reconstructed none of that enum's keys. The rule
+    // then read seven perfectly good lines as orphans, which is the *unsafe*
+    // direction: this rule refuses lines, so under-approximating here deletes
+    // sentences rather than keeping extra ones.
+    preg_match_all("/'([a-z][a-z0-9_.-]*\\.[a-z0-9_-]*)%s([a-z0-9_-]*)'/", $said, $shapes, PREG_SET_ORDER);
+    preg_match_all("/case \\w+ = '([a-z0-9_-]+)'/", $said, $cases);
 
     $built = [];
 
