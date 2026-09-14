@@ -75,10 +75,10 @@ const NOT_YET = [
     'Beside', 'Bundle', 'Clients', 'Config', 'Credentials', 'Dashboard',
     'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'History', 'Hosting',
     'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
-    'Music', 'Outbound', 'Preview', 'Pull', 'Quality', 'Removal', 'Repair',
-    'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space', 'Start',
-    'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Trace', 'Undo',
-    'Uninstall', 'Update', 'Upgrade', 'Version', 'Watch', 'Word',
+    'Music', 'Outbound', 'Preview', 'Provenance', 'Pull', 'Quality', 'Removal',
+    'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Space',
+    'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Trace',
+    'Undo', 'Uninstall', 'Update', 'Upgrade', 'Version', 'Watch', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {
