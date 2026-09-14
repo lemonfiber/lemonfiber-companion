@@ -88,6 +88,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Stuck->forTheStack($this->stored);
     }
 
+    /** What this machine is running, and the verbs about it (`N2-R7`). */
+    public function services(): string
+    {
+        return AStacksScreen::Services->forTheStack($this->stored);
+    }
+
     /** What one of this machine's services has been saying (`N2-R10`). */
     public function logsOf(ServiceId $service): string
     {

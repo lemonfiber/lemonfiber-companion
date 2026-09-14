@@ -151,8 +151,30 @@ return [
         'active' => 'Alles draait',
     ],
     'do' => [
-        'start' => 'Start hem',
-        'stop' => 'Stop hem',
-        'restart' => 'Herstart hem',
+        'start' => 'Starten',
+        'stop' => 'Stoppen',
+        'restart' => 'Opnieuw starten',
     ],
+
+    'what_it_runs' => 'Wat er draait',
+
+    // N2-R7's screen. The verbs above are the buttons; these are the sentences
+    // around them — what a row says about itself, and what a stop is stated to
+    // disturb before anybody agrees to it.
+    'in_form' => 'Onderdeel van :form',
+    'it_exited' => 'Gestopt met :code',
+    'host_runs_it' => 'Deze machine draait hem, niet de stack',
+    'read_its_logs' => 'Lees wat hij gezegd heeft',
+    'nothing_is_running' => 'Er draait niets op deze machine',
+    'no_forms_at_all' => 'Er is nog niets ingericht op deze machine',
+    'by_form' => 'Of een heel formulier tegelijk',
+
+    // N2-R8. Said before the yes and not after it.
+    'about_to' => 'Op het punt :what te wijzigen',
+    'about_to_form' => 'Dit is elke dienst in dat formulier, niet alleen die ene.',
+    'would_not_help' => 'Hij start al keer op keer opnieuw. Nog een herstart komt in de rij.',
+    'leaning_on_it' => 'Deze werken niet zolang hij uit staat:',
+    'nothing_leans_on_it' => 'Niets anders in de stack heeft hem nodig.',
+    'go_ahead' => 'Doe maar',
+    'never_mind' => 'Laat maar',
 ];

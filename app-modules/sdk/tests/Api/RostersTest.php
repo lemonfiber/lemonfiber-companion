@@ -49,17 +49,16 @@ function aServiceSaying(array $differently = []): array
     ], ...$differently];
 }
 
-/** What a service said it exited with, or that it said nothing at all. */
-final readonly class WhatTheServiceExitedWith
-{
-    /** What the arm for a service that is still going carries. */
-    public const string NOTHING = 'nothing said';
-
-    public function __construct(public string $said) {}
-}
-
 /**
  * What the one service in a listing exited with, whichever arm it takes.
+ *
+ * The empty string is *it said nothing*, which is the fact and not a stand-in
+ * for one: a service that is running has no exit code at all, and `0` is the
+ * code for one that ended well.
+ *
+ * The carrier is anonymous because this file's namespace is one the
+ * architecture rules resolve classes from, and a second named class here maps
+ * to no file of its own.
  *
  * @param array<mixed> $differently
  */
@@ -69,10 +68,12 @@ function whatTheServiceExitedWith(array $differently): string
 
     foreach (Rosters::in(aRosterSaying($differently)) as $daemon) {
         $said = $daemon->exit(
-            said: static fn(int $code): WhatTheServiceExitedWith
-                => new WhatTheServiceExitedWith((string) $code),
-            unstated: static fn(): WhatTheServiceExitedWith
-                => new WhatTheServiceExitedWith(WhatTheServiceExitedWith::NOTHING),
+            said: static fn(int $code): object => new readonly class ((string) $code) {
+                public function __construct(public string $said) {}
+            },
+            unstated: static fn(): object => new readonly class ('') {
+                public function __construct(public string $said) {}
+            },
         )->said;
     }
 
@@ -123,7 +124,7 @@ it('reads a service that ended by the constructor that says so', function (): vo
 it('reads a service that is still going as one that said nothing', function (): void {
     // The other arm, and the one that must not be a number: a service running
     // now has no exit code, and a zero here would read as one that ended well.
-    expect(whatTheServiceExitedWith(aRosterOf()))->toBe(WhatTheServiceExitedWith::NOTHING);
+    expect(whatTheServiceExitedWith(aRosterOf()))->toBe('');
 });
 
 it('reads `exit: null` as a service that did not end', function (): void {

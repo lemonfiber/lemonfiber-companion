@@ -147,5 +147,15 @@
             label="{{ __('health.what_stopped') }}"
             @navigate="{{ $this->goes()->stuck() }}"
         />
+
+        {{-- N2-R7: what this machine is running, and the three verbs about it.
+             Reachable from the machine rather than from the list, as the three
+             above are. It is not under the verdict either: every check can pass
+             on a machine where the one service somebody wants is switched off,
+             which is exactly the evening this screen is for. --}}
+        <native:button
+            label="{{ __('health.what_it_runs') }}"
+            @navigate="{{ $this->goes()->services() }}"
+        />
     @endunless
 </native:column>

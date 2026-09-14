@@ -59,3 +59,19 @@ it('the order is the contract\'s, worst first', function (): void {
             'host-managed',
         ]);
 });
+
+it('N1-R27 — only a starting service becomes something else on its own', function (): void {
+    // The one state that resolves without anybody touching the phone, which is
+    // what a stated cadence is for. Every other case is a standing answer, so a
+    // screen polling on any of them would be polling on a listing that cannot
+    // change — the thing `N1-R17` refuses.
+    expect(HowAServiceRuns::Starting->isSettling())->toBeTrue();
+
+    foreach (HowAServiceRuns::cases() as $runs) {
+        if ($runs === HowAServiceRuns::Starting) {
+            continue;
+        }
+
+        expect($runs->isSettling())->toBeFalse($runs->value);
+    }
+});

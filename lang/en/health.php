@@ -155,4 +155,26 @@ return [
         'stop' => 'Stop it',
         'restart' => 'Restart it',
     ],
+
+    'what_it_runs' => 'What it is running',
+
+    // N2-R7's screen. The verbs above are the buttons; these are the sentences
+    // around them — what a row says about itself, and what a stop is stated to
+    // disturb before anybody agrees to it.
+    'in_form' => 'Part of :form',
+    'it_exited' => 'It ended with :code',
+    'host_runs_it' => 'This machine runs it, not the stack',
+    'read_its_logs' => 'Read what it has been saying',
+    'nothing_is_running' => 'Nothing is running on this machine',
+    'no_forms_at_all' => 'Nothing has been set up on this machine yet',
+    'by_form' => 'Or a whole form at once',
+
+    // N2-R8. Said before the yes and not after it.
+    'about_to' => 'About to change :what',
+    'about_to_form' => 'This is every service in that form, not just one of them.',
+    'would_not_help' => 'It is already restarting over and over. Another restart joins the queue.',
+    'leaning_on_it' => 'These will not work while it is off:',
+    'nothing_leans_on_it' => 'Nothing else in the stack depends on it.',
+    'go_ahead' => 'Go ahead',
+    'never_mind' => 'Never mind',
 ];

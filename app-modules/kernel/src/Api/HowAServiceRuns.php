@@ -89,6 +89,21 @@ enum HowAServiceRuns: string
     }
 
     /**
+     * Whether this will become something else without anybody touching it.
+     *
+     * The one state that resolves on its own, which is what `N1-R27` wants a
+     * stated cadence for: a service that is starting becomes a running one in a
+     * few seconds, and a screen showing *starting* with no way to learn
+     * otherwise leaves somebody tapping to find out. Every other case here is a
+     * standing answer — a stopped service stays stopped until somebody says
+     * otherwise, and a failed one until somebody does something about it.
+     */
+    public function isSettling(): bool
+    {
+        return $this === self::Starting;
+    }
+
+    /**
      * Whether restarting it now would make things worse.
      *
      * `CrashLooping` is already being started over and over; asking for another
