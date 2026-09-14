@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatTheCameraSaw;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -127,6 +128,31 @@ final class PairByScanning extends NativeComponent
     public function codeWasUnreadable(): bool
     {
         return $this->codeWasUnreadable;
+    }
+
+    /**
+     * Whether the typed road is worth offering beside the camera.
+     *
+     * The screen already says *you can type the pairing code instead* when the
+     * camera comes back with nothing and when it comes back with something
+     * unreadable. Saying so without a way to do it is the app giving an
+     * instruction it does not honour — and on a first run this screen is one of
+     * only two things on an empty list, so somebody whose camera is refused has
+     * read the answer and cannot reach it.
+     *
+     * Asked as one question rather than two conditions in the template, which
+     * is `F4`: what makes the other road worth offering is a decision, and a
+     * template is where decisions go to be forgotten.
+     */
+    public function theTypedRoadWouldHelp(): bool
+    {
+        return $this->nothingWasScanned() || $this->codeWasUnreadable;
+    }
+
+    /** Where the typed road is, read off the case the provider registers from. */
+    public function typingIsAt(): string
+    {
+        return AScreenWithoutAStack::PairByTyping->value;
     }
 
     /**
