@@ -55,6 +55,7 @@ return [
     'signed_in_action' => 'This stack is open to you. You can reach it from the main screen.',
     'sign_in_to' => 'Sign in to :stack',
     'sign_in_to_action' => 'Type the password for this stack. It is exchanged once, for a session this phone keeps.',
+    'back_to_your_stacks' => 'Back to your stacks',
     'sign_in' => 'Sign in',
     'try_that_again' => 'Try that password again',
     'password_label' => 'Password',
