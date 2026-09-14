@@ -19,6 +19,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
+use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\WhatOneStalledItemSays;
 use Modules\Operator\Internal\WhatStoppedTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -64,6 +65,8 @@ use function view;
 #[Concealed]
 final class WhatStoppedComingIn extends NativeComponent
 {
+    use LetsGoOfARefusedSession;
+
     /**
      * What came back, once the frame has asked.
      *
@@ -184,6 +187,7 @@ final class WhatStoppedComingIn extends NativeComponent
         return view('operator::what-stopped-coming-in');
     }
 
+
     /** What came back, asked once per frame. */
     private function answer(): WhatStoppedTurnedOutToBe
     {
@@ -213,8 +217,11 @@ final class WhatStoppedComingIn extends NativeComponent
         return $this->stalling->stoppedOn($stack, $session)->either(
             these: static fn(Stalled $stalled): WhatStoppedTurnedOutToBe
                 => WhatStoppedTurnedOutToBe::these($stalled),
-            met: static fn(Obstacle $why): WhatStoppedTurnedOutToBe
-                => WhatStoppedTurnedOutToBe::met($why),
+            met: function (Obstacle $why) use ($stack): WhatStoppedTurnedOutToBe {
+                $this->letGoOfTheSession($why, $stack);
+
+                return WhatStoppedTurnedOutToBe::met($why);
+            },
         );
     }
 }

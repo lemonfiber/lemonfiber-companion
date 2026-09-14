@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Wanting;
+use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\WhatOneRequestSays;
 use Modules\Operator\Internal\WhatTheHouseholdTurnedOutToWant;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -59,6 +60,8 @@ use function view;
 #[Concealed]
 final class WhatTheHouseholdAsked extends NativeComponent
 {
+    use LetsGoOfARefusedSession;
+
     /**
      * What came back, once the frame has asked.
      *
@@ -204,14 +207,18 @@ final class WhatTheHouseholdAsked extends NativeComponent
         );
     }
 
+
     /** What the stack said, or what the operator met instead. */
     private function asked(Stack $stack, Session $session): WhatTheHouseholdTurnedOutToWant
     {
         return $this->wanting->askedOf($stack, $session)->either(
             these: static fn(Requested $wanted): WhatTheHouseholdTurnedOutToWant
                 => WhatTheHouseholdTurnedOutToWant::these($wanted),
-            met: static fn(Obstacle $why): WhatTheHouseholdTurnedOutToWant
-                => WhatTheHouseholdTurnedOutToWant::met($why),
+            met: function (Obstacle $why) use ($stack): WhatTheHouseholdTurnedOutToWant {
+                $this->letGoOfTheSession($why, $stack);
+
+                return WhatTheHouseholdTurnedOutToWant::met($why);
+            },
         );
     }
 }

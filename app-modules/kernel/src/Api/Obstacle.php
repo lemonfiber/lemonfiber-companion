@@ -159,6 +159,40 @@ enum Obstacle: string
     }
 
     /**
+     * Whether meeting this means the session this device holds is no longer one.
+     *
+     * `N3-R13` says an identity removed from the household results in a
+     * signed-out app at the next refused call, and that the app must not go on
+     * rendering what was already loaded. The five other obstacles say nothing
+     * about the session — a phone off a network, a stack asleep, a certificate
+     * that changed — and a screen that signed somebody out on any of them would
+     * make a walk out of wifi look like being thrown out of the house.
+     *
+     * `CredentialWasRefused` is the one where the stack answered and said no.
+     * Whatever this device is holding, it is not a session any more: the
+     * identity was removed, the password was changed, or the stack was rebuilt.
+     * Keeping it leaves an app that reports *this stack refused the pairing of
+     * this app* on every screen, for ever, with a button that asks again and is
+     * refused again.
+     *
+     * **The line is drawn once, here.** Five screens fold an obstacle into
+     * something a template reads, and a screen deciding this for itself is how
+     * two of them come to disagree about whether somebody is signed in — which
+     * an operator meets as one screen offering a password and the next
+     * pretending nothing happened.
+     *
+     * {@see TooManyAttempts} is deliberately not included. The stack is
+     * refusing to *look* at the credential rather than refusing the credential,
+     * and signing somebody out for waiting too long would throw away a session
+     * that is still good — and then ask them to sign in, which is another
+     * attempt, which is what lengthens the wait.
+     */
+    public function meansWeAreSignedOut(): bool
+    {
+        return $this === self::CredentialWasRefused;
+    }
+
+    /**
      * The identifier an operator can search for.
      *
      * The app's own, not the server's. `Code` says codes are declared beside

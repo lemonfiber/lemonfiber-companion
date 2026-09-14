@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\WhatOneLineSays;
 use Modules\Operator\Internal\WhatTheServiceTurnedOutToSay;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -65,6 +66,8 @@ use function view;
 #[Concealed]
 final class WhatThisServiceSaid extends NativeComponent
 {
+    use LetsGoOfARefusedSession;
+
     /**
      * What somebody has typed into the search box.
      *
@@ -284,8 +287,12 @@ final class WhatThisServiceSaid extends NativeComponent
 
                 return WhatTheServiceTurnedOutToSay::this($scrollback, $looking);
             },
-            met: static fn(Obstacle $why): WhatTheServiceTurnedOutToSay
-                => WhatTheServiceTurnedOutToSay::met($why),
+            met: function (Obstacle $why) use ($stack): WhatTheServiceTurnedOutToSay {
+                $this->letGoOfTheSession($why, $stack);
+
+                return WhatTheServiceTurnedOutToSay::met($why);
+            },
         );
     }
+
 }

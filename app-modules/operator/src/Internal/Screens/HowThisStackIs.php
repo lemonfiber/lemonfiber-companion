@@ -23,6 +23,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\WhatOneFindingSays;
 use Modules\Operator\Internal\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -30,6 +31,7 @@ use Modules\Operator\Internal\WhichFamilyToRead;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
+use function trim;
 use function view;
 
 /**
@@ -70,6 +72,8 @@ use function view;
 #[Concealed]
 final class HowThisStackIs extends NativeComponent
 {
+    use LetsGoOfARefusedSession;
+
     /**
      * What came back, once the frame has asked.
      *
@@ -264,12 +268,30 @@ final class HowThisStackIs extends NativeComponent
      *
      * Takes the name a row is holding rather than a {@see ServiceId}, because a
      * template cannot build one and giving it the chance would put the refusal
-     * for a blank name inside a Blade expression. The value is made here, where
-     * a blank is a fault in the fold above rather than a screen half-drawn.
+     * for a blank name inside a Blade expression. The value is made here, once
+     * there is a name to make it from.
+     *
+     * **A finding about the machine carries no service**, and says so with the
+     * empty string — {@see WhatOneFindingSays::$service} is documented that way.
+     * The template happens not to draw the button for those rows, but this is a
+     * public method on a screen and a client can call it with anything: safety
+     * that rests on a template remembering is the shape `N3-R3` refuses one
+     * level up. Building the value object first put a raise on a tap.
+     *
+     * It comes away with this machine's own screen rather than refusing, which
+     * is {@see agreeTo()}'s argument: a sentence about a button the template
+     * does not draw is noise, and a button that leads back to where the
+     * operator already is leads nowhere wrong.
      */
     public function logsOf(string $service): string
     {
-        return $this->goes()->logsOf(ServiceId::called($service));
+        $named = trim($service);
+
+        if ($named === '') {
+            return $this->goes()->health();
+        }
+
+        return $this->goes()->logsOf(ServiceId::called($named));
     }
 
     /**
@@ -352,12 +374,17 @@ final class HowThisStackIs extends NativeComponent
         );
     }
 
+
     /** What the stack said, or what the operator met instead. */
     private function asked(Stack $stack, Session $session): WhatTheStackTurnedOutToBe
     {
         return $this->asking->about($stack, $session)->either(
             said: static fn(Report $report): WhatTheStackTurnedOutToBe => WhatTheStackTurnedOutToBe::said($report),
-            met: static fn(Obstacle $why): WhatTheStackTurnedOutToBe => WhatTheStackTurnedOutToBe::met($why),
+            met: function (Obstacle $why) use ($stack): WhatTheStackTurnedOutToBe {
+                $this->letGoOfTheSession($why, $stack);
+
+                return WhatTheStackTurnedOutToBe::met($why);
+            },
         );
     }
 }

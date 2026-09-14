@@ -23,6 +23,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\WhatThisStackPutRight;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -67,6 +68,8 @@ use function view;
 #[Concealed]
 final class WhatWouldBePutRight extends NativeComponent
 {
+    use LetsGoOfARefusedSession;
+
     /**
      * What came back, once the frame has asked.
      *
@@ -132,7 +135,16 @@ final class WhatWouldBePutRight extends NativeComponent
     /** Whether this device still holds a session for it (`N1-R44`). */
     public function isSignedIn(): bool
     {
-        return $this->answer()->isSignedIn;
+        if (! $this->answer()->isSignedIn) {
+            return false;
+        }
+
+        // `N3-R13`: the outcome read can meet a refused credential after the
+        // offer read succeeded, and one frame of a screen showing what it
+        // loaded a moment ago under a session the stack has stopped
+        // recognising is exactly what the requirement forbids. Both folds are
+        // asked, so whichever one met it is the one that answers.
+        return ! $this->agreed || ! $this->done()->isSignedOut;
     }
 
     /**
@@ -389,12 +401,16 @@ final class WhatWouldBePutRight extends NativeComponent
                     done: static fn(WhatWasMended $mended): WhatThisStackPutRight
                         => WhatThisStackPutRight::these($mended),
                     ended: static fn(): WhatThisStackPutRight => WhatThisStackPutRight::ended(),
-                    met: static fn(Obstacle $why): WhatThisStackPutRight
-                        => WhatThisStackPutRight::met($why),
+                    met: function (Obstacle $why) use ($stack): WhatThisStackPutRight {
+                        $this->letGoOfTheSession($why, $stack);
+
+                        return WhatThisStackPutRight::met($why);
+                    },
                 ),
             notHeld: static fn(): WhatThisStackPutRight => WhatThisStackPutRight::ended(),
         );
     }
+
 
     /** What came back, asked once per frame. */
     private function answer(): WhatTheStackWouldPutRight
@@ -445,7 +461,11 @@ final class WhatWouldBePutRight extends NativeComponent
 
                 return $this->became($stack, $session, $job);
             },
-            met: static fn(Obstacle $why): WhatTheStackWouldPutRight => WhatTheStackWouldPutRight::met($why),
+            met: function (Obstacle $why) use ($stack): WhatTheStackWouldPutRight {
+                $this->letGoOfTheSession($why, $stack);
+
+                return WhatTheStackWouldPutRight::met($why);
+            },
         );
     }
 
