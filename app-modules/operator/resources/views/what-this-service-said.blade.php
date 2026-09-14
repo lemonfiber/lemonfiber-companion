@@ -5,7 +5,7 @@
         {{ __('health.logs_for', ['service' => $this->service()->named()]) }}
     </native:text>
 
-    @unless ($this->isSignedIn())
+    @unless ($this->answer()->isSignedIn)
         {{-- N1-R44: the session has ended, so nothing was read and there is
              nothing to report. The remedy is a screen rather than a sentence. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
@@ -13,12 +13,12 @@
             label="{{ __('connection.sign_in') }}"
             @navigate="{{ $this->goes()->signIn() }}"
         />
-    @elseif ($this->met() !== '')
+    @elseif ($this->answer()->met !== '')
         {{-- N1-R10: what stood in the way, and what to do about it. Both come
              off the obstacle, so this screen cannot describe a condition
              differently from the one next to it. --}}
-        <native:text class="font-bold">{{ __($this->met()) }}</native:text>
-        <native:text>{{ __($this->remedy()) }}</native:text>
+        <native:text class="font-bold">{{ __($this->answer()->met) }}</native:text>
+        <native:text>{{ __($this->answer()->remedy) }}</native:text>
 
         {{-- N1-R3: the action is offered and the failure is reported, rather
              than the action being taken away because the stack is unreachable.
@@ -31,13 +31,13 @@
              silent when the bound cut nothing teaches an operator to read
              silence, and silence is also what a screen that lost the claim
              produces. --}}
-        @if ($this->isAWindow())
+        @if ($this->answer()->isAWindow)
             <native:text class="text-sm">
-                {{ __('health.window_of', ['count' => $this->howManyArrived()]) }}
+                {{ __('health.window_of', ['count' => $this->answer()->arrived]) }}
             </native:text>
         @else
             <native:text class="text-sm">
-                {{ __('health.the_whole_of_it', ['count' => $this->howManyArrived()]) }}
+                {{ __('health.the_whole_of_it', ['count' => $this->answer()->arrived]) }}
             </native:text>
         @endif
 
@@ -51,13 +51,13 @@
         />
         <native:text class="text-sm">{{ __('health.search_is_over_the_window') }}</native:text>
 
-        @if ($this->isSearching())
+        @if ($this->answer()->isSearching)
             <native:text class="font-bold">
                 {{ trans_choice('health.matched_count', $this->howMany()) }}
             </native:text>
         @endif
 
-        @forelse ($this->lines() as $line)
+        @forelse ($this->answer()->lines as $line)
             <native:column class="w-full gap-1">
                 {{-- Two branches with a literal class each rather than one
                      element with a computed one (F9). The stream is not a
@@ -78,7 +78,7 @@
                 </native:text>
             </native:column>
         @empty
-            @if ($this->isSearching())
+            @if ($this->answer()->isSearching)
                 {{-- Not the same as a silent service, and the difference is the
                      whole reason both lines exist. --}}
                 <native:text class="font-bold">{{ __('health.nothing_matched') }}</native:text>

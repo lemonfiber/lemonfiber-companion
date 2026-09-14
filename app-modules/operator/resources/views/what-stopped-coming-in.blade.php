@@ -1,7 +1,7 @@
 <native:column class="w-full gap-4 p-6">
     <native:text class="text-lg font-bold">{{ $this->stack()->name()->shown() }}</native:text>
 
-    @unless ($this->isSignedIn())
+    @unless ($this->answer()->isSignedIn)
         {{-- N1-R44: the session has ended, so nothing was asked and there is
              nothing to report. The remedy is a screen rather than a sentence. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
@@ -9,12 +9,12 @@
             label="{{ __('connection.sign_in') }}"
             @navigate="{{ $this->goes()->signIn() }}"
         />
-    @elseif ($this->met() !== '')
+    @elseif ($this->answer()->met !== '')
         {{-- N1-R10: what stood in the way, and what to do about it. Both come
              off the obstacle, so this screen cannot describe a condition
              differently from the one next to it. --}}
-        <native:text class="font-bold">{{ __($this->met()) }}</native:text>
-        <native:text>{{ __($this->remedy()) }}</native:text>
+        <native:text class="font-bold">{{ __($this->answer()->met) }}</native:text>
+        <native:text>{{ __($this->answer()->remedy) }}</native:text>
 
         {{-- N1-R3: the action is offered and the failure is reported, rather
              than the action being taken away because the stack is unreachable.
@@ -33,9 +33,9 @@
              cases rather than only when something is missing: a screen that is
              silent when a list is whole teaches an operator to read silence,
              and silence is also what a screen that forgot the flag produces. --}}
-        <native:text class="text-sm">{{ __($this->howMuchIsShown()) }}</native:text>
+        <native:text class="text-sm">{{ __($this->answer()->shownSaid) }}</native:text>
 
-        @forelse ($this->stalled() as $item)
+        @forelse ($this->answer()->stalled as $item)
             <native:column class="w-full gap-1">
                 <native:text class="font-bold">{{ $item->title }}</native:text>
 

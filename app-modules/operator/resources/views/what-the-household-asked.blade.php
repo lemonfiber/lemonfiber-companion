@@ -1,7 +1,7 @@
 <native:column class="w-full gap-4 p-6">
     <native:text class="text-lg font-bold">{{ $this->stack()->name()->shown() }}</native:text>
 
-    @unless ($this->isSignedIn())
+    @unless ($this->answer()->isSignedIn)
         {{-- N1-R44: the session has ended, so nothing was asked and there is
              nothing to report. The remedy is a screen rather than a sentence. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
@@ -9,12 +9,12 @@
             label="{{ __('connection.sign_in') }}"
             @navigate="{{ $this->goes()->signIn() }}"
         />
-    @elseif ($this->met() !== '')
+    @elseif ($this->answer()->met !== '')
         {{-- N1-R10: what stood in the way, and what to do about it. Both come
              off the obstacle, so this screen cannot describe a condition
              differently from the one next to it. --}}
-        <native:text class="font-bold">{{ __($this->met()) }}</native:text>
-        <native:text>{{ __($this->remedy()) }}</native:text>
+        <native:text class="font-bold">{{ __($this->answer()->met) }}</native:text>
+        <native:text>{{ __($this->answer()->remedy) }}</native:text>
 
         {{-- N1-R3: the action is offered and the failure is reported, rather
              than the action being taken away because the stack is unreachable.
@@ -27,10 +27,10 @@
              them to should not have to count rows to find out whether anything
              needs them. --}}
         <native:text class="font-bold">
-            {{ trans_choice('household.waiting_count', $this->howManyWaiting()) }}
+            {{ trans_choice('household.waiting_count', $this->answer()->waiting) }}
         </native:text>
 
-        @forelse ($this->requests() as $request)
+        @forelse ($this->answer()->requests as $request)
             <native:column class="w-full gap-1">
                 <native:text class="font-bold">{{ $request->title }}</native:text>
                 <native:text class="text-sm">{{ __('household.asked_by', ['who' => $request->by]) }}</native:text>

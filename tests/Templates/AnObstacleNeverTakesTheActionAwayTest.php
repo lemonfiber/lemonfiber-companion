@@ -27,13 +27,56 @@ use Tests\Support\Tree;
 // these templates are shaped fails here rather than quietly matching nothing.
 
 /**
- * Every branch in a template whose condition is about meeting an obstacle.
+ * The condition a branch directive opens with.
  *
- * @return list<string>
+ * Balanced, rather than everything before the first `)`. A condition that calls
+ * anything closes a parenthesis of its own a quarter of the way in, so a reader
+ * that stops there sees `($this->answer(` and no obstacle in a branch that is
+ * entirely about one.
+ *
+ * It has to stop somewhere, though: what follows the condition is the branch
+ * body, and a branch that merely mentions an obstacle is not a branch that met
+ * one. The balanced group is where the condition ends whatever is written
+ * inside it.
+ *
+ * Split by character rather than matched, because a regular expression cannot
+ * balance parentheses. Bytes are enough: the two characters this counts are
+ * ASCII, and anything wider passes through untouched.
+ */
+function theConditionIn(string $body): string
+{
+    $depth = 0;
+
+    foreach (mb_str_split($body) as $at => $character) {
+        $depth += $character === '(' ? 1 : 0;
+        $depth -= $character === ')' ? 1 : 0;
+
+        if ($depth === 0 && $character === ')') {
+            return mb_substr($body, 0, $at + 1);
+        }
+    }
+
+    return $body;
+}
+
+/**
+ * Every branch in a template whose condition is about meeting an obstacle, by
+ * what it does to the rest of the screen.
+ *
+ * An `@elseif` arm is exclusive: the other arms are what would have been drawn,
+ * so whatever the operator can do next has to be inside this one. A standalone
+ * `@if` is additive — it opens, closes, and the screen carries on underneath —
+ * so the action it leaves them is the screen's.
+ *
+ * The distinction is the difference between a banner and a dead end, and it is
+ * in the directive rather than in the prose beside it.
+ *
+ * @return array{exclusive: list<string>, additive: list<string>}
  */
 function everyObstacleBranch(string $view): array
 {
-    $found = [];
+    $exclusive = [];
+    $additive = [];
 
     // A branch runs from its own directive to the next one at any depth, which
     // is where its body ends for this purpose: anything after `@elseif` belongs
@@ -41,7 +84,7 @@ function everyObstacleBranch(string $view): array
     $pieces = preg_split('/(@(?:if|elseif|else|endif|unless|endunless|forelse|empty|endforelse)\b)/', $view, -1, PREG_SPLIT_DELIM_CAPTURE);
 
     if (! is_array($pieces)) {
-        return [];
+        return ['exclusive' => [], 'additive' => []];
     }
 
     foreach ($pieces as $at => $piece) {
@@ -58,14 +101,32 @@ function everyObstacleBranch(string $view): array
 
         $body = $pieces[$at + 1];
 
-        if (! str_contains((string) preg_replace('/\).*/s', '', $body), 'met')) {
+        if (! str_contains(theConditionIn($body), 'met')) {
             continue;
         }
 
-        $found[] = $body;
+        if ($piece === '@elseif') {
+            $exclusive[] = $body;
+
+            continue;
+        }
+
+        $additive[] = $body;
     }
 
-    return $found;
+    return ['exclusive' => $exclusive, 'additive' => $additive];
+}
+
+/** Whether this markup gives the operator something to press. */
+function offersSomethingToDo(string $markup): bool
+{
+    return str_contains($markup, '@tap=') || str_contains($markup, '@navigate=');
+}
+
+/** Enough of a branch to find it by, on one line. */
+function theBranchNamed(string $body): string
+{
+    return trim((string) preg_replace('/\s+/', ' ', mb_substr($body, 0, 60)));
 }
 
 it('N1-R3 — no obstacle branch leaves an operator with nothing to do', function (): void {
@@ -74,15 +135,29 @@ it('N1-R3 — no obstacle branch leaves an operator with nothing to do', functio
 
     foreach (Tree::filesUnder(Tree::at('app-modules'), '.blade.php') as $path) {
         $view = (string) file_get_contents($path);
+        $found = everyObstacleBranch($view);
 
-        foreach (everyObstacleBranch($view) as $body) {
+        foreach ($found['exclusive'] as $body) {
             $branches++;
 
-            if (str_contains($body, '@tap=') || str_contains($body, '@navigate=')) {
+            if (offersSomethingToDo($body)) {
                 continue;
             }
 
-            $silent[] = sprintf('%s — %s', basename($path), trim((string) preg_replace('/\s+/', ' ', mb_substr($body, 0, 60))));
+            $silent[] = sprintf('%s — %s', basename($path), theBranchNamed($body));
+        }
+
+        // An additive branch is read against the whole template, because what it
+        // leaves the operator is everything it did not replace. A screen where
+        // that is nothing at all is still a dead end, which is what this asks.
+        foreach ($found['additive'] as $body) {
+            $branches++;
+
+            if (offersSomethingToDo($view)) {
+                continue;
+            }
+
+            $silent[] = sprintf('%s — %s', basename($path), theBranchNamed($body));
         }
     }
 

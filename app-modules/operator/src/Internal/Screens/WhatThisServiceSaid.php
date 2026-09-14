@@ -23,7 +23,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
-use Modules\Operator\Internal\WhatOneLineSays;
 use Modules\Operator\Internal\WhatTheServiceTurnedOutToSay;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -119,79 +118,16 @@ final class WhatThisServiceSaid extends NativeComponent
         return ServiceId::called(is_string($named) ? $named : '');
     }
 
-    /** Whether this device still holds a session for the stack (`N1-R44`). */
-    public function isSignedIn(): bool
-    {
-        return $this->answer()->isSignedIn;
-    }
-
-    /** What the operator met instead, as a key, or the empty string where they did not. */
-    public function met(): string
-    {
-        return $this->answer()->met;
-    }
-
-    /** What to do about it, beside {@see met()}. */
-    public function remedy(): string
-    {
-        return $this->answer()->remedy;
-    }
-
     /** What somebody has typed, for the box to hold it. */
     public function looking(): string
     {
         return $this->looking;
     }
 
-    /**
-     * The lines to show, oldest first.
-     *
-     * Narrowed by whatever is in the box, which is `N2-R10`'s *searchable* —
-     * over the window rather than over the scrollback, because the window is
-     * all there is.
-     *
-     * @return list<WhatOneLineSays>
-     */
-    public function lines(): array
-    {
-        return $this->answer()->lines;
-    }
-
     /** How many are shown, which is fewer than arrived while a search is on. */
     public function howMany(): int
     {
         return count($this->answer()->lines);
-    }
-
-    /** How many came back, before anything narrowed them. */
-    public function howManyArrived(): int
-    {
-        return $this->answer()->arrived;
-    }
-
-    /** How many were asked for, which is the bound this read was given (`N2-R10`). */
-    public function bound(): int
-    {
-        return $this->answer()->bound;
-    }
-
-    /**
-     * Whether the view stops where it was told to stop (`N2-R10`).
-     *
-     * The sentence the screen owes an operator. True and it says there may be
-     * more behind this; false and it says this is all the stack kept — which is
-     * a smaller claim than *all the service ever said*, and the catalogue line
-     * is worded to keep the difference.
-     */
-    public function isAWindow(): bool
-    {
-        return $this->answer()->isAWindow;
-    }
-
-    /** Whether a search is narrowing what is shown. */
-    public function isSearching(): bool
-    {
-        return $this->answer()->isSearching;
     }
 
     /**
@@ -236,8 +172,15 @@ final class WhatThisServiceSaid extends NativeComponent
      * this screen searches without re-asking: typing changes what is shown and
      * never what was fetched, so the claim about the edge of the view survives
      * the search — and a machine on a home network is spoken to once.
+     *
+     * One accessor handing out the value rather than one per field, which is
+     * {@see WhatThisStackRuns::answer()}'s shape and its argument: a method per
+     * field is a method this class spends on saying nothing, and the next fact
+     * the template needs then costs one it does not have. The template reads
+     * the fields off what one asking produced, which is also the only thing
+     * that could be true of them together.
      */
-    private function answer(): WhatTheServiceTurnedOutToSay
+    public function answer(): WhatTheServiceTurnedOutToSay
     {
         $held = $this->held;
 
