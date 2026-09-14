@@ -19,6 +19,13 @@ That takes three requirements at once:
 | `N3-R2` | What a member may do MUST be the core's answer |
 | `N3-R3` | A control a member is not entitled to MUST be refused by the core if it is ever reached, and MUST NOT rely on the app having omitted it |
 
+**The wire does carry what a member may do.** `household.members[].access`
+has `administrator`, `disabled`, `libraries` and `restriction`, and a reader
+finding that could reasonably conclude the paragraph above is stale. It is not:
+what is missing is not the entitlement but the *subject*. An app holding the
+access list can only match it to a person by deciding for itself which person is
+looking, and a control hidden on that basis is hidden by the app.
+
 `N3-R3` is the one that makes this a block rather than a slow start. A member
 surface built on a single operator token would be safe exactly to the extent
 that it remembered to leave controls out — and *the app omitted it* is the one

@@ -85,9 +85,27 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         'shape' => 'array{token: string, until: string}',
         'raised' => 'The whole household surface waits on this rather than one requirement of it: '
             . '`N3-R1` has the app a person is given decided by the identity that signed in and '
-            . "`N3-R2` has what a member may do be the core's answer, and the wire carries neither. "
-            . 'A member surface built now would rely on having omitted the controls, which is the '
-            . 'one thing `N3-R3` names.',
+            . "`N3-R2` has what a member may do be the core's answer. The wire carries what a "
+            . 'member **may do** — `household.members[].access` has `administrator`, `disabled`, '
+            . '`libraries`, `restriction` — and does not carry **who is asking**. That distinction '
+            . 'is the row: an app holding the access list could read `administrator` and hide the '
+            . 'controls, and hiding them is exactly what `N3-R3` refuses to let anything rest on.',
+    ],
+    [
+        'requirement' => 'N3-R3',
+        'asks' => 'the same thing, watched wherever an answer lands rather than only where one is missing',
+        // The row above is pinned to `AdmissionEnvelope`, which catches the
+        // answer arriving as a field on the envelope that exists and misses it
+        // arriving as an envelope of its own. A second row rather than a
+        // widened first one, the way `N3-R5` sits beside `N3-R4`: a row watches
+        // one thing, and a row that watched two could half-fire.
+        'envelope' => null,
+        'field' => 'member',
+        'shape' => null,
+        'raised' => 'A surface that learned who was asking would say so by name, and the name is the '
+            . 'thing to watch for rather than the envelope it lands on. Until one does, no payload '
+            . 'on this wire carries a subject at all — the admission body is one password and the '
+            . 'run token belongs to whoever started the process.',
     ],
 ];
 
