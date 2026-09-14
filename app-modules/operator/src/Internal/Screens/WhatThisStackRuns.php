@@ -32,6 +32,7 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
+use function trim;
 use function view;
 
 /**
@@ -226,7 +227,7 @@ final class WhatThisStackRuns extends NativeComponent
             return null;
         }
 
-        return $this->row(ServiceId::called($agreed->named()));
+        return $this->row($agreed->named());
     }
 
     /**
@@ -329,10 +330,8 @@ final class WhatThisStackRuns extends NativeComponent
      */
     private function agreementFor(WhatToDoWithIt $doing, string $about): ?AgreedTo
     {
-        $service = ServiceId::called($about);
-
-        if ($this->row($service) instanceof WhatOneServiceSays) {
-            return AgreedTo::theService($doing, $service);
+        if ($this->row($about) instanceof WhatOneServiceSays) {
+            return AgreedTo::theService($doing, ServiceId::called($about));
         }
 
         if (in_array($about, $this->answer()->forms, strict: true)) {
@@ -342,9 +341,25 @@ final class WhatThisStackRuns extends NativeComponent
         return null;
     }
 
-    /** The row of that name in what was read, or nothing where there is none. */
-    private function row(ServiceId $service): ?WhatOneServiceSays
+    /**
+     * The row of that name in what was read, or nothing where there is none.
+     *
+     * Takes the name as text and turns it into a {@see ServiceId} here, after
+     * refusing a blank. {@see ServiceId::called()} raises on one — rightly, a
+     * service named as nothing is the whole machine talking at once — and a
+     * template can send anything, so building the value before knowing there is
+     * a row would put that raise on a tap. Nothing here is a service and no
+     * form is named nothing, so a blank is *no such row* and comes away the
+     * same as any other name this screen never read.
+     */
+    private function row(string $named): ?WhatOneServiceSays
     {
+        if (trim($named) === '') {
+            return null;
+        }
+
+        $service = ServiceId::called($named);
+
         foreach ($this->answer()->services as $row) {
             if ($row->is($service)) {
                 return $row;

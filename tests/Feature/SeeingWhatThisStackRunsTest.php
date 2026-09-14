@@ -287,6 +287,15 @@ it('a name this screen never read is not acted on', function (): void {
         ->and($screen->asking())->toBeNull();
 });
 
+it('a verb about a name that is blank is not acted on', function (): void {
+    $supervising = AStackThatSupervises::with(aStackRunningTwoThings());
+    $screen = theServicesScreen($supervising);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, '   ');
+
+    expect($supervising->whatItWasToldToDo())->toBe([]);
+});
+
 it('a verb this app does not have is not acted on either', function (): void {
     $supervising = AStackThatSupervises::with(aStackRunningTwoThings());
     $screen = theServicesScreen($supervising);
