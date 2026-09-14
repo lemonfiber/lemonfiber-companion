@@ -111,13 +111,20 @@ recorded why the port could not be written before the job reading existed; it is
 kept because the reasoning is what shaped the port, and because the *agreeing*
 half is still unbuilt for one part of it.
 
-`Confirmed` — a yes that rendering a finding cannot produce — and `Carried` are
-still reached by nothing. The agreeing half needs what the offer half did not: a
-vocabulary for what became of each repair (`fixed`, `fix_failed`, `stopped`,
-`declined`, `would_overwrite` on the `repair` envelope's `mended[]`), and a
-screen holding the offer as a **live** `Reading`, since `Confirmed::against()`
-refuses a retained one by `N1-R39`. That is a second capability rather than the
-rest of this one, and it is the next thing here.
+**The agreeing half is built too.** `Mending::agreeTo()` takes a `Confirmed`,
+which is `N2-R5` and `N2-R6` as a signature — the only way to make one is
+against a listing that holds the repair and a reading the operator was shown, so
+a caller cannot agree to a repair on behalf of a listing it was never in.
+`WhatBecameOfIt` is the vocabulary the `repair` envelope's `mended[]` carries,
+`LeftBehind` is what a stopped repair left, and the screen holds the offer as a
+**live** `Reading` because `Confirmed::against()` refuses a retained one
+(`N1-R39`).
+
+`Carried` is still reached by nothing, and is the one piece of this that turned
+out not to be needed: it models a repair refused because the reading moved
+underneath it, which the app checks by holding the live `Reading` rather than by
+asking the stack. Whether it earns its place is a question for whoever writes
+the next action on this surface.
 
 ### The offer and the yes are one request, read twice
 
@@ -154,8 +161,12 @@ real rather than semantic: a job the stack acknowledged *did* happen, and asking
 after it is a read. Replaying an action it never received would be inventing one.
 
 So the port took the shape the job reading forced rather than one that would
-have had to change: two methods, because asking is not answering, and a reading
-with four arms because *ended* is neither running nor finished. `N2-R7`'s start,
+have had to change: four methods, because asking is not answering and agreeing
+is not asking, and two readings with four arms each because *ended* is neither
+running nor finished — and because a listing of what a stack *would* do and a
+record of what it *did* are different answers. A single reading would hand a
+screen a value it has to narrow before rendering, and the narrowing is where an
+offer gets shown as an outcome. `N2-R7`'s start,
 stop and restart are in exactly the same position and will take the same shape —
 every action on this surface is a job, and `Job`, `Underway` and
 `HowTheOfferIsGoing` are already the types for one.
