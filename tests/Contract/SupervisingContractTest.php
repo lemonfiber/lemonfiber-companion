@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Sdk\Api\PinnedClients;
@@ -30,6 +32,20 @@ use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\WhatTheContractAccepts;
+
+/** What a stack reports its verbs cost, as this suite's stacks report them. */
+function whatTheSupervisedVerbsCost(): Disturbances
+{
+    // The same numbers {@see howLongEachVerbTakesIt()} puts on the wire, and
+    // three different ones: a reader that took the first and used it everywhere
+    // would be right about a start and wrong about the other two, which is
+    // exactly what a contract suite comparing the two implementations is for.
+    return Disturbances::of(
+        starting: WhatItTakesAway::atMost(45),
+        stopping: WhatItTakesAway::atMost(20),
+        restarting: WhatItTakesAway::atMost(30),
+    );
+}
 
 // The Supervising contract, run against the adapter and against the fake.
 //
@@ -74,6 +90,7 @@ function theSameRunning(): Daemons
     return Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::these(Form::called('media'), Form::called('downloads')),
+        whatTheSupervisedVerbsCost(),
         Daemon::called(
             'Jellyfin',
             ServiceId::called('jellyfin'),

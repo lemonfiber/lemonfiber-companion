@@ -52,6 +52,9 @@ enum AStacksScreen: string
     case Services = '/stacks/{stack}/services';
 
     /** What one of this machine's services has been saying (`N2-R10`). */
+    /** Where this machine stands on being up to date (`N2-R15`). */
+    case Updates = '/stacks/{stack}/updates';
+
     case Logs = '/stacks/{stack}/logs/{service}';
 
     /** What the router holds a machine under. */
