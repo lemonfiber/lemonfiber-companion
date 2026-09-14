@@ -33,6 +33,31 @@ final class OfferIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /**
+     * One record of what became of a repair.
+     *
+     * Its own refusal rather than {@see self::repair()}, because the two are
+     * read in different places and mean different things: one is a listing the
+     * operator has not agreed to yet, and this is a record of what a machine
+     * already did. A reader who cannot tell which they are looking at cannot
+     * tell whether anything happened.
+     */
+    public static function outcome(int $position): self
+    {
+        return new self(sprintf(
+            'Outcome %d is not a record of a repair. It is refused rather than dropped, because a run reported one outcome short reads as a repair nobody agreed to — and the operator is left not knowing what their machine did.',
+            $position,
+        ));
+    }
+
+    public static function word(string $said): self
+    {
+        return new self(sprintf(
+            'A repair reports becoming `%s`, and this app does not read that word. Guessing is how a repair that overwrote nothing gets shown as one that worked.',
+            $said,
+        ));
+    }
+
     public static function repair(int $position): self
     {
         return new self(sprintf(

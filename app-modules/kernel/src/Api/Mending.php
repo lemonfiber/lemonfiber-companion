@@ -54,4 +54,28 @@ interface Mending
      * most tempted to fold into one of the others.
      */
     public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheOfferIsGoing;
+
+    /**
+     * Agree to one repair inside a listing, and have the stack carry it out.
+     *
+     * Takes a {@see Confirmed} rather than a repair and a listing, which is the
+     * whole of `N2-R5` and `N2-R6` expressed as a signature: the only way to
+     * make one is against a listing that holds the repair and a reading the
+     * operator was actually shown, so a port taking the two separately would
+     * let a caller agree to a repair on behalf of a listing it was never in.
+     *
+     * Answers a handle, like everything else here.
+     */
+    public function agreeTo(Stack $stack, Session $session, Confirmed $confirmed): Underway;
+
+    /**
+     * Ask what became of the carrying out.
+     *
+     * Its own method rather than {@see whatBecameOf()} widened, because the
+     * answers are different things: one is a listing of what a stack *would*
+     * do, the other a record of what it *did*. A single method answering either
+     * would hand a screen a value it has to narrow before it can render it, and
+     * the narrowing is where an offer gets shown as an outcome.
+     */
+    public function whatWasDoneAbout(Stack $stack, Session $session, Job $job): HowTheRepairIsGoing;
 }

@@ -31,4 +31,14 @@ final class RepairSaysNothing extends InvalidArgumentException
     {
         return new self('A repair arrived naming no check, so nothing can say which finding it belongs under.');
     }
+
+    public static function whetherItLeftAnything(): self
+    {
+        return new self('A repair was recorded as stopped part-way without saying whether it left anything, and a stopped repair that left nothing is a different morning from one that did.');
+    }
+
+    public static function whatItLeft(): self
+    {
+        return new self('A repair said it stopped part-way and left something, and did not say what — which is a heading with nothing under it, and worse than the heading alone.');
+    }
 }

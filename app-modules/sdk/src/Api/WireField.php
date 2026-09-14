@@ -71,6 +71,15 @@ enum WireField: string
     /** The repairs a stack says it would carry out. */
     case Offered = 'offered';
 
+    /** What became of each repair a stack was agreed to carry out. */
+    case Mended = 'mended';
+
+    /** What a repair left on the machine where it stopped part-way. */
+    case Leaving = 'leaving';
+
+    /** The repair one outcome is about, inside a record of what was done. */
+    case Repair = 'repair';
+
     /** Whether a repair can be taken back afterwards. */
     case Reversible = 'reversible';
 
