@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use function str_contains;
 use function str_replace;
 
 /**
@@ -46,8 +47,15 @@ enum AStacksScreen: string
     /** What has stopped coming in, which is the first of `N2-R9`'s four. */
     case Stuck = '/stacks/{stack}/stuck';
 
-    /** What the router holds this screen under. */
+
+    /** What one of this machine's services has been saying (`N2-R10`). */
+    case Logs = '/stacks/{stack}/logs/{service}';
+
+    /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
+
+    /** What it holds one of that machine's services under (`N2-R10`). */
+    public const string ABOUT = '{service}';
 
     /**
      * This screen's path, for one machine.
@@ -55,9 +63,50 @@ enum AStacksScreen: string
      * Built by replacing the router's own placeholder rather than by a second
      * format string, so there is no way for the pattern and the path to be
      * spelled differently — which is the whole of what this type is for.
+     *
+     * **It refuses a case that needs more than a machine.** A path still
+     * carrying `{service}` resolves to nothing and would be a button that does
+     * nothing on a handset — the exact failure this type was written to end,
+     * arriving by a new road. {@see self::forTheStacksService()} is the one for
+     * those, and a caller that used the wrong one finds out here rather than in
+     * somebody's hand.
      */
     public function forTheStack(string $stored): string
     {
+        if ($this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::toBeReached($this);
+        }
+
         return str_replace(self::NAMED, $stored, $this->value);
+    }
+
+    /**
+     * This screen's path, for one service on one machine.
+     *
+     * The other half, and it refuses the other mistake: a case with no
+     * `{service}` in it would silently ignore the second argument, which is a
+     * caller holding a service name the path does not carry and a screen that
+     * opens on whatever it likes.
+     */
+    public function forTheStacksService(string $stored, string $service): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stored, $service], $this->value);
+    }
+
+    /**
+     * Whether naming a machine is enough to reach this screen.
+     *
+     * Read off the pattern rather than listed, so a case added with a second
+     * placeholder is covered by both refusals above without anybody
+     * remembering to add it to a list — which is the failure mode a hand-kept
+     * list has, and the one this whole type exists to close.
+     */
+    public function alsoNeedsAService(): bool
+    {
+        return str_contains($this->value, self::ABOUT);
     }
 }

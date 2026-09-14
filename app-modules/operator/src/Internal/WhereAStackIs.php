@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
 
 /**
@@ -85,5 +86,11 @@ final readonly class WhereAStackIs
     public function stuck(): string
     {
         return AStacksScreen::Stuck->forTheStack($this->stored);
+    }
+
+    /** What one of this machine's services has been saying (`N2-R10`). */
+    public function logsOf(ServiceId $service): string
+    {
+        return AStacksScreen::Logs->forTheStacksService($this->stored, $service->named());
     }
 }

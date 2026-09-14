@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Nonce;
+use Modules\Operator\Internal\AScreenNeedsMoreThanAStack;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -48,7 +49,13 @@ function everyPathAScreenHandsOut(): array
     }
 
     foreach (AStacksScreen::cases() as $screen) {
-        $paths[sprintf('AStacksScreen::%s', $screen->name)] = $screen->forTheStack(aStackInTheUri());
+        // Asked which builder it needs rather than told, so a case added with a
+        // second placeholder is covered here without anybody remembering to add
+        // it — and a case that needs one and is asked for the other refuses
+        // rather than handing back a path with `{service}` still in it.
+        $paths[sprintf('AStacksScreen::%s', $screen->name)] = $screen->alsoNeedsAService()
+            ? $screen->forTheStacksService(aStackInTheUri(), 'gluetun')
+            : $screen->forTheStack(aStackInTheUri());
     }
 
     return $paths;
@@ -131,4 +138,36 @@ it('the builder and the router agree about which machine a path names', function
     $params = is_array($resolved) && is_array($resolved['params'] ?? null) ? $resolved['params'] : [];
 
     expect($params['stack'] ?? null)->toBe($named);
+});
+
+it('a screen that needs a service refuses to be asked for with only a stack', function (): void {
+    // `str_replace` handed a pattern with a placeholder it was not given leaves
+    // the placeholder in the string, and `/stacks/abc/logs/{service}` resolves
+    // to nothing — a button that does nothing, on a handset, with no error
+    // anywhere. That is the exact failure this enum was written to end,
+    // arriving by a new road, so it is a refusal rather than a comment.
+    expect(fn(): string => AStacksScreen::Logs->forTheStack(aStackInTheUri()))
+        ->toThrow(AScreenNeedsMoreThanAStack::class, 'naming a machine is not enough');
+});
+
+it('a screen that needs only a stack refuses to be handed a service', function (): void {
+    // The other mistake, and it is not harmless either: a caller holding a
+    // service name the path does not carry has a screen that opens on whatever
+    // it likes.
+    expect(fn(): string => AStacksScreen::Health->forTheStacksService(aStackInTheUri(), 'gluetun'))
+        ->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
+it('which builder a screen needs is read off its own pattern', function (): void {
+    // Read rather than listed, so a case added with a second placeholder is
+    // covered by both refusals without anybody remembering to add it to a list
+    // — which is the failure mode a hand-kept list has, and the one this whole
+    // type exists to close.
+    $needingAService = array_values(array_filter(
+        AStacksScreen::cases(),
+        static fn(AStacksScreen $screen): bool => $screen->alsoNeedsAService(),
+    ));
+
+    expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $needingAService))
+        ->toBe(['Logs']);
 });

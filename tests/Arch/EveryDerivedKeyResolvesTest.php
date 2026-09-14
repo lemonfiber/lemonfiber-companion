@@ -121,7 +121,7 @@ function everyDerivedKey(): array
         HowMuchIsShown::class => aPairPerCase(
             HowMuchIsShown::cases(),
             static fn(HowMuchIsShown $shown): array => [$shown->saidOnTheScreen()],
-
+        ),
         Stream::class => aPairPerCase(
             Stream::cases(),
             static fn(Stream $stream): array => [$stream->saidOnTheScreen()],

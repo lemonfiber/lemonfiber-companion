@@ -52,6 +52,7 @@ function theGeneratedDoctorEnvelope(): string
 function theGeneratedStuckEnvelope(): string
 {
     return theGeneratedEnvelope('StuckEnvelope');
+}
 
 /** The generated envelope that carries a service's scrollback, as text. */
 function theGeneratedLogEnvelope(): string
@@ -62,9 +63,9 @@ function theGeneratedLogEnvelope(): string
 /**
  * One generated envelope, as text.
  *
- * Named rather than spelled at each caller once there were two: the path is one
- * fact about where the generator writes, and two copies of it would let a
- * regenerated tree move one and leave the other reading a file that is no longer
+ * Named rather than spelled at each caller once there were several: the path is
+ * one fact about where the generator writes, and a copy per envelope would let a
+ * regenerated tree move one and leave the others reading a file that is no longer
  * there — which returns `''`, and an empty source makes every union it is asked
  * about come back empty. The rules below assert they found something for exactly
  * that reason, but they would name the union rather than the path.
@@ -290,6 +291,7 @@ it('N1-R13 — every stage the contract describes has a case', function (): void
 
     expect($stages)->not->toBe([], 'no stage union was found in the generated envelope');
     expect(valuesOf(Stage::cases()))->toBe($stages);
+});
 
 it('N1-R13 — every stream the contract describes has a case', function (): void {
     // A third generated envelope, read the way the stuck one above is. A union

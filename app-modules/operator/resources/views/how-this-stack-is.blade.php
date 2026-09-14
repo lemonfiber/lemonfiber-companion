@@ -100,6 +100,18 @@
                         <native:text>{{ __('health.nothing_to_try') }}</native:text>
                     @endforelse
                 @endif
+
+                {{-- N2-R10: the logs, offered from the finding that is already
+                     about this service. Only where there is one — a check about
+                     the machine itself has no scrollback to read, and a button
+                     that led to an empty window would be the row teaching an
+                     operator not to trust the row. --}}
+                @if ($finding->service !== '')
+                    <native:button
+                        label="{{ __('health.what_a_service_said') }}"
+                        @navigate="{{ $this->logsOf($finding->service) }}"
+                    />
+                @endif
             </native:column>
         @empty
             <native:text>{{ __('health.no_findings') }}</native:text>
