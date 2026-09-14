@@ -5,15 +5,17 @@
 # `main` requires has passed, and the reusable reads this same list back out of
 # this file to know what it must see finish first — so a workflow missing from it
 # is a workflow the gate never waits for and never re-evaluates on. `main`
-# requires twenty checks here and they come from three workflows:
+# requires twenty-two checks here and they come from four workflows:
 #
-#   ci         spec-check / spec-check, dco / dco, commitlint / commitlint,
-#              hygiene / {actionlint, invite, links, markdown, pins,
-#              shared-files, typos}, security / {gitleaks, osv-scanner},
+#   ci         spec-check / spec-check, dco / dco, attribution / attribution,
+#              commitlint / commitlint, hygiene / {actionlint, invite, links,
+#              markdown, pins, shared-files, typos},
+#              security / {gitleaks, osv-scanner},
 #              checks, rules, the rules refuse violations,
 #              tests and coverage, mutation testing
 #   sonar      gate / gate, sonarcloud
 #   sdk-drift  sdk-drift
+#   codeql     alerts / alerts
 #
 # `sonarcloud` is there in place of `SonarCloud Code Analysis`, which the
 # SonarCloud app posts rather than a workflow. That tick cannot appear at all on
@@ -35,13 +37,12 @@
 name: awaiting-maintainer
 on:
   workflow_run:
-  # `codeql` is here because of what its `alerts` job does rather than because a
-  # required context comes from it. That job refuses a branch an open alert
-  # stands against; a gating workflow left out of this list can be the last one
-  # to finish, with nothing afterwards to notice the pull request became
-  # mergeable — the flag never goes up and nothing says why. Naming it costs one
-  # more evaluation and means the list is already right on the day it is
-  # required.
+  # `codeql` was named here before a required context came from it, on the
+  # grounds that its `alerts` job refuses a branch an open alert stands against
+  # and a gating workflow left out of this list can be the last one to finish,
+  # with nothing afterwards to notice the pull request became mergeable. That day
+  # has since arrived: `alerts / alerts` is required, and the list was already
+  # right, which is the whole argument for naming a gating workflow early.
     workflows: [ci, sonar, sdk-drift, codeql]
     types: [completed]
   pull_request_review:
