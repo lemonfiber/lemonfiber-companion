@@ -56,6 +56,15 @@ use function view;
  * screen that asked about a start would be teaching an operator to confirm
  * without reading, which is what makes the stop confirmation worth anything.
  *
+ * **It does not say how long a stop lasts, and that is deliberate.** `N2-R8`
+ * asks for the bound the stack reported or for the fact that it reported none,
+ * and the contract carries neither for a lifecycle verb — there is no field on
+ * the `lifecycle` envelope for it and no unconfirmed form of these three to ask
+ * through. `N2-R14` says the app must not substitute one, and *the stack
+ * reported none* would be substituting: nothing asked it. The gap is held by
+ * `WhatTheContractDoesNotCarryTest`, which fails the day lemonfiber carries the
+ * field, and the sentence belongs here when it does.
+ *
  * **It polls only while something is settling** (`N1-R27`). A service that is
  * starting becomes a running one on its own, and *ask again* as the only road
  * to finding out is the reliance on leaving and returning that rule refuses.
