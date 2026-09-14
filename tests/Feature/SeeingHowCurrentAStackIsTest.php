@@ -301,27 +301,31 @@ it('N1-R44 — a yes on a phone whose session ended sends nothing', function ():
 it('N2-R18 — says what became of each service the last update touched', function (): void {
     $applied = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()))->answer()->applied;
 
+    // What did not arrive comes first, which is `NotArrivedFirst`'s doing and
+    // is asserted on its own beside the other ordering cases. Read here in the
+    // order the template draws them.
     expect($applied)->toHaveCount(2)
-        ->and($applied[0]->service)->toBe('jellyfin')
-        ->and($applied[0]->endingSaid)->toBe(HowItEnded::Updated->saidOnTheScreen())
-        ->and($applied[0]->arrived)->toBeTrue()
-        ->and($applied[1]->service)->toBe('sonarr')
+        ->and($applied[0]->service)->toBe('sonarr')
         // Not a failure. The row says the image arrived and the service would
         // not come back up on it, which sends somebody to its own log rather
         // than to the machine.
-        ->and($applied[1]->endingSaid)->toBe(HowItEnded::NotStarted->saidOnTheScreen())
-        ->and($applied[1]->arrived)->toBeFalse();
+        ->and($applied[0]->endingSaid)->toBe(HowItEnded::NotStarted->saidOnTheScreen())
+        ->and($applied[0]->arrived)->toBeFalse()
+        ->and($applied[1]->service)->toBe('jellyfin')
+        ->and($applied[1]->endingSaid)->toBe(HowItEnded::Updated->saidOnTheScreen())
+        ->and($applied[1]->arrived)->toBeTrue();
 });
 
 it('N2-R19 — says which way back, and whether it brings the data with it', function (): void {
     $applied = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()))->answer()->applied;
 
-    expect($applied[0]->undoSaid)->toBe(HowToUndoIt::Rollback->saidOnTheScreen())
-        ->and($applied[0]->undoCarriesTheDataWithIt)->toBeFalse()
-        // A restore is the larger promise and the different conversation: it
-        // puts the snapshot back, and the evening's data with it.
-        ->and($applied[1]->undoSaid)->toBe(HowToUndoIt::Restore->saidOnTheScreen())
-        ->and($applied[1]->undoCarriesTheDataWithIt)->toBeTrue();
+    // A restore is the larger promise and the different conversation: it puts
+    // the snapshot back, and the evening's data with it. It leads because the
+    // service it belongs to is the one that did not arrive.
+    expect($applied[0]->undoSaid)->toBe(HowToUndoIt::Restore->saidOnTheScreen())
+        ->and($applied[0]->undoCarriesTheDataWithIt)->toBeTrue()
+        ->and($applied[1]->undoSaid)->toBe(HowToUndoIt::Rollback->saidOnTheScreen())
+        ->and($applied[1]->undoCarriesTheDataWithIt)->toBeFalse();
 });
 
 it('N2-R18 — counts what is not where the operator wanted it, apart from what is unknown', function (): void {
@@ -472,7 +476,8 @@ it('N1-R44 — a signed-out screen states nothing about the stack at all', funct
         ->and($answer->applied)->toBe([])
         ->and($answer->didNotArrive)->toBe(0)
         ->and($answer->anythingUnanswered)->toBeFalse()
-        ->and($answer->canTakeOne)->toBeFalse();
+        ->and($answer->canTakeOne)->toBeFalse()
+        ->and($answer->anyWorthNoticing)->toBeFalse();
 });
 
 it('N1-R10 — an obstacle states what stood in the way and nothing about the stack', function (): void {
@@ -492,7 +497,8 @@ it('N1-R10 — an obstacle states what stood in the way and nothing about the st
         ->and($answer->applied)->toBe([])
         ->and($answer->didNotArrive)->toBe(0)
         ->and($answer->anythingUnanswered)->toBeFalse()
-        ->and($answer->canTakeOne)->toBeFalse();
+        ->and($answer->canTakeOne)->toBeFalse()
+        ->and($answer->anyWorthNoticing)->toBeFalse();
 });
 
 it('N2-R15 — a stack that named no release in use says so rather than showing a blank', function (): void {
@@ -516,4 +522,43 @@ it('N2-R15 — a stack that named no release in use says so rather than showing 
         // where nothing went wrong.
         ->and($answer->met)->toBe('')
         ->and($answer->remedy)->toBe('');
+});
+
+it('N2-R18 — reads what needs attention before what is fine', function (): void {
+    // The ordering is the `updates` module's decision, made before the fold so
+    // the template draws rows in the order they are read in.
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+        HowCurrent::Current,
+        Releases::none(),
+        Services::none(),
+        HowServicesTookIt::these(
+            HowAServiceTookIt::of(ServiceId::called('jellyfin'), HowItEnded::Updated, HowToUndoIt::Rollback),
+            HowAServiceTookIt::of(ServiceId::called('sonarr'), HowItEnded::NotStarted, HowToUndoIt::Restore),
+            HowAServiceTookIt::of(ServiceId::called('radarr'), HowItEnded::Updated, HowToUndoIt::Rollback),
+        ),
+    )));
+
+    $named = [];
+
+    foreach ($screen->answer()->applied as $took) {
+        $named[] = $took->service;
+    }
+
+    expect($named)->toBe(['sonarr', 'jellyfin', 'radarr']);
+});
+
+it('N2-R16 — says when one of the releases waiting is one the household would see', function (): void {
+    $noticed = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+    $chores = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+        HowCurrent::Pending,
+        Releases::these(Release::called('4.0.16', noticeable: false, withdrawn: false)),
+        Services::none(),
+        HowServicesTookIt::none(),
+    )));
+
+    expect($noticed->answer()->anyWorthNoticing)->toBeTrue()
+        // Releases waiting, and not one of them is an evening. The screen says
+        // so rather than leading with a line that would be untrue.
+        ->and($chores->answer()->anyWorthNoticing)->toBeFalse()
+        ->and($chores->howMany())->toBe(1);
 });

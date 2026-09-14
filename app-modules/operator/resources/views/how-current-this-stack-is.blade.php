@@ -78,6 +78,14 @@
             <native:text class="font-bold">{{ __('updates.running_withdrawn') }}</native:text>
         @endif
 
+        @if ($this->answer()->anyWorthNoticing)
+            {{-- N2-R16: said before the list, because it is what makes tonight
+                 a decision rather than a chore. An operator who reads *the
+                 household will see the difference* before the versions is
+                 deciding on the evening rather than on a number. --}}
+            <native:text class="font-bold">{{ __('updates.something_worth_noticing') }}</native:text>
+        @endif
+
         @forelse ($this->answer()->waiting as $release)
             <native:column class="w-full gap-1">
                 <native:text class="font-bold">{{ $release->version }}</native:text>
