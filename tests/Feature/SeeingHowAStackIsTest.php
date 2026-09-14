@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\WhatOneFindingSays;
 use Modules\Operator\Internal\WhichFamilyToRead;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
@@ -707,4 +708,16 @@ it('N2-R9 — a value naming no family shows the whole report rather than nothin
         ->and($screen->howMany())->toBe(3)
         ->and($screen->findings())->toHaveCount(3)
         ->and($open)->toBe([false, false]);
+});
+
+it('N2-R11 — what the household asked for is one tap from the machine it is about', function (): void {
+    // The link's half of the pair. `SeeingWhatTheHouseholdAskedForTest` asserts
+    // that something is registered under that route; this asserts that the
+    // screen an operator is actually looking at points at it, which is what
+    // makes the requests screen reachable rather than merely present.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+
+    expect($screen->requestsAreAt())
+        ->toBe(sprintf('/stacks/%s/requests', theStackBeingLookedAt()->id()->stored()))
+        ->and(NativeRouter::resolve($screen->requestsAreAt()))->not->toBeNull();
 });

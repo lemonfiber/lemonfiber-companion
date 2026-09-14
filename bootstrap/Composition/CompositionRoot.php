@@ -33,9 +33,11 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Verdicts;
+use Modules\Kernel\Api\Wanting;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Questions;
+use Modules\Sdk\Api\Requests;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
@@ -165,6 +167,11 @@ final class CompositionRoot extends ServiceProvider
         // Bound rather than a singleton for the reason the store above is: the
         // facade is a handle to something outside this process, and a phone
         // changes network while the app is open.
+        // What the household has asked its stack for, which `N2-R11`'s screen
+        // reads. Beside `Asking` and built the same way: both go through
+        // `PinnedClients`, so there is one place a certificate is checked.
+        $this->app->bind(Wanting::class, static fn(): Wanting => new Requests(new PinnedClients()));
+
         $this->app->bind(
             Networking::class,
             static fn(): Networking => new PlatformNetwork(new PlatformNetworkFacade()),

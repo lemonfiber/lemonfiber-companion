@@ -10,6 +10,7 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\YourStacks;
 
 /**
@@ -95,6 +96,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // stack signed into later is a second entry rather than the same
             // screen re-pointed.
             Router::native('/stacks/{stack}/sign-in', SignIntoAStack::class);
+
+            // What the house asked for, which is the part of a stack an
+            // operator gets asked about in person. Before `/stacks/{stack}`
+            // rather than after it, for the reason `sign-in` is: the router
+            // matches in registration order, and a bare `{stack}` registered
+            // first would swallow every path under it.
+            Router::native('/stacks/{stack}/requests', WhatTheHouseholdAsked::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

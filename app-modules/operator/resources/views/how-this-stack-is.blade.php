@@ -109,5 +109,14 @@
              fixed something scrolls to the end of what was wrong, and that is
              where they want to ask whether it took. --}}
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
+
+        {{-- N2-R11: what the house asked for, one tap from the machine it is
+             about. Here rather than on the list because requests belong to one
+             stack and the list is about several — and an operator looking at a
+             machine is already holding the question the household asks them. --}}
+        <native:button
+            label="{{ __('household.asked_for') }}"
+            @navigate="{{ $this->requestsAreAt() }}"
+        />
     @endunless
 </native:column>
