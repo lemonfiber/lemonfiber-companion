@@ -150,4 +150,9 @@ return [
         'partial' => 'Some of it is running',
         'active' => 'Everything is running',
     ],
+    'do' => [
+        'start' => 'Start it',
+        'stop' => 'Stop it',
+        'restart' => 'Restart it',
+    ],
 ];

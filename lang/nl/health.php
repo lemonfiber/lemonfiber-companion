@@ -150,4 +150,9 @@ return [
         'partial' => 'Een deel draait',
         'active' => 'Alles draait',
     ],
+    'do' => [
+        'start' => 'Start hem',
+        'stop' => 'Stop hem',
+        'restart' => 'Herstart hem',
+    ],
 ];

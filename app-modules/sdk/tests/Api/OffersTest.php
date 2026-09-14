@@ -9,7 +9,6 @@ use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Effects;
-use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\OfferHasNoName;
 use Modules\Kernel\Api\Repair;
@@ -19,22 +18,6 @@ use Modules\Sdk\Api\OfferIsUnreadable;
 use Modules\Sdk\Api\Offers;
 
 use function sprintf;
-
-/**
- * A `job` envelope holding whatever the case under test is about.
- *
- * Built by hand rather than fetched, because what is being tested is what
- * happens when the wire says something the contract does not allow — which a
- * client that honoured the contract could never produce.
- *
- * @param array<mixed> $data
- *
- * @return Envelope<mixed>
- */
-function jobSaying(array $data): Envelope
-{
-    return new Envelope(1, 'job', $data);
-}
 
 /**
  * A `repair` envelope, likewise.
@@ -88,26 +71,6 @@ function aListingOf(array $repair): array
         'offered' => [$repair],
     ];
 }
-
-it('reads the handle a stack answered an action with', function (): void {
-    $job = Offers::handleIn(jobSaying(['action' => 'repair', 'job' => 'a-job-name']));
-
-    expect($job->shown())->toBe('a-job-name');
-});
-
-it('refuses an acknowledgement with no job name in it', function (): void {
-    // The state `N1-R41` has no answer for: the action was delivered, so it
-    // must not be sent again, and there is nothing to ask after it by.
-    expect(fn(): object => Offers::handleIn(jobSaying(['action' => 'repair'])))
-        ->toThrow(OfferIsUnreadable::class, 'job');
-});
-
-it('refuses an acknowledgement whose job name is blank', function (): void {
-    // Refused one layer further in, by `Job` itself — a name present and empty
-    // is a handle in shape and nothing in substance.
-    expect(fn(): object => Offers::handleIn(jobSaying(['action' => 'repair', 'job' => '   '])))
-        ->toThrow(JobHasNoName::class);
-});
 
 it('N2-R4 — reads all three clauses off an offered repair', function (): void {
     $offer = Offers::offerIn(repairSaying(aListingOf(anOfferedRepair())));
@@ -222,14 +185,6 @@ it('refuses a row in the listing that is not a repair at all', function (): void
         'mended' => [],
         'offered' => ['a sentence where a repair belongs'],
     ])))->toThrow(OfferIsUnreadable::class, 'Repair 0');
-});
-
-it('refuses an acknowledgement whose payload is not a shape at all', function (): void {
-    // The generated envelope asserts its payload's shape without checking it,
-    // and that assertion is not a fact about the socket. This is the case where
-    // the two differ: a body that parsed as JSON and is not an object.
-    expect(fn(): object => Offers::handleIn(new Envelope(1, 'job', 'a sentence where a payload belongs')))
-        ->toThrow(OfferIsUnreadable::class, 'data');
 });
 
 it('refuses a listing whose payload is not a shape at all', function (): void {

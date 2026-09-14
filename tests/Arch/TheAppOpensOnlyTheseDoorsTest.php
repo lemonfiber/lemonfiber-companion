@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
+use Modules\Kernel\Api\WhatToDoWithIt;
 use Tests\Support\Tree;
 
 // N1-R4 and N2-R12 — the doors this application is allowed to open on a stack.
@@ -19,7 +20,19 @@ use Tests\Support\Tree;
 // stack is changed, and it is the only way this app could ever configure a
 // machine or write a credential. A screen that offered setup would have to call
 // it. So the rule is a list of the doors this app opens, each with the reason it
-// is open, and `act()` is not among them.
+// is open.
+//
+// `act()` is open, and what holds the two requirements up is not that it is shut
+// but that this app cannot spell what goes through it. An action's name is the
+// last segment of its path, and every call here composes that path with
+// `Api::action()` from `WhatToDoWithIt::asked()` — three verbs, none of them
+// `setup` and none of them a credential. Two things are refused below: a string
+// handed to `Api::action()`, which would be a name this app chose, and a
+// `->value` handed to it, which is the operator's word for a verb rather than
+// lemonfiber's and would be refused by a machine in front of somebody holding a
+// phone. The three verbs are then checked against the list of reasons in both
+// directions, because the forward check catches one that lost its reason and
+// only the reverse catches the fourth verb somebody adds by hand.
 //
 // The list is compared against the client rather than trusted: a method renamed
 // in the SDK fails here rather than leaving this rule describing a door that no
@@ -40,7 +53,109 @@ const DOORS_THE_APP_OPENS = [
     // and it takes a `Repair` the stack itself offered rather than an endpoint
     // and a body. A caller cannot spell an arbitrary change through it.
     'repair' => 'carries out a repair the stack offered, against the reading it was offered on',
+
+    // `N2-R7`'s three verbs, and nothing else can reach it: the path is
+    // composed by `Api::action()` from a `WhatToDoWithIt` case, which is a
+    // closed set this app cannot add a name to at a call site.
+    'act' => 'asks for one of the three verbs `N2-R7` names, by a name no call site can spell',
 ];
+
+/** Every verb this application can ask a stack for, and why that one. */
+const VERBS_THE_APP_ASKS_FOR = [
+    // `N2-R7`. A start disturbs nothing, which is why it is the one verb
+    // `N2-R8` asks for no confirmation of.
+    'up' => 'starts a form, or a service inside one',
+
+    // `N2-R7`, and the verb `N2-R8` exists for: it takes something away from
+    // everybody in the house until somebody says otherwise.
+    'down' => 'stops a form, or a service inside one',
+
+    // `N2-R7`. A stop that means to come back, and still a gap the household
+    // is in — so it is asked about as the stop is.
+    'restart' => 'stops and starts it again',
+];
+
+/**
+ * Every first argument the application hands to the writing door.
+ *
+ * The expression as it is written, not what it evaluates to. What this rule has
+ * to know is whether a call site chose a path, and a call site that did chose it
+ * in the source.
+ *
+ * @return list<string>
+ */
+function everyCallOnTheWritingDoor(): array
+{
+    $found = [];
+
+    foreach (theApplicationsSources() as $path) {
+        preg_match_all('/\$client->act\(\s*([^,)]+)/', (string) file_get_contents($path), $called);
+
+        foreach ($called[1] as $argument) {
+            $found[] = trim($argument);
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * Every action named to `Api::action()` by something other than `asked()`.
+ *
+ * Two shapes, one list: a string literal is a name this app chose, and a
+ * `->value` is a verb's name in the operator's words rather than in
+ * lemonfiber's. Both reach the socket as an action nobody offers.
+ *
+ * Read a line at a time, and comments are skipped — every docblock that
+ * explains this rule names `Api::action()` while explaining it, so a reader
+ * that took the whole file would find the paragraph before it found a call.
+ *
+ * @return list<string>
+ */
+function theNamesHandedToTheWritingDoor(): array
+{
+    $found = [];
+
+    foreach (theApplicationsSources() as $path) {
+        foreach (explode("\n", (string) file_get_contents($path)) as $line) {
+            $said = trim($line);
+
+            if (str_starts_with($said, '*') || str_starts_with($said, '//')) {
+                continue;
+            }
+
+            if (! str_contains($said, 'Api::action(')) {
+                continue;
+            }
+
+            if (str_contains($said, '->asked()')) {
+                continue;
+            }
+
+            $found[] = sprintf('%s: %s', $path, $said);
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * Every file of this application, leaving its tests out.
+ *
+ * @return list<string>
+ */
+function theApplicationsSources(): array
+{
+    $sources = [
+        ...Tree::filesUnder(Tree::at('app-modules'), '.php'),
+        ...Tree::filesUnder(Tree::at('bootstrap'), '.php'),
+    ];
+
+    return array_values(array_filter(
+        $sources,
+        static fn(string $path): bool => ! str_contains($path, '/tests/'),
+    ));
+}
 
 /**
  * Every method the application actually calls on a client.
@@ -51,16 +166,7 @@ function everyDoorTheAppOpens(): array
 {
     $found = [];
 
-    $sources = [
-        ...Tree::filesUnder(Tree::at('app-modules'), '.php'),
-        ...Tree::filesUnder(Tree::at('bootstrap'), '.php'),
-    ];
-
-    foreach ($sources as $path) {
-        if (str_contains($path, '/tests/')) {
-            continue;
-        }
-
+    foreach (theApplicationsSources() as $path) {
         preg_match_all('/\$client->([a-zA-Z]+)\(/', (string) file_get_contents($path), $called);
 
         foreach ($called[1] as $door) {
@@ -111,19 +217,61 @@ it('every door this rule names is one the client still has', function (): void {
     ));
 });
 
-it('N1-R4, N2-R12 — the door that writes whatever it is told is not open', function (): void {
+it('N1-R4, N2-R12 — the door that writes whatever it is told is never told a name', function (): void {
     // Named rather than left to the list above, because this is the one that
-    // matters and a reader of the list should not have to work out which. It
-    // exists on the client, this app never calls it, and the day it does is the
-    // day a screen can configure somebody's machine.
-    // Asked by name through reflection, so a client that stopped having
-    // `act()` fails here rather than leaving this case passing about a door
-    // that is gone — the same both-directions shape as the rule above.
+    // matters and a reader of the list should not have to work out which.
+    // Asked by name through reflection, so a client that stopped having `act()`
+    // fails here rather than leaving this case passing about a door that is
+    // gone — the same both-directions shape as the rule above.
     $doors = array_map(
         static fn(ReflectionMethod $method): string => $method->getName(),
         new ReflectionClass(Client::class)->getMethods(ReflectionMethod::IS_PUBLIC),
     );
 
     expect($doors)->toContain('act');
-    expect(everyDoorTheAppOpens())->not->toContain('act');
+
+    // Every call composes its path with `Api::action()`, and none of them hands
+    // that a string. A literal there is this app choosing an action's name, and
+    // `setup` is a name — which is the whole of what `N1-R4` refuses.
+    $opened = everyCallOnTheWritingDoor();
+
+    expect($opened)->not->toBe([], 'no call on the writing door was found, so this rule read nothing');
+    expect(array_values(array_filter($opened, static fn(string $call): bool
+        => ! str_starts_with($call, 'Api::action('))))->toBe([], sprintf(
+            "These ask the writing door for a path this app spelled itself:\n  %s\n\n"
+            . 'An action\'s name is the last segment of its path, so a call that does not go '
+            . "through `Api::action()` with a `WhatToDoWithIt` case is a call that can name any "
+            . "action a stack offers — `setup` among them (`N1-R4`), and the ones that write a "
+            . "credential (`N2-R12`).\n",
+            implode("\n  ", $opened),
+        ));
+
+    expect(theNamesHandedToTheWritingDoor())->toBe([], sprintf(
+        "These name an action by something other than `WhatToDoWithIt::asked()`:\n  %s\n\n"
+        . 'A string is a name this app chose, and a `->value` is the operator\'s word for a '
+        . "verb rather than lemonfiber's — `stop` where that surface offers `down`.\n",
+        implode("\n  ", theNamesHandedToTheWritingDoor()),
+    ));
+});
+
+it('N2-R7 — every verb this app asks for has a reason, and every reason a verb', function (): void {
+    // Both directions, because they catch different mistakes. The forward check
+    // finds a case that lost its reason; only the reverse finds the fourth verb
+    // somebody adds to this list by hand, which is the edit that would widen
+    // what this app can ask for without widening the enum.
+    $asked = array_map(
+        static fn(WhatToDoWithIt $doing): string => $doing->asked(),
+        WhatToDoWithIt::cases(),
+    );
+    $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
+
+    sort($asked);
+    sort($explained);
+
+    expect($asked)->toBe($explained, sprintf(
+        "The verbs this app can ask for and the verbs this rule explains are not the same set:\n"
+        . "  asked:     %s\n  explained: %s\n",
+        implode(', ', $asked),
+        implode(', ', $explained),
+    ));
 });

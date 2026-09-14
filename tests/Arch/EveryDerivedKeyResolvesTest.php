@@ -11,8 +11,8 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Tests\Support\Catalogue;
@@ -113,6 +114,10 @@ function everyDerivedKey(): array
         Category::class => aPairPerCase(
             Category::cases(),
             static fn(Category $category): array => [$category->saidOnTheScreen()],
+        ),
+        WhatToDoWithIt::class => aPairPerCase(
+            WhatToDoWithIt::cases(),
+            static fn(WhatToDoWithIt $doing): array => [$doing->saidOnTheScreen()],
         ),
         HowAServiceRuns::class => aPairPerCase(
             HowAServiceRuns::cases(),

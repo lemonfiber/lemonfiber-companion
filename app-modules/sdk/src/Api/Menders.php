@@ -59,10 +59,10 @@ final readonly class Menders implements Mending
         $client = $this->clients->client($stack, $session);
 
         try {
-            return Underway::as(Offers::handleIn($client->repair(Asking::offer())));
+            return Underway::as(Handles::in($client->repair(Asking::offer())));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -79,10 +79,10 @@ final readonly class Menders implements Mending
             // without naming the listing it came from.
             $asked = Asking::agreedTo($confirmed->quoting(), $confirmed->repair()->answers());
 
-            return Underway::as(Offers::handleIn($client->repair($asked)));
+            return Underway::as(Handles::in($client->repair($asked)));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }

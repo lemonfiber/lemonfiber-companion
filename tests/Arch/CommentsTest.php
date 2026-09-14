@@ -218,6 +218,20 @@ function repeatedIn(array $paragraphs): array
     return $repeats;
 }
 
+/**
+ * A marker is a word, not a run of letters.
+ *
+ * A comment quotes the code it explains, and a type named for a decision —
+ * {@see LemonFiber\Kernel\Api\WhatToDoWithIt} — carries one of these markers
+ * inside its own name. A letter on either side means the match is part of an
+ * identifier rather than a note somebody left behind; a trailing plural is
+ * still the note.
+ */
+function narrativeMarker(string $marker): string
+{
+    return sprintf('/(?<![A-Za-z])%ss?(?![A-Za-z])/i', preg_quote($marker, '/'));
+}
+
 it('K1 — a comment says what is true, not what happened', function (): void {
     // Split so that this list is not itself a run of the phrases it refuses.
     $markers = [
@@ -234,7 +248,7 @@ it('K1 — a comment says what is true, not what happened', function (): void {
 
         foreach ($lines as $line) {
             foreach ($markers as $marker) {
-                if (stripos($line, $marker) !== false) {
+                if (preg_match(narrativeMarker($marker), $line) === 1) {
                     $offenders[] = sprintf('%s %s', $path, $line);
                 }
             }
