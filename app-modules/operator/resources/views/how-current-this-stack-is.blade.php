@@ -156,5 +156,12 @@
         @empty
             <native:text>{{ __('updates.nothing_applied') }}</native:text>
         @endforelse
+
+        {{-- The way back, which every screen under a machine offers. A leaf a
+             person can enter and not leave is a dead end on a handset: the
+             platform's own gesture may be there, and a screen that counts on it
+             is a screen that works on one handset and traps somebody on
+             another. --}}
+        <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="{{ $this->goes()->health() }}" />
     @endunless
 </native:column>
