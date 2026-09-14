@@ -13,10 +13,8 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Repair as Asking;
 use Modules\Kernel\Api\HowTheOfferIsGoing;
 use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Offer;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
@@ -43,7 +41,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * would spin on a handle nothing will ever answer for. It becomes
  * {@see HowTheOfferIsGoing::ended()}, whose remedy is to ask again.
  *
- * **A `JobHasNoName` is not caught**, and the asymmetry is deliberate. It means
+ * **A {@see \Modules\Kernel\Api\JobHasNoName} is not caught**, and the asymmetry is deliberate. It means
  * a stack acknowledged an action and named it with nothing — the one state
  * `N1-R41` has no answer for, since the action *was* delivered and so must not
  * be sent again, and there is no handle to ask after it by. Swallowing it into
