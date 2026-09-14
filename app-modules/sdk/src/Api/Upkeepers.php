@@ -53,7 +53,7 @@ final readonly class Upkeepers implements KeepingCurrent
         $client = $this->clients->client($stack, $session);
 
         try {
-            $envelope = $client->act(Api::action('update'), $this->about($agreed));
+            $envelope = $client->act(Api::action($agreed->asked()), $this->about($agreed));
 
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {

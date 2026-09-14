@@ -41,6 +41,25 @@ final readonly class TakingAnUpdate
         return new self($release, $changing);
     }
 
+    /**
+     * The name lemonfiber's surface asks for this by.
+     *
+     * Here rather than on an enum of its own, because there is exactly one
+     * thing to do about an update and a single-case enum would be a shape
+     * pretending at a choice that does not exist. What matters is that the name
+     * is spelled once, in the kernel, and never at a call site — `N1-R4`
+     * refuses an app that can name any action a stack offers, `setup` among
+     * them, and the way that happens is a literal in an adapter.
+     *
+     * {@see WhatToDoWithIt::asked()} is the same method one verb over, and for
+     * the same reason: the operator's word and the wire's are allowed to
+     * differ, so neither can be read off the other.
+     */
+    public function asked(): string
+    {
+        return 'update';
+    }
+
     public function release(): Release
     {
         return $this->release;
