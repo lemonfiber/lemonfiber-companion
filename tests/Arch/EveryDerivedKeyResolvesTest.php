@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\SizeUnit;
 use Modules\Kernel\Api\Stage;
+use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatBecameOfIt;
@@ -120,6 +121,10 @@ function everyDerivedKey(): array
         HowMuchIsShown::class => aPairPerCase(
             HowMuchIsShown::cases(),
             static fn(HowMuchIsShown $shown): array => [$shown->saidOnTheScreen()],
+
+        Stream::class => aPairPerCase(
+            Stream::cases(),
+            static fn(Stream $stream): array => [$stream->saidOnTheScreen()],
         ),
         WhatBecameOfIt::class => aPairPerCase(
             WhatBecameOfIt::cases(),

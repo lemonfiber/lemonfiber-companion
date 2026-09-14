@@ -149,6 +149,15 @@ enum WireField: string
     /** How far a stalled item got before it stopped. */
     case Stage = 'stage';
 
+    /** When something happened, where the thing that wrote it said so. */
+    case At = 'at';
+
+    /** One line of what a service wrote, exactly as it wrote it. */
+    case Line = 'line';
+
+    /** Which of a service's two mouths a line came out of. */
+    case Stream = 'stream';
+
     /** How a single check turned out, as a tagged union. */
     case Verdict = 'verdict';
 
