@@ -19,6 +19,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -108,6 +109,10 @@ it('N2-R7 — shows every service, how it runs, and which form it is in', functi
         // would never be reached at all.
         ->and($answer->isSignedIn)->toBeTrue()
         ->and($answer->met)->toBe('')
+        // And no remedy, which is the pair `met` is read with: a template
+        // branching on one and printing the other would put *what to do about
+        // it* under a machine where nothing went wrong.
+        ->and($answer->remedy)->toBe('')
         ->and($answer->services[0]->id->named())->toBe('sonarr')
         ->and($answer->services[0]->form)->toBe('downloads')
         ->and($answer->services[0]->runsSaid)->toBe(HowAServiceRuns::Running->saidOnTheScreen());
@@ -325,14 +330,19 @@ it('N1-R27 — looks again only while something is settling', function (): void 
         Forms::these(Form::called('downloads')),
         aServiceRunning('sonarr', HowAServiceRuns::Starting),
     );
-    $screen = theServicesScreen(AStackThatSupervises::with($settling));
+    $supervising = AStackThatSupervises::with($settling);
+    $screen = theServicesScreen($supervising);
 
     expect($screen->answer()->isSettling)->toBeTrue();
 
     $screen->whileItSettles();
+    $screen->answer();
 
-    // Twice: the first reading, and the one the cadence asked for.
-    expect($screen->answer())->not->toBeNull()
+    // Twice: the first reading, and the one the cadence asked for. Counted off
+    // the port, which is the only thing that can say a second reading happened —
+    // the assertion here used to be that `answer()` was not null, which is true
+    // of a cadence that does nothing at all.
+    expect($supervising->askings())->toBe(2)
         ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
 });
 
@@ -368,7 +378,15 @@ it('N1-R10 — an obstacle is what stood in the way, with what to do about it', 
         // Signed in, and the listing is empty because nothing was read — not
         // because the machine is running nothing.
         ->and($answer->isSignedIn)->toBeTrue()
-        ->and($answer->services)->toBe([]);
+        ->and($answer->services)->toBe([])
+        // Which is why there is no overall either. A stack that could not be
+        // reached has not been found to be healthy, and a fold that carried a
+        // verdict here would put one on a screen assembled from nothing.
+        ->and($answer->overall)->toBe('')
+        // And nothing is settling, so the cadence stops. A screen that polled
+        // through an obstacle would keep a phone talking to a machine that is
+        // not answering.
+        ->and($answer->isSettling)->toBeFalse();
 });
 
 it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
@@ -389,6 +407,12 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
         ->and($screen->answer()->met)->toBe('')
         ->and($screen->answer()->services)->toBe([])
         ->and($screen->answer()->overall)->toBe('')
+        // The remedy and the cadence as well. A signed-out screen offering
+        // *what to do about it* would be answering about a machine nobody
+        // asked, and one that reported itself settling would poll a stack this
+        // device has no session for, for ever.
+        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->isSettling)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeFalse();
 });
 
@@ -511,6 +535,20 @@ it('a session that ended between the reading and the yes sends nothing', functio
 
     expect($supervising->whatItWasToldToDo())->toBe([])
         ->and($screen->answer()->isSignedIn)->toBeFalse();
+});
+
+it('refuses a route parameter that is not text', function (): void {
+    // A parameter arrives as `mixed`, because the navigation stack's own
+    // parameter array is untyped. Anything that is not a string names no stack,
+    // which is the same situation as a route with nothing in that segment —
+    // asserted rather than assumed, because the narrowing is a branch and a
+    // branch nothing drives is a branch that can quietly become the other one.
+    // The five other screens with this shape each make this assertion; this was
+    // the sixth, and it did not.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
 it('N2-R7 — the screen is registered under the route that reaches it', function (): void {
