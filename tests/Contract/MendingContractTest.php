@@ -507,3 +507,61 @@ it('a job that ended after an agreement is not a run that failed', function (): 
         expect(whatWasDone($make()))->toBe('ended', $which);
     }
 });
+
+it('N1-R10 — a refused agreement is a refused session, not a broken machine', function (): void {
+    // Only the adapter can be asked this: what is being pinned is the collapse
+    // on the *agreeing* half, which has its own catches.
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make('{"error":"no"}', 401)]);
+
+    $said = new Menders(new PinnedClients())
+        ->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())
+        ->either(
+            started: static fn(Job $job): WhatTheRepairTurnedOutToSay
+                => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
+            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
+                => new WhatTheRepairTurnedOutToSay($why->value),
+        )->said;
+
+    expect($said)->toBe(Obstacle::CredentialWasRefused->value);
+});
+
+it('an agreement the far end answers unreadably is the machine', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make('not json at all')]);
+
+    $said = new Menders(new PinnedClients())
+        ->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())
+        ->either(
+            started: static fn(Job $job): WhatTheRepairTurnedOutToSay
+                => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
+            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
+                => new WhatTheRepairTurnedOutToSay($why->value),
+        )->said;
+
+    expect($said)->toBe(Obstacle::StackDidNotAnswer->value);
+});
+
+it('N1-R10 — reading what was done can meet an obstacle of its own', function (): void {
+    // Time passes between agreeing and reading, which is exactly where a
+    // session ends underneath somebody.
+    $table = [
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
+        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        MockClient::destroyGlobal();
+        MockClient::global([$answered]);
+
+        expect(whatWasDone(new Menders(new PinnedClients())))->toBe($why->value, $why->value);
+    }
+});
+
+it('work still going on an agreement is its own answer', function (): void {
+    $ways = everyWayOfMending(stillGoing(), AStackThatWouldMend::stillWorkingItOut(...));
+
+    foreach ($ways as $which => $make) {
+        expect(whatWasDone($make()))->toBe('still running', $which);
+    }
+});

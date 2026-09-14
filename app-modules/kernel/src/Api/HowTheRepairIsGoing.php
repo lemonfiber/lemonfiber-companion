@@ -29,22 +29,31 @@ use Closure;
  */
 final readonly class HowTheRepairIsGoing
 {
+    /**
+     * Every field defaults, and each constructor says only its own state.
+     *
+     * {@see HowTheOfferIsGoing} carries the same note for the same measurement:
+     * `met()` writing `running: false` is a value nothing can ever read,
+     * because {@see self::either()} consults the obstacle first — and a value
+     * nothing reads is one no test can hold to being right. The cure is
+     * {@see Size}'s, which is to leave the meaningless value unwritten.
+     */
     private function __construct(
-        private ?WhatWasMended $done,
-        private ?Obstacle $met,
-        private bool $running,
+        private ?WhatWasMended $done = null,
+        private ?Obstacle $met = null,
+        private bool $running = false,
     ) {}
 
     /** The stack is still carrying out what it was agreed to. */
     public static function stillRunning(): self
     {
-        return new self(done: null, met: null, running: true);
+        return new self(running: true);
     }
 
     /** It finished, and this is what became of each repair. */
     public static function done(WhatWasMended $mended): self
     {
-        return new self(done: $mended, met: null, running: false);
+        return new self(done: $mended);
     }
 
     /**
@@ -57,13 +66,13 @@ final readonly class HowTheRepairIsGoing
      */
     public static function ended(): self
     {
-        return new self(done: null, met: null, running: false);
+        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */
     public static function met(Obstacle $why): self
     {
-        return new self(done: null, met: $why, running: false);
+        return new self(met: $why);
     }
 
     /**

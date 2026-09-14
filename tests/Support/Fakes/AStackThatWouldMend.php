@@ -148,6 +148,41 @@ final class AStackThatWouldMend implements Mending
         );
     }
 
+    /**
+     * A stack that offers a listing and is still carrying out what it took on.
+     *
+     * The two halves answer differently, which the single-answer constructors
+     * above cannot express — and it is the ordinary middle of this screen: the
+     * listing has been read, the operator has agreed, and the machine is
+     * working. Reaching it needs a fake that gives a listing *and* reports a
+     * run in progress.
+     */
+    public static function carryingOutStill(Offer $offer): self
+    {
+        return new self(
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::stillRunning(),
+        );
+    }
+
+    /**
+     * A stack that offers a listing and then cannot be reached about the run.
+     *
+     * Time passes between agreeing and reading, which is exactly where a phone
+     * leaves the house or a session ends underneath somebody. A fake that met
+     * the obstacle on *both* halves could never get as far as agreeing, so this
+     * is the only way to drive the state.
+     */
+    public static function goneAfterAgreeing(Offer $offer, Obstacle $why): self
+    {
+        return new self(
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::offering($offer),
+            static fn(): HowTheRepairIsGoing => HowTheRepairIsGoing::met($why),
+        );
+    }
+
     /** The stack it was last asked about, or nothing where it never was. */
     public function askedAbout(): ?Stack
     {

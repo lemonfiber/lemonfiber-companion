@@ -454,3 +454,64 @@ it('a job that ended after an agreement is not a run that failed', function (): 
 
     expect($screen->wasAgreedTo())->toBeFalse();
 });
+
+it('nothing was agreed to, so there is nothing that was done', function (): void {
+    // Not *still working it out*: a screen answering that for a run nobody
+    // started would be inventing one. The same answer as a job the stack has
+    // forgotten, because both mean there is no run to describe — and the
+    // template branches on `wasAgreedTo()` rather than on this.
+    $screen = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()));
+
+    expect($screen->done()->hasEnded)->toBeTrue()
+        ->and($screen->done()->isWorking)->toBeFalse()
+        ->and($screen->done()->outcomes)->toBe([]);
+});
+
+it('N1-R10 — a stack that goes away between agreeing and reading says what was met', function (): void {
+    // Time passes between the two, which is exactly where a phone leaves the
+    // house or a session ends underneath somebody. Reaching it needs a stack
+    // that offers a listing and *then* cannot be reached — one that met the
+    // obstacle on both halves could never get as far as agreeing.
+    $screen = theRepairsScreen(
+        AStackThatWouldMend::goneAfterAgreeing(aListingWorthReading(), Obstacle::StackDidNotAnswer),
+    );
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect($screen->done()->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($screen->done()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+        ->and($screen->done()->outcomes)->toBe([]);
+});
+
+it('N2-R5 — a run still being carried out is its own state', function (): void {
+    // The ordinary middle: the listing read, the operator agreed, the machine
+    // working. Told apart from *nothing was agreed to*, which is the case
+    // above, and from a run that finished having done nothing.
+    $screen = theRepairsScreen(AStackThatWouldMend::carryingOutStill(aListingWorthReading()));
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect($screen->done()->isWorking)->toBeTrue()
+        ->and($screen->done()->hasEnded)->toBeFalse()
+        ->and($screen->done()->met)->toBe('');
+});
+
+it('N1-R17 — what was done is held, so reading it twice asks once', function (): void {
+    // The same rule as the offer, one question along: a frame reads several
+    // fields off the outcome and each read must not be a trip to the machine.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    $before = $mending->readings();
+
+    $screen->done();
+    $screen->done();
+    $screen->done();
+
+    expect($mending->readings() - $before)->toBe(1);
+});

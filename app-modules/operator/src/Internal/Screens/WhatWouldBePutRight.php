@@ -165,10 +165,6 @@ final class WhatWouldBePutRight extends NativeComponent
      */
     public function done(): WhatThisStackPutRight
     {
-        if (! $this->agreed) {
-            return WhatThisStackPutRight::stillWorkingItOut();
-        }
-
         return $this->carriedOut ??= $this->askWhatWasDone();
     }
 
@@ -283,6 +279,13 @@ final class WhatWouldBePutRight extends NativeComponent
     {
         $held = $this->handle;
 
+        // No handle is *nothing to report*, which is what a frame that has not
+        // been agreed to on says — and it is the same answer as a job the stack
+        // has forgotten, because both mean there is no run to describe. Asked
+        // before agreeing rather than guarded against: a screen that answered
+        // "still working it out" for a run nobody started would be inventing
+        // one, and the template's own branch on {@see wasAgreedTo()} is what
+        // keeps it off the glass.
         if (! is_string($held)) {
             return WhatThisStackPutRight::ended();
         }
