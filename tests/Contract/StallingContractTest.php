@@ -21,6 +21,7 @@ use Modules\Sdk\Api\Stalls;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatStalled;
+use Tests\Support\WhatTheContractAccepts;
 
 // The Stalling contract, run against the adapter and against the fake.
 //
@@ -64,22 +65,34 @@ function theSameStalled(): Stalled
     );
 }
 
+/**
+ * The payload a stack sends where those two have stopped.
+ *
+ * Separate from the response so the rule at the foot of this file reads the
+ * same array the adapter is given. A fixture checked in one place and sent in
+ * another is a fixture that can drift from itself.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackWithSomethingStuckSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'stuck',
+        'data' => [
+            'incomplete' => true,
+            'items' => [
+                ['title' => 'A film nobody has seen', 'service' => 'radarr', 'stage' => 'searching'],
+                ['title' => 'A series somebody has', 'service' => 'sonarr', 'stage' => 'downloaded'],
+            ],
+        ],
+    ];
+}
+
 /** What the far end answers where those two have stopped. */
 function aStalledAnswer(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'stuck',
-            'data' => [
-                'incomplete' => true,
-                'items' => [
-                    ['title' => 'A film nobody has seen', 'service' => 'radarr', 'stage' => 'searching'],
-                    ['title' => 'A series somebody has', 'service' => 'sonarr', 'stage' => 'downloaded'],
-                ],
-            ],
-        ]),
-    );
+    return MockResponse::make((string) json_encode(whatAStackWithSomethingStuckSends()));
 }
 
 /**
@@ -198,4 +211,9 @@ it('an answer this app cannot read is a stack that did not answer', function ():
     foreach (everyWayOfAskingWhatStopped($answered, Obstacle::StackDidNotAnswer) as $which => $make) {
         expect(everythingStuckIn($make()))->toBe(Obstacle::StackDidNotAnswer->value, $which);
     }
+});
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('StuckEnvelope', whatAStackWithSomethingStuckSends()))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
