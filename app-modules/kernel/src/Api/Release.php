@@ -31,9 +31,11 @@ final readonly class Release
     /**
      * A release the stack named.
      *
-     * @throws VersionIsBlank where the stack named nothing, which is a payload
-     *                        this side cannot render rather than a release with
-     *                        an empty name.
+     * Refuses a blank version rather than carrying one: a payload short of the
+     * name is the stack's half of the conversation gone wrong, not a release
+     * with an empty name. Undeclared for the reason the other named values are
+     * — a declared throw is a checked one here, and every caller would carry a
+     * catch for a fixture it wrote itself.
      */
     public static function called(string $version, bool $noticeable, bool $withdrawn): self
     {
