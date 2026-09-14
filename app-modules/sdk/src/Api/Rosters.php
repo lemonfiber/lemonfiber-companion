@@ -182,11 +182,13 @@ final readonly class Rosters
         $matters = self::matters($row, $position);
         $leaning = self::leaning($row, $position);
 
-        if (! self::ended($row, $position)) {
+        $code = self::howItEnded($row, $position);
+
+        if ($code === null) {
             return Daemon::called($name, $id, $profile, $runs, $matters, $leaning);
         }
 
-        return Daemon::thatExited($name, $id, $profile, $runs, $matters, $leaning, self::code($row, $position));
+        return Daemon::thatExited($name, $id, $profile, $runs, $matters, $leaning, $code);
     }
 
     /**
@@ -260,47 +262,33 @@ final readonly class Rosters
     }
 
     /**
-     * Whether this service ended with a code.
+     * What this service exited with, or nothing where it did not.
      *
      * Absent and null are both *it did not*, which is what the contract's
      * `exit?: int|null` says twice. Anything else is refused rather than read
      * as still running: the two look identical on a screen and one of them is a
      * service somebody needs to know about.
      *
+     * One reading rather than a predicate beside a fetch. A method answering
+     * *did it end* and a second answering *with what* would each guard the same
+     * absence, and the second guard could never fire — an unreachable line that
+     * reads as caution and no test can defend. `?int` here is the wire's own
+     * optionality, and {@see Daemon::thatExited()} is where it stops being
+     * optional.
+     *
      * @param array<mixed> $row
      */
-    private static function ended(array $row, int $position): bool
+    private static function howItEnded(array $row, int $position): ?int
     {
         if (! array_key_exists(WireField::Exit->value, $row)) {
-            return false;
+            return null;
         }
 
         $code = $row[WireField::Exit->value];
 
         if ($code === null) {
-            return false;
+            return null;
         }
-
-        if (! is_int($code)) {
-            throw RosterIsUnreadable::ended($position);
-        }
-
-        return true;
-    }
-
-    /**
-     * What it exited with, read again now that {@see self::ended()} has said
-     * there is one.
-     *
-     * @param array<mixed> $row
-     */
-    private static function code(array $row, int $position): int
-    {
-        if (! array_key_exists(WireField::Exit->value, $row)) {
-            throw RosterIsUnreadable::ended($position);
-        }
-
-        $code = $row[WireField::Exit->value];
 
         if (! is_int($code)) {
             throw RosterIsUnreadable::ended($position);

@@ -146,6 +146,19 @@ it('refuses an `exit` that is neither absent, null, nor a number', function (): 
         ->toThrow(RosterIsUnreadable::class, 'exit');
 });
 
+it('refuses a listing with no condition at all', function (): void {
+    // Read before any row is, and refused rather than worked out from the rows:
+    // a second opinion assembled on a phone would disagree with the machine the
+    // first time lemonfiber changed how it weighs a degraded service.
+    expect(fn(): object => Rosters::in(aRosterSaying(['forms' => [], 'services' => []])))
+        ->toThrow(RosterIsUnreadable::class, 'condition');
+});
+
+it('refuses a condition that is not a word', function (): void {
+    expect(fn(): object => Rosters::in(aRosterSaying(['condition' => 41, 'forms' => [], 'services' => []])))
+        ->toThrow(RosterIsUnreadable::class, 'condition');
+});
+
 it('refuses a condition this build has not heard of', function (): void {
     expect(fn(): object => Rosters::in(aRosterSaying(['condition' => 'brilliant', 'forms' => [], 'services' => []])))
         ->toThrow(RosterIsUnreadable::class, 'brilliant');
