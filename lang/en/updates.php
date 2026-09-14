@@ -21,6 +21,7 @@ return [
     'about_to_take' => 'About to take :version',
     'would_change' => '{1} One service will stop and start again|[2,*] :count services will stop and start again',
     'changes_nothing' => 'This release changes no service on this machine.',
+    'something_worth_noticing' => 'One of these is a change the household will see',
     'take_this_one' => 'Take this one',
     'last_update' => 'The last update',
     'did_not_arrive' => '{1} One service is not where you wanted it|[2,*] :count services are not where you wanted it',
