@@ -26,6 +26,7 @@ final readonly class WentWrong
         private Remedies $remedies,
         private Severity $severity,
         private Standing $standing,
+        private WhatItSaysUnderneath $underneath,
     ) {}
 
     /**
@@ -40,6 +41,7 @@ final readonly class WentWrong
         Remedies $remedies,
         Severity $severity,
         Standing $standing,
+        WhatItSaysUnderneath $underneath,
     ): self {
         $said = trim($meaning);
 
@@ -47,7 +49,7 @@ final readonly class WentWrong
             throw CheckSaidNothing::under($code);
         }
 
-        return new self($code, $said, $remedies, $severity, $standing);
+        return new self($code, $said, $remedies, $severity, $standing, $underneath);
     }
 
     /**
@@ -78,6 +80,18 @@ final readonly class WentWrong
     public function standing(): Standing
     {
         return $this->standing;
+    }
+
+    /**
+     * What the core said underneath, where it said anything.
+     *
+     * `G4-R4` has the detail available and not leading, so it is asked for by
+     * name rather than arriving beside the meaning — a screen has to reach for
+     * it, which is what *must not lead* means on a surface with one column.
+     */
+    public function underneath(): WhatItSaysUnderneath
+    {
+        return $this->underneath;
     }
 
     /** The code an operator can search for, and quote to somebody. */

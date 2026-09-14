@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 
 function row(string $check, Conclusion $conclusion): Finding
@@ -40,6 +41,7 @@ function costing(string $check, Severity $severity, Conclusion $conclusion = Con
             Remedies::none(),
             $severity,
             Standing::Guided,
+            WhatItSaysUnderneath::none(),
         ),
     );
 }

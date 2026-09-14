@@ -26,6 +26,7 @@ use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
@@ -90,6 +91,7 @@ function aRunThatExplainsItself(): Report
                 ),
                 Severity::Critical,
                 Standing::Remediable,
+                WhatItSaysUnderneath::none(),
             ),
         ),
     ));
@@ -186,6 +188,7 @@ it('N2-R3 — says so where the machine knows what is wrong and has nothing to s
                 Remedies::none(),
                 Severity::Critical,
                 Standing::Remediable,
+                WhatItSaysUnderneath::none(),
             ),
         ),
     ))));
@@ -460,6 +463,32 @@ it('N2-R3 — a row whose check could not run carries the reason and nothing els
         ->and($row->verdict)->toBe(Conclusion::Unverified->saidOnTheScreen());
 });
 
+/**
+ * The one row a screen draws for a failing check, with whatever detail the core
+ * added under it.
+ */
+function aFindingRowFor(WhatItSaysUnderneath $underneath): WhatOneFindingSays
+{
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.egress'),
+            Category::Vpn,
+            'Torrent traffic leaves through the tunnel',
+            Conclusion::Failed,
+            WhatTheCheckSaid::wentWrong(
+                Code::of('VPN-3'),
+                'Your address was visible to the swarm',
+                Remedies::of(Remedy::of('Restart the tunnel')),
+                Severity::Critical,
+                Standing::Guided,
+                $underneath,
+            ),
+        ),
+    ))));
+
+    return $screen->findings()[0];
+}
+
 /** A failing verdict, for the rows that exist to carry an attribution. */
 function aFailingVerdict(): WhatTheCheckSaid
 {
@@ -469,6 +498,7 @@ function aFailingVerdict(): WhatTheCheckSaid
         Remedies::none(),
         Severity::Critical,
         Standing::Guided,
+        WhatItSaysUnderneath::none(),
     );
 }
 
@@ -548,6 +578,7 @@ function aRunWhoseWorstRanLast(): Report
                 Remedies::none(),
                 Severity::Critical,
                 Standing::Remediable,
+                WhatItSaysUnderneath::none(),
             ),
         ),
     ));
@@ -866,4 +897,24 @@ it('N3-R13 — no other obstacle throws the session away', function (): void {
 
         expect($keychain->isHolding(theStackBeingLookedAt()->id()))->toBeTrue($why->value);
     }
+});
+
+it('G4-R4 — the detail is on the row, under everything that leads', function (): void {
+    // Available and not leading, which on a surface with one column is a
+    // question about order. The plain explanation and what to try come first;
+    // this is last, so somebody who wants it has it and everybody else has
+    // already read the sentence written for them.
+    $row = aFindingRowFor(WhatItSaysUnderneath::said('dial tcp 10.0.0.4:8989: connection refused'));
+
+    expect($row->underneath)->toBe('dial tcp 10.0.0.4:8989: connection refused')
+        // The two that lead are still there and still lead.
+        ->and($row->meaning)->not->toBe('')
+        ->and($row->remedies->count())->toBe(1);
+});
+
+it('G4-R4 — a finding the core added nothing to carries no detail', function (): void {
+    // The template branches on the empty string, so a row that carried a blank
+    // heading would draw *what the check reported* with nothing under it —
+    // which reads as the app knowing something and not saying it.
+    expect(aFindingRowFor(WhatItSaysUnderneath::none())->underneath)->toBe('');
 });

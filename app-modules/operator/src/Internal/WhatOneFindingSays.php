@@ -11,6 +11,20 @@ use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\WhatItSaysUnderneath;
+
+/**
+ * One technical detail carried out of an `either()` arm.
+ *
+ * {@see WhatItSaysUnderneath::either()} answers with an object so that a caller
+ * cannot fold its two arms into a string and lose the difference between *the
+ * core said nothing* and *the core said nothing useful*.
+ */
+final readonly class WhatTheCoreAddedUnderneath
+{
+    public function __construct(public string $said) {}
+}
 
 /**
  * One row of a report, flattened for a template to read.
@@ -80,6 +94,7 @@ final readonly class WhatOneFindingSays
      * @param string   $service  which service this is about, or empty
      * @param string   $because  the title of what explains this, or empty
      * @param Remedies $remedies what to try, likeliest first, empty where none
+     * @param string   $underneath the technical detail the core added, or empty
      */
     private function __construct(
         public string $title,
@@ -91,6 +106,7 @@ final readonly class WhatOneFindingSays
         public string $service,
         public string $because,
         public Remedies $remedies,
+        public string $underneath,
     ) {}
 
     /**
@@ -116,12 +132,15 @@ final readonly class WhatOneFindingSays
                 service: $service,
                 because: $because,
                 remedies: Remedies::none(),
+                underneath: '',
             ),
             wentWrong: static fn(
                 Code $code,
                 string $meaning,
                 Remedies $remedies,
                 Severity $severity,
+                Standing $standing,
+                WhatItSaysUnderneath $underneath,
             ): self => new self(
                 title: $finding->title(),
                 about: $finding->category()->saidOnTheScreen(),
@@ -136,6 +155,15 @@ final readonly class WhatOneFindingSays
                 // has room for the list — an operator whose first remedy did
                 // not work would otherwise have nowhere to find the second.
                 remedies: $remedies,
+                // `G4-R4`: available, and not leading. It arrives on the row
+                // beneath everything the requirement puts above it, which is
+                // what *must not lead* means on a surface with one column.
+                underneath: $underneath->either(
+                    said: static fn(string $detail): WhatTheCoreAddedUnderneath
+                        => new WhatTheCoreAddedUnderneath($detail),
+                    none: static fn(): WhatTheCoreAddedUnderneath
+                        => new WhatTheCoreAddedUnderneath(''),
+                )->said,
             ),
             couldNotSay: static fn(string $reason, Remedies $remedies): self => new self(
                 title: $finding->title(),
@@ -152,6 +180,7 @@ final readonly class WhatOneFindingSays
                 service: $service,
                 because: $because,
                 remedies: $remedies,
+                underneath: '',
             ),
         );
     }
