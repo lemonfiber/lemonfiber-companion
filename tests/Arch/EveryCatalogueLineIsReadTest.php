@@ -61,12 +61,11 @@ function writtenBeforeItsScreen(): array
         'device.permission_refused' => 'the screen shown after a permission is declined',
 
         // `N2-R5`: a repair an operator asked for and the stack would not do.
-        // The whole repair flow is specified and unbuilt — `Repair`,
-        // `Undoing` and `RepairWasConfirmedAgainstAnOldReading` are all here
-        // and all unreached.
+        // The offer half is built — `Mending` asks what a stack would put right
+        // and the screen states all three of `N2-R4`'s clauses — and the
+        // agreeing half is not, so `Confirmed` and
+        // `RepairWasConfirmedAgainstAnOldReading` are still unreached.
         'health.repair_refused' => 'a repair the stack refused',
-        'health.undoing.permanent' => 'a repair being confirmed, which says whether it can be taken back',
-        'health.undoing.possible' => 'a repair being confirmed, which says whether it can be taken back',
 
         // `N2-R2`: how old a reading is. The report carries no timestamp today,
         // so this waits on the wire as much as on a screen.
