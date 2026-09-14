@@ -80,7 +80,7 @@ final class HowThisStackIs extends NativeComponent
     protected ?WhatTheStackTurnedOutToBe $answered = null;
 
     /**
-     * Which family of checks the operator is reading, or empty for all of them.
+     * Which family of checks the operator is reading, or nothing for all of them.
      *
      * `N2-R9` asks that stuck downloads, provider health, disk pressure and
      * VPN verification each be *reachable*. They are all in the list already,
@@ -89,13 +89,23 @@ final class HowThisStackIs extends NativeComponent
      * downloading should not have to read past eight families to find the
      * queue.
      *
-     * A key rather than a {@see Category}, because this
-     * is a screen's own state and `NativeComponent` reflects over what it can
-     * serialise. The narrowing turns it back into a case, and a value that is
-     * not one is read as no narrowing at all — a tap that lands wrong shows the
-     * whole report rather than nothing.
+     * A key rather than a {@see Category}, because this is a screen's own state
+     * and `NativeComponent` reflects over what it can serialise. The narrowing
+     * turns it back into a case, and a value that is not one is read as no
+     * narrowing at all — a tap that lands wrong shows the whole report rather
+     * than nothing.
+     *
+     * **Null rather than an empty string for *not narrowed*.** The two behave
+     * identically — neither names a case, so both widen out — and that is the
+     * problem: with a sentinel, *no narrowing* and *a key nobody recognises*
+     * are the same state reached two ways, and no test can tell them apart.
+     * The mutation gate proved it, over every tap sequence of length three: a
+     * run with the empty string replaced by an arbitrary word produced
+     * byte-identical screens. A value nothing can distinguish is a value
+     * nothing can defend, which is `HowLongAgo`'s argument about a floor that
+     * had three right answers.
      */
-    protected string $reading = '';
+    protected ?string $reading = null;
 
     public function __construct(
         private readonly Asking $asking,
@@ -227,7 +237,7 @@ final class HowThisStackIs extends NativeComponent
      */
     public function read(string $family): void
     {
-        $this->reading = $this->reading === $family ? '' : $family;
+        $this->reading = $this->reading === $family ? null : $family;
     }
 
     /**
@@ -293,7 +303,7 @@ final class HowThisStackIs extends NativeComponent
      */
     private function narrowing(): ?Category
     {
-        return Category::tryFrom($this->reading);
+        return $this->reading === null ? null : Category::tryFrom($this->reading);
     }
 
     /**
