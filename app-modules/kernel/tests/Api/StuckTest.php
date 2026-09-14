@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\StuckSaysNothing;
@@ -16,8 +17,8 @@ final readonly class WhatOneStalledItemSaid
 function whatTheStalledItemSaid(Stuck $stuck): string
 {
     return $stuck->stated(
-        static fn(string $title, string $service, Stage $stage): WhatOneStalledItemSaid
-            => new WhatOneStalledItemSaid(sprintf('%s/%s/%s', $title, $service, $stage->value)),
+        static fn(string $title, ServiceId $service, Stage $stage): WhatOneStalledItemSaid
+            => new WhatOneStalledItemSaid(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
     )->said;
 }
 

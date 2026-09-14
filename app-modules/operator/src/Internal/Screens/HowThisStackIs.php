@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -256,6 +257,19 @@ final class HowThisStackIs extends NativeComponent
     public function again(): void
     {
         $this->answered = null;
+    }
+
+    /**
+     * Where one service's scrollback is (`N2-R10`).
+     *
+     * Takes the name a row is holding rather than a {@see ServiceId}, because a
+     * template cannot build one and giving it the chance would put the refusal
+     * for a blank name inside a Blade expression. The value is made here, where
+     * a blank is a fault in the fold above rather than a screen half-drawn.
+     */
+    public function logsOf(string $service): string
+    {
+        return $this->goes()->logsOf(ServiceId::called($service));
     }
 
     /**

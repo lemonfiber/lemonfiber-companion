@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
@@ -470,7 +471,7 @@ it('N2-R3 — reads which service a finding is about', function (): void {
     foreach ($report->findings() as $finding) {
         $named[] = $finding->whatItIsAbout()->either(
             theMachine: static fn(): Code => Code::of('the-machine'),
-            theService: static fn(string $service): Code => Code::of($service),
+            theService: static fn(ServiceId $service): Code => Code::of($service->named()),
         );
     }
 
@@ -484,7 +485,7 @@ it('N2-R3 — a check about the machine names no service', function (): void {
     foreach ($report->findings() as $finding) {
         $named[] = $finding->whatItIsAbout()->either(
             theMachine: static fn(): Code => Code::of('the-machine'),
-            theService: static fn(string $service): Code => Code::of($service),
+            theService: static fn(ServiceId $service): Code => Code::of($service->named()),
         );
     }
 

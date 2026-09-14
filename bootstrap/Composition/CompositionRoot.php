@@ -29,6 +29,7 @@ use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Reaching;
+use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sharing;
@@ -41,6 +42,7 @@ use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Stalls;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
@@ -183,11 +185,15 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Mending::class, static fn(): Mending => new Menders(new PinnedClients()));
 
         // What has stopped coming in, which is the first of `N2-R9`'s four.
+
+        // What one service has been saying, bounded and named (`N2-R10`).
         // Beside the two above and built the same way, because the reason they
         // share a constructor is the pin: one place decides whether a
         // certificate is checked, and a port that built its own client would be
         // a second.
         $this->app->bind(Stalling::class, static fn(): Stalling => new Stalls(new PinnedClients()));
+
+        $this->app->bind(Saying::class, static fn(): Saying => new Scrollbacks(new PinnedClients()));
 
         $this->app->bind(
             Networking::class,

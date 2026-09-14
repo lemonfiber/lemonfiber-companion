@@ -99,4 +99,27 @@ return [
     'nothing_stopped' => 'Er is niets blijven steken.',
     'nothing_stopped_action' => 'Alles waar het huishouden om vroeg is onderweg of al binnen.',
     'what_stopped' => 'Wat niet meer binnenkomt',
+
+    // N2-R10 — een begrensde, doorzoekbare weergave die de dienst noemt en
+    // zegt dat dit een venster is en niet het geheel.
+    'stream' => [
+        'stdout' => 'Uitvoer',
+        'stderr' => 'Opgemerkt',
+    ],
+    'what_a_service_said' => 'Bekijk wat deze dienst zei',
+    'logs_for' => 'Wat :service heeft gezegd',
+    'window_of' => 'De laatste :count regels die deze stack bewaarde. Er kan meer achter zitten.',
+    'the_whole_of_it' => 'Alle :count regels die deze stack voor deze dienst heeft.',
+    'search_label' => 'Zoek in deze regels',
+    'search_placeholder' => 'Een woord uit de regel die je zoekt',
+    'search_is_over_the_window' => 'Doorzoekt wat hierboven staat, niet de hele scrollback.',
+    'matched_count' => '{0} Hier past niets bij|{1} Eén regel past|[2,*] :count regels passen',
+    'nothing_matched' => 'Geen regel in dit venster bevat dat.',
+    'nothing_matched_action' => 'Het kan verder terug liggen dan dit venster reikt. Wis de zoekopdracht om het hele venster weer te zien.',
+    'service_said_nothing' => 'Deze dienst heeft niets gezegd.',
+    'service_said_nothing_action' => 'Hij draait rustig door, of is net gestart.',
+    'no_moment' => 'Geen tijd opgegeven',
+    'every' => [
+        'while_work_runs' => 'Kijkt elke :count seconden opnieuw zolang dit loopt.',
+    ],
 ];

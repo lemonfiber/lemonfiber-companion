@@ -832,6 +832,14 @@ services:
         tags:
             - phpstan.rules.rule
 
+    # N2-R14 — a reader one field short refuses rather than substituting. The
+    # coalesce that hands back a default is the same expression as the one that
+    # raises, and only one of them is honest about what arrived.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoSubstitutedWireValueRule
+        tags:
+            - phpstan.rules.rule
+
     # H8 — a method leaves by at most three doors. SonarCloud's S1142 found the
     # first one, on a pull request, which is after the work is finished and
     # where the author has stopped looking. Same argument as D6 below: a rule

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stuck;
 
@@ -54,9 +55,9 @@ final readonly class WhatOneStalledItemSays
     public static function in(Stuck $stuck): self
     {
         return $stuck->stated(
-            static fn(string $title, string $service, Stage $stage): self => new self(
+            static fn(string $title, ServiceId $service, Stage $stage): self => new self(
                 title: $title,
-                service: $service,
+                service: $service->named(),
                 stageSaid: $stage->saidOnTheScreen(),
                 stillMoving: $stage->stillMoving(),
             ),

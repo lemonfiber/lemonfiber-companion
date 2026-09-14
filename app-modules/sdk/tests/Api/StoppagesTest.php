@@ -10,6 +10,7 @@ use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\HowMuchIsShown;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Sdk\Api\Stoppages;
@@ -56,8 +57,8 @@ function everyRowIn(Stalled $stalled): string
 
     foreach ($stalled as $one) {
         $rows[] = $one->stated(
-            static fn(string $title, string $service, Stage $stage): WhatOneStuckRowSaid
-                => new WhatOneStuckRowSaid(sprintf('%s/%s/%s', $title, $service, $stage->value)),
+            static fn(string $title, ServiceId $service, Stage $stage): WhatOneStuckRowSaid
+                => new WhatOneStuckRowSaid(sprintf('%s/%s/%s', $title, $service->named(), $stage->value)),
         )->said;
     }
 

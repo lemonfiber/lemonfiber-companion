@@ -31,7 +31,7 @@ final readonly class Stuck
 {
     private function __construct(
         private string $title,
-        private string $service,
+        private ServiceId $service,
         private Stage $stage,
     ) {}
 
@@ -41,6 +41,13 @@ final readonly class Stuck
      * A blank title is refused because it renders as an empty row somebody is
      * asked to act on, and a blank service because it is a row with nowhere to
      * go — {@see StuckSaysNothing} says which.
+     *
+     * The service is refused here rather than left to {@see ServiceId::called()}
+     * even though that would raise too, because the two sentences are about
+     * different things: one is a stalled item nothing owns and the other is a
+     * caller asking to read the logs of nothing. The name becomes a
+     * {@see ServiceId} immediately afterwards, so a row and a log read cannot
+     * disagree about what a service name is.
      */
     public static function at(string $title, string $service, Stage $stage): self
     {
@@ -50,13 +57,11 @@ final readonly class Stuck
             throw StuckSaysNothing::itIsCalled();
         }
 
-        $owner = trim($service);
-
-        if ($owner === '') {
+        if (trim($service) === '') {
             throw StuckSaysNothing::whichServiceHasIt();
         }
 
-        return new self($named, $owner, $stage);
+        return new self($named, ServiceId::called($service), $stage);
     }
 
     /**
@@ -80,7 +85,7 @@ final readonly class Stuck
      *
      * @template TSaid of object
      *
-     * @param Closure(string, string, Stage): TSaid $say
+     * @param Closure(string, ServiceId, Stage): TSaid $say
      *
      * @return TSaid
      */

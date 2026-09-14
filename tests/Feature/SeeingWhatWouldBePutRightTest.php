@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\Mended;
 use Modules\Kernel\Api\Nonce;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
+use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatWouldMend;
@@ -557,4 +559,62 @@ it('looking again asks the stack afresh rather than reusing the listing', functi
     $screen->offer();
 
     expect($mending->askings() - $before)->toBe(1);
+});
+
+it('N1-R27 — while the stack is working it out, the screen looks again by itself', function (): void {
+    // The half of `N1-R27` that is not a button. An operator who told a machine
+    // to do something should not have to keep tapping to find out whether it
+    // did, and leaving and returning is what the rule refuses by name.
+    $mending = AStackThatWouldMend::stillWorkingItOut();
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $before = $mending->readings();
+    $screen->whileItRuns();
+    $screen->offer();
+
+    // A reading rather than an asking: the handle is kept while the work runs,
+    // so looking again reads the job the stack already took on rather than
+    // asking it what it would put right a second time.
+    expect($mending->readings() - $before)->toBe(1)
+        ->and($screen->isWorking())->toBeTrue();
+});
+
+it('N1-R17 — the cadence costs nothing while there is nothing to wait for', function (): void {
+    // What keeps this from being the polling `N1-R17` refuses. A screen showing
+    // an offer has nothing that changes on its own, so the poll does not reach
+    // the machine at all.
+    $mending = AStackThatWouldMend::offering(aListingWorthReading());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $before = $mending->askings() + $mending->readings();
+    $screen->whileItRuns();
+    $screen->offer();
+
+    expect($mending->askings() + $mending->readings() - $before)->toBe(0)
+        ->and($screen->isWorking())->toBeFalse();
+});
+
+it('N1-R27 — the cadence the screen states is the one the attribute keeps', function (): void {
+    // The two halves come off one constant, so there is no arrangement in which
+    // the sentence says five seconds and the poll fires at two. Asserted
+    // against the attribute itself rather than against a number written here.
+    $screen = theRepairsScreen(AStackThatWouldMend::stillWorkingItOut());
+
+    // Through the class rather than `new ReflectionMethod(...)`, whose
+    // constructor throws a checked exception a Pest body may not — the reason
+    // `EveryWireValueIsACaseTest` reads its enums off class constants.
+    $polls = [];
+
+    foreach (new ReflectionClass($screen)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        if ($method->getName() === 'whileItRuns') {
+            $polls = $method->getAttributes(Poll::class);
+        }
+    }
+
+    expect($polls)->toHaveCount(1)
+        ->and($polls[0]->newInstance()->ms)->toBe(HowOften::WhileWorkRuns->milliseconds())
+        ->and($screen->cadence()->seconds() * 1_000)->toBe($polls[0]->newInstance()->ms)
+        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
 });

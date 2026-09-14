@@ -10,12 +10,22 @@
              describe a condition differently from the one next to it. --}}
         <native:text class="font-bold">{{ __($this->offer()->met) }}</native:text>
         <native:text>{{ __($this->offer()->remedy) }}</native:text>
+
+        {{-- N1-R3: the action stays on the screen and the failure is reported
+             beside it. An obstacle branch with nothing on it leaves an operator
+             whose stack woke up two seconds later with no way to find out. --}}
+        <native:button label="{{ __('health.ask_again') }}" @tap="lookAgain()" />
     @elseif ($this->offer()->isWorking)
         {{-- N2-R7: the unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
              operator — N1-R17 keeps a screen from being a poller. --}}
         <native:text class="font-bold">{{ __('health.working_it_out') }}</native:text>
         <native:text>{{ __('health.working_it_out_action') }}</native:text>
+
+        {{-- The same cadence, on the other state the stack works through. --}}
+        <native:text class="text-sm">
+            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
+        </native:text>
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @elseif ($this->offer()->hasEnded)
         {{-- The stack has no outcome for that asking any more. Not a fault and
@@ -32,10 +42,23 @@
         @if ($this->done()->isWorking)
             <native:text class="font-bold">{{ __('health.carrying_it_out') }}</native:text>
             <native:text>{{ __('health.carrying_it_out_action') }}</native:text>
+            {{-- N1-R27: the cadence is stated, because a screen that refreshes
+                 silently is one an operator cannot reason about — they cannot
+                 tell a second-old answer from a minute-old one, and whether
+                 something has changed is the only reason they are looking. --}}
+            <native:text class="text-sm">
+                {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
+            </native:text>
             <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
         @elseif ($this->done()->met !== '')
             <native:text class="font-bold">{{ __($this->done()->met) }}</native:text>
             <native:text>{{ __($this->done()->remedy) }}</native:text>
+
+            {{-- N1-R3 again, and the sharper half of it: this obstacle stands
+                 between the operator and the answer to *did it work*. Taking
+                 the action away leaves them with a machine they told to change
+                 something and no way to ask what happened. --}}
+            <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
         @elseif ($this->done()->hasEnded)
             {{-- The one state where *it failed* is certainly the wrong word.
                  The operator does not know what happened to their machine, and

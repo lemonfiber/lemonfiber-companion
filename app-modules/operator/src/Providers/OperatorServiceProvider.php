@@ -14,6 +14,7 @@ use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\YourStacks;
 
@@ -120,6 +121,12 @@ final class OperatorServiceProvider extends ServiceProvider
             // a contradiction, and folding this into health would put the two
             // under one verdict that has to be about one of them.
             Router::native(AStacksScreen::Stuck->value, WhatStoppedComingIn::class);
+
+            // What one service has been saying (`N2-R10`). Two placeholders,
+            // which no other route here has: the service is in the path rather
+            // than held by the screen, so a frame whose URI names one service
+            // cannot be showing another's lines under its heading.
+            Router::native(AStacksScreen::Logs->value, WhatThisServiceSaid::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

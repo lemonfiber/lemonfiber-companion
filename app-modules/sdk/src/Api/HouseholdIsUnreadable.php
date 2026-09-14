@@ -54,6 +54,15 @@ final class HouseholdIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    public static function refusal(string $by, int $position): self
+    {
+        return new self(sprintf(
+            'Request %d belonging to `%s` says it was declined and carries no readable reason. `D7-R7` makes the reason part of declining, so this is refused rather than shown as a word nobody can explain to the person who asked.',
+            $position,
+            $by,
+        ));
+    }
+
     public static function standing(string $said): self
     {
         // The accepted list comes from the enum rather than from a sentence

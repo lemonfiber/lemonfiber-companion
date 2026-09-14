@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -53,12 +54,18 @@ function theGeneratedStuckEnvelope(): string
     return theGeneratedEnvelope('StuckEnvelope');
 }
 
+/** The generated envelope that carries a service's scrollback, as text. */
+function theGeneratedLogEnvelope(): string
+{
+    return theGeneratedEnvelope('LogEnvelope');
+}
+
 /**
  * One generated envelope, as text.
  *
- * Named rather than spelled at each caller once there were two: the path is one
- * fact about where the generator writes, and two copies of it would let a
- * regenerated tree move one and leave the other reading a file that is no longer
+ * Named rather than spelled at each caller once there were several: the path is
+ * one fact about where the generator writes, and a copy per envelope would let a
+ * regenerated tree move one and leave the others reading a file that is no longer
  * there — which returns `''`, and an empty source makes every union it is asked
  * about come back empty. The rules below assert they found something for exactly
  * that reason, but they would name the union rather than the path.
@@ -286,6 +293,17 @@ it('N1-R13 — every stage the contract describes has a case', function (): void
     expect(valuesOf(Stage::cases()))->toBe($stages);
 });
 
+it('N1-R13 — every stream the contract describes has a case', function (): void {
+    // A third generated envelope, read the way the stuck one above is. A union
+    // is only declared where it is used, so asking any other envelope about
+    // `stream` answers `[]` — the same answer a renamed field gives, which is
+    // why the assertion insists something was found before comparing.
+    $streams = unionIn(theGeneratedLogEnvelope(), 'stream');
+
+    expect($streams)->not->toBe([], 'no stream union was found in the generated envelope');
+    expect(valuesOf(Stream::cases()))->toBe($streams);
+});
+
 it('N1-R13 — every standing the contract describes has a case', function (): void {
     // The contract calls this `state`. The enum is named for what it says about
     // a problem rather than for the field it arrives in, which is why the two
@@ -329,6 +347,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     Severity::class => 'severity',
     Stage::class => 'stage',
     Standing::class => 'state',
+    Stream::class => 'stream',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

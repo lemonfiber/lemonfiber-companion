@@ -15,6 +15,12 @@
              differently from the one next to it. --}}
         <native:text class="font-bold">{{ __($this->met()) }}</native:text>
         <native:text>{{ __($this->remedy()) }}</native:text>
+
+        {{-- N1-R3: the action is offered and the failure is reported, rather
+             than the action being taken away because the stack is unreachable.
+             Without it the only way back is leaving and returning, which
+             `N1-R27` names separately as the thing a screen must not rely on. --}}
+        <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @else
         {{-- How many stopped, said before the list, so an operator who opened
              this because somebody in the house asked them to does not have to

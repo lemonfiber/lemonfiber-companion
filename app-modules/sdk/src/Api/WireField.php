@@ -113,6 +113,9 @@ enum WireField: string
     /** Why a check has no answer, on the arms that produced none. */
     case Reason = 'reason';
 
+    /** What a request's decline carried, where it was declined (`D7-R7`). */
+    case Refused = 'refused';
+
     /** The single thing to do about an unverified check. Singular on the wire. */
     case Remedy = 'remedy';
 
@@ -148,6 +151,15 @@ enum WireField: string
 
     /** How far a stalled item got before it stopped. */
     case Stage = 'stage';
+
+    /** When something happened, where the thing that wrote it said so. */
+    case At = 'at';
+
+    /** One line of what a service wrote, exactly as it wrote it. */
+    case Line = 'line';
+
+    /** Which of a service's two mouths a line came out of. */
+    case Stream = 'stream';
 
     /** How a single check turned out, as a tagged union. */
     case Verdict = 'verdict';

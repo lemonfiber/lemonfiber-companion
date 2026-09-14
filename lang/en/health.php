@@ -99,4 +99,27 @@ return [
     'nothing_stopped' => 'Nothing has stopped coming in.',
     'nothing_stopped_action' => 'Everything the house asked for is on its way or already here.',
     'what_stopped' => 'What stopped coming in',
+
+    // N2-R10 — a bounded, searchable read that names the service and says the
+    // view is a window rather than the whole.
+    'stream' => [
+        'stdout' => 'Output',
+        'stderr' => 'Noticed',
+    ],
+    'what_a_service_said' => 'See what this service said',
+    'logs_for' => 'What :service has been saying',
+    'window_of' => 'The last :count lines this stack kept. There may be more behind them.',
+    'the_whole_of_it' => 'All :count lines this stack has for this service.',
+    'search_label' => 'Find in these lines',
+    'search_placeholder' => 'A word from the line you want',
+    'search_is_over_the_window' => 'Searching what is shown above, not the whole scrollback.',
+    'matched_count' => '{0} Nothing here matches|{1} One line matches|[2,*] :count lines match',
+    'nothing_matched' => 'No line in this window holds that.',
+    'nothing_matched_action' => 'It may be further back than this window reaches. Clear the search to see the whole window again.',
+    'service_said_nothing' => 'This service has said nothing.',
+    'service_said_nothing_action' => 'It is running quietly, or it has only just started.',
+    'no_moment' => 'No time given',
+    'every' => [
+        'while_work_runs' => 'Looking again every :count seconds while this runs.',
+    ],
 ];

@@ -747,3 +747,28 @@ it('N2-R9 — what stopped coming in is one tap from the machine', function (): 
         ->toBe(AStacksScreen::Stuck->forTheStack(theStackBeingLookedAt()->id()->stored()))
         ->and(NativeRouter::resolve($screen->goes()->stuck()))->not->toBeNull();
 });
+
+it('N2-R10 — a finding about a service offers what that service said', function (): void {
+    // Offered from the finding rather than from a list of every service the
+    // stack runs: this row is already about one, and a picker would put a
+    // choice in front of somebody who came here to read a specific thing.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.up'),
+            Category::Vpn,
+            'The tunnel',
+            Conclusion::Failed,
+            aFailingVerdict(),
+        )->about(AboutWhat::theService('gluetun')),
+    ))));
+
+    $rows = $screen->findings();
+
+    expect($rows[0]->service)->toBe('gluetun')
+        ->and($screen->logsOf($rows[0]->service))
+        ->toBe(AStacksScreen::Logs->forTheStacksService(
+            theStackBeingLookedAt()->id()->stored(),
+            'gluetun',
+        ))
+        ->and(NativeRouter::resolve($screen->logsOf($rows[0]->service)))->not->toBeNull();
+});

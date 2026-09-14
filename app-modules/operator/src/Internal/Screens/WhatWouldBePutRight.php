@@ -10,6 +10,7 @@ use function is_string;
 
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Confirmed;
+use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
@@ -26,6 +27,7 @@ use Modules\Operator\Internal\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\WhatThisStackPutRight;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
+use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -222,6 +224,69 @@ final class WhatWouldBePutRight extends NativeComponent
         }
 
         $this->answered = null;
+    }
+
+    /**
+     * Look again while the stack is carrying the repair out (`N1-R27`).
+     *
+     * The one piece of content in this app that changes without anybody
+     * touching the phone. `N1-R27` refuses a screen that relies on the operator
+     * leaving and returning to see a change, and *ask again* as the only road
+     * is exactly that with a button on it: somebody who told a machine to fix
+     * something has to keep tapping to find out whether it did.
+     *
+     * **It does nothing unless the work is running**, which is what keeps this
+     * from being the polling `N1-R17` refuses. A finished run answers the same
+     * thing however often it is read and a screen showing an offer has nothing
+     * to wait for, so the cadence costs a machine on a home network nothing in
+     * either state.
+     *
+     * The interval is {@see HowOften}'s constant rather than a number written
+     * here, because {@see cadence()} renders the same cadence into a
+     * sentence and a screen that polled at one interval while stating another
+     * would be stating a cadence it does not keep.
+     */
+    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    public function whileItRuns(): void
+    {
+        if (! $this->isWorking()) {
+            return;
+        }
+
+        $this->again();
+    }
+
+    /**
+     * Whether the stack is carrying something out right now.
+     *
+     * Published because the template branches on it and the cadence above
+     * reads it, and those two must agree: a screen that said *this is running*
+     * while the poll had stopped would leave somebody watching a sentence that
+     * will never change.
+     */
+    public function isWorking(): bool
+    {
+        return $this->agreed ? $this->done()->isWorking : $this->offer()->isWorking;
+    }
+
+    /**
+     * How often this screen looks again (`N1-R27`).
+     *
+     * The stated half of the requirement. A screen that refreshes silently is
+     * one an operator cannot reason about: they do not know whether what they
+     * are reading is a second old or a minute old, and whether something has
+     * changed is the only reason they are looking.
+     *
+     * One accessor handing out the cadence rather than one per part of the
+     * sentence, which is {@see goes()}'s shape and for its reason: a key and a
+     * count were two methods naming `WhileWorkRuns` separately, so the screen
+     * said which cadence it keeps in three places and this class arrived at the
+     * twenty-first method `Q-R64` refuses. The template reads what it needs off
+     * the case, and the next thing the sentence counts on costs no method here.
+     */
+    public function cadence(): HowOften
+    {
+        return HowOften::WhileWorkRuns;
     }
 
     /**
