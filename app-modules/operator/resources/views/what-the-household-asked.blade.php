@@ -48,6 +48,25 @@
                 </native:text>
 
                 <native:text>{{ __($request->standing) }}</native:text>
+
+                {{-- N3-R7 and D7-R7: a refused request carries the reason that
+                     was given. `declined` on its own is the answer that sends
+                     somebody to ask their operator in person, which is the
+                     whole thing the requirement exists to prevent. --}}
+                @if ($request->refusedReason !== '')
+                    <native:text class="text-sm">
+                        {{ __('household.refused_because', ['reason' => $request->refusedReason]) }}
+                    </native:text>
+
+                    @if ($request->refusedAt !== '')
+                        {{-- In the stack's own words rather than this phone's
+                             timezone, so two people in the house do not
+                             disagree about when it happened. --}}
+                        <native:text class="text-sm">
+                            {{ __('household.refused_at', ['when' => $request->refusedAt]) }}
+                        </native:text>
+                    @endif
+                @endif
             </native:column>
         @empty
             {{-- Not the same screen as a stack that could not be asked. A quiet

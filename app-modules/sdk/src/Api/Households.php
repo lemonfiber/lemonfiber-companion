@@ -14,9 +14,12 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\HouseholdEnvelope;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\Size;
+use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Sdk\Internal\Wire;
+
+use function trim;
 
 /**
  * The `household` envelope, as the requests this app can show.
@@ -123,13 +126,7 @@ final readonly class Households
                 throw HouseholdIsUnreadable::request($by, $position);
             }
 
-            $wanted[] = Wanted::of(
-                self::number($row, $by, $position),
-                $by,
-                self::title($row, $by, $position),
-                self::size($row),
-                self::standing($row, $by, $position),
-            );
+            $wanted[] = self::request($row, $by, $position);
             $position++;
         }
 
@@ -268,6 +265,81 @@ final readonly class Households
         }
 
         return $said;
+    }
+
+    /**
+     * One request, refused or not, which are two different values.
+     *
+     * The branch is on the standing rather than on whether a `refused` key
+     * happens to be there, because `D7-R7` ties the two together: a decline
+     * *is* a reason, so a row saying `declined` and carrying none is a stack
+     * that broke the rule and is refused here rather than shown as a word an
+     * operator cannot explain to the person who asked.
+     *
+     * The other direction is left alone on purpose. A row that is not declined
+     * and carries a refusal anyway is a stack that changed its mind, and the
+     * standing is the fact this app renders — showing somebody why a thing they
+     * are still waiting for was refused would be worse than dropping it.
+     *
+     * @param array<mixed> $row
+     */
+    private static function request(array $row, string $by, int $position): Wanted
+    {
+        $standing = self::standing($row, $by, $position);
+        $number = self::number($row, $by, $position);
+        $title = self::title($row, $by, $position);
+
+        if ($standing !== Waiting::Declined) {
+            return Wanted::of($number, $by, $title, self::size($row), $standing);
+        }
+
+        return Wanted::turnedDown(
+            $number,
+            $by,
+            $title,
+            self::size($row),
+            self::whyItWasRefused($row, $by, $position),
+        );
+    }
+
+    /**
+     * What they were told, and when, where the stack said when (`N3-R7`).
+     *
+     * A declined row with no readable reason is refused rather than given one,
+     * which is `N2-R14` exactly: the app must not substitute a value the
+     * contract did not carry, and the substitute available here — *no reason
+     * given* — is a sentence this application would have written on a stack's
+     * behalf and shown to the person who asked.
+     *
+     * @param array<mixed> $row
+     */
+    private static function whyItWasRefused(array $row, string $by, int $position): TurnedDown
+    {
+        $refused = self::under($row, WireField::Refused);
+
+        if (! is_array($refused)) {
+            throw HouseholdIsUnreadable::refusal($by, $position);
+        }
+
+        // Through `under()` rather than a coalesce on the subscript: `C9` refuses
+        // the shape and `N2-R14` refuses what it usually means, which is this
+        // app filling a gap the contract left.
+        $reason = self::under($refused, WireField::Reason);
+
+        if (! is_string($reason) || trim($reason) === '') {
+            throw HouseholdIsUnreadable::refusal($by, $position);
+        }
+
+        $at = self::under($refused, WireField::At);
+
+        // A refusal with no moment is ordinary — the stack records one where it
+        // has one — so this is the one absence here with an answer rather than
+        // a refusal, which is `Size::unknown()`'s argument on the row above.
+        if (! is_string($at) || trim($at) === '') {
+            return TurnedDown::because($reason);
+        }
+
+        return TurnedDown::at($at, $reason);
     }
 
     /** @param array<mixed> $row */

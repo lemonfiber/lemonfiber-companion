@@ -113,6 +113,9 @@ enum WireField: string
     /** Why a check has no answer, on the arms that produced none. */
     case Reason = 'reason';
 
+    /** What a request's decline carried, where it was declined (`D7-R7`). */
+    case Refused = 'refused';
+
     /** The single thing to do about an unverified check. Singular on the wire. */
     case Remedy = 'remedy';
 

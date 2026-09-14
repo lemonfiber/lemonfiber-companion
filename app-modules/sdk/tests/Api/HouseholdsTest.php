@@ -11,6 +11,7 @@ use function iterator_to_array;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Sdk\Api\HouseholdIsUnreadable;
 use Modules\Sdk\Api\Households;
@@ -302,4 +303,85 @@ it('D7-R3 — an estimate half-readable is no more use than none of it', functio
 
     expect($howBig(0))->toBe('unknown')
         ->and($howBig(1))->toBe('unknown');
+});
+
+it('N3-R7 — reads the reason a request was refused, and when', function (): void {
+    $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
+        aMember('Robin', [[
+            'id' => 1,
+            'title' => 'A film',
+            'state' => 'declined',
+            'refused' => ['at' => '2026-09-14T04:00:00Z', 'reason' => 'The disk is nearly full'],
+        ]]),
+    ]])), preserve_keys: false);
+
+    $said = $wanted[0]->refusal(
+        was: static fn(TurnedDown $why): Code => Code::of(sprintf('%s/%s', $why->reason(), $why->when(
+            then: static fn(string $when): Code => Code::of($when),
+            unstated: static fn(): Code => Code::of('-'),
+        )->shown())),
+        wasNot: static fn(): Code => Code::of('not refused'),
+    );
+
+    expect($said->shown())->toBe('The disk is nearly full/2026-09-14T04:00:00Z');
+});
+
+it('a refusal the stack did not time is read without one', function (): void {
+    $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
+        aMember('Robin', [[
+            'id' => 1,
+            'title' => 'A film',
+            'state' => 'declined',
+            'refused' => ['reason' => 'Not this week'],
+        ]]),
+    ]])), preserve_keys: false);
+
+    $said = $wanted[0]->refusal(
+        was: static fn(TurnedDown $why): Code => Code::of($why->when(
+            then: static fn(string $when): Code => Code::of($when),
+            unstated: static fn(): Code => Code::of('unstated'),
+        )->shown()),
+        wasNot: static fn(): Code => Code::of('not refused'),
+    );
+
+    expect($said->shown())->toBe('unstated');
+});
+
+it('D7-R7 — a declined request carrying no reason is refused, not shown short', function (): void {
+    // `declined` with nothing after it is the screen that sends somebody to ask
+    // their operator in person, which is the whole thing the requirement exists
+    // to prevent — and substituting *no reason given* would be this app writing
+    // a sentence on a stack's behalf (`N2-R14`).
+    $each = [
+        'no refused key at all' => ['id' => 1, 'title' => 'A film', 'state' => 'declined'],
+        'a refusal that is not one' => ['id' => 1, 'title' => 'A film', 'state' => 'declined', 'refused' => 'no'],
+        'a blank reason' => ['id' => 1, 'title' => 'A film', 'state' => 'declined', 'refused' => ['reason' => '  ']],
+    ];
+
+    foreach ($each as $which => $row) {
+        expect(fn(): Requested => Households::in(householdSaying(['members' => [aMember('Robin', [$row])]])))
+            ->toThrow(HouseholdIsUnreadable::class, 'no readable reason', $which);
+    }
+});
+
+it('a request that is not declined is read whatever `refused` says', function (): void {
+    // A row that is not declined and carries a refusal anyway is a stack that
+    // changed its mind. The standing is the fact this app renders, and showing
+    // somebody why a thing they are still waiting for was refused would be
+    // worse than dropping it.
+    $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
+        aMember('Robin', [[
+            'id' => 1,
+            'title' => 'A film',
+            'state' => 'getting',
+            'refused' => ['reason' => 'a reason from a decision that was reversed'],
+        ]]),
+    ]])), preserve_keys: false);
+
+    $said = $wanted[0]->refusal(
+        was: static fn(TurnedDown $why): Code => Code::of($why->reason()),
+        wasNot: static fn(): Code => Code::of('not refused'),
+    );
+
+    expect($said->shown())->toBe('not refused');
 });

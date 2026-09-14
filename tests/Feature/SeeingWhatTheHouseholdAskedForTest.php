@@ -14,6 +14,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Operator\Internal\AStacksScreen;
@@ -343,4 +344,42 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
     $screen->howMany();
 
     expect($wanting->askings())->toBe(2);
+});
+
+it('N3-R7 — a refused request shows the reason on the row', function (): void {
+    // The answer the household actually asks its operator for. `declined` on
+    // its own is what sends somebody to ask in person, which is the whole thing
+    // `D7-R7` and `N3-R7` exist to prevent.
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
+        Wanted::turnedDown(
+            41,
+            'Sam',
+            'A film nobody has seen',
+            Size::unknown(),
+            TurnedDown::at('2026-09-14T04:00:00Z', 'The disk is nearly full'),
+        ),
+        Wanted::of(42, 'Robin', 'A series somebody has', Size::unknown(), Waiting::Here),
+    )));
+
+    $rows = $screen->requests();
+
+    expect($rows[0]->refusedReason)->toBe('The disk is nearly full')
+        ->and($rows[0]->refusedAt)->toBe('2026-09-14T04:00:00Z')
+        ->and($rows[0]->standing)->toBe(Waiting::Declined->saidOnTheScreen())
+        // The row beside it carries neither, which is what the template
+        // branches on — an empty reason renders nothing rather than a heading
+        // with a blank under it.
+        ->and($rows[1]->refusedReason)->toBe('')
+        ->and($rows[1]->refusedAt)->toBe('');
+});
+
+it('a refusal the stack did not time carries the reason and no moment', function (): void {
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
+        Wanted::turnedDown(41, 'Sam', 'A film', Size::unknown(), TurnedDown::because('Not this week')),
+    )));
+
+    $rows = $screen->requests();
+
+    expect($rows[0]->refusedReason)->toBe('Not this week')
+        ->and($rows[0]->refusedAt)->toBe('');
 });

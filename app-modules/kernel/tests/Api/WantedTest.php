@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\RequestHasNobodyBehindIt;
 use Modules\Kernel\Api\Size;
+use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 
@@ -104,4 +105,57 @@ it('D7-R3 — hands the size out with its label still on it', function (): void 
     expect(theSizeOn(aRequest(size: Size::guessedAt(4_000_000_000))))
         ->toBe('guessed-4000000000')
         ->and(theSizeOn(aRequest()))->toBe('nobody-knows');
+});
+
+/** One word carried out of a refusal arm. */
+final readonly class WhatTheRequestSaidAboutBeingRefused
+{
+    public function __construct(public string $said) {}
+}
+
+/** Why a request was refused, or the word for not having been. */
+function whyItWasTurnedDown(Wanted $wanted): string
+{
+    return $wanted->refusal(
+        was: static fn(TurnedDown $why): WhatTheRequestSaidAboutBeingRefused
+            => new WhatTheRequestSaidAboutBeingRefused($why->reason()),
+        wasNot: static fn(): WhatTheRequestSaidAboutBeingRefused
+            => new WhatTheRequestSaidAboutBeingRefused('not refused'),
+    )->said;
+}
+
+it('N3-R7 — a refused request carries the reason that was given', function (): void {
+    $wanted = Wanted::turnedDown(
+        41,
+        'Sam',
+        'A film nobody has seen',
+        Size::unknown(),
+        TurnedDown::because('The disk is nearly full'),
+    );
+
+    expect(whyItWasTurnedDown($wanted))->toBe('The disk is nearly full');
+});
+
+it('D7-R7 — a refused request is `declined` by construction', function (): void {
+    // The standing is not a parameter, which makes two mistakes unspellable at
+    // once: a decline carrying no reason, and a reason attached to a request
+    // that was never declined — a screen telling somebody why a thing they are
+    // still waiting for was refused.
+    $wanted = Wanted::turnedDown(41, 'Sam', 'A film', Size::unknown(), TurnedDown::because('No room'));
+
+    expect($wanted->standing())->toBe(Waiting::Declined);
+});
+
+it('a request that was not refused says so rather than answering with nothing', function (): void {
+    $wanted = Wanted::of(41, 'Sam', 'A film', Size::unknown(), Waiting::ForApproval);
+
+    expect(whyItWasTurnedDown($wanted))->toBe('not refused');
+});
+
+it('a refused request is still refused for the reasons every request is', function (): void {
+    // `turnedDown()` goes through `of()`, so the blank-title and blank-requester
+    // refusals reach it too — which is what keeps a decline from being the one
+    // row that can arrive unreadable.
+    expect(fn(): Wanted => Wanted::turnedDown(41, '  ', 'A film', Size::unknown(), TurnedDown::because('No')))
+        ->toThrow(RequestHasNobodyBehindIt::class);
 });

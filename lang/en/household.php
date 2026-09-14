@@ -26,4 +26,6 @@ return [
     'nothing_asked_action' => 'What the household asks for shows up here as soon as somebody requests something.',
     'see_health' => 'See how this stack is doing',
     'asked_for' => 'What the household asked for',
+    'refused_because' => 'Turned down: :reason',
+    'refused_at' => 'Turned down at :when',
 ];

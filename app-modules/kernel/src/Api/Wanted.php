@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use Closure;
+
 use function trim;
 
 /**
@@ -46,6 +48,7 @@ final readonly class Wanted
         private string $forWhat,
         private Size $size,
         private Waiting $standing,
+        private ?TurnedDown $turnedDown = null,
     ) {}
 
     /**
@@ -56,6 +59,13 @@ final readonly class Wanted
      * be approving, is a decision nobody can make. The requester is refused for
      * the same reason one step along — *somebody* asked for this is not enough
      * to decide on, and `D7-R7` has a decline reach them by name.
+     *
+     * **A refused request is built by {@see self::turnedDown()} instead.** Not a
+     * sixth parameter that is usually null: `C2` refuses that shape, and it is
+     * right for a reason worth stating here. A nullable refusal makes *refused*
+     * and *not refused* the same call, told apart by an `instanceof` no caller
+     * can see — and the standing would then be free to say `declined` while the
+     * reason said nothing, which is exactly what `D7-R7` forbids.
      */
     public static function of(
         int $number,
@@ -105,6 +115,51 @@ final readonly class Wanted
     public function size(): Size
     {
         return $this->size;
+    }
+
+    /**
+     * The one place a refused request becomes one this app can show.
+     *
+     * Its own constructor rather than a nullable parameter, which is `C2`'s
+     * cure spelled out: *refused* and *not refused* are different calls, so a
+     * caller cannot reach one while meaning the other.
+     *
+     * **The standing is not a parameter.** A request built here is `Declined`
+     * by construction, which makes two mistakes unspellable at once: a decline
+     * carrying no reason, and a reason attached to a request that was never
+     * declined. `D7-R7` forbids the first and the second is a screen telling
+     * somebody why a thing they are still waiting for was refused.
+     */
+    public static function turnedDown(
+        int $number,
+        string $by,
+        string $forWhat,
+        Size $size,
+        TurnedDown $why,
+    ): self {
+        $was = self::of($number, $by, $forWhat, $size, Waiting::Declined);
+
+        return new self($was->number, $was->by, $was->forWhat, $was->size, $was->standing, $why);
+    }
+
+    /**
+     * Say why it was refused, or say that it was not (`N3-R7`).
+     *
+     * Two arms rather than a nullable getter, for `C2`'s reason and for a
+     * sharper one here: a screen handed a null would render an empty line where
+     * the reason belongs, and an empty reason is exactly what `D7-R7` forbids.
+     * The shape that cannot be built is the shape that cannot be shown.
+     *
+     * @template TWas of object
+     * @template TWasNot of object
+     *
+     * @param  Closure(TurnedDown): TWas $was
+     * @param  Closure(): TWasNot        $wasNot
+     * @return TWas|TWasNot
+     */
+    public function refusal(Closure $was, Closure $wasNot): object
+    {
+        return $this->turnedDown instanceof TurnedDown ? $was($this->turnedDown) : $wasNot();
     }
 
     /** Where it stands, which is what says whether a decision is wanted. */
