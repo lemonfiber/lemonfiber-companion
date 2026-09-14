@@ -2,6 +2,10 @@ name: sonar
 
 on:
   pull_request:
+  # `sonarcloud` is a required check, so it has to report on the queue's branch
+  # as well as on the pull request. See `ci.yml` for what a merge group is; what
+  # it means here is below, on the job, because it is narrower than it looks.
+  merge_group:
   push:
     branches: [main]
 
@@ -35,7 +39,24 @@ jobs:
     name: sonarcloud
     # A fork has no access to the token, and a job that cannot authenticate
     # should not report a red tick that nobody can fix.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    #
+    # A merge group is named here rather than left to the fork comparison. Its
+    # branch is this repository's own — the queue builds it here, never in a
+    # fork — so the token is present and the scan can run; but the field that
+    # comparison reads is `github.event.pull_request.head.repo.full_name`, which
+    # is null on this event, and what a null compares equal to is not a rule a
+    # required check should rest on. Unnamed, this job would skip in the queue,
+    # and a skipped required check reports success.
+    #
+    # What the scan proves there is less than it proves on a pull request, and
+    # saying so is cheaper than discovering it. There is no pull request for
+    # SonarCloud to decorate, so the run is recorded against the queue's own
+    # short-lived branch, and the gate below — which reads a pull request's
+    # summary — skips. So in a merge group this check means the scan ran over
+    # the merged tree and neither it nor the coverage run fell over. `Q-R64`
+    # itself is enforced on the pull request, which cannot be queued while that
+    # gate is red.
+    if: github.event_name == 'push' || github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -175,6 +196,16 @@ jobs:
     #
     # `!cancelled()` rather than `always()`: a cancelled run is somebody pressing
     # stop, and finishing the job they stopped serves nobody.
+    #
+    # On a merge group `gate / gate` skips, and reports success by skipping. The
+    # condition that does it is in the reusable rather than here — its `gate` job
+    # is `if: github.event_name == 'pull_request'`, and its `not-a-pull-request`
+    # job runs in its place and says in the log that nothing was gated. Nothing
+    # in this file can change that, and there is nothing for it to read anyway:
+    # the gate wants a SonarCloud summary about a pull request and an allowance
+    # to compare against a base branch, and a merge group has neither. `Q-R64`
+    # is enforced one step earlier, on the pull request, which is where the two
+    # things it reads exist.
     if: ${{ !cancelled() }}
     permissions:
       contents: read
