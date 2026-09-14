@@ -28,6 +28,18 @@ namespace Modules\Kernel\Api;
  * the screen can re-offer rather than leaving somebody in front of a button
  * that did nothing.
  *
+ * **It carries the listing the repair was offered in.** `N2-R6` is settled
+ * twice and the engine's is the one that counts: it can see whether the machine
+ * has moved and this app cannot. A confirmation quotes {@see Offer::named()}
+ * and the engine refuses it where the moment has passed. The reading comparison
+ * below is the same rule asked on this side, against what the screen still
+ * holds — both refuse, and whichever notices first is the one that does.
+ *
+ * Requiring the offer also makes a confirmation that names a repair the listing
+ * never contained impossible to build. That is not a defensive check: the two
+ * arrive together and a screen that had lost track of which listing a button
+ * belonged to would be confirming against one listing and quoting another.
+ *
  * **Identity, not equality.** The comparison is against the reading instance
  * the confirmation was made from. A re-read that happens to produce the same
  * values is still a different reading, and treating it as the same one would
@@ -36,7 +48,11 @@ namespace Modules\Kernel\Api;
  */
 final readonly class Confirmed
 {
-    private function __construct(private Repair $repair, private Reading $against) {}
+    private function __construct(
+        private Repair $repair,
+        private Offer $inside,
+        private Reading $against,
+    ) {}
 
     /**
      * The one way a confirmation exists.
@@ -46,13 +62,35 @@ final readonly class Confirmed
      * `N1-R39`, and there is no half-confirmed repair to carry on with — which
      * is the same argument `Pairing::read()` makes for raising.
      */
-    public static function against(Repair $repair, Reading $shown): self
+    public static function against(Repair $repair, Offer $inside, Reading $shown): self
     {
         if (! $shown->mayConfirmAnAction()) {
             throw RepairWasConfirmedAgainstAnOldReading::of($repair);
         }
 
-        return new self($repair, $shown);
+        if (! $inside->repairs()->holds($repair)) {
+            throw RepairWasNotInThatOffer::of($repair);
+        }
+
+        return new self($repair, $inside, $shown);
+    }
+
+    /**
+     * What the engine calls the listing this was agreed to.
+     *
+     * Published so the port that acts can quote it, and for nothing else. A screen reading it would be about to make a decision from it, and
+     * every decision that could be made from it is the engine's — see
+     * {@see Offer} for the argument.
+     */
+    public function quoting(): string
+    {
+        return $this->inside->named();
+    }
+
+    /** Which repair was agreed to, for naming it where the engine is asked. */
+    public function repair(): Repair
+    {
+        return $this->repair;
     }
 
     /**
