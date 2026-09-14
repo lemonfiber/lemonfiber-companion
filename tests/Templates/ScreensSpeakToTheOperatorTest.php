@@ -56,11 +56,14 @@ const OPERATED_BY = ['@tap', '@press', '@navigate', 'native:model'];
 foreach ($templates as $template) {
     it(sprintf('F5 — every control in %s announces itself', $template->path), function () use ($template): void {
         $silent = [];
+        $controls = 0;
 
         foreach ($template->elements() as $element) {
             if (! isAControl($element['tag'], $element['attributes'])) {
                 continue;
             }
+
+            $controls++;
 
             if (announcesItself($element['attributes'])) {
                 continue;
@@ -68,6 +71,15 @@ foreach ($templates as $template) {
 
             $silent[] = $template->describe($element['tag'], $element['line']);
         }
+
+        // The floor is one per screen and it is not a guess. Every screen owes
+        // the operator a way off it, a way off is something that navigates, and
+        // something that navigates is operated — so a screen this rule finds no
+        // control on is a screen where the reading, not the screen, is wrong.
+        expect($controls)->toBeGreaterThan(0, sprintf(
+            '%s has no control this rule can see, so it read nothing here',
+            $template->path,
+        ));
 
         expect($silent)->toBe([], sprintf(
             "These controls are silent to a screen reader:\n  %s\n\n"
