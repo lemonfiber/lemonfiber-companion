@@ -244,6 +244,15 @@ enum WireField: string
     /** When a release was taken back. Absent on one that still stands. */
     case Withdrawn = 'withdrawn';
 
+    /** What became of each service the last applied update touched. */
+    case Applied = 'applied';
+
+    /** How one service's share of an applied update finished. */
+    case Ending = 'ending';
+
+    /** The way back the stack named for one service. */
+    case Reversal = 'reversal';
+
     /**
      * This field's name as a path, where it is read off another field's value.
      *

@@ -38,4 +38,17 @@ final class UpkeepIsUnreadable extends InvalidArgumentException
     {
         return new self(sprintf('Release %d in the changelog could not be read.', $position + 1));
     }
+
+    /**
+     * One service's share of an applied update, named by where it sat.
+     *
+     * One refusal for the row rather than one per field. Which of the three a
+     * row was short of is not a different evening for the operator — the update
+     * is reported and this side cannot say what became of that service — and
+     * three refusals would be three sentences saying so.
+     */
+    public static function applied(int $position): self
+    {
+        return new self(sprintf('Service %d in the applied update could not be read.', $position + 1));
+    }
 }

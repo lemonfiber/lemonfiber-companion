@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\HowItEnded;
+use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -24,6 +28,8 @@ use Modules\Sdk\Api\Upkeepers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Tree;
+use Tests\Support\WhatTheContractAccepts;
 
 // The KeepingCurrent contract, run against the adapter and against the fake.
 //
@@ -75,36 +81,115 @@ function theSameStanding(): Upkeep
         // confirmation naming it would have somebody agree to a service that
         // was never going to move.
         Services::these(ServiceId::called('jellyfin')),
+        theSameApplying(),
     );
+}
+
+/**
+ * What became of the last update, which both implementations report (`N2-R18`).
+ *
+ * Two endings and not one, and the second is not *failed*: a service that took
+ * the image and would not come back up sends somebody to its logs, and one that
+ * never answered sends them to the machine. Flattened, both send them nowhere.
+ */
+function theSameApplying(): HowServicesTookIt
+{
+    return HowServicesTookIt::these(
+        HowAServiceTookIt::of(ServiceId::called('jellyfin'), HowItEnded::Updated, HowToUndoIt::Rollback),
+        HowAServiceTookIt::of(ServiceId::called('sonarr'), HowItEnded::NotStarted, HowToUndoIt::Restore),
+    );
+}
+
+/**
+ * The payload the far end answers with, as a stack would actually send it.
+ *
+ * Every field the contract requires, at the path the contract puts it. The rule
+ * below holds it to that rather than trusting this to have been written
+ * carefully, because a fixture is written by whoever wrote the reader: when the
+ * two agree about a field that is not there, both are wrong the same way and
+ * every assertion passes.
+ *
+ * `state` appears twice on this payload and means two things. The top-level one
+ * says how the last applied update finished; the *current, pending, stale*
+ * triple `N2-R15` asks for is under `changelog`. They are both words, so nothing
+ * but the contract tells them apart.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackWithUpdatesSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'update',
+        'data' => [
+            'state' => 'partial',
+            'confirmed' => true,
+            'in_flight' => [],
+            'stack_edits' => [],
+            'applied' => [
+                [
+                    'service' => 'jellyfin',
+                    'ending' => 'updated',
+                    'from' => '4.0.14',
+                    'to' => '4.0.15',
+                    'reversal' => 'rollback',
+                ],
+                [
+                    'service' => 'sonarr',
+                    'ending' => 'not-started',
+                    'from' => '4.0.14',
+                    'to' => '4.0.15',
+                    'reversal' => 'restore',
+                ],
+            ],
+            'changes' => [
+                aChangeTo('jellyfin', refused: false),
+                // Refused, so it is not a service an update would change and
+                // naming it in a confirmation would have somebody agree to one
+                // that was never going to move.
+                aChangeTo('sonarr', refused: true),
+            ],
+            'changelog' => [
+                'state' => 'pending',
+                'requirements' => [],
+                'running' => [
+                    'version' => '4.0.15',
+                    'user_facing' => false,
+                    'tag' => 'v4.0.15',
+                    'groups' => [],
+                ],
+                'releases' => [
+                    ['version' => '4.1.0', 'user_facing' => true],
+                    ['version' => '4.0.16', 'user_facing' => false],
+                    ['version' => '4.0.17', 'user_facing' => true, 'withdrawn' => '2026-09-01'],
+                ],
+            ],
+        ],
+    ];
+}
+
+/**
+ * One row of what an update would change.
+ *
+ * @return array<string, mixed>
+ */
+function aChangeTo(string $service, bool $refused): array
+{
+    return [
+        'service' => $service,
+        'refused' => $refused,
+        'because' => 'a newer image is published',
+        'current' => '4.0.15',
+        'target' => '4.1.0',
+        'irreversible' => false,
+        'jump' => 'minor',
+    ];
 }
 
 /** What the far end answers where that is where it stands. */
 function anUpkeepAnswer(): MockResponse
 {
-    return MockResponse::make(
-        (string) json_encode([
-            'api_version' => 1,
-            'kind' => 'update',
-            'data' => [
-                'state' => 'pending',
-                'running' => ['version' => '4.0.15', 'user_facing' => false],
-                'changes' => [
-                    ['service' => 'jellyfin', 'refused' => false],
-                    // Refused, so it is not a service an update would change and
-                    // naming it in a confirmation would have somebody agree to
-                    // one that was never going to move.
-                    ['service' => 'sonarr', 'refused' => true],
-                ],
-                'changelog' => [
-                    'releases' => [
-                        ['version' => '4.1.0', 'user_facing' => true],
-                        ['version' => '4.0.16', 'user_facing' => false],
-                        ['version' => '4.0.17', 'user_facing' => true, 'withdrawn' => '2026-09-01'],
-                    ],
-                ],
-            ],
-        ]),
-    );
+    return MockResponse::make((string) json_encode(whatAStackWithUpdatesSends()));
 }
 
 /**
@@ -232,3 +317,106 @@ it('N2-R17 — takes an update agreed against the services it named', function (
         expect($underway)->toBeInstanceOf(Underway::class, $which);
     }
 });
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    // The rule that makes every rule above mean anything. What it refuses is a
+    // fixture agreeing with the reader about a field neither the stack nor the
+    // contract has — which is not a hypothetical failure: this payload once put
+    // `state` and `running` at the top, `Standings` read them there, and three
+    // rules passed while the screen would have refused every stack with an
+    // update waiting.
+    //
+    // Both directions, because each catches a different mistake. A field the
+    // contract does not have at that path is a reader looking in the wrong
+    // place. A field it requires and this leaves out is a fixture standing in
+    // for a payload no stack sends, which is a reader nothing has tested.
+    expect(WhatTheContractAccepts::complaintsAbout('UpdateEnvelope', whatAStackWithUpdatesSends()))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});
+
+it('N2-R19 — the contract still names a way back on every service', function (): void {
+    // `HowAServiceTookIt` has no case for *no way back*, and this is why that
+    // is safe rather than an omission. `N2-R19` refuses to offer undoing where
+    // the stack named neither, and the stack names one every time: `reversal`
+    // is required and says `rollback` or `restore`.
+    //
+    // The day it becomes optional, the requirement stops being answered by the
+    // contract and starts needing an absent case again — so this fails and says
+    // so, rather than the app quietly promising a way back it was handed null
+    // for. The check a planted violation would otherwise have to prove, kept
+    // where the assumption is made.
+    $shape = thePayloadShapeOfTheUpdateEnvelope();
+
+    expect($shape)
+        ->toContain("reversal: 'rollback'|'restore'")
+        ->and($shape)->not->toContain('reversal?:');
+});
+
+it('N2-R18 — reports each service of an applied update apart from the others', function (): void {
+    // The rule the fake could not be wrong about alone: what makes it worth
+    // asserting across both is that the adapter has to read four endings off
+    // the wire and keep them four. A `not-started` flattened into a failure
+    // sends an operator to the machine when the answer is in the service's own
+    // log, and the wire carries the difference either way.
+    foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
+        $said = [];
+
+        foreach (whatBecameOfIt($build()) as $service) {
+            $said[] = sprintf(
+                '%s:%s:%s',
+                $service->service()->named(),
+                $service->ending()->value,
+                $service->undo()->value,
+            );
+        }
+
+        expect($said)->toBe([
+            'jellyfin:updated:rollback',
+            'sonarr:not-started:restore',
+        ], $which);
+    }
+});
+
+it('N2-R18 — leads with the services that are not where the operator wanted them', function (): void {
+    foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
+        $went = whatBecameOfIt($build());
+        $wrong = [];
+
+        foreach ($went->thatDidNotArrive() as $service) {
+            $wrong[] = $service->service()->named();
+        }
+
+        expect($wrong)->toBe(['sonarr'], $which)
+            ->and($went->count())->toBe(2, $which)
+            ->and($went->isEmpty())->toBeFalse($which)
+            // `not-started` is a service that would not come back up, which the
+            // stack knows. Unanswered is the one it does not, and a screen that
+            // read them as one would offer a remedy for a situation it is
+            // guessing at.
+            ->and($went->anythingUnanswered())->toBeFalse($which);
+    }
+});
+
+/** What became of each service, whichever implementation answered. */
+function whatBecameOfIt(KeepingCurrent $keeping): HowServicesTookIt
+{
+    return $keeping->standing(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith())->either(
+        stands: static fn(Upkeep $upkeep): HowServicesTookIt => $upkeep->howItWent(),
+        // Nothing was applied, because nothing was read. Which obstacle it was
+        // is what the rule about obstacles asserts; here it only has to not be
+        // a list.
+        met: static fn(): HowServicesTookIt => HowServicesTookIt::none(),
+    );
+}
+
+/** The `update` envelope's declared payload shape, as text. */
+function thePayloadShapeOfTheUpdateEnvelope(): string
+{
+    $said = (string) file_get_contents(
+        Tree::at('vendor/lemonfiber/sdk-php/src/Generated/UpdateEnvelope.php'),
+    );
+
+    preg_match('/@phpstan-type Data (.*)/', $said, $shape);
+
+    return $shape[1] ?? '';
+}

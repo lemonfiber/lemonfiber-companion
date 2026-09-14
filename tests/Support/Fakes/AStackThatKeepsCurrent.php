@@ -6,6 +6,7 @@ namespace Tests\Support\Fakes;
 
 use Closure;
 use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
@@ -57,7 +58,12 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
     /** A stack with nothing waiting, which is the ordinary evening. */
     public static function withNothingWaiting(): self
     {
-        return self::with(Upkeep::reported(HowCurrent::Current, Releases::none(), Services::none()));
+        return self::with(Upkeep::reported(
+            HowCurrent::Current,
+            Releases::none(),
+            Services::none(),
+            HowServicesTookIt::none(),
+        ));
     }
 
     public static function met(Obstacle $why): self

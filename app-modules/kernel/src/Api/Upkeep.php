@@ -26,6 +26,7 @@ final readonly class Upkeep
         private HowCurrent $how,
         private Releases $releases,
         private Services $changing,
+        private HowServicesTookIt $went,
         private ?Release $running = null,
     ) {}
 
@@ -41,9 +42,13 @@ final readonly class Upkeep
      * named arguments carries their names as keys, so being variadic is not
      * the same claim as being a list.
      */
-    public static function reported(HowCurrent $how, Releases $releases, Services $changing): self
-    {
-        return new self($how, $releases, $changing);
+    public static function reported(
+        HowCurrent $how,
+        Releases $releases,
+        Services $changing,
+        HowServicesTookIt $went,
+    ): self {
+        return new self($how, $releases, $changing, $went);
     }
 
     /** The same reading, where the stack named the release in use. */
@@ -52,8 +57,9 @@ final readonly class Upkeep
         Release $running,
         Releases $releases,
         Services $changing,
+        HowServicesTookIt $went,
     ): self {
-        return new self($how, $releases, $changing, $running);
+        return new self($how, $releases, $changing, $went, $running);
     }
 
     public function how(): HowCurrent
@@ -128,5 +134,19 @@ final readonly class Upkeep
     public function hasSomethingToOffer(): bool
     {
         return $this->how->hasSomethingWaiting() && ! $this->waiting()->isEmpty();
+    }
+
+    /**
+     * What became of each service the last applied update touched (`N2-R18`).
+     *
+     * Part of this reading rather than a second errand because it arrives in
+     * the same payload and answers the other half of the same question. An
+     * operator opening this screen is asking *where am I* — and where they are
+     * includes an update that went half way last night, which a screen showing
+     * only what is waiting would leave them to discover from the services.
+     */
+    public function howItWent(): HowServicesTookIt
+    {
+        return $this->went;
     }
 }

@@ -35,8 +35,11 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param string                   $howSaid    the key for whether the stack is current, pending or stale
      * @param string                   $running    the version in use, or empty where the stack named none
      * @param bool                     $runningWasWithdrawn whether the version in use has been taken back
-     * @param list<WhatOneReleaseSays> $waiting    the releases worth offering, in the stack's order
-     * @param Services                 $changing   the services taking one would change
+     * @param list<WhatOneReleaseSays>        $waiting    the releases worth offering, in the stack's order
+     * @param Services                        $changing   the services taking one would change
+     * @param list<WhatOneServiceTookItSays>  $applied    what became of each service the last update touched
+     * @param int                             $didNotArrive how many of those are not where the operator wanted them
+     * @param bool                            $anythingUnanswered whether the stack cannot say what some are doing
      */
     private function __construct(
         public bool $isSignedIn,
@@ -47,6 +50,9 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public bool $runningWasWithdrawn,
         public array $waiting,
         public Services $changing,
+        public array $applied,
+        public int $didNotArrive,
+        public bool $anythingUnanswered,
     ) {}
 
     /**
@@ -66,6 +72,9 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             runningWasWithdrawn: false,
             waiting: [],
             changing: Services::none(),
+            applied: [],
+            didNotArrive: 0,
+            anythingUnanswered: false,
         );
     }
 
@@ -76,6 +85,12 @@ final readonly class WhatTheUpkeepTurnedOutToBe
 
         foreach ($upkeep->waiting() as $release) {
             $waiting[] = WhatOneReleaseSays::of($release);
+        }
+
+        $applied = [];
+
+        foreach ($upkeep->howItWent() as $took) {
+            $applied[] = WhatOneServiceTookItSays::of($took);
         }
 
         return new self(
@@ -90,6 +105,9 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             runningWasWithdrawn: $upkeep->runningAWithdrawnRelease(),
             waiting: $waiting,
             changing: $upkeep->changing(),
+            applied: $applied,
+            didNotArrive: $upkeep->howItWent()->thatDidNotArrive()->count(),
+            anythingUnanswered: $upkeep->howItWent()->anythingUnanswered(),
         );
     }
 
@@ -117,6 +135,9 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             runningWasWithdrawn: false,
             waiting: [],
             changing: Services::none(),
+            applied: [],
+            didNotArrive: 0,
+            anythingUnanswered: false,
         );
     }
 }

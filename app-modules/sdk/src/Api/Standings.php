@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Sdk\Internal\Endings;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -44,14 +45,45 @@ final readonly class Standings
             throw UpkeepIsUnreadable::missing(WireField::Data);
         }
 
-        $how = self::how($data);
-        $waiting = self::waiting($data);
+        $changelog = self::changelog($data);
+
+        $how = self::how($changelog);
+        $waiting = self::waiting($changelog);
         $changing = self::changing($data);
-        $running = self::running($data);
+        $went = Endings::in($data);
+        $running = self::running($changelog);
 
         return $running instanceof Release
-            ? Upkeep::runningOn($how, $running, $waiting, $changing)
-            : Upkeep::reported($how, $waiting, $changing);
+            ? Upkeep::runningOn($how, $running, $waiting, $changing, $went)
+            : Upkeep::reported($how, $waiting, $changing, $went);
+    }
+
+    /**
+     * The block the stack answers `N2-R15` and `N2-R16` in.
+     *
+     * Read once and handed down rather than found again by each reader, so
+     * there is one answer to *where the changelog is* — and because the payload
+     * carries a second `state` at the top, which says how the last applied
+     * update finished. Reading that one for *current, pending or stale* is a
+     * mistake that costs nothing at the point of writing and refuses every
+     * stack with an update waiting, which is the only time this screen matters.
+     *
+     * @param  array<array-key, mixed>  $data
+     * @return array<array-key, mixed>
+     */
+    private static function changelog(array $data): array
+    {
+        if (! array_key_exists(WireField::Changelog->value, $data)) {
+            throw UpkeepIsUnreadable::missing(WireField::Changelog);
+        }
+
+        $changelog = $data[WireField::Changelog->value];
+
+        if (! is_array($changelog)) {
+            throw UpkeepIsUnreadable::missing(WireField::Changelog);
+        }
+
+        return $changelog;
     }
 
     /** @param Envelope<mixed> $envelope */
@@ -60,14 +92,18 @@ final readonly class Standings
         return UpdateEnvelope::in($envelope)->data;
     }
 
-    /** @param array<array-key, mixed> $data */
-    private static function how(array $data): HowCurrent
+    /**
+     * Which of the three states the stack reported (`N2-R15`).
+     *
+     * @param  array<array-key, mixed>  $changelog
+     */
+    private static function how(array $changelog): HowCurrent
     {
-        if (! array_key_exists(WireField::State->value, $data)) {
+        if (! array_key_exists(WireField::State->value, $changelog)) {
             throw UpkeepIsUnreadable::missing(WireField::State);
         }
 
-        $said = $data[WireField::State->value];
+        $said = $changelog[WireField::State->value];
 
         if (! is_string($said)) {
             throw UpkeepIsUnreadable::missing(WireField::State);
@@ -83,15 +119,15 @@ final readonly class Standings
      * the distinction {@see Upkeep::running()} keeps: not looking and running
      * nothing are different answers.
      *
-     * @param array<array-key, mixed> $data
+     * @param  array<array-key, mixed>  $changelog
      */
-    private static function running(array $data): ?Release
+    private static function running(array $changelog): ?Release
     {
-        if (! array_key_exists(WireField::Running->value, $data)) {
+        if (! array_key_exists(WireField::Running->value, $changelog)) {
             return null;
         }
 
-        $said = $data[WireField::Running->value];
+        $said = $changelog[WireField::Running->value];
 
         return is_array($said) ? self::release($said, 0) : null;
     }
@@ -99,17 +135,11 @@ final readonly class Standings
     /**
      * Every release the changelog listed, in the order it listed them.
      *
-     * @param array<array-key, mixed> $data
+     * @param  array<array-key, mixed>  $changelog
      */
-    private static function waiting(array $data): Releases
+    private static function waiting(array $changelog): Releases
     {
-        if (! array_key_exists(WireField::Changelog->value, $data)) {
-            throw UpkeepIsUnreadable::missing(WireField::Changelog);
-        }
-
-        $changelog = $data[WireField::Changelog->value];
-
-        if (! is_array($changelog) || ! array_key_exists(WireField::Releases->value, $changelog)) {
+        if (! array_key_exists(WireField::Releases->value, $changelog)) {
             throw UpkeepIsUnreadable::missing(WireField::Releases);
         }
 
