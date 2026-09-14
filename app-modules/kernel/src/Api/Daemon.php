@@ -41,7 +41,7 @@ final readonly class Daemon
     private function __construct(
         private ServiceId $id,
         private string $name,
-        private string $profile,
+        private Form $profile,
         private HowAServiceRuns $runs,
         private HowMuchItMatters $matters,
         private WhatLeansOnIt $leaning,
@@ -58,7 +58,7 @@ final readonly class Daemon
     public static function called(
         string $name,
         ServiceId $id,
-        string $profile,
+        Form $profile,
         HowAServiceRuns $runs,
         HowMuchItMatters $matters,
         WhatLeansOnIt $leaning,
@@ -69,7 +69,7 @@ final readonly class Daemon
             throw ServiceIsUnnamed::whereOneWasExpected();
         }
 
-        return new self($id, $shown, trim($profile), $runs, $matters, $leaning);
+        return new self($id, $shown, $profile, $runs, $matters, $leaning);
     }
 
     /**
@@ -85,7 +85,7 @@ final readonly class Daemon
     public static function thatExited(
         string $name,
         ServiceId $id,
-        string $profile,
+        Form $profile,
         HowAServiceRuns $runs,
         HowMuchItMatters $matters,
         WhatLeansOnIt $leaning,
@@ -109,7 +109,7 @@ final readonly class Daemon
     }
 
     /** Which form it belongs to, for reading a stack by form (`N2-R7`). */
-    public function profile(): string
+    public function profile(): Form
     {
         return $this->profile;
     }

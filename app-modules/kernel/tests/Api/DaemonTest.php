@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\ServiceId;
@@ -32,7 +33,7 @@ function aDaemonCalled(string $name, HowAServiceRuns $runs = HowAServiceRuns::He
     return Daemon::called(
         $name,
         ServiceId::called($name),
-        'media',
+        Form::called('media'),
         $runs,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),
@@ -44,7 +45,7 @@ it('N2-R7 — carries what an operator needs before touching a service', functio
 
     expect($daemon->name())->toBe('sonarr')
         ->and($daemon->id()->named())->toBe('sonarr')
-        ->and($daemon->profile())->toBe('media')
+        ->and($daemon->profile()->named())->toBe('media')
         ->and($daemon->runs())->toBe(HowAServiceRuns::Stopped)
         ->and($daemon->matters())->toBe(HowMuchItMatters::Important);
 });
@@ -55,7 +56,7 @@ it('the name and the id are kept apart', function (): void {
     $daemon = Daemon::called(
         'Sonarr',
         ServiceId::called('sonarr-4'),
-        'media',
+        Form::called('media'),
         HowAServiceRuns::Healthy,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),
@@ -69,7 +70,7 @@ it('refuses a service with no name to show', function (): void {
     expect(fn(): Daemon => Daemon::called(
         '   ',
         ServiceId::called('sonarr'),
-        'media',
+        Form::called('media'),
         HowAServiceRuns::Healthy,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),
@@ -80,7 +81,7 @@ it('N2-R8 — carries what stopping it would take with it', function (): void {
     $daemon = Daemon::called(
         'gluetun',
         ServiceId::called('gluetun'),
-        'network',
+        Form::called('network'),
         HowAServiceRuns::Healthy,
         HowMuchItMatters::Critical,
         WhatLeansOnIt::these(ServiceId::called('qbittorrent'), ServiceId::called('prowlarr')),
@@ -93,7 +94,7 @@ it('a service that ended with a code says so, and one that did not says that', f
     $ended = Daemon::thatExited(
         'sonarr',
         ServiceId::called('sonarr'),
-        'media',
+        Form::called('media'),
         HowAServiceRuns::Failed,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),
@@ -111,7 +112,7 @@ it('a service that ended is refused for the reasons every service is', function 
     expect(fn(): Daemon => Daemon::thatExited(
         ' ',
         ServiceId::called('sonarr'),
-        'media',
+        Form::called('media'),
         HowAServiceRuns::Failed,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),
