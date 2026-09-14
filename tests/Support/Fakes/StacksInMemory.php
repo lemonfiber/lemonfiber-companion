@@ -26,6 +26,9 @@ final class StacksInMemory implements Stacks
 {
     private Configured $held;
 
+    /** How many times something has read the list, for asserting an order. */
+    private int $asked = 0;
+
     private function __construct(private readonly ?WhyAStackCannotBeRemembered $refusing)
     {
         $this->held = Configured::none();
@@ -64,7 +67,23 @@ final class StacksInMemory implements Stacks
 
     public function configured(): Configured
     {
+        $this->asked++;
+
         return $this->held;
+    }
+
+    /**
+     * How many times the list has been read.
+     *
+     * For the one requirement that is about the *order* things are asked in
+     * rather than the answer: `N4-R19` wants the device's own authentication on
+     * a cold start, and a launch that read the stack list first would satisfy
+     * every assertion about what it answered and still have looked at retained
+     * state before the operator proved who they were.
+     */
+    public function timesAsked(): int
+    {
+        return $this->asked;
     }
 
     public function remember(Stack $stack): Remembered
