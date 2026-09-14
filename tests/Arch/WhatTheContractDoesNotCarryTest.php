@@ -49,6 +49,19 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'and the wire says nothing about one. The app shows what a provider reported and cannot '
             . 'say what is left of it.',
     ],
+    [
+        'requirement' => 'N3-R5',
+        'asks' => 'when a spent allowance resets, told to the member before they ask',
+        // The sibling of the row above and a separate row, because it waits on
+        // a second field rather than on the same one: knowing an allowance is
+        // spent is not knowing when it comes back, and *spent, and nothing about
+        // when* is the answer that leaves somebody asking again every hour.
+        'envelope' => null,
+        'field' => 'resets_at',
+        'raised' => 'The wire carries no allowance and so carries no reset for one. A time worked out '
+            . 'in the app would be `N2-R14` exactly — a guess at something the provider knows and '
+            . 'the app does not, wrong in the cases somebody is actually waiting on.',
+    ],
 ];
 
 /**
