@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function array_map;
-use function array_values;
-
 /**
  * An update the operator said yes to, against what it will change.
  *
@@ -27,23 +24,21 @@ use function array_values;
  */
 final readonly class TakingAnUpdate
 {
-    /** @param list<ServiceId> $changing */
     private function __construct(
         private Release $release,
-        private array $changing,
+        private Services $changing,
     ) {}
 
     /**
      * What the operator was shown and agreed to.
      *
-     * Variadic so that an empty call is a decision somebody wrote rather than
-     * an array that happened to arrive empty. Reindexed all the same: a
-     * variadic collected from named arguments carries their names as keys, so
-     * *variadic* and *list* are not the same claim.
+     * The services travel as a {@see Services} rather than an array, which is
+     * `D1`: what is in a list of names has to live somewhere other than in
+     * whoever last wrote a `foreach`.
      */
-    public static function agreed(Release $release, ServiceId ...$changing): self
+    public static function agreed(Release $release, Services $changing): self
     {
-        return new self($release, array_values($changing));
+        return new self($release, $changing);
     }
 
     public function release(): Release
@@ -52,20 +47,15 @@ final readonly class TakingAnUpdate
     }
 
     /**
-     * The services this was agreed about, by name.
+     * The services this was agreed about.
      *
-     * Names rather than the values, because this is what crosses the wire and
-     * the adapter has no business reaching into a value object to build a
-     * payload.
-     *
-     * @return list<string>
+     * Handed out as the collection so the one caller that has to put names on
+     * a wire iterates for them — an adapter reaching into a value object for
+     * its insides is the thing typed collections exist to stop.
      */
-    public function changing(): array
+    public function changing(): Services
     {
-        return array_map(
-            static fn(ServiceId $service): string => $service->named(),
-            $this->changing,
-        );
+        return $this->changing;
     }
 
     /**
@@ -77,6 +67,6 @@ final readonly class TakingAnUpdate
      */
     public function changesNothing(): bool
     {
-        return $this->changing === [];
+        return $this->changing->isEmpty();
     }
 }

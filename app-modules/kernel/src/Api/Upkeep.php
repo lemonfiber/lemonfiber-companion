@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function array_filter;
-use function array_values;
+use Closure;
 
 /**
  * Where the stack stands on being up to date, as the stack reported it.
@@ -23,23 +22,33 @@ use function array_values;
  */
 final readonly class Upkeep
 {
-    /** @param list<Release> $releases */
     private function __construct(
         private HowCurrent $how,
-        private ?Release $running,
-        private array $releases,
+        private Releases $releases,
+        private ?Release $running = null,
     ) {}
 
     /**
-     * What one reading of the stack's upkeep said.
+     * A reading where the stack did not say what it is on.
+     *
+     * Its own constructor rather than a null argument, which is `C2`'s cure and
+     * {@see Daemon::thatExited()}'s shape: a screen handed a null would print
+     * an empty version where one belongs, and an operator would read that as
+     * *it is running nothing*.
      *
      * Reindexed rather than taken as it arrives: a variadic collected from
      * named arguments carries their names as keys, so being variadic is not
      * the same claim as being a list.
      */
-    public static function reported(HowCurrent $how, ?Release $running, Release ...$releases): self
+    public static function reported(HowCurrent $how, Releases $releases): self
     {
-        return new self($how, $running, array_values($releases));
+        return new self($how, $releases);
+    }
+
+    /** The same reading, where the stack named the release in use. */
+    public static function runningOn(HowCurrent $how, Release $running, Releases $releases): self
+    {
+        return new self($how, $releases, $running);
     }
 
     public function how(): HowCurrent
@@ -48,28 +57,35 @@ final readonly class Upkeep
     }
 
     /**
-     * The release in use, where the stack named one.
+     * Say the release in use, or say the stack did not name one.
      *
-     * Absent on a stack that has not looked, which is not the same as a stack
-     * running nothing — and `N2-R15` has this side report what it was told
+     * Two arms rather than a nullable getter, for the reason
+     * {@see Daemon::exit()} gives. A stack that has not looked is not a stack
+     * running nothing, and `N2-R15` has this side report what it was told
      * rather than fill in a blank.
+     *
+     * @template TOn of object
+     * @template TUnstated of object
+     *
+     * @param  Closure(Release): TOn  $on
+     * @param  Closure(): TUnstated  $unstated
+     * @return TOn|TUnstated
      */
-    public function running(): ?Release
+    public function running(Closure $on, Closure $unstated): object
     {
-        return $this->running;
+        return $this->running instanceof Release ? $on($this->running) : $unstated();
     }
 
     /**
-     * The releases worth offering, newest as the stack ordered them.
+     * The releases worth offering, as the stack ordered them.
      *
-     * @return list<Release>
+     * A {@see Releases} rather than an array, which is `D1`, and filtered by
+     * the collection rather than here so that `N2-R16`'s refusal lives in one
+     * place.
      */
-    public function waiting(): array
+    public function waiting(): Releases
     {
-        return array_values(array_filter(
-            $this->releases,
-            static fn(Release $release): bool => $release->isWorthOffering(),
-        ));
+        return $this->releases->worthOffering();
     }
 
     /**
@@ -93,6 +109,6 @@ final readonly class Upkeep
      */
     public function hasSomethingToOffer(): bool
     {
-        return $this->how->hasSomethingWaiting() && $this->waiting() !== [];
+        return $this->how->hasSomethingWaiting() && ! $this->waiting()->isEmpty();
     }
 }
