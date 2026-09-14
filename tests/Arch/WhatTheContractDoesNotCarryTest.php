@@ -67,6 +67,36 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'verb disturbs and cannot state how long for.',
     ],
     [
+        'requirement' => 'N1-R47',
+        'asks' => 'to be handed pairing material by a stack somebody is already admitted to',
+        // Unnamed for the reason the row above is, and because there is no
+        // candidate anyway: no payload on this wire is pairing material, so
+        // this is a type the contract does not have rather than a field one of
+        // its types is missing.
+        'envelope' => null,
+        // `fingerprint` would be the truer name and cannot be used: the
+        // contract already spends that word on a credential's likeness, for
+        // telling two copies of a secret apart in a report, which has nothing
+        // to do with the certificate a stack presents. A row watching it would
+        // fire on `CredentialsEnvelope` today and go on firing.
+        //
+        // `expires` is the next best and is sound rather than merely free. The
+        // app refuses material without it — {@see Pairing} throws
+        // `PairingIsNotReadable::withoutIts()` — so material this app can use
+        // necessarily carries it, and a payload that arrives without one has
+        // not closed this gap whatever else it says.
+        'field' => 'expires',
+        'shape' => null,
+        'raised' => 'This is the one requirement of `N1` that neither repository was tracking. The app '
+            . 'cites every other one and lemonfiber\'s tracker cites no `N1` at all, so a requirement '
+            . 'that is the stack\'s half of the app\'s own pairing had nobody holding it. The app is '
+            . 'built to consume what it describes as what a stack hands somebody out of band, and '
+            . 'nothing produces it: the address is served, the certificate is presented, and the '
+            . 'material pairing the two so a phone can know the machine before it trusts the '
+            . 'connection does not exist. Until it does, pairing depends on somebody assembling by '
+            . 'hand what `N1-R47` says a surface must be able to produce on demand.',
+    ],
+    [
         'requirement' => 'N3-R4',
         'asks' => 'what a provider has left, before somebody in the house is told to ask for something',
         // No envelope named: nothing in the contract carries an allowance at
