@@ -185,6 +185,24 @@ enum WireField: string
     /** What a service that has ended exited with. Absent while it runs. */
     case Exit = 'exit';
 
+    /** Where the releases a stack could be on are listed. */
+    case Changelog = 'changelog';
+
+    /** The releases inside the changelog, newest as the stack ordered them. */
+    case Releases = 'releases';
+
+    /** The release in use. Absent where the stack has not determined one. */
+    case Running = 'running';
+
+    /** What one release is called. */
+    case Version = 'version';
+
+    /** Whether somebody in the house would notice this release. */
+    case UserFacing = 'user_facing';
+
+    /** When a release was taken back. Absent on one that still stands. */
+    case Withdrawn = 'withdrawn';
+
     /**
      * This field's name as a path, where it is read off another field's value.
      *

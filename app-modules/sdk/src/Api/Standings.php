@@ -1,0 +1,198 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Sdk\Api;
+
+use function array_key_exists;
+use function is_array;
+use function is_bool;
+use function is_string;
+
+use Lemonfiber\Sdk\Envelope\Envelope;
+use Lemonfiber\Sdk\Generated\UpdateEnvelope;
+use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\Release;
+use Modules\Kernel\Api\Releases;
+use Modules\Kernel\Api\Upkeep;
+use Modules\Sdk\Internal\Wire;
+
+/**
+ * The `update` envelope, read into what a screen can decide on.
+ *
+ * {@see Rosters} one endpoint over, and the same argument: the reading is a
+ * separate thing from the port so that what a payload means is decided in one
+ * place, and the adapter is left holding only the conversation.
+ *
+ * **A withdrawn release is read, not dropped.** The wire says when a release was
+ * taken back rather than whether it was, and this turns the presence of that
+ * date into the fact `N2-R16` is about. Dropping the release here instead would
+ * leave a stack that is *running* a withdrawn one with nothing to say about it.
+ */
+final readonly class Standings
+{
+    /**
+     * @param Envelope<mixed> $envelope the `update` envelope, as the client returned it
+     */
+    public static function in(Envelope $envelope): Upkeep
+    {
+        $data = self::payload(Wire::checked($envelope));
+
+        if (! is_array($data)) {
+            throw UpkeepIsUnreadable::missing(WireField::Data);
+        }
+
+        $how = self::how($data);
+        $waiting = self::waiting($data);
+        $running = self::running($data);
+
+        return $running instanceof Release
+            ? Upkeep::runningOn($how, $running, $waiting)
+            : Upkeep::reported($how, $waiting);
+    }
+
+    /** @param Envelope<mixed> $envelope */
+    private static function payload(Envelope $envelope): mixed
+    {
+        return UpdateEnvelope::in($envelope)->data;
+    }
+
+    /** @param array<array-key, mixed> $data */
+    private static function how(array $data): HowCurrent
+    {
+        if (! array_key_exists(WireField::State->value, $data)) {
+            throw UpkeepIsUnreadable::missing(WireField::State);
+        }
+
+        $said = $data[WireField::State->value];
+
+        if (! is_string($said)) {
+            throw UpkeepIsUnreadable::missing(WireField::State);
+        }
+
+        return HowCurrent::tryFrom($said) ?? throw UpkeepIsUnreadable::state($said);
+    }
+
+    /**
+     * The release in use, where the stack named one.
+     *
+     * Absent rather than empty on a stack that has not determined it, which is
+     * the distinction {@see Upkeep::running()} keeps: not looking and running
+     * nothing are different answers.
+     *
+     * @param array<array-key, mixed> $data
+     */
+    private static function running(array $data): ?Release
+    {
+        if (! array_key_exists(WireField::Running->value, $data)) {
+            return null;
+        }
+
+        $said = $data[WireField::Running->value];
+
+        return is_array($said) ? self::release($said, 0) : null;
+    }
+
+    /**
+     * Every release the changelog listed, in the order it listed them.
+     *
+     * @param array<array-key, mixed> $data
+     */
+    private static function waiting(array $data): Releases
+    {
+        if (! array_key_exists(WireField::Changelog->value, $data)) {
+            throw UpkeepIsUnreadable::missing(WireField::Changelog);
+        }
+
+        $changelog = $data[WireField::Changelog->value];
+
+        if (! is_array($changelog) || ! array_key_exists(WireField::Releases->value, $changelog)) {
+            throw UpkeepIsUnreadable::missing(WireField::Releases);
+        }
+
+        $listed = $changelog[WireField::Releases->value];
+
+        if (! is_array($listed)) {
+            throw UpkeepIsUnreadable::missing(WireField::Releases);
+        }
+
+        $releases = [];
+        $position = 0;
+
+        foreach ($listed as $said) {
+            if (! is_array($said)) {
+                throw UpkeepIsUnreadable::release($position);
+            }
+
+            $releases[] = self::release($said, $position);
+            ++$position;
+        }
+
+        return Releases::these(...$releases);
+    }
+
+    /**
+     * One release, from the shape both the changelog and the running field use.
+     *
+     * @param array<array-key, mixed> $said
+     */
+    private static function release(array $said, int $position): Release
+    {
+        if (! array_key_exists(WireField::Version->value, $said)) {
+            throw UpkeepIsUnreadable::release($position);
+        }
+
+        $version = $said[WireField::Version->value];
+
+        if (! is_string($version)) {
+            throw UpkeepIsUnreadable::release($position);
+        }
+
+        return Release::called($version, self::noticeable($said, $position), self::withdrawn($said));
+    }
+
+    /**
+     * Whether somebody in the house would notice this release.
+     *
+     * Refused rather than defaulted when it is missing. The contract carries
+     * this on every release, and a default here would be the reassuring one —
+     * *nobody will notice* — which is the answer that quietly turns a decision
+     * into a chore. The absent case is the stack's to explain, not this side's
+     * to fill in.
+     *
+     * @param array<array-key, mixed> $said
+     */
+    private static function noticeable(array $said, int $position): bool
+    {
+        if (! array_key_exists(WireField::UserFacing->value, $said)) {
+            throw UpkeepIsUnreadable::release($position);
+        }
+
+        $noticed = $said[WireField::UserFacing->value];
+
+        if (! is_bool($noticed)) {
+            throw UpkeepIsUnreadable::release($position);
+        }
+
+        return $noticed;
+    }
+
+    /**
+     * Whether this release has been taken back.
+     *
+     * The wire carries *when*, so what makes a release withdrawn is that the
+     * field is there at all and says something. A date this side cannot parse
+     * is still a stack saying the release was taken back, and treating it as
+     * standing would be the unsafe reading of an unreadable field.
+     *
+     * @param array<array-key, mixed> $said
+     */
+    private static function withdrawn(array $said): bool
+    {
+        if (! array_key_exists(WireField::Withdrawn->value, $said)) {
+            return false;
+        }
+
+        return $said[WireField::Withdrawn->value] !== null;
+    }
+}
