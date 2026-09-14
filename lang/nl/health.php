@@ -50,4 +50,12 @@ return [
     'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',
     'ask_again' => 'Opnieuw controleren',
     'see_how_it_is' => 'Bekijk hoe deze stack het doet',
+    'working_it_out' => 'Deze stack kijkt wat er te herstellen valt.',
+    'working_it_out_action' => 'Dit duurt even. Vraag het zo nog eens.',
+    'nothing_came_back' => 'Deze vraag is verlopen.',
+    'nothing_came_back_action' => 'Er is niets uitgevoerd. Vraag het opnieuw.',
+    'nothing_to_put_right' => 'Deze stack heeft niets te herstellen.',
+    'affects_nothing_else' => 'Raakt verder niets.',
+    'would_put_right' => 'Kijk wat er te herstellen valt',
+    'back_to_the_stack' => 'Terug naar deze stack',
 ];

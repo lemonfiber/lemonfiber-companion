@@ -50,4 +50,12 @@ return [
     'nothing_to_try' => 'The stack did not suggest anything to try for this.',
     'ask_again' => 'Check again',
     'see_how_it_is' => 'See how this stack is doing',
+    'working_it_out' => 'This stack is working out what it could put right.',
+    'working_it_out_action' => 'It takes a moment. Ask again shortly.',
+    'nothing_came_back' => 'That question has expired.',
+    'nothing_came_back_action' => 'Nothing was carried out. Ask again.',
+    'nothing_to_put_right' => 'This stack has nothing to put right.',
+    'affects_nothing_else' => 'Affects nothing else.',
+    'would_put_right' => 'See what could be put right',
+    'back_to_the_stack' => 'Back to this stack',
 ];

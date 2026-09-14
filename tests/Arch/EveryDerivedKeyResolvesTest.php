@@ -13,6 +13,8 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\SizeUnit;
+use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
@@ -103,6 +105,14 @@ function everyDerivedKey(): array
         Category::class => aPairPerCase(
             Category::cases(),
             static fn(Category $category): array => [$category->saidOnTheScreen()],
+        ),
+        SizeUnit::class => aPairPerCase(
+            SizeUnit::cases(),
+            static fn(SizeUnit $unit): array => [$unit->saidOnTheScreen()],
+        ),
+        Undoing::class => aPairPerCase(
+            Undoing::cases(),
+            static fn(Undoing $undoing): array => [$undoing->saidOnTheScreen()],
         ),
         Waiting::class => aPairPerCase(
             Waiting::cases(),

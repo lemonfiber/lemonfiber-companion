@@ -2173,6 +2173,44 @@ final readonly class Fixtures
             // renamed in `lang/` and the template that reads it was not. A
             // planted misspelling would also make the typos gate red, for a
             // word that is deliberately wrong.
+            // An enum that derives its own catalogue keys and is not listed in
+            // `everyDerivedKey()`. The table there is maintained by hand for a
+            // good reason — a scan would have to guess which methods return
+            // keys — and this is the gap that leaves: an enum written after the
+            // table is invisible to every rule in the suite, including the one
+            // that checks derived keys resolve. It can ship with no catalogue
+            // line at all and the operator is shown the key itself.
+            //
+            // `Waiting` was exactly this shape, with seven cases building
+            // `household.<value>` against a catalogue file that did not exist.
+            // Nothing caught it, which is why the scan exists and why it has a
+            // fixture of its own rather than being trusted to keep working.
+            Fixture::suite(
+                'L7',
+                'app-modules/health/src/Api/Fixtures/Unlisted.php',
+                <<<'PHP'
+                    <?php
+
+                    declare(strict_types=1);
+
+                    namespace Modules\Health\Api\Fixtures;
+
+                    use function sprintf;
+
+                    enum Unlisted: string
+                    {
+                        case Something = 'something';
+
+                        public function saidOnTheScreen(): string
+                        {
+                            return sprintf('health.%s', $this->value);
+                        }
+                    }
+                    PHP,
+                'L7 —',
+                'Modules\Health\Api\Fixtures\Unlisted',
+            ),
+
             Fixture::edit(
                 'L7',
                 'app-modules/operator/resources/views/your-stacks.blade.php',

@@ -27,6 +27,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\WhatOneFindingSays;
 use Modules\Operator\Internal\WhichFamilyToRead;
@@ -341,7 +342,7 @@ it('N4-R6 — a keychain that will not open asks for the password rather than br
 it('N1-R11 — signing in again goes to this stack and no other', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
-    expect($screen->signInAt())
+    expect($screen->goes()->signIn())
         ->toBe(sprintf('/stacks/%s/sign-in', theStackBeingLookedAt()->id()->stored()));
 });
 
@@ -717,7 +718,20 @@ it('N2-R11 — what the household asked for is one tap from the machine it is ab
     // makes the requests screen reachable rather than merely present.
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
-    expect($screen->requestsAreAt())
-        ->toBe(sprintf('/stacks/%s/requests', theStackBeingLookedAt()->id()->stored()))
-        ->and(NativeRouter::resolve($screen->requestsAreAt()))->not->toBeNull();
+    expect($screen->goes()->requests())
+        ->toBe(AStacksScreen::Requests->forTheStack(theStackBeingLookedAt()->id()->stored()))
+        ->and(NativeRouter::resolve($screen->goes()->requests()))->not->toBeNull();
+});
+
+it('N2-R4 — what this machine would put right is one tap from the machine', function (): void {
+    // The link's half of the pair. `SeeingWhatWouldBePutRightTest` asserts that
+    // something is registered under that route; this asserts that the screen an
+    // operator is looking at points at it. A screen rather than a button beside
+    // one finding, because a listing reached from one finding would show the
+    // repairs for all of them under a heading naming one.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+
+    expect($screen->goes()->repairs())
+        ->toBe(AStacksScreen::Repairs->forTheStack(theStackBeingLookedAt()->id()->stored()))
+        ->and(NativeRouter::resolve($screen->goes()->repairs()))->not->toBeNull();
 });

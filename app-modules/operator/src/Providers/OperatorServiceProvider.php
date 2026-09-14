@@ -6,11 +6,13 @@ namespace Modules\Operator\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\YourStacks;
 
 /**
@@ -95,21 +97,27 @@ final class OperatorServiceProvider extends ServiceProvider
             // of this screen returns to the list they picked from, and a second
             // stack signed into later is a second entry rather than the same
             // screen re-pointed.
-            Router::native('/stacks/{stack}/sign-in', SignIntoAStack::class);
+            Router::native(AStacksScreen::SignIn->value, SignIntoAStack::class);
 
             // What the house asked for, which is the part of a stack an
             // operator gets asked about in person. Before `/stacks/{stack}`
             // rather than after it, for the reason `sign-in` is: the router
             // matches in registration order, and a bare `{stack}` registered
             // first would swallow every path under it.
-            Router::native('/stacks/{stack}/requests', WhatTheHouseholdAsked::class);
+            Router::native(AStacksScreen::Requests->value, WhatTheHouseholdAsked::class);
+
+            // What the machine would put right, stated before anybody is asked
+            // to agree (`N2-R4`). A screen rather than a dialog behind a
+            // button: a sentence an operator has to tap to reveal is one they
+            // will agree without reading.
+            Router::native(AStacksScreen::Repairs->value, WhatWouldBePutRight::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section
             // of the list, because `N1-R17` says the app asks a machine once
             // per screen — a list that reported on every stack would ask every
             // machine on the network to draw one frame.
-            Router::native('/stacks/{stack}', HowThisStackIs::class);
+            Router::native(AStacksScreen::Health->value, HowThisStackIs::class);
         });
     }
 }

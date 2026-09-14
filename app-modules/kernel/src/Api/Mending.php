@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Kernel\Api;
+
+/**
+ * Asking a stack what it would put right, and reading what came of it.
+ *
+ * `N2-R4` is the requirement: where the core offers a repair, the app offers it
+ * too, and states what it does, what else it affects and whether it can be
+ * undone *before* asking for confirmation. The types for that have been built
+ * and tested since the health screen landed — {@see Repair} states all three
+ * clauses and {@see Repairs} and {@see Offer} hold a listing — and the port was
+ * held back, because the shape of the answer was not settled.
+ *
+ * **Two methods, because asking is not answering.** `N2-R7` has every action on
+ * this surface arrive as a job: the stack acknowledges and names the work, and
+ * the outcome is a separate reading at a separate moment. A port with one
+ * method would have to hide a wait inside itself — which is `F4`'s socket in a
+ * frame and `N1-R17`'s poller, both at once.
+ *
+ * **Asking what would be done changes nothing, and is still an action.** That
+ * is the part worth knowing before reading the adapter: the unconfirmed form of
+ * the repair action says what each repair *would* do and carries nothing out,
+ * yet it is answered with a job like everything else here. So *what would you
+ * put right* costs a round trip and a handle, and the screen that asks it has
+ * to be built for waiting.
+ *
+ * **A handle is not a pending action.** `N1-R41` refuses to retain an
+ * undelivered action, replay one, or present one as pending. A job is none of
+ * those — the stack received the action and named it, so asking after the name
+ * is a read, and a read repeated changes nothing. {@see Job} says this at
+ * more length, because it is the distinction that lets this port exist at all.
+ */
+interface Mending
+{
+    /**
+     * Ask what this stack would put right, changing nothing.
+     *
+     * Answers a handle rather than a listing, which is `N2-R7` showing through
+     * the port rather than being hidden by it. A signature promising the
+     * listing would be one that has to wait, and a port that waits is a screen
+     * that freezes on a home network with a machine that may be asleep.
+     */
+    public function wouldPutRight(Stack $stack, Session $session): Underway;
+
+    /**
+     * Ask what became of that asking.
+     *
+     * Answers {@see HowTheOfferIsGoing} rather than raising, for `C1`'s reason:
+     * still working, finished, and a job the stack no longer has an outcome for
+     * are three ordinary states, and the third is the one an implementation is
+     * most tempted to fold into one of the others.
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheOfferIsGoing;
+}

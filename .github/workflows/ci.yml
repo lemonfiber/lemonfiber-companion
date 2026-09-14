@@ -339,7 +339,11 @@ jobs:
   # it needs fails, which turns a red gate into a missing one.
   mutation-gate:
     name: mutation testing
-    needs: [tests, mutation-scope, mutation]
+    # `scope` is needed for its outputs rather than its work: this job has to
+    # be able to tell a `tests` that skipped by design from one that skipped
+    # because something upstream broke, and those two are indistinguishable
+    # from `needs.tests.result` alone.
+    needs: [scope, tests, mutation-scope, mutation]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
@@ -348,12 +352,47 @@ jobs:
           TESTS: ${{ needs.tests.result }}
           SCOPE: ${{ needs.mutation-scope.result }}
           SHARDS: ${{ needs.mutation.result }}
+          EVENT: ${{ github.event_name }}
+          SCOPED: ${{ needs.scope.result }}
+          CHANGED: ${{ needs.scope.outputs.code }}
         run: |
           # `skipped` is a pass here and only here: the shards are skipped when
           # no module holds code yet, which `mutation-scope` reports as an empty
           # list. Every other reason a shard does not run — a failure upstream,
           # a cancelled run — is already covered by the two results above it.
-          echo "tests=$TESTS scope=$SCOPE shards=$SHARDS"
+          echo "tests=$TESTS scope=$SCOPE shards=$SHARDS event=$EVENT scoped=$SCOPED changed=$CHANGED"
+
+          # `tests` runs on a pull request that touched code, and skips
+          # otherwise. Both of those skips are deliberate and this job is
+          # downstream of them, so without this it fails on every push to the
+          # default branch — main is then permanently red for a reason that has
+          # nothing to do with the commit — and a documentation-only pull
+          # request cannot merge at all, because this is a required context and
+          # a required context that fails blocks rather than skips.
+          #
+          # That is the failure `tests`' own comment was written to prevent,
+          # reintroduced one job downstream of it.
+          #
+          # The condition is restated rather than inferred. `needs.tests.result`
+          # says `skipped` whether the skip was intended or whether something
+          # above it broke, and treating those alike is what would let a real
+          # breakage pass as a quiet day. So this asks the same two questions
+          # `tests` asks, of the same inputs, and calls only those two skips a
+          # pass.
+          BY_DESIGN=no
+
+          if [ "$TESTS" = skipped ]; then
+            if [ "$EVENT" != pull_request ]; then
+              BY_DESIGN=yes
+            elif [ "$SCOPED" = success ] && [ "$CHANGED" != true ]; then
+              BY_DESIGN=yes
+            fi
+          fi
+
+          if [ "$BY_DESIGN" = yes ]; then
+            echo "Nothing to mutate: the tests did not run, and were not meant to."
+            exit 0
+          fi
 
           if [ "$TESTS" != success ] || [ "$SCOPE" != success ]; then
             echo "::error::Mutation did not run: the tests or the module list did not pass."

@@ -20,10 +20,10 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
+use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
-use function sprintf;
 use function trim;
 use function view;
 
@@ -214,7 +214,7 @@ final class SignIntoAStack extends NativeComponent
      */
     public function onwardsTo(): string
     {
-        return sprintf('/stacks/%s', $this->stack()->id()->stored());
+        return WhereAStackIs::of($this->stack()->id())->health();
     }
 
     /** The frame, by name. */

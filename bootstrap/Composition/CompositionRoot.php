@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Reaching;
@@ -35,6 +36,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Sdk\Api\Admissions;
+use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Requests;
@@ -171,6 +173,12 @@ final class CompositionRoot extends ServiceProvider
         // reads. Beside `Asking` and built the same way: both go through
         // `PinnedClients`, so there is one place a certificate is checked.
         $this->app->bind(Wanting::class, static fn(): Wanting => new Requests(new PinnedClients()));
+
+        // What a stack would put right, asked without changing anything.
+        // `Repair::offer()` is the unconfirmed form and the SDK makes the two
+        // refused consent arrangements unrepresentable, so nothing bound here
+        // can turn the question into an instruction.
+        $this->app->bind(Mending::class, static fn(): Mending => new Menders(new PinnedClients()));
 
         $this->app->bind(
             Networking::class,

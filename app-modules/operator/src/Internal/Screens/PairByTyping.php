@@ -17,10 +17,10 @@ use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
+use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
-use function sprintf;
 use function trim;
 use function view;
 
@@ -259,7 +259,7 @@ final class PairByTyping extends NativeComponent
      */
     public function onwardsTo(): string
     {
-        return sprintf('/stacks/%s/sign-in', $this->paired);
+        return WhereAStackIs::rememberedAs($this->paired)->signIn();
     }
 
     /** The frame, by name. */

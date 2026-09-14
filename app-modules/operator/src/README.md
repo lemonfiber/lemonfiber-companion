@@ -104,10 +104,20 @@ happened first.
 > does, what else it affects, and whether it can be undone, before asking for
 > confirmation.
 
-The types for this are built and tested — `Repair` states all three clauses,
-`Repairs` and `Offer` hold a listing a yes can quote, `Confirmed` is a yes that
-rendering a finding cannot produce, and `Carried` is the refusal that re-offers.
-What is not built is the port, and this is why.
+**The offer half is built.** `Mending` asks what a stack would put right,
+`WhatWouldBePutRight` states all three of `N2-R4`'s clauses before anything asks
+for a yes, and `Offers` reads both the handle and the listing. What follows
+recorded why the port could not be written before the job reading existed; it is
+kept because the reasoning is what shaped the port, and because the *agreeing*
+half is still unbuilt for one part of it.
+
+`Confirmed` — a yes that rendering a finding cannot produce — and `Carried` are
+still reached by nothing. The agreeing half needs what the offer half did not: a
+vocabulary for what became of each repair (`fixed`, `fix_failed`, `stopped`,
+`declined`, `would_overwrite` on the `repair` envelope's `mended[]`), and a
+screen holding the offer as a **live** `Reading`, since `Confirmed::against()`
+refuses a retained one by `N1-R39`. That is a second capability rather than the
+rest of this one, and it is the next thing here.
 
 ### The offer and the yes are one request, read twice
 
@@ -121,13 +131,14 @@ seen.
 The SDK names that endpoint as of `Lemonfiber\Sdk\Repair`, and the two refused
 consent arrangements are unrepresentable there rather than refused at runtime.
 
-### What is missing is the answer, not the asking
+### What was missing was the answer, not the asking
 
 `answering()` in `lemonfiber-api` has no arm for `Command::Repair`, so it falls
 to `Answering::Later`: the action answers **202 with the `job` envelope**, for
 the offer half as well as the acting half. The `repair` envelope — the one
 carrying `offered`, which is what `N2-R4` needs an operator to read — arrives
-through `GET /api/jobs/{job}`, which the SDK does not yet name.
+through `GET /api/jobs/{job}`. The SDK names that now (`whatBecameOf()` and
+`letGoOf()`), which is what unblocked the port.
 
 That is not a detail of plumbing. It changes the shape of the port: asking what
 a stack would repair is not a question with an answer, it is a question with a
@@ -142,9 +153,12 @@ pending. A job handle is very close to a pending action, and the distinction is
 real rather than semantic: a job the stack acknowledged *did* happen, and asking
 after it is a read. Replaying an action it never received would be inventing one.
 
-So the port waits for the job reading rather than being written against a shape
-that would have to change. `N2-R7`'s start, stop and restart are in exactly the
-same position, for the same reason — every action on this surface is a job.
+So the port took the shape the job reading forced rather than one that would
+have had to change: two methods, because asking is not answering, and a reading
+with four arms because *ended* is neither running nor finished. `N2-R7`'s start,
+stop and restart are in exactly the same position and will take the same shape —
+every action on this surface is a job, and `Job`, `Underway` and
+`HowTheOfferIsGoing` are already the types for one.
 
 ### One asymmetry worth knowing
 

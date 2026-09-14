@@ -26,11 +26,11 @@ use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\HowAStackLastWas;
 use Modules\Operator\Internal\WhatTheLaunchWas;
 use Modules\Operator\Internal\WhatTheSharingDid;
+use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
-use function sprintf;
 use function view;
 
 /**
@@ -265,7 +265,7 @@ final class YourStacks extends NativeComponent
      */
     public function signInAt(Stack $stack): string
     {
-        return sprintf('/stacks/%s/sign-in', $stack->id()->stored());
+        return WhereAStackIs::of($stack->id())->signIn();
     }
 
     /**
@@ -282,7 +282,7 @@ final class YourStacks extends NativeComponent
     public function tappingGoesTo(Stack $stack): string
     {
         return $this->isSignedInto($stack)
-            ? sprintf('/stacks/%s', $stack->id()->stored())
+            ? WhereAStackIs::of($stack->id())->health()
             : $this->signInAt($stack);
     }
 
