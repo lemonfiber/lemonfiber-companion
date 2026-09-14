@@ -9,11 +9,13 @@ use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\HowLongAgo;
+use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\SizeUnit;
+use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatBecameOfIt;
@@ -110,6 +112,14 @@ function everyDerivedKey(): array
         SizeUnit::class => aPairPerCase(
             SizeUnit::cases(),
             static fn(SizeUnit $unit): array => [$unit->saidOnTheScreen()],
+        ),
+        Stage::class => aPairPerCase(
+            Stage::cases(),
+            static fn(Stage $stage): array => [$stage->saidOnTheScreen()],
+        ),
+        HowMuchIsShown::class => aPairPerCase(
+            HowMuchIsShown::cases(),
+            static fn(HowMuchIsShown $shown): array => [$shown->saidOnTheScreen()],
         ),
         WhatBecameOfIt::class => aPairPerCase(
             WhatBecameOfIt::cases(),

@@ -33,6 +33,7 @@ use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Sdk\Api\Admissions;
@@ -40,6 +41,7 @@ use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Stalls;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
@@ -179,6 +181,13 @@ final class CompositionRoot extends ServiceProvider
         // refused consent arrangements unrepresentable, so nothing bound here
         // can turn the question into an instruction.
         $this->app->bind(Mending::class, static fn(): Mending => new Menders(new PinnedClients()));
+
+        // What has stopped coming in, which is the first of `N2-R9`'s four.
+        // Beside the two above and built the same way, because the reason they
+        // share a constructor is the pin: one place decides whether a
+        // certificate is checked, and a port that built its own client would be
+        // a second.
+        $this->app->bind(Stalling::class, static fn(): Stalling => new Stalls(new PinnedClients()));
 
         $this->app->bind(
             Networking::class,
