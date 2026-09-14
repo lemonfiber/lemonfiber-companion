@@ -228,6 +228,80 @@ it('every way this app asks where a machine is is somewhere a template can send 
     ));
 });
 
+it('every screen that needs no machine is somewhere a template can send you too', function (): void {
+    // The same question of the other destination type, because the rule above
+    // names `WhereAStackIs` and that is only where a *machine's* screens are.
+    // The roads into pairing are not about a machine — there is no machine yet
+    // — and a rule covering one of two kinds of destination is the gap it was
+    // written to close, one level up.
+    //
+    // These are handed out by accessors on the screen that offers them rather
+    // than by a type of their own, so the case is traced to its accessor and
+    // the accessor to a template.
+    $linked = destinationsTemplatesNavigateTo();
+    $handedOut = whatHandsOutAScreenWithoutAStack();
+    $stranded = [];
+
+    foreach (AScreenWithoutAStack::cases() as $screen) {
+        // The opening screen, which the launch shows and nothing navigates to.
+        // Exempt by name and said out loud: an exemption nobody can read is how
+        // a rule quietly stops covering the thing it was written for.
+        if ($screen === AScreenWithoutAStack::TheList) {
+            continue;
+        }
+
+        $accessor = $handedOut[$screen->name] ?? null;
+
+        if ($accessor === null) {
+            $stranded[] = sprintf('%s is a screen nothing hands out a path to', $screen->name);
+
+            continue;
+        }
+
+        if (! in_array($accessor, $linked, strict: true)) {
+            $stranded[] = sprintf('%s is handed out by %s(), which no template navigates to', $screen->name, $accessor);
+        }
+    }
+
+    expect($handedOut)->not->toBe([], 'no accessor was found handing out one of these, so this rule read nothing');
+
+    expect($stranded)->toBe([], sprintf(
+        "These are places the app can describe and nobody can get to:\n  %s\n\n"
+        . 'On a first run the roads into pairing are the only way out of the opening screen, so one '
+        . "of these with no button is an app that opens and cannot be used.\n",
+        implode("\n  ", $stranded),
+    ));
+});
+
+/**
+ * Which accessor hands out which screen, read off the source.
+ *
+ * The accessors are one line each and live on the screen that offers the road
+ * rather than on a type of their own, so there is nothing to reflect over —
+ * what there is instead is a shape every one of them has.
+ *
+ * @return array<string, string> the case's name, against the accessor's
+ */
+function whatHandsOutAScreenWithoutAStack(): array
+{
+    $found = [];
+
+    foreach (Tree::filesUnder(Tree::at('app-modules/operator/src'), '.php') as $file) {
+        preg_match_all(
+            '/public function (\w+)\(\): string\s*\{\s*return AScreenWithoutAStack::(\w+)->value;/',
+            (string) file_get_contents($file),
+            $accessors,
+            PREG_SET_ORDER,
+        );
+
+        foreach ($accessors as [, $accessor, $case]) {
+            $found[$case] = $accessor;
+        }
+    }
+
+    return $found;
+}
+
 /**
  * Every destination a template navigates to, by the accessor's name.
  *
