@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use function Tests\Support\carriesTheRule;
 use function Tests\Support\documentedRules;
 use function Tests\Support\enforcementSources;
+use function Tests\Support\whereEachKindOfRuleLives;
 
 // ARCHITECTURE.md, checked against itself.
 //
@@ -41,6 +43,51 @@ it('enforces every rule the architecture documents', function (): void {
         . 'Either write the rule and tag it with its identifier, or change the '
         . "enforcement column to `review` and accept that a human has to catch it.",
         implode("\n  ", $unenforced),
+    ));
+});
+
+it('enforces every rule by the kind of mechanism it claims', function (): void {
+    // The join above is the identifier, and an identifier appears anywhere. A
+    // rule naming three mechanisms needs only one of them to mention it, so a
+    // row could claim `arch` while nothing under `tests/Arch` had ever heard of
+    // it — and the table would say enforced, three times over, on the strength
+    // of a comment in `phpstan.neon`.
+    //
+    // That is not hypothetical either. `H3` read *methods per class, lines per
+    // method, constructor parameters, cognitive complexity* with one mechanism
+    // behind the last clause; `F1` claimed an arch size cap that did not exist;
+    // and `G3` claimed an arch half beside a runtime one that turned out not to
+    // cover the client this application actually uses. All three passed the
+    // check above.
+    //
+    // So the kind is checked too: a row that says `arch` is looked for where
+    // arch rules live, and one that says `phpstan` where those live. It does
+    // not prove the clause count — nothing can — but it does refuse the
+    // cheapest way for a row to be wider than its mechanism.
+    $wrong = [];
+
+    foreach (documentedRules() as $id => $claim) {
+        if ($claim === 'review' || $claim === 'planned') {
+            continue;
+        }
+
+        foreach (whereEachKindOfRuleLives() as $kind => $sources) {
+            if (! str_contains(strtolower($claim), $kind)) {
+                continue;
+            }
+
+            if (! carriesTheRule($id, $sources)) {
+                $wrong[] = sprintf('%s claims "%s" and nothing under %s carries it', $id, $claim, $kind);
+            }
+        }
+    }
+
+    expect($wrong)->toBe([], sprintf(
+        "These name a kind of mechanism that does not carry them:\n  %s\n\n"
+        . 'A row naming several mechanisms needs only one of them to mention its identifier, '
+        . 'which is how a clause with nothing behind it hides in a green table. Write the '
+        . "mechanism the row names, or name the one that is really there.\n",
+        implode("\n  ", $wrong),
     ));
 });
 

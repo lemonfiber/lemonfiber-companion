@@ -293,7 +293,7 @@ automatic and the operator never sees the question.
 
 | | Rule | Enforced by |
 |---|---|---|
-| F1 | Components are thin: hold state, delegate decisions | phpstan cognitive complexity + arch size cap |
+| F1 | Components are thin: hold state, delegate decisions | phpstan: `cognitive_complexity` + `H3`'s method cap |
 | F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor |
 | F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | `tests/Templates`, against the installed parser and registries |
 | F5 | Every interactive element announces itself to a screen reader | `tests/Templates` |
@@ -684,7 +684,7 @@ there, and neither is read as a description of the current code.
 |---|---|---|
 | G1 | No mocking types you do not own — hand-written fakes for our ports | arch: no Mockery on foreign namespaces |
 | G2 | Every port has one contract test, run against the real adapter **and** its fake | test: the ports, their implementations and the contract file, compared |
-| G3 | No test reaches the network | `Http::preventStrayRequests()` + arch |
+| G3 | No test reaches the network | `Http::preventStrayRequests()` + an empty global `MockClient` + test |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
 | G6 | No committed `->only(`, and no `->skip()` without a reason | arch |
