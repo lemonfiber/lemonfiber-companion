@@ -21,6 +21,11 @@
              operator — N1-R17 keeps a screen from being a poller. --}}
         <native:text class="font-bold">{{ __('health.working_it_out') }}</native:text>
         <native:text>{{ __('health.working_it_out_action') }}</native:text>
+
+        {{-- The same cadence, on the other state the stack works through. --}}
+        <native:text class="text-sm">
+            {{ __($this->cadenceSaid(), ['count' => $this->cadenceSeconds()]) }}
+        </native:text>
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @elseif ($this->offer()->hasEnded)
         {{-- The stack has no outcome for that asking any more. Not a fault and
@@ -37,6 +42,13 @@
         @if ($this->done()->isWorking)
             <native:text class="font-bold">{{ __('health.carrying_it_out') }}</native:text>
             <native:text>{{ __('health.carrying_it_out_action') }}</native:text>
+            {{-- N1-R27: the cadence is stated, because a screen that refreshes
+                 silently is one an operator cannot reason about — they cannot
+                 tell a second-old answer from a minute-old one, and whether
+                 something has changed is the only reason they are looking. --}}
+            <native:text class="text-sm">
+                {{ __($this->cadenceSaid(), ['count' => $this->cadenceSeconds()]) }}
+            </native:text>
             <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
         @elseif ($this->done()->met !== '')
             <native:text class="font-bold">{{ __($this->done()->met) }}</native:text>

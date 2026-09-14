@@ -119,4 +119,7 @@ return [
     'service_said_nothing' => 'Deze dienst heeft niets gezegd.',
     'service_said_nothing_action' => 'Hij draait rustig door, of is net gestart.',
     'no_moment' => 'Geen tijd opgegeven',
+    'every' => [
+        'while_work_runs' => 'Kijkt elke :count seconden opnieuw zolang dit loopt.',
+    ],
 ];

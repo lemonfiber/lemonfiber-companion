@@ -119,4 +119,7 @@ return [
     'service_said_nothing' => 'This service has said nothing.',
     'service_said_nothing_action' => 'It is running quietly, or it has only just started.',
     'no_moment' => 'No time given',
+    'every' => [
+        'while_work_runs' => 'Looking again every :count seconds while this runs.',
+    ],
 ];

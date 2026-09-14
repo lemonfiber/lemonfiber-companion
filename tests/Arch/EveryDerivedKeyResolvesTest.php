@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
+use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Permission;
@@ -121,6 +122,10 @@ function everyDerivedKey(): array
         HowMuchIsShown::class => aPairPerCase(
             HowMuchIsShown::cases(),
             static fn(HowMuchIsShown $shown): array => [$shown->saidOnTheScreen()],
+        ),
+        HowOften::class => aPairPerCase(
+            HowOften::cases(),
+            static fn(HowOften $often): array => [$often->saidOnTheScreen()],
         ),
         Stream::class => aPairPerCase(
             Stream::cases(),
