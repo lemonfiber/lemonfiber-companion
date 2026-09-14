@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\Wanted;
-
-use function round;
 
 /**
  * One request the household made, flattened for a template to read.
@@ -28,23 +27,6 @@ use function round;
 final readonly class WhatOneRequestSays
 {
     /**
-     * What a thousand is for a size, which is what a disk is sold in.
-     *
-     * Decimal rather than binary because the operator is comparing this against
-     * a number printed on a box, not against what a filesystem reports.
-     */
-    private const int A_THOUSAND = 1000;
-
-    /** Bytes in a megabyte, which is the smallest unit shown. */
-    private const int A_MEGABYTE = self::A_THOUSAND ** 2;
-
-    /** Bytes in a gigabyte. */
-    private const int A_GIGABYTE = self::A_THOUSAND ** 3;
-
-    /** Bytes in a terabyte, which is where a season of anything ends up. */
-    private const int A_TERABYTE = self::A_THOUSAND ** 4;
-
-    /**
      * @param string $title         what was asked for, which is what a decision is made about
      * @param string $by            who asked, so a decline can reach them by name (`D7-R7`)
      * @param string $standing      the key for where the request stands
@@ -52,6 +34,11 @@ final readonly class WhatOneRequestSays
      * @param string $sizeSaid   the key for how big it is, and how sure that is
      * @param int    $sizeFigure  the number that key is rendered with, whole and under a thousand
      * @param string $sizeUnit    the key for what the figure counts, or empty where there is none
+     *
+     * The figure and the unit both come off one {@see HowBig}, which is the
+     * only place the bands are decided. Two ladders here — one picking the
+     * divisor and one picking the word — were one decision spelled twice, with
+     * thresholds that had to agree and nothing holding them to it.
      */
     private function __construct(
         public string $title,
@@ -82,8 +69,8 @@ final readonly class WhatOneRequestSays
                 standing: $standing->saidOnTheScreen(),
                 wantsADecision: $standing->wantsADecision(),
                 sizeSaid: 'household.size_measured',
-                sizeFigure: self::figureFor($bytes),
-                sizeUnit: self::unitFor($bytes),
+                sizeFigure: HowBig::of($bytes)->figure,
+                sizeUnit: HowBig::of($bytes)->said,
             ),
             guessed: static fn(int $bytes): self => new self(
                 title: $wanted->forWhat(),
@@ -91,8 +78,8 @@ final readonly class WhatOneRequestSays
                 standing: $standing->saidOnTheScreen(),
                 wantsADecision: $standing->wantsADecision(),
                 sizeSaid: 'household.size_guessed',
-                sizeFigure: self::figureFor($bytes),
-                sizeUnit: self::unitFor($bytes),
+                sizeFigure: HowBig::of($bytes)->figure,
+                sizeUnit: HowBig::of($bytes)->said,
             ),
             unknown: static fn(): self => new self(
                 title: $wanted->forWhat(),
@@ -109,45 +96,5 @@ final readonly class WhatOneRequestSays
                 sizeUnit: '',
             ),
         );
-    }
-
-    /**
-     * The figure, in whichever unit keeps it under a thousand.
-     *
-     * Whole rather than to a decimal place, and that is `L5` deciding the shape
-     * rather than a preference: Dutch writes 1.234,5 where English writes
-     * 1,234.5, so a separator written into this file is wrong in one locale by
-     * construction. Three units and a ceiling of a thousand means every figure
-     * that leaves here is an integer between zero and 999, which has no
-     * separator to get wrong in any language.
-     *
-     * The precision lost is precision this number did not have. `D7-R4` exists
-     * because most of these are estimates, and a tenth of a gigabyte on a guess
-     * is a claim nobody can stand behind — while *is it 4 or 400* is the whole
-     * of what an operator is deciding.
-     */
-    private static function figureFor(int $bytes): int
-    {
-        return (int) match (true) {
-            $bytes >= self::A_TERABYTE => round($bytes / self::A_TERABYTE),
-            $bytes >= self::A_GIGABYTE => round($bytes / self::A_GIGABYTE),
-            default => round($bytes / self::A_MEGABYTE),
-        };
-    }
-
-    /**
-     * What that figure counts, as a key.
-     *
-     * A key rather than `'GB'`, because `L1` has every word an operator reads
-     * come from the translator — and these are words in some languages even
-     * where they are letters in ours.
-     */
-    private static function unitFor(int $bytes): string
-    {
-        return match (true) {
-            $bytes >= self::A_TERABYTE => 'household.terabytes',
-            $bytes >= self::A_GIGABYTE => 'household.gigabytes',
-            default => 'household.megabytes',
-        };
     }
 }
