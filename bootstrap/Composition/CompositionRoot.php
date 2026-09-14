@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
@@ -46,6 +47,7 @@ use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Stalls;
 use Modules\Sdk\Api\Supervisors;
+use Modules\Sdk\Api\Upkeepers;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
@@ -205,6 +207,15 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             Supervising::class,
             static fn(): Supervising => new Supervisors(new PinnedClients()),
+        );
+
+        // Where a stack stands on being up to date, and taking one. Both halves
+        // on one binding for the reason supervising is: an operator reads what
+        // is waiting, agrees to it, and a second port for the agreeing would be
+        // a second place a client could be reached for.
+        $this->app->bind(
+            KeepingCurrent::class,
+            static fn(): KeepingCurrent => new Upkeepers(new PinnedClients()),
         );
 
         $this->app->bind(

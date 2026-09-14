@@ -18,4 +18,9 @@ return [
         'rollback' => 'Go back to the previous version',
         'restore' => 'Restore the snapshot taken first',
     ],
+    'running_on' => 'Running :version',
+    'running_withdrawn' => 'This version has been withdrawn',
+    'would_be_noticed' => 'The household will see the difference',
+    'would_not_be_noticed' => 'Nobody will notice this one',
+    'nothing_waiting' => 'There is nothing waiting.',
 ];

@@ -18,4 +18,9 @@ return [
         'rollback' => 'Terug naar de vorige versie',
         'restore' => 'Zet de eerst gemaakte momentopname terug',
     ],
+    'running_on' => 'Draait :version',
+    'running_withdrawn' => 'Deze versie is teruggetrokken',
+    'would_be_noticed' => 'Het huishouden ziet het verschil',
+    'would_not_be_noticed' => 'Hier merkt niemand iets van',
+    'nothing_waiting' => 'Er staat niets klaar.',
 ];
