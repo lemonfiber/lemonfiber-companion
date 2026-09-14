@@ -83,6 +83,11 @@ it('N2-R9 — shows what stopped, where it stopped, and who has it', function ()
     $screen = theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()));
 
     expect($screen->howMany())->toBe(2)
+        // A stack that answered is not a session that ended. `isSignedIn` is the
+        // template's first branch, so a fold reporting otherwise here would put
+        // `N1-R44`'s sign-in prompt in front of an operator whose session is
+        // working and the rows would never be reached at all.
+        ->and($screen->isSignedIn())->toBeTrue()
         // Neither of the obstacle's two keys, because nothing was met.
         ->and($screen->met())->toBe('')
         ->and($screen->remedy())->toBe('');
@@ -136,6 +141,10 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
     $screen = theStalledScreen(AStackThatStalled::met(Obstacle::DeviceHasNoNetwork));
 
     expect($screen->howMany())->toBe(0)
+        // Meeting an obstacle is not losing the session either: the device
+        // asked and was answered. Reporting otherwise would hide which of the
+        // six was met behind a sign-in screen for a session that is fine.
+        ->and($screen->isSignedIn())->toBeTrue()
         ->and($screen->met())->toBe(Obstacle::DeviceHasNoNetwork->said())
         ->and($screen->remedy())->toBe(Obstacle::DeviceHasNoNetwork->remedy())
         // Nothing to be complete about, so the line is not rendered at all
@@ -149,8 +158,13 @@ it('N1-R44 — a device with no session for that stack is not asked to wait for 
 
     expect($screen->isSignedIn())->toBeFalse()
         ->and($screen->howMany())->toBe(0)
-        // Nothing was met, because the app never got as far as asking.
+        // Nothing was met, because the app never got as far as asking — and a
+        // remedy beside no obstacle would be an instruction about nothing.
         ->and($screen->met())->toBe('')
+        ->and($screen->remedy())->toBe('')
+        // Nothing to be complete about either, so the line the listing branch
+        // always renders is not rendered here at all.
+        ->and($screen->howMuchIsShown())->toBe('')
         ->and($stalling->askings())->toBe(0);
 });
 

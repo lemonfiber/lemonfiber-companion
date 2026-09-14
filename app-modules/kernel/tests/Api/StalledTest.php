@@ -65,13 +65,19 @@ it('nothing stuck is an answer, and it is the whole answer', function (): void {
 });
 
 it('reads by position, whatever keys the variadic arrived with', function (): void {
-    // Named arguments give a variadic string keys, and everything here reads by
-    // position — the reindex `Requested::of()` makes for the same reason.
+    // Named arguments give a variadic string keys, and this collection hands its
+    // items out again through its iterator — so the keys escape, and everything
+    // downstream reads by position. The keys are what has to be read back:
+    // `foreach` yields insertion order whatever they are, so a listing that had
+    // kept `first` and `second` iterates identically to one that reindexed, and
+    // a title assertion alone cannot tell the two apart. `Requested::of()`'s own
+    // test reads them for the same reason.
     $stalled = Stalled::of(
         shown: HowMuchIsShown::AllOfIt,
         first: aStalledItem('The first thing'),
         second: aStalledItem('The second thing'),
     );
 
-    expect(titlesIn($stalled))->toBe('The first thing | The second thing');
+    expect(array_keys(iterator_to_array($stalled, preserve_keys: true)))->toBe([0, 1])
+        ->and(titlesIn($stalled))->toBe('The first thing | The second thing');
 });
