@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\SizeUnit;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Tests\Support\Catalogue;
@@ -109,6 +110,10 @@ function everyDerivedKey(): array
         SizeUnit::class => aPairPerCase(
             SizeUnit::cases(),
             static fn(SizeUnit $unit): array => [$unit->saidOnTheScreen()],
+        ),
+        WhatBecameOfIt::class => aPairPerCase(
+            WhatBecameOfIt::cases(),
+            static fn(WhatBecameOfIt $became): array => [$became->saidOnTheScreen()],
         ),
         Undoing::class => aPairPerCase(
             Undoing::cases(),
@@ -268,7 +273,14 @@ it('L7 — every enum that builds a catalogue key is asked above', function (): 
         Tree::filesUnder(Tree::at(sprintf('lang/%s', Catalogue::locales()[0])), '.php'),
     );
 
-    $building = sprintf("/sprintf\\(\n?\\s*'(%s)\\.%%s/", implode('|', array_map(preg_quote(...), $stems)));
+    // Anything between the group and the placeholder, because a key may be
+    // nested: `Undoing` builds `health.undoing.%s` and `WhatBecameOfIt` builds
+    // `health.mended.%s`, and a pattern demanding the placeholder immediately
+    // after the group saw neither. That is the same under-approximation the
+    // catalogue mirror had with hyphens, in the same unsafe direction — a rule
+    // that cannot see an enum reports it as absent, and absent here means
+    // nobody checks its lines exist.
+    $building = sprintf("/sprintf\\(\n?\\s*'(%s)\\.[a-z0-9_.-]*%%s/", implode('|', array_map(preg_quote(...), $stems)));
     $asked = array_keys(everyDerivedKey());
     $missing = [];
 
