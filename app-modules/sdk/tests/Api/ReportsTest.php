@@ -534,3 +534,38 @@ it('N2-R3 — a finding nothing explains stands alone', function (): void {
 
     expect($explained[0]->shown())->toBe('stands-alone');
 });
+
+it('names which finding it could not read, rather than blaming the envelope', function (): void {
+    // The second one, deliberately. A refusal inside a finding names the
+    // finding, because the envelope's words — *the doctor envelope has no
+    // `title`* — are untrue of an envelope holding nine good findings and one
+    // bad one, and give a reader nothing to look at. The position is the only
+    // thing that makes the bad row findable, and a fixture whose bad row is
+    // first passes whether or not the position is carried.
+    $data = aRun('broken', [
+        aFinding('storage.one-filesystem', 'storage', 'Disk', ['outcome' => 'pass']),
+        ['check' => 'vpn.egress-match', 'category' => 'vpn', 'verdict' => ['outcome' => 'pass']],
+    ]);
+
+    expect(fn(): Report => Reports::in(doctorSaying($data)))
+        ->toThrow(ReportIsUnreadable::class, 'Finding 1');
+});
+
+it('names the finding for a verdict field as well as for a finding field', function (): void {
+    // The reads inside a verdict are finding-level too: a `severity` is a field
+    // of one row, not of the report, so it names the row the same way. Asserted
+    // separately because a verdict is read through its own helpers, which could
+    // carry the position for the finding's own fields and drop it here.
+    $data = aRun('broken', [
+        aFinding('storage.one-filesystem', 'storage', 'Disk', ['outcome' => 'pass']),
+        aFinding('vpn.egress-match', 'vpn', 'Egress', [
+            'outcome' => 'fail',
+            'severity' => 'error',
+            'state' => 'guided',
+            'meaning' => 'Traffic is leaving unprotected',
+        ]),
+    ]);
+
+    expect(fn(): Report => Reports::in(doctorSaying($data)))
+        ->toThrow(ReportIsUnreadable::class, 'Finding 1');
+});

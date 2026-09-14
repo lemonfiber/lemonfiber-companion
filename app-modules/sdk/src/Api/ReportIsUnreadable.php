@@ -39,6 +39,25 @@ final class ReportIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /**
+     * One field of one finding, naming both.
+     *
+     * Separate from {@see missing()} because they are different failures, and
+     * the difference is what a reader does next. `missing()` says the doctor
+     * envelope has no such field, which is true of an envelope and false of a
+     * row — a report of nine findings whose fourth has no verdict was reporting
+     * as an answer from an unreadable version of lemonfiber, and the position,
+     * the one thing that makes it findable, was dropped on the way.
+     */
+    public static function inFinding(int $position, WireField $field): self
+    {
+        return new self(sprintf(
+            'Finding %d has no `%s`, or it is not what the contract says it is. A report with a row this app cannot read is refused rather than shown one row short.',
+            $position,
+            $field->value,
+        ));
+    }
+
     public static function finding(int $position): self
     {
         return new self(sprintf(
