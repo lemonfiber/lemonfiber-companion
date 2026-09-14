@@ -14,6 +14,8 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Sdk\Api\RosterIsUnreadable;
 use Modules\Sdk\Api\Rosters;
 
+use function sprintf;
+
 /**
  * A `status` envelope holding whatever the case under test is about.
  *
@@ -193,8 +195,13 @@ it('names what it does read, in the words the enum has', function (): void {
     // The accepted list comes from `cases()` rather than from a sentence, so a
     // word added to the contract cannot leave the message describing the
     // vocabulary of the build before it.
+    //
+    // Quoted, and asserted quoted. The message is prose with a list inside it,
+    // and `degraded` bare in a sentence is a word a reader has to work out the
+    // status of — which is the whole difference between a message naming a
+    // vocabulary and one describing a machine.
     expect(fn(): object => Rosters::in(aRosterSaying(['condition' => 'brilliant', 'forms' => [], 'services' => []])))
-        ->toThrow(RosterIsUnreadable::class, HowTheStackIsRunning::Degraded->value);
+        ->toThrow(RosterIsUnreadable::class, sprintf('`%s`', HowTheStackIsRunning::Degraded->value));
 });
 
 it('refuses a state this build has not heard of', function (): void {
@@ -244,6 +251,30 @@ it('refuses a form that is not a name', function (): void {
         'forms' => ['media', ''],
         'services' => [],
     ])))->toThrow(RosterIsUnreadable::class, 'Form 1');
+});
+
+it('refuses a name that is only spacing, in both lists that read one', function (): void {
+    // `''` and `'   '` are one name on a screen and two values on the wire.
+    // Both lists decide after trimming, so a form or a dependency padded into
+    // looking like a word is refused here rather than becoming a `Form` or a
+    // `ServiceId` that renders as nothing everywhere it is shown — a row
+    // leaning on a blank understates what a stop disturbs, which is the reading
+    // `leaning()`'s own message says it exists to prevent.
+    $each = [
+        'a form' => [
+            ['condition' => 'active', 'forms' => ['media', '   '], 'services' => []],
+            'Form 1',
+        ],
+        'a dependency' => [
+            aRosterOf(['depends_on' => ['jellyfin', "\t"]]),
+            'depends_on',
+        ],
+    ];
+
+    foreach ($each as $which => [$said, $named]) {
+        expect(fn(): object => Rosters::in(aRosterSaying($said)))
+            ->toThrow(RosterIsUnreadable::class, $named, $which);
+    }
 });
 
 it('refuses a dependency that is not a name', function (): void {
