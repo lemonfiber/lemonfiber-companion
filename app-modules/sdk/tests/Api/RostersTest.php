@@ -139,6 +139,31 @@ it('reads `exit: null` as a service that did not end', function (): void {
     expect($daemons->count())->toBe(1);
 });
 
+it('refuses a list the stack sent as something other than a list', function (): void {
+    // Present and not a list is a different fault from absent, and the reader
+    // must not tell them apart by luck: `foreach` over a string raises where
+    // `foreach` over an array does not, so a reader that only checked for the
+    // key would fail somewhere further in, about something else, with the
+    // stack's real mistake nowhere in the message.
+    //
+    // All three lists, because the guard is one method and a caller that
+    // reached it by a different road is a caller it has never been asked about.
+    $each = [
+        'forms as a word' => ['condition' => 'active', 'forms' => 'downloads', 'services' => []],
+        'services as a number' => ['condition' => 'active', 'forms' => [], 'services' => 7],
+        'depends_on as a word' => [
+            'condition' => 'active',
+            'forms' => ['downloads'],
+            'services' => [aServiceSaying(['depends_on' => 'gluetun'])],
+        ],
+    ];
+
+    foreach ($each as $which => $said) {
+        expect(fn(): object => Rosters::in(aRosterSaying($said)))
+            ->toThrow(RosterIsUnreadable::class, 'not what the contract says it is', $which);
+    }
+});
+
 it('refuses an `exit` that is neither absent, null, nor a number', function (): void {
     // Refused rather than read as still running, which is the reading that
     // turns a service that died into one nobody looks at.
