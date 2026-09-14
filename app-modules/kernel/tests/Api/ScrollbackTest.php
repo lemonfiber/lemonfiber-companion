@@ -143,6 +143,12 @@ it('a service that said nothing is an empty window, not a missing one', function
 });
 
 it('reads by position, whatever keys the variadic arrived with', function (): void {
+    // Named arguments give a variadic string keys, and this window hands its
+    // lines out again through its iterator — so the keys escape, and everything
+    // downstream reads by position. The keys are what has to be read back:
+    // `foreach` yields insertion order whatever they are, so a window that had
+    // kept `first` and `second` iterates identically to one that reindexed, and
+    // a line assertion alone cannot tell the two apart.
     $window = Scrollback::of(
         service: theServiceTalking(),
         asked: HowManyLines::of(3),
@@ -150,5 +156,28 @@ it('reads by position, whatever keys the variadic arrived with', function (): vo
         second: aLineSaying('second'),
     );
 
-    expect(everyLineIn($window))->toBe('first | second');
+    expect(array_keys(iterator_to_array($window, preserve_keys: true)))->toBe([0, 1])
+        ->and(everyLineIn($window))->toBe('first | second');
+});
+
+it('a blank search selects every line, which is what exempts the early return', function (): void {
+    // `matching()` carries a mutation exemption, and this is the assertion that
+    // ends it.
+    //
+    // The early return answers a blank search with the window whole. Removing
+    // it drops through to the loop below, which asks each line whether it holds
+    // what is being looked for — and `mb_stripos($line, '')` is 0, so every
+    // line says yes. The two arms then build the same window from the same
+    // lines, with the same `LookingFor`: every non-searching one holds the
+    // empty string, so `nothing()` and a blank `text()` are the same value.
+    //
+    // Nothing can tell them apart while that is true. The day `holds()` answers
+    // a blank search with `false`, it stops being true and the early return
+    // becomes the only thing keeping the window whole.
+    foreach ([LookingFor::nothing(), LookingFor::text('   ')] as $blank) {
+        expect($blank->isSearching())->toBeFalse()
+            ->and($blank->typed())->toBe('', 'a non-searching LookingFor now holds text, so the early return in `Scrollback::matching()` is observable: it answers `nothing()` where the loop answers what it was given. Delete the `@pest-mutate-ignore: RemoveEarlyReturn` beside it and assert which of the two a blank search reports.')
+            ->and(aLineSaying('nothing like that')->holds($blank))
+            ->toBeTrue('a blank search no longer selects every line, so the early return in `Scrollback::matching()` is the only thing that gives the window back whole. Delete the `@pest-mutate-ignore: RemoveEarlyReturn` beside it and assert the count it returns.');
+    }
 });

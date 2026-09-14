@@ -139,6 +139,30 @@ it('a moment stated as nothing is refused rather than treated as unstated', func
     ])))->toThrow(LineIsUnreadable::class, 'not a moment');
 });
 
+it('the refusal quotes back the moment it could not read', function (): void {
+    // The phrase *not a moment* is the same on every one of these, so a message
+    // that had lost the value would satisfy a test reading only the phrase —
+    // and somebody looking at a stack that writes `  ` where a timestamp goes
+    // needs to see the `  `. It is the one part of the sentence that says which
+    // line to go and look at.
+    expect(fn(): Scrollback => Lines::in(aWindowOf('gluetun', 10, [
+        aLogRow('tunnel up', 'gluetun', 'stdout', '   '),
+    ])))->toThrow(LineIsUnreadable::class, 'happened at `   `,');
+});
+
+it('a moment that is not text at all is refused, and quoted as nothing', function (): void {
+    // A number where a timestamp goes is a stack with a different fault from
+    // one writing blanks, and the reader must not hand it on: the message takes
+    // a string, so a value that is not one is quoted as nothing rather than
+    // coerced into a shape that would read as a moment somebody could look up.
+    //
+    // Written as a row rather than through `aLogRow()`, whose `at` is typed
+    // `?string` — which is exactly why nothing had reached this arm.
+    expect(fn(): Scrollback => Lines::in(aWindowOf('gluetun', 10, [
+        ['at' => 7, 'line' => 'tunnel up', 'service' => 'gluetun', 'stream' => 'stdout'],
+    ])))->toThrow(LineIsUnreadable::class, 'happened at ``,');
+});
+
 it('a line with no `at` key at all is a line with no moment', function (): void {
     $window = Lines::in(aWindowOf('gluetun', 10, [
         ['line' => 'tunnel up', 'service' => 'gluetun', 'stream' => 'stdout'],

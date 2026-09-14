@@ -118,7 +118,31 @@ it('N2-R10 — shows the lines, oldest first, with the mouth each came out of', 
         Stream::Stdout->saidOnTheScreen(),
         Stream::Stderr->saidOnTheScreen(),
         Stream::Stdout->saidOnTheScreen(),
-    ))->and($screen->met())->toBe('');
+    ))->and($screen->met())->toBe('')
+        ->and($screen->isSignedIn())->toBeTrue()
+        // A read that worked leaves no obstacle and so nothing to do about one.
+        // Asserted beside `met()` because the two are written together and only
+        // one of them was read back, which is how a remedy for nothing survives.
+        ->and($screen->remedy())->toBe('');
+});
+
+it('N2-R10 — a line the service timed carries the moment, and one it did not says so', function (): void {
+    // `hasAMoment` is a field of its own so a template never has to read an
+    // empty `at` as *no moment*. That only holds if the two disagree somewhere:
+    // a fold that set the flag from nothing, or set it the same way on both
+    // arms, renders identically on every line that does carry a time — and the
+    // lines without one are exactly where nobody looks.
+    $rows = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()))->lines();
+
+    expect($rows[0]->at)->toBe('2026-09-14T04:00:00Z')
+        ->and($rows[0]->hasAMoment)->toBeTrue()
+        // The service wrote this one without a time, so there is nothing to show
+        // and the screen says which rather than showing a blank where a moment
+        // goes.
+        ->and($rows[1]->at)->toBe('')
+        ->and($rows[1]->hasAMoment)->toBeFalse()
+        ->and($rows[2]->at)->toBe('2026-09-14T04:00:02Z')
+        ->and($rows[2]->hasAMoment)->toBeTrue();
 });
 
 it('N2-R10 — names the service it is about, from the route', function (): void {
@@ -215,11 +239,21 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
     $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork));
 
     expect($screen->howMany())->toBe(0)
+        // Meeting an obstacle is not losing the session: the device asked and
+        // was answered. Reporting otherwise would put the sign-in screen in
+        // front of an operator whose session works, and `N1-R44`'s branch comes
+        // first in the template — so which of the six was met is never reached.
+        ->and($screen->isSignedIn())->toBeTrue()
         ->and($screen->met())->toBe(Obstacle::DeviceHasNoNetwork->said())
         ->and($screen->remedy())->toBe(Obstacle::DeviceHasNoNetwork->remedy())
         // Nothing to be a window over, so no claim is made about an edge.
         ->and($screen->isAWindow())->toBeFalse()
-        ->and($screen->bound())->toBe(0);
+        ->and($screen->bound())->toBe(0)
+        // Nothing arrived, and nothing was being looked for. Both are counted
+        // and rendered beside the rows, so a state with no rows that claimed
+        // either would put a count over an empty screen.
+        ->and($screen->howManyArrived())->toBe(0)
+        ->and($screen->isSearching())->toBeFalse();
 });
 
 it('N1-R44 — a device with no session for that stack is not asked to wait for one', function (): void {
@@ -228,7 +262,17 @@ it('N1-R44 — a device with no session for that stack is not asked to wait for 
 
     expect($screen->isSignedIn())->toBeFalse()
         ->and($screen->howMany())->toBe(0)
+        // Nothing was met, because the app never got as far as asking — and a
+        // remedy beside no obstacle would be an instruction about nothing.
         ->and($screen->met())->toBe('')
+        ->and($screen->remedy())->toBe('')
+        // Every claim a window makes is a claim about a read that happened.
+        // This state is the one where none did, so each of them is the empty
+        // answer rather than a number carried over from a state it is not in.
+        ->and($screen->howManyArrived())->toBe(0)
+        ->and($screen->bound())->toBe(0)
+        ->and($screen->isAWindow())->toBeFalse()
+        ->and($screen->isSearching())->toBeFalse()
         ->and($saying->askings())->toBe(0);
 });
 

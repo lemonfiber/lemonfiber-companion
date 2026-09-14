@@ -90,6 +90,28 @@ final readonly class Scrollback implements IteratorAggregate
      */
     public function matching(LookingFor $looking): self
     {
+        // Exempt from the mutator that removes this return, because while a
+        // blank search selects every line the two are the same program: the
+        // loop below asks each line whether it holds the empty string and
+        // `mb_stripos` answers 0 to all of them, so it rebuilds this window out
+        // of the same lines — and every non-searching `LookingFor` holds the
+        // same empty text as `nothing()`, so even the search it reports back is
+        // the same value. Nothing can tell the two apart.
+        //
+        // The exemption removes itself: `ScrollbackTest` asserts both facts it
+        // rests on — that a blank search still selects every line, and that a
+        // non-searching `LookingFor` still holds nothing — so the day either
+        // stops being true that test fails and names this line as the one to
+        // delete.
+        //
+        // Kept rather than deleted because the guard is the statement of intent
+        // — a blank search is not a search — and deleting it would leave that
+        // resting on what `mb_stripos` does with an empty needle.
+        //
+        // On the `if` rather than on the return: the annotation is read off the
+        // node the traversal enters, and this mutator is reached through the
+        // branch.
+        // @pest-mutate-ignore: RemoveEarlyReturn
         if (! $looking->isSearching()) {
             return new self($this->service, $this->asked, $this->arrived, $this->arrived, LookingFor::nothing());
         }

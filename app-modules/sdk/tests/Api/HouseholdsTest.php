@@ -17,6 +17,7 @@ use Modules\Sdk\Api\HouseholdIsUnreadable;
 use Modules\Sdk\Api\Households;
 
 use function sprintf;
+use function var_export;
 
 /**
  * A `household` envelope holding whatever the case under test is about.
@@ -324,6 +325,34 @@ it('N3-R7 — reads the reason a request was refused, and when', function (): vo
     );
 
     expect($said->shown())->toBe('The disk is nearly full/2026-09-14T04:00:00Z');
+});
+
+it('a refusal timed as whitespace is read as one the stack did not time', function (): void {
+    // `at` present and blank is not the same shape as `at` absent, and it is the
+    // one a stack produces by accident — a field it always writes, filled with
+    // nothing on the row where the moment was not known. Read untrimmed it is a
+    // string, so it would reach a screen as a moment made of spaces and render
+    // as a refusal that happened at no time anybody can read.
+    foreach (['', ' ', '   ', "\t", "\n"] as $blank) {
+        $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
+            aMember('Robin', [[
+                'id' => 1,
+                'title' => 'A film',
+                'state' => 'declined',
+                'refused' => ['at' => $blank, 'reason' => 'Not this week'],
+            ]]),
+        ]])), preserve_keys: false);
+
+        $said = $wanted[0]->refusal(
+            was: static fn(TurnedDown $why): Code => Code::of($why->when(
+                then: static fn(string $when): Code => Code::of(sprintf('timed as `%s`', $when)),
+                unstated: static fn(): Code => Code::of('unstated'),
+            )->shown()),
+            wasNot: static fn(): Code => Code::of('not refused'),
+        );
+
+        expect($said->shown())->toBe('unstated', sprintf('a refusal timed as %s', var_export($blank, return: true)));
+    }
 });
 
 it('a refusal the stack did not time is read without one', function (): void {
