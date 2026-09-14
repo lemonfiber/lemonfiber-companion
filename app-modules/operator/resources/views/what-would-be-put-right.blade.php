@@ -73,6 +73,13 @@
                      and the other means nobody knows. --}}
                 <native:text>{{ __('health.nothing_was_carried_out') }}</native:text>
             @endforelse
+
+            {{-- A listing usually holds more than one repair, and agreeing to
+                 one is not agreeing to the rest. Everything is asked afresh
+                 rather than the old listing kept: the machine has just changed,
+                 so what it would offer now is not necessarily what it offered
+                 before. --}}
+            <native:button label="{{ __('health.look_again') }}" @tap="lookAgain()" />
         @endif
     @else
         @forelse ($this->offer()->repairs as $repair)

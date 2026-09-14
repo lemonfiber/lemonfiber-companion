@@ -515,3 +515,46 @@ it('N1-R17 — what was done is held, so reading it twice asks once', function (
 
     expect($mending->readings() - $before)->toBe(1);
 });
+
+it('N2-R5 — a second repair in the same listing can still be agreed to', function (): void {
+    // A listing usually holds more than one, and agreeing to the first is not
+    // agreeing to the rest. Without a way back, the operator who fixed the disk
+    // is left looking at that one outcome with the credential still waiting
+    // beside it — a screen enterable once per listing, which is not what a
+    // listing is.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $screen->done();
+
+    $screen->lookAgain();
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and(count($screen->offer()->repairs))->toBe(2);
+
+    $screen->agreeTo('credentials.expired');
+
+    expect($screen->wasAgreedTo())->toBeTrue()
+        ->and($mending->agreements())->toBe(2)
+        ->and($mending->agreedTo()?->repair()->answers())->toBe('credentials.expired');
+});
+
+it('looking again asks the stack afresh rather than reusing the listing', function (): void {
+    // The machine has just changed, so the repairs it would offer now are not
+    // necessarily the ones it offered before. Keeping the old listing would
+    // have somebody agree to a fix for something already put right.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $screen->done();
+
+    $before = $mending->askings();
+    $screen->lookAgain();
+    $screen->offer();
+
+    expect($mending->askings() - $before)->toBe(1);
+});

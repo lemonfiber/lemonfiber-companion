@@ -73,4 +73,5 @@ return [
         'would_overwrite' => 'Niet gedaan: het zou iets overschrijven',
     ],
     'nothing_was_carried_out' => 'Er bleek niets te doen.',
+    'look_again' => 'Kijk opnieuw wat er te herstellen valt',
 ];

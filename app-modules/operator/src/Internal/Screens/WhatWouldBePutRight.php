@@ -225,6 +225,30 @@ final class WhatWouldBePutRight extends NativeComponent
     }
 
     /**
+     * Look again at what this machine would put right.
+     *
+     * A listing usually holds more than one repair, and agreeing to one is not
+     * agreeing to the rest. Without this the operator who fixed the disk is
+     * left looking at that one outcome with no way back to the credential still
+     * waiting beside it — a screen that can be entered once per listing, which
+     * is not what a listing is.
+     *
+     * Everything is forgotten rather than the listing being kept, and that is
+     * deliberate: the machine has just changed, so the repairs it would offer
+     * now are not necessarily the ones it offered before. Keeping the old
+     * listing would have somebody agree to a fix for something that has already
+     * been put right.
+     */
+    public function lookAgain(): void
+    {
+        $this->agreed = false;
+        $this->handle = null;
+        $this->offered = null;
+        $this->answered = null;
+        $this->carriedOut = null;
+    }
+
+    /**
      * Where this machine's screens are.
      *
      * One accessor rather than one per destination, and {@see WhereAStackIs}
