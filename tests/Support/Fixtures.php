@@ -783,6 +783,37 @@ final readonly class Fixtures
                 }
                 PHP, 'F8 —', 'ShowsWhateverArrived'),
 
+            // A screen that names a template nobody wrote. `F10` makes the join
+            // between markup and class from `render()`, so a screen whose view
+            // is not there is a screen whose markup was never read at all —
+            // which is the rule reporting rather than the rule passing.
+            //
+            // Its other branch, a template calling a method the screen lost,
+            // wants a `.blade.php` on disk. One written here would be picked up
+            // by `Template::all()` and judged by the nine other rules over
+            // `resources/views`, so proving this rule would mean satisfying all
+            // of them first — a fixture whose failure could be any of ten
+            // things is not evidence about one of them.
+            Fixture::suite('F10', 'app-modules/operator/src/Internal/Screens/Fixtures/RendersATemplateNobodyWrote.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Operator\Internal\Screens\Fixtures;
+
+                use Illuminate\View\View;
+
+                use function view;
+
+                final readonly class RendersATemplateNobodyWrote
+                {
+                    public function render(): View
+                    {
+                        return view('operator::a-template-nobody-wrote');
+                    }
+                }
+                PHP, 'F10 —', 'RendersATemplateNobodyWrote'),
+
             Fixture::analyser('H5', 'Plain/Concatenates.php', <<<'PHP'
                 <?php
 
