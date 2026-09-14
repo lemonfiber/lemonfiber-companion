@@ -24,10 +24,11 @@ env:
 # Separate from `ci` on purpose.
 #
 # Sonar needs a token, which means it cannot run on a pull request from a fork,
-# and it needs a coverage report, which means a coverage driver and a full test
-# run. Folding it into the `checks` job would make every gate in that job wait
-# for pcov and then fail for everyone without the secret. Here it can be
-# skipped cleanly and the rest of CI carries on.
+# nor on one Dependabot opened — that run reads a different secret store — and it
+# needs a coverage report, which means a coverage driver and a full test run.
+# Folding it into the `checks` job would make every gate in that job wait for
+# pcov and then fail for everyone without the secret. Here it can be skipped
+# cleanly and the rest of CI carries on.
 
 jobs:
   sonar:
@@ -54,8 +55,34 @@ jobs:
       - name: coverage and test report
         run: composer test:report
 
+      # A Dependabot run reads its secrets from the Dependabot store rather than
+      # the Actions store, and `SONAR_TOKEN` lives only in the second. The
+      # scanner was handed an empty string, died on "Not authorized or project
+      # not found", and turned this job red over a step with nothing to do with
+      # the bump. No dependency update in this repository has ever merged; #155
+      # was the first one to try, and it sat on a stack trace about credentials
+      # while the two action SHAs it carried were never in question.
+      #
+      # Skipped rather than left to fail: a scan that cannot authenticate has no
+      # verdict to give, and a red tick meaning "the runner held no credential"
+      # is worth less than a step that says so in a sentence. The coverage and
+      # test report above needs no token and still runs, so what `tests and
+      # coverage` measures is unchanged on these pull requests.
+      #
+      # Keyed on who opened the pull request, because that is what selects the
+      # secret store. Not `github.triggering_actor`, which becomes whoever
+      # pressed re-run — keyed on that, this step would come back on the re-run
+      # of a Dependabot pull request and fail it a second time.
+      #
+      # The event is named as well as the author. A push to main carries no pull
+      # request, so the author field is null there, and what a null compares
+      # equal to is not a rule this workflow should rest on: SonarCloud's
+      # analysis of main is the baseline every pull request is measured against,
+      # and a comparison that quietly went the other way would switch it off with
+      # nothing anywhere to notice.
       - uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
         id: scan
+        if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -92,6 +119,20 @@ jobs:
 
           echo "::notice::${said}"
           printf '### Why the SonarCloud scan failed\n\n%s\n' "$said" >> "$GITHUB_STEP_SUMMARY"
+
+      # Runs in exactly the case the scan does not. A step absent from a log
+      # reads the same as a step that ran and found nothing, and this repository
+      # has been caught by that reading before, so the skip appears under its own
+      # name carrying its reason and the identifier it was decided on.
+      - name: Why the scan was skipped
+        if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          set -euo pipefail
+          said="The SonarCloud scan was skipped: ${AUTHOR} opened this pull request, and a Dependabot run reads secrets from the Dependabot store rather than the Actions store, so SONAR_TOKEN is empty here and the scanner could only have failed on it. Coverage and the test report ran above either way. No analysis was produced, so nothing on this run enforced Q-R64."
+          echo "::notice::${said}"
+          printf '### SonarCloud scan skipped\n\n%s\n' "$said" >> "$GITHUB_STEP_SUMMARY"
 
   # Q-R64 — the check this repository was the only one in the estate without.
   #
