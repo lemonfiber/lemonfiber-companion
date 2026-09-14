@@ -664,6 +664,21 @@ it('N2-R9 — reading the family already open widens back out', function (): voi
     expect($screen->isNarrowed())->toBeFalse()
         ->and($screen->howMany())->toBe(3);
 
+    // And the control that was open closes with the report it narrowed. The
+    // row is the only thing on the frame that says which family is being read
+    // — the list below it looks the same whether nine findings arrived or nine
+    // were left after narrowing — so a control still marked open over a report
+    // that has widened tells the operator they are reading the queue while
+    // they are reading everything. Asserted on the way out and not only on the
+    // way in, because the two are separate reads of the same state and only
+    // the way in has ever been looked at.
+    $closed = array_map(
+        static fn(WhichFamilyToRead $family): bool => $family->isOpen,
+        $screen->families(),
+    );
+
+    expect($closed)->toBe([false, false]);
+
     // And naming another family while one is open moves to it rather than
     // widening, which is the other half of the same tap.
     $screen->read(Category::Queue->value);
