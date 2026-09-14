@@ -8,6 +8,8 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Updates\Api\Queries\NotArrivedFirst;
+use Modules\Updates\Api\Queries\WorthNoticing;
 
 /**
  * What asking a stack where it stands produced, flattened for a template.
@@ -41,6 +43,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param int                             $didNotArrive how many of those are not where the operator wanted them
      * @param bool                            $anythingUnanswered whether the stack cannot say what some are doing
      * @param bool                            $canTakeOne whether there is an update here to offer at all
+     * @param bool                            $anyWorthNoticing whether any release waiting is one the household would see
      */
     private function __construct(
         public bool $isSignedIn,
@@ -55,6 +58,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public int $didNotArrive,
         public bool $anythingUnanswered,
         public bool $canTakeOne,
+        public bool $anyWorthNoticing,
     ) {}
 
     /**
@@ -78,6 +82,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             didNotArrive: 0,
             anythingUnanswered: false,
             canTakeOne: false,
+            anyWorthNoticing: false,
         );
     }
 
@@ -92,7 +97,13 @@ final readonly class WhatTheUpkeepTurnedOutToBe
 
         $applied = [];
 
-        foreach ($upkeep->howItWent() as $took) {
+        // Ordered before folding, so the rows reach the template in the order
+        // they are read in. `NotArrivedFirst` puts every service that is not
+        // where the operator wanted it above the ones that are, and ranks the
+        // three ways of not arriving against each other not at all — which of
+        // a network, a service and a machine matters most is not a judgement
+        // this app is in a position to make.
+        foreach (new NotArrivedFirst()->over($upkeep->howItWent()) as $took) {
             $applied[] = WhatOneServiceTookItSays::of($took);
         }
 
@@ -116,6 +127,10 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             // and a screen counting rows would offer an update to one that
             // listed releases while reporting itself up to date.
             canTakeOne: $upkeep->hasSomethingToOffer(),
+            // `N2-R16`'s distinction, asked rather than counted: a screen
+            // deciding whether tonight is worth an evening should not have to
+            // build a list to find out that it is empty.
+            anyWorthNoticing: ! new WorthNoticing()->over($upkeep->waiting())->isEmpty(),
         );
     }
 
@@ -147,6 +162,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             didNotArrive: 0,
             anythingUnanswered: false,
             canTakeOne: false,
+            anyWorthNoticing: false,
         );
     }
 }

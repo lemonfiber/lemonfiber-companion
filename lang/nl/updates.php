@@ -22,6 +22,7 @@ return [
     'about_to_take' => 'Op het punt :version te nemen',
     'would_change' => '{1} Eén dienst stopt en start opnieuw|[2,*] :count diensten stoppen en starten opnieuw',
     'changes_nothing' => 'Deze release verandert geen enkele dienst op deze machine.',
+    'something_worth_noticing' => 'Een hiervan is een verandering die het huishouden ziet',
     'take_this_one' => 'Neem deze',
     'last_update' => 'De laatste update',
     'did_not_arrive' => '{1} Eén dienst staat niet waar je hem wilde|[2,*] :count diensten staan niet waar je ze wilde',
