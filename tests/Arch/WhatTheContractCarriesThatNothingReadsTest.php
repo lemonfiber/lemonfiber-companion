@@ -189,6 +189,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'at all, so a reading that depended on one would work only where it was least needed.',
     ],
     [
+        'path' => 'ErrorEnvelope.detail',
+        'because' => 'The same reading, and the same answer. `N2-R3` has a finding carry its meaning in '
+            . 'the words the core produced, and that arrives on the `doctor` envelope where a screen can '
+            . 'show it; an error body reaches the operator as an obstacle, which is one of four sentences '
+            . 'this app has written.',
+    ],
+    [
         'path' => 'HouseholdEnvelope.allows',
         'because' => 'The household surface is blocked rather than unstarted. `N3-R1` to `N3-R3` wait on the '
             . 'wire saying who is asking, which it does not, so nothing under `household` is read at all — '
