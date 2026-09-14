@@ -1,7 +1,36 @@
 # The household surface
 
-Empty, and the requirements it will hold are worth reading before anything is
-put here — because two of them are about what this module must **not** grow.
+Empty, and the first thing to know is that it is **blocked** rather than
+unstarted. The requirements below are worth reading anyway, because two of them
+are about what this module must not grow — but nothing here can be built until
+the surface says who is asking.
+
+## The wire does not say who signed in
+
+`lemonfiber` mints one token for the run and exchanges one password for one
+session, and the `admission` envelope says what the session is — `{token,
+until}` — and not who holds it. Every caller carrying it is the operator.
+
+That takes three requirements at once:
+
+| | |
+|---|---|
+| `N3-R1` | The application a person is given MUST be decided by the identity that signed in |
+| `N3-R2` | What a member may do MUST be the core's answer |
+| `N3-R3` | A control a member is not entitled to MUST be refused by the core if it is ever reached, and MUST NOT rely on the app having omitted it |
+
+`N3-R3` is the one that makes this a block rather than a slow start. A member
+surface built on a single operator token would be safe exactly to the extent
+that it remembered to leave controls out — and *the app omitted it* is the one
+answer that requirement refuses. Building it would produce a screen that looks
+right and is not, which is worse than the empty directory.
+
+`N3-R4` and `N3-R5` are held on the same shelf for a narrower reason: nothing on
+the wire says what a member has left of an allowance or when it resets.
+
+All five are in `tests/Arch/WhatTheContractDoesNotCarryTest.php`, which reads
+the generated contract and **fails the day any of them arrives** — so this
+paragraph stops being true in a run rather than in somebody's memory.
 
 ## `N3-R2` — the app implements no permission model
 
