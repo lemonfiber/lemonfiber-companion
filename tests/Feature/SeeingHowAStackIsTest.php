@@ -735,3 +735,15 @@ it('N2-R4 — what this machine would put right is one tap from the machine', fu
         ->toBe(AStacksScreen::Repairs->forTheStack(theStackBeingLookedAt()->id()->stored()))
         ->and(NativeRouter::resolve($screen->goes()->repairs()))->not->toBeNull();
 });
+
+it('N2-R9 — what stopped coming in is one tap from the machine', function (): void {
+    // *Reachable* is the whole requirement, and this is the tap that satisfies
+    // it. It hangs off the machine rather than off the verdict above, because a
+    // stack passing every check and a household getting nothing are not a
+    // contradiction — a screen under the verdict would be claiming they are.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+
+    expect($screen->goes()->stuck())
+        ->toBe(AStacksScreen::Stuck->forTheStack(theStackBeingLookedAt()->id()->stored()))
+        ->and(NativeRouter::resolve($screen->goes()->stuck()))->not->toBeNull();
+});

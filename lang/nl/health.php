@@ -74,4 +74,29 @@ return [
     ],
     'nothing_was_carried_out' => 'Er bleek niets te doen.',
     'look_again' => 'Kijk opnieuw wat er te herstellen valt',
+    // N2-R9 — wat niet meer binnenkomt. De fase is waar het bleef steken, en
+    // dat is het hele verschil tussen een indexer die niets vindt en een
+    // bestand dat de bibliotheek nooit heeft opgepakt.
+    'stage' => [
+        'not-monitored' => 'Hier wordt niet op gelet',
+        'monitored' => 'Wordt in de gaten gehouden, nog niet gezocht',
+        'searching' => 'Wordt gezocht',
+        'found' => 'Er is een kopie en die is nog niet gepakt',
+        'grabbed' => 'Gepakt, nog niet begonnen met binnenhalen',
+        'downloading' => 'Komt nu binnen',
+        'downloaded' => 'Binnen, nog niet aan de bibliotheek gegeven',
+        'importing' => 'Wordt overgedragen',
+        'imported' => 'Overgedragen, nog niet af te spelen',
+        'available' => 'Staat er en is af te spelen',
+    ],
+    'shown' => [
+        'all-of-it' => 'Dit is alles waar de stack op is vastgelopen.',
+        'some-of-it' => 'De stack heeft er meer; hij stuurde een deel van de lijst.',
+    ],
+    'stuck_count' => '{0} Er komt niets vast te zitten|{1} Er is één ding blijven steken|[2,*] Er zijn :count dingen blijven steken',
+    'stuck_in' => 'In :service',
+    'stuck_for_good' => 'Hier gebeurt vanzelf niets meer mee.',
+    'nothing_stopped' => 'Er is niets blijven steken.',
+    'nothing_stopped_action' => 'Alles waar het huishouden om vroeg is onderweg of al binnen.',
+    'what_stopped' => 'Wat niet meer binnenkomt',
 ];

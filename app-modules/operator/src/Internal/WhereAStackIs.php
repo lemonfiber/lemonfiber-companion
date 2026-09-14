@@ -80,4 +80,10 @@ final readonly class WhereAStackIs
     {
         return AStacksScreen::Repairs->forTheStack($this->stored);
     }
+
+    /** What has stopped coming in to this machine (`N2-R9`). */
+    public function stuck(): string
+    {
+        return AStacksScreen::Stuck->forTheStack($this->stored);
+    }
 }

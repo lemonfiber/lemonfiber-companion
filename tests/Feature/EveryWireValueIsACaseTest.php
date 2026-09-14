@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Waiting;
 use Tests\Support\ApiSurface;
@@ -43,8 +44,29 @@ use Tests\Support\Tree;
 /** The generated envelope that carries a report, as text. */
 function theGeneratedDoctorEnvelope(): string
 {
+    return theGeneratedEnvelope('DoctorEnvelope');
+}
+
+/** The generated envelope that carries what has stopped coming in, as text. */
+function theGeneratedStuckEnvelope(): string
+{
+    return theGeneratedEnvelope('StuckEnvelope');
+}
+
+/**
+ * One generated envelope, as text.
+ *
+ * Named rather than spelled at each caller once there were two: the path is one
+ * fact about where the generator writes, and two copies of it would let a
+ * regenerated tree move one and leave the other reading a file that is no longer
+ * there — which returns `''`, and an empty source makes every union it is asked
+ * about come back empty. The rules below assert they found something for exactly
+ * that reason, but they would name the union rather than the path.
+ */
+function theGeneratedEnvelope(string $called): string
+{
     $said = file_get_contents(
-        Tree::at('vendor/lemonfiber/sdk-php/src/Generated/DoctorEnvelope.php'),
+        Tree::at(sprintf('vendor/lemonfiber/sdk-php/src/Generated/%s.php', $called)),
     );
 
     return is_string($said) ? $said : '';
@@ -252,6 +274,18 @@ it('N1-R13 — every severity the contract describes has a case', function (): v
     expect(valuesOf(Severity::cases()))->toBe(wireUnion('severity'));
 });
 
+it('N1-R13 — every stage the contract describes has a case', function (): void {
+    // Read from the stuck envelope rather than the doctor one, which is the
+    // first time these rules have looked at a second file. The union is only
+    // declared where it is used, so asking the doctor envelope about `stage`
+    // answers `[]` — which is the same answer a renamed field gives, and is why
+    // the assertion below insists something was found before comparing.
+    $stages = unionIn(theGeneratedStuckEnvelope(), 'stage');
+
+    expect($stages)->not->toBe([], 'no stage union was found in the generated envelope');
+    expect(valuesOf(Stage::cases()))->toBe($stages);
+});
+
 it('N1-R13 — every standing the contract describes has a case', function (): void {
     // The contract calls this `state`. The enum is named for what it says about
     // a problem rather than for the field it arrives in, which is why the two
@@ -293,6 +327,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     Conclusion::class => 'outcome',
     Overall::class => 'overall',
     Severity::class => 'severity',
+    Stage::class => 'stage',
     Standing::class => 'state',
 
     // `state` twice, and that is the wire's name rather than a mistake here:

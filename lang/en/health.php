@@ -74,4 +74,29 @@ return [
     ],
     'nothing_was_carried_out' => 'There turned out to be nothing to do.',
     'look_again' => 'Look again at what could be put right',
+    // N2-R9 — what has stopped coming in. The stage is where it stopped, and it
+    // is the whole difference between an indexer with nothing and a file the
+    // library never picked up.
+    'stage' => [
+        'not-monitored' => 'Nothing is watching for this',
+        'monitored' => 'Being watched for, not looked for yet',
+        'searching' => 'Being looked for',
+        'found' => 'A copy exists and has not been taken',
+        'grabbed' => 'Taken, not started coming down',
+        'downloading' => 'Coming down now',
+        'downloaded' => 'Down, not handed to the library yet',
+        'importing' => 'Being handed over',
+        'imported' => 'Handed over, not playable yet',
+        'available' => 'There and playable',
+    ],
+    'shown' => [
+        'all-of-it' => 'This is everything the stack has stopped on.',
+        'some-of-it' => 'The stack has more than this; it sent part of the list.',
+    ],
+    'stuck_count' => '{0} Nothing has stopped coming in|{1} One thing has stopped coming in|[2,*] :count things have stopped coming in',
+    'stuck_in' => 'In :service',
+    'stuck_for_good' => 'Nothing will move this by itself.',
+    'nothing_stopped' => 'Nothing has stopped coming in.',
+    'nothing_stopped_action' => 'Everything the house asked for is on its way or already here.',
+    'what_stopped' => 'What stopped coming in',
 ];

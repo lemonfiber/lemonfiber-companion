@@ -43,6 +43,9 @@ enum AStacksScreen: string
     /** What this machine would put right, stated before any yes (`N2-R4`). */
     case Repairs = '/stacks/{stack}/repairs';
 
+    /** What has stopped coming in, which is the first of `N2-R9`'s four. */
+    case Stuck = '/stacks/{stack}/stuck';
+
     /** What the router holds this screen under. */
     public const string NAMED = '{stack}';
 

@@ -134,11 +134,20 @@ enum WireField: string
     /** What happened, in one plain sentence, before it is explained. */
     case Summary = 'summary';
 
-    /** The service a finding is about, where it is about one. */
+    /** Which service something belongs to — a finding, or a stalled item. */
     case Service = 'service';
 
-    /** What a check is called, in the core's words. */
+    /** What something is called in the core's words: a check, or a stalled item. */
     case Title = 'title';
+
+    /** Whether a listing is short of what the stack actually holds. */
+    case Incomplete = 'incomplete';
+
+    /** The rows of a listing, where the envelope does not name them otherwise. */
+    case Items = 'items';
+
+    /** How far a stalled item got before it stopped. */
+    case Stage = 'stage';
 
     /** How a single check turned out, as a tagged union. */
     case Verdict = 'verdict';

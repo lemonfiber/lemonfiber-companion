@@ -125,5 +125,15 @@
             label="{{ __('health.would_put_right') }}"
             @navigate="{{ $this->goes()->repairs() }}"
         />
+
+        {{-- N2-R9: what stopped coming in. Reachable from the machine it is
+             about rather than from the list, for the reason the requests button
+             is — and reachable at all is the requirement: a stack passing every
+             check and a household getting nothing are not a contradiction, so
+             this cannot live under the verdict above. --}}
+        <native:button
+            label="{{ __('health.what_stopped') }}"
+            @navigate="{{ $this->goes()->stuck() }}"
+        />
     @endunless
 </native:column>
