@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
@@ -322,7 +323,7 @@ function aScreen(): YourStacks
         AShareSheetThatWasOffered::working(),
         VerdictsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
-        new Opening(ADeviceThatKnowsYou::willing(), StacksInMemory::working()),
+        new Opening(ADeviceThatKnowsYou::willing(), StacksInMemory::working(), ADeviceOnANetwork::connected()),
     );
 }
 

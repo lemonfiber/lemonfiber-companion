@@ -6,6 +6,8 @@ namespace Modules\Connection\Api;
 
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Launch;
+use Modules\Kernel\Api\Networking;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stacks;
 
 /**
@@ -30,14 +32,20 @@ use Modules\Kernel\Api\Stacks;
  * screen offering pairing, and reporting it as a failure to reach would be the
  * app describing its own first run as a fault.
  *
+ * The network is asked third and last, and only once a stack is known. It is
+ * the one question about reaching a machine that can be answered without
+ * sending anything, which is exactly why it belongs at a launch: a phone in
+ * flight mode and a machine that is switched off produce the same silence at
+ * the socket, and `N1-R37` wants them told apart. Asking it before the pairing
+ * check would put the question to a device that has nothing to reach.
+ *
  * **What this does not do is reach the stack.** `F4` says a frame is not where
  * a socket is opened and `N1-R17` says a screen is not a poller, and opening
  * the app is the moment both are easiest to break — four paired machines, on a
  * home network, one of them asleep. So *ready* here means *paired, unlocked and
  * ready to be asked*, and the asking belongs to the screen the operator chose.
- * The `blocked` arm exists for what a launch can learn without asking: `N4-R6`'s
- * device with no secure storage is the one this build can produce, and a device
- * that cannot hold a session cannot be signed into whatever the network does.
+ * The `blocked` arm is therefore only ever reached by what a launch can learn
+ * without sending anything, and having no network is the one thing that is.
  *
  * A query rather than a command, so it answers rather than refuses (`M1`):
  * *what did the app find* has no failure case, only five answers, and four of
@@ -48,6 +56,7 @@ final readonly class Opening
     public function __construct(
         private DeviceAuth $device,
         private Stacks $stacks,
+        private Networking $network,
     ) {}
 
     /**
@@ -76,7 +85,20 @@ final readonly class Opening
         // *which one is this launch about*, which the screen needs before it can
         // say anything. An operator with four machines meets the list.
         foreach ($this->stacks->configured() as $stack) {
-            return Launch::ready($stack->id());
+            // Asked here rather than above the loop, so a first run never puts
+            // the question at all. An unpaired device has nowhere to send
+            // anything, and telling somebody their wifi is off when what they
+            // have not done yet is pair a machine is an answer to a question
+            // they did not ask.
+            //
+            // Only the refusal decides anything. A connected device is not a
+            // reachable stack — the machine can still be asleep, on another
+            // network, or behind a permission this app has not been granted —
+            // so an affirmative here is permission to try, and the trying
+            // belongs to the screen.
+            return $this->network->isConnected()
+                ? Launch::ready($stack->id())
+                : Launch::blockedBy(Obstacle::DeviceHasNoNetwork);
         }
 
         // No stack paired, which is a first run rather than a fault (`N1-R35`).

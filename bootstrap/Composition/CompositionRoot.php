@@ -11,6 +11,7 @@ use Bootstrap\Composition\NativePHP\TheTheme;
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Screen;
 use Modules\Device\Api\PlatformAuth;
+use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Api\PlatformScanner;
 use Modules\Device\Api\PlatformScreen;
@@ -24,6 +25,7 @@ use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Scanning;
@@ -37,10 +39,9 @@ use Modules\Sdk\Api\Questions;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
+use Native\Mobile\Network as PlatformNetworkFacade;
 use Native\Mobile\Scanner;
 use Native\Mobile\SecureStorage as PlatformStore;
-use Native\Mobile\Share;
-
 /**
  * The composition root.
  *
@@ -56,6 +57,8 @@ use Native\Mobile\Share;
  * is what makes a capability module testable without a device, a network or a
  * stack to talk to.
  */
+use Native\Mobile\Share;
+
 final class CompositionRoot extends ServiceProvider
 {
     public function register(): void
@@ -155,6 +158,16 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             Verdicts::class,
             static fn(): Verdicts => new PlatformVerdicts(new PlatformStore()),
+        );
+
+        // Whether this device is on a network at all, which is the one question
+        // about reaching a stack that can be answered without sending anything.
+        // Bound rather than a singleton for the reason the store above is: the
+        // facade is a handle to something outside this process, and a phone
+        // changes network while the app is open.
+        $this->app->bind(
+            Networking::class,
+            static fn(): Networking => new PlatformNetwork(new PlatformNetworkFacade()),
         );
 
         // Bound, not a singleton, for the same reason the store above is not:

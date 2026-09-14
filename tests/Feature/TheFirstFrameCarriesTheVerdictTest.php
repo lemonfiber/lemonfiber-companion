@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -59,7 +60,7 @@ function theOpeningScreen(Stack $stack, ?VerdictsInMemory $verdicts = null, int 
         AShareSheetThatWasOffered::working(),
         $verdicts ?? VerdictsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds($now)),
-        new Opening(ADeviceThatKnowsYou::willing(), $stacks),
+        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
     );
 }
 
@@ -162,7 +163,7 @@ it('N1-R11 — one stack\'s verdict is not another\'s', function (): void {
         AShareSheetThatWasOffered::working(),
         $verdicts,
         FrozenClock::at(Instant::atEpochSeconds(NOW)),
-        new Opening(ADeviceThatKnowsYou::willing(), StacksInMemory::holding($loft, $shed)),
+        new Opening(ADeviceThatKnowsYou::willing(), StacksInMemory::holding($loft, $shed), ADeviceOnANetwork::connected()),
     );
 
     expect($screen->lastKnownOf($loft)->said)->toBe(Overall::Broken->saidOnTheScreen())

@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -18,6 +19,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -73,7 +75,7 @@ function theLaunchScreen(
         $sharing ?? AShareSheetThatWasOffered::working(),
         $verdicts ?? VerdictsInMemory::working(),
         $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
-        $opening ?? new Opening(ADeviceThatKnowsYou::willing(), $stacks),
+        $opening ?? new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
     );
 }
 
@@ -363,7 +365,7 @@ it('N4-R19 — a device that will not open holds the whole screen shut', functio
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
     $screen = theLaunchScreen(
         $stacks,
-        opening: new Opening(ADeviceThatKnowsYou::refusing(), $stacks),
+        opening: new Opening(ADeviceThatKnowsYou::refusing(), $stacks, ADeviceOnANetwork::connected()),
     );
 
     expect($screen->isLocked())->toBeTrue();
@@ -373,7 +375,7 @@ it('N4-R19 — an unlocked device shows the stacks', function (): void {
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
     $screen = theLaunchScreen(
         $stacks,
-        opening: new Opening(ADeviceThatKnowsYou::willing(), $stacks),
+        opening: new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
     );
 
     expect($screen->isLocked())->toBeFalse();
@@ -385,7 +387,7 @@ it('N4-R3 — a device with no screen lock is not a locked one', function (): vo
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
     $screen = theLaunchScreen(
         $stacks,
-        opening: new Opening(ADeviceThatKnowsYou::withNoScreenLock(), $stacks),
+        opening: new Opening(ADeviceThatKnowsYou::withNoScreenLock(), $stacks, ADeviceOnANetwork::connected()),
     );
 
     expect($screen->isLocked())->toBeFalse();
@@ -397,7 +399,7 @@ it('N4-R19 — the device is asked once for the frame, not once per field', func
     // teaches people the app is broken.
     $device = ADeviceThatKnowsYou::refusing();
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
-    $screen = theLaunchScreen($stacks, opening: new Opening($device, $stacks));
+    $screen = theLaunchScreen($stacks, opening: new Opening($device, $stacks, ADeviceOnANetwork::connected()));
 
     $screen->isLocked();
     $screen->isLocked();
@@ -412,11 +414,79 @@ it('N4-R4 — asking again is the operator saying they are ready', function (): 
     // it, so there is one path to an answer.
     $device = ADeviceThatKnowsYou::refusing();
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
-    $screen = theLaunchScreen($stacks, opening: new Opening($device, $stacks));
+    $screen = theLaunchScreen($stacks, opening: new Opening($device, $stacks, ADeviceOnANetwork::connected()));
 
     $screen->isLocked();
     $screen->tryToUnlock();
     $screen->isLocked();
 
     expect($device->asked())->toBe(2);
+});
+
+it('N1-R37 — a launch with no network says so, and says what to do', function (): void {
+    // The half of the requirement that producing the answer does not satisfy.
+    // `Obstacle::DeviceHasNoNetwork` existed from the day the obstacles were
+    // written and nothing produced one; then something did, and for a while
+    // nothing showed it. Either way the operator meets a stack that will not
+    // answer and is sent to a cupboard to look at a machine that is fine.
+    $stacks = StacksInMemory::holding(aPairedStack('The loft'));
+    $screen = theLaunchScreen(
+        $stacks,
+        opening: new Opening(
+            ADeviceThatKnowsYou::willing(),
+            $stacks,
+            ADeviceOnANetwork::withNothingToReachOver(),
+        ),
+    );
+
+    expect($screen->whatStoppedIt())->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($screen->remedyFor())->toBe(Obstacle::DeviceHasNoNetwork->remedy());
+});
+
+it('N1-R37 — the stacks are still shown to a device with no network', function (): void {
+    // Deliberate, and the opposite of the lock above. A retained verdict is
+    // worth most when the device cannot ask for a new one, and the diagnostics
+    // control at the foot of this screen is the one thing that still works when
+    // nothing else does — `N4-R13` puts it here for that reason. Drawing the
+    // obstacle *instead of* the list would take both away at the moment they
+    // are useful.
+    $stacks = StacksInMemory::holding(aPairedStack('The loft'));
+    $screen = theLaunchScreen(
+        $stacks,
+        opening: new Opening(
+            ADeviceThatKnowsYou::willing(),
+            $stacks,
+            ADeviceOnANetwork::withNothingToReachOver(),
+        ),
+    );
+
+    expect($screen->isLocked())->toBeFalse()
+        ->and($screen->nothingIsPairedYet())->toBeFalse()
+        ->and($screen->configured()->isEmpty())->toBeFalse();
+});
+
+it('N1-R36 — a launch that is ready has nothing standing in the way', function (): void {
+    // The banner is drawn on `!== ''`, so a fold that answered with a key for
+    // every launch would put "this device has no network" above a working one.
+    $stacks = StacksInMemory::holding(aPairedStack('The loft'));
+    $screen = theLaunchScreen(
+        $stacks,
+        opening: new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+    );
+
+    expect($screen->whatStoppedIt())->toBe('')
+        ->and($screen->remedyFor())->toBe('');
+});
+
+it('N1-R35 — a first run has nothing standing in the way either', function (): void {
+    // Nothing is wrong on a first run, and an obstacle drawn here would be the
+    // app describing its own first launch as a fault (`N1-R35`).
+    $stacks = StacksInMemory::working();
+    $screen = theLaunchScreen(
+        $stacks,
+        opening: new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+    );
+
+    expect($screen->whatStoppedIt())->toBe('')
+        ->and($screen->remedyFor())->toBe('');
 });

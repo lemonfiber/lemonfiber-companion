@@ -125,19 +125,7 @@ final class YourStacks extends NativeComponent
      */
     public function isLocked(): bool
     {
-        $this->launched ??= $this->opening->found();
-
-        // Every arm named, and the three that are not locked answer alike. That
-        // is `Launch`'s design working rather than four arms saying one thing:
-        // an optional arm would be a default, and a default is where two of the
-        // four quietly become the same answer — which is what `N1-R37` refuses.
-        // Saying it four times is the cost of never being able to forget one.
-        return $this->launched->either(
-            locked: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::locked(),
-            unpaired: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::unpaired(),
-            blocked: static fn(Obstacle $why): WhatTheLaunchWas => WhatTheLaunchWas::blockedBy($why),
-            ready: static fn(StackId $stack): WhatTheLaunchWas => WhatTheLaunchWas::readyFor($stack),
-        )->isLocked;
+        return $this->howItOpened()->isLocked;
     }
 
     /**
@@ -298,6 +286,39 @@ final class YourStacks extends NativeComponent
             : $this->signInAt($stack);
     }
 
+    /**
+     * What stood between this launch and the machine it is paired with.
+     *
+     * Empty where nothing did, which is every launch that is locked, unpaired
+     * or ready — the three of the four that are not an obstacle. The template
+     * reads it the way {@see HowThisStackIs::met()} is read, because it is the
+     * same question one screen earlier and an operator should not have to learn
+     * two shapes for *what is wrong* in one application.
+     *
+     * `N1-R37` is only half satisfied by producing the answer. A launch that
+     * decided *no network* and then drew the machine names and a stale verdict
+     * would leave somebody tapping a stack their phone cannot reach, and the
+     * distinction the type refuses to collapse would be discarded by the one
+     * surface that was supposed to show it.
+     */
+    public function whatStoppedIt(): string
+    {
+        return $this->howItOpened()->met;
+    }
+
+    /**
+     * What to do about it, beside {@see whatStoppedIt()}.
+     *
+     * Its own sentence rather than part of the one above, because `N1-R10`
+     * asks for both: what happened is a fact about the world, and what to do
+     * about it is advice. For a launch the advice is the whole value — the fact
+     * is that a phone has no signal, which its owner can usually see.
+     */
+    public function remedyFor(): string
+    {
+        return $this->howItOpened()->remedy;
+    }
+
     /** What became of the last attempt to hand a report over. */
     public function sharingWent(): string
     {
@@ -373,5 +394,30 @@ final class YourStacks extends NativeComponent
     public function render(): View
     {
         return view('operator::your-stacks');
+    }
+
+    /**
+     * The launch, folded once into the shape a template can read.
+     *
+     * Held rather than asked per accessor, because asking twice would prompt
+     * twice: the platform's unlock is a system dialog, and a frame that drew it
+     * once per field would put several in front of somebody.
+     *
+     * Every arm is named even though each reader takes one field. That is
+     * `Launch`'s design working rather than four arms saying one thing: an
+     * optional arm would be a default, and a default is where two of the four
+     * quietly become the same answer — which is what `N1-R37` refuses. Saying
+     * it four times is the cost of never being able to forget one.
+     */
+    private function howItOpened(): WhatTheLaunchWas
+    {
+        $this->launched ??= $this->opening->found();
+
+        return $this->launched->either(
+            locked: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::locked(),
+            unpaired: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::unpaired(),
+            blocked: static fn(Obstacle $why): WhatTheLaunchWas => WhatTheLaunchWas::blockedBy($why),
+            ready: static fn(StackId $stack): WhatTheLaunchWas => WhatTheLaunchWas::readyFor($stack),
+        );
     }
 }

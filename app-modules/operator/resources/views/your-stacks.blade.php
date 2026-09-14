@@ -11,6 +11,23 @@
              immediately is what teaches people to turn a feature off. --}}
         <native:button label="{{ __('device.unlock') }}" @tap="tryToUnlock()" />
     @else
+    {{-- N1-R37: what stood between this launch and the machine, shown rather
+         than discarded. Producing the answer is half of the requirement; a
+         screen that decided "no network" and then drew the machine names and a
+         stale verdict as though nothing were wrong leaves somebody tapping a
+         stack their phone cannot reach.
+
+         Above the list and not instead of it. The verdicts below are retained,
+         which is exactly what they are for — a device with no signal is when
+         the last thing a stack said is worth most — and the diagnostics control
+         at the bottom is the one thing that still works when nothing else does.
+         N1-R10 wants the remedy too: what happened is a fact about the world,
+         and what to do about it is advice. --}}
+    @if ($this->whatStoppedIt() !== '')
+        <native:text class="text-lg font-bold">{{ __($this->whatStoppedIt()) }}</native:text>
+        <native:text>{{ __($this->remedyFor()) }}</native:text>
+    @endif
+
     @forelse ($this->configured() as $stack)
         <native:column class="w-full gap-1">
             <native:button

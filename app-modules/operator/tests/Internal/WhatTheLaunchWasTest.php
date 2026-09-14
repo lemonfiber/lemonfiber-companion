@@ -35,6 +35,7 @@ it('says the app is shut, and nothing else about a launch that stopped there', f
     expect($locked->isLocked)->toBeTrue()
         ->and($locked->isPaired)->toBeFalse()
         ->and($locked->met)->toBe('')
+        ->and($locked->remedy)->toBe('')
         ->and($locked->opensOn)->toBe('');
 });
 
@@ -46,6 +47,7 @@ it('N1-R35 — says no machine is paired, which is not an obstacle', function ()
     expect($unpaired->isLocked)->toBeFalse()
         ->and($unpaired->isPaired)->toBeFalse()
         ->and($unpaired->met)->toBe('')
+        ->and($unpaired->remedy)->toBe('')
         ->and($unpaired->opensOn)->toBe('');
 });
 
@@ -59,6 +61,9 @@ it('N1-R37 — says what stood in the way, by a key built from the obstacle', fu
         // the application container and this does not. Here the claim is only
         // that the key is built from the case rather than listed against it.
         expect($blocked->met)->toBe(sprintf('connection.%s', $why->value), $why->value)
+            // `N1-R10` asks for both, and they are not the same sentence: what
+            // happened is a fact about the world, what to do about it is advice.
+            ->and($blocked->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
             ->and($blocked->isLocked)->toBeFalse($why->value)
             ->and($blocked->isPaired)->toBeTrue($why->value)
             ->and($blocked->opensOn)->toBe('', $why->value);
@@ -72,7 +77,8 @@ it('N1-R36 — names which machine a ready launch is about', function (): void {
     expect($ready->opensOn)->toBe($stack->stored())
         ->and($ready->isLocked)->toBeFalse()
         ->and($ready->isPaired)->toBeTrue()
-        ->and($ready->met)->toBe('');
+        ->and($ready->met)->toBe('')
+        ->and($ready->remedy)->toBe('');
 });
 
 it('N1-R37 — tells blocked from unpaired, which both have no stack to open on', function (): void {
