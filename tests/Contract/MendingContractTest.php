@@ -3,13 +3,17 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\LeftBehind;
+use Modules\Kernel\Api\Mended;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
+use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\Repairs;
 use Modules\Kernel\Api\Session;
@@ -17,6 +21,8 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
+use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatWasMended;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
@@ -314,4 +320,190 @@ it('a handle that answers with something unreadable is the machine', function ()
 
     expect(whatTheHandleSaid(new Menders(new PinnedClients())))
         ->toBe(Obstacle::StackDidNotAnswer->value);
+});
+
+/** A yes against the listing both implementations answer with. */
+function theSameYes(): Confirmed
+{
+    $offer = theSameOffer();
+
+    // Walked rather than indexed, because `Repairs` publishes no index — and
+    // returned from inside the loop so there is no `null` for the analyser to
+    // worry about, which is the same reason `Opening::found()` walks its stacks.
+    foreach ($offer->repairs() as $repair) {
+        return Confirmed::against($repair, $offer, Reading::live($offer));
+    }
+
+    throw new RuntimeException('theSameOffer() holds two repairs, so this is unreachable.');
+}
+
+/** What a stack answers once it has carried the agreement out. */
+function aRecordOfWhatWasDone(): MockResponse
+{
+    return MockResponse::make(
+        (string) json_encode([
+            'api_version' => 1,
+            'kind' => 'repair',
+            'data' => [
+                'acted' => true,
+                'agreement' => 'agreement-a-test-can-name',
+                'beyond' => [],
+                'offered' => [],
+                'mended' => [
+                    [
+                        'repair' => [
+                            'check' => 'storage.one-filesystem',
+                            'does' => 'Move the library onto the larger disk',
+                            'effects' => ['Downloads pause while it moves'],
+                            'reversible' => true,
+                        ],
+                        'outcome' => ['outcome' => 'fixed'],
+                    ],
+                    [
+                        'repair' => [
+                            'check' => 'credentials.expired',
+                            'does' => 'Forget the expired credential',
+                            'effects' => [],
+                            'reversible' => false,
+                        ],
+                        'outcome' => ['outcome' => 'stopped', 'leaving' => 'Half of the library on the old disk'],
+                    ],
+                ],
+            ],
+        ]),
+    );
+}
+
+/** What both implementations say a run came to. */
+function theSameOutcomes(): WhatWasMended
+{
+    $moved = Repair::offered(
+        'storage.one-filesystem',
+        'Move the library onto the larger disk',
+        Effects::of('Downloads pause while it moves'),
+        Undoing::Possible,
+    );
+
+    $forgot = Repair::offered(
+        'credentials.expired',
+        'Forget the expired credential',
+        Effects::nothingElse(),
+        Undoing::Permanent,
+    );
+
+    return WhatWasMended::of(
+        Mended::went($moved, WhatBecameOfIt::Fixed),
+        Mended::stopped($forgot, LeftBehind::of('Half of the library on the old disk')),
+    );
+}
+
+/** What carrying out produced, as a word, whichever arm it took. */
+function whatWasDone(Mending $mending): string
+{
+    return $mending
+        ->whatWasDoneAbout(aStackThatMightMend(), theSessionARepairIsAskedWith(), Job::named(AStackThatWouldMend::THE_JOB))
+        ->either(
+            stillRunning: static fn(): WhatTheRepairTurnedOutToSay
+                => new WhatTheRepairTurnedOutToSay('still running'),
+            done: static function (WhatWasMended $mended): WhatTheRepairTurnedOutToSay {
+                $said = [];
+
+                foreach ($mended as $one) {
+                    $said[] = $one->said(
+                        static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): WhatTheRepairTurnedOutToSay
+                            => new WhatTheRepairTurnedOutToSay($left->either(
+                                something: static fn(string $what): WhatTheRepairTurnedOutToSay
+                                    => new WhatTheRepairTurnedOutToSay(sprintf('%s/%s', $became->value, $what)),
+                                nothing: static fn(): WhatTheRepairTurnedOutToSay
+                                    => new WhatTheRepairTurnedOutToSay($became->value),
+                            )->said),
+                    )->said;
+                }
+
+                return new WhatTheRepairTurnedOutToSay(sprintf('%d: %s', $mended->changed(), implode(' | ', $said)));
+            },
+            ended: static fn(): WhatTheRepairTurnedOutToSay => new WhatTheRepairTurnedOutToSay('ended'),
+            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
+                => new WhatTheRepairTurnedOutToSay($why->value),
+        )->said;
+}
+
+it('N2-R5 — agreeing is its own act, and answers a handle like every other', function (): void {
+    $ways = everyWayOfMending(
+        anAcknowledgement(),
+        static fn(): Mending => AStackThatWouldMend::carryingOut(theSameOffer(), theSameOutcomes()),
+    );
+
+    foreach ($ways as $which => $make) {
+        $mending = $make();
+        $said = $mending->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes())->either(
+            started: static fn(Job $job): WhatTheRepairTurnedOutToSay
+                => new WhatTheRepairTurnedOutToSay(sprintf('started %s', $job->shown())),
+            met: static fn(Obstacle $why): WhatTheRepairTurnedOutToSay
+                => new WhatTheRepairTurnedOutToSay($why->value),
+        )->said;
+
+        expect($said)->toBe(sprintf('started %s', AStackThatWouldMend::THE_JOB), $which);
+    }
+});
+
+it('N2-R5 — a finished run says what became of each repair, and what it left', function (): void {
+    // Per repair, because a listing agreed to as a whole comes apart: one fix
+    // takes and the next stops part-way. A run reported as one word would have
+    // the operator believe either that everything worked or that nothing did,
+    // and there is half a library on the old disk either way.
+    $ways = everyWayOfMending(
+        aRecordOfWhatWasDone(),
+        static fn(): Mending => AStackThatWouldMend::carryingOut(theSameOffer(), theSameOutcomes()),
+    );
+
+    foreach ($ways as $which => $make) {
+        expect(whatWasDone($make()))->toBe(
+            '1: fixed | stopped/Half of the library on the old disk',
+            $which,
+        );
+    }
+});
+
+it('N2-R6 — the yes names the listing it was given', function (): void {
+    // Only the fake can be asked this: what reaches the wire is the agreement's
+    // name and the repair's check, and the fake is what can hold the whole
+    // `Confirmed` to compare. A port that let the two be passed separately
+    // could agree to a repair on behalf of a listing it was never in.
+    $mending = AStackThatWouldMend::carryingOut(theSameOffer(), theSameOutcomes());
+    $yes = theSameYes();
+
+    $mending->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), $yes);
+
+    expect($mending->agreedTo()?->quoting())->toBe(theSameOffer()->named())
+        ->and($mending->agreements())->toBe(1);
+});
+
+it('N1-R41 — reading what was done is a read, and does not agree again', function (): void {
+    // The distinction that lets a screen hold a handle at all. An agreement
+    // sent twice is a repair carried out twice, and for a fix that moves a
+    // library that is not the same as doing it once.
+    $mending = AStackThatWouldMend::carryingOut(theSameOffer(), theSameOutcomes());
+    $job = Job::named(AStackThatWouldMend::THE_JOB);
+
+    $mending->agreeTo(aStackThatMightMend(), theSessionARepairIsAskedWith(), theSameYes());
+    $mending->whatWasDoneAbout(aStackThatMightMend(), theSessionARepairIsAskedWith(), $job);
+    $mending->whatWasDoneAbout(aStackThatMightMend(), theSessionARepairIsAskedWith(), $job);
+
+    expect($mending->agreements())->toBe(1)
+        ->and($mending->readings())->toBe(2);
+});
+
+it('a job that ended after an agreement is not a run that failed', function (): void {
+    // The state that matters most on this side. The operator does not know what
+    // happened to their machine, and *it failed* is the one answer that is
+    // certainly wrong — it may well have worked.
+    $ways = everyWayOfMending(
+        MockResponse::make('{"error":"no such job"}', 404),
+        AStackThatWouldMend::thatForgotTheJob(...),
+    );
+
+    foreach ($ways as $which => $make) {
+        expect(whatWasDone($make()))->toBe('ended', $which);
+    }
 });
