@@ -211,6 +211,29 @@ final readonly class Fixtures
                 }
                 PHP, 'A6/I1'),
 
+            // The other declaration, and its own fixture rather than a second
+            // assertion on the two above: a static inside a method body has no
+            // property for reflection to find and survives a dispatch just as
+            // completely, so a fixture proving the property half says nothing
+            // at all about this one.
+            Fixture::suite('A6', 'app-modules/health/src/Fixtures/HoldsBetweenCalls.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                final readonly class HoldsBetweenCalls
+                {
+                    public function soFar(): int
+                    {
+                        static $seen = 0;
+
+                        return ++$seen;
+                    }
+                }
+                PHP, 'A6/I1'),
+
             Fixture::suite('A7', 'app-modules/health/src/Fixtures/UsesIlluminate.php', <<<'PHP'
                 <?php
 
@@ -1008,6 +1031,26 @@ final readonly class Fixtures
                 }
                 PHP, 'K1 —'),
 
+            // The same marker, at the end of a line of code. Its own fixture
+            // because it is its own reading: a scan anchored at the start of a
+            // line sees the one above and not this one, and this is where a
+            // note left behind is actually written.
+            Fixture::suite('K1', 'app-modules/health/src/Fixtures/NarratesInPassing.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                final readonly class NarratesInPassing
+                {
+                    public function label(): string
+                    {
+                        return 'x';  // Previously this read the file directly.
+                    }
+                }
+                PHP, 'K1 —'),
+
             Fixture::suite('K2', 'app-modules/health/src/Fixtures/Restates.php', <<<'PHP'
                 <?php
 
@@ -1746,6 +1789,23 @@ final readonly class Fixtures
                 })->only();
                 PHP, 'G6 —', 'NarrowedTest'),
 
+            // The row's other half, and the shape that is not empty brackets.
+            // `skip(true)` switches a test off as completely as `skip()` does
+            // and reads, to anything looking for `()`, exactly like a test that
+            // runs — so the half of the row about reasons needs a fixture that
+            // gives a condition and no reason. It shares a pass with the rest:
+            // a skipped test changes what the run reports about itself and
+            // nothing about what the run examines.
+            Fixture::suite('G6', 'app-modules/health/tests/Fixtures/SilentlySkippedTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                it('is switched off, and says nothing about what it is waiting for', function (): void {
+                    expect(true)->toBeTrue();
+                })->skip(true);
+                PHP, 'G6 —', 'SilentlySkippedTest'),
+
             Fixture::suite('H7', 'app-modules/health/tests/Fixtures/MiscTest.php', <<<'PHP'
                 <?php
 
@@ -1881,6 +1941,37 @@ final readonly class Fixtures
                     }
                 }
                 PHP, 'C10 —', 'KeepsKeys.php'),
+
+            // The same argument with the collection arriving as a call, which
+            // is how a query hands over its own. It needs a fixture of its own
+            // because it needs a different reading: a pattern that stops at the
+            // first `)` matches the one above and walks past this one, and this
+            // is the spelling the rule was written for.
+            Fixture::suite('C10', 'app-modules/health/src/Api/Queries/Fixtures/KeepsKeysFromACall.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Api\Queries\Fixtures;
+
+                use Modules\Kernel\Api\Findings;
+
+                use function iterator_to_array;
+
+                final readonly class KeepsKeysFromACall
+                {
+                    /** @return list<object> */
+                    public function over(Findings $findings): array
+                    {
+                        return iterator_to_array($this->worstFirst($findings), preserve_keys: false);
+                    }
+
+                    private function worstFirst(Findings $findings): Findings
+                    {
+                        return $findings;
+                    }
+                }
+                PHP, 'C10 —', 'KeepsKeysFromACall.php'),
         ];
     }
 
@@ -2092,6 +2183,42 @@ final readonly class Fixtures
                     }
                 }
                 PHP, 'N3-R9 — nothing on a member surface can be handed'),
+
+            // The queue `ADR-0020` spends its length rejecting, written the way
+            // every collection in this repository is written: a promoted
+            // constructor parameter with its shape on the constructor's
+            // `@param`, and the element type led with by an `@implements`.
+            // `Findings` is the model it copies, which is what makes this the
+            // spelling a queue would actually arrive in.
+            Fixture::suite('N1-R41', 'app-modules/health/src/Fixtures/HoldsUndelivered.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                use ArrayIterator;
+                use IteratorAggregate;
+                use Modules\Kernel\Api\Attempted;
+                use Traversable;
+
+                /** @implements IteratorAggregate<int, Attempted> */
+                final readonly class HoldsUndelivered implements IteratorAggregate
+                {
+                    /** @param array<int, Attempted> $waiting */
+                    private function __construct(private array $waiting) {}
+
+                    public static function of(Attempted ...$waiting): self
+                    {
+                        return new self(array_values($waiting));
+                    }
+
+                    public function getIterator(): Traversable
+                    {
+                        return new ArrayIterator($this->waiting);
+                    }
+                }
+                PHP, 'N1-R41 — nothing holds a collection of actions', 'HoldsUndelivered'),
 
             Fixture::suite('N3-R8', 'native/resources/android/PlaysMedia.kt', <<<'KOTLIN'
                 package app.lemonfiber.native

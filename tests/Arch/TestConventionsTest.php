@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\Calls;
 use Tests\Support\Tree;
 
 // The files that have to name what they refuse in order to refuse it: this one
@@ -152,10 +153,8 @@ it('G6 — no committed ->only(, and no skip without a reason', function (): voi
             $offenders[] = sprintf('%s narrows the run to one test', $path);
         }
 
-        // `->skip()` with nothing in the brackets. A reason is the difference
-        // between a test waiting for something and a test nobody understands.
-        if (preg_match('/->skip\(\s*\)/', $contents) === 1) {
-            $offenders[] = sprintf('%s skips without saying why', $path);
+        foreach (skipsWithoutAReason($contents) as $line) {
+            $offenders[] = sprintf('%s:%d skips without saying why', $path, $line);
         }
     }
 
@@ -170,6 +169,60 @@ it('G6 — no committed ->only(, and no skip without a reason', function (): voi
         implode("\n  ", $offenders),
     ));
 });
+
+/**
+ * Every `->skip()` in a test file that leaves the reader no reason.
+ *
+ * Pest takes the reason as the last argument — `skip('why')`, or
+ * `skip($condition, 'why')` — so that is what is asked for, and asked for as
+ * the argument rather than as a quote anywhere in the brackets. Empty brackets
+ * are one shape of this and the smaller one: `skip(true)` switches a test off
+ * just as completely and reads, to a pattern looking for `()`, exactly like a
+ * test that runs. So does a condition carrying a string of its own —
+ * `skip(fn (): bool => PHP_OS_FAMILY === 'Darwin')` says which machines and
+ * still says nothing about why.
+ *
+ * @return list<int> the lines they are written on
+ */
+function skipsWithoutAReason(string $source): array
+{
+    $tokens = token_get_all($source);
+    $found = [];
+
+    foreach ($tokens as $at => $token) {
+        if (! Calls::isNamed($token, 'skip') || ! isReachedWithAnArrow($tokens, $at)) {
+            continue;
+        }
+
+        if (! endsWithAReason(Calls::argumentsAt($tokens, $at))) {
+            $found[] = $token[2];
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * Whether the last of those arguments is the sentence a reader needs.
+ *
+ * @param list<list<array{int, string, int}|string>> $arguments
+ */
+function endsWithAReason(array $arguments): bool
+{
+    return $arguments !== [] && Calls::isALoneString($arguments[count($arguments) - 1]);
+}
+
+/**
+ * Whether the name at `$at` is being called on an object rather than declared.
+ *
+ * @param list<array{int, string, int}|string> $tokens
+ */
+function isReachedWithAnArrow(array $tokens, int $at): bool
+{
+    $before = $tokens[$at - 1] ?? null;
+
+    return is_array($before) && $before[0] === T_OBJECT_OPERATOR;
+}
 
 it('H7 — a test is named for the behaviour it pins', function (): void {
     $offenders = [];

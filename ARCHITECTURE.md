@@ -144,7 +144,7 @@ honestly is better than pretending.
 | A3 | No service location — `app()`, `resolve()`, `Container` | phpstan `disallowed-calls` |
 | A4 | No container-reaching helpers — `config()`, `cache()`, `view()`, `__()` and the rest — outside the composition root, `config/` and tests | phpstan `disallowed-calls` |
 | A5 | `env()` only inside `config/` | arch |
-| A6 | No mutable static state | arch: reflection over every module class |
+| A6 | No mutable static state — a static property, and a `static` inside a method body | arch: reflection over every module class for the property, a token read over every source for the variable |
 | A7 | `Illuminate\*` forbidden in `kernel` and every `capability` | arch: module kind |
 | A8 | `Native\Mobile\Facades\*` only in `device` and `vault` | phpstan `disallowed-calls` |
 | A9 | A service provider binds and does not work: no read, no request, no resolve in `register()`/`boot()` | phpstan: own rule |
@@ -688,7 +688,7 @@ there, and neither is read as a description of the current code.
 | G3 | No test reaches the network | `Http::preventStrayRequests()` + an empty global `MockClient` + test |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
-| G6 | No committed `->only(`, and no `->skip()` without a reason | arch |
+| G6 | No committed `->only(`, and no `->skip()` whose last argument is not the reason | arch |
 | G7 | Every module declares its own coverage and mutation floors | arch |
 | G8 | Every port in `Modules\Kernel` is bound, once, in the composition root | test: the booted composition root |
 | G9 | No module is below the coverage floor it declared | test: the `Floors` suite, over the clover report |
@@ -821,6 +821,13 @@ NativePHP runs the application as a long-lived process, not a request. A static
 cache that would be harmlessly rebuilt per request on a web server here survives
 between screens and becomes a stale answer on someone's phone. This is the
 reason A6 is absolute rather than a preference.
+
+It is also the reason A6 is two readings rather than one. A static property is a
+fact about a class and reflection answers it; a `static` inside a method body has
+no property, no name the class knows and no entry in any API, and it outlives a
+dispatch in exactly the same way. Memoising inside a method is the natural way to
+write a cache, so the declaration reflection cannot see is the one somebody
+reaches for first.
 
 ---
 
