@@ -187,6 +187,72 @@ it('every way this app asks where a machine is hands back a path the router know
     ));
 });
 
+it('every way this app asks where a machine is is somewhere a template can send you', function (): void {
+    // The other direction of the rule above, and the failure it cannot see.
+    // That one asks whether a button points at a path the router knows; this
+    // asks whether anything points at all.
+    //
+    // Both leave an operator unable to get somewhere, and only one of them
+    // leaves a trace: a button pointing nowhere at least has a button. A
+    // destination nothing navigates to is a screen that exists, is registered,
+    // resolves, is covered by its own feature suite — and cannot be reached on
+    // a handset, because a test constructs a screen and an operator has to tap
+    // their way to one.
+    //
+    // `updates()` arrived exactly that way: route registered, path handed out,
+    // router happy, every gate green, no way in.
+    $linked = destinationsTemplatesNavigateTo();
+    $stranded = [];
+    $asked = 0;
+
+    foreach (new ReflectionClass(WhereAStackIs::class)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        if ($method->isStatic()) {
+            continue;
+        }
+
+        $asked++;
+
+        if (! in_array($method->getName(), $linked, strict: true)) {
+            $stranded[] = sprintf('%s() is a destination no template navigates to', $method->getName());
+        }
+    }
+
+    expect($asked)->toBeGreaterThan(1, 'no accessor was read off `WhereAStackIs`, so this rule read nothing');
+    expect($linked)->not->toBe([], 'no template named a destination, so this rule read nothing');
+
+    expect($stranded)->toBe([], sprintf(
+        "These are places the app can describe and nobody can get to:\n  %s\n\n"
+        . 'Put a way in on the screen it belongs under, or delete the destination. A screen '
+        . "reachable only by a test is a screen that ships and never opens.\n",
+        implode("\n  ", $stranded),
+    ));
+});
+
+/**
+ * Every destination a template navigates to, by the accessor's name.
+ *
+ * Read out of the templates rather than listed, so a way in that is added or
+ * removed is one this rule sees without an edit — and read as `->name(` so a
+ * mention of the word in a comment is not taken for a link, which is the
+ * reading `K1` had to be taught about its own markers.
+ *
+ * @return list<string>
+ */
+function destinationsTemplatesNavigateTo(): array
+{
+    $named = [];
+
+    foreach (Tree::filesUnder(Tree::at('app-modules'), '.blade.php') as $template) {
+        preg_match_all('/->([a-zA-Z]+)\(/', (string) file_get_contents($template), $found);
+
+        foreach ($found[1] as $name) {
+            $named[] = $name;
+        }
+    }
+
+    return array_values(array_unique($named));
+}
+
 it('a screen that needs a service refuses to be asked for with only a stack', function (): void {
     // `str_replace` handed a pattern with a placeholder it was not given leaves
     // the placeholder in the string, and `/stacks/abc/logs/{service}` resolves
