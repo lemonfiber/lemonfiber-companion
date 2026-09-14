@@ -117,7 +117,7 @@ jobs:
   # own log before passing. That is a reported pass rather than a silent one,
   # which is the whole reason they are shaped that way.
   dco:
-    uses: lemonfiber/spec/.github/workflows/dco.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
+    uses: lemonfiber/spec/.github/workflows/dco.yml@706811551b8da8603607cc85639e7320f0c89fd0 # main
 
   # Beside `dco` because the two read the same record from opposite directions:
   # that one insists a human attested to the work, this one insists no tool is
@@ -125,7 +125,7 @@ jobs:
   # same way and says "no PR range; skipping" on a push to main rather than
   # needing an `if` here to say it for it.
   attribution:
-    uses: lemonfiber/spec/.github/workflows/attribution.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
+    uses: lemonfiber/spec/.github/workflows/attribution.yml@706811551b8da8603607cc85639e7320f0c89fd0 # main
 
   # `pull-requests: write` is what lets the gate close a pull request whose
   # citation is missing or names an identifier that does not exist, rather than
@@ -133,34 +133,34 @@ jobs:
   # default for a job that declares nothing; a job-level block replaces that
   # default outright, so `contents: read` is restated here rather than inherited.
   spec-check:
-    # Pull requests only — and on a merge group that is a hole rather than a
-    # skip, which is why it is written out here rather than left to be found.
+    # A merge group runs this, for `commitlint`'s naming reason: the required
+    # context is the caller job and the called job joined, and a caller that
+    # skips leaves no tick at all rather than a skipped one — which a queue
+    # reads as a wait and ends by dropping the pull request.
     #
-    # The required context is `spec-check / spec-check`: the caller job and the
-    # called job, joined. Skip the caller and the called job never exists, so
-    # **nothing reports that name at all** — it is not a skipped tick, it is an
-    # absence. A push to `main` shows it plainly: the check list there carries
-    # `spec-check`, skipped, and no `spec-check / spec-check` anywhere near it.
-    # A required context that never reports is not a failure a queue can read.
-    # It is a wait, and the queue ends a wait by dropping the pull request when
-    # the status-check timeout expires.
+    # It could not be run until the pin above moved. The shared gate read its
+    # range from `github.event.pull_request` alone, took two empty strings on a
+    # merge group and exited 1 — failing a whole batch over a pull request that
+    # was never in the event, which is the other way this context could have
+    # locked the queue. It now names the range per event.
     #
-    # It cannot be let through either. The shared gate reads
-    # `github.event.pull_request.base.sha`, refuses a base that is not a commit
-    # SHA and exits 1, so a merge group that called it would fail the whole
-    # batch over a missing pull request rather than over anything in the code.
+    # What it asks of a merge group is narrower, and its run says so rather than
+    # leaving a bare tick. `GOV-R3` is asked: every identifier the batch cites is
+    # resolved against spec@main as it stands now, which is the one answer that
+    # can change while a pull request waits in a queue. `GOV-R2` is not re-asked:
+    # a citation may live in the pull request body and Dependabot's allowance
+    # keys on the author, and a merge group carries neither — so demanding a
+    # trailer of the commits alone would refuse a batch for citing exactly where
+    # the rule allows it. Presence was settled before the queue accepted the
+    # pull request, and a merge group does not rewrite a commit message. Nothing
+    # is closed there: the batch is the queue's rather than any one author's.
     #
-    # Neither half is fixable from this repository — the condition that would
-    # have to change lives in `lemonfiber/spec`. Until it does, this is not a
-    # context a merge queue can require, and it has to come off the required
-    # list before the queue is turned on. It still runs on every pull request
-    # and still closes one that cites nothing; what it stops being is the thing
-    # holding the branch.
-    if: github.event_name == 'pull_request'
+    # `push` stays out: `main` does not require this context.
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/spec-check.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
+    uses: lemonfiber/spec/.github/workflows/spec-check.yml@706811551b8da8603607cc85639e7320f0c89fd0 # main
 
   commitlint:
     # A merge group runs this, and not because there is anything to lint there:
@@ -175,20 +175,20 @@ jobs:
     # `push` stays out: `main` does not require this context, so no name is
     # waiting to be reported there and the runner would be spent for nothing.
     if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
-    uses: lemonfiber/spec/.github/workflows/commitlint.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
+    uses: lemonfiber/spec/.github/workflows/commitlint.yml@706811551b8da8603607cc85639e7320f0c89fd0 # main
 
   hygiene:
-    uses: lemonfiber/spec/.github/workflows/hygiene.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
+    uses: lemonfiber/spec/.github/workflows/hygiene.yml@706811551b8da8603607cc85639e7320f0c89fd0 # main
 
   security:
-    uses: lemonfiber/spec/.github/workflows/security.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
+    uses: lemonfiber/spec/.github/workflows/security.yml@706811551b8da8603607cc85639e7320f0c89fd0 # main
 
   labeler:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/labeler.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
+    uses: lemonfiber/spec/.github/workflows/labeler.yml@706811551b8da8603607cc85639e7320f0c89fd0 # main
 
   # The rules, before anything slower gets a chance to hide a boundary break.
   #
