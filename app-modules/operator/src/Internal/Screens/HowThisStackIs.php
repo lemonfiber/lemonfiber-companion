@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Health\Api\Queries\InCategory;
+use Modules\Health\Api\Queries\TheCauseBeforeItsSymptoms;
 use Modules\Health\Api\Queries\WorstFirst;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Category;
@@ -158,7 +159,12 @@ final class HowThisStackIs extends NativeComponent
         // is invisible on any report whose worst finding happens to have run
         // first. `operator/src/README.md` recorded this gate against the day a
         // findings screen existed, and this is the day.
-        $run = new WorstFirst()->over($this->narrowed($this->answer()->findings));
+        // Narrow, sort, then group. `G4-R3` wants the cause reported rather
+        // than each symptom independently, and grouping last is what lets the
+        // symptoms under a cause keep the severity order the sort gave them.
+        $run = new TheCauseBeforeItsSymptoms()->over(
+            new WorstFirst()->over($this->narrowed($this->answer()->findings)),
+        );
         $rows = [];
 
         foreach ($run as $finding) {
