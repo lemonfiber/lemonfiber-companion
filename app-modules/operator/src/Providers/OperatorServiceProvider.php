@@ -8,6 +8,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\AStacksScreen;
+use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
@@ -122,6 +123,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // a contradiction, and folding this into health would put the two
             // under one verdict that has to be about one of them.
             Router::native(AStacksScreen::Stuck->value, WhatStoppedComingIn::class);
+            Router::native(AStacksScreen::Updates->value, HowCurrentThisStackIs::class);
 
             // What this machine is running, and the three verbs about it
             // (`N2-R7`). A screen of its own rather than a section of health:

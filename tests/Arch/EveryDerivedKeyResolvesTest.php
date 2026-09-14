@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
+use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\HowAServiceRuns;
@@ -97,6 +98,10 @@ function everyDerivedKey(): array
         WhereTheCodeGot::class => aPairPerCase(
             WhereTheCodeGot::cases(),
             static fn(WhereTheCodeGot $got): array => [$got->saidUnderTheField()],
+        ),
+        Awaiting::class => aPairPerCase(
+            Awaiting::cases(),
+            static fn(Awaiting $awaiting): array => [$awaiting->saidOnTheScreen()],
         ),
         HowCurrent::class => aPairPerCase(
             HowCurrent::cases(),

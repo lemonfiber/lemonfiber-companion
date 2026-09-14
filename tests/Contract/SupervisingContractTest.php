@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Sdk\Api\PinnedClients;
@@ -28,6 +30,16 @@ use Modules\Sdk\Api\Supervisors;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatSupervises;
+
+/** What a stack reports its verbs cost, as this suite's stacks report them. */
+function whatTheSupervisedVerbsCost(): Disturbances
+{
+    return Disturbances::of(
+        starting: WhatItTakesAway::atMost(180),
+        stopping: WhatItTakesAway::atMost(10),
+        restarting: WhatItTakesAway::atMost(180),
+    );
+}
 
 // The Supervising contract, run against the adapter and against the fake.
 //
@@ -72,6 +84,7 @@ function theSameRunning(): Daemons
     return Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::these(Form::called('media'), Form::called('downloads')),
+        whatTheSupervisedVerbsCost(),
         Daemon::called(
             'Jellyfin',
             ServiceId::called('jellyfin'),
@@ -100,6 +113,13 @@ function aRunningAnswer(): MockResponse
             'api_version' => 1,
             'kind' => 'status',
             'data' => [
+                'disturbs' => [
+                    'starting' => ['bound' => 'bounded', 'seconds' => 180],
+                    'stopping' => ['bound' => 'bounded', 'seconds' => 10],
+                    'restarting' => ['bound' => 'bounded', 'seconds' => 180],
+                    'stopping_after_downloads' => ['bound' => 'open-ended', 'until' => 'downloads'],
+                    'switching' => ['bound' => 'bounded', 'seconds' => 180],
+                ],
                 'condition' => 'degraded',
                 'forms' => ['media', 'downloads'],
                 'services' => [
@@ -296,6 +316,13 @@ it('an answer this app cannot read is a stack that did not answer', function ():
             'api_version' => 1,
             'kind' => 'status',
             'data' => [
+                'disturbs' => [
+                    'starting' => ['bound' => 'bounded', 'seconds' => 180],
+                    'stopping' => ['bound' => 'bounded', 'seconds' => 10],
+                    'restarting' => ['bound' => 'bounded', 'seconds' => 180],
+                    'stopping_after_downloads' => ['bound' => 'open-ended', 'until' => 'downloads'],
+                    'switching' => ['bound' => 'bounded', 'seconds' => 180],
+                ],
                 'condition' => 'active',
                 'forms' => ['media'],
                 'services' => [[

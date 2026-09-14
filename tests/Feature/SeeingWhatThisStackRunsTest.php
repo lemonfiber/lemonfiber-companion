@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AStacksScreen;
@@ -29,6 +31,16 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
+
+/** What a stack reports its verbs cost, as this suite's stacks report them. */
+function whatTheRunningVerbsCost(): Disturbances
+{
+    return Disturbances::of(
+        starting: WhatItTakesAway::atMost(180),
+        stopping: WhatItTakesAway::atMost(10),
+        restarting: WhatItTakesAway::atMost(180),
+    );
+}
 
 // N2-R7 and N2-R8 — the three verbs, and the sentence in front of two of them.
 //
@@ -70,6 +82,7 @@ function aStackRunningTwoThings(): Daemons
     return Daemons::of(
         HowTheStackIsRunning::Active,
         Forms::these(Form::called('downloads'), Form::called('media')),
+        whatTheRunningVerbsCost(),
         aServiceRunning('sonarr', leaning: WhatLeansOnIt::these(ServiceId::called('jellyfin'))),
         aServiceRunning('jellyfin'),
     );
@@ -140,6 +153,7 @@ it('N2-R7 — a service this stack does not run is not offered a verb', function
     $running = Daemons::of(
         HowTheStackIsRunning::Partial,
         Forms::these(Form::called('media')),
+        whatTheRunningVerbsCost(),
         aServiceRunning('jellyfin', HowAServiceRuns::HostManaged),
         aServiceRunning('sonarr'),
     );
@@ -155,6 +169,7 @@ it('N2-R7 — a row says what it ended with, and says nothing where it did not',
     $running = Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::these(Form::called('downloads')),
+        whatTheRunningVerbsCost(),
         Daemon::thatExited(
             'Sonarr',
             ServiceId::called('sonarr'),
@@ -178,6 +193,7 @@ it('N2-R7 — carries the forms whether or not anything in them is running', fun
     $running = Daemons::of(
         HowTheStackIsRunning::Partial,
         Forms::these(Form::called('downloads'), Form::called('media')),
+        whatTheRunningVerbsCost(),
         aServiceRunning(),
     );
 
@@ -253,6 +269,7 @@ it('N2-R8 — says a restart will not help where it is already looping', functio
     $running = Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::these(Form::called('downloads')),
+        whatTheRunningVerbsCost(),
         aServiceRunning('sonarr', HowAServiceRuns::CrashLooping),
     );
     $screen = theServicesScreen(AStackThatSupervises::with($running));
@@ -328,6 +345,7 @@ it('N1-R27 — looks again only while something is settling', function (): void 
     $settling = Daemons::of(
         HowTheStackIsRunning::Partial,
         Forms::these(Form::called('downloads')),
+        whatTheRunningVerbsCost(),
         aServiceRunning('sonarr', HowAServiceRuns::Starting),
     );
     $supervising = AStackThatSupervises::with($settling);
@@ -477,6 +495,7 @@ it('N2-R8 — a question about a form stays about the form when a service takes 
         Daemons::of(
             HowTheStackIsRunning::Active,
             Forms::these(Form::called('downloads')),
+            whatTheRunningVerbsCost(),
             aServiceRunning('downloads', leaning: WhatLeansOnIt::these(ServiceId::called('jellyfin'))),
         ),
     ));

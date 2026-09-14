@@ -7,6 +7,7 @@ namespace Tests\Support\Fakes;
 use Closure;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -14,6 +15,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatIsRunning;
+use Modules\Kernel\Api\WhatItTakesAway;
 
 /**
  * A stack where a test says what is running, and which remembers what it was
@@ -73,7 +75,11 @@ final class AStackThatSupervises implements Supervising
      */
     public static function withNothingRunning(): self
     {
-        return self::with(Daemons::none());
+        return self::with(Daemons::none(Disturbances::of(
+            starting: WhatItTakesAway::atMost(180),
+            stopping: WhatItTakesAway::atMost(10),
+            restarting: WhatItTakesAway::atMost(180),
+        )));
     }
 
     /** A stack the operator could not reach, for the reason given, either way. */

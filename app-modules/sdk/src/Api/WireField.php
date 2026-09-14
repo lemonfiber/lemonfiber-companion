@@ -193,6 +193,30 @@ enum WireField: string
     /** What a service that has ended exited with. Absent while it runs. */
     case Exit = 'exit';
 
+    /** What each verb takes away, on a reading of what is running. */
+    case Disturbs = 'disturbs';
+
+    /** Which of a disturbance's two shapes this one is. */
+    case Bound = 'bound';
+
+    /** The shape with a clock on it. */
+    case Bounded = 'bounded';
+
+    /** How long that clock runs for. */
+    case Seconds = 'seconds';
+
+    /** What a disturbance with no clock on it waits for. */
+    case Until = 'until';
+
+    /** Bringing services up. */
+    case Starting = 'starting';
+
+    /** Taking services down. */
+    case Stopping = 'stopping';
+
+    /** Restarting services. */
+    case Restarting = 'restarting';
+
     /** Which of the two things an update reading is about. */
     case What = 'what';
 
