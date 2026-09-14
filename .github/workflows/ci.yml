@@ -2,6 +2,23 @@ name: ci
 
 on:
   pull_request:
+  # What a merge queue asks, and the only event it asks it on.
+  #
+  # A queued pull request is merged with `main`'s tip, and with everything ahead
+  # of it in the queue, onto a temporary `gh-readonly-queue/main/...` branch;
+  # this event is the queue asking for checks on that branch. Every context
+  # `main` requires has to report on it. One that does not is not read as a
+  # failure — it is read as a wait, and the pull request is dropped from the
+  # queue when the status-check timeout expires, with nothing naming the cause.
+  # That is the same hole `mutation-gate` and `sonar.yml`'s gate exist to close,
+  # reached from a third direction.
+  #
+  # It carries no pull request. `github.event.pull_request` is null here, and
+  # `github.head_ref` and `github.base_ref` are empty — so a job reading any of
+  # them is handed nothing rather than an error, and a job that then *skips*
+  # reports success, which is how a queue merges a batch nothing tested. Every
+  # condition below that names an event says what it does on this one and why.
+  merge_group:
   push:
     branches: [main]
 
@@ -60,7 +77,18 @@ jobs:
           persist-credentials: false
       - id: diff
         env:
-          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          # What this branch is measured against, named per event rather than
+          # inferred. A merge group's base is the tip the batch would land on,
+          # so the diff below covers every pull request in the batch at once,
+          # which is the whole point of a queue: one answer for the lot.
+          #
+          # Two fields rather than one because only one of them exists at a
+          # time: `github.event.pull_request` is null on a merge group and
+          # `github.event.merge_group` is null on a pull request. A single
+          # expression reading either would fall through to the empty string on
+          # the other, take the "no usable base commit" arm, and run every gate
+          # — safe, and a sentence in the log that is not true.
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
         run: |
           set -euo pipefail
           # No base to compare against means run everything rather than guess.
@@ -81,7 +109,13 @@ jobs:
 
   # The gates every repository in the org shares, defined once in the spec repo
   # and pinned by commit. Those needing a pull request are guarded, because this
-  # workflow also runs on pushes to main.
+  # workflow also runs on pushes to main and on merge groups.
+  #
+  # `dco` and `attribution` are not guarded, and are the two that need no
+  # `merge_group` handling at all: each reads a base..head range off the event,
+  # finds none outside a pull request, and says `no PR range; skipping` in its
+  # own log before passing. That is a reported pass rather than a silent one,
+  # which is the whole reason they are shaped that way.
   dco:
     uses: lemonfiber/spec/.github/workflows/dco.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
 
@@ -99,6 +133,29 @@ jobs:
   # default for a job that declares nothing; a job-level block replaces that
   # default outright, so `contents: read` is restated here rather than inherited.
   spec-check:
+    # Pull requests only — and on a merge group that is a hole rather than a
+    # skip, which is why it is written out here rather than left to be found.
+    #
+    # The required context is `spec-check / spec-check`: the caller job and the
+    # called job, joined. Skip the caller and the called job never exists, so
+    # **nothing reports that name at all** — it is not a skipped tick, it is an
+    # absence. A push to `main` shows it plainly: the check list there carries
+    # `spec-check`, skipped, and no `spec-check / spec-check` anywhere near it.
+    # A required context that never reports is not a failure a queue can read.
+    # It is a wait, and the queue ends a wait by dropping the pull request when
+    # the status-check timeout expires.
+    #
+    # It cannot be let through either. The shared gate reads
+    # `github.event.pull_request.base.sha`, refuses a base that is not a commit
+    # SHA and exits 1, so a merge group that called it would fail the whole
+    # batch over a missing pull request rather than over anything in the code.
+    #
+    # Neither half is fixable from this repository — the condition that would
+    # have to change lives in `lemonfiber/spec`. Until it does, this is not a
+    # context a merge queue can require, and it has to come off the required
+    # list before the queue is turned on. It still runs on every pull request
+    # and still closes one that cites nothing; what it stops being is the thing
+    # holding the branch.
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
@@ -106,7 +163,18 @@ jobs:
     uses: lemonfiber/spec/.github/workflows/spec-check.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
 
   commitlint:
-    if: github.event_name == 'pull_request'
+    # A merge group runs this, and not because there is anything to lint there:
+    # the shared gate finds no range, says `no PR range; skipping`, and passes.
+    # It runs because of how a skipped job is *named*. `commitlint / commitlint`
+    # is the caller job and the called job joined, and skipping the caller means
+    # the called job never exists — so that name reports nothing at all rather
+    # than reporting a skip, and a required context that reports nothing is a
+    # wait the queue ends by dropping the pull request. `spec-check` above is
+    # the same shape and is why this one is spelled out only once.
+    #
+    # `push` stays out: `main` does not require this context, so no name is
+    # waiting to be reported there and the runner would be spent for nothing.
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
     uses: lemonfiber/spec/.github/workflows/commitlint.yml@1c4c9fecdfb03b6b71a79652ab465840878de54e # main
 
   hygiene:
@@ -260,7 +328,13 @@ jobs:
     # was the one path that did the opposite.
     #
     # So the condition asks the result as well as the output.
-    if: ${{ !cancelled() && github.event_name == 'pull_request' && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
+    #
+    # A merge group runs this exactly as a pull request does, and that is the
+    # single most important line in this file. Left as `pull_request` alone this
+    # job skips in the queue, a skipped required check reports success, and the
+    # queue merges a batch the suite was never run over — the whole tree of
+    # comments above, undone by the one event that has the last word.
+    if: ${{ !cancelled() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -370,9 +444,15 @@ jobs:
           # a cancelled run — is already covered by the two results above it.
           echo "tests=$TESTS scope=$SCOPE shards=$SHARDS event=$EVENT scoped=$SCOPED changed=$CHANGED"
 
-          # `tests` runs on a pull request that touched code, and skips
-          # otherwise. Both of those skips are deliberate and this job is
-          # downstream of them, so without this it fails on every push to the
+          # `merge_group` is named beside `pull_request` below because `tests`
+          # now runs on both. Left out, a merge group whose tests skipped for
+          # any reason at all would read as "not a pull request, so nothing was
+          # meant to run" — and the queue is the event where that sentence is
+          # least true, being the last thing between the batch and `main`.
+          #
+          # `tests` runs on a pull request or a merge group that touched code,
+          # and skips otherwise. Both of those skips are deliberate and this job
+          # is downstream of them, so without this it fails on every push to the
           # default branch — main is then permanently red for a reason that has
           # nothing to do with the commit — and a documentation-only pull
           # request cannot merge at all, because this is a required context and
@@ -390,7 +470,7 @@ jobs:
           BY_DESIGN=no
 
           if [ "$TESTS" = skipped ]; then
-            if [ "$EVENT" != pull_request ]; then
+            if [ "$EVENT" != pull_request ] && [ "$EVENT" != merge_group ]; then
               BY_DESIGN=yes
             elif [ "$SCOPED" = success ] && [ "$CHANGED" != true ]; then
               BY_DESIGN=yes
