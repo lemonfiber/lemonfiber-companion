@@ -12,6 +12,7 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\YourStacks;
@@ -112,6 +113,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // button: a sentence an operator has to tap to reveal is one they
             // will agree without reading.
             Router::native(AStacksScreen::Repairs->value, WhatWouldBePutRight::class);
+
+            // What has stopped coming in, which is the first of `N2-R9`'s four.
+            // A screen of its own rather than a section of the health one: a
+            // stack passing every check and a household getting nothing are not
+            // a contradiction, and folding this into health would put the two
+            // under one verdict that has to be about one of them.
+            Router::native(AStacksScreen::Stuck->value, WhatStoppedComingIn::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section
