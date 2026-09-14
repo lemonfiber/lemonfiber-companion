@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatCameBack;
+use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
  * The one place this application asks a stack how it is.
@@ -57,15 +58,6 @@ use Modules\Kernel\Api\WhatCameBack;
  */
 final readonly class Questions implements Asking
 {
-    /**
-     * What a stack answers with when the session it was handed is not one.
-     *
-     * Named rather than written as `401` at the comparison, which is `D6`: a
-     * bare number at a call site says nothing about which of the several
-     * statuses this application distinguishes it is.
-     */
-    private const int SESSION_IS_NOT_ACCEPTED = 401;
-
     public function __construct(private PinnedClients $clients) {}
 
     public function about(Stack $stack, Session $session): WhatCameBack
@@ -83,25 +75,9 @@ final readonly class Questions implements Asking
             // worse than either.
             return WhatCameBack::report(Reports::in($envelope));
         } catch (RequestFailed $why) {
-            return WhatCameBack::met($this->met($why));
+            return WhatCameBack::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|ReportIsUnreadable) {
             return WhatCameBack::met(Obstacle::StackDidNotAnswer);
         }
-    }
-
-    /**
-     * What the operator met, given what the far end refused with.
-     *
-     * A session the stack will not accept is the one refusal worth telling
-     * apart: it is answered by signing in again, on a machine that is working
-     * perfectly. Everything else — a stack asleep, a network that dropped, an
-     * endpoint answering five hundred — is the same sentence, and it is the one
-     * `N1-R10` gives for a stack that is not answering.
-     */
-    private function met(RequestFailed $why): Obstacle
-    {
-        return $why->status() === self::SESSION_IS_NOT_ACCEPTED
-            ? Obstacle::CredentialWasRefused
-            : Obstacle::StackDidNotAnswer;
     }
 }

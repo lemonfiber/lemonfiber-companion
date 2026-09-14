@@ -50,8 +50,29 @@ enum WireField: string
     /** The body of an envelope, under its kind and version. */
     case Data = 'data';
 
+    /** How big a request is thought to be, and whether anybody measured it. */
+    case Estimate = 'estimate';
+
     /** The rows of a diagnostic run, in the order the checks produced them. */
     case Findings = 'findings';
+
+    /** The figure inside an estimate. */
+    case Bytes = 'bytes';
+
+    /** Whether the figure beside it was measured rather than worked out. */
+    case Measured = 'measured';
+
+    /** What a stack calls one request, for naming it when acting on it. */
+    case Id = 'id';
+
+    /** The people in a household, each with what they have asked for. */
+    case Members = 'members';
+
+    /** What a household member is called. */
+    case Name = 'name';
+
+    /** What one member has asked their stack for. */
+    case Requests = 'requests';
 
     /** What a problem means for the operator, in the core's words. */
     case Meaning = 'meaning';
