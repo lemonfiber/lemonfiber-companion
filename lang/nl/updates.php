@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'how_current' => 'Updates',
     'how' => [
         'current' => 'Bijgewerkt',
         'pending' => 'Er staat een update klaar',

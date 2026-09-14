@@ -23,6 +23,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
+use Modules\Operator\Internal\WhatTheStackIsOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
@@ -512,9 +513,15 @@ it('N2-R15 — a stack that named no release in use says so rather than showing 
         HowServicesTookIt::none(),
     )))->answer();
 
-    expect($answer->running)->toBe('—')
+    expect($answer->running)->toBe(WhatTheStackIsOn::NOT_NAMED)
         ->and($answer->howSaid)->toBe(HowCurrent::Stale->saidOnTheScreen())
-        ->and($answer->runningWasWithdrawn)->toBeFalse();
+        ->and($answer->runningWasWithdrawn)->toBeFalse()
+        // A reading that came through carries neither of the obstacle's keys.
+        // They are read as a pair, and a template branching on one while
+        // printing the other would put *what to do about it* under a machine
+        // where nothing went wrong.
+        ->and($answer->met)->toBe('')
+        ->and($answer->remedy)->toBe('');
 });
 
 it('N2-R18 — reads what needs attention before what is fine', function (): void {
