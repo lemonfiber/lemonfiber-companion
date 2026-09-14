@@ -20,6 +20,8 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Sdk\Internal\Endings;
 use Modules\Sdk\Internal\Wire;
 
+use function trim;
+
 /**
  * The `update` envelope, read into what a screen can decide on.
  *
@@ -260,7 +262,11 @@ final readonly class Standings
 
         $version = $said[WireField::Version->value];
 
-        if (! is_string($version)) {
+        // Blank as well as absent, because {@see Release::called()} refuses a
+        // blank one by throwing its own kind — and that one would travel past
+        // the adapter's catch and reach the operator as a crash rather than as
+        // an obstacle. What a payload is short of is this reader's to report.
+        if (! is_string($version) || trim($version) === '') {
             throw UpkeepIsUnreadable::release($position);
         }
 

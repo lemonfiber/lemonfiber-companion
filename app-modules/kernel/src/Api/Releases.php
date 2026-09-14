@@ -63,20 +63,6 @@ final readonly class Releases implements IteratorAggregate
         )));
     }
 
-    /**
-     * Only the ones somebody in the house would notice.
-     *
-     * The distinction `N2-R16` turns on, so that a screen can lead with the
-     * releases that make this a decision rather than a chore.
-     */
-    public function theHouseholdWouldNotice(): self
-    {
-        return new self(array_values(array_filter(
-            $this->releases,
-            static fn(Release $release): bool => $release->theHouseholdWouldNotice(),
-        )));
-    }
-
     public function count(): int
     {
         return count($this->releases);

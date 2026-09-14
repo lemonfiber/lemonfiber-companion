@@ -40,6 +40,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param list<WhatOneServiceTookItSays>  $applied    what became of each service the last update touched
      * @param int                             $didNotArrive how many of those are not where the operator wanted them
      * @param bool                            $anythingUnanswered whether the stack cannot say what some are doing
+     * @param bool                            $canTakeOne whether there is an update here to offer at all
      */
     private function __construct(
         public bool $isSignedIn,
@@ -53,6 +54,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public array $applied,
         public int $didNotArrive,
         public bool $anythingUnanswered,
+        public bool $canTakeOne,
     ) {}
 
     /**
@@ -75,6 +77,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             applied: [],
             didNotArrive: 0,
             anythingUnanswered: false,
+            canTakeOne: false,
         );
     }
 
@@ -108,6 +111,11 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             applied: $applied,
             didNotArrive: $upkeep->howItWent()->thatDidNotArrive()->count(),
             anythingUnanswered: $upkeep->howItWent()->anythingUnanswered(),
+            // `N2-R20`, asked of the reading rather than worked out from the
+            // list below. A stack that says it is current is not asked further,
+            // and a screen counting rows would offer an update to one that
+            // listed releases while reporting itself up to date.
+            canTakeOne: $upkeep->hasSomethingToOffer(),
         );
     }
 
@@ -138,6 +146,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
             applied: [],
             didNotArrive: 0,
             anythingUnanswered: false,
+            canTakeOne: false,
         );
     }
 }

@@ -700,6 +700,31 @@ adapter makes the suite green while the application is broken, and nothing else
 here catches that. One contract test per port, run twice, is what makes every
 fake trustworthy — and therefore what makes G1 safe to adopt.
 
+**There is a half G2 cannot reach.** Running both implementations against the
+same assertions proves they agree with each other. It does not prove either
+agrees with the stack, because the payload they are both run against is written
+by hand — by whoever wrote the reader. When the reader looks for a field at a
+path the contract has not got and the payload obliges, both sides pass and the
+application is broken against every real machine.
+
+That is not a hypothetical. `Standings` read `state` and `running` off the top
+of the `update` payload; the contract puts the first under `changelog` and gives
+the top-level one another meaning. Three rules passed, and the screen would have
+refused every stack with an update waiting. So the payload is now read against
+the generated types instead of against the reader — a key the contract has not
+got there, a key it requires that the payload leaves out, and a word outside a
+closed set it declares. The third is the one that names a defect rather than a
+symptom: a reader in the wrong place often finds a field that *exists* there
+under another meaning, so nothing is unknown and nothing is missing, and only
+the word is wrong.
+
+`WhatTheContractDeclares` reads the types and `WhatTheContractAccepts` judges a
+payload against them. This is **not** a numbered rule yet, deliberately: the
+`update` suite calls it and the other seven do not, so a row here would claim a
+guarantee about contract suites that one file's assertion carries. It becomes a
+rule when every suite makes the check — and not before, because a green row with
+seven suites outside it is worse than no row at all.
+
 ```
 tests/Contract/ClockContractTest.php
   ✓ SystemClock   (the real adapter, reading the platform's clock)

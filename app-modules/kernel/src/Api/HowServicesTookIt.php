@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function array_any;
 use function array_filter;
 use function array_values;
 
@@ -73,13 +74,7 @@ final readonly class HowServicesTookIt implements IteratorAggregate
      */
     public function anythingUnanswered(): bool
     {
-        foreach ($this->services as $service) {
-            if ($service->ending()->leftUnanswered()) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->services, fn(HowAServiceTookIt $service): bool => $service->ending()->leftUnanswered());
     }
 
     public function count(): int

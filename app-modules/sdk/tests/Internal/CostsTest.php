@@ -119,3 +119,45 @@ it('refuses a wait for something this app has no case for', function (): void {
         'stopping' => ['bound' => 'open-ended', 'until' => 'the-weather'],
     ])))->toThrow(RosterIsUnreadable::class, 'stopping');
 });
+
+it('refuses a listing whose lengths are not a shape at all', function (): void {
+    // A word where the block belongs. `N2-R14` again: read as *nothing*, every
+    // verb would silently become free.
+    expect(fn(): object => Costs::in(['disturbs' => 'quick']))
+        ->toThrow(RosterIsUnreadable::class, 'disturbs');
+});
+
+it('refuses a verb that arrived without a tag to read its shape off', function (): void {
+    // The tag is what decides which of the two shapes this is, so a verb
+    // without one is a bound this side cannot read — not a bound of zero, and
+    // not whichever field happens to be present.
+    expect(fn(): object => Costs::in(whatAStackReportsItsVerbsCost([
+        'stopping' => ['seconds' => 10],
+    ])))->toThrow(RosterIsUnreadable::class, 'bound');
+});
+
+it('refuses a verb whose bound is not a shape', function (): void {
+    expect(fn(): object => Costs::in(whatAStackReportsItsVerbsCost([
+        'stopping' => 'ten seconds',
+    ])))->toThrow(RosterIsUnreadable::class, 'bound');
+});
+
+it('refuses a bounded verb that never said how long', function (): void {
+    expect(fn(): object => Costs::in(whatAStackReportsItsVerbsCost([
+        'stopping' => ['bound' => 'bounded'],
+    ])))->toThrow(RosterIsUnreadable::class, 'stopping');
+});
+
+it('refuses an unbounded verb that never said what it waits for', function (): void {
+    // *Unbounded, and nothing about what for* is the answer that leaves an
+    // operator watching a spinner with nothing to decide on.
+    expect(fn(): object => Costs::in(whatAStackReportsItsVerbsCost([
+        'stopping' => ['bound' => 'open-ended'],
+    ])))->toThrow(RosterIsUnreadable::class, 'stopping');
+});
+
+it('refuses a wait that is not a word', function (): void {
+    expect(fn(): object => Costs::in(whatAStackReportsItsVerbsCost([
+        'stopping' => ['bound' => 'open-ended', 'until' => 4],
+    ])))->toThrow(RosterIsUnreadable::class, 'stopping');
+});

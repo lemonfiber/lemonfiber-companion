@@ -83,8 +83,4 @@ final readonly class Release
         return ! $this->withdrawn;
     }
 
-    public function is(self $other): bool
-    {
-        return $this->version === $other->version;
-    }
 }

@@ -361,7 +361,7 @@ it('N2-R18 — reports each service of an applied update apart from the others',
     foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
         $said = [];
 
-        foreach (whatBecameOfIt($build()) as $service) {
+        foreach (whatTheUpdateCameTo($build()) as $service) {
             $said[] = sprintf(
                 '%s:%s:%s',
                 $service->service()->named(),
@@ -379,7 +379,7 @@ it('N2-R18 — reports each service of an applied update apart from the others',
 
 it('N2-R18 — leads with the services that are not where the operator wanted them', function (): void {
     foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
-        $went = whatBecameOfIt($build());
+        $went = whatTheUpdateCameTo($build());
         $wrong = [];
 
         foreach ($went->thatDidNotArrive() as $service) {
@@ -397,8 +397,14 @@ it('N2-R18 — leads with the services that are not where the operator wanted th
     }
 });
 
-/** What became of each service, whichever implementation answered. */
-function whatBecameOfIt(KeepingCurrent $keeping): HowServicesTookIt
+/**
+ * What became of each service, whichever implementation answered.
+ *
+ * Named for the update rather than for the services, because the root suites
+ * share one namespace (`G10`) and `NotifierContractTest` already spends the
+ * shorter name on what became of a notification.
+ */
+function whatTheUpdateCameTo(KeepingCurrent $keeping): HowServicesTookIt
 {
     return $keeping->standing(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith())->either(
         stands: static fn(Upkeep $upkeep): HowServicesTookIt => $upkeep->howItWent(),
