@@ -73,9 +73,10 @@ function theLogScreen(
     ?string $named = null,
     ?string $service = null,
     bool $signedIn = true,
+    ?AKeychainInMemory $keychain = null,
 ): WhatThisServiceSaid {
     $stack = theStackWhoseServiceIsRead();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
@@ -359,4 +360,40 @@ it('asking again forgets the window, so a search is not run against stale lines'
     $screen->lines();
 
     expect($saying->askings())->toBe(2);
+});
+
+it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+    // This screen makes the same two moves its four siblings do, and it has to
+    // make them itself: a fold cannot forget anything, and a session left in the
+    // store is resumed on the next frame and refused again.
+    $keychain = AKeychainInMemory::working();
+    $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::CredentialWasRefused), keychain: $keychain);
+
+    expect($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
+
+    expect($screen->isSignedIn())->toBeFalse()
+        // Nothing about a machine, because this is not about the machine — and
+        // nothing already loaded, which `N3-R13` names separately. A window is
+        // the thing this screen most obviously has to drop: an operator reading
+        // a service's log under *this stack refused the pairing of this app* is
+        // reading lines the stack has just said it will not answer for.
+        ->and($screen->met())->toBe('')
+        ->and($screen->remedy())->toBe('')
+        ->and($screen->lines())->toBe([])
+        ->and($screen->howMany())->toBe(0)
+        ->and($screen->isAWindow())->toBeFalse()
+        ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeFalse();
+});
+
+it('N3-R13 — an obstacle that is not a refused credential leaves the session alone', function (): void {
+    // The other side of the same line, and the one that keeps this from being a
+    // screen that signs somebody out whenever a machine is unreachable. A phone
+    // in flight mode has not lost its pairing, and forgetting the session would
+    // make somebody sign in again to read a log they were already entitled to.
+    $keychain = AKeychainInMemory::working();
+    $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork), keychain: $keychain);
+
+    expect($screen->isSignedIn())->toBeTrue()
+        ->and($screen->met())->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 });

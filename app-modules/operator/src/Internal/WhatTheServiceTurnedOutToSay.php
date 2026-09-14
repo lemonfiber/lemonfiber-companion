@@ -104,9 +104,21 @@ final readonly class WhatTheServiceTurnedOutToSay
      * The keys come off {@see Obstacle}, which owns them — so an obstacle
      * gaining a seventh case needs no edit here and cannot be given a sentence
      * here that disagrees with the one another screen shows.
+     *
+     * **A credential the stack refused is a signed-out app, not an obstacle.**
+     * `N3-R13` says an identity removed from the household results in a
+     * signed-out app at the next refused call and that nothing already loaded
+     * goes on being rendered. {@see Obstacle::meansWeAreSignedOut()} draws that
+     * line once, so this fold and the four beside it cannot come to disagree
+     * about whether somebody is signed in — and a window already fetched is not
+     * shown under a sentence about a machine.
      */
     public static function met(Obstacle $why): self
     {
+        if ($why->meansWeAreSignedOut()) {
+            return self::signedOut();
+        }
+
         return new self(
             isSignedIn: true,
             met: $why->said(),

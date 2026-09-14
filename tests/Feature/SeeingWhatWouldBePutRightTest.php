@@ -626,16 +626,38 @@ it('N3-R13 — a refused credential on the outcome read signs this device out', 
     // would, for one frame, render what it loaded a moment ago under a session
     // the stack has stopped recognising — which is the half of `N3-R13` that is
     // about rendering rather than about storage.
+    $keychain = AKeychainInMemory::working();
     $mending = AStackThatWouldMend::goneAfterAgreeing(
         aListingWorthReading(),
         Obstacle::CredentialWasRefused,
     );
+    $screen = theRepairsScreen($mending, keychain: $keychain);
+
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+
+    expect($screen->isSignedIn())->toBeFalse()
+        // And the storage half on this road too. The offer read has its own
+        // case below; this is the one where the refusal arrives after a session
+        // has already been used successfully, and the effect is not a property
+        // of which read met it.
+        ->and($keychain->isHolding(theStackBeingOfferedRepairs()->id()))->toBeFalse();
+});
+
+it('N3-R13 — an outcome that came back is not a session that ended', function (): void {
+    // The other side of the line `isSignedIn()` draws. Once something has been
+    // agreed to, the answer comes from the outcome read rather than the offer
+    // read — so a screen that folded the two together with *and* would report a
+    // signed-out device the moment anybody agreed to anything, which is every
+    // successful repair this screen exists to carry out.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
     $screen = theRepairsScreen($mending);
 
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
 
-    expect($screen->isSignedIn())->toBeFalse();
+    expect($screen->wasAgreedTo())->toBeTrue()
+        ->and($screen->isSignedIn())->toBeTrue();
 });
 
 it('N3-R13 — and the session is let go of, handle and all', function (): void {
