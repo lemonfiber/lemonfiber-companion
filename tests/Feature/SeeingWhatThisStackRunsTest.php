@@ -113,6 +113,60 @@ it('N2-R7 — shows every service, how it runs, and which form it is in', functi
         ->and($answer->services[0]->runsSaid)->toBe(HowAServiceRuns::Running->saidOnTheScreen());
 });
 
+it('N2-R7 — a row carries the name an operator recognises, beside the id a verb uses', function (): void {
+    // Two facts and not one. On a stack where somebody renamed a service they
+    // differ, and a row carrying only the id puts an identifier in front of
+    // somebody looking for *Sonarr*.
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()));
+    $row = $screen->answer()->services[0];
+
+    expect($row->name)->toBe('Sonarr')
+        ->and($row->id->named())->toBe('sonarr')
+        // How much it matters is what decides how loudly a stop is asked
+        // about, so it travels with the row rather than being looked up.
+        ->and($row->mattersSaid)->toBe(HowMuchItMatters::Important->saidOnTheScreen());
+});
+
+it('N2-R7 — a service this stack does not run is not offered a verb', function (): void {
+    // `N2-R7` is about what this stack runs. `B2-R15` has native-mode Jellyfin
+    // report as host-managed and not be started or stopped by lemonfiber, so a
+    // verb offered about one would be refused by the machine — and offering it
+    // teaches an operator that the buttons here are a guess.
+    $running = Daemons::of(
+        HowTheStackIsRunning::Partial,
+        Forms::these(Form::called('media')),
+        aServiceRunning('jellyfin', HowAServiceRuns::HostManaged),
+        aServiceRunning('sonarr'),
+    );
+    $rows = theServicesScreen(AStackThatSupervises::with($running))->answer()->services;
+
+    expect($rows[0]->isOurs)->toBeFalse()
+        ->and($rows[1]->isOurs)->toBeTrue();
+});
+
+it('N2-R7 — a row says what it ended with, and says nothing where it did not', function (): void {
+    // An empty field and a zero are different facts: a service that is running
+    // has no exit code at all, and `0` is the code for one that ended well.
+    $running = Daemons::of(
+        HowTheStackIsRunning::Degraded,
+        Forms::these(Form::called('downloads')),
+        Daemon::thatExited(
+            'Sonarr',
+            ServiceId::called('sonarr'),
+            Form::called('downloads'),
+            HowAServiceRuns::Failed,
+            HowMuchItMatters::Important,
+            WhatLeansOnIt::nothing(),
+            137,
+        ),
+        aServiceRunning('jellyfin'),
+    );
+    $rows = theServicesScreen(AStackThatSupervises::with($running))->answer()->services;
+
+    expect($rows[0]->exited)->toBe('137')
+        ->and($rows[1]->exited)->toBe('');
+});
+
 it('N2-R7 — carries the forms whether or not anything in them is running', function (): void {
     // The form with everything stopped is the one an operator opened this
     // screen to start, and a listing assembled from the rows would not have it.
@@ -325,6 +379,24 @@ it('a stack running nothing is an answer and not a gap', function (): void {
     expect($screen->answer()->services)->toBe([])
         ->and($screen->answer()->isSignedIn)->toBeTrue()
         ->and($screen->answer()->overall)->toBe(HowTheStackIsRunning::Inactive->saidOnTheScreen());
+});
+
+it('a session that ended between the reading and the yes sends nothing', function (): void {
+    // The narrow path `N3-R13` opens: the listing was read while the session
+    // worked, and the stack refused it in between. The agreement is still held
+    // and there is nothing to send it with, so this must come away quietly
+    // rather than raise on a tap — the frame after it is `N1-R44`'s screen,
+    // which is where the operator is told.
+    $supervising = AStackThatSupervises::with(aStackRunningTwoThings());
+    $keychain = AKeychainInMemory::working();
+    $screen = theServicesScreen($supervising, $keychain);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+    $keychain->forget(theStackWhoseServicesAreRead()->id());
+    $screen->agree();
+
+    expect($supervising->whatItWasToldToDo())->toBe([])
+        ->and($screen->answer()->isSignedIn)->toBeFalse();
 });
 
 it('N2-R7 — the screen is registered under the route that reaches it', function (): void {
