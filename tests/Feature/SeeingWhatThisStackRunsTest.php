@@ -339,9 +339,9 @@ it('N1-R27 — looks again only while something is settling', function (): void 
     $screen->answer();
 
     // Twice: the first reading, and the one the cadence asked for. Counted off
-    // the port, which is the only thing that can say a second reading happened —
-    // the assertion here used to be that `answer()` was not null, which is true
-    // of a cadence that does nothing at all.
+    // the port, because that is the only thing that can say a second reading
+    // happened: `answer()` hands back a fold either way, so asking whether it is
+    // null says nothing about whether the cadence did anything.
     expect($supervising->askings())->toBe(2)
         ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
 });
@@ -422,10 +422,10 @@ it('N3-R13 — a credential refused on the verb lets the session go too', functi
     // refuses it on a read, and this is the call that happens on the tap.
     //
     // One stack, answering the reading and refusing the verb, because those are
-    // different calls and a session can end between them. Two screens over a
-    // shared keychain proved nothing: the second one refused the *read*, so the
-    // sign-out under test was the one the case above already covers and the
-    // fold behind the verb was never entered by anything in this suite.
+    // different calls and a session can end between them. A second screen over a
+    // shared keychain does not reach this: a stack that refuses the read signs
+    // the device out on the road the case above already covers, and the fold
+    // behind the verb is never entered at all.
     $keychain = AKeychainInMemory::working();
     $supervising = AStackThatSupervises::withButRefusing(
         aStackRunningTwoThings(),
