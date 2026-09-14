@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\WhatOneServiceSays;
 use Modules\Operator\Internal\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -82,6 +83,8 @@ use function view;
 #[Concealed]
 final class WhatThisStackRuns extends NativeComponent
 {
+    use LetsGoOfARefusedSession;
+
     /**
      * What came back, once the frame has asked.
      *
@@ -315,8 +318,11 @@ final class WhatThisStackRuns extends NativeComponent
         return $this->supervising->running($stack, $session)->either(
             these: static fn(Daemons $daemons): WhatThisStackRunsTurnedOutToBe
                 => WhatThisStackRunsTurnedOutToBe::these($daemons),
-            met: static fn(Obstacle $why): WhatThisStackRunsTurnedOutToBe
-                => WhatThisStackRunsTurnedOutToBe::met($why),
+            met: function (Obstacle $why) use ($stack): WhatThisStackRunsTurnedOutToBe {
+                $this->letGoOfTheSession($why, $stack);
+
+                return WhatThisStackRunsTurnedOutToBe::met($why);
+            },
         );
     }
 
@@ -404,7 +410,15 @@ final class WhatThisStackRuns extends NativeComponent
     {
         return $this->supervising->told($stack, $session, $agreed)->either(
             started: static fn(Job $job): AsText => AsText::of($job->shown()),
-            met: static fn(Obstacle $why): AsText => AsText::of($why->said()),
+            met: function (Obstacle $why) use ($stack): AsText {
+                // The verb's refusal lets go of the session too, and not only
+                // the reading's. A stack that refuses a credential on a stop is
+                // the same signed-out device as one that refuses it on a read,
+                // and this is the call that happens the moment somebody taps.
+                $this->letGoOfTheSession($why, $stack);
+
+                return AsText::of($why->said());
+            },
         );
     }
 }

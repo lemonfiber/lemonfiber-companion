@@ -371,6 +371,56 @@ it('N1-R10 — an obstacle is what stood in the way, with what to do about it', 
         ->and($answer->services)->toBe([]);
 });
 
+it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+    // Both halves, because a fold cannot forget anything. Rendering the
+    // signed-out state and leaving the session in the store means the next
+    // frame resumes it, is refused again, and the operator reads a sign-in
+    // prompt over a device that still believes it is signed in.
+    $keychain = AKeychainInMemory::working();
+    $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::CredentialWasRefused), $keychain);
+
+    expect($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeTrue();
+
+    expect($screen->answer()->isSignedIn)->toBeFalse()
+        // Nothing about a machine, because this is not about the machine — and
+        // nothing already loaded, which matters more here than on a listing
+        // nobody acts from: what is already loaded is six buttons that change
+        // somebody's machine.
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->services)->toBe([])
+        ->and($screen->answer()->overall)->toBe('')
+        ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeFalse();
+});
+
+it('N3-R13 — a credential refused on the verb lets the session go too', function (): void {
+    // The half a read cannot reach. A stack that refuses a credential the
+    // moment somebody taps stop is the same signed-out device as one that
+    // refuses it on a read, and this is the call that happens on the tap.
+    $keychain = AKeychainInMemory::working();
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackRunningTwoThings()), $keychain);
+
+    // Read with a working stack so there is a listing to pick a row from, then
+    // let the stack start refusing.
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value, 'sonarr');
+
+    $refusing = theServicesScreen(AStackThatSupervises::met(Obstacle::CredentialWasRefused), $keychain);
+    $refusing->answer();
+
+    expect($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeFalse();
+});
+
+it('N3-R13 — a machine that cannot be reached keeps its session', function (): void {
+    // The line's other side. A phone in flight mode has not lost its pairing,
+    // and forgetting the session there would make somebody sign in again to
+    // start a service they were entitled to start all along.
+    $keychain = AKeychainInMemory::working();
+    $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork), $keychain);
+
+    expect($screen->answer()->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeTrue();
+});
+
 it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
     $supervising = AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork);
     $screen = theServicesScreen($supervising);

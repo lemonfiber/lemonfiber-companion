@@ -22,17 +22,23 @@ use Tests\Support\Tree;
 // it. So the rule is a list of the doors this app opens, each with the reason it
 // is open.
 //
-// `act()` is open, and what holds the two requirements up is not that it is shut
-// but that this app cannot spell what goes through it. An action's name is the
-// last segment of its path, and every call here composes that path with
-// `Api::action()` from `WhatToDoWithIt::asked()` — three verbs, none of them
-// `setup` and none of them a credential. Two things are refused below: a string
-// handed to `Api::action()`, which would be a name this app chose, and a
-// `->value` handed to it, which is the operator's word for a verb rather than
-// lemonfiber's and would be refused by a machine in front of somebody holding a
-// phone. The three verbs are then checked against the list of reasons in both
-// directions, because the forward check catches one that lost its reason and
-// only the reverse catches the fourth verb somebody adds by hand.
+// `act()` is open, and what holds the two requirements up is now this rule
+// rather than the door being shut. Say that plainly: `Api::action(string)`,
+// `Client::act(string)` and `WhatToDoWithIt::asked(): string` are all strings,
+// so nothing in the type system stops `Api::action('setup')`. The app *does
+// not* spell what goes through the door, and what makes that stay true is the
+// three checks below — not the design.
+//
+// An action's name is the last segment of its path, and every call here
+// composes that path with `Api::action()` from `WhatToDoWithIt::asked()` —
+// three verbs, none of them `setup` and none of them a credential. Two things
+// are refused: a string handed to `Api::action()`, which would be a name this
+// app chose, and a `->value` handed to it, which is the operator's word for a
+// verb rather than lemonfiber's and would be refused by a machine in front of
+// somebody holding a phone. The three verbs are then checked against the list
+// of reasons in both directions, because the forward check catches one that
+// lost its reason and only the reverse catches the fourth verb somebody adds by
+// hand.
 //
 // The list is compared against the client rather than trusted: a method renamed
 // in the SDK fails here rather than leaving this rule describing a door that no
@@ -54,10 +60,18 @@ const DOORS_THE_APP_OPENS = [
     // and a body. A caller cannot spell an arbitrary change through it.
     'repair' => 'carries out a repair the stack offered, against the reading it was offered on',
 
+    // `N1-R41`'s other half: work that answered with a name is asked after by
+    // that name. It reads and changes nothing — a job's standing is what the
+    // stack already decided — and it is how a repair's outcome arrives at all.
+    // It was opened when `N2-R4` was built and this rule could not see it: the
+    // call is chained off `client(...)` rather than landing in a variable, and
+    // the rule matched a receiver.
+    'whatBecameOf' => 'asks what became of work the stack named, changing nothing',
+
     // `N2-R7`'s three verbs, and nothing else can reach it: the path is
     // composed by `Api::action()` from a `WhatToDoWithIt` case, which is a
     // closed set this app cannot add a name to at a call site.
-    'act' => 'asks for one of the three verbs `N2-R7` names, by a name no call site can spell',
+    'act' => 'asks for one of the three verbs `N2-R7` names, by a name the rule below holds it to',
 ];
 
 /** Every verb this application can ask a stack for, and why that one. */
@@ -82,6 +96,11 @@ const VERBS_THE_APP_ASKS_FOR = [
  * to know is whether a call site chose a path, and a call site that did chose it
  * in the source.
  *
+ * On any receiver, for {@see everyDoorTheAppOpens()}'s reason: a call through a
+ * variable named anything else is the same call. There is exactly one `->act(`
+ * in this application and no class holds a client as a property, so this finds
+ * the one call today and nothing else.
+ *
  * @return list<string>
  */
 function everyCallOnTheWritingDoor(): array
@@ -89,7 +108,7 @@ function everyCallOnTheWritingDoor(): array
     $found = [];
 
     foreach (theApplicationsSources() as $path) {
-        preg_match_all('/\$client->act\(\s*([^,)]+)/', (string) file_get_contents($path), $called);
+        preg_match_all('/->act\(\s*([^,)]+)/', (string) file_get_contents($path), $called);
 
         foreach ($called[1] as $argument) {
             $found[] = trim($argument);
@@ -160,24 +179,69 @@ function theApplicationsSources(): array
 /**
  * Every method the application actually calls on a client.
  *
+ * Driven by the client's own method names rather than by a receiver named
+ * `$client`, and that is the whole of whether this rule works. Matching the
+ * receiver reads one spelling of a call: `$door = $client; $door->act(...)`
+ * walked past every assertion here, and so did the two calls `Menders` already
+ * makes — `$this->clients->client(...)->whatBecameOf(...)` is chained and never
+ * lands in a variable at all, so a door this app has opened since `N2-R4` was
+ * built was one this rule had never seen.
+ *
+ * It over-approximates: a method of the same name on something that is not a
+ * client counts too, and `Mending::whatBecameOf()` is one. That is the safe
+ * direction — this rule can then ask for an explanation it did not need, and
+ * never miss one it did. Under-approximating is what let `setup` through.
+ *
  * @return list<string>
  */
 function everyDoorTheAppOpens(): array
 {
+    $said = implode("\n", array_map(
+        static fn(string $path): string => (string) file_get_contents($path),
+        theApplicationsSources(),
+    ));
+
     $found = [];
 
-    foreach (theApplicationsSources() as $path) {
-        preg_match_all('/\$client->([a-zA-Z]+)\(/', (string) file_get_contents($path), $called);
-
-        foreach ($called[1] as $door) {
-            $found[$door] = true;
+    foreach (everyDoorTheClientHas() as $door) {
+        if (preg_match(sprintf('/->%s\s*\(/', preg_quote($door, '/')), $said) === 1) {
+            $found[] = $door;
         }
     }
 
-    $doors = array_keys($found);
-    sort($doors);
+    sort($found);
 
-    return $doors;
+    return $found;
+}
+
+/**
+ * Every method the SDK's client publishes.
+ *
+ * Read from the class rather than listed, so a door added to the SDK is one
+ * this rule can see the day it arrives — which is the half a hand-kept list
+ * cannot have.
+ *
+ * @return list<string>
+ */
+function everyDoorTheClientHas(): array
+{
+    $found = [];
+
+    foreach (new ReflectionClass(Client::class)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        // Statics are not doors. `Client::at()` builds a client rather than
+        // doing anything to a stack, and what may build one is
+        // `NothingOpensAConnectionByHandTest`'s question — every connection
+        // through `PinnedClients`, so the certificate pin lives in one file.
+        // Left in, it also reads `$stack->at()` as a door, which is an address
+        // accessor with the same name and nothing to do with a client.
+        if ($method->isConstructor() || $method->isStatic()) {
+            continue;
+        }
+
+        $found[] = $method->getName();
+    }
+
+    return $found;
 }
 
 it('N1-R4, N2-R12 — the app opens only the doors it has a reason for', function (): void {
