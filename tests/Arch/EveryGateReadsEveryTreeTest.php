@@ -305,3 +305,54 @@ function namesSomethingIn(string $directory): bool
 
     return false;
 }
+
+it('R4 — every tree the scanner is pointed at is on disk', function (): void {
+    // `sonar-project.properties` names its trees in a file no other rule here
+    // reads, and the scanner refuses to start on one that is not there:
+    //
+    //     ERROR Invalid value of sonar.sources
+    //     ERROR The folder 'native/src' does not exist
+    //
+    // Which makes it the same failure shape as an analyser that will not
+    // bootstrap — one red job, nothing measured, and a summary saying `Q-R64`
+    // was not enforced on that run. A directory rename caught every reader in
+    // PHP, XML, YAML and neon and missed this one, because a `.properties` file
+    // was in nobody's pattern.
+    //
+    // Both keys, because the exclusions are as able to name a tree that moved
+    // as the sources are — and an exclusion matching nothing is the quieter
+    // half: it does not fail the scan, it just stops excluding whatever it was
+    // written to exclude.
+    $properties = file_get_contents(Tree::at('sonar-project.properties'));
+
+    expect($properties)->toBeString('sonar-project.properties could not be read, so nothing below was checked.');
+
+    $missing = [];
+
+    foreach (['sonar.sources', 'sonar.exclusions'] as $key) {
+        if (preg_match(sprintf('/^%s=(.*)$/m', preg_quote($key, '/')), (string) $properties, $said) !== 1) {
+            continue;
+        }
+
+        foreach (explode(',', trim($said[1])) as $tree) {
+            $tree = trim($tree);
+
+            // An exclusion is a glob and a source is a path, so both are asked
+            // the question a glob answers. `GLOB_BRACE` is not passed because
+            // neither key uses braces; a pattern that gained one would report
+            // here rather than silently matching nothing.
+            if ($tree !== '' && glob(Tree::at(rtrim($tree, '/'))) === [] && glob(Tree::at($tree), GLOB_ONLYDIR) === []) {
+                $missing[] = sprintf('%s: %s', $key, $tree);
+            }
+        }
+    }
+
+    expect($missing)->toBe([], sprintf(
+        "sonar-project.properties names these and nothing on disk matches:\n  %s\n\n"
+        . 'A source tree that is not there stops the scanner starting, so the run '
+        . "measures nothing and reports that `Q-R64` was not enforced.\nAn exclusion "
+        . 'that matches nothing is quieter and still wrong: it excludes whatever it '
+        . 'was written to exclude, which is now something else (R4).',
+        implode("\n  ", $missing),
+    ));
+});
