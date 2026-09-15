@@ -321,13 +321,22 @@ it('K1 — a comment says what is true, not what happened', function (): void {
 });
 
 /**
- * The template parameters a file declares, which are not class names.
+ * The bare identifiers a file gives a meaning to, which are not class names.
  *
- * `@return TSaid` beside `: object` is a bare identifier and says a great deal
- * the signature cannot: which object, tied to what the caller's closure
- * answered. Read per file rather than per docblock because a template is in
- * scope for the method that declares it and PHPStan refuses one used anywhere
- * else, so a wider read cannot admit a tag a narrower one would have caught.
+ * Two notations, one exception. `@return TSaid` beside `: object` is a bare
+ * identifier and says a great deal the signature cannot: which object, tied to
+ * what the caller's closure answered. `@param Bindings $bindings` beside
+ * `: array` is the same thing said the other way — the alias is where the shape
+ * is written down, and `array` is what the signature is able to say.
+ *
+ * An alias is admitted where the file declares it with `@phpstan-type` or takes
+ * it from another with `@phpstan-import-type`, which is exactly the condition
+ * PHPStan itself resolves one under: a name neither declared nor imported is an
+ * error there and a restated signature here, and both are the same complaint.
+ *
+ * Read per file rather than per docblock for the reason a template needs it:
+ * both are in scope for the file that declares them and refused anywhere else,
+ * so a wider read cannot admit a tag a narrower one would have caught.
  *
  * @param list<string> $lines
  *
@@ -339,6 +348,10 @@ function templatesIn(array $lines): array
 
     foreach ($lines as $line) {
         if (preg_match('/@(?:phpstan-)?template(?:-covariant)?\s+([A-Za-z_]\w*)/', $line, $found) === 1) {
+            $named[] = $found[1];
+        }
+
+        if (preg_match('/@phpstan-(?:import-)?type\s+([A-Za-z_]\w*)/', $line, $found) === 1) {
             $named[] = $found[1];
         }
     }

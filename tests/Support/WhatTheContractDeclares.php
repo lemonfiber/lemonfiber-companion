@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function array_unique;
+use function array_values;
 use function file_exists;
 use function file_get_contents;
 use function preg_match;
 use function sprintf;
 use function str_split;
+use function str_starts_with;
 use function strlen;
 use function substr;
 use function trim;
@@ -28,6 +31,16 @@ use function trim;
  */
 final readonly class WhatTheContractDeclares
 {
+    /**
+     * How an entry of a list or a map is written into a path.
+     *
+     * One marker for both kinds, and public because the two sides of a path
+     * comparison have to spell it the same way: {@see WhatTheReadersRead}
+     * recovers the reader's half and this declares the contract's, and a marker
+     * written out in each would be one edit away from two vocabularies that
+     * never match.
+     */
+    public const string EACH = '[]';
     /** Where the generated envelopes are written. */
     private const string GENERATED = 'vendor/lemonfiber/sdk-php/src/Generated';
 
@@ -86,6 +99,37 @@ final readonly class WhatTheContractDeclares
     }
 
     /**
+     * Every path a type declares, all the way down, in the order it declares them.
+     *
+     * A field is not `detail`, it is `findings[].verdict.remedies[].detail` —
+     * and the difference is the whole of what a name-based reading gets wrong.
+     * Nine envelopes declare two hundred and twenty-three of these between
+     * them, and forty-one of the names are shared by two paths or more.
+     *
+     * Both bracket kinds become one marker, `[]`, for the reason
+     * {@see WhatTheReadersRead} gives about a reader walking either with
+     * `foreach`: what a path is compared against has to be written the way the
+     * reader's side of it can be recovered.
+     *
+     * A union contributes every arm, because the contract writes a tagged shape
+     * as one — `verdict` carries `reason` on two arms and `remedies` on two
+     * others, and a reading that took the first arm would call the rest fields
+     * nobody has.
+     *
+     * @return list<string>
+     */
+    public static function everyPathIn(string $type, string $under = ''): array
+    {
+        $found = [];
+
+        foreach (self::alternatives($type) as $alternative) {
+            $found = [...$found, ...self::pathsUnder($alternative, $under)];
+        }
+
+        return array_values(array_unique($found));
+    }
+
+    /**
      * What sits between a type's opening bracket and the one that closes it.
      *
      * The closing bracket is the last character of a well-formed type, which is
@@ -138,6 +182,37 @@ final readonly class WhatTheContractDeclares
         $parts[] = trim($held);
 
         return $parts;
+    }
+
+    /**
+     * One arm of a type, as the paths it puts under a path.
+     *
+     * @return list<string>
+     */
+    private static function pathsUnder(string $type, string $under): array
+    {
+        if (str_starts_with($type, 'list<')) {
+            return self::everyPathIn(self::inside($type, 'list<'), sprintf('%s%s', $under, self::EACH));
+        }
+
+        if (str_starts_with($type, 'array<')) {
+            $holds = self::split(self::inside($type, 'array<'), ',');
+
+            return self::everyPathIn($holds[1] ?? '', sprintf('%s%s', $under, self::EACH));
+        }
+
+        if (! str_starts_with($type, 'array{')) {
+            return [];
+        }
+
+        $found = [];
+
+        foreach (self::fieldsOf($type) as $name => $field) {
+            $path = $under === '' ? $name : sprintf('%s.%s', $under, $name);
+            $found = [...$found, $path, ...self::everyPathIn($field[1], $path)];
+        }
+
+        return $found;
     }
 
     /**

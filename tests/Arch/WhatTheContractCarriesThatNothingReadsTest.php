@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 use Tests\Support\WhatTheContractDeclares;
+use Tests\Support\WhatTheReadersRead;
 
 // N1-R17 — what the wire carries that this app does not read, and why.
 //
@@ -18,10 +19,25 @@ use Tests\Support\WhatTheContractDeclares;
 // nowhere. The contract has moved under this app several times in a week, and
 // each time the only thing that noticed was somebody reading a diff.
 //
-// So every field the contract declares on an envelope this app reads is either
-// **named by a `WireField`** — this side has a word for it — or **listed below
-// with a reason**. A field that is neither fails this suite, which is the
+// So every path the contract declares on an envelope this app reads is either
+// **read by a reader** — followed to the subscript that takes it — or **listed
+// below with a reason**. A path that is neither fails this suite, which is the
 // moment somebody decides rather than the moment somebody notices.
+//
+// **A name is not a place, and the difference is the whole of this rule.**
+// Asking whether this app has a `WireField` case for a field answers yes for
+// every path that field's name appears at: one case for `state` covers
+// `error.state`, `status.services[].state`, `doctor.findings[].verdict.state`
+// and `update.changelog.state` alike. Twenty-nine names do that across
+// ninety-nine of the two hundred and twenty-three paths here.
+//
+// The last of those four is the argument. `update.changelog.state` is the field
+// `Tests\Support\WhatTheContractAccepts` exists because a reader misread — the
+// top-level `state` taken for the triple the contract puts under `changelog` —
+// and a register built to catch that could not see it, because a case written
+// for the `status` envelope had already answered for it. So the question is
+// *does anything read this path*, and `Tests\Support\WhatTheReadersRead`
+// answers it by following the reader.
 //
 // **It is a register of decisions, not of gaps.** Most rows here will never be
 // read, and saying so is the point: *the household surface is blocked* and *no
@@ -35,10 +51,11 @@ use Tests\Support\WhatTheContractDeclares;
 // requirement before it wants a screen, and the row is where that is said.
 
 /**
- * Every field this app has read and decided not to read, and why.
+ * Every path this app has read and decided not to read, and why.
  *
- * `envelope` and `field` name one field exactly. `because` is the decision, and
- * it is the only part that survives the person who made it.
+ * `path` names one place on one envelope exactly, and covers everything beneath
+ * it. `because` is the decision, and it is the only part that survives the
+ * person who made it.
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
@@ -60,6 +77,12 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'disagree, and `G4-R3` asks for the cause reported rather than each symptom, not for both.',
     ],
     [
+        'path' => 'DoctorEnvelope.findings[].verdict.summary',
+        'because' => 'What the check found, in a sentence, before the meaning explains it. A screen shows '
+            . 'the code, the meaning, the remedies and what the core said underneath, which is `N2-R3` and '
+            . '`G4-R4` together; a fifth line saying the meaning shorter is the one an operator skips.',
+    ],
+    [
         'path' => 'DoctorEnvelope.findings[].verdict.remedies[].detail',
         'because' => 'A remedy is an action an operator takes. `N2-R3` has it carried in the words the core '
             . 'produced, and the action is those words — a second line under each one turns a list of things '
@@ -75,12 +98,71 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'is one of four sentences this app has written and not a page of the core\'s.',
     ],
     [
-        'path' => 'HouseholdEnvelope.members',
-        'because' => 'The household surface is blocked rather than unstarted, so nothing under a member is '
-            . 'read — access, what they are asking for, what they have claimed, when they were last seen. '
-            . 'One decision about the whole subtree rather than thirty rows saying it separately. `N3-R1` '
-            . 'to `N3-R3` wait on the wire saying who is asking, which it does not; see '
-            . '`app-modules/household/src/README.md` and the gap register beside this one.',
+        'path' => 'HouseholdEnvelope.findings',
+        'because' => 'Plain sentences about the listing itself, beside the members. `N2-R3` has a finding '
+            . 'carry a code, a meaning and a remedy, and those arrive on the `doctor` envelope; a bare '
+            . 'string here has none of the three and is not something an operator can act on.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].access',
+        'because' => 'What one member is allowed — administrator, disabled, which libraries, which ratings. '
+            . 'The household surface is blocked rather than unstarted, and this is the field that makes it a '
+            . 'block: the wire carries the entitlement and not the *subject*, so an app holding this list '
+            . 'could only match it to a person by deciding for itself who is looking, and `N3-R3` refuses a '
+            . 'control hidden on that basis. `app-modules/household/src/README.md` holds the rest.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].asking',
+        'because' => 'What one member has left of an allowance and when it comes back. `N3-R4` and `N3-R5` '
+            . 'have this told to the member before they ask, which is the surface `N3-R1` to `N3-R3` are '
+            . 'waiting on. The same block, and the operator\'s reading of this payload (`N2-R11`) is about '
+            . 'requests awaiting a decision rather than about somebody\'s quota.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].claimed',
+        'because' => 'Whether a member has taken up their invitation. The same block: it is a fact about a '
+            . 'person rather than about a request, and `N2-R11` surfaces the requests.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].last_seen',
+        'because' => 'When a member was last about. The same block, and the same distinction — `N2-R13` has '
+            . 'a *reading* carry its age, which is how old this app\'s answer is rather than how long ago '
+            . 'somebody opened a client.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].to_hand_over',
+        'because' => 'What would pass to somebody else if this member went. A household decision, and the '
+            . 'same block: the surface cannot yet say whose decision it is.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].requests[].media',
+        'because' => 'The library\'s own handle for the thing asked for. `N2-R11` asks for enough to decide '
+            . 'on, and the words a person recognises are the title beside it; `N3-R8` keeps this app out of '
+            . 'playing anything, so there is nothing here an identifier would be used to reach.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].requests[].waiting_days',
+        'because' => 'How long a request has waited. Genuinely operator-facing — a fortnight is a different '
+            . 'decision from an hour — and no requirement in `N1` to `N4` asks for it. Raise it against the '
+            . 'spec before reading it, which is `N1-R17`.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].requests[].refused.expired',
+        'because' => 'Whether a decline has lapsed. `N3-R7` has a refused request carry the reason it was '
+            . 'given, which is what this app reads off `reason` and `at`; whether the refusal still stands '
+            . 'is the stack\'s answer to somebody asking again, and nothing here asks again.',
+    ],
+    [
+        'path' => 'HouseholdEnvelope.members[].requests[].refused.told',
+        'because' => 'That the member was told, and who. `D7-R7` has a decline reach them by name and the '
+            . 'stack is what reaches them; a screen here reporting that a notification was sent would be '
+            . 'this app describing a message it neither sent nor can see.',
+    ],
+    [
+        'path' => 'JobEnvelope.action',
+        'because' => 'Which action the stack acknowledged. The caller already knows — it is the one that '
+            . 'just asked — so reading it to check would be this app telling a stack what it had been asked, '
+            . 'and reading it to decide would put a second answer beside the one the call site is holding.',
     ],
     [
         'path' => 'StatusEnvelope.disturbs.stopping_after_downloads',
@@ -137,10 +219,35 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'identifiers.',
     ],
     [
-        'path' => 'UpdateEnvelope.changelog.running',
-        'because' => 'The full changelog entry for the release in use — its tag, its groups, what it '
-            . 'carried. The app reads the version and whether it was withdrawn, which is what `N2-R15` and '
-            . '`N2-R16` ask for; the rest is a changelog screen nobody has asked for.',
+        'path' => 'UpdateEnvelope.changelog.running.carried',
+        'because' => 'What the release in use brought forward from the one before it. The app reads a '
+            . 'release\'s version and whether it was taken back, which is what `N2-R15` and `N2-R16` ask '
+            . 'of it; the rest of the entry is a changelog screen nobody has asked for.',
+    ],
+    [
+        'path' => 'UpdateEnvelope.changelog.running.delivers',
+        'because' => 'The same field the row on `changelog.releases[].delivers` is about, on the other '
+            . 'place the contract writes a release out.',
+    ],
+    [
+        'path' => 'UpdateEnvelope.changelog.running.patches',
+        'because' => 'The same, for what the release in use fixes.',
+    ],
+    [
+        'path' => 'UpdateEnvelope.changelog.running.released_on',
+        'because' => 'The same, for when it was published.',
+    ],
+    [
+        'path' => 'UpdateEnvelope.changelog.running.tag',
+        'because' => 'The name the release was published under, beside the version it is. Two names for one '
+            . 'release on one screen is the shape an operator reads as two releases, and `N2-R15` asks for '
+            . 'the one the stack reports itself as being on.',
+    ],
+    [
+        'path' => 'UpdateEnvelope.changelog.running.groups',
+        'because' => 'The release notes for the version in use, grouped and entry by entry, and everything '
+            . 'under them. `N2-R16` has the stack answer whether the household will notice, which it does '
+            . 'in a flag beside this; rendering the notes is the changelog screen no requirement asks for.',
     ],
     [
         'path' => 'UpdateEnvelope.changes[].because',
@@ -174,6 +281,14 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The diffs an update would make to the stack\'s own configuration, and the paths they '
             . 'touch. `N2-R12` refuses to let this app set or change a value; showing a diff of one is the '
             . 'near neighbour of that and wants a requirement of its own before it wants a screen.',
+    ],
+    [
+        'path' => 'UpdateEnvelope.state',
+        'because' => 'How the last run of an update ended, at the top of the payload. It is the field this '
+            . 'whole rule is about: `N2-R15` is answered from `changelog.state`, the two share half a '
+            . 'vocabulary, and reading this one for that question is the mistake that would have refused '
+            . 'every stack with an update waiting. What became of a run is `N2-R18`, which the app answers '
+            . 'service by service off `applied` — a summary beside it is a second answer to one question.',
     ],
     [
         'path' => 'RepairEnvelope.beyond',
@@ -272,6 +387,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
  * reading is one this rule covers without an edit — which is the difference
  * between a register and a list that goes stale the first time the app grows.
  *
+ * Kept beside `WhatTheReadersRead::envelopes()` rather than replaced by it, and
+ * the two are held against each other below. This one finds an envelope by the
+ * call that opens it and knows nothing about what happens next; that one finds
+ * it by following a payload to a subscript. An envelope the first sees and the
+ * second does not is a reader the following stopped partway through, which is
+ * the one failure that would make every rule here quietly narrower.
+ *
  * @return list<string>
  */
 function everyEnvelopeThisAppReads(): array
@@ -292,163 +414,185 @@ function everyEnvelopeThisAppReads(): array
 }
 
 /**
- * Every wire name this app has a word for.
+ * Every path every envelope declares, as `Envelope.path`.
  *
- * `WireField` is the one place a field's name on the wire is spelled (`D4`), so
- * a field with a case here is one this side can read. It does not prove a
- * reader uses it for this envelope, and it does not need to: what this rule
- * watches for is a field nobody has a word for at all.
- *
- * @return list<string>
- */
-function everyWireNameThisAppKnows(): array
-{
-    preg_match_all(
-        "/case \\w+ = '([^']+)';/",
-        (string) file_get_contents(Tree::at('app-modules/sdk/src/Api/WireField.php')),
-        $found,
-    );
-
-    return $found[1];
-}
-
-/**
- * Every field an envelope declares, at every depth, as a path.
- *
- * Nested and not only top-level, because the field that proved this rule worth
- * having was nested: `G4-R4` asks for the technical detail under a verdict to
- * be available, and `detail` sits two levels down inside a list. A register
- * that read the top of a payload would have reported that envelope clean.
- *
- * `[]` marks a list and `{}` a map, so a path says where a field lives rather
- * than only what it is called — `changes[].irreversible` is one flag per
- * service and reads as one.
+ * Nested and not only top-level, because the fields a decision is most often
+ * owed about are nested: `update.changelog.state` is two levels down, and a
+ * register that read the top of a payload reported that envelope clean.
  *
  * @return list<string>
  */
-function everyPathAnEnvelopeDeclares(string $envelope): array
+function everyPathTheContractDeclares(): array
 {
-    return array_values(array_unique(
-        walkTheContract(WhatTheContractDeclares::shapeOf($envelope), $envelope),
-    ));
-}
+    $declared = [];
 
-/**
- * One type, walked into whatever it holds.
- *
- * Alternatives are walked rather than chosen between, because a tagged union
- * is how the contract writes a shape with arms — every arm's fields are fields
- * the app might meet, and picking one would leave the others unwatched.
- *
- * @return list<string>
- */
-function walkTheContract(string $type, string $path): array
-{
-    $found = [];
-
-    foreach (WhatTheContractDeclares::alternatives($type) as $alternative) {
-        if (str_starts_with($alternative, 'array{')) {
-            foreach (WhatTheContractDeclares::fieldsOf($alternative) as $name => [$optional, $held]) {
-                $under = sprintf('%s.%s', $path, $name);
-                $found = [...$found, $under, ...walkTheContract($held, $under)];
-            }
-
-            continue;
-        }
-
-        if (str_starts_with($alternative, 'list<')) {
-            $found = [...$found, ...walkTheContract(
-                WhatTheContractDeclares::inside($alternative, 'list<'),
-                sprintf('%s[]', $path),
-            )];
-
-            continue;
-        }
-
-        if (str_starts_with($alternative, 'array<')) {
-            $parts = WhatTheContractDeclares::split(WhatTheContractDeclares::inside($alternative, 'array<'), ',');
-            $found = [...$found, ...walkTheContract($parts[1] ?? '', sprintf('%s{}', $path))];
+    foreach (WhatTheReadersRead::envelopes() as $envelope) {
+        foreach (WhatTheContractDeclares::everyPathIn(WhatTheContractDeclares::shapeOf($envelope)) as $path) {
+            $declared[] = sprintf('%s.%s', $envelope, $path);
         }
     }
 
-    return $found;
+    return $declared;
 }
 
 /**
- * Whether a row's path covers this field.
+ * Whether a row's path covers this one.
  *
  * A row covers its own path and everything beneath it, because that is what a
- * decision not to read something actually means: the household surface is
- * blocked, so nothing under `members` is read, and thirty-eight rows saying so
- * separately would be one decision written out thirty-eight times.
+ * decision not to read something means: `changelog.running.groups` is one
+ * decision about the release notes and the eight paths inside them, and eight
+ * rows saying so would be one decision written out eight times.
  *
- * It is not a way to excuse a payload wholesale. A row naming a whole envelope
- * covers every field in it, and the rule below prints what each row covers —
- * so a row that has quietly grown to cover a subtree somebody should have read
- * is one a reader can see at a glance rather than one they have to work out.
+ * It is not a way to excuse a payload wholesale, and the rule below prints what
+ * each row covers so that a row which has quietly grown over something somebody
+ * should have read is visible at a glance rather than worked out.
  */
 function thePathIsCoveredBy(string $path, string $row): bool
 {
-    // All three markers, because a subtree can be entered three ways: a field
-    // (`.`), a list (`[]`) or a map (`{}`). A check that knew two of them would
-    // cover a subtree everywhere except through the third, which is the shape
-    // of gap this whole file exists to refuse.
+    // Both ways into a subtree: a field (`.`) and an entry (`[]`). A check that
+    // knew one of them would cover a subtree everywhere except through the
+    // other, which is the shape of gap this whole file exists to refuse.
     return $path === $row
         || str_starts_with($path, sprintf('%s.', $row))
-        || str_starts_with($path, sprintf('%s[', $row))
-        || str_starts_with($path, sprintf('%s{', $row));
+        || str_starts_with($path, sprintf('%s[', $row));
 }
 
-/** The last segment of a path, which is the name the app would have a word for. */
-function theLeafOf(string $path): string
+/**
+ * What a path hangs off, which is where a decision about it belongs.
+ *
+ * A field under something nothing reads is not a decision of its own: the app
+ * does not read `update.changelog.running.groups`, so whether it reads the
+ * `title` of each group is not a question anybody has to answer. Reporting the
+ * frontier — the first path down each branch that nothing reads — is what keeps
+ * this register a list of decisions instead of a transcription of the contract.
+ *
+ * The entry marker comes off with the last segment, because a reader steps into
+ * a list and then reads a field of it: `changelog.releases[].version` hangs off
+ * `changelog.releases`, which is the subscript that found the list.
+ */
+function theHolderOf(string $path): string
 {
     $at = strrpos($path, '.');
 
-    return $at === false ? $path : substr($path, $at + 1);
+    return $at === false ? $path : rtrim(substr($path, 0, $at), '[]');
 }
 
-it('N1-R17 — every field on an envelope this app reads has been decided about', function (): void {
+/** The envelope a path is on, which is the payload every path here hangs off. */
+function theEnvelopeIn(string $path): string
+{
+    $at = strpos($path, '.');
+
+    return $at === false ? $path : substr($path, 0, $at);
+}
+
+it('N1-R17 — every path on an envelope this app reads has been decided about', function (): void {
     // The half that matters. A field lemonfiber adds is a field somebody has to
     // weigh, and this is what makes that happen on the day it arrives rather
     // than on the day a screen turns out to be missing something.
-    $known = everyWireNameThisAppKnows();
+    $read = WhatTheReadersRead::paths();
+    $declared = everyPathTheContractDeclares();
     $undecided = [];
-    $read = 0;
 
-    foreach (everyEnvelopeThisAppReads() as $envelope) {
-        foreach (everyPathAnEnvelopeDeclares($envelope) as $path) {
-            $read++;
-            // Every path starts with an envelope name and a dot, so there is
-            // always one to find — read through a helper anyway, because a
-            // `false` here would be silently added to and produce a name
-            // nothing matches.
-            $name = theLeafOf($path);
-
-            if (in_array($name, $known, strict: true)) {
-                continue;
-            }
-
-            foreach (WHAT_THIS_APP_DOES_NOT_READ as $row) {
-                if (thePathIsCoveredBy($path, $row['path'])) {
-                    continue 2;
-                }
-            }
-
-            $undecided[] = sprintf('%s, and nothing here has a word for it', $path);
+    foreach ($declared as $path) {
+        if (in_array($path, $read, strict: true)) {
+            continue;
         }
+
+        foreach (WHAT_THIS_APP_DOES_NOT_READ as $row) {
+            if (thePathIsCoveredBy($path, $row['path'])) {
+                continue 2;
+            }
+        }
+
+        // The holder of a top-level field is the envelope, whose payload is
+        // read by definition — which is what makes every top-level field a
+        // decision and leaves the deeper ones to the branch they hang off.
+        $holder = theHolderOf($path);
+
+        if ($holder !== theEnvelopeIn($path) && ! in_array($holder, $read, strict: true)) {
+            continue;
+        }
+
+        $undecided[] = $path;
     }
 
     // A rule that has stopped finding the envelopes reports no violations, and
-    // no violations is exactly what compliance looks like.
-    expect($read)->toBeGreaterThan(1, 'no field was read off the contract, so this rule read nothing');
+    // no violations is exactly what compliance looks like. Both halves are
+    // asserted: a contract that declared nothing, and a following that read
+    // nothing, are two ways to the same green tick.
+    expect(count($declared))->toBeGreaterThan(1, 'no path was read off the contract, so this rule read nothing');
+    expect(count($read))->toBeGreaterThan(1, 'no path was read off a reader, so this rule read nothing');
 
     expect($undecided)->toBe([], sprintf(
         "The contract carries these and this app has not said anything about them:\n  %s\n\n"
-        . 'Read the field — give it a `WireField` case and a reader — or add a row to '
+        . 'Read the path — give it a `WireField` case and a reader — or add a row to '
         . "`WHAT_THIS_APP_DOES_NOT_READ` saying why not. A field wants a requirement before it wants a "
         . "screen (`N1-R17`), so *no requirement asks for this* is a complete answer and an unweighed "
         . "field is not.\n",
         implode("\n  ", $undecided),
+    ));
+});
+
+it('N1-R17 — the reading follows a reader rather than recognising a name', function (): void {
+    // What the rule above rests on, asserted on the pair that proves it. Both
+    // of these are called `state`, one is read and one is not, and a reading
+    // that answered from `WireField` would call both of them read — which is
+    // how the register came to say nothing about the exact field
+    // `WhatTheContractAccepts` was written because a reader misread.
+    $read = WhatTheReadersRead::paths();
+
+    expect($read)->toContain('UpdateEnvelope.changelog.state')
+        ->and($read)->not->toContain('UpdateEnvelope.state');
+
+    // And a second pair one level further in, where both paths are nested and
+    // the app reads three of the five verbs the stack describes. A reading that
+    // had quietly stopped following calls would answer `false` to both of
+    // these, which the first expectation alone would not notice.
+    expect($read)->toContain('StatusEnvelope.disturbs.starting.bound')
+        ->and($read)->not->toContain('StatusEnvelope.disturbs.switching.bound');
+});
+
+it('N1-R17 — every reach into a payload is one the reading placed', function (): void {
+    // The failure this rule cannot survive quietly. A subscript the following
+    // cannot seat reads a field the register is then told nothing reads, and
+    // the answer to that is a row explaining why a field that *is* read is not
+    // — a false decision, written down, that outlives everybody who could have
+    // spotted it.
+    //
+    // So an unplaceable reach is fatal rather than silently unread. It names
+    // the reader and the line, because what it means is that a reader here is
+    // written in a shape the following does not model, and the fix is in one of
+    // the two of them.
+    expect(WhatTheReadersRead::unseated())->toBe([], sprintf(
+        "These reach for a field off something this reading could not place:\n  %s\n\n"
+        . 'Every one of them reads a field that the register above will be told nothing reads. Either '
+        . 'the reader seats its payload somewhere `WhatTheReadersRead` does not follow — a call it '
+        . "cannot resolve, a value it cannot type — or the following is short of a shape.\n",
+        implode("\n  ", WhatTheReadersRead::unseated()),
+    ));
+});
+
+it('N1-R17 — every envelope a reader opens is one the reading was seated on', function (): void {
+    // The other half of the same guarantee, and the one that catches a whole
+    // reader dropping out rather than one line of it. An envelope opened by
+    // `XEnvelope::in` and missing from the following is an envelope whose every
+    // field would read as unread, and the register's answer to that is fifty
+    // rows nobody should ever have written.
+    $seated = WhatTheReadersRead::envelopes();
+    $opened = everyEnvelopeThisAppReads();
+    $lost = [];
+
+    foreach ($opened as $envelope) {
+        if (! in_array($envelope, $seated, strict: true)) {
+            $lost[] = $envelope;
+        }
+    }
+
+    expect($opened)->not->toBe([], 'no envelope was found being opened, so this rule read nothing');
+
+    expect($lost)->toBe([], sprintf(
+        "A reader opens these and the reading never seated a payload on them:\n  %s\n",
+        implode("\n  ", $lost),
     ));
 });
 
@@ -457,16 +601,11 @@ it('N1-R17 — every row still names a path the contract has', function (): void
     // renamed or removed leaves a row explaining a decision about something
     // that is not there, and the rule above would then be excusing a field
     // nobody can find.
-    $everywhere = [];
-
-    foreach (everyEnvelopeThisAppReads() as $envelope) {
-        $everywhere = [...$everywhere, ...everyPathAnEnvelopeDeclares($envelope)];
-    }
-
+    $declared = everyPathTheContractDeclares();
     $gone = [];
 
     foreach (WHAT_THIS_APP_DOES_NOT_READ as $row) {
-        if (! in_array($row['path'], $everywhere, strict: true)) {
+        if (! in_array($row['path'], $declared, strict: true)) {
             $gone[] = sprintf('%s is not a path the contract has', $row['path']);
         }
     }
@@ -478,23 +617,45 @@ it('N1-R17 — every row still names a path the contract has', function (): void
     ));
 });
 
+it('N1-R17 — every row names a path nothing reads', function (): void {
+    // The direction a name-based reading could not ask about at all, and the
+    // one that had two rows wrong: a row saying nothing under `members` is read
+    // while the app reads a member's name and every request under them, and a
+    // row saying the entry for the release in use is not read while `N2-R15` is
+    // answered off it.
+    //
+    // A row like that is worse than a missing one. It reads as a decision
+    // somebody took, it is false, and the next reader weighing whether to build
+    // a screen believes it.
+    $read = WhatTheReadersRead::paths();
+    $overtaken = [];
+
+    foreach (WHAT_THIS_APP_DOES_NOT_READ as $row) {
+        if (in_array($row['path'], $read, strict: true)) {
+            $overtaken[] = $row['path'];
+        }
+    }
+
+    expect($overtaken)->toBe([], sprintf(
+        "These rows say a path is not read and something reads it:\n  %s\n\n"
+        . 'Delete the row, or move it down to the paths beneath that are genuinely unread. A row '
+        . "covering a subtree it sits at the top of excuses the fields under it on a reason that is not true.\n",
+        implode("\n  ", $overtaken),
+    ));
+});
+
 it('N1-R17 — every row says why, and says how much it covers', function (): void {
     // The reason is the only part that survives the person who wrote it, and a
     // row without one is a row the next reader has to re-decide from scratch.
     //
     // The count is printed rather than capped. A row covering a subtree is
-    // sometimes exactly right — the household surface is blocked, and that is
-    // one decision about thirty-eight fields — and sometimes a row that has
-    // quietly grown over something somebody should have read. A number a reader
-    // can see tells those apart; a cap would refuse the first along with the
-    // second.
+    // sometimes exactly right — the release notes are one decision about nine
+    // paths — and sometimes a row that has quietly grown over something
+    // somebody should have read. A number a reader can see tells those apart;
+    // a cap would refuse the first along with the second.
+    $declared = everyPathTheContractDeclares();
     $thin = [];
     $covers = [];
-    $everywhere = [];
-
-    foreach (everyEnvelopeThisAppReads() as $envelope) {
-        $everywhere = [...$everywhere, ...everyPathAnEnvelopeDeclares($envelope)];
-    }
 
     foreach (WHAT_THIS_APP_DOES_NOT_READ as $row) {
         if (trim($row['because']) === '') {
@@ -503,7 +664,7 @@ it('N1-R17 — every row says why, and says how much it covers', function (): vo
 
         $under = 0;
 
-        foreach ($everywhere as $path) {
+        foreach ($declared as $path) {
             if (thePathIsCoveredBy($path, $row['path'])) {
                 $under++;
             }
