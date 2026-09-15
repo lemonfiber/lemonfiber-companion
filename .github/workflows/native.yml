@@ -77,7 +77,7 @@ jobs:
           persist-credentials: false
 
       - name: swift-format
-        working-directory: native
+        working-directory: bridge
         run: swift format lint --strict --recursive --configuration .swift-format resources/ios ios
 
       # The compiler's own findings, made blocking. The counterpart of Kotlin's
@@ -85,13 +85,13 @@ jobs:
       # because `unsafeFlags` there would make this package unusable as anybody
       # else's dependency.
       - name: build, with warnings blocking
-        working-directory: native
+        working-directory: bridge
         run: swift build -Xswiftc -warnings-as-errors
 
       # Runs the tests and holds the 100% floor in one step, so a suite that
       # passes while covering less cannot be read as green.
       - name: the decision, in Swift, and the floor
-        working-directory: native
+        working-directory: bridge
         run: ./ios/coverage.sh
 
   # The two halves must decide the same thing. Each is tested against the same six
