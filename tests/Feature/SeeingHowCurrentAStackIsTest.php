@@ -22,6 +22,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\VersionInUse;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -56,7 +57,7 @@ function anEveningWorthSpending(): Upkeep
 {
     return Upkeep::runningOn(
         HowCurrent::Pending,
-        Release::called('4.0.15', noticeable: false, withdrawn: false),
+        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false)),
         Releases::these(
             Release::called('4.1.0', noticeable: true, withdrawn: false),
             Release::called('4.0.16', noticeable: false, withdrawn: false),
@@ -149,7 +150,7 @@ it('N2-R16 — says so where the stack is running one that was taken back', func
     // would leave an operator reading a screen that says nothing is wrong.
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::runningOn(
         HowCurrent::Pending,
-        Release::called('4.0.17', noticeable: true, withdrawn: true),
+        VersionInUse::of(Release::called('4.0.17', noticeable: true, withdrawn: true)),
         Releases::none(),
         Services::none(),
         HowServicesTookIt::none(),

@@ -11,8 +11,8 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowToUndoIt;
-use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\VersionInUse;
 use Modules\Sdk\Api\Standings;
 use Modules\Sdk\Api\UpkeepIsUnreadable;
 
@@ -84,9 +84,9 @@ function aReleaseSaying(array $differently = []): array
 /**
  * One answer carried out of an `either()` arm, which hands back objects.
  *
- * {@see Upkeep::running()} returns an object so that a
- * caller cannot fold its two arms into a nullable string — which would lose the
- * difference between a stack that has not looked and one running nothing.
+ * {@see Upkeep::inUse()} returns an object so that a caller cannot fold its two
+ * arms into a nullable string — which would lose the difference between a stack
+ * that has not looked and one running nothing.
  */
 final readonly class WhatTheStackTurnedOutToBeOn
 {
@@ -96,9 +96,9 @@ final readonly class WhatTheStackTurnedOutToBeOn
 /** What the stack said it is on, as a word a test can compare. */
 function whatItIsOn(Upkeep $upkeep): string
 {
-    return $upkeep->running(
-        on: static fn(Release $release): WhatTheStackTurnedOutToBeOn
-            => new WhatTheStackTurnedOutToBeOn($release->version()),
+    return $upkeep->inUse(
+        named: static fn(VersionInUse $inUse): WhatTheStackTurnedOutToBeOn
+            => new WhatTheStackTurnedOutToBeOn($inUse->version()),
         unstated: static fn(): WhatTheStackTurnedOutToBeOn
             => new WhatTheStackTurnedOutToBeOn('unstated'),
     )->version;

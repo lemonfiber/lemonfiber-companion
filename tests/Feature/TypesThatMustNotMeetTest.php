@@ -11,10 +11,14 @@ use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Interrupted;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\Reach;
+use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Undoing;
+use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\VersionInUse;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -279,5 +283,77 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
         . 'screen holding it has learned nothing about what the repair would do. A '
         . 'second string accessor is `does()` by another name (N2-R4).',
         implode("\n  ", $strings),
+    ));
+});
+
+it('N2-R20 — nothing a stack is standing on can be handed to the apply path', function (): void {
+    // The requirement's first clause: an update the stack did not report as
+    // pending is never applied. A reading carries two versions — the one the
+    // machine is on and the ones the changelog lists — and while they were one
+    // type the first could be handed to `TakingAnUpdate::agreed()`, which is
+    // the whole of applying one. Nothing refused it. What stood between an
+    // operator and *take the version you are already on* was
+    // `HowCurrentThisStackIs::agreementFor()` scanning the list it had drawn,
+    // which is a `MUST NOT` kept by a screen remembering.
+    //
+    // So this is asked of what these types **answer with** rather than of what
+    // they name. Narrowing a `Release` into a {@see VersionInUse} is how one is
+    // built and has to stay spellable; handing one back out is the door, and
+    // every way back out is a way to the apply path. That is the distinction
+    // {@see ApiSurface::answeredBy()} exists for, and the same one the repair
+    // case above turns on.
+    //
+    // `Upkeep` is a subject beside it because the flaw returns as easily from
+    // the reading as from the value: a `runningRelease()` added for a template
+    // that wanted "just the version" would hand back exactly what was taken
+    // away. The one route to a `Release` is `Upkeep::waiting()`, which has
+    // already applied `N2-R16`'s filter — a `Releases` is not a `Release` and
+    // nothing here confuses the two.
+    $applyPath = [];
+
+    foreach (ApiSurface::publicMethodsOf(ApiSurface::reflect(TakingAnUpdate::class)) as $method) {
+        if (! ApiSurface::isNamedConstructor($method)) {
+            continue;
+        }
+
+        foreach ($method->getParameters() as $parameter) {
+            $applyPath = [...$applyPath, ...ApiSurface::namesIn($parameter->getType())];
+        }
+    }
+
+    // The floor, and it is a type rather than a count on purpose: a number here
+    // would be a number somebody edits when the signature moves, and what is
+    // worth pinning is not how many arguments an agreement takes but that a
+    // `Release` is still the currency of applying one. The day it is not, this
+    // rule is watching a door that moved, and says so rather than passing.
+    expect(in_array(Release::class, $applyPath, strict: true))->toBeTrue(
+        'the apply path no longer takes a Release, so this rule is watching a door that moved',
+    );
+
+    $found = [];
+
+    foreach ([VersionInUse::class, Upkeep::class] as $subject) {
+        $answers = ApiSurface::answeredBy(ApiSurface::reflect($subject));
+
+        // Assert the reading before what it says. A subject answering nothing
+        // would make this pass about nothing, which is the state every rule
+        // here exists to refuse in everything else.
+        expect($answers)->not->toBe([], sprintf('%s answers nothing, so this rule proved nothing', $subject));
+
+        foreach ($answers as [$where, $named]) {
+            if (in_array(Release::class, $named, strict: true)) {
+                $found[] = $where;
+            }
+        }
+    }
+
+    expect(array_values(array_unique($found)))->toBe([], sprintf(
+        "A reading hands out the release a stack is standing on:\n  %s\n\n"
+        . 'N2-R20 refuses to apply an update the stack did not report as pending, and a '
+        . '`Release` is what an update is agreed about. The version in use is a '
+        . "`VersionInUse` so that offering it is not a sentence anybody can write.\n"
+        . 'If a screen needs the version, it needs the string — `VersionInUse::version()` '
+        . 'is that, and it is all of it (N2-R16, N2-R20).',
+        implode("\n  ", $found),
     ));
 });

@@ -21,6 +21,13 @@ namespace Modules\Kernel\Api;
  * what was named is what gets done. An update applied against a list re-read
  * after the yes would be an update to whatever the stack had by then, confirmed
  * against a screen that is no longer true.
+ *
+ * **A {@see Release} is a release the stack listed as waiting, and nothing
+ * else.** That is what makes this parameter safe to take by type: the only
+ * other version a reading carries is the one the machine is standing on, and
+ * {@see VersionInUse} is what keeps it from arriving here. `N2-R20` refuses an
+ * update the stack did not report as pending, and a screen scanning its own
+ * list for the version a template sent is a screen that has to remember to.
  */
 final readonly class TakingAnUpdate
 {
