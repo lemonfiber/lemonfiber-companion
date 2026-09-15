@@ -1,10 +1,12 @@
-<native:column class="w-full gap-4 p-6">
+<x-operator::screen
+    :title="__('navigation.your_stacks')"
+>
     @if ($this->howItOpened()->isLocked)
         {{-- N4-R19: the device's own authentication on a cold start, asked
              before anything reads retained state or touches a network. Nothing
              below is drawn — not the machine names, not a verdict, not the
              diagnostics control — because all of it is what the lock is for. --}}
-        <native:text class="text-lg font-bold">{{ __('device.unlock_reason') }}</native:text>
+        <x-operator::heading>{{ __('device.unlock_reason') }}</x-operator::heading>
 
         {{-- N4-R4: a button rather than an automatic retry. An operator who
              dismissed the prompt meant it, and a screen that asked again
@@ -24,12 +26,12 @@
          N1-R10 wants the remedy too: what happened is a fact about the world,
          and what to do about it is advice. --}}
     @if ($this->howItOpened()->met !== '')
-        <native:text class="text-lg font-bold">{{ __($this->howItOpened()->met) }}</native:text>
+        <x-operator::heading>{{ __($this->howItOpened()->met) }}</x-operator::heading>
         <native:text>{{ __($this->howItOpened()->remedy) }}</native:text>
     @endif
 
     @forelse ($this->configured() as $stack)
-        <native:column class="w-full gap-1">
+        <x-operator::entry>
             <native:button
                 label="{{ $stack->name()->shown() }}"
                 @navigate="$this->tappingGoesTo($stack)"
@@ -45,26 +47,26 @@
                  age comes out of the same fold as the word, so a row cannot
                  have one without the other. --}}
             @if ($this->lastKnownOf($stack)->isKnown)
-                <native:text class="font-bold">{{ __($this->lastKnownOf($stack)->said) }}</native:text>
-                <native:text class="text-sm">
+                <x-operator::emphasis>{{ __($this->lastKnownOf($stack)->said) }}</x-operator::emphasis>
+                <x-operator::note>
                     {{ __('health.stale', [
                         'ago' => trans_choice($this->lastKnownOf($stack)->agoSaid, $this->lastKnownOf($stack)->agoCount),
                     ]) }}
-                </native:text>
+                </x-operator::note>
             @endif
 
             <native:text>
                 {{ __($this->isSignedInto($stack) ? 'connection.stack_is_open' : 'connection.stack_wants_a_password') }}
             </native:text>
-        </native:column>
+        </x-operator::entry>
     @empty
-        <native:text class="text-lg font-bold">{{ __('connection.no_stacks') }}</native:text>
+        <x-operator::heading>{{ __('connection.no_stacks') }}</x-operator::heading>
         <native:text>{{ __('connection.setup_is_at_the_machine') }}</native:text>
         <native:text>{{ __('connection.no_stacks_action') }}</native:text>
     @endforelse
 
     @if ($this->sharingWent() !== '')
-        <native:text class="font-bold">{{ __($this->sharingWent()) }}</native:text>
+        <x-operator::emphasis>{{ __($this->sharingWent()) }}</x-operator::emphasis>
         <native:text>{{ __($this->sharingRemedy()) }}</native:text>
     @endif
 
@@ -77,4 +79,4 @@
          is exactly when somebody needs to ask for help. --}}
     <native:button label="{{ __('device.share_diagnostics') }}" @tap="share()" />
     @endif
-</native:column>
+</x-operator::screen>

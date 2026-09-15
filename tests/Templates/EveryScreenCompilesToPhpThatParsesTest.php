@@ -111,7 +111,13 @@ function firstComplaintIn(string $said, string $scratch): string
 /** @return list<string> */
 function everyScreenTemplate(): array
 {
-    $found = glob(sprintf('%s/../../app-modules/*/resources/views/*.blade.php', __DIR__));
+    // `GLOB_BRACE` rather than one pattern, because a component lives a
+    // directory deeper than a screen and a glob that stops at the screens
+    // checks everything except the file every screen now goes through.
+    $found = glob(
+        sprintf('%s/../../app-modules/*/resources/views/{,*/}*.blade.php', __DIR__),
+        GLOB_BRACE,
+    );
 
     return $found === false ? [] : $found;
 }
@@ -132,9 +138,11 @@ it('every screen compiles to PHP that parses', function (): void {
 
 it('finds the screens it claims to read', function (): void {
     // A selector that matches nothing passes silently, which is the one way a
-    // rule can claim more than it enforces. Twelve is what the repository holds;
-    // the count is what stops the glob from quietly becoming a no-op.
-    expect(everyScreenTemplate())->toHaveCount(12);
+    // rule can claim more than it enforces. Twelve screens and the chrome they
+    // sit in is what the repository holds; the count is what stops the glob
+    // from quietly becoming a no-op, and what caught it reaching only the
+    // screens while the component every screen goes through went unread.
+    expect(everyScreenTemplate())->toHaveCount(17);
 });
 
 it('refuses a template whose compiled form does not parse', function (): void {

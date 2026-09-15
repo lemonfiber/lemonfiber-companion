@@ -1,5 +1,7 @@
-<native:column class="w-full gap-4 p-6">
-    <native:text class="text-lg font-bold">{{ __($this->went()->said(), ['stack' => $this->stack()->name()->shown()]) }}</native:text>
+<x-operator::screen
+    :title="$this->stack()->name()->shown()"
+>
+    <x-operator::heading>{{ __($this->went()->said(), ['stack' => $this->stack()->name()->shown()]) }}</x-operator::heading>
     <native:text>{{ __($this->went()->remedy()) }}</native:text>
 
     @if ($this->isSignedIn())
@@ -34,4 +36,4 @@
             @tap="offer()"
         />
     @endif
-</native:column>
+</x-operator::screen>

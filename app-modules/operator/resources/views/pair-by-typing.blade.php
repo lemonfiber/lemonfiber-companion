@@ -1,5 +1,7 @@
-<native:column class="w-full gap-4 p-6">
-    <native:text class="text-lg font-bold">{{ __($this->headline(), ['stack' => $this->called()]) }}</native:text>
+<x-operator::screen
+    :title="__('navigation.pairing')"
+>
+    <x-operator::heading>{{ __($this->headline(), ['stack' => $this->called()]) }}</x-operator::heading>
     <native:text>{{ __($this->supporting()) }}</native:text>
 
     @if ($this->went()->isPaired())
@@ -47,4 +49,4 @@
          and a screen that counts on it works on one handset and traps somebody
          on another. --}}
     <native:button label="{{ __('connection.back_to_your_stacks') }}" @navigate="$this->theListIsAt()" />
-</native:column>
+</x-operator::screen>

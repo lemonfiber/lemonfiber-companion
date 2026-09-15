@@ -1,5 +1,9 @@
-<native:column class="w-full gap-4 p-6">
-    <native:text class="text-lg font-bold">{{ $this->stack()->name()->shown() }}</native:text>
+<x-operator::screen
+    :title="$this->stack()->name()->shown()"
+    :goes="$this->goes()"
+    here="repairs"
+>
+    <x-operator::heading>{{ $this->stack()->name()->shown() }}</x-operator::heading>
 
     @unless ($this->isSignedIn())
         {{-- N1-R44: the session has ended, so nothing was asked. --}}
@@ -8,7 +12,7 @@
     @elseif ($this->offer()->met !== '')
         {{-- N1-R10: both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
-        <native:text class="font-bold">{{ __($this->offer()->met) }}</native:text>
+        <x-operator::emphasis>{{ __($this->offer()->met) }}</x-operator::emphasis>
         <native:text>{{ __($this->offer()->remedy) }}</native:text>
 
         {{-- N1-R3: the action stays on the screen and the failure is reported
@@ -19,20 +23,20 @@
         {{-- N2-R7: the unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
              operator — N1-R17 keeps a screen from being a poller. --}}
-        <native:text class="font-bold">{{ __('health.working_it_out') }}</native:text>
+        <x-operator::emphasis>{{ __('health.working_it_out') }}</x-operator::emphasis>
         <native:text>{{ __('health.working_it_out_action') }}</native:text>
 
         {{-- The same cadence, on the other state the stack works through. --}}
-        <native:text class="text-sm">
+        <x-operator::note>
             {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-        </native:text>
+        </x-operator::note>
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @elseif ($this->offer()->hasEnded)
         {{-- The stack has no outcome for that asking any more. Not a fault and
              not an answer: nothing was carried out, and the way forward is to
              ask again from the start. Saying so is what keeps it from reading
              as a machine that is broken. --}}
-        <native:text class="font-bold">{{ __('health.nothing_came_back') }}</native:text>
+        <x-operator::emphasis>{{ __('health.nothing_came_back') }}</x-operator::emphasis>
         <native:text>{{ __('health.nothing_came_back_action') }}</native:text>
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @elseif ($this->wasAgreedTo())
@@ -40,18 +44,18 @@
              from what it said it would do — and rendered from a different value
              for that reason, so an offer can never appear as an outcome. --}}
         @if ($this->done()->isWorking)
-            <native:text class="font-bold">{{ __('health.carrying_it_out') }}</native:text>
+            <x-operator::emphasis>{{ __('health.carrying_it_out') }}</x-operator::emphasis>
             <native:text>{{ __('health.carrying_it_out_action') }}</native:text>
             {{-- N1-R27: the cadence is stated, because a screen that refreshes
                  silently is one an operator cannot reason about — they cannot
                  tell a second-old answer from a minute-old one, and whether
                  something has changed is the only reason they are looking. --}}
-            <native:text class="text-sm">
+            <x-operator::note>
                 {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-            </native:text>
+            </x-operator::note>
             <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
         @elseif ($this->done()->met !== '')
-            <native:text class="font-bold">{{ __($this->done()->met) }}</native:text>
+            <x-operator::emphasis>{{ __($this->done()->met) }}</x-operator::emphasis>
             <native:text>{{ __($this->done()->remedy) }}</native:text>
 
             {{-- N1-R3 again, and the sharper half of it: this obstacle stands
@@ -64,30 +68,30 @@
                  The operator does not know what happened to their machine, and
                  it may well have worked — so they are sent to look at its
                  health rather than offered the agreement again. --}}
-            <native:text class="font-bold">{{ __('health.nobody_knows_what_happened') }}</native:text>
+            <x-operator::emphasis>{{ __('health.nobody_knows_what_happened') }}</x-operator::emphasis>
             <native:text>{{ __('health.nobody_knows_what_happened_action') }}</native:text>
         @else
-            <native:text class="font-bold">
+            <x-operator::emphasis>
                 {{ trans_choice('health.changed_count', $this->done()->changed) }}
-            </native:text>
+            </x-operator::emphasis>
 
             @forelse ($this->done()->outcomes as $outcome)
-                <native:column class="w-full gap-1">
-                    <native:text class="font-bold">{{ $outcome->repair->does }}</native:text>
+                <x-operator::entry>
+                    <x-operator::emphasis>{{ $outcome->repair->does }}</x-operator::emphasis>
                     <native:text>{{ __($outcome->became) }}</native:text>
 
                     {{-- What a stopped repair left, which is the whole of what
                          tells an operator whether they may simply try again. --}}
                     @if ($outcome->left !== '')
-                        <native:text class="text-sm">{{ $outcome->left }}</native:text>
+                        <x-operator::note>{{ $outcome->left }}</x-operator::note>
                     @endif
 
-                    <native:text class="text-sm">{{ __($outcome->repair->undoing) }}</native:text>
+                    <x-operator::note>{{ __($outcome->repair->undoing) }}</x-operator::note>
 
                     @if ($outcome->worthAnotherGo)
-                        <native:text class="text-sm">{{ __('health.worth_another_go') }}</native:text>
+                        <x-operator::note>{{ __('health.worth_another_go') }}</x-operator::note>
                     @endif
-                </native:column>
+                </x-operator::entry>
             @empty
                 {{-- A run that finished having done nothing. Rare and real: the
                      stack took the agreement, found there was nothing left to
@@ -106,16 +110,16 @@
         @endif
     @else
         @forelse ($this->offer()->repairs as $repair)
-            <native:column class="w-full gap-1">
+            <x-operator::entry>
                 {{-- N2-R4: all three clauses, in the order the requirement puts
                      them, and before anything asks for a yes. What it does, what
                      else it touches, and whether it can be taken back. --}}
-                <native:text class="font-bold">{{ $repair->does }}</native:text>
+                <x-operator::emphasis>{{ $repair->does }}</x-operator::emphasis>
 
                 @forelse ($repair->effects as $effect)
-                    <native:text class="text-sm">{{ $effect }}</native:text>
+                    <x-operator::note>{{ $effect }}</x-operator::note>
                 @empty
-                    <native:text class="text-sm">{{ __('health.affects_nothing_else') }}</native:text>
+                    <x-operator::note>{{ __('health.affects_nothing_else') }}</x-operator::note>
                 @endforelse
 
                 <native:text>{{ __($repair->undoing) }}</native:text>
@@ -129,16 +133,16 @@
                     label="{{ __('health.agree_to_it') }}"
                     @tap="agreeTo('{{ $repair->answers }}')"
                 />
-            </native:column>
+            </x-operator::entry>
         @empty
             {{-- A stack with nothing to put right is the healthy case, and it is
                  told apart from a job that ended: there is nothing to fix, which
                  is an answer, rather than ask me again. --}}
-            <native:text class="font-bold">{{ __('health.nothing_to_put_right') }}</native:text>
+            <x-operator::emphasis>{{ __('health.nothing_to_put_right') }}</x-operator::emphasis>
         @endforelse
 
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @endunless
 
     <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="$this->goes()->health()" />
-</native:column>
+</x-operator::screen>
