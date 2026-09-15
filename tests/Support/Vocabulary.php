@@ -41,22 +41,24 @@ final readonly class Vocabulary
     {
         $found = [];
 
-        foreach (Module::all() as $module) {
-            foreach ($module->classes() as $file) {
-                $source = file_get_contents($file);
+        // Every tree the coverage floor measures, not only the modules. The
+        // modules were the whole of it, and `$scheme === 'https'` — the example
+        // `D4`'s own rule writes out — planted in `bootstrap/Composition` passed
+        // the Arch suite, as would one in `native/src` (`R4`).
+        foreach (OurCode::sourceFiles() as $file) {
+            $source = file_get_contents($file);
 
-                if (! is_string($source)) {
-                    continue;
-                }
+            if (! is_string($source)) {
+                continue;
+            }
 
-                foreach (self::inSource($source) as $literal) {
-                    $found[] = sprintf(
-                        "'%s' — %s:%d",
-                        $literal[0],
-                        trim(str_replace(Tree::root(), '', $file), '/'),
-                        $literal[1],
-                    );
-                }
+            foreach (self::inSource($source) as $literal) {
+                $found[] = sprintf(
+                    "'%s' — %s:%d",
+                    $literal[0],
+                    trim(str_replace(Tree::root(), '', $file), '/'),
+                    $literal[1],
+                );
             }
         }
 

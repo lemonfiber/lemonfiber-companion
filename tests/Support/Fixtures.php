@@ -942,6 +942,42 @@ final readonly class Fixtures
                 });
                 PHP, 'G3 —'),
 
+            // The same rule in the tree it did not reach. The guard was bound
+            // to four of the eight suites and `app-modules/*\/tests` was not
+            // one of them — which is where every adapter that speaks to a stack
+            // is tested, and where an unmocked read raised Saloon's
+            // `FatalRequestException` rather than its `NoMockResponse`: the
+            // difference between having been stopped and having dialled. The
+            // fixture is under a module's tests for exactly that reason (R4).
+            Fixture::suite('G3', 'app-modules/sdk/tests/Fixtures/ReachesAStackTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use Modules\Kernel\Api\Address;
+                use Modules\Kernel\Api\Fingerprint;
+                use Modules\Kernel\Api\Nonce;
+                use Modules\Kernel\Api\Session;
+                use Modules\Kernel\Api\Stack;
+                use Modules\Kernel\Api\StackId;
+                use Modules\Kernel\Api\StackName;
+                use Modules\Sdk\Api\PinnedClients;
+
+                it('G3 — a module test that reaches a stack is stopped', function (): void {
+                    new PinnedClients()
+                        ->client(
+                            Stack::of(
+                                StackId::of(Nonce::of(str_repeat('9', Nonce::SHORTEST))),
+                                StackName::of('Nowhere'),
+                                Address::of('https://127.0.0.1:1'),
+                                Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS)),
+                            ),
+                            Session::of('a-session-not-a-secret'),
+                        )
+                        ->read('/api/status');
+                });
+                PHP, 'G3 —'),
+
             // Planted under `tests/Support`, which `Tree::testFiles()` reads and no
             // testsuite loads. That is the whole trick and it is not incidental: a
             // real G10 violation is a fatal at load, so a fixture phpunit would
@@ -2200,6 +2236,22 @@ final readonly class Fixtures
                     ->expect('Native')
                     ->not->toBeUsed();
                 PHP, 'R3 — every namespace an expectation names resolves', 'MalformedRuleTest'),
+
+            // A tree held to a coverage floor that no gate reads, which is the
+            // whole of what `R4` is about and is not a file: the violation is a
+            // line in `phpunit.xml` saying a directory is measured, with the
+            // analyser's paths, the refactorer's paths and the autoloader all
+            // silent about it. `lang/` is a real directory of real PHP and is
+            // none of those things, so naming it as source is the smallest true
+            // form of the mistake.
+            Fixture::edit(
+                'R4',
+                'phpunit.xml',
+                '            <directory>native/src</directory>',
+                "            <directory>native/src</directory>\n            <directory>lang</directory>",
+                'R4 —',
+                'lang',
+            ),
         ];
     }
 
