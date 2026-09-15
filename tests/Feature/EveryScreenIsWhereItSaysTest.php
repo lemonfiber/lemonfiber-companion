@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Operator\Internal\AScreenNeedsMoreThanAStack;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Screens;
 use Tests\Support\Tree;
 
 // Both directions, the way `EveryCatalogueLineIsReadTest` and
@@ -26,47 +26,11 @@ use Tests\Support\Tree;
 // happening, on a handset, at runtime — which is the one place this repository
 // cannot see.
 
-/** A stack identifier shaped the way a real one is. Named for this file (`G10`). */
-function aStackInTheUri(): string
-{
-    return str_repeat('a', Nonce::SHORTEST);
-}
-
-/**
- * Every path the app can send anybody to, labelled by the case that hands it out.
- *
- * The two enums between them are all the screens there are — one names a machine
- * in its path and the other does not — so a screen missing from here is a screen
- * missing from an enum, which is the thing being refused.
- *
- * @return array<string, string>
- */
-function everyPathAScreenHandsOut(): array
-{
-    $paths = [];
-
-    foreach (AScreenWithoutAStack::cases() as $screen) {
-        $paths[sprintf('AScreenWithoutAStack::%s', $screen->name)] = $screen->value;
-    }
-
-    foreach (AStacksScreen::cases() as $screen) {
-        // Asked which builder it needs rather than told, so a case added with a
-        // second placeholder is covered here without anybody remembering to add
-        // it — and a case that needs one and is asked for the other refuses
-        // rather than handing back a path with `{service}` still in it.
-        $paths[sprintf('AStacksScreen::%s', $screen->name)] = $screen->alsoNeedsAService()
-            ? $screen->forTheStacksService(aStackInTheUri(), 'gluetun')
-            : $screen->forTheStack(aStackInTheUri());
-    }
-
-    return $paths;
-}
-
 it('every screen the app knows about is registered under the path it hands out', function (): void {
     // The direction that catches a builder pointing somewhere nothing serves.
     $unserved = [];
 
-    foreach (everyPathAScreenHandsOut() as $case => $path) {
+    foreach (Screens::everyPathAScreenHandsOut() as $case => $path) {
         if (NativeRouter::resolve($path) === null) {
             $unserved[] = sprintf('%s — %s', $case, $path);
         }
@@ -134,7 +98,7 @@ it('the builder and the router agree about which machine a path names', function
     // A builder that put the stack in the wrong segment would still resolve —
     // the pattern matches any single segment — and would open somebody else's
     // machine.
-    $named = aStackInTheUri();
+    $named = Screens::aStackInTheUri();
     $resolved = NativeRouter::resolve(WhereAStackIs::rememberedAs($named)->repairs());
     $params = is_array($resolved) && is_array($resolved['params'] ?? null) ? $resolved['params'] : [];
 
@@ -151,7 +115,7 @@ it('every way this app asks where a machine is hands back a path the router know
     // without anybody remembering this file — the argument
     // `everyPathAScreenHandsOut()` makes about the enum, made about the type
     // that hands the enum's paths out.
-    $where = WhereAStackIs::rememberedAs(aStackInTheUri());
+    $where = WhereAStackIs::rememberedAs(Screens::aStackInTheUri());
     $unknown = [];
     $asked = 0;
 
@@ -239,7 +203,7 @@ it('every screen that needs no machine is somewhere a template can send you too'
     // than by a type of their own, so the case is traced to its accessor and
     // the accessor to a template.
     $linked = destinationsTemplatesNavigateTo();
-    $handedOut = whatHandsOutAScreenWithoutAStack();
+    $handedOut = Screens::whatHandsOutAScreenWithoutAStack();
     $stranded = [];
 
     foreach (AScreenWithoutAStack::cases() as $screen) {
@@ -274,35 +238,6 @@ it('every screen that needs no machine is somewhere a template can send you too'
 });
 
 /**
- * Which accessor hands out which screen, read off the source.
- *
- * The accessors are one line each and live on the screen that offers the road
- * rather than on a type of their own, so there is nothing to reflect over —
- * what there is instead is a shape every one of them has.
- *
- * @return array<string, string> the case's name, against the accessor's
- */
-function whatHandsOutAScreenWithoutAStack(): array
-{
-    $found = [];
-
-    foreach (Tree::filesUnder(Tree::at('app-modules/operator/src'), '.php') as $file) {
-        preg_match_all(
-            '/public function (\w+)\(\): string\s*\{\s*return AScreenWithoutAStack::(\w+)->value;/',
-            (string) file_get_contents($file),
-            $accessors,
-            PREG_SET_ORDER,
-        );
-
-        foreach ($accessors as [, $accessor, $case]) {
-            $found[$case] = $accessor;
-        }
-    }
-
-    return $found;
-}
-
-/**
  * Every destination a template navigates to, by the accessor's name.
  *
  * Read out of the templates rather than listed, so a way in that is added or
@@ -333,7 +268,7 @@ it('a screen that needs a service refuses to be asked for with only a stack', fu
     // to nothing — a button that does nothing, on a handset, with no error
     // anywhere. That is the exact failure this enum was written to end,
     // arriving by a new road, so it is a refusal rather than a comment.
-    expect(fn(): string => AStacksScreen::Logs->forTheStack(aStackInTheUri()))
+    expect(fn(): string => AStacksScreen::Logs->forTheStack(Screens::aStackInTheUri()))
         ->toThrow(AScreenNeedsMoreThanAStack::class, 'naming a machine is not enough');
 });
 
@@ -341,7 +276,7 @@ it('a screen that needs only a stack refuses to be handed a service', function (
     // The other mistake, and it is not harmless either: a caller holding a
     // service name the path does not carry has a screen that opens on whatever
     // it likes.
-    expect(fn(): string => AStacksScreen::Health->forTheStacksService(aStackInTheUri(), 'gluetun'))
+    expect(fn(): string => AStacksScreen::Health->forTheStacksService(Screens::aStackInTheUri(), 'gluetun'))
         ->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
 });
 
