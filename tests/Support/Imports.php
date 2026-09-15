@@ -105,6 +105,50 @@ final readonly class Imports
     }
 
     /**
+     * Every class, interface, trait and enum the file declares, by short name.
+     *
+     * {@see declaredName()} reads the first one, which is the right answer to
+     * the question it is asked — which class does this path name — and an
+     * honest one only for as long as there is exactly one to choose from. This
+     * is what `W6` is checked with, so that the assumption the rest of this
+     * class rests on is stated somewhere rather than left implicit.
+     *
+     * Anonymous classes are left out: they have no name to compare against a
+     * path, nothing can autoload one, and `new class {}` inside a method is not
+     * a second declaration in the sense that matters.
+     *
+     * @return list<string>
+     */
+    public static function declaredNames(string $file): array
+    {
+        $source = file_get_contents($file);
+
+        if (! is_string($source)) {
+            return [];
+        }
+
+        $statements = new ParserFactory()->createForNewestSupportedVersion()->parse($source);
+
+        if ($statements === null) {
+            return [];
+        }
+
+        $names = [];
+
+        /** @var list<ClassLike> $declarations */
+        $declarations = new NodeFinder()->findInstanceOf($statements, ClassLike::class);
+
+        foreach ($declarations as $declaration) {
+            if ($declaration->name !== null) {
+                $names[] = $declaration->name->toString();
+            }
+        }
+
+        return $names;
+    }
+
+
+    /**
      * Whether any of these names starts with the given namespace.
      *
      * Compared with a trailing separator so that `Native\Mobile` does not match
