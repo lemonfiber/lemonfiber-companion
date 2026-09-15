@@ -47,6 +47,11 @@ const WHAT_A_COMPONENT_IS = [
     'top-bar-title' => false,
     'scroll-view' => false,
     'bottom-nav' => false,
+    // The platform's own grouped container and the group inside it. Both are
+    // boxes, and a box announced as a box is a word between the reader and
+    // what it holds — the same reason a column is furniture.
+    'list' => false,
+    'list-section' => false,
 
     'button' => true,
     'outlined-text-input' => true,

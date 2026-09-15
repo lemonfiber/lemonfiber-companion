@@ -1,6 +1,6 @@
-<x-operator::screen
-    :title="__('navigation.pairing')"
->
+<x-operator::screen-opens :title="__('navigation.pairing')" />
+
+<native:column class="w-full gap-4 px-6 py-4">
     <x-operator::heading>{{ __($this->headline(), ['stack' => $this->called()]) }}</x-operator::heading>
     <native:text>{{ __($this->supporting()) }}</native:text>
 
@@ -52,4 +52,4 @@
          and a screen that counts on it works on one handset and traps somebody
          on another. --}}
     <x-operator::action label="{{ __('connection.back_to_your_stacks') }}" :goes="$this->theListIsAt()" />
-</x-operator::screen>
+</native:column>

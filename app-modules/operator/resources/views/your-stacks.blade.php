@@ -1,6 +1,6 @@
-<x-operator::screen
-    :title="__('navigation.your_stacks')"
->
+<x-operator::screen-opens :title="__('navigation.your_stacks')" />
+
+<native:column class="w-full gap-4 px-6 py-4">
     @if ($this->howItOpened()->isLocked)
         {{-- N4-R19: the device's own authentication on a cold start, asked
              before anything reads retained state or touches a network. Nothing
@@ -76,4 +76,4 @@
          is exactly when somebody needs to ask for help. --}}
     <x-operator::action label="{{ __('device.share_diagnostics') }}" tap="share()" />
     @endif
-</x-operator::screen>
+</native:column>

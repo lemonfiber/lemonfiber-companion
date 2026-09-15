@@ -1,12 +1,14 @@
-<x-operator::screen
-    :title="$this->stack()->name()->shown()"
+<x-operator::screen-opens :title="$this->stack()->name()->shown()" />
+
+<x-operator::what-stopped-the-reading
     :signed-in="$this->answer()->isSignedIn"
     :met="$this->answer()->met"
     :remedy="$this->answer()->remedy"
     :sign-in-goes-to="$this->goes()->signIn()"
-    :goes="$this->goes()"
-    here="updates"
->
+/>
+
+@if ($this->answer()->isSignedIn && $this->answer()->met === '')
+<native:column class="w-full gap-4 px-6 py-4">
 @if ($this->asking() !== null)
     {{-- N2-R17: asked before it runs, and the question names the services
          it would change. A screen of its own rather than a line beside the
@@ -157,4 +159,7 @@
          another. --}}
     <x-operator::action label="{{ __('health.back_to_the_stack') }}" :goes="$this->goes()->health()" />
 @endif
-</x-operator::screen>
+</native:column>
+@endif
+
+<x-operator::screen-closes :goes="$this->goes()" here="updates" />

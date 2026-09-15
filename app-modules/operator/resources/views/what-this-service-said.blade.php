@@ -1,12 +1,14 @@
-<x-operator::screen
-    :title="__('health.logs_for', ['service' => $this->service()->named()])"
+<x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->service()->named()])" />
+
+<x-operator::what-stopped-the-reading
     :signed-in="$this->answer()->isSignedIn"
     :met="$this->answer()->met"
     :remedy="$this->answer()->remedy"
     :sign-in-goes-to="$this->goes()->signIn()"
-    :goes="$this->goes()"
-    here="services"
->
+/>
+
+@if ($this->answer()->isSignedIn && $this->answer()->met === '')
+<native:column class="w-full gap-4 px-6 py-4">
     {{-- N2-R10: the view is a window rather than the whole, said before the
          lines rather than under them. Both cases have a line — a screen
          silent when the bound cut nothing teaches an operator to read
@@ -69,4 +71,7 @@
             <native:text>{{ __('health.service_said_nothing_action') }}</native:text>
         @endif
     @endforelse
-</x-operator::screen>
+</native:column>
+@endif
+
+<x-operator::screen-closes :goes="$this->goes()" here="services" />

@@ -1,12 +1,14 @@
-<x-operator::screen
-    :title="$this->stack()->name()->shown()"
+<x-operator::screen-opens :title="$this->stack()->name()->shown()" />
+
+<x-operator::what-stopped-the-reading
     :signed-in="$this->answer()->isSignedIn"
     :met="$this->answer()->met"
     :remedy="$this->answer()->remedy"
     :sign-in-goes-to="$this->goes()->signIn()"
-    :goes="$this->goes()"
-    here="health"
->
+/>
+
+@if ($this->answer()->isSignedIn && $this->answer()->met === '')
+<native:column class="w-full gap-4 px-6 py-4">
     {{-- N2-R11: what is waiting on the operator, said before the list. An
          operator who opened this screen because somebody in the house asked
          them to should not have to count rows to find out whether anything
@@ -60,4 +62,7 @@
         <x-operator::emphasis>{{ __('household.nothing_asked') }}</x-operator::emphasis>
         <native:text>{{ __('household.nothing_asked_action') }}</native:text>
     @endforelse
-</x-operator::screen>
+</native:column>
+@endif
+
+<x-operator::screen-closes :goes="$this->goes()" here="health" />

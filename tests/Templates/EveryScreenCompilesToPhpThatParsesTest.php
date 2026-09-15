@@ -142,7 +142,7 @@ it('finds the screens it claims to read', function (): void {
     // sit in is what the repository holds; the count is what stops the glob
     // from quietly becoming a no-op, and what caught it reaching only the
     // screens while the component every screen goes through went unread.
-    expect(everyScreenTemplate())->toHaveCount(18);
+    expect(everyScreenTemplate())->toHaveCount(20);
 });
 
 it('refuses a template whose compiled form does not parse', function (): void {

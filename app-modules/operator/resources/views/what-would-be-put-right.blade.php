@@ -1,8 +1,6 @@
-<x-operator::screen
-    :title="$this->stack()->name()->shown()"
-    :goes="$this->goes()"
-    here="repairs"
->
+<x-operator::screen-opens :title="$this->stack()->name()->shown()" />
+
+<native:column class="w-full gap-4 px-6 py-4">
 
     @unless ($this->isSignedIn())
         {{-- N1-R44: the session has ended, so nothing was asked. --}}
@@ -141,4 +139,6 @@
     @endunless
 
     <x-operator::action label="{{ __('health.back_to_the_stack') }}" :goes="$this->goes()->health()" />
-</x-operator::screen>
+</native:column>
+
+<x-operator::screen-closes :goes="$this->goes()" here="repairs" />

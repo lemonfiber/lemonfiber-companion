@@ -101,7 +101,13 @@ function everyObstacleBranch(string $view): array
 
         $body = $pieces[$at + 1];
 
-        if (! str_contains(theConditionIn($body), 'met')) {
+        // `met !==` rather than `met`, because the two say opposite things. A
+        // branch guarded on the obstacle being *absent* is the screen's own
+        // reading — the arm this rule exists to let through — and matching it
+        // as an obstacle reported every screen that names its content branch
+        // explicitly. What makes a branch an obstacle branch is asserting there
+        // is one.
+        if (! str_contains(theConditionIn($body), 'met !==')) {
             continue;
         }
 
