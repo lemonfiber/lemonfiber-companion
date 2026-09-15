@@ -2,30 +2,9 @@
 
 declare(strict_types=1);
 
-use function basename;
-use function expect;
-use function explode;
-use function file_get_contents;
-use function file_put_contents;
-use function glob;
-
 use Illuminate\Support\Facades\Blade;
-
-use function is_string;
-use function it;
-
 use Native\Mobile\Edge\NativeTagPrecompiler;
-
-use function sprintf;
-use function str_replace;
-use function str_starts_with;
-
 use Symfony\Component\Process\Process;
-
-use function sys_get_temp_dir;
-use function tempnam;
-use function trim;
-use function unlink;
 
 // A screen is Blade, and Blade becomes PHP before anything renders it. Every
 // other suite here reads the *template* — that a screen names its controls, that
@@ -142,7 +121,7 @@ it('finds the screens it claims to read', function (): void {
     // sit in is what the repository holds; the count is what stops the glob
     // from quietly becoming a no-op, and what caught it reaching only the
     // screens while the component every screen goes through went unread.
-    expect(everyScreenTemplate())->toHaveCount(20);
+    expect(everyScreenTemplate())->toHaveCount(21);
 });
 
 it('refuses a template whose compiled form does not parse', function (): void {

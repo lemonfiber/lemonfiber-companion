@@ -30,6 +30,7 @@ use Modules\Operator\Internal\ViewModels\HowAStackLastWas;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -103,6 +104,19 @@ final class YourStacks extends NativeComponent
 
     /** What to do about it, beside {@see sharingWent()}. */
     protected string $sharingRemedy = '';
+
+    /**
+     * How far into the first run the operator has read.
+     *
+     * Held on the screen rather than stored, which is `N1-R38` exactly: this is
+     * what the operator did on a screen, and it is worth nothing once they have
+     * a stack. Storing it would mean a device that remembers being told what
+     * this app is — and something has to decide when to forget that, which is a
+     * question `N1-R56` already answers by tying the sequence to an empty
+     * store.
+     */
+    protected WhereTheFirstRunIs $firstRunAt = WhereTheFirstRunIs::WhatThisIs;
+
     public function __construct(
         private readonly Stacks $stacks,
         private readonly SecureStorage $storage,
@@ -140,6 +154,70 @@ final class YourStacks extends NativeComponent
     public function nothingIsPairedYet(): bool
     {
         return $this->configured()->isEmpty();
+    }
+
+    /**
+     * Which step of the first run this frame is drawing.
+     *
+     * `N1-R56` ties the sequence to an empty store rather than to a flag: it is
+     * drawn inside the arm for *no stacks*, so a device that holds a pairing
+     * cannot reach it and nothing has to remember that it was finished. A
+     * boolean would have been a second answer to a question the store already
+     * answers, and two answers is where they disagree.
+     */
+    public function firstRunIsAt(): WhereTheFirstRunIs
+    {
+        return $this->firstRunAt;
+    }
+
+    /** Read that step; show the next one. */
+    public function goOn(): void
+    {
+        $this->firstRunAt = $this->firstRunAt->andThen();
+    }
+
+    /**
+     * Leave the sequence, landing on pairing.
+     *
+     * `N1-R55` is specific that leaving lands on pairing rather than on
+     * nothing, and this is why the exit is a step rather than a route: an
+     * operator who skipped arrives where the sequence was going, on the screen
+     * they were already on, with the same two controls the last step offers.
+     */
+    public function skipAhead(): void
+    {
+        $this->firstRunAt = WhereTheFirstRunIs::Pairing;
+    }
+
+    /**
+     * Whether this frame is a step of the first run rather than the screen.
+     *
+     * The one question the sequence asks of everything else on here, so that
+     * *not during the sequence* has one spelling. `N1-R54` asks for a sequence
+     * rather than a screen, and a sequence is only a sequence if the frame
+     * carries the step and not the screen the step is on the way to.
+     *
+     * The pairing step is not it. That step *is* the screen's own controls
+     * with a sentence above them — which is what `N1-R55` means by leaving
+     * landing on pairing rather than on nothing.
+     */
+    public function theFirstRunIsStillRunning(): bool
+    {
+        return $this->nothingIsPairedYet() && ! $this->firstRunAt->isThePairing();
+    }
+
+    /**
+     * Whether the two pairing roads are drawn on this frame.
+     *
+     * Always, once anything is paired — `N1-R36` is a list and adding a second
+     * machine is what somebody is on this screen to do. On a first run, only at
+     * the end of the sequence: a *pair now* button visible under step one is
+     * the wall `N1-R54` exists to refuse, because a control that skips the
+     * reading makes the reading optional and an optional sentence is unread.
+     */
+    public function pairingIsOffered(): bool
+    {
+        return ! $this->theFirstRunIsStillRunning();
     }
 
     /**

@@ -18,9 +18,12 @@ use function view;
  * rather than parity by everybody remembering.
  *
  * It draws nothing when the reading succeeded, so a screen emits it
- * unconditionally and asks {@see nothingStoppedIt()} before drawing its own.
- * That keeps the decision in one place: a screen cannot show its content *and*
- * an obstacle, and cannot forget one of the two states either.
+ * unconditionally and guards its own content on the same two facts — which is
+ * the half of this that is still written out per screen, because the fields
+ * live on seven separate answer types with no shape between them. Folding
+ * `isSignedIn`, `met` and `remedy` into one value those seven hold is what
+ * would put the decision in one place; until then the component owns what is
+ * *drawn* and each screen owns whether to draw beside it.
  */
 final class WhatStoppedTheReading extends Component
 {
@@ -31,12 +34,6 @@ final class WhatStoppedTheReading extends Component
         public readonly string $signInGoesTo,
         public readonly string $askAgain = 'again()',
     ) {}
-
-    /** Whether the screen should draw its own reading rather than this. */
-    public function nothingStoppedIt(): bool
-    {
-        return $this->signedIn && $this->met === '';
-    }
 
     public function render(): View
     {

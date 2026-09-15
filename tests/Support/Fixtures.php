@@ -2615,10 +2615,10 @@ final readonly class Fixtures
             Fixture::edit(
                 'L7',
                 'app-modules/operator/resources/views/your-stacks.blade.php',
-                "{{ __('connection.setup_is_at_the_machine') }}",
-                "{{ __('connection.setup_happens_at_the_machine') }}",
+                "{{ __('connection.pair') }}",
+                "{{ __('connection.pair_up') }}",
                 'L7 —',
-                'connection.setup_happens_at_the_machine',
+                'connection.pair_up',
             ),
 
             // Nothing to drop in: a listener is only a listener once something

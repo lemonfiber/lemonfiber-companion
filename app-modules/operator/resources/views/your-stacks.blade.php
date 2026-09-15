@@ -57,9 +57,16 @@
             </native:text>
         </x-operator::entry>
     @empty
-        <x-operator::heading>{{ __('connection.no_stacks') }}</x-operator::heading>
-        <native:text>{{ __('connection.setup_is_at_the_machine') }}</native:text>
-        <native:text>{{ __('connection.no_stacks_action') }}</native:text>
+        {{-- N1-R54: a sequence rather than a wall — one frame carrying a
+             heading, two sentences and three buttons at once says nothing about
+             which of them to read first. One step per frame, each stating its
+             own position, and pairing at the end of it.
+
+             Inside the empty arm and not beside it, which is `N1-R56` by
+             construction: a device holding a pairing never evaluates this, so
+             the sequence cannot be re-entered and nothing has to remember that
+             it was finished. --}}
+        <x-operator::first-run :at="$this->firstRunIsAt()" on="goOn()" leave="skipAhead()" />
     @endforelse
 
     @if ($this->sharingWent() !== '')
@@ -67,13 +74,36 @@
         <native:text>{{ __($this->sharingRemedy()) }}</native:text>
     @endif
 
-    <x-operator::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
-    <x-operator::action label="{{ __('connection.pair_by_typing') }}" :goes="$this->typingIsAt()" />
+    {{-- N1-R6's two roads, and N1-R54's last step. Guarded rather than moved
+         into the sequence: an operator with a stack already paired is on this
+         screen to add another, and the same two controls answer both — one
+         spelling, one set of tests. --}}
+    @if ($this->pairingIsOffered())
+        <x-operator::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
+        <x-operator::action label="{{ __('connection.pair_by_typing') }}" :goes="$this->typingIsAt()" />
+    @endif
 
     {{-- N4-R13: assembled for the operator to send, and not sent by the app.
          On this screen because it is the one reachable from anywhere and the
          one that works when nothing else does — a stack that cannot be reached
-         is exactly when somebody needs to ask for help. --}}
-    <x-operator::action label="{{ __('device.share_diagnostics') }}" tap="share()" />
+         is exactly when somebody needs to ask for help.
+
+         Not on a step of the first run, which is not the same as not reachable:
+         the sequence ends on this screen with everything it offers, and that is
+         where somebody who is stuck on a first run actually is. The platform
+         paints every button the same fill and the design rules refuse a second
+         style — `DES-R15` measures lemon as text at 1.6:1 — so on this device
+         a frame's hierarchy is how many controls are on it, and three of equal
+         weight under `Step 1 of 3` says none of them is the way forward. --}}
+    @unless ($this->theFirstRunIsStillRunning())
+        {{-- A rule above it rather than a quieter button beside it. The
+             platform paints every button the same fill and honours no
+             per-instance colour, so grouping is the only hierarchy available
+             here that is not an override `DES-R25` refuses — and what this
+             needs to say is not *press me less*, it is *this one is not part
+             of the pairing above*. --}}
+        <native:divider />
+        <x-operator::action label="{{ __('device.share_diagnostics') }}" tap="share()" />
+    @endunless
     @endif
 </native:column>

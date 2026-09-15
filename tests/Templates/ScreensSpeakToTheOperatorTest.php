@@ -53,6 +53,13 @@ const WHAT_A_COMPONENT_IS = [
     'list' => false,
     'list-section' => false,
 
+    // A rule between two groups. Furniture by the same argument and one more:
+    // what a divider says is *these are not the same kind of thing*, and a
+    // reader who is being read to hears that from the order and the labels
+    // rather than from a line — announcing it would be a word standing in for
+    // a space.
+    'divider' => false,
+
     'button' => true,
     'outlined-text-input' => true,
     // Tapped to go somewhere, which is the whole of what it is for.
