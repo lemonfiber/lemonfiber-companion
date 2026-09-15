@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatTheCoreDecided;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -52,7 +53,7 @@ it('N4-R10 — has nowhere to hold a credential, a name or a title', function ()
 
     expect($carries)->toBe([
         'about' => StackId::class,
-        'says' => Code::class,
+        'says' => WhatTheCoreDecided::class,
         'guarded' => 'bool',
     ]);
 });
@@ -61,7 +62,7 @@ it('N4-R15 — knows whether its stack is still configured', function (): void {
     $here = StackId::rememberedAs('the-loft');
     $gone = StackId::rememberedAs('the-shed');
 
-    $notification = Notification::fromTheCore($gone, Code::of('STACK-7'));
+    $notification = Notification::fromTheCore($gone, WhatTheCoreDecided::toSay('backup.finished'));
 
     expect($notification->concernsOneOf($here))->toBeFalse()
         ->and($notification->concernsOneOf($here, $gone))->toBeTrue();
@@ -71,18 +72,18 @@ it('N4-R15 — concerns nothing when the device has no stacks at all', function 
     // The boundary the loop gets wrong: an empty list is what a device has
     // immediately after the last stack is removed, which is exactly when a
     // notification about it is most likely to still be in flight.
-    $notification = Notification::fromTheCore(StackId::rememberedAs('the-loft'), Code::of('STACK-7'));
+    $notification = Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'));
 
     expect($notification->concernsOneOf())->toBeFalse();
 });
 
 it('says what it is about when the device is unlocked', function (): void {
-    $said = Notification::fromTheCore(StackId::rememberedAs('the-loft'), Code::of('STACK-7'))->either(
-        plain: fn(Code $says, StackId $about): Code => Code::of(sprintf('%s on %s', $says->shown(), $about->stored())),
-        guarded: fn(Code $says): Code => $says,
+    $said = Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'))->either(
+        plain: fn(WhatTheCoreDecided $says, StackId $about): Code => Code::of(sprintf('%s on %s', $says->shown(), $about->stored())),
+        guarded: fn(WhatTheCoreDecided $says): WhatTheCoreDecided => $says,
     );
 
-    expect($said->shown())->toBe('STACK-7 on the-loft');
+    expect($said->shown())->toBe('backup.finished on the-loft');
 });
 
 it('N4-R20 — hands a locked device no stack to name', function (): void {
@@ -105,43 +106,43 @@ it('N4-R20 — hands a locked device no stack to name', function (): void {
 
     $handed = null;
 
-    Notification::fromTheCore(StackId::rememberedAs('the-loft'), Code::of('STACK-7'))
+    Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'))
         ->whileLocked()
         ->either(
-            plain: fn(Code $says, StackId $about): Code => Code::of(sprintf('%s%s', $says->shown(), $about->stored())),
-            guarded: function (Code $says) use (&$handed): Code {
+            plain: fn(WhatTheCoreDecided $says, StackId $about): Code => Code::of(sprintf('%s%s', $says->shown(), $about->stored())),
+            guarded: function (WhatTheCoreDecided $says) use (&$handed): WhatTheCoreDecided {
                 $handed = $says->shown();
 
                 return $says;
             },
         );
 
-    expect($handed)->toBe('STACK-7');
+    expect($handed)->toBe('backup.finished');
 });
 
 it('N4-R20 — the guarded arm is the only one a locked device can run', function (): void {
-    $ran = Notification::fromTheCore(StackId::rememberedAs('the-loft'), Code::of('STACK-7'))
+    $ran = Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'))
         ->whileLocked()
         ->either(
-            plain: fn(Code $says, StackId $about): Code => Code::of(sprintf('plain %s %s', $says->shown(), $about->stored())),
-            guarded: fn(Code $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
+            plain: fn(WhatTheCoreDecided $says, StackId $about): Code => Code::of(sprintf('plain %s %s', $says->shown(), $about->stored())),
+            guarded: fn(WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
         );
 
-    expect($ran->shown())->toBe('guarded STACK-7');
+    expect($ran->shown())->toBe('guarded backup.finished');
 });
 
 it('N4-R20 — locking one notification does not unlock the original', function (): void {
     // `whileLocked()` returns a new object, and the mistake it exists to
     // prevent is a renderer that locks a notification and then, still holding
     // the same reference, renders the plain form somewhere else.
-    $notification = Notification::fromTheCore(StackId::rememberedAs('the-loft'), Code::of('STACK-7'));
+    $notification = Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'));
 
     $notification->whileLocked();
 
     $ran = $notification->either(
-        plain: fn(Code $says, StackId $about): Code => Code::of(sprintf('plain %s %s', $says->shown(), $about->stored())),
-        guarded: fn(Code $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
+        plain: fn(WhatTheCoreDecided $says, StackId $about): Code => Code::of(sprintf('plain %s %s', $says->shown(), $about->stored())),
+        guarded: fn(WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
     );
 
-    expect($ran->shown())->toBe('plain STACK-7 the-loft');
+    expect($ran->shown())->toBe('plain backup.finished the-loft');
 });

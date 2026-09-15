@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhyNothingIsShown;
 
 use function sprintf;
@@ -86,8 +87,9 @@ final class ANotifierInMemory implements Notifier
         }
 
         $this->told[] = $notification->either(
-            plain: fn(Code $says, StackId $about): Code => Code::of(sprintf('plain %s %s', $says->shown(), $about->stored())),
-            guarded: fn(Code $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
+            plain: fn(WhatTheCoreDecided $says, StackId $about): Code
+                => Code::of(sprintf('plain %s %s', $says->shown(), $about->stored())),
+            guarded: fn(WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
         )->shown();
 
         return Shown::delivered();

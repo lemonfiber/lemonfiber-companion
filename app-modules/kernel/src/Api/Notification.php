@@ -15,15 +15,21 @@ use Closure;
  * each of them is about what a notification may **not** carry.
  *
  * **`N4-R11` — the app raises no alerts of its own.** Every notification
- * originates in the core's notification decisions, so this carries a
- * {@see Code} the server declared and no text at all. There is nowhere to put a
+ * originates in the core's notification decisions, so this carries an
+ * identifier the core declared and no text at all. There is nowhere to put a
  * sentence the app wrote. That is the difference between a rule and a habit:
- * the words come from the translator, keyed by the code (`L1`), and an app
- * wanting to invent an alert would have to invent a code the core never sends.
+ * the words come from the translator, keyed by the identifier (`L1`).
+ *
+ * The identifier is a {@see WhatTheCoreDecided} and not a {@see Code}, and that
+ * is the other half of the same requirement. Inventing a code the core never
+ * sends was never the work: this app already has codes — `Obstacle::code()`
+ * mints them about a server that did not answer — so while the parameter was a
+ * `Code`, raising an alert about the app's own trouble was a sentence anybody
+ * could write, and the paragraph above said it could not be.
  *
  * **`N4-R10` — no credential, no household member's name, no requested title.**
- * All three are values, and none of them fits through a `Code`. That is the
- * whole mechanism: a notification cannot leak what it has nowhere to hold.
+ * All three are values, and none of them fits through an identifier. That is
+ * the whole mechanism: a notification cannot leak what it has nowhere to hold.
  *
  * **`N4-R15` — not shown for a stack no longer configured.** The `StackId` is
  * what lets that be asked at all. A notification arriving for a stack the
@@ -41,7 +47,7 @@ final readonly class Notification
 {
     private function __construct(
         private StackId $about,
-        private Code $says,
+        private WhatTheCoreDecided $says,
         private bool $guarded,
     ) {}
 
@@ -49,10 +55,10 @@ final readonly class Notification
      * A notification the core decided on, for one stack.
      *
      * The only constructor, and it takes no text. An adapter turning the core's
-     * decision into one of these has a code and a stack and nothing else to
-     * hand over, which is `N4-R11` expressed as a signature.
+     * decision into one of these has that decision and a stack and nothing else
+     * to hand over, which is `N4-R11` expressed as a signature.
      */
-    public static function fromTheCore(StackId $about, Code $says): self
+    public static function fromTheCore(StackId $about, WhatTheCoreDecided $says): self
     {
         return new self($about, $says, guarded: false);
     }
@@ -99,8 +105,8 @@ final readonly class Notification
      * @template TPlain of object
      * @template TGuarded of object
      *
-     * @param  Closure(Code, StackId): TPlain  $plain
-     * @param  Closure(Code): TGuarded  $guarded
+     * @param  Closure(WhatTheCoreDecided, StackId): TPlain  $plain
+     * @param  Closure(WhatTheCoreDecided): TGuarded  $guarded
      * @return TPlain|TGuarded
      */
     public function either(Closure $plain, Closure $guarded): object

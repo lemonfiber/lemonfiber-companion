@@ -3,13 +3,17 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Held;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Interrupted;
+use Modules\Kernel\Api\Notification;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Pairing;
+use Modules\Kernel\Api\Problem;
 use Modules\Kernel\Api\Reach;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Repair;
@@ -99,8 +103,53 @@ function typesThatMustNotMeet(): array
             . 'operator earlier action again — at a moment nobody chose, against a stack '
             . 'whose state has moved on.',
         ],
+        [
+            Notification::class,
+            [Code::class, Problem::class, Obstacle::class],
+            'N4-R11',
+            'The app raises no alerts of its own. A notification carrying no text is only '
+            . 'half of that, because the app has codes: Obstacle::code() mints '
+            . 'COMPANION-NO-ANSWER about a server that did not answer, and Problem::code() '
+            . 'carries what a stack said when it refused a request the operator made. '
+            . 'Either one handed to fromTheCore() is an alert nobody in the core decided '
+            . 'to raise, so the identifier is a WhatTheCoreDecided and a Code cannot '
+            . 'become one.',
+        ],
     ];
 }
+
+it('N1-R17 — every type this table refuses is one this application has', function (): void {
+    // `Foo::class` is a string the compiler builds out of the `use` above it,
+    // and it resolves whether or not anything of that name exists. So a renamed
+    // type leaves a row here that matches nothing, and the rule below goes on
+    // passing while protecting one fewer thing than it says it does — which is
+    // worse than not listing it, because a reader stops checking.
+    //
+    // The subject half is caught already: `ApiSurface::reflect()` raises on a
+    // name nothing declares. The forbidden half is not, and it is the half that
+    // matters — it is the list a rule is read against, and an empty
+    // intersection is indistinguishable from a rule that holds.
+    //
+    // This is the floor and it cannot be edited down, because it counts nothing
+    // of its own: what it reads is the table, and a row removed takes its own
+    // check with it rather than leaving a number that no longer adds up.
+    $gone = [];
+
+    foreach (typesThatMustNotMeet() as [$subject, $forbidden, $requirement, $why]) {
+        foreach ([$subject, ...$forbidden] as $named) {
+            if (! class_exists($named) && ! interface_exists($named) && ! enum_exists($named)) {
+                $gone[] = sprintf('%s — %s', $requirement, $named);
+            }
+        }
+    }
+
+    expect(array_values(array_unique($gone)))->toBe([], sprintf(
+        "This table refuses types this application does not have:\n  %s\n\n"
+        . 'Find what each was renamed to and name it here. A row that matches nothing is a '
+        . "requirement that is written down and not enforced.\n",
+        implode("\n  ", $gone),
+    ));
+});
 
 it('N1-R38 — what a screen kept cannot be handed anything that could refetch it', function (): void {
     // The requirement's second clause: returning to a screen must not re-read

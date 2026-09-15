@@ -6,11 +6,11 @@ namespace Modules\Device\Api;
 
 use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Asked;
-use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhyNothingIsShown;
 use Native\Mobile\PushNotifications as Permissions;
 use NativePHP\LocalNotifications\LocalNotifications as Platform;
@@ -107,7 +107,7 @@ final readonly class PlatformNotifier implements Notifier
         }
 
         $notification->either(
-            plain: function (Code $says, StackId $about): Code {
+            plain: function (WhatTheCoreDecided $says, StackId $about): WhatTheCoreDecided {
                 // Built and released in one statement: the builder sends when
                 // it is destroyed, so anything that keeps it alive stops it.
                 $this->centre->send($this->idFor($says))
@@ -116,7 +116,7 @@ final readonly class PlatformNotifier implements Notifier
 
                 return $says;
             },
-            guarded: function (Code $says): Code {
+            guarded: function (WhatTheCoreDecided $says): WhatTheCoreDecided {
                 // No stack reaches this arm, so nothing here can name one
                 // (`N4-R20`). The wording is the guarded pair for the same
                 // reason — it must hold on a screen anybody walking past can
@@ -133,7 +133,7 @@ final readonly class PlatformNotifier implements Notifier
     }
 
     /** One id per code, so a repeat updates the alert rather than stacking another. */
-    private function idFor(Code $says): string
+    private function idFor(WhatTheCoreDecided $says): string
     {
         return sprintf('%s.%s', self::UNDER, $says->shown());
     }
