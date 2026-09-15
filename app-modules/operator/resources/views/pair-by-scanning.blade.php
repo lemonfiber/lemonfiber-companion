@@ -40,6 +40,18 @@
             :disabled="! $this->mayScan()"
             @tap="scan()"
         />
+
+        @if ($this->theTypedRoadWouldHelp())
+            {{-- The sentence above says the code can be typed instead. This is
+                 the way to do it: an instruction with no route is the app
+                 telling somebody to do something it has not let them do, and on
+                 a first run this screen is one of two things on an empty
+                 list. --}}
+            <native:button
+                label="{{ __('connection.pair_by_typing') }}"
+                @navigate="{{ $this->typingIsAt() }}"
+            />
+        @endif
     @endunless
     {{-- The way out. On a first run the list is empty and these two roads are
          the only things on it, so a person who starts pairing and changes their

@@ -286,6 +286,45 @@ it('N1-R2 — a paired stack leads to signing into it, rather than to a sentence
         );
 });
 
+it('offers the typed road wherever it tells somebody to type the code instead', function (): void {
+    // The sentence and the way to act on it have to arrive together. This
+    // screen already said *you can type the pairing code instead* on every one
+    // of these, and offered no route — an instruction the app does not honour,
+    // on a screen that is one of two things on an empty list the first time
+    // somebody opens the app.
+    foreach (WhyNothingWasScanned::cases() as $why) {
+        $screen = named(scanningScreen(ACameraInMemory::answering($why)));
+        $screen->scan();
+
+        expect($screen->theTypedRoadWouldHelp())->toBeTrue($why->value);
+    }
+});
+
+it('offers the typed road for a code the camera read and could not use', function (): void {
+    // The other arm, and the one somebody meets holding a working camera: a
+    // code that will not scan is exactly the moment to type it.
+    $screen = named(scanningScreen(ACameraInMemory::reading('not a pairing code at all')));
+    $screen->scan();
+
+    expect($screen->codeWasUnreadable())->toBeTrue()
+        ->and($screen->theTypedRoadWouldHelp())->toBeTrue();
+});
+
+it('does not offer the typed road before anybody has tried the camera', function (): void {
+    // Offered as a remedy rather than as a second front door. `YourStacks`
+    // already puts both roads side by side, which is where somebody chooses;
+    // here it answers something that has just gone wrong.
+    expect(named(scanningScreen(ACameraInMemory::reading(scannedCode())))->theTypedRoadWouldHelp())
+        ->toBeFalse();
+});
+
+it('sends the typed road to the screen the provider registers for it', function (): void {
+    // Read off the case rather than spelled here, so a rename cannot leave this
+    // button pointing at nothing.
+    expect(named(scanningScreen(ACameraInMemory::reading(scannedCode())))->typingIsAt())
+        ->toBe(AScreenWithoutAStack::PairByTyping->value);
+});
+
 it('offers a way out of pairing at any point', function (): void {
     // On a first run the list is empty and the two roads into pairing are the
     // only things on it, so a person who starts and changes their mind has
