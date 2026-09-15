@@ -12,6 +12,7 @@ use function json_encode;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
@@ -66,7 +67,7 @@ function theListingAgreedTo(): Offer
 {
     return Offer::of('agreement-a-test-can-name', Repairs::of(
         Repair::offered(
-            'storage.one-filesystem',
+            Check::of('storage.one-filesystem'),
             'Move the library onto the larger disk',
             Effects::of('Downloads pause while it moves'),
             Undoing::Possible,

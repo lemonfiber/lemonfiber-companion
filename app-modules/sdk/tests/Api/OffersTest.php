@@ -177,6 +177,16 @@ it('refuses a repair whose fields are there and the wrong type', function (): vo
     }
 });
 
+it('refuses a repair naming a check that is blank rather than absent', function (): void {
+    // Blank as well as absent, and reported by this reader rather than raised
+    // one layer down. `Check::of()` refuses a blank one by throwing its own
+    // kind, and that one travels past the catch in `Menders` — so a stack
+    // sending a repair with an empty check would reach the operator as a crash
+    // where every other short payload reaches them as an obstacle.
+    expect(fn(): object => Offers::offerIn(repairSaying(aListingOf(anOfferedRepair(['check' => '   '])))))
+        ->toThrow(OfferIsUnreadable::class, 'Repair 0');
+});
+
 it('refuses a row in the listing that is not a repair at all', function (): void {
     expect(fn(): object => Offers::offerIn(repairSaying([
         'acted' => false,

@@ -94,7 +94,7 @@ final readonly class Repairs implements IteratorAggregate
     {
         return array_any(
             $this->repairs,
-            static fn(Repair $repair): bool => $repair->answers() === $check->shown(),
+            static fn(Repair $repair): bool => $repair->answers()->is($check),
         );
     }
 

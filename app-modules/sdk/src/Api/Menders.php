@@ -88,7 +88,7 @@ final readonly class Menders implements Mending
             // the listing it was given, and the SDK's signature is that
             // requirement in a parameter list: there is no way to name a repair
             // without naming the listing it came from.
-            $asked = Asking::agreedTo($confirmed->quoting(), $confirmed->repair()->answers());
+            $asked = Asking::agreedTo($confirmed->quoting(), $confirmed->repair()->answers()->shown());
 
             // The key is built inline, as {@see Supervisors::told()} builds
             // its own. A name for this attempt that outlived the statement

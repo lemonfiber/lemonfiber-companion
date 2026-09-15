@@ -252,8 +252,18 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
     //
     // That design is worth nothing the day a getter is added for a template
     // that needed "just the one field", so it is checked rather than written
-    // down. Two properties, because `does` is a string and cannot be told from
-    // `answers()` by its type alone.
+    // down.
+    //
+    // `does` is the one clause with no type of its own — it is prose, and the
+    // only prose a repair holds — so the string is the shape to look for. This
+    // read `[Repair::answers()]` while a check was a string too, which meant
+    // the rule could not tell the identifier from the sentence and had to name
+    // the one method allowed to answer either. `answers()` is a {@see Check}
+    // now, for the reason `Check` exists at all: a check and a sentence both
+    // arrive on the same row and a call with them the wrong way round compiled.
+    // With that gone the list is empty, and an empty list is a stronger claim —
+    // *no string leaves a repair on its own* rather than *no string but this
+    // one*.
     $clauses = [];
     $strings = [];
 
@@ -276,12 +286,19 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
         implode("\n  ", $clauses),
     ));
 
-    expect($strings)->toBe(['Modules\Kernel\Api\Repair::answers()'], sprintf(
-        "A repair answers with a string somewhere other than `answers()`:\n  %s\n\n"
-        . '`answers()` is published alone because a check name is not something the '
-        . 'operator reads — it is how a screen files the repair under a finding, and a '
-        . 'screen holding it has learned nothing about what the repair would do. A '
-        . 'second string accessor is `does()` by another name (N2-R4).',
+    // Asserted before the emptiness, because an empty list is also what a rule
+    // reading nothing produces: a `Repair` that answered with no type at all
+    // would satisfy the expectation below and prove nothing.
+    expect(ApiSurface::answeredBy(ApiSurface::reflect(Repair::class)))
+        ->not->toBe([], 'Repair answers nothing, so this rule proved nothing');
+
+    expect($strings)->toBe([], sprintf(
+        "A repair answers with a string:\n  %s\n\n"
+        . 'The only prose a repair holds is `does`, and `N2-R4` has it leave with the '
+        . 'other two clauses or not at all — so a string coming out on its own is '
+        . "`does()` by another name.\nWhich check it answers is a `Check` and is "
+        . 'published alone, because that is not something the operator reads: it is how '
+        . 'a screen files the repair under a finding (N2-R4).',
         implode("\n  ", $strings),
     ));
 });

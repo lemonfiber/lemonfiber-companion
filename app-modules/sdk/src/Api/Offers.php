@@ -11,6 +11,7 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\RepairEnvelope;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\Mended;
@@ -212,11 +213,33 @@ final readonly class Offers
     private static function repair(array $row, int $position): Repair
     {
         return Repair::offered(
-            self::said($row, WireField::Check, $position),
+            Check::of(self::named($row, $position)),
             self::said($row, WireField::Does, $position),
             Effects::of(...self::effects($row, $position)),
             self::undoing($row, $position),
         );
+    }
+
+    /**
+     * The check a repair answers, refused here when the row does not name one.
+     *
+     * Blank as well as absent, because {@see Check::of()} refuses a blank one
+     * by throwing its own kind — and that one would travel past this adapter's
+     * catch and reach the operator as a crash rather than as an obstacle. What
+     * a payload is short of is this reader's to report, which is the argument
+     * {@see Standings} makes about a release with no version.
+     *
+     * @param array<mixed> $row
+     */
+    private static function named(array $row, int $position): string
+    {
+        $said = trim(self::said($row, WireField::Check, $position));
+
+        if ($said === '') {
+            throw OfferIsUnreadable::repair($position);
+        }
+
+        return $said;
     }
 
     /**

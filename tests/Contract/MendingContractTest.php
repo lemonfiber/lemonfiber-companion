@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
@@ -70,13 +71,13 @@ function theSameOffer(): Offer
 {
     return Offer::of('agreement-a-test-can-name', Repairs::of(
         Repair::offered(
-            'storage.one-filesystem',
+            Check::of('storage.one-filesystem'),
             'Move the library onto the larger disk',
             Effects::of('Downloads pause while it moves'),
             Undoing::Possible,
         ),
         Repair::offered(
-            'credentials.expired',
+            Check::of('credentials.expired'),
             'Forget the expired credential',
             Effects::nothingElse(),
             Undoing::Permanent,
@@ -403,14 +404,14 @@ function aRecordOfWhatWasDone(): MockResponse
 function theSameOutcomes(): WhatWasMended
 {
     $moved = Repair::offered(
-        'storage.one-filesystem',
+        Check::of('storage.one-filesystem'),
         'Move the library onto the larger disk',
         Effects::of('Downloads pause while it moves'),
         Undoing::Possible,
     );
 
     $forgot = Repair::offered(
-        'credentials.expired',
+        Check::of('credentials.expired'),
         'Forget the expired credential',
         Effects::nothingElse(),
         Undoing::Permanent,

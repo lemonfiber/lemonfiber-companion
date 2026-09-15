@@ -31,7 +31,11 @@ final readonly class HowARepairReads
                 // them: `Repair::answers()` is published on its own precisely
                 // because it is not something the operator reads. It is how a
                 // row knows which finding it belongs under.
-                answers: $repair->answers(),
+                //
+                // Unwrapped here and nowhere earlier. A template reads fields
+                // (`E2`), so the `Check` becomes a string at the boundary it
+                // has to cross rather than at the boundary it was built on.
+                answers: $repair->answers()->shown(),
             ),
         );
     }
