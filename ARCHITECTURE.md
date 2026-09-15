@@ -546,6 +546,7 @@ phpstan/Rules/            the rules that are easier to write than to find
 | W4 | A module's tests are namespaced for that module | arch |
 | W5 | A file with no namespace imports no global name — the warning it raises fails the run silently | arch |
 | W6 | A source file declares one class, and it is the one its path names | arch: over the declarations of every file a class-name rule reads |
+| W7 | Every reader puts its envelope through the wire gate before reading the payload | arch: over the SDK module's own sources |
 
 **Why `W6` is not covered by the rule above it.** `Q-R66` asserts that a rule
 found subjects to judge, and that cures the three cases this repository has

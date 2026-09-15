@@ -59,6 +59,11 @@ parameters:
     # way anything can.
     excludePaths:
         - */resources/views/*.blade.php
+        # Published by `native:install` rather than written here, and ignored by
+        # git — so it is absent in CI and present on every machine that has run
+        # a build. Analysed, the two disagree: a gate that is red locally and
+        # green on CI is read as noise, and then so is the next one.
+        - config/nativephp.php
 
     # Pest's own annotation, corrected. See the stub for why.
     stubFiles:
@@ -151,6 +156,13 @@ parameters:
                 # NativePHP components are extended by the framework's own
                 # contract; a component that did not extend it is not a screen.
                 - Native\Mobile\Edge\NativeComponent
+                # A Blade component, for the reason a screen extends its own
+                # base: the framework instantiates it and reads `render()` off
+                # it. It is also what avoids the alternative — an anonymous
+                # component, which Blade resolves by first guessing a class from
+                # the application namespace, and guessing reads an `app/`
+                # directory this repository does not have.
+                - Illuminate\View\Component
                 # The platform's secure store, extended once, in a test fake.
                 # There is no Keychain behind a PHP process on a laptop, so
                 # without a hand-written stand-in `PlatformKeychain` is a file
@@ -414,6 +426,12 @@ parameters:
             message: "A4 — `view()` reaches the container for a view factory. Inside a screen's render() it is the framework's own contract and is allowed; anywhere else, name the frame some other way. A class that reaches the container stops telling the truth about what it needs (A4)."
             allowIn:
                 - app-modules/*/src/Internal/Screens/*
+                # A Blade component's `render()` is the same contract as a
+                # screen's, arrived at the same way: the framework builds the
+                # object and asks it for a view. The directory is the one
+                # `internachi/modular` registers components from, so this
+                # reaches components and nothing else.
+                - app-modules/*/src/View/Components/*
                 - bootstrap/Composition/*
                 - config/*
                 - tests/*

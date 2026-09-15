@@ -2038,6 +2038,29 @@ final readonly class Fixtures
                 });
                 PHP, 'W5 —', 'SaysNothingTest'),
 
+            // Inside the SDK module, because that is where W7 looks — a reader
+            // planted anywhere else would prove the rule green while refusing
+            // nothing. It reaches a payload and never names the gate, which is
+            // the whole of what the rule refuses.
+            Fixture::suite('W7', 'app-modules/sdk/src/Api/Fixtures/ReadsUnchecked.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Sdk\Api\Fixtures;
+
+                use Lemonfiber\Sdk\Envelope\Envelope;
+
+                final readonly class ReadsUnchecked
+                {
+                    /** @param Envelope<mixed> $envelope */
+                    public static function in(Envelope $envelope): mixed
+                    {
+                        return $envelope->data;
+                    }
+                }
+                PHP, 'W7 —', 'ReadsUnchecked'),
+
             // A source file, not a test: C10 exempts tests deliberately, so a
             // fixture planted under `tests/` would prove the rule green while
             // refusing nothing.

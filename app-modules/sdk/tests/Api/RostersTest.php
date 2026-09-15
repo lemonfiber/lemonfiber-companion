@@ -6,11 +6,13 @@ namespace Modules\Sdk\Tests\Api;
 
 use function expect;
 use function it;
+use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Sdk\Api\RosterIsUnreadable;
 use Modules\Sdk\Api\Rosters;
 
@@ -133,6 +135,25 @@ function aRosterOf(array $differently = []): array
             'state' => 'running',
         ]],
     ];
+}
+
+/**
+ * One container the machine is running that this stack did not put there.
+ *
+ * `describes` is plain language rather than an image reference — the contract
+ * calls it *what it does for the operator, which is exactly what is not known*
+ * — so the stand-in says what a stack says and not what a reader assumed.
+ *
+ * @param  array<mixed> $differently
+ * @return array<mixed>
+ */
+function somethingElseSaying(array $differently = []): array
+{
+    return [...[
+        'id' => 'pihole',
+        'describes' => 'Not declared by this stack',
+        'state' => 'running',
+    ], ...$differently];
 }
 
 it('reads what the stack says it all amounts to', function (): void {
@@ -344,6 +365,86 @@ it('refuses a listing with no services field at all', function (): void {
 it('refuses a payload that is not a shape at all', function (): void {
     expect(fn(): object => Rosters::in(new Envelope(1, 'status', 'a sentence where a payload belongs')))
         ->toThrow(RosterIsUnreadable::class, 'data');
+});
+
+it('N2-R21 — reads what else the machine is running', function (): void {
+    // A second reading of the same envelope, because what the stack did not put
+    // there is not part of the stack and the two collections cannot hold each
+    // other's rows.
+    $else = Rosters::whatElseIsRunning(aRosterSaying([
+        ...aRosterOf(),
+        'undeclared' => [somethingElseSaying(), somethingElseSaying([
+            'id' => 'watchtower',
+            'describes' => 'Not declared by this stack',
+            'state' => 'healthy',
+        ])],
+    ]));
+
+    expect($else->count())->toBe(2);
+
+    $first = iterator_to_array($else, preserve_keys: false)[0];
+
+    expect($first->id->named())->toBe('pihole')
+        ->and($first->describes)->toBe('Not declared by this stack')
+        ->and($first->runs)->toBe(HowAServiceRuns::Running);
+});
+
+it('N2-R21 — a machine running only what the stack declares says so', function (): void {
+    // Empty is the ordinary answer rather than an absence. A machine with
+    // nothing unaccounted for is the expected shape, and reading it as *the
+    // stack did not say* would put a question on the screen where there is none.
+    //
+    // The list is emptied here rather than left to the helper: `aRosterOf()`
+    // carries a container so that the contract stand-in is asked about the
+    // shape of a row, and this case is the one machine that has none.
+    expect(Rosters::whatElseIsRunning(aRosterSaying([...aRosterOf(), 'undeclared' => []]))->isEmpty())->toBeTrue();
+});
+
+it('N2-R21 — refuses a payload that is not a shape at all', function (): void {
+    // The same refusal {@see Rosters::in} makes, asked of the second reading.
+    // Both readings open the same envelope, and a `data` that is a sentence is
+    // unreadable whichever question is being put to it.
+    expect(fn(): WhatElseIsRunning => Rosters::whatElseIsRunning(
+        new Envelope(1, 'status', 'a sentence where a payload belongs'),
+    ))->toThrow(RosterIsUnreadable::class, 'data');
+});
+
+it('N2-R21 — refuses an undeclared entry that is not a row', function (): void {
+    // A list of the right name holding the wrong thing. Refused by the field
+    // that carried it rather than read as a container with nothing to say,
+    // because a sentence where a row belongs is the machine disagreeing with
+    // the contract, not a stranger this screen should render blank.
+    expect(fn(): WhatElseIsRunning => Rosters::whatElseIsRunning(aRosterSaying([
+        ...aRosterOf(),
+        'undeclared' => ['a sentence where a container belongs'],
+    ])))->toThrow(RosterIsUnreadable::class, 'undeclared');
+});
+
+it('N2-R21 — names the first row where the machine keyed the list by name', function (): void {
+    // The reading takes a row's position from its key, which is what the
+    // contract's list gives it. A machine that sent an object instead has no
+    // position to give, and the reader falls back to the first — so a refusal
+    // still names a row rather than reading `somebody-elses-name` as one.
+    //
+    // Held to the number rather than to the class, because the number is the
+    // whole of what the fallback decides: a refusal that named the key, or the
+    // row after it, or the one before, would point an operator at a row that is
+    // not the one the machine got wrong.
+    expect(fn(): WhatElseIsRunning => Rosters::whatElseIsRunning(aRosterSaying([
+        ...aRosterOf(),
+        'undeclared' => ['somebody-elses-name' => ['id' => 'pihole', 'state' => 'running']],
+    ])))->toThrow(RosterIsUnreadable::class, 'Service 0');
+});
+
+it('N2-R21 — refuses a container the machine named but did not describe', function (): void {
+    // `describes` is what the requirement means by *state what it is running*,
+    // so a row without one cannot answer it. Refused by name rather than shown
+    // blank, because a row that names a container and says nothing about it is
+    // the question the screen exists to answer, left unanswered.
+    expect(fn(): WhatElseIsRunning => Rosters::whatElseIsRunning(aRosterSaying([
+        ...aRosterOf(),
+        'undeclared' => [['id' => 'pihole', 'state' => 'running']],
+    ])))->toThrow(RosterIsUnreadable::class);
 });
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

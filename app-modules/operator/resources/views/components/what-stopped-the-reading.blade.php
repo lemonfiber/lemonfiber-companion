@@ -1,0 +1,22 @@
+@unless ($signedIn)
+    <native:column class="w-full gap-4 px-6 py-4">
+        {{-- The session has ended, so nothing was asked and there is nothing to
+             report. The remedy is a screen rather than a sentence. --}}
+        <native:text>{{ __('connection.session_has_ended') }}</native:text>
+        <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$signInGoesTo" />
+    </native:column>
+@elseif ($met !== '')
+    <native:column class="w-full gap-4 px-6 py-4">
+        {{-- What stood in the way and what to do about it, both off the
+             obstacle — so no screen describes a condition differently from the
+             one beside it. --}}
+        <x-operator::emphasis>{{ __($met) }}</x-operator::emphasis>
+        <native:text>{{ __($remedy) }}</native:text>
+
+        {{-- The action is offered and the failure reported, rather than taken
+             away because the stack is unreachable. Without it the only way back
+             is leaving and returning, which `N1-R27` names separately as what a
+             screen must not rely on. --}}
+        <x-operator::action label="{{ __('health.ask_again') }}" tap="{{ $askAgain }}" />
+    </native:column>
+@endunless

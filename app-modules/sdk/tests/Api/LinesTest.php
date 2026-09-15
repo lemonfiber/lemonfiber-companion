@@ -11,6 +11,7 @@ use function it;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Logs;
 use Lemonfiber\Sdk\LogWindow;
+use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\Scrollback;
 use Modules\Sdk\Api\LineIsUnreadable;
 use Modules\Sdk\Api\Lines;
@@ -18,6 +19,26 @@ use Modules\Sdk\Api\Lines;
 use function sprintf;
 
 use Tests\Support\WhatTheContractAccepts;
+
+/**
+ * A window whose lines arrived on a wire version this app has never heard of.
+ *
+ * A function beside {@see aWindowOf()} rather than a line in the test, because
+ * building a window is what throws the client's own checked exceptions and a
+ * closure may not let one out.
+ *
+ * @param list<array<mixed>> $rows
+ */
+function aWindowOnVersion(int $version, string $service, int $bound, array $rows): LogWindow
+{
+    $envelopes = [];
+
+    foreach ($rows as $row) {
+        $envelopes[] = new Envelope($version, 'log', $row);
+    }
+
+    return LogWindow::of(Logs::ofService($service, $bound), $envelopes);
+}
 
 /**
  * A log window holding whatever the case under test is about.
@@ -171,6 +192,18 @@ it('a line with no `at` key at all is a line with no moment', function (): void 
     ]));
 
     expect($window->count())->toBe(1);
+});
+
+it('N1-R13 — a window on a wire version this app does not support is refused', function (): void {
+    // The gate, at the only place it can stand for a log read. A window is many
+    // envelopes rather than one, and the client asserts each line's *kind* as it
+    // builds the window while saying nothing about its version — so a window on
+    // a version nobody here has heard of was read and handed on as fact.
+    $window = aWindowOnVersion(99, 'sonarr', 100, [
+        aLogRow('something happened', 'sonarr', 'stdout'),
+    ]);
+
+    expect(fn(): Scrollback => Lines::in($window))->toThrow(EnvelopeIsNotRead::class);
 });
 
 it('stands in for a service with lines the contract would accept', function (): void {

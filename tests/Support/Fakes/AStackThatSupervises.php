@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
 
@@ -60,7 +61,22 @@ final class AStackThatSupervises implements Supervising
     public static function with(Daemons $daemons): self
     {
         return new self(
-            static fn(): WhatIsRunning => WhatIsRunning::these($daemons),
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, WhatElseIsRunning::nothing()),
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+        );
+    }
+
+    /**
+     * A machine running the listing, and other things nobody declared.
+     *
+     * A constructor of its own rather than a default on {@see with()}, because
+     * *the machine reported nothing undeclared* and *nobody said* are different
+     * answers and a default would spell them the same way.
+     */
+    public static function alsoRunning(Daemons $daemons, WhatElseIsRunning $elsewhere): self
+    {
+        return new self(
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, $elsewhere),
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
         );
     }
@@ -106,7 +122,7 @@ final class AStackThatSupervises implements Supervising
     public static function withButRefusing(Daemons $daemons, Obstacle $why): self
     {
         return new self(
-            static fn(): WhatIsRunning => WhatIsRunning::these($daemons),
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, WhatElseIsRunning::nothing()),
             static fn(): Underway => Underway::met($why),
         );
     }
@@ -123,13 +139,21 @@ final class AStackThatSupervises implements Supervising
      */
     public static function thenMeeting(Daemons $first, Obstacle $why): self
     {
-        $reading = 0;
+        // A flag rather than a count, because the rule is *once, then that
+        // answer from then on* and a counter says it in two places that have to
+        // agree — the increment and the comparison — while carrying values
+        // (three, four, five) that nothing here ever reads.
+        $hasAnswered = false;
 
         return new self(
-            static function () use ($first, $why, &$reading): WhatIsRunning {
-                $reading++;
+            static function () use ($first, $why, &$hasAnswered): WhatIsRunning {
+                if ($hasAnswered) {
+                    return WhatIsRunning::met($why);
+                }
 
-                return $reading === 1 ? WhatIsRunning::these($first) : WhatIsRunning::met($why);
+                $hasAnswered = true;
+
+                return WhatIsRunning::these($first, WhatElseIsRunning::nothing());
             },
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
         );
@@ -146,13 +170,15 @@ final class AStackThatSupervises implements Supervising
      */
     public static function thenRunning(Daemons $first, Daemons $andThen): self
     {
-        $reading = 0;
+        // The same flag as {@see thenMeeting()}, for the same reason.
+        $hasAnswered = false;
 
         return new self(
-            static function () use ($first, $andThen, &$reading): WhatIsRunning {
-                $reading++;
+            static function () use ($first, $andThen, &$hasAnswered): WhatIsRunning {
+                $listing = $hasAnswered ? $andThen : $first;
+                $hasAnswered = true;
 
-                return WhatIsRunning::these($reading === 1 ? $first : $andThen);
+                return WhatIsRunning::these($listing, WhatElseIsRunning::nothing());
             },
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
         );

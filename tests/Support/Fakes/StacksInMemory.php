@@ -73,6 +73,20 @@ final class StacksInMemory implements Stacks
     }
 
     /**
+     * Whether anything is held, without counting as having read it.
+     *
+     * Deliberately not counted by {@see timesAsked()}. The count exists for the
+     * one requirement about *order* — that a shut app has not read the
+     * operator's machines — and asking whether the record is empty is not
+     * reading them. Counting it here would make that rule refuse the
+     * arrangement `N4-R22` asks for.
+     */
+    public function holdsAny(): bool
+    {
+        return ! $this->held->isEmpty();
+    }
+
+    /**
      * How many times the list has been read.
      *
      * For the one requirement that is about the *order* things are asked in

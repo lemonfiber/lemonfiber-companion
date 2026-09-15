@@ -10,6 +10,7 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\BinaryOp\Coalesce;
@@ -51,6 +52,15 @@ final readonly class WhereAnExpressionPoints
 {
     /** The property an SDK envelope carries its payload on. */
     private const string PAYLOAD = 'data';
+
+    /**
+     * The type whose static call is a pass-through rather than a construction.
+     *
+     * Named rather than compared inline for `D4`'s reason, and because there is
+     * exactly one of these: a second would mean the following has to model a
+     * set of them, and a set is a thing to keep correct.
+     */
+    private const string THE_WIRE_GATE = 'Wire';
 
     /**
      * Everywhere in an envelope one expression can be read as.
@@ -109,6 +119,16 @@ final readonly class WhereAnExpressionPoints
         if ($expr instanceof StaticCall && $expr->class instanceof Name) {
             $named = self::theLeafOf($expr->class->toString());
 
+            // `Wire::checked()` hands back the envelope it was given — it
+            // asserts the wire version and returns the same object — so a
+            // reading that stopped here would lose every field read through the
+            // gate `N1-R13` asks for, and report them as fields nothing reads.
+            // Seeing through it is what keeps passing an envelope through the
+            // gate from making its payload invisible to this register.
+            if ($named === self::THE_WIRE_GATE) {
+                return self::whatWasHandedTo($expr, $bindings);
+            }
+
             return WhatTheContractDeclares::shapeOf($named) === '' ? null : $named;
         }
 
@@ -123,6 +143,31 @@ final readonly class WhereAnExpressionPoints
         $at = strrpos($written, '\\');
 
         return $at === false ? $written : substr($written, $at + 1);
+    }
+
+    /**
+     * Where the envelope a pass-through was given points.
+     *
+     * Its own method rather than a branch inside {@see theEnvelopeHeld()},
+     * which the analyser holds to a complexity the extra guards crossed.
+     *
+     * `array_key_exists` rather than `??` on the subscript, which `C9`
+     * refuses, and the `Arg` guard because a call's arguments may hold a
+     * variadic placeholder with no expression in it.
+     *
+     * @param Bindings $bindings
+     */
+    private static function whatWasHandedTo(StaticCall $expr, array $bindings): ?string
+    {
+        if (! array_key_exists(0, $expr->args)) {
+            return null;
+        }
+
+        $handed = $expr->args[0];
+
+        return $handed instanceof Arg
+            ? self::theEnvelopeHeld($handed->value, $bindings)
+            : null;
     }
 
     /**

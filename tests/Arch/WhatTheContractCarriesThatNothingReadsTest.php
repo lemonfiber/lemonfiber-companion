@@ -337,13 +337,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . '`N2-R4` has the app state what a repair did in the words the core produced.',
     ],
     [
-        'path' => 'StatusEnvelope.undeclared',
-        'because' => 'Containers the machine is running that this stack\'s own configuration does not '
-            . 'declare. Genuinely operator-facing — something is running here that is not part of your '
-            . 'stack — and no requirement in `N1` to `N4` asks the app to say so. Raise it against the '
-            . 'spec before reading it, which is `N1-R17`.',
-    ],
-    [
         'path' => 'StatusEnvelope.unsupported',
         'because' => 'What this stack cannot do, and why. It is the stack describing its own limits '
             . 'rather than its condition, and `N2-R1` opens this app on a verdict. A screen mixing the '

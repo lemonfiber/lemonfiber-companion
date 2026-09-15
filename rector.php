@@ -58,6 +58,11 @@ return RectorConfig::configure()
     // nine tests in `PairingAStackByScanningTest` fail. Scoped to the screens,
     // because everywhere else in a final class the rule is right and stays on.
     ->withSkip([
+        // Published by `native:install` rather than written here, and ignored by
+        // git — absent in CI and present on every machine that has run a build.
+        // Refactoring it would rewrite a file the next install overwrites, and
+        // leaving it in makes this gate red locally and green on CI.
+        __DIR__ . '/config/nativephp.php',
         StringClassNameToClassConstantRector::class => [__DIR__ . '/tests/Arch'],
         ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [__DIR__ . '/tests/Contract'],
         // Globbed rather than named, because `household` is a surface too and a

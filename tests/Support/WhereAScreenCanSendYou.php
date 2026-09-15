@@ -21,6 +21,7 @@ use function is_string;
 
 use Native\Mobile\Edge\NativeRouter;
 
+use function preg_match;
 use function preg_match_all;
 
 use ReflectionClass;
@@ -28,6 +29,8 @@ use ReflectionMethod;
 use ReflectionNamedType;
 
 use function sprintf;
+use function str_contains;
+use function str_replace;
 
 /**
  * The navigation an operator can actually perform, as a graph.
@@ -257,9 +260,60 @@ final readonly class WhereAScreenCanSendYou
             return [];
         }
 
-        preg_match_all('/@navigate\s*=\s*(["\'])(.*?)\1/s', (string) file_get_contents($path), $found);
+        $source = (string) file_get_contents($path);
 
-        return $found[2];
+        preg_match_all('/@navigate\s*=\s*(["\'])(.*?)\1/s', $source, $found);
+        $ways = $found[2];
+
+        // A control written as a component carries its route in `:goes`, which
+        // is the same edge under another name. Reading only `@navigate` would
+        // have this walk go blind the moment a screen names its controls
+        // instead of spelling them out — and a graph with no edges reports
+        // every screen as unreachable rather than reporting nothing.
+        preg_match_all('/<x-operator::action\b[^>]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
+        $ways = [...$ways, ...$named[2]];
+
+        return [...$ways, ...$this->waysOffTheChromeOf($source)];
+    }
+
+    /**
+     * The ways off a screen that belong to the chrome it stands in.
+     *
+     * A screen handing `:goes` to the chrome gets the chrome's whole bottom
+     * navigation, and those are real edges — they are how a person moves
+     * between the readings of one machine. The chrome writes them against the
+     * argument it was handed, so reading them means putting back what the
+     * screen passed in.
+     *
+     * @return list<string>
+     */
+    private function waysOffTheChromeOf(string $source): array
+    {
+        if (preg_match('/<x-operator::screen\b[^>]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $handed) !== 1) {
+            return [];
+        }
+
+        $chrome = Tree::at('app-modules/operator/resources/views/components/screen.blade.php');
+
+        if (! is_file($chrome)) {
+            return [];
+        }
+
+        preg_match_all('/@navigate[\w.]*\s*=\s*(["\'])(.*?)\1/s', (string) file_get_contents($chrome), $found);
+
+        // Only what the handed-in destinations reach. The chrome's other way
+        // off is the sign-in screen, and that one is written against an
+        // argument each screen supplies separately — substituting the wrong
+        // one would invent an edge rather than find one.
+        $reached = array_map(
+            static fn(string $expression): string => str_replace('$goes->', sprintf('%s->', $handed[2]), $expression),
+            $found[2],
+        );
+
+        return array_values(array_filter(
+            $reached,
+            static fn(string $expression): bool => ! str_contains($expression, 'signInGoesTo'),
+        ));
     }
 
     /**

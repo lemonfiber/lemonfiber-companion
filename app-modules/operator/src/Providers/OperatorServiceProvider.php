@@ -13,6 +13,7 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
@@ -131,6 +132,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // and what do I want on*, which an operator opens the app for even
             // when every check passes.
             Router::native(AStacksScreen::Services->value, WhatThisStackRuns::class);
+
+            // What is running here that this machine never declared (`N2-R21`).
+            // Separate from the listing above rather than a section of it,
+            // because that screen offers a verb against every row and the
+            // requirement forbids offering one against these — two screens is
+            // the version of that refusal which survives somebody adding a row.
+            Router::native(AStacksScreen::Elsewhere->value, WhatElseIsRunningHere::class);
 
             // What one service has been saying (`N2-R10`). Two placeholders,
             // which no other route here has: the service is in the path rather

@@ -101,7 +101,13 @@ function everyObstacleBranch(string $view): array
 
         $body = $pieces[$at + 1];
 
-        if (! str_contains(theConditionIn($body), 'met')) {
+        // `met !==` rather than `met`, because the two say opposite things. A
+        // branch guarded on the obstacle being *absent* is the screen's own
+        // reading — the arm this rule exists to let through — and matching it
+        // as an obstacle reported every screen that names its content branch
+        // explicitly. What makes a branch an obstacle branch is asserting there
+        // is one.
+        if (! str_contains(theConditionIn($body), 'met !==')) {
             continue;
         }
 
@@ -120,7 +126,14 @@ function everyObstacleBranch(string $view): array
 /** Whether this markup gives the operator something to press. */
 function offersSomethingToDo(string $markup): bool
 {
-    return str_contains($markup, '@tap=') || str_contains($markup, '@navigate=');
+    // The component counts as much as the attributes do. An action is the thing
+    // whose whole purpose is to be pressed — it carries the handler inside its
+    // own template — and a rule that reads only the spelled-out attribute stops
+    // seeing controls the moment they are named instead, which is a rule going
+    // quiet exactly when the screens improve.
+    return str_contains($markup, '@tap=')
+        || str_contains($markup, '@navigate=')
+        || str_contains($markup, '<x-operator::action');
 }
 
 /** Enough of a branch to find it by, on one line. */

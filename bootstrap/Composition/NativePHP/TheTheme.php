@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Bootstrap\Composition\NativePHP;
 
 use Modules\Design\Api\Theme;
+use Modules\Design\Api\ThemeToken;
 use Native\Mobile\Edge\TailwindParser;
+use Native\Mobile\UI\Theme as WhatTheWidgetsPaintWith;
 
 /**
  * Whose palette `bg-theme-*` and `text-theme-*` resolve against.
@@ -56,5 +58,43 @@ final readonly class TheTheme
         // ink on lemon measures 10.9:1 whichever way a reader has their phone
         // set, so there is nothing for a second palette to improve.
         TailwindParser::setThemeDarkResolver(null);
+
+        // The accent role, which is the whole of what `DES-R24` maps: `lemon`
+        // is asserted and the ground, the type and the spacing stay the
+        // platform's. A filled button takes `primary` from the widget theme and
+        // honours no per-instance colour — deliberately, says the renderer — so
+        // a class on a button is dropped and this is the only place the brand
+        // reaches one.
+        //
+        // Merged rather than loaded: `merge()` overrides these two keys and
+        // leaves every other token the package chose, which is the difference
+        // between mapping a role and repainting an app.
+        //
+        // The same pair in both modes. `ThemeToken::hex()` carries why there is
+        // no dark companion — ink on lemon measures 10.9:1 whichever way a
+        // reader has their phone set.
+        WhatTheWidgetsPaintWith::merge([
+            'light' => self::theAccentRole(),
+            'dark' => self::theAccentRole(),
+        ]);
+    }
+
+    /**
+     * What the widget theme calls the two tokens this surface asserts.
+     *
+     * A method rather than a constant because the hex is read off
+     * {@see ThemeToken} rather than written out, and a constant cannot ask. The
+     * point of asking is that the value lives in one place: `ThemeTokenTest` is
+     * what holds these to the brand's own token file, and a hex typed here
+     * would be a second source that agreed until somebody changed the brand.
+     *
+     * @return array{primary: string, on-primary: string}
+     */
+    private static function theAccentRole(): array
+    {
+        return [
+            'primary' => ThemeToken::Accent->hex(),
+            'on-primary' => ThemeToken::OnAccent->hex(),
+        ];
     }
 }

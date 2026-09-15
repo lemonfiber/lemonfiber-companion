@@ -19,7 +19,10 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\SomethingElseRunning;
+use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatLeansOnIt;
+use Modules\Kernel\Api\WhatTheEngineCallsIt;
 use Modules\Sdk\Internal\Costs;
 use Modules\Sdk\Internal\Wire;
 
@@ -68,6 +71,44 @@ final readonly class Rosters
             Costs::in($data),
             ...self::services($data),
         );
+    }
+
+    /**
+     * What else is running on the machine, which this stack did not put there.
+     *
+     * A second reading of the same envelope rather than a corner of the first,
+     * because `N2-R21` forbids presenting one of these as part of the stack and
+     * the surest way to keep that true is to give a caller no way to spell it.
+     * {@see Daemons} cannot hold one and {@see WhatElseIsRunning} cannot hold a
+     * service, so a screen that mixed them would not compile.
+     *
+     * @param Envelope<mixed> $envelope the `status` envelope, as the client returned it
+     */
+    public static function whatElseIsRunning(Envelope $envelope): WhatElseIsRunning
+    {
+        $data = self::payload(Wire::checked($envelope));
+
+        if (! is_array($data)) {
+            throw RosterIsUnreadable::missing(WireField::Data);
+        }
+
+        $found = [];
+
+        foreach (self::listed($data, WireField::Undeclared) as $at => $row) {
+            if (! is_array($row)) {
+                throw RosterIsUnreadable::missing(WireField::Undeclared);
+            }
+
+            $position = is_int($at) ? $at : 0;
+
+            $found[] = SomethingElseRunning::called(
+                id: WhatTheEngineCallsIt::called(self::text($row, WireField::Id, $position)),
+                describes: self::text($row, WireField::Describes, $position),
+                runs: self::runs($row, $position),
+            );
+        }
+
+        return WhatElseIsRunning::these(...$found);
     }
 
     /**
