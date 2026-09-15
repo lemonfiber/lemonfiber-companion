@@ -18,6 +18,7 @@ use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatTheEngineCallsIt;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
@@ -75,10 +76,11 @@ function twoThingsNobodyDeclared(): WhatElseIsRunning
 /** The screen, with a stack it knows and a keychain holding whatever a test says. */
 function theStrangersScreen(
     AStackThatSupervises $supervising,
+    ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
 ): WhatElseIsRunningHere {
     $stack = theStackWhoseStrangersAreRead();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
@@ -144,4 +146,51 @@ it('N1-R44 — a session that has ended is not a machine running nothing', funct
     expect($screen->answer()->isSignedIn)->toBeFalse()
         ->and($screen->answer()->met)->toBe('')
         ->and($screen->howMany())->toBe(0);
+});
+
+it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+    // Both halves, because the fold and the store have to agree. A refused
+    // credential is being signed out rather than an obstacle to read about, so
+    // nothing is offered to do about it — and the session has to be gone, or
+    // the next frame resumes it, is refused again, and the operator reads a
+    // sign-in prompt over a device that still believes it is signed in.
+    $keychain = AKeychainInMemory::working();
+    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::CredentialWasRefused), $keychain);
+
+    expect($keychain->isHolding(theStackWhoseStrangersAreRead()->id()))->toBeTrue();
+
+    expect($screen->answer()->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->running)->toBe([])
+        ->and($keychain->isHolding(theStackWhoseStrangersAreRead()->id()))->toBeFalse();
+});
+
+it('N1-R3 — asking again after an obstacle asks the machine again', function (): void {
+    $supervising = AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork);
+    $screen = theStrangersScreen($supervising);
+
+    $screen->answer();
+    $screen->again();
+    $screen->answer();
+
+    expect($supervising->askings())->toBe(2);
+});
+
+it('the way back to the machine is a route as well', function (): void {
+    $screen = theStrangersScreen(AStackThatSupervises::alsoRunning(
+        Daemons::none(whatTheVerbsCostBesideTheStrangers()),
+        twoThingsNobodyDeclared(),
+    ));
+
+    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+});
+
+it('renders its own view', function (): void {
+    $screen = theStrangersScreen(AStackThatSupervises::alsoRunning(
+        Daemons::none(whatTheVerbsCostBesideTheStrangers()),
+        twoThingsNobodyDeclared(),
+    ));
+
+    expect($screen->render()->name())->toBe('operator::what-else-is-running-here');
 });
