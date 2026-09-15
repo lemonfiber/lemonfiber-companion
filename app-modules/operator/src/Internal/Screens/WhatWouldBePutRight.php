@@ -24,8 +24,10 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
-use Modules\Operator\Internal\WhatTheStackWouldPutRight;
-use Modules\Operator\Internal\WhatThisStackPutRight;
+use Modules\Operator\Internal\Presenters\HowAMendingReads;
+use Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads;
+use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
+use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
@@ -364,14 +366,14 @@ final class WhatWouldBePutRight extends NativeComponent
                         $this->agreed = true;
                         $this->carriedOut = null;
 
-                        return WhatTheStackWouldPutRight::stillWorkingItOut();
+                        return new HowAnOfferOfRepairsReads()->stillWorkingItOut();
                     },
                     met: fn(Obstacle $why): WhatTheStackWouldPutRight
-                        => $this->answered = WhatTheStackWouldPutRight::met($why),
+                        => $this->answered = new HowAnOfferOfRepairsReads()->met($why),
                 );
             },
             notHeld: fn(): WhatTheStackWouldPutRight
-                => $this->answered = WhatTheStackWouldPutRight::signedOut(),
+                => $this->answered = new HowAnOfferOfRepairsReads()->signedOut(),
         );
     }
 
@@ -388,7 +390,7 @@ final class WhatWouldBePutRight extends NativeComponent
         // one, and the template's own branch on {@see wasAgreedTo()} is what
         // keeps it off the glass.
         if (! is_string($held)) {
-            return WhatThisStackPutRight::ended();
+            return new HowAMendingReads()->ended();
         }
 
         $stack = $this->stack();
@@ -397,17 +399,17 @@ final class WhatWouldBePutRight extends NativeComponent
             held: fn(Session $session): WhatThisStackPutRight
                 => $this->mending->whatWasDoneAbout($stack, $session, Job::named($held))->either(
                     stillRunning: static fn(): WhatThisStackPutRight
-                        => WhatThisStackPutRight::stillWorkingItOut(),
+                        => new HowAMendingReads()->stillWorkingItOut(),
                     done: static fn(WhatWasMended $mended): WhatThisStackPutRight
-                        => WhatThisStackPutRight::these($mended),
-                    ended: static fn(): WhatThisStackPutRight => WhatThisStackPutRight::ended(),
+                        => new HowAMendingReads()->these($mended),
+                    ended: static fn(): WhatThisStackPutRight => new HowAMendingReads()->ended(),
                     met: function (Obstacle $why) use ($stack): WhatThisStackPutRight {
                         $this->letGoOfTheSession($why, $stack);
 
-                        return WhatThisStackPutRight::met($why);
+                        return new HowAMendingReads()->met($why);
                     },
                 ),
-            notHeld: static fn(): WhatThisStackPutRight => WhatThisStackPutRight::ended(),
+            notHeld: static fn(): WhatThisStackPutRight => new HowAMendingReads()->ended(),
         );
     }
 
@@ -431,7 +433,7 @@ final class WhatWouldBePutRight extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheStackWouldPutRight => $this->read($stack, $session),
-            notHeld: static fn(): WhatTheStackWouldPutRight => WhatTheStackWouldPutRight::signedOut(),
+            notHeld: static fn(): WhatTheStackWouldPutRight => new HowAnOfferOfRepairsReads()->signedOut(),
         );
     }
 
@@ -464,7 +466,7 @@ final class WhatWouldBePutRight extends NativeComponent
             met: function (Obstacle $why) use ($stack): WhatTheStackWouldPutRight {
                 $this->letGoOfTheSession($why, $stack);
 
-                return WhatTheStackWouldPutRight::met($why);
+                return new HowAnOfferOfRepairsReads()->met($why);
             },
         );
     }
@@ -474,18 +476,18 @@ final class WhatWouldBePutRight extends NativeComponent
     {
         return $this->mending->whatBecameOf($stack, $session, $job)->either(
             stillRunning: static fn(): WhatTheStackWouldPutRight
-                => WhatTheStackWouldPutRight::stillWorkingItOut(),
+                => new HowAnOfferOfRepairsReads()->stillWorkingItOut(),
             offering: function (Offer $offer): WhatTheStackWouldPutRight {
                 // Kept as the value, not only as the fold: `Confirmed` can be
                 // made against nothing else, which is `N2-R6` refusing a yes
                 // that quotes a listing it was not given.
                 $this->offered = $offer;
 
-                return WhatTheStackWouldPutRight::offering($offer);
+                return new HowAnOfferOfRepairsReads()->offering($offer);
             },
-            ended: static fn(): WhatTheStackWouldPutRight => WhatTheStackWouldPutRight::ended(),
+            ended: static fn(): WhatTheStackWouldPutRight => new HowAnOfferOfRepairsReads()->ended(),
             met: static fn(Obstacle $why): WhatTheStackWouldPutRight
-                => WhatTheStackWouldPutRight::met($why),
+                => new HowAnOfferOfRepairsReads()->met($why),
         );
     }
 }
