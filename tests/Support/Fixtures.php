@@ -2361,8 +2361,8 @@ final readonly class Fixtures
             Fixture::edit(
                 'R4',
                 'phpunit.xml',
-                '            <directory>native/src</directory>',
-                "            <directory>native/src</directory>\n            <directory>lang</directory>",
+                '            <directory>bridge/src</directory>',
+                "            <directory>bridge/src</directory>\n            <directory>lang</directory>",
                 'R4 —',
                 'lang',
             ),
@@ -2454,7 +2454,7 @@ final readonly class Fixtures
                 }
                 PHP, 'N1-R41 — nothing holds a collection of actions', 'HoldsUndelivered'),
 
-            Fixture::suite('N3-R8', 'native/resources/android/PlaysMedia.kt', <<<'KOTLIN'
+            Fixture::suite('N3-R8', 'bridge/resources/android/PlaysMedia.kt', <<<'KOTLIN'
                 package app.lemonfiber.native
 
                 class PlaysMedia(private val context: Context) {

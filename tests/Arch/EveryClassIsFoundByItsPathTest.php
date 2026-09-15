@@ -72,7 +72,7 @@ function everySourceFile(): array
         ...$found,
         ...Tree::filesUnder(Tree::at('bootstrap'), '.php'),
         ...Tree::filesUnder(Tree::at('phpstan'), '.php'),
-        ...Tree::filesUnder(Tree::at('native/src'), '.php'),
+        ...Tree::filesUnder(Tree::at('bridge/src'), '.php'),
     ];
 }
 

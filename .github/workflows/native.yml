@@ -21,12 +21,12 @@ name: native
 on:
   pull_request:
     paths:
-      - 'native/**'
+      - 'bridge/**'
       - '.github/workflows/native.yml'
   push:
     branches: [main]
     paths:
-      - 'native/**'
+      - 'bridge/**'
       - '.github/workflows/native.yml'
 
 permissions:
@@ -63,7 +63,7 @@ jobs:
       # them with `allWarningsAsErrors` and `explicitApi()` on, which is the
       # nearest thing it has to `declare(strict_types=1)`.
       - name: ktlint, detekt, the decision, and the floor
-        working-directory: native/android
+        working-directory: bridge/android
         run: gradle ktlintCheck detekt test koverVerify --console=plain
 
   swift:
@@ -132,17 +132,17 @@ jobs:
             # by not looking is the failure its own error message describes.
             kotlin = {
                 p.stem.removesuffix("Test")
-                for p in Path("native/android/src/test/kotlin").glob("*Test.kt")
+                for p in Path("bridge/android/src/test/kotlin").glob("*Test.kt")
             }
             swift = {
                 p.parent.name.removesuffix("Tests")
-                for p in Path("native/ios/Tests").glob("*Tests/*Tests.swift")
+                for p in Path("bridge/ios/Tests").glob("*Tests/*Tests.swift")
             }
 
             pairs = [
                 (
-                    Path("native/android/src/test/kotlin") / f"{name}Test.kt",
-                    Path("native/ios/Tests") / f"{name}Tests" / f"{name}Tests.swift",
+                    Path("bridge/android/src/test/kotlin") / f"{name}Test.kt",
+                    Path("bridge/ios/Tests") / f"{name}Tests" / f"{name}Tests.swift",
                 )
                 for name in sorted(kotlin | swift)
             ]

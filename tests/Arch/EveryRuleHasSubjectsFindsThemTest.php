@@ -61,8 +61,8 @@ it('Q-R66 — the trees the file rules read are found', function (): void {
     // why they are asserted together rather than beside the rules that use them.
     expect(Tree::filesUnder(Tree::at('app-modules'), '.php'))->not->toBe([]);
     expect(Tree::filesUnder(Tree::at('tests'), '.php'))->not->toBe([]);
-    expect(Tree::filesUnder(Tree::at('native/resources'), '.kt'))->not->toBe([]);
-    expect(Tree::filesUnder(Tree::at('native/resources'), '.swift'))->not->toBe([]);
+    expect(Tree::filesUnder(Tree::at('bridge/resources'), '.kt'))->not->toBe([]);
+    expect(Tree::filesUnder(Tree::at('bridge/resources'), '.swift'))->not->toBe([]);
     expect(Tree::testFiles())->not->toBe([]);
 });
 

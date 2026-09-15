@@ -44,7 +44,7 @@ final readonly class Vocabulary
         // Every tree the coverage floor measures, not only the modules. The
         // modules were the whole of it, and `$scheme === 'https'` — the example
         // `D4`'s own rule writes out — planted in `bootstrap/Composition` passed
-        // the Arch suite, as would one in `native/src` (`R4`).
+        // the Arch suite, as would one in `bridge/src` (`R4`).
         foreach (OurCode::sourceFiles() as $file) {
             $source = file_get_contents($file);
 

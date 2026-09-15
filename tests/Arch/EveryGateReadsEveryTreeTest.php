@@ -15,14 +15,14 @@ use Tests\Support\Tree;
 // copy that loses a tree loses it in the one way nothing reports: every rule
 // resting on it keeps passing, about the trees it still reads.
 //
-// That is not a worry. It was the state of this repository. `native/src` is
+// That is not a worry. It was the state of this repository. `bridge/src` is
 // production code, ships inside the application, and is held to the same 100%
 // coverage floor as everything else — `phpunit.xml` says so in as many words,
 // *being a package is not a reason to be held to a lower bar than the code that
 // calls it* — and it was in the analyser's paths, the refactorer's paths and
 // the architecture namespaces in exactly none of them. `time()`, an
 // `Illuminate\Support\Facades\Cache::get()` and an `echo` planted in
-// `native/src/Screen.php` made `composer analyse` report *No errors*; a
+// `bridge/src/Screen.php` made `composer analyse` report *No errors*; a
 // non-final `WindowManager` holding a mutable public static passed all 189 Arch
 // tests. `bootstrap/Composition` was outside the architecture namespaces for a
 // different reason and cost the same thing, and `App` was inside them,
@@ -214,7 +214,7 @@ it('R4 — the refactorer reads them too', function (): void {
 it('R4 — an exemption for the tests names every place tests live', function (): void {
     // This repository keeps its tests in three homes: the root suites under
     // `tests/`, each module's own under `app-modules/<name>/tests`, and the
-    // plugin's under `native/tests`. All three are testsuites in `phpunit.xml`
+    // plugin's under `bridge/tests`. All three are testsuites in `phpunit.xml`
     // and all three are analysed.
     //
     // An exemption naming some of them holds the rest to the rules written for

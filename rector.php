@@ -18,10 +18,10 @@ return RectorConfig::configure()
         __DIR__ . '/routes',
         __DIR__ . '/tests',
         // The plugin's own PHP. A path package rather than a module, so the
-        // entry above does not reach it — and `phpunit.xml` holds `native/src`
+        // entry above does not reach it — and `phpunit.xml` holds `bridge/src`
         // to the same coverage floor as everything else. `R4` compares the two
         // lists so a tree cannot be in one and not the other again.
-        __DIR__ . '/native',
+        __DIR__ . '/bridge',
     ])
     ->withPhpSets()
     ->withPreparedSets(

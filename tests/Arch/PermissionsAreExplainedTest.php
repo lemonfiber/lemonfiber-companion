@@ -108,7 +108,7 @@ it('N4-R16 — the local-network purpose is declared, and is not a placeholder',
         '',
         'iOS shows this sentence in its own dialog before it will let the app reach',
         'the local network at all, and a build without one is rejected at review.',
-        'Declare it under `ios.info_plist` in `native/nativephp.json` (N4-R16).',
+        'Declare it under `ios.info_plist` in `bridge/nativephp.json` (N4-R16).',
     ]));
 
     expect(Manifests::readsLikeAPlaceholder($said))->toBeFalse(sprintf(

@@ -116,8 +116,8 @@ return (new Configuration())
     // package written inside this repository is not a package exempt from them,
     // and without these two lines the plugin's `src` is the one production path
     // nothing here reads.
-    ->addPathToScan(__DIR__ . '/native/src', isDev: false)
-    ->addPathToScan(__DIR__ . '/native/tests', isDev: true)
+    ->addPathToScan(__DIR__ . '/bridge/src', isDev: false)
+    ->addPathToScan(__DIR__ . '/bridge/tests', isDev: true)
     ->addPathToScan(__DIR__ . '/config', isDev: false)
     ->addPathToScan(__DIR__ . '/routes', isDev: false)
     ->addPathToScan(__DIR__ . '/tests', isDev: true)
@@ -176,11 +176,11 @@ return (new Configuration())
     // `autoload.files` entry and in no class map, and the analyser reports it as
     // a symbol it cannot check.
     //
-    // Scoped to `native/src`, which is the only place in this repository that
+    // Scoped to `bridge/src`, which is the only place in this repository that
     // may call the bridge at all — everything else reaches it through
     // `Modules\Kernel\Api\Capture`. A blanket ignore would also cover a future
     // undeclared function somewhere it has no business being.
-    ->ignoreErrorsOnPath(__DIR__ . '/native/src', [ErrorType::UNKNOWN_FUNCTION])
+    ->ignoreErrorsOnPath(__DIR__ . '/bridge/src', [ErrorType::UNKNOWN_FUNCTION])
     // Resolved through the container rather than named, so the analyser cannot
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])

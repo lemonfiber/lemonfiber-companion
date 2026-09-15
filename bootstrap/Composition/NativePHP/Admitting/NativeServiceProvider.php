@@ -24,7 +24,7 @@ use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notificati
  * `type: nativephp-plugin`, both declare native halves, and neither was reaching
  * a build:
  *
- * - **`lemonfiber/native`** carries `Lemonfiber.Conceal`, `Lemonfiber.Reveal`
+ * - **`lemonfiber/bridge`** carries `Lemonfiber.Conceal`, `Lemonfiber.Reveal`
  *   and `Lemonfiber.IsProtected` — which is `N4-R18`, the protection for a
  *   screen showing a session token or pairing material — and
  *   `Lemonfiber.Authenticate` / `Lemonfiber.CanAuthenticate`, which is `N4-R8`

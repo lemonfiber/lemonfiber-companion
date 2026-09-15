@@ -51,7 +51,7 @@ function keysNamedInSource(): array
     $sources = [
         ...Tree::filesUnder(Tree::at('app-modules'), '.php'),
         ...Tree::filesUnder(Tree::at('bootstrap/Composition'), '.php'),
-        ...Tree::filesUnder(Tree::at('native/src'), '.php'),
+        ...Tree::filesUnder(Tree::at('bridge/src'), '.php'),
     ];
 
     $found = [];

@@ -26,7 +26,7 @@ style:
 naming:
   # A NativePHP plugin ships its native sources flat under `resources/android`,
   # because that is the directory the builder copies into the host app — there
-  # is no `app/lemonfiber/native/` tree here and there cannot be one. The package
+  # is no `app/lemonfiber/bridge/` tree here and there cannot be one. The package
   # is still what the manifest names in `nativephp.json`, and a mismatch between
   # the two is caught there rather than by a rule about directory layout.
   InvalidPackageDeclaration:

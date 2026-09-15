@@ -179,7 +179,7 @@ final readonly class Tree
      * Read from the suites `phpunit.xml` declares rather than from a list of
      * directories kept here. Three places, not the two that were written out:
      * the root suites and each module's own are the obvious pair, and
-     * `native/tests` is the third — the plugin is a path package rather than a
+     * `bridge/tests` is the third — the plugin is a path package rather than a
      * module, so neither of the two reached it. Every rule resting on this
      * (`G1`, `G5`, `G6`, `G10`, `H7`) held two thirds of the suite to
      * conventions the third was silently exempt from (`R4`).

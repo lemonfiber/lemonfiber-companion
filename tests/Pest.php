@@ -8,12 +8,12 @@ use Tests\Support\OurCode;
 use Tests\TestCase;
 
 // The native expansion's tests are here too, by path rather than by name: they
-// live in `native/tests` because the plugin is a package, and `in()` resolves a
+// live in `bridge/tests` because the plugin is a package, and `in()` resolves a
 // bare word against this directory. They need the application because
 // `FakeBridge` binds into the container — without it, the seam the whole file
 // depends on cannot be reached and every assertion would be about a bridge that
 // was never intercepted.
-pest()->extend(TestCase::class)->in('Feature', 'Templates', 'Contract', sprintf('%s/../native/tests', __DIR__));
+pest()->extend(TestCase::class)->in('Feature', 'Templates', 'Contract', sprintf('%s/../bridge/tests', __DIR__));
 
 /*
  * G3 — no test reaches the network.
@@ -55,4 +55,4 @@ pest()->beforeEach(function (): void {
 
 pest()->beforeEach(function (): void {
     Http::preventStrayRequests();
-})->in('Feature', 'Templates', 'Contract', sprintf('%s/../native/tests', __DIR__));
+})->in('Feature', 'Templates', 'Contract', sprintf('%s/../bridge/tests', __DIR__));
