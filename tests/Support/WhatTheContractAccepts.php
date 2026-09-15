@@ -66,7 +66,36 @@ final readonly class WhatTheContractAccepts
             return [sprintf('`%s` was stood in for by a body with no `data`.', $envelope)];
         }
 
-        return self::against($shape, $data, 'data');
+        return [...self::underTheRightName($envelope, $body), ...self::against($shape, $data, 'data')];
+    }
+
+    /**
+     * Whether the body is claiming to be the envelope it is being read as.
+     *
+     * The one defect the shape reading cannot see. Two envelopes that share
+     * their required fields each accept the other's body, so a fixture filed
+     * under the wrong name is a payload every assertion agrees with and no
+     * stack would send — and the name is what the reader will have picked the
+     * envelope by.
+     *
+     * A body that names no kind is not judged here. A suite that builds one
+     * positionally hands the kind to the envelope type instead, where `G12`
+     * reads it, and demanding it twice would have the fixture repeat what it
+     * already said one line up.
+     *
+     * @param  array<array-key, mixed>  $body
+     * @return list<string>
+     */
+    private static function underTheRightName(string $envelope, array $body): array
+    {
+        $reads = WhatTheContractDeclares::kindOf($envelope);
+        $said = $body['kind'] ?? null;
+
+        if (! is_string($said) || $said === $reads) {
+            return [];
+        }
+
+        return [sprintf('`%s` reads the `%s` kind, and this body calls itself `%s`.', $envelope, $reads, $said)];
     }
 
     /**

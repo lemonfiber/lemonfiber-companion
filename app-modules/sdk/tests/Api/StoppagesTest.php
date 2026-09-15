@@ -18,6 +18,8 @@ use Modules\Sdk\Api\StuckIsUnreadable;
 
 use function sprintf;
 
+use Tests\Support\WhatTheContractAccepts;
+
 /**
  * A `stuck` envelope holding whatever the case under test is about.
  *
@@ -158,4 +160,18 @@ it('a stage this app does not recognise names what it does read', function (): v
         'incomplete' => false,
         'items' => [aStalledRow('A film', 'radarr', 'transmuting')],
     ])))->toThrow(StuckIsUnreadable::class, '`not-monitored`');
+});
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    // Held to the generated types rather than to the reader, because a fixture
+    // is written by whoever wrote the reader: where the two agree about a field
+    // that is not there, both are wrong in the same direction and every case
+    // above is green against a machine nobody has run them against.
+    $payload = [
+        'incomplete' => false,
+        'items' => [aStalledRow('A film nobody has seen', 'radarr', 'searching')],
+    ];
+
+    expect(WhatTheContractAccepts::complaintsAbout('StuckEnvelope', ['kind' => 'stuck', 'data' => $payload]))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

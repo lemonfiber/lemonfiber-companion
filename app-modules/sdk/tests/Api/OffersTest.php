@@ -19,6 +19,8 @@ use Modules\Sdk\Api\Offers;
 
 use function sprintf;
 
+use Tests\Support\WhatTheContractAccepts;
+
 /**
  * A `repair` envelope, likewise.
  *
@@ -55,6 +57,20 @@ function anOfferedRepair(array $changed = []): array
 }
 
 /**
+ * One answer carried out of an arm, which hands back objects.
+ *
+ * `StoppagesTest`'s `WhatOneStuckRowSaid` one endpoint over, and the same
+ * argument: an arm returns an object so that a caller cannot fold two arms into
+ * a nullable string. The envelope type is not the thing to carry it in —
+ * an envelope is what one program sends another, and a body under a kind the
+ * contract has not got is a conversation neither end could have had.
+ */
+final readonly class WhatOneOfferSaid
+{
+    public function __construct(public string $said) {}
+}
+
+/**
  * A whole listing around one repair.
  *
  * @param array<string, mixed> $repair
@@ -78,9 +94,9 @@ it('N2-R4 — reads all three clauses off an offered repair', function (): void 
 
     foreach ($offer->repairs() as $repair) {
         $said = $repair->stated(
-            static fn(string $does, Effects $effects, Undoing $undoing): Envelope
-                => new Envelope(1, 'x', sprintf('%s/%d/%s', $does, $effects->count(), $undoing->value)),
-        )->data;
+            static fn(string $does, Effects $effects, Undoing $undoing): WhatOneOfferSaid
+                => new WhatOneOfferSaid(sprintf('%s/%d/%s', $does, $effects->count(), $undoing->value)),
+        )->said;
     }
 
     expect($offer->named())->toBe('agreement-a-test-can-name')
@@ -96,9 +112,9 @@ it('N2-R4 — reads reversible as the word rather than carrying the boolean', fu
 
     foreach ($permanent->repairs() as $repair) {
         $said[] = $repair->stated(
-            static fn(string $does, Effects $effects, Undoing $undoing): Envelope
-                => new Envelope(1, 'x', $undoing->value),
-        )->data;
+            static fn(string $does, Effects $effects, Undoing $undoing): WhatOneOfferSaid
+                => new WhatOneOfferSaid($undoing->value),
+        )->said;
     }
 
     expect($said)->toBe([Undoing::Permanent->value]);
@@ -287,15 +303,13 @@ it('N2-R5 — reads what became of a repair, and what a stopped one left', funct
 
     foreach ($run as $one) {
         $said = $one->said(
-            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): Envelope => new Envelope(
-                1,
-                'x',
-                $left->either(
-                    something: static fn(string $what): Envelope => new Envelope(1, 'x', sprintf('%s/%s', $became->value, $what)),
-                    nothing: static fn(): Envelope => new Envelope(1, 'x', $became->value),
-                )->data,
-            ),
-        )->data;
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): WhatOneOfferSaid
+                => new WhatOneOfferSaid($left->either(
+                    something: static fn(string $what): WhatOneOfferSaid
+                        => new WhatOneOfferSaid(sprintf('%s/%s', $became->value, $what)),
+                    nothing: static fn(): WhatOneOfferSaid => new WhatOneOfferSaid($became->value),
+                )->said),
+        )->said;
     }
 
     expect($said)->toBe('stopped/Half of it on the old disk')
@@ -311,15 +325,13 @@ it('reads a stopped repair that left nothing as having left nothing', function (
 
     foreach ($run as $one) {
         $said = $one->said(
-            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): Envelope => new Envelope(
-                1,
-                'x',
-                $left->either(
-                    something: static fn(string $what): Envelope => new Envelope(1, 'x', sprintf('left %s', $what)),
-                    nothing: static fn(): Envelope => new Envelope(1, 'x', 'left nothing'),
-                )->data,
-            ),
-        )->data;
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): WhatOneOfferSaid
+                => new WhatOneOfferSaid($left->either(
+                    something: static fn(string $what): WhatOneOfferSaid
+                        => new WhatOneOfferSaid(sprintf('left %s', $what)),
+                    nothing: static fn(): WhatOneOfferSaid => new WhatOneOfferSaid('left nothing'),
+                )->said),
+        )->said;
 
         expect($said)->toBe('left nothing');
     }
@@ -392,16 +404,33 @@ it('reads a description of what was left that says nothing as nothing', function
 
     foreach ($run as $one) {
         $said = $one->said(
-            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): Envelope => new Envelope(
-                1,
-                'x',
-                $left->either(
-                    something: static fn(string $what): Envelope => new Envelope(1, 'x', sprintf('left %s', $what)),
-                    nothing: static fn(): Envelope => new Envelope(1, 'x', 'left nothing'),
-                )->data,
-            ),
-        )->data;
+            static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): WhatOneOfferSaid
+                => new WhatOneOfferSaid($left->either(
+                    something: static fn(string $what): WhatOneOfferSaid
+                        => new WhatOneOfferSaid(sprintf('left %s', $what)),
+                    nothing: static fn(): WhatOneOfferSaid => new WhatOneOfferSaid('left nothing'),
+                )->said),
+        )->said;
 
         expect($said)->toBe('left nothing');
+    }
+});
+
+it('stands in for a stack with payloads the contract would accept', function (): void {
+    // Both readings, because they are two payloads under one kind: what a stack
+    // would do, and what it did. Held to the generated types rather than to the
+    // reader, since a fixture is written by whoever wrote the reader and the
+    // two then agree about a field that is not there.
+    $payloads = [
+        'the listing' => aListingOf(anOfferedRepair()),
+        'the record' => aRunOf(anOutcomeOf(['outcome' => 'stopped', 'leaving' => 'Half of it on the old disk'])),
+    ];
+
+    foreach ($payloads as $which => $payload) {
+        expect(WhatTheContractAccepts::complaintsAbout('RepairEnvelope', ['kind' => 'repair', 'data' => $payload]))
+            ->toBe([], sprintf(
+                "The payload this suite stands in for a stack with is not one a stack would send: %s.\n",
+                $which,
+            ));
     }
 });
