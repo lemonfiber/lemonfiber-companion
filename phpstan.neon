@@ -61,9 +61,17 @@ parameters:
         - */resources/views/*.blade.php
         # Published by `native:install` rather than written here, and ignored by
         # git — so it is absent in CI and present on every machine that has run
-        # a build. Analysed, the two disagree: a gate that is red locally and
-        # green on CI is read as noise, and then so is the next one.
-        - config/nativephp.php
+        # a build. Analysed, the two disagree: a gate that answers differently
+        # on two machines is read as noise, and then so is the next one.
+        #
+        # `(?)` marks it as a path that may not be there, and it is load-bearing
+        # rather than tidy. Without it the analyser does not skip the file, it
+        # refuses to start — and a bootstrap failure is not one red rule, it is
+        # every rule reporting nothing. That takes `composer analyse` and the
+        # guards suite down together, and the second of those fails saying the
+        # analyser produced no readable output, which is the only reason the
+        # cause is findable at all.
+        - config/nativephp.php (?)
 
     # Pest's own annotation, corrected. See the stub for why.
     stubFiles:

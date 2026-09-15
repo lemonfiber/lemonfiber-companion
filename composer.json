@@ -112,6 +112,7 @@
             "php-http/discovery": true
         },
         "optimize-autoloader": true,
+        "process-timeout": 0,
         "platform": {
             "php": "8.5.0"
         },
