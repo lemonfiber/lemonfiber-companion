@@ -181,6 +181,12 @@ enum WireField: string
     /** The services a stack has, each with its own state. */
     case Services = 'services';
 
+    /** Containers on the machine that the stack's own configuration does not declare. */
+    case Undeclared = 'undeclared';
+
+    /** What a container is running, in the machine's words rather than this app's. */
+    case Describes = 'describes';
+
     /** How much a household loses when one service is not running. */
     case Criticality = 'criticality';
 
