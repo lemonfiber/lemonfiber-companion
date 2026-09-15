@@ -23,6 +23,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\VersionInUse;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Upkeepers;
 use Saloon\Http\Faking\MockClient;
@@ -71,7 +72,7 @@ function theSameStanding(): Upkeep
 {
     return Upkeep::runningOn(
         HowCurrent::Pending,
-        Release::called('4.0.15', noticeable: false, withdrawn: false),
+        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false)),
         Releases::these(
             Release::called('4.1.0', noticeable: true, withdrawn: false),
             Release::called('4.0.16', noticeable: false, withdrawn: false),
@@ -245,8 +246,8 @@ function whereItStands(KeepingCurrent $keeping): string
             return new WhatTheUpkeepTurnedOutToSay(sprintf(
                 '%s/%s/%s',
                 $upkeep->how()->value,
-                $upkeep->running(
-                    on: static fn(Release $release): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($release->version()),
+                $upkeep->inUse(
+                    named: static fn(VersionInUse $inUse): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($inUse->version()),
                     unstated: static fn(): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay('unstated'),
                 )->said,
                 implode(',', $offered),

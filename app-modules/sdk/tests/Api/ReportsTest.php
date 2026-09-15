@@ -31,6 +31,8 @@ use Modules\Sdk\Api\Reports;
 
 use function sprintf;
 
+use Tests\Support\WhatTheContractAccepts;
+
 /**
  * A `doctor` envelope holding whatever the case under test is about.
  *
@@ -666,3 +668,14 @@ final readonly class WhatWasAddedUnderneath
 {
     public function __construct(public string $said) {}
 }
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    // Two arms of the verdict union rather than one, because the contract
+    // writes a verdict as a tagged shape: a run carrying only passes would
+    // leave the shape a failure has never held to anything. Held to the
+    // generated types rather than to the reader, since a fixture is written by
+    // whoever wrote the reader and the two then agree about a field that is
+    // not there.
+    expect(WhatTheContractAccepts::complaintsAbout('DoctorEnvelope', ['kind' => 'doctor', 'data' => aWholeRun()]))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});

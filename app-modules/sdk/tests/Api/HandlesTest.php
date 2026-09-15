@@ -11,6 +11,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Sdk\Api\HandleIsUnreadable;
 use Modules\Sdk\Api\Handles;
+use Tests\Support\WhatTheContractAccepts;
 
 /**
  * A `job` envelope holding whatever the case under test is about.
@@ -28,8 +29,18 @@ function anAcknowledgementSaying(array $data): Envelope
     return new Envelope(1, 'job', $data);
 }
 
+/**
+ * What a stack answers an action with, complete.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackAnswersAnActionWith(): array
+{
+    return ['action' => 'repair', 'job' => 'a-job-name'];
+}
+
 it('reads the handle a stack answered an action with', function (): void {
-    $job = Handles::in(anAcknowledgementSaying(['action' => 'repair', 'job' => 'a-job-name']));
+    $job = Handles::in(anAcknowledgementSaying(whatAStackAnswersAnActionWith()));
 
     expect($job->shown())->toBe('a-job-name');
 });
@@ -68,4 +79,15 @@ it('refuses an acknowledgement whose payload is not a shape at all', function ()
     // the two differ: a body that parsed as JSON and is not an object.
     expect(fn(): object => Handles::in(new Envelope(1, 'job', 'a sentence where a payload belongs')))
         ->toThrow(HandleIsUnreadable::class, 'data');
+});
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    // Held to the generated types rather than to the reader, because a fixture
+    // is written by whoever wrote the reader: where the two agree about a field
+    // that is not there, both are wrong in the same direction and every case
+    // above is green against a machine nobody has run them against.
+    expect(WhatTheContractAccepts::complaintsAbout('JobEnvelope', [
+        'kind' => 'job',
+        'data' => whatAStackAnswersAnActionWith(),
+    ]))->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

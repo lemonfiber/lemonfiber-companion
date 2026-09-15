@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Http;
 use Saloon\Http\Faking\MockClient;
+use Tests\Support\OurCode;
 use Tests\TestCase;
 
 // The native expansion's tests are here too, by path rather than by name: they
@@ -35,8 +36,23 @@ pest()->extend(TestCase::class)->in('Feature', 'Templates', 'Contract', sprintf(
  * none and raises `NoMockResponseFoundException` before it reaches a socket. A
  * test that wants a response installs its own over the top, which is what every
  * contract suite already does.
+ *
+ * **Over every suite, read from `phpunit.xml`.** Four were named here and there
+ * are eight, and the four left out included `app-modules/*\/tests` — which is
+ * where every adapter that speaks to a stack is tested. An unmocked read there
+ * raised Saloon's `FatalRequestException` rather than its `NoMockResponse`,
+ * which is the difference between being stopped and having dialled (`R4`).
+ *
+ * Saloon's half is the one that reaches every suite. `preventStrayRequests()`
+ * resolves a factory out of the container, so it can only be arranged where the
+ * application is booted — which is the same four directories `TestCase` is
+ * extended into above, and is where the `Http` facade can be reached from at
+ * all.
  */
 pest()->beforeEach(function (): void {
-    Http::preventStrayRequests();
     MockClient::global([]);
+})->in(...OurCode::testDirectories());
+
+pest()->beforeEach(function (): void {
+    Http::preventStrayRequests();
 })->in('Feature', 'Templates', 'Contract', sprintf('%s/../native/tests', __DIR__));

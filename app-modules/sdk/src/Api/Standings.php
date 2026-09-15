@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\VersionInUse;
 use Modules\Sdk\Internal\Endings;
 use Modules\Sdk\Internal\Wire;
 
@@ -53,10 +54,10 @@ final readonly class Standings
         $waiting = self::waiting($changelog);
         $changing = self::changing($data);
         $went = Endings::in($data);
-        $running = self::running($changelog);
+        $inUse = self::inUse($changelog);
 
-        return $running instanceof Release
-            ? Upkeep::runningOn($how, $running, $waiting, $changing, $went)
+        return $inUse instanceof VersionInUse
+            ? Upkeep::runningOn($how, $inUse, $waiting, $changing, $went)
             : Upkeep::reported($how, $waiting, $changing, $went);
     }
 
@@ -118,12 +119,19 @@ final readonly class Standings
      * The release in use, where the stack named one.
      *
      * Absent rather than empty on a stack that has not determined it, which is
-     * the distinction {@see Upkeep::running()} keeps: not looking and running
+     * the distinction {@see Upkeep::inUse()} keeps: not looking and running
      * nothing are different answers.
+     *
+     * Read by {@see self::release()} and then narrowed, so the running block
+     * and the changelog entries go through one reader — the wire sends them
+     * under one shape and a second reader for it is a second place for it to
+     * drift. What the narrowing takes away is the apply path: a
+     * {@see VersionInUse} is not something {@see Upkeep::waiting()} offers and
+     * not something an update can be agreed about (`N2-R20`).
      *
      * @param  array<array-key, mixed>  $changelog
      */
-    private static function running(array $changelog): ?Release
+    private static function inUse(array $changelog): ?VersionInUse
     {
         if (! array_key_exists(WireField::Running->value, $changelog)) {
             return null;
@@ -131,7 +139,7 @@ final readonly class Standings
 
         $said = $changelog[WireField::Running->value];
 
-        return is_array($said) ? self::release($said, 0) : null;
+        return is_array($said) ? VersionInUse::of(self::release($said, 0)) : null;
     }
 
     /**

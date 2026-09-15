@@ -43,6 +43,13 @@ parameters:
         # directory the analyser never looks at.
         - scripts
         - tests
+        # The plugin's own PHP and its tests. It is a path package rather than a
+        # module, so `app-modules` does not reach it and neither did this list —
+        # while `phpunit.xml` holds `native/src` to the same coverage floor as
+        # everything else and says in as many words that being a package is not
+        # a reason to be held to a lower bar. `R4` is what keeps the two lists
+        # saying the same thing.
+        - native
 
     # A Blade template is a `.php` file by extension and is not PHP the
     # analyser can read: it is a tree of `native:` tags compiled by EDGE at
@@ -248,6 +255,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- B2: randomness is an input too --------------------------------
         -
@@ -271,6 +279,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- B4: waiting is a port, not a syscall ---------------------------
         -
@@ -332,6 +341,7 @@ parameters:
                 - scripts/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- A3/A4: service location hides what a class needs ---------------
         -
@@ -380,6 +390,7 @@ parameters:
                 - config/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- A4: `view()`, where the framework owns the signature -----------
         #
@@ -407,6 +418,7 @@ parameters:
                 - config/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- S1: the execution bundle, scoped -------------------------------
         #
@@ -456,6 +468,7 @@ parameters:
                 - config/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- P3: a class whose shape is a runtime question ------------------
         -
@@ -493,6 +506,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- L4: a format string is one locale's answer ----------------------
         -
@@ -504,6 +518,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- L5: so is a decimal separator -----------------------------------
         -
@@ -514,6 +529,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- L6: byte order is not alphabetical ------------------------------
         -
@@ -538,6 +554,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
     disallowedStaticCalls:
         # --- B1 ------------------------------------------------------------
@@ -553,6 +570,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- B2 ------------------------------------------------------------
         -
@@ -569,6 +587,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- N4-R11 -------------------------------------------------------
         #
@@ -606,6 +625,7 @@ parameters:
                 - routes/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- A8: the platform's facades are facades too ---------------------
         #
@@ -623,6 +643,7 @@ parameters:
                 - app-modules/vault/src/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- B3: Storage is the filesystem with a nicer name ----------------
         -
@@ -633,6 +654,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- P4: reflection is the analyser's blind spot ---------------------
         -
@@ -645,6 +667,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
                 - phpstan/*
 
         # --- A3: the container, named directly ------------------------------
@@ -657,6 +680,7 @@ parameters:
                 - bootstrap/Composition/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
         # --- B1: the clock, as a type ---------------------------------------
         -
@@ -673,6 +697,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
     disallowedSuperglobals:
         # --- Q2: the runtime fills some of these in itself -------------------
@@ -693,6 +718,7 @@ parameters:
                 - bootstrap/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
 
     disallowedAttributes:
         # --- P3: a property that exists only at runtime -----------------------
@@ -752,6 +778,7 @@ parameters:
                 - routes/*
                 - tests/*
                 - app-modules/*/tests/*
+                - native/tests/*
             # A module-owned exception constructing itself is the cure, not the
             # disease — and `new self(...)` inside a subclass of RuntimeException
             # resolves to the parent's constructor. Ordinary module code is not

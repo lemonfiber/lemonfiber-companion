@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Native;
 
+use function array_key_exists;
 use function is_array;
 use function json_decode;
 use function json_encode;
@@ -120,7 +121,10 @@ final readonly class Screen
      *
      * The `=== true` matters. A `NO_DEVICE` answer decodes to an array with no
      * `protected` key, and a loose check on a missing key is the kind of false
-     * that turns into a true the day somebody returns `"false"`.
+     * that turns into a true the day somebody returns `"false"`. The key is
+     * asked for rather than defaulted, which is the same distinction one step
+     * earlier: `?? false` cannot say whether the bridge answered no or answered
+     * nothing at all (`C9`).
      */
     private function ask(Call $function): bool
     {
@@ -139,6 +143,6 @@ final readonly class Screen
             associative: true,
         );
 
-        return is_array($said) && ($said[$key] ?? false) === true;
+        return is_array($said) && array_key_exists($key, $said) && $said[$key] === true;
     }
 }
