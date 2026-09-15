@@ -55,6 +55,7 @@ return [
     'signed_in_action' => 'Deze stack staat voor je open. Je bereikt hem via het hoofdscherm.',
     'sign_in_to' => 'Aanmelden bij :stack',
     'sign_in_to_action' => 'Typ het wachtwoord van deze stack. Het wordt één keer uitgewisseld, voor een sessie die deze telefoon bewaart.',
+    'back_to_your_stacks' => 'Terug naar je stacks',
     'sign_in' => 'Aanmelden',
     'try_that_again' => 'Probeer dat wachtwoord opnieuw',
     'password_label' => 'Wachtwoord',

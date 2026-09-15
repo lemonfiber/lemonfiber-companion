@@ -23,7 +23,8 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
-use Modules\Operator\Internal\WhatTheServiceTurnedOutToSay;
+use Modules\Operator\Internal\Presenters\HowAScrollbackReads;
+use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -185,7 +186,7 @@ final class WhatThisServiceSaid extends NativeComponent
         $held = $this->held;
 
         if ($held instanceof Scrollback) {
-            return WhatTheServiceTurnedOutToSay::this($held, $this->lookingFor());
+            return new HowAScrollbackReads()->this($held, $this->lookingFor());
         }
 
         return $this->ask();
@@ -210,7 +211,7 @@ final class WhatThisServiceSaid extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheServiceTurnedOutToSay => $this->read($stack, $session),
-            notHeld: static fn(): WhatTheServiceTurnedOutToSay => WhatTheServiceTurnedOutToSay::signedOut(),
+            notHeld: static fn(): WhatTheServiceTurnedOutToSay => new HowAScrollbackReads()->signedOut(),
         );
     }
 
@@ -228,12 +229,12 @@ final class WhatThisServiceSaid extends NativeComponent
             this_: function (Scrollback $scrollback) use ($looking): WhatTheServiceTurnedOutToSay {
                 $this->held = $scrollback;
 
-                return WhatTheServiceTurnedOutToSay::this($scrollback, $looking);
+                return new HowAScrollbackReads()->this($scrollback, $looking);
             },
             met: function (Obstacle $why) use ($stack): WhatTheServiceTurnedOutToSay {
                 $this->letGoOfTheSession($why, $stack);
 
-                return WhatTheServiceTurnedOutToSay::met($why);
+                return new HowAScrollbackReads()->met($why);
             },
         );
     }

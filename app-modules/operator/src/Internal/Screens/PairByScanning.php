@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatTheCameraSaw;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -130,6 +131,31 @@ final class PairByScanning extends NativeComponent
     }
 
     /**
+     * Whether the typed road is worth offering beside the camera.
+     *
+     * The screen already says *you can type the pairing code instead* when the
+     * camera comes back with nothing and when it comes back with something
+     * unreadable. Saying so without a way to do it is the app giving an
+     * instruction it does not honour — and on a first run this screen is one of
+     * only two things on an empty list, so somebody whose camera is refused has
+     * read the answer and cannot reach it.
+     *
+     * Asked as one question rather than two conditions in the template, which
+     * is `F4`: what makes the other road worth offering is a decision, and a
+     * template is where decisions go to be forgotten.
+     */
+    public function theTypedRoadWouldHelp(): bool
+    {
+        return $this->nothingWasScanned() || $this->codeWasUnreadable;
+    }
+
+    /** Where the typed road is, read off the case the provider registers from. */
+    public function typingIsAt(): string
+    {
+        return AScreenWithoutAStack::PairByTyping->value;
+    }
+
+    /**
      * Whether the camera may be offered at all.
      *
      * `N1-R11` needs a name and the material carries none — an address and a
@@ -237,6 +263,18 @@ final class PairByScanning extends NativeComponent
     public function onwardsTo(): string
     {
         return WhereAStackIs::rememberedAs($this->paired)->signIn();
+    }
+
+    /**
+     * Where the list of machines is.
+     *
+     * Read off the case the provider registers from, for the reason every
+     * other route here is: a rename cannot leave this button pointing at
+     * nothing.
+     */
+    public function theListIsAt(): string
+    {
+        return AScreenWithoutAStack::TheList->value;
     }
 
     /** The frame, by name. */

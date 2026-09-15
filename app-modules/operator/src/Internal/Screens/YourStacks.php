@@ -24,8 +24,10 @@ use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\AScreenWithoutAStack;
-use Modules\Operator\Internal\HowAStackLastWas;
-use Modules\Operator\Internal\WhatTheLaunchWas;
+use Modules\Operator\Internal\Presenters\HowAStacksAgeReads;
+use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
+use Modules\Operator\Internal\ViewModels\HowAStackLastWas;
+use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
@@ -216,18 +218,18 @@ final class YourStacks extends NativeComponent
         $now = $this->clock->now();
 
         return $this->verdicts->lastKnownOf($stack->id())->either(
-            waiting: static fn(): HowAStackLastWas => HowAStackLastWas::notYetKnown(),
+            waiting: static fn(): HowAStackLastWas => new HowAStacksAgeReads()->notYetKnown(),
             holding: static fn(Reading $reading): HowAStackLastWas => $reading->either(
                 // A live reading cannot arrive here: everything this port
                 // answers came out of a store. Answered rather than refused
                 // because the arm is the type's, not this screen's — and the
                 // honest answer for a word read just now is the word with no
                 // age, which is what `notYetKnown` renders as no verdict.
-                live: static fn(): HowAStackLastWas => HowAStackLastWas::notYetKnown(),
+                live: static fn(): HowAStackLastWas => new HowAStacksAgeReads()->notYetKnown(),
                 retained: static fn(object $overall, Instant $at): HowAStackLastWas
                     => $overall instanceof Overall
-                        ? HowAStackLastWas::read($overall, $at, $now)
-                        : HowAStackLastWas::notYetKnown(),
+                        ? new HowAStacksAgeReads()->read($overall, $at, $now)
+                        : new HowAStacksAgeReads()->notYetKnown(),
             ),
         );
     }
@@ -401,10 +403,10 @@ final class YourStacks extends NativeComponent
         $this->launched ??= $this->opening->found();
 
         return $this->launched->either(
-            locked: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::locked(),
-            unpaired: static fn(): WhatTheLaunchWas => WhatTheLaunchWas::unpaired(),
-            blocked: static fn(Obstacle $why): WhatTheLaunchWas => WhatTheLaunchWas::blockedBy($why),
-            ready: static fn(StackId $stack): WhatTheLaunchWas => WhatTheLaunchWas::readyFor($stack),
+            locked: static fn(): WhatTheLaunchWas => new HowTheLaunchReads()->locked(),
+            unpaired: static fn(): WhatTheLaunchWas => new HowTheLaunchReads()->unpaired(),
+            blocked: static fn(Obstacle $why): WhatTheLaunchWas => new HowTheLaunchReads()->blockedBy($why),
+            ready: static fn(StackId $stack): WhatTheLaunchWas => new HowTheLaunchReads()->readyFor($stack),
         );
     }
 }

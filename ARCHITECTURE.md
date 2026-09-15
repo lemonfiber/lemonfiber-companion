@@ -294,7 +294,7 @@ automatic and the operator never sees the question.
 | | Rule | Enforced by |
 |---|---|---|
 | F1 | Components are thin: hold state, delegate decisions | phpstan: `cognitive_complexity` + `H3`'s method cap |
-| F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor |
+| F2 | Presenters are pure: data in, view model out, no ports injected | arch: no interface in a presenter's constructor, over a set the same rule asserts it found |
 | F3 | Blade holds no logic; theme tokens only; every EDGE class and tag verified | `tests/Templates`, against the installed parser and registries |
 | F5 | Every interactive element announces itself to a screen reader | `tests/Templates` |
 | F6 | Every list has an empty state | `tests/Templates` |
@@ -303,6 +303,7 @@ automatic and the operator never sees the question.
 | F8 | A screen shows findings in the order a capability decided, never the order they arrived | arch: a screen that names findings names `WorstFirst` |
 | F9 | A class list is written out, never decided at runtime | arch: over the text of every template |
 | F10 | Every method a template calls is one its screen has, and every screen that renders is paired | `tests/Templates` |
+| F11 | Every component a screen uses is classified as a control or as furniture, so F5 cannot pass over one nobody thought about | `tests/Templates` |
 
 **Why F9 exists, given F3.** Every rule about a class list is handed the answer
 of one function, `Template::classStrings()`, and that function drops any token
@@ -385,7 +386,7 @@ ever sees.
 
 | | Rule | Enforced by |
 |---|---|---|
-| L1 | Text a person reads comes from the translator | phpstan: own rule, scoped to presenters, view models and screens |
+| L1 | Text a person reads comes from the translator | phpstan: own rule, over everything on the way to a screen that is not a refusal |
 | L2 | Every locale carries the same keys, none empty and none equal to its key | test |
 | L7 | Every catalogue key the application names is a key the catalogue holds — the literal ones read out of the sources, the derived ones asked of each enum that builds them — and every line the catalogue holds is one something shows | test: three, one per direction plus one for derived keys |
 
@@ -503,6 +504,7 @@ app-modules/<name>/
   src/Api/Queries/        one public method each, never returning Outcome
   src/Internal/           unreachable from anywhere else
   src/Internal/Presenters/   pure: data in, view model out
+  src/Internal/ViewModels/   what a template reads, deciding nothing
   resources/views/        the screens this module navigates to
   tests/                  mirroring src/, one directory level for one
 lang/<locale>/<module>.php   every sentence a person reads
@@ -889,7 +891,15 @@ the decisions are.
 
 ### View model
 
-`final readonly`, no behaviour, named for the screen it dresses.
+`final readonly`, named for the screen it dresses. It carries what a template
+reads and folds nothing: every value on it was decided by the presenter beside
+it, which is what keeps those decisions somewhere a mutation run can reach.
+
+**No behaviour means no decisions, not no methods.** Asking a view model about
+what it already holds — whether a field is set, whether an identity matches the
+one a screen is acting on — is reading. The line is the fold: a method that
+takes a domain value and works out what to show is a presenter's, wherever it
+happens to be written.
 
 ### Outcome
 
