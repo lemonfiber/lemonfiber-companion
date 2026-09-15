@@ -138,6 +138,21 @@ it('N2-R21 — a machine that could not be asked reports no strangers, not none'
         ->and($screen->howMany())->toBe(0);
 });
 
+it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
+    // The other half of `N3-R13`, and the half a screen shows rather than the
+    // half it stores. A stack that did not answer says nothing about whether
+    // this device is still signed into it — `Obstacle` owns that decision and
+    // only the refused credential means signed out.
+    //
+    // Reported the wrong way round, the screen draws the sign-in prompt instead
+    // of the obstacle: somebody whose phone has no signal is told to sign in,
+    // which is advice for a problem they do not have and hides the one they do.
+    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::StackDidNotAnswer));
+
+    expect($screen->answer()->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->met)->toBe(Obstacle::StackDidNotAnswer->said());
+});
+
 it('N1-R44 — a session that has ended is not a machine running nothing', function (): void {
     $screen = theStrangersScreen(
         AStackThatSupervises::with(Daemons::none(whatTheVerbsCostBesideTheStrangers())),
