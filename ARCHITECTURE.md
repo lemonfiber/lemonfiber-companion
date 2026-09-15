@@ -524,6 +524,7 @@ phpstan/Rules/            the rules that are easier to write than to find
 | W3 | Root `tests/` holds only the suites; root `resources/views/` holds no Blade | arch |
 | W4 | A module's tests are namespaced for that module | arch |
 | W5 | A file with no namespace imports no global name — the warning it raises fails the run silently | arch |
+| W7 | Every reader puts its envelope through the wire gate before reading the payload | arch: over the SDK module's own sources |
 
 **These are not tidiness.** Every rule on this page is derived from a path or a
 namespace: the kind rules read `app-modules/<name>/composer.json`, the published

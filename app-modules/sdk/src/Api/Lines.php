@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Said;
 use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stream;
+use Modules\Sdk\Internal\Wire;
 
 use function trim;
 
@@ -54,7 +55,12 @@ final readonly class Lines
         $position = 0;
 
         foreach ($window->lines() as $envelope) {
-            $said[] = self::line($envelope->data, $position);
+            // Every line, not the window. `N1-R13` refuses a wire version this
+            // app does not support, and a window is many envelopes rather than
+            // one — the client asserts each line's *kind* as it builds the
+            // window and says nothing about its version, so this is the only
+            // place the gate can stand for a log read.
+            $said[] = self::line(Wire::checked($envelope)->data, $position);
             $position++;
         }
 
