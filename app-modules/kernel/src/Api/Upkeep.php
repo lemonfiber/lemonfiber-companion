@@ -17,8 +17,13 @@ use Closure;
  * **The waiting list is what the stack offered, filtered by what may be
  * offered.** `N2-R16` refuses a withdrawn release, and doing it here means a
  * screen cannot forget: what {@see waiting()} hands out is already only what is
- * worth offering, and {@see withdrawn()} is the separate question a screen asks
- * to tell somebody their stack is on one.
+ * worth offering, and {@see runningAWithdrawnRelease()} is the separate
+ * question a screen asks to tell somebody their stack is on one.
+ *
+ * **What it is standing on and what it could take are two types.** The wire
+ * sends them under one shape, and {@see VersionInUse} is why this reading
+ * cannot hand the first one to {@see TakingAnUpdate::agreed()} — `N2-R20`'s
+ * refusal, made structural rather than left to the screen that reads this.
  */
 final readonly class Upkeep
 {
@@ -27,7 +32,7 @@ final readonly class Upkeep
         private Releases $releases,
         private Services $changing,
         private HowServicesTookIt $went,
-        private ?Release $running = null,
+        private ?VersionInUse $inUse = null,
     ) {}
 
     /**
@@ -54,12 +59,12 @@ final readonly class Upkeep
     /** The same reading, where the stack named the release in use. */
     public static function runningOn(
         HowCurrent $how,
-        Release $running,
+        VersionInUse $inUse,
         Releases $releases,
         Services $changing,
         HowServicesTookIt $went,
     ): self {
-        return new self($how, $releases, $changing, $went, $running);
+        return new self($how, $releases, $changing, $went, $inUse);
     }
 
     public function how(): HowCurrent
@@ -75,16 +80,24 @@ final readonly class Upkeep
      * running nothing, and `N2-R15` has this side report what it was told
      * rather than fill in a blank.
      *
-     * @template TOn of object
+     * **Named `inUse` rather than `running`**, which is what
+     * {@see Daemons::running()} and {@see Supervising::running()} already mean
+     * one file over: there they are about services being up, and here it was
+     * about a version. One word for two ideas in neighbouring types is what
+     * kept the type they shared out of sight. The word an operator reads is
+     * still *Running*, in the catalogue, for the reason
+     * {@see WhatToDoWithIt::asked()} gives about `up` and *start*.
+     *
+     * @template TNamed of object
      * @template TUnstated of object
      *
-     * @param  Closure(Release): TOn  $on
+     * @param  Closure(VersionInUse): TNamed  $named
      * @param  Closure(): TUnstated  $unstated
-     * @return TOn|TUnstated
+     * @return TNamed|TUnstated
      */
-    public function running(Closure $on, Closure $unstated): object
+    public function inUse(Closure $named, Closure $unstated): object
     {
-        return $this->running instanceof Release ? $on($this->running) : $unstated();
+        return $this->inUse instanceof VersionInUse ? $named($this->inUse) : $unstated();
     }
 
     /**
@@ -121,7 +134,7 @@ final readonly class Upkeep
      */
     public function runningAWithdrawnRelease(): bool
     {
-        return $this->running instanceof Release && $this->running->wasWithdrawn();
+        return $this->inUse instanceof VersionInUse && $this->inUse->wasWithdrawn();
     }
 
     /**

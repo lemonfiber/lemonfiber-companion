@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\VersionInUse;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Updates\Api\Queries\NotArrivedFirst;
@@ -72,9 +72,10 @@ final readonly class HowUpkeepReads
             met: '',
             remedy: '',
             howSaid: $upkeep->how()->saidOnTheScreen(),
-            running: $upkeep->running(
-                on: static fn(Release $release): WhatTheStackIsOn => new HowARunningReleaseReads()->of($release),
-                unstated: static fn(): WhatTheStackIsOn => new HowARunningReleaseReads()->notNamed(),
+            running: $upkeep->inUse(
+                named: static fn(VersionInUse $inUse): WhatTheStackIsOn
+                    => new HowTheVersionInUseReads()->of($inUse),
+                unstated: static fn(): WhatTheStackIsOn => new HowTheVersionInUseReads()->notNamed(),
             )->version,
             runningWasWithdrawn: $upkeep->runningAWithdrawnRelease(),
             waiting: $waiting,
