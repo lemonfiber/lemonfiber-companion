@@ -1,0 +1,65 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Operator\Internal\Presenters;
+
+use Modules\Kernel\Api\Daemon;
+use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
+
+/**
+ * What one service a stack runs comes to, as the fields a row reads.
+ *
+ * **What leans on it travels with the row.** `N2-R8` has a disruptive action
+ * state what it disturbs, and what a stop disturbs is not knowable from the
+ * service alone — it is the other services that will not work without it. A
+ * screen that had to go back and ask would be a screen that could forget to.
+ */
+final readonly class HowAServiceReads
+{
+    /**
+     * Fold one service into the fields a row needs.
+     *
+     * The exit code is folded here rather than in the screen, for
+     * {@see HowAStalledItemReads::in()}'s reason: one closure builds the whole
+     * row, so a field cannot reach a template by a path that skipped the value
+     * object.
+     */
+    public function in(Daemon $daemon): WhatOneServiceSays
+    {
+        $leaning = [];
+
+        foreach ($daemon->whatLeansOnIt() as $id) {
+            $leaning[] = $id->named();
+        }
+
+        return new WhatOneServiceSays(
+            id: $daemon->id(),
+            name: $daemon->name(),
+            form: $daemon->profile()->named(),
+            runsSaid: $daemon->runs()->saidOnTheScreen(),
+            mattersSaid: $daemon->matters()->saidOnTheScreen(),
+            isSettling: $daemon->runs()->isSettling(),
+            isOurs: $daemon->runs()->isThisStacksToRun(),
+            wouldNotHelp: $daemon->runs()->isAlreadyBeingRestarted(),
+            leaning: $leaning,
+            exited: $this->exited($daemon),
+        );
+    }
+
+    /**
+     * What it exited with, as text, or nothing where it did not.
+     *
+     * The empty string rather than a zero, because a service that is running
+     * has no exit code at all and `0` is the code for one that ended well — the
+     * two must not render the same.
+     */
+    private function exited(Daemon $daemon): string
+    {
+        return $daemon->exit(
+            said: static fn(int $code): AsText => AsText::of((string) $code),
+            unstated: static fn(): AsText => AsText::nothing(),
+        )->said;
+    }
+}

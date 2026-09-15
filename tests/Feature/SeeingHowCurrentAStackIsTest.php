@@ -23,7 +23,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
-use Modules\Operator\Internal\WhatTheStackIsOn;
+use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
