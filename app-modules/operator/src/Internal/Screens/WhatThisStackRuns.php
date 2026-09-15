@@ -27,9 +27,11 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
-use Modules\Operator\Internal\WhatAVerbTakesAwaySays;
-use Modules\Operator\Internal\WhatOneServiceSays;
-use Modules\Operator\Internal\WhatThisStackRunsTurnedOutToBe;
+use Modules\Operator\Internal\Presenters\HowAListingReads;
+use Modules\Operator\Internal\Presenters\HowAVerbReads;
+use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
+use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
+use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
@@ -231,7 +233,7 @@ final class WhatThisStackRuns extends NativeComponent
             return null;
         }
 
-        return WhatAVerbTakesAwaySays::of($disturbs->forThe($agreed->doing()));
+        return new HowAVerbReads()->of($disturbs->forThe($agreed->doing()));
     }
 
     /**
@@ -340,7 +342,7 @@ final class WhatThisStackRuns extends NativeComponent
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatThisStackRunsTurnedOutToBe => $this->asked($stack, $session),
             notHeld: static fn(): WhatThisStackRunsTurnedOutToBe
-                => WhatThisStackRunsTurnedOutToBe::signedOut(),
+                => new HowAListingReads()->signedOut(),
         );
     }
 
@@ -349,11 +351,11 @@ final class WhatThisStackRuns extends NativeComponent
     {
         return $this->supervising->running($stack, $session)->either(
             these: static fn(Daemons $daemons): WhatThisStackRunsTurnedOutToBe
-                => WhatThisStackRunsTurnedOutToBe::these($daemons),
+                => new HowAListingReads()->these($daemons),
             met: function (Obstacle $why) use ($stack): WhatThisStackRunsTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
-                return WhatThisStackRunsTurnedOutToBe::met($why);
+                return new HowAListingReads()->met($why);
             },
         );
     }

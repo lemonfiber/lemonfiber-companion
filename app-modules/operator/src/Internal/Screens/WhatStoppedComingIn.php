@@ -20,7 +20,8 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
-use Modules\Operator\Internal\WhatStoppedTurnedOutToBe;
+use Modules\Operator\Internal\Presenters\HowAStallReads;
+use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -169,7 +170,7 @@ final class WhatStoppedComingIn extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatStoppedTurnedOutToBe => $this->asked($stack, $session),
-            notHeld: static fn(): WhatStoppedTurnedOutToBe => WhatStoppedTurnedOutToBe::signedOut(),
+            notHeld: static fn(): WhatStoppedTurnedOutToBe => new HowAStallReads()->signedOut(),
         );
     }
 
@@ -178,11 +179,11 @@ final class WhatStoppedComingIn extends NativeComponent
     {
         return $this->stalling->stoppedOn($stack, $session)->either(
             these: static fn(Stalled $stalled): WhatStoppedTurnedOutToBe
-                => WhatStoppedTurnedOutToBe::these($stalled),
+                => new HowAStallReads()->these($stalled),
             met: function (Obstacle $why) use ($stack): WhatStoppedTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
-                return WhatStoppedTurnedOutToBe::met($why);
+                return new HowAStallReads()->met($why);
             },
         );
     }

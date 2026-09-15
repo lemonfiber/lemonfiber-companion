@@ -19,7 +19,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
-use Modules\Operator\Internal\WhichFamilyToRead;
+use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatWasAsked;

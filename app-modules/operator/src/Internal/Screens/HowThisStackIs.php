@@ -25,10 +25,13 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
-use Modules\Operator\Internal\WhatOneFindingSays;
-use Modules\Operator\Internal\WhatTheStackTurnedOutToBe;
+use Modules\Operator\Internal\Presenters\HowAFamilyReads;
+use Modules\Operator\Internal\Presenters\HowAFindingReads;
+use Modules\Operator\Internal\Presenters\HowAStackReads;
+use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
+use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Operator\Internal\WhereAStackIs;
-use Modules\Operator\Internal\WhichFamilyToRead;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -165,13 +168,17 @@ final class HowThisStackIs extends NativeComponent
         $run = new TheCauseBeforeItsSymptoms()->over(
             new WorstFirst()->over($this->narrowed($this->answer()->findings)),
         );
+
+        // The whole run, not just the row: a finding the engine attributed to
+        // another is shown by that other one's title, and the title is only
+        // findable across the run. Built once and asked per row, so every row
+        // resolves its cause against the listing this screen is showing —
+        // grouped, so a symptom resolves against the cause it now sits under.
+        $reads = new HowAFindingReads($run);
         $rows = [];
 
         foreach ($run as $finding) {
-            // The whole run, not just the row: a finding the engine attributed
-            // to another is shown by that other one's title, and the title is
-            // only findable here.
-            $rows[] = WhatOneFindingSays::in($finding, $run);
+            $rows[] = $reads->of($finding);
         }
 
         return $rows;
@@ -203,7 +210,7 @@ final class HowThisStackIs extends NativeComponent
                 continue;
             }
 
-            $families[] = WhichFamilyToRead::of($family, $found->count(), $this->reading === $family->value);
+            $families[] = new HowAFamilyReads()->of($family, $found->count(), $this->reading === $family->value);
         }
 
         return $families;
@@ -358,7 +365,7 @@ final class HowThisStackIs extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheStackTurnedOutToBe => $this->asked($stack, $session),
-            notHeld: static fn(): WhatTheStackTurnedOutToBe => WhatTheStackTurnedOutToBe::signedOut(),
+            notHeld: static fn(): WhatTheStackTurnedOutToBe => new HowAStackReads()->signedOut(),
         );
     }
 
@@ -366,11 +373,11 @@ final class HowThisStackIs extends NativeComponent
     private function asked(Stack $stack, Session $session): WhatTheStackTurnedOutToBe
     {
         return $this->asking->about($stack, $session)->either(
-            said: static fn(Report $report): WhatTheStackTurnedOutToBe => WhatTheStackTurnedOutToBe::said($report),
+            said: static fn(Report $report): WhatTheStackTurnedOutToBe => new HowAStackReads()->said($report),
             met: function (Obstacle $why) use ($stack): WhatTheStackTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
-                return WhatTheStackTurnedOutToBe::met($why);
+                return new HowAStackReads()->met($why);
             },
         );
     }

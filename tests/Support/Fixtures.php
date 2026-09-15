@@ -2055,11 +2055,31 @@ final readonly class Fixtures
                 </native:column>
                 BLADE, 'F9 —', 'runtime-class'),
 
+            // A field somebody types into, with nothing to say for itself. The
+            // component the screens use rather than one they do not, because
+            // this is the shape the rule used to pass over.
             Fixture::suite('F5', sprintf('%s/silent-control.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">
-                    <native:fab icon="plus" />
+                    <native:outlined-text-input native:model="typed" />
                 </native:column>
                 BLADE, 'every control in', 'silent-control'),
+
+            // Furniture handed something to do, which the table of component
+            // kinds cannot see and the second reading can.
+            Fixture::suite('F5', sprintf('%s/silent-tap.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    <native:text @tap="open">x</native:text>
+                </native:column>
+                BLADE, 'every control in', 'silent-tap'),
+
+            // A component nobody has classified, and deliberately one with
+            // nothing to do: were it operable the rule above would fire too,
+            // and two rules answering for one fixture proves neither.
+            Fixture::suite('F11', sprintf('%s/unclassified-component.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    <native:activity-indicator />
+                </native:column>
+                BLADE, 'every component in', 'unclassified-component'),
 
             Fixture::suite('F6', sprintf('%s/no-empty-state.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">
