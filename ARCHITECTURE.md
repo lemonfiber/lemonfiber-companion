@@ -766,8 +766,39 @@ missing, and only the word is wrong.
 payload against them. The rule is over the suites rather than inside one: a
 check living in whichever suite last remembered would have `G12` claim a
 guarantee that one file's assertion was carrying, which is the same defect one
-level up. A suite is found by `api_version`, which nothing but an envelope
-writes, and the rule fails if that mark ever matches nothing at all.
+level up.
+
+**A suite is found by the body it builds, read over tokens rather than over
+text.** There are two ways to build one and the rule started by seeing one of
+them: a body written out whole spells the wire's version field, and a body
+built positionally hands three arguments to the envelope type and spells no
+field of an envelope anywhere. Ten suites wrote one the second way — every SDK
+reader suite, including the one whose payload is the reason this rule exists —
+and the register read as complete while half of it had never been looked at.
+Tokens rather than text because every comment on this page quotes code: a
+search for either mark finds this paragraph before it finds a payload.
+
+The kind a body is built under is resolved to an envelope out of the generated
+package, never from a map kept here. Each envelope declares the one kind it
+reads and the generated enum holds the word, so a kind neither of them has
+**fails by name** — a stand-in built under a word the contract has not got is
+judged against nothing and reads as covered. What fails there is an envelope
+being used as a carrier for a value a test needs out of a closure, and the fix
+is a readonly class rather than an exemption.
+
+Three things are asserted, and none of them is a figure written down. Every
+stand-in judges the body it builds. There is at least one stand-in, so a mark
+that matched nothing cannot read as compliance. And every envelope some reader
+here unwraps has at least one judged stand-in — grepped from the `::in(` call
+sites on each run, so a reader written for a new envelope tomorrow fails until
+something stands a payload in for it.
+
+Where a body is deliberately not one a stack sends — `Wire`'s version check is
+answered before the payload is read, so its fixture is empty on purpose — the
+fixture says so, naming the kind and the reason. Per kind and not per file: a
+suite that later builds a second kind of body is asked about that one on its
+own, because an exemption nobody can read is how a rule stops covering what it
+was written for.
 
 ```
 tests/Contract/ClockContractTest.php

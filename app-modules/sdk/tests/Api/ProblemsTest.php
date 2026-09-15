@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 use Modules\Sdk\Api\ProblemIsUnreadable;
 use Modules\Sdk\Api\Problems;
+use Tests\Support\WhatTheContractAccepts;
 
 /**
  * An `error` envelope holding whatever the case under test is about.
@@ -176,4 +177,13 @@ it('N1-R13 — refuses an envelope in a wire version this app does not read', fu
     // because a version mismatch is itself the kind of thing a stack reports.
     expect(fn(): Problem => Problems::in(new Envelope(99, 'error', [])))
         ->toThrow(EnvelopeIsNotRead::class, 'version 99');
+});
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    // Held to the generated types rather than to the reader, because a fixture
+    // is written by whoever wrote the reader: where the two agree about a field
+    // that is not there, both are wrong in the same direction and every case
+    // above is green against a machine nobody has run them against.
+    expect(WhatTheContractAccepts::complaintsAbout('ErrorEnvelope', ['kind' => 'error', 'data' => aWholeError()]))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

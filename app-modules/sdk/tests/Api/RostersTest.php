@@ -16,6 +16,8 @@ use Modules\Sdk\Api\Rosters;
 
 use function sprintf;
 
+use Tests\Support\WhatTheContractAccepts;
+
 /**
  * A `status` envelope holding whatever the case under test is about.
  *
@@ -36,6 +38,11 @@ function aRosterSaying(array $data): Envelope
 /**
  * One service, complete, with whatever this case is about changed.
  *
+ * Complete means every field the contract requires, `describes` included —
+ * which nothing here reads. A fixture short of a required field is a sample of
+ * a payload no stack sends, and a reader tested only against it has been tested
+ * against nothing.
+ *
  * @param  array<mixed> $differently
  * @return array<mixed>
  */
@@ -44,6 +51,7 @@ function aServiceSaying(array $differently = []): array
     return [...[
         'id' => 'sonarr',
         'name' => 'Sonarr',
+        'describes' => 'Fetches the series somebody is following',
         'profile' => 'downloads',
         'state' => 'running',
         'criticality' => 'important',
@@ -115,6 +123,15 @@ function aRosterOf(array $differently = []): array
         'forms' => ['downloads'],
         'disturbs' => whatTheseVerbsCostOnTheWire(),
         'services' => [aServiceSaying($differently)],
+        // A container the machine is running that this stack's own
+        // configuration does not declare. Every stack sends the field, and it
+        // carries a row rather than none so that the shape of a row is part of
+        // what the contract is asked about here.
+        'undeclared' => [[
+            'id' => 'a-container-somebody-started',
+            'describes' => 'Something running beside the stack',
+            'state' => 'running',
+        ]],
     ];
 }
 
@@ -327,4 +344,13 @@ it('refuses a listing with no services field at all', function (): void {
 it('refuses a payload that is not a shape at all', function (): void {
     expect(fn(): object => Rosters::in(new Envelope(1, 'status', 'a sentence where a payload belongs')))
         ->toThrow(RosterIsUnreadable::class, 'data');
+});
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    // Held to the generated types rather than to the reader, because a fixture
+    // is written by whoever wrote the reader: where the two agree about a field
+    // that is not there, both are wrong in the same direction and every case
+    // above is green against a machine nobody has run them against.
+    expect(WhatTheContractAccepts::complaintsAbout('StatusEnvelope', ['kind' => 'status', 'data' => aRosterOf()]))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

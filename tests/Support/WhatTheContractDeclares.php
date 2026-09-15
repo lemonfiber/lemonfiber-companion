@@ -28,8 +28,15 @@ use function trim;
  */
 final readonly class WhatTheContractDeclares
 {
-    /** Where the generated envelopes are written. */
-    private const string GENERATED = 'vendor/lemonfiber/sdk-php/src/Generated';
+    /**
+     * Where the generated envelopes are written.
+     *
+     * Public because `G12` reads the same directory for a different question —
+     * which envelope declares which kind — and a second spelling of the path
+     * would be a second thing to move the day the package is laid out
+     * differently, with only one of them raising when it was missed.
+     */
+    public const string GENERATED = 'vendor/lemonfiber/sdk-php/src/Generated';
 
     /**
      * The payload shape one envelope declares, as text.
@@ -38,31 +45,31 @@ final readonly class WhatTheContractDeclares
      * {@see \thePayloadShapeOf()} gives about the gap register: every docblock
      * in that package quotes field names in prose, so anything wider reads an
      * explanation as a declaration.
-     *
-     * An envelope this repository does not vendor answers with nothing rather
-     * than raising, because the caller has a sentence for that and no sentence
-     * for a raise coming out of an expectation.
      */
     public static function shapeOf(string $envelope): string
     {
-        $path = sprintf('%s/%s.php', Tree::at(self::GENERATED), $envelope);
+        return self::whatIsDeclared(sprintf('%s.php', $envelope), '/@phpstan-type Data (.*)/');
+    }
 
-        // Asked before it is read rather than read under `@`. Suppression is
-        // refused here for `G11`'s reason: a warning raised under it is dropped
-        // before the result sees it, so the run prints it and still exits zero.
-        if (! file_exists($path)) {
-            return '';
-        }
+    /**
+     * The kind one envelope reads, as the word that kind is on the wire.
+     *
+     * Two hops, because the package keeps them apart: the envelope names a case
+     * of the generated enum, and the enum holds the word. Read rather than
+     * mapped, for the reason every other reading here is: a map written beside
+     * this one is a second copy of the contract's answer, and the copy is what
+     * goes on agreeing after the contract has moved.
+     */
+    public static function kindOf(string $envelope): string
+    {
+        $case = self::whatIsDeclared(
+            sprintf('%s.php', $envelope),
+            '/public const Kind KIND = Kind::([A-Za-z0-9_]+);/',
+        );
 
-        $said = file_get_contents($path);
-
-        if ($said === false) {
-            return '';
-        }
-
-        preg_match('/@phpstan-type Data (.*)/', $said, $shape);
-
-        return trim($shape[1] ?? '');
+        return $case === ''
+            ? ''
+            : self::whatIsDeclared('Kind.php', sprintf('/case %s = \'([^\']+)\';/', $case));
     }
 
     /**
@@ -138,6 +145,37 @@ final readonly class WhatTheContractDeclares
         $parts[] = trim($held);
 
         return $parts;
+    }
+
+    /**
+     * The one thing a pattern picks out of a file under the generated tree.
+     *
+     * An envelope this repository does not vendor answers with nothing rather
+     * than raising, because the caller has a sentence for that and no sentence
+     * for a raise coming out of an expectation.
+     */
+    private static function whatIsDeclared(string $file, string $pattern): string
+    {
+        preg_match($pattern, self::whatIsWrittenIn($file), $said);
+
+        return trim($said[1] ?? '');
+    }
+
+    /** What one file under the generated tree says. */
+    private static function whatIsWrittenIn(string $file): string
+    {
+        $path = sprintf('%s/%s', Tree::at(self::GENERATED), $file);
+
+        // Asked before it is read rather than read under `@`. Suppression is
+        // refused here for `G11`'s reason: a warning raised under it is dropped
+        // before the result sees it, so the run prints it and still exits zero.
+        if (! file_exists($path)) {
+            return '';
+        }
+
+        $said = file_get_contents($path);
+
+        return $said === false ? '' : $said;
     }
 
     /**

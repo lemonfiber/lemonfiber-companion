@@ -16,6 +16,10 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Sdk\Api\Standings;
 use Modules\Sdk\Api\UpkeepIsUnreadable;
 
+use function sprintf;
+
+use Tests\Support\WhatTheContractAccepts;
+
 /**
  * What an `update` envelope this side cannot read does to the reader.
  *
@@ -51,6 +55,14 @@ function anUpkeepSaying(array $data): Envelope
  * it, and the payload carries a second `state` at the top that means something
  * else entirely.
  *
+ * **Every field the contract requires is here, including the four no reader
+ * touches.** A fixture short of one is a sample of a payload no stack sends,
+ * and a reader tested only against it has been tested against nothing — so
+ * `confirmed`, `in_flight`, `stack_edits` and the changelog's `requirements`
+ * are carried whether or not anything reads them. What this app does not read
+ * and why is the register beside this one's subject; what a stack sends is
+ * this one's.
+ *
  * @param  array<mixed> $changelog
  * @param  array<mixed> $differently
  * @return array<mixed>
@@ -61,9 +73,13 @@ function whatAStackSaysAboutItsUpkeep(array $changelog = [], array $differently 
         'state' => 'partial',
         'applied' => [],
         'changes' => [],
+        'confirmed' => false,
+        'in_flight' => [],
+        'stack_edits' => [],
         'changelog' => [
             'state' => 'pending',
             'releases' => [],
+            'requirements' => [],
             ...$changelog,
         ],
         ...$differently,
@@ -71,7 +87,7 @@ function whatAStackSaysAboutItsUpkeep(array $changelog = [], array $differently 
 }
 
 /**
- * One release, complete, with whatever this case is about changed.
+ * One release the changelog lists, with whatever this case is about changed.
  *
  * @param  array<mixed>  $differently
  * @return array<mixed>
@@ -79,6 +95,28 @@ function whatAStackSaysAboutItsUpkeep(array $changelog = [], array $differently 
 function aReleaseSaying(array $differently = []): array
 {
     return ['version' => '4.1.0', 'user_facing' => true, ...$differently];
+}
+
+/**
+ * The release a stack says it is running, which is a wider shape than a listed
+ * one.
+ *
+ * The contract puts the notes somebody would read on the release in use and not
+ * on the ones waiting, so the two are not interchangeable even though this
+ * reader asks both the same three questions.
+ *
+ * @param  array<mixed>  $differently
+ * @return array<mixed>
+ */
+function aReleaseInUseSaying(array $differently = []): array
+{
+    return [
+        'version' => '4.0.15',
+        'user_facing' => true,
+        'tag' => 'v4.0.15',
+        'groups' => [],
+        ...$differently,
+    ];
 }
 
 /**
@@ -125,7 +163,7 @@ it('N2-R15 — reads the triple off the changelog rather than off the payload', 
 
 it('N2-R15 — reads the release in use off the changelog', function (): void {
     $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep([
-        'running' => aReleaseSaying(['version' => '4.0.15']),
+        'running' => aReleaseInUseSaying(),
     ]));
 
     expect(whatItIsOn($upkeep))->toBe('4.0.15');
@@ -386,4 +424,31 @@ it('counts a refused change when it names where a later one sat', function (): v
         ['service' => 'jellyfin', 'refused' => false],
         ['refused' => false],
     ]])))->toThrow(UpkeepIsUnreadable::class, 'Change 3');
+});
+
+it('stands in for a stack with payloads the contract would accept', function (): void {
+    // The payload every case here is built from, held to the generated types
+    // rather than to the reader that reads it. A fixture is written by whoever
+    // wrote the reader, so the two agree about a field that is not there and
+    // every assertion above passes against a machine nobody has run them
+    // against — which is the defect that had this reader looking for the triple
+    // `N2-R15` asks for at the top of the payload instead of under `changelog`.
+    //
+    // The two releases are separate entries because they are separate shapes.
+    // The contract puts the notes somebody would read on the release in use and
+    // not on the ones waiting, so one fixture serving both would be short of
+    // half of one of them and nothing here would say so.
+    $payloads = [
+        'the reading' => whatAStackSaysAboutItsUpkeep(),
+        'a release the changelog lists' => whatAStackSaysAboutItsUpkeep(['releases' => [aReleaseSaying()]]),
+        'the release in use' => whatAStackSaysAboutItsUpkeep(['running' => aReleaseInUseSaying()]),
+    ];
+
+    foreach ($payloads as $which => $payload) {
+        expect(WhatTheContractAccepts::complaintsAbout('UpdateEnvelope', ['kind' => 'update', 'data' => $payload]))
+            ->toBe([], sprintf(
+                "The payload this suite stands in for a stack with is not one a stack would send: %s.\n",
+                $which,
+            ));
+    }
 });

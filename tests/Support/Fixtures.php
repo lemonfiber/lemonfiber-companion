@@ -990,6 +990,41 @@ final readonly class Fixtures
                 });
                 PHP, 'G12 —'),
 
+            // The other way a body is written, and the half the rule could not
+            // see for as long as it read one mark. This one spells no field of
+            // an envelope anywhere: the version and the kind are handed to the
+            // envelope type as arguments, which is how every SDK reader suite
+            // builds its payload. A fixture for the first half alone would go
+            // on passing whatever this half did.
+            Fixture::suite('G12', 'tests/Support/Fixtures/StandsInPositionallyTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use Lemonfiber\Sdk\Envelope\Envelope;
+
+                it('hands an envelope a payload nothing read against the contract', function (): void {
+                    expect(new Envelope(1, 'doctor', ['overall' => 'healthy'])->kind)->toBe('doctor');
+                });
+                PHP, 'G12 —'),
+
+            // The envelope type standing in as a carrier for a value a test
+            // wants out of a closure. There is no contract kind here at all, so
+            // nothing resolves, nothing is judged, and the suite is green about
+            // a conversation neither end could have had. The rule has to name
+            // it rather than pass over it, which is what this plants.
+            Fixture::suite('G12', 'tests/Support/Fixtures/StandsInUnderNoKindTest.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use Lemonfiber\Sdk\Envelope\Envelope;
+
+                it('carries a value out of a closure in an envelope', function (): void {
+                    expect(new Envelope(1, 'x', 'what one arm said')->data)->toBe('what one arm said');
+                });
+                PHP, 'G12 —'),
+
             Fixture::suite('H1', 'app-modules/health/src/Fixtures/RepairManager.php', <<<'PHP'
                 <?php
 
