@@ -2,10 +2,6 @@
 
 declare(strict_types=1);
 
-use function config;
-use function expect;
-use function it;
-
 use Modules\Design\Api\ThemeToken;
 
 // `DES-R24` maps one brand colour to the accent role and leaves the rest of the
