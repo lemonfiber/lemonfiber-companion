@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 
 use function sprintf;
@@ -74,6 +75,7 @@ it('N2-R3 — a finding carries the code, the meaning and the remedy the core pr
         Remedies::of(Remedy::of('restart the tunnel')),
         Severity::Error,
         Standing::Remediable,
+        WhatItSaysUnderneath::none(),
     );
 
     $shown = Finding::of(
@@ -140,5 +142,38 @@ it('N2-R3 — a failure that says nothing is refused rather than shown', functio
         Remedies::none(),
         Severity::Error,
         Standing::Guided,
+        WhatItSaysUnderneath::none(),
     ))->toThrow(CheckSaidNothing::class);
 });
+
+it('G4-R4 — a verdict carries what the core added underneath, where it added any', function (): void {
+    // Available, which is the half of the rule a screen forgets. The plain
+    // explanation already leads; what was missing was any way through to the
+    // line an operator who knows what a socket is would actually want.
+    $said = WhatItSaysUnderneath::said('dial tcp 10.0.0.4:8989: connect: connection refused');
+
+    expect(whatItSays($said))->toBe('dial tcp 10.0.0.4:8989: connect: connection refused');
+});
+
+it('G4-R4 — a core that added nothing is told from one that added an empty line', function (): void {
+    // Blank is absent. A screen that told them apart would draw a heading with
+    // nothing under it, which reads as *we know something and are not telling
+    // you* — and the operator cannot see the difference that justified it.
+    expect(whatItSays(WhatItSaysUnderneath::none()))->toBe('nothing')
+        ->and(whatItSays(WhatItSaysUnderneath::said('   ')))->toBe('nothing');
+});
+
+/** What a detail says, carried out of the `either()` arms. */
+function whatItSays(WhatItSaysUnderneath $underneath): string
+{
+    return $underneath->either(
+        said: static fn(string $detail): WhatTheDetailTurnedOutToBe => new WhatTheDetailTurnedOutToBe($detail),
+        none: static fn(): WhatTheDetailTurnedOutToBe => new WhatTheDetailTurnedOutToBe('nothing'),
+    )->said;
+}
+
+/** One answer carried out of an `either()` arm, which hands back objects. */
+final readonly class WhatTheDetailTurnedOutToBe
+{
+    public function __construct(public string $said) {}
+}

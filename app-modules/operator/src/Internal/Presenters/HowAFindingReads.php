@@ -11,8 +11,11 @@ use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Severity;
+use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
+use Modules\Operator\Internal\WhatTheCoreAddedUnderneath;
 
 /**
  * One finding, as the row a report draws.
@@ -84,12 +87,15 @@ final readonly class HowAFindingReads
                 service: $service,
                 because: $because,
                 remedies: Remedies::none(),
+                underneath: '',
             ),
             wentWrong: static fn(
                 Code $code,
                 string $meaning,
                 Remedies $remedies,
                 Severity $severity,
+                Standing $standing,
+                WhatItSaysUnderneath $underneath,
             ): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),
                 about: $finding->category()->saidOnTheScreen(),
@@ -104,6 +110,15 @@ final readonly class HowAFindingReads
                 // has room for the list — an operator whose first remedy did
                 // not work would otherwise have nowhere to find the second.
                 remedies: $remedies,
+                // `G4-R4`: available, and not leading. It arrives on the row
+                // beneath everything the requirement puts above it, which is
+                // what *must not lead* means on a surface with one column.
+                underneath: $underneath->either(
+                    said: static fn(string $detail): WhatTheCoreAddedUnderneath
+                        => new WhatTheCoreAddedUnderneath($detail),
+                    none: static fn(): WhatTheCoreAddedUnderneath
+                        => new WhatTheCoreAddedUnderneath(''),
+                )->said,
             ),
             couldNotSay: static fn(string $reason, Remedies $remedies): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),
@@ -120,6 +135,7 @@ final readonly class HowAFindingReads
                 service: $service,
                 because: $because,
                 remedies: $remedies,
+                underneath: '',
             ),
         );
     }

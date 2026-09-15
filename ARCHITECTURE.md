@@ -304,6 +304,25 @@ automatic and the operator never sees the question.
 | F9 | A class list is written out, never decided at runtime | arch: over the text of every template |
 | F10 | Every method a template calls is one its screen has, and every screen that renders is paired | `tests/Templates` |
 | F11 | Every component a screen uses is classified as a control or as furniture, so F5 cannot pass over one nobody thought about | `tests/Templates` |
+| F12 | Every screen can be reached from the one the app opens on, by following navigation from screen to screen | `tests/Feature`: the walk from the screen the router serves at launch |
+
+**Why F12 is a rule of its own, given the three beside it.** Three rules already
+ask about reachability and every one of them asks it of a single screen: each
+screen offers a way off it, each screen under a machine offers a way back to it,
+and each destination the app can describe is one some template navigates to. All
+three are local, and a cluster of screens wired to each other satisfies every one
+of them while sitting outside the application entirely — each has a way off, each
+has something pointing at it, and nobody can get to any of them from where a
+person actually starts. That is what a feature branch looks like halfway through,
+and the first report would be an operator who cannot find the screen.
+
+So F12 starts at the screen the router serves under the path a launch asks for —
+derived, never named, because a rule that started at a screen somebody wrote down
+would go on passing from a screen nobody sees — and follows every `@navigate`
+transitively. A `@navigate` names an accessor rather than a path, so following one
+means resolving the accessor to the case it hands out and the case to the screen
+registered under it; an accessor this cannot resolve fails the rule by name,
+because a silently dropped edge makes a stranded screen look reachable.
 
 **Why F9 exists, given F3.** Every rule about a class list is handed the answer
 of one function, `Template::classStrings()`, and that function drops any token
@@ -524,7 +543,28 @@ phpstan/Rules/            the rules that are easier to write than to find
 | W3 | Root `tests/` holds only the suites; root `resources/views/` holds no Blade | arch |
 | W4 | A module's tests are namespaced for that module | arch |
 | W5 | A file with no namespace imports no global name — the warning it raises fails the run silently | arch |
+| W6 | A source file declares one class, and it is the one its path names | arch: over the declarations of every file a class-name rule reads |
 | W7 | Every reader puts its envelope through the wire gate before reading the payload | arch: over the SDK module's own sources |
+
+**Why `W6` is not covered by the rule above it.** `Q-R66` asserts that a rule
+found subjects to judge, and that cures the three cases this repository has
+actually had — `L1` named two directories that did not exist, `F2` a namespace
+with no classes in it, `F5` five tag names no screen used. In each the selected
+set was wrong, so counting it catches them.
+
+A second class in a file is a different failure and a floor does not reach it.
+Discovery is working: `Module::classNames()` asks `Imports::declaredName()`
+which class a path names, gets an honest answer about the first one, and returns
+a set that is exactly right. The file's second class was never a candidate to be
+counted, so the count is correct and the class is still judged by nothing — not
+`every class is final`, not the readonly rule, not the boundary rules. The
+question that catches it is not *did this rule select anything* but *is there
+anything this rule could not have selected*.
+
+It is also a live fault rather than only a blind spot. PSR-4 maps the second
+class to a file that does not exist, so it resolves only because something
+already loaded the sibling it shares a file with — and the day a reference names
+it first, the autoloader has nowhere to look.
 
 **These are not tidiness.** Every rule on this page is derived from a path or a
 namespace: the kind rules read `app-modules/<name>/composer.json`, the published

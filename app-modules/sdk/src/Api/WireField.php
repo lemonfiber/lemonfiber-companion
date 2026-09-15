@@ -241,6 +241,9 @@ enum WireField: string
     /** The release in use. Absent where the stack has not determined one. */
     case Running = 'running';
 
+    /** The technical detail under a verdict, where the core gave one. */
+    case Detail = 'detail';
+
     /** What one release is called. */
     case Version = 'version';
 

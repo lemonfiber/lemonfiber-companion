@@ -29,6 +29,12 @@ use Modules\Kernel\Api\Remedies;
  * about it whichever outcome produced it. The empty code is the difference, and
  * it is a true one: there is no identifier to search for.
  *
+ * **The detail the core added is last.** `G4-R4` wants it available and not
+ * leading, and on a surface with one column that is a question about order: the
+ * plain explanation and what to try come first, and this sits under them, so
+ * whoever wants it has it and everybody else has already read the sentence
+ * written for them.
+ *
  * `Internal` because it is a detail of how this surface reads one value, and
  * `E2`'s promise is that anything here can be renamed without reading another
  * module.
@@ -45,6 +51,7 @@ final readonly class WhatOneFindingSays
      * @param string   $service  which service this is about, or empty
      * @param string   $because  the title of what explains this, or empty
      * @param Remedies $remedies what to try, likeliest first, empty where none
+     * @param string   $underneath the technical detail the core added, or empty
      */
     public function __construct(
         public string $title,
@@ -56,6 +63,7 @@ final readonly class WhatOneFindingSays
         public string $service,
         public string $because,
         public Remedies $remedies,
+        public string $underneath,
     ) {}
 
     /** Whether there is anything to explain, which is what the template asks. */
