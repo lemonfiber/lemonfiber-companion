@@ -2,12 +2,6 @@
 
 declare(strict_types=1);
 
-use function basename;
-use function file_get_contents;
-use function implode;
-use function sprintf;
-use function str_contains;
-
 use Tests\Support\Tree;
 
 // W7 — every answer passes the wire gate before anything reads it.
