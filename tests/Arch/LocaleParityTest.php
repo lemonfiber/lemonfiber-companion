@@ -161,9 +161,10 @@ function thePlaceholdersIn(string $line): array
 it('L2 — every locale names the same placeholders in a line', function (): void {
     // The gap the parity check above leaves open, and it is not a small one: a
     // key present in both locales with a sentence in each satisfies every rule
-    // in this file, and renders `Stap :stap van :aantal` on the glass the day a
-    // translator names the variable in their own language. Nothing else in the
-    // toolchain reads a catalogue value for what it interpolates.
+    // in this file, and puts the placeholder itself on the glass the day a
+    // translator names the variable in their own language rather than leaving
+    // it alone. Nothing else in the toolchain reads a catalogue value for what
+    // it interpolates.
     //
     // Against the first locale rather than pairwise, because the first is where
     // a key is written and the rest are translations of it — and a pairwise
@@ -200,9 +201,10 @@ it('L2 — every locale names the same placeholders in a line', function (): voi
     expect($offenders)->toBe([], sprintf(
         "These lines interpolate different things in different languages:\n  %s\n\n"
         . 'A placeholder the caller does not pass is rendered as itself, so the operator '
-        . 'is shown `:stap` rather than a number — and one the caller does pass and the '
-        . "line does not name is silently dropped.\nName the same variables as the "
-        . 'source locale; translate the sentence around them, not the variable (L2).',
+        . 'is shown the name of the variable rather than a number — and one the caller '
+        . "does pass and the line does not name is silently dropped.\nName the same "
+        . 'variables as the source locale; translate the sentence around them, not the '
+        . 'variable (L2).',
         implode("\n  ", $offenders),
     ));
 });
