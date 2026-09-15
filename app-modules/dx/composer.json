@@ -1,0 +1,32 @@
+{
+    "name": "modules/dx",
+    "description": "Stand-ins that let the whole app be run and looked at with nothing else on the network.",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
+    "require": {
+        "php": "^8.5",
+        "lemonfiber/sdk-php": "*",
+        "modules/kernel": "dev-main",
+        "saloonphp/saloon": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Dx\\": "src/",
+            "Modules\\Dx\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Dx\\Providers\\DxServiceProvider"
+            ]
+        },
+        "lemonfiber": {
+            "floors": {
+                "coverage": 100,
+                "mutation": 0
+            },
+            "kind": "adapter"
+        }
+    }
+}

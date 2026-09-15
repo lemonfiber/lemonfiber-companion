@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f0297411df00c11f9427f47ce8933a80",
+    "content-hash": "c58b94067c3655c6d4f0a4a10c18a012",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -10109,6 +10109,50 @@
             "time": "2025-08-30T09:44:18+00:00"
         },
         {
+            "name": "modules/dx",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/dx",
+                "reference": "792e21821648b2f7dd92c81b951e0021e34b85be"
+            },
+            "require": {
+                "lemonfiber/sdk-php": "*",
+                "modules/kernel": "dev-main",
+                "php": "^8.5",
+                "saloonphp/saloon": "^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Dx\\Providers\\DxServiceProvider"
+                    ]
+                },
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 0
+                    },
+                    "kind": "adapter"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Dx\\": "src/",
+                    "Modules\\Dx\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "Stand-ins that let the whole app be run and looked at with nothing else on the network.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "myclabs/deep-copy",
             "version": "1.14.0",
             "source": {
@@ -14598,6 +14642,7 @@
         "modules/connection": 20,
         "modules/design": 20,
         "modules/device": 20,
+        "modules/dx": 20,
         "modules/health": 20,
         "modules/household": 20,
         "modules/kernel": 20,

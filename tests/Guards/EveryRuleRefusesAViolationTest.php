@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-use function Tests\Support\documentedRules;
-
 use Tests\Support\Fixture;
 use Tests\Support\Fixtures;
 use Tests\Support\Proof;
+use Tests\Support\Rules;
 use Tests\Support\Tree;
 
 /**
@@ -99,7 +98,7 @@ it('puts back what a killed run wrote over', function (): void {
 
 it('has a fixture for every rule that claims to be enforced', function (): void {
     $missing = rulesWithNoFixture(
-        documentedRules(),
+        Rules::documented(),
         array_map(static fn(Fixture $f): string => $f->rule, Fixtures::all()),
     );
 

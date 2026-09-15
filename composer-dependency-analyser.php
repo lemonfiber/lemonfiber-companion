@@ -185,6 +185,14 @@ return (new Configuration())
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])
     ->ignoreErrorsOnPackage('laravel/tinker', [ErrorType::UNUSED_DEPENDENCY])
+    // Named by nothing, on purpose, and this ignore is where that is written
+    // down. `N1-R61` refuses a released build that can run against a stand-in,
+    // and what keeps it is that no composition reaches for this module: the
+    // provider is found by package discovery when the package is installed, and
+    // a release installs without development dependencies. A line in the
+    // composition naming it would be exactly the setting the requirement
+    // refuses, so this error firing forever is the correct state.
+    ->ignoreErrorsOnPackage('modules/dx', [ErrorType::UNUSED_DEPENDENCY])
     // Every dev tool that is real but never named in PHP, with what invokes it.
     // A package absent from both this list and the codebase is dead weight, and
     // that is the whole point of the switch above: captainhook sat in

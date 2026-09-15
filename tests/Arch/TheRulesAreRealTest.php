@@ -2,11 +2,7 @@
 
 declare(strict_types=1);
 
-use function Tests\Support\carriesTheRule;
-use function Tests\Support\claimsTheKind;
-use function Tests\Support\documentedRules;
-use function Tests\Support\enforcementSources;
-use function Tests\Support\whereEachKindOfRuleLives;
+use Tests\Support\Rules;
 
 // ARCHITECTURE.md, checked against itself.
 //
@@ -26,7 +22,7 @@ use function Tests\Support\whereEachKindOfRuleLives;
 it('enforces every rule the architecture documents', function (): void {
     $unenforced = [];
 
-    foreach (documentedRules() as $id => $claim) {
+    foreach (Rules::documented() as $id => $claim) {
         // A rule that genuinely cannot be mechanised says so, in that word. It
         // is not a loophole — it is the honest answer, and the count below
         // makes how many there are visible rather than buried in prose.
@@ -34,7 +30,7 @@ it('enforces every rule the architecture documents', function (): void {
             continue;
         }
 
-        if (! str_contains(enforcementSources(), $id)) {
+        if (! str_contains(Rules::enforcementSources(), $id)) {
             $unenforced[] = sprintf('%s (claims "%s")', $id, $claim);
         }
     }
@@ -67,17 +63,17 @@ it('enforces every rule by the kind of mechanism it claims', function (): void {
     // cheapest way for a row to be wider than its mechanism.
     $wrong = [];
 
-    foreach (documentedRules() as $id => $claim) {
+    foreach (Rules::documented() as $id => $claim) {
         if ($claim === 'review' || $claim === 'planned') {
             continue;
         }
 
-        foreach (whereEachKindOfRuleLives() as $kind => $sources) {
-            if (! claimsTheKind($claim, $kind)) {
+        foreach (Rules::whereEachKindLives() as $kind => $sources) {
+            if (! Rules::claimsTheKind($claim, $kind)) {
                 continue;
             }
 
-            if (! carriesTheRule($id, $sources)) {
+            if (! Rules::carriesTheRule($id, $sources)) {
                 $wrong[] = sprintf('%s claims "%s" and nothing under %s carries it', $id, $claim, $kind);
             }
         }
@@ -104,21 +100,21 @@ it('reads a claimed mechanism as a word, so a row cannot borrow one by spelling'
     // narrower than the bug: reading only the word that opens a claim would
     // refuse *architecture* correctly and quietly stop asking the rows that
     // name their second mechanism last.
-    expect(claimsTheKind('arch: over the suites that write a wire body', 'arch'))->toBeTrue()
-        ->and(claimsTheKind('composer + arch', 'arch'))->toBeTrue()
-        ->and(claimsTheKind('review, plus an arch check for the obvious markers', 'arch'))->toBeTrue()
-        ->and(claimsTheKind('test: the architecture of a screen, compared', 'arch'))->toBeFalse()
-        ->and(claimsTheKind('arch: the `@phpstan-type` line, read off the envelope', 'phpstan'))->toBeFalse();
+    expect(Rules::claimsTheKind('arch: over the suites that write a wire body', 'arch'))->toBeTrue()
+        ->and(Rules::claimsTheKind('composer + arch', 'arch'))->toBeTrue()
+        ->and(Rules::claimsTheKind('review, plus an arch check for the obvious markers', 'arch'))->toBeTrue()
+        ->and(Rules::claimsTheKind('test: the architecture of a screen, compared', 'arch'))->toBeFalse()
+        ->and(Rules::claimsTheKind('arch: the `@phpstan-type` line, read off the envelope', 'phpstan'))->toBeFalse();
 });
 
 it('documents every rule the codebase enforces', function (): void {
-    $documented = array_keys(documentedRules());
+    $documented = array_keys(Rules::documented());
     $undocumented = [];
 
     // The other direction. A rule enforced but absent from the table is how the
     // document goes stale from the far end: the codebase gets stricter, the
     // document stops describing it, and the next reader trusts the document.
-    preg_match_all('/(?<![-A-Za-z0-9])([A-Z]\d{1,2})\b(?=\s*[—\/,)])/u', enforcementSources(), $found);
+    preg_match_all('/(?<![-A-Za-z0-9])([A-Z]\d{1,2})\b(?=\s*[—\/,)])/u', Rules::enforcementSources(), $found);
 
     foreach (array_unique($found[1]) as $id) {
         if (! in_array($id, $documented, strict: true)) {
@@ -142,7 +138,7 @@ it('does not let the unbuilt rules grow', function (): void {
     $ceiling = 0;
 
     $planned = array_keys(array_filter(
-        documentedRules(),
+        Rules::documented(),
         static fn(string $claim): bool => $claim === 'planned',
     ));
 
@@ -159,7 +155,7 @@ it('does not let the unbuilt rules grow', function (): void {
 
 it('reports how many rules rest on a human reading the diff', function (): void {
     $review = array_keys(array_filter(
-        documentedRules(),
+        Rules::documented(),
         static fn(string $claim): bool => $claim === 'review',
     ));
 

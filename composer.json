@@ -45,6 +45,7 @@
         "ergebnis/phpstan-rules": "^2.13",
         "larastan/larastan": "^3.12",
         "laravel/pint": "^1.32",
+        "modules/dx": "dev-main",
         "nikic/php-parser": "^5.8",
         "nunomaduro/collision": "^8.9",
         "pestphp/pest": "^5.1",
@@ -100,10 +101,7 @@
         "psr-4": {
             "Lemonfiber\\Companion\\PHPStan\\": "phpstan/",
             "Tests\\": "tests/"
-        },
-        "files": [
-            "tests/Support/rules.php"
-        ]
+        }
     },
     "config": {
         "allow-plugins": {

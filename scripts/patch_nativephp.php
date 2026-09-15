@@ -3,34 +3,38 @@
 declare(strict_types=1);
 
 /*
- * A build must not ship an autoloader that requires files the bundle excludes.
+ * Every step of a build must be asked the same question about development
+ * dependencies.
  *
- * NativePHP assembles a bundle in steps that are asked different questions about
- * development dependencies, and a device needs all of them answered the same way.
- * Both lanes install them for a debug build; the dump that follows excludes them
- * in neither; and the step after that removes everything the device has no use
- * for, `tests/` among it.
+ * NativePHP assembles a bundle in three steps. Both platform lanes decide
+ * whether to install development dependencies from the build type — debug keeps
+ * them, release does not — and the dump that follows is not asked at all: it
+ * passes no flag, so it always keeps `autoload-dev`.
  *
- * Disagreeing produces two fatals, and fixing either one alone produces the
- * other. While the dump is asked to keep `autoload-dev`, it writes back the
- * entry the bundle is about to delete the directory of — this application has
- * one, `tests/Support/rules.php`, which is where it belongs:
- *
- *     Warning: require(.../tests/Support/rules.php): Failed to open stream
- *
- * Once the dump excludes them but the install still fetches them, package
- * discovery reads a vendor directory holding development packages and registers
- * a provider the authoritative classmap was built without:
+ * That disagreement is a fatal on a release build. The install has dropped the
+ * development packages and the dump writes an authoritative classmap that
+ * expects them, so package discovery registers a provider the classmap was
+ * built without:
  *
  *     Class "…\Collision\Adapters\Laravel\CollisionServiceProvider" not found
  *
- * Either way `PHPBridge` reports an empty response, so the first frame never
- * renders and the app returns to the launcher without saying anything. Every
- * suite is green when that happens, because no suite builds a bundle.
+ * `PHPBridge` then reports an empty response, so the first frame never renders
+ * and the app returns to the launcher without saying anything. Every suite is
+ * green when that happens, because no suite builds a bundle.
  *
- * `--no-dev` in every lane rather than shipping `tests/` in one, because a
- * development dependency is useless to a device — the files that would use it
- * are the ones being excluded.
+ * So the dump is asked the same question the install was, from the same
+ * variable, in the same method. A debug build keeps its development
+ * dependencies through all three steps and a release build drops them through
+ * all three — which is what lets a stand-in for a stack reach a handset while
+ * being absent from anything shipped (`N1-R57`, `N1-R61`).
+ *
+ * **What the bundle removes is the other half of this, and it is not patched
+ * here.** The cleanup drops `tests` at any depth, so an autoloader entry
+ * pointing into it is a file that is gone by the time anything reads it. Only
+ * `autoload-dev.files` is `require`d unconditionally at boot, so that is the
+ * entry this application must not have — see {@see \Tests\Support\Rules},
+ * which is a class for exactly that reason. A classmap entry naming a dropped
+ * file is inert until something autoloads it, and on a device nothing does.
  *
  * Run from `post-install-cmd` and `post-update-cmd`, so it survives the next
  * `composer install` rather than being a thing somebody remembers. It refuses
@@ -49,29 +53,40 @@ declare(strict_types=1);
  */
 const WHAT_THIS_REWRITES = [
     [
-        'in' => '/../vendor/nativephp/mobile/src/Commands/BuildIosAppCommand.php',
-        'ships' => "                    ...(\$this->option('release') ? ['--no-dev'] : []),",
-        'becomes' => '                    ...[\'--no-dev\'],',
-    ],
-    [
-        'in' => '/../vendor/nativephp/mobile/src/Concerns/RunsAndroid.php',
-        // The comment is part of what is matched and part of what is removed:
-        // it states the behaviour the line below it no longer has, and a reader
-        // who found it still there would believe the package rather than this.
+        // A bundle carrying development dependencies is a bigger bundle, and
+        // the copy that assembles it passes no timeout of its own — so it takes
+        // Laravel's default sixty seconds, which a debug build exceeds. Sixty
+        // seconds is a budget rather than a correctness property, and what it
+        // produces when it runs out is an rsync killed halfway: a partial tree,
+        // a build that fails somewhere later, and nothing saying the copy is
+        // what ended.
+        'in' => '/../vendor/nativephp/mobile/src/Support/BundleFileManager.php',
         'ships' => <<<'SHIPS'
-                // Include dev dependencies for debug builds (like iOS does)
-                $cleanCache = $this->buildType !== 'debug';
-                $excludeDevDependencies = $this->buildType !== 'debug';
-        SHIPS,
+        $result = Process::run("rsync -a --copy-links {$excludeFlags} \"{$source}/\" \"{$destination}/\"");
+SHIPS,
         'becomes' => <<<'BECOMES'
-                $cleanCache = $this->buildType !== 'debug';
-                $excludeDevDependencies = true;
-        BECOMES,
+        $result = Process::timeout(600)->run("rsync -a --copy-links {$excludeFlags} \"{$source}/\" \"{$destination}/\"");
+BECOMES,
     ],
     [
         'in' => '/../vendor/nativephp/mobile/src/Concerns/PreparesBuild.php',
-        'ships' => "->run('composer dump-autoload --optimize --classmap-authoritative');",
-        'becomes' => "->run('composer dump-autoload --optimize --classmap-authoritative --no-dev');",
+        // The closing marker sits at column zero so that nothing is stripped:
+        // PHP removes the marker's own indentation from every line of a
+        // heredoc, and these lines have to arrive with the twelve, sixteen and
+        // twenty spaces the package wrote them with or the match is a match
+        // against text that exists nowhere.
+        'ships' => <<<'SHIPS'
+            $this->components->task('Optimizing autoloader', function () use ($tempDir) {
+                $result = Process::path($tempDir)
+                    ->timeout(60)
+                    ->run('composer dump-autoload --optimize --classmap-authoritative');
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            $this->components->task('Optimizing autoloader', function () use ($tempDir, $excludeDevDependencies) {
+                $result = Process::path($tempDir)
+                    ->timeout(60)
+                    ->run('composer dump-autoload --optimize --classmap-authoritative'.($excludeDevDependencies ? ' --no-dev' : ''));
+BECOMES,
     ],
 ];
 
@@ -119,5 +134,5 @@ foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => 
 }
 
 if ($rewritten > 0) {
-    fwrite(STDOUT, sprintf("patch_nativephp: %d build step(s) now exclude dev dependencies.\n", $rewritten));
+    fwrite(STDOUT, sprintf("patch_nativephp: %d build step(s) now ask the same question about dev dependencies.\n", $rewritten));
 }
