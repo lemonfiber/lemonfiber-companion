@@ -177,14 +177,25 @@ it('refuses a repair whose fields are there and the wrong type', function (): vo
     }
 });
 
-it('refuses a repair naming a check that is blank rather than absent', function (): void {
+it('refuses a repair whose fields are blank rather than absent', function (): void {
     // Blank as well as absent, and reported by this reader rather than raised
-    // one layer down. `Check::of()` refuses a blank one by throwing its own
-    // kind, and that one travels past the catch in `Menders` — so a stack
-    // sending a repair with an empty check would reach the operator as a crash
-    // where every other short payload reaches them as an obstacle.
-    expect(fn(): object => Offers::offerIn(repairSaying(aListingOf(anOfferedRepair(['check' => '   '])))))
-        ->toThrow(OfferIsUnreadable::class, 'Repair 0');
+    // one layer down. `Check::of()` and `Repair::offered()` each refuse a blank
+    // by throwing their own kind, and neither is caught in `Menders` — so a
+    // stack sending either would reach the operator as a crash where every
+    // other short payload reaches them as an obstacle.
+    //
+    // Both fields, because a reader that trimmed one would look finished: they
+    // are the two `said()` serves and the one that goes untrimmed is whichever
+    // was not the reason somebody opened this file.
+    $each = [
+        'check' => anOfferedRepair(['check' => '   ']),
+        'does' => anOfferedRepair(['does' => "\t\n"]),
+    ];
+
+    foreach ($each as $blank => $repair) {
+        expect(fn(): object => Offers::offerIn(repairSaying(aListingOf($repair))))
+            ->toThrow(OfferIsUnreadable::class, 'Repair 0', sprintf('blank `%s`', $blank));
+    }
 });
 
 it('refuses a row in the listing that is not a repair at all', function (): void {

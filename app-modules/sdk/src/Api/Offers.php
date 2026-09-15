@@ -213,33 +213,11 @@ final readonly class Offers
     private static function repair(array $row, int $position): Repair
     {
         return Repair::offered(
-            Check::of(self::named($row, $position)),
+            Check::of(self::said($row, WireField::Check, $position)),
             self::said($row, WireField::Does, $position),
             Effects::of(...self::effects($row, $position)),
             self::undoing($row, $position),
         );
-    }
-
-    /**
-     * The check a repair answers, refused here when the row does not name one.
-     *
-     * Blank as well as absent, because {@see Check::of()} refuses a blank one
-     * by throwing its own kind — and that one would travel past this adapter's
-     * catch and reach the operator as a crash rather than as an obstacle. What
-     * a payload is short of is this reader's to report, which is the argument
-     * {@see Standings} makes about a release with no version.
-     *
-     * @param array<mixed> $row
-     */
-    private static function named(array $row, int $position): string
-    {
-        $said = trim(self::said($row, WireField::Check, $position));
-
-        if ($said === '') {
-            throw OfferIsUnreadable::repair($position);
-        }
-
-        return $said;
     }
 
     /**
@@ -389,6 +367,14 @@ final readonly class Offers
      * `does` is one repair in a listing — and the position is what makes the
      * second one findable.
      *
+     * **Blank as well as absent, and that is this reader's to report.** Both
+     * fields it serves refuse a blank one layer down — `Check::of()` and
+     * {@see Repair::offered()} each throw their own kind — and those travel
+     * past this adapter's catch and reach the operator as a crash, where every
+     * other short payload reaches them as an obstacle. What a payload is short
+     * of is read here, which is the argument {@see Standings} makes about a
+     * release with no version.
+     *
      * @param array<mixed> $row
      */
     private static function said(array $row, WireField $field, int $position): string
@@ -399,7 +385,7 @@ final readonly class Offers
 
         $said = $row[$field->value];
 
-        if (! is_string($said)) {
+        if (! is_string($said) || trim($said) === '') {
             throw OfferIsUnreadable::repair($position);
         }
 
