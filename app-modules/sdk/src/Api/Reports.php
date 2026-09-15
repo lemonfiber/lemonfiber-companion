@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Sdk\Internal\Wire;
 
@@ -276,12 +277,44 @@ final readonly class Reports
                 self::remedies($verdict, $position),
                 self::severity(self::saidIn($verdict, WireField::Severity, $position)),
                 self::standing(self::saidIn($verdict, WireField::State, $position)),
+                self::underneath($verdict),
             ),
             Conclusion::Unverified, Conclusion::Skipped => WhatTheCheckSaid::couldNotSay(
                 self::saidIn($verdict, WireField::Reason, $position),
                 self::remedy($verdict, $position),
             ),
         };
+    }
+
+    /**
+     * The technical detail under a verdict, where the core gave one.
+     *
+     * Absent on most findings and optional on the wire, so its absence is the
+     * ordinary case rather than a payload gone wrong — which is why this is the
+     * one field here that does not refuse. `G4-R4` asks for it to be available
+     * where there is one, and says nothing about a core that has nothing to add.
+     *
+     * Blank is absent, for the reason {@see WhatItSaysUnderneath} gives: a core
+     * that sent an empty string has said nothing, and a screen telling the two
+     * apart would be drawing a distinction the operator cannot see.
+     *
+     * @param array<mixed> $verdict
+     */
+    private static function underneath(array $verdict): WhatItSaysUnderneath
+    {
+        // Written out rather than with `??`, which `C9` refuses on a subscript
+        // and is right to: that idiom reads as a default and cannot be told
+        // from one substituting for a field the payload should have carried.
+        // This is the field where the distinction is real — the contract marks
+        // it optional, so absent is the core having nothing to add rather than
+        // a conversation gone wrong.
+        if (! array_key_exists(WireField::Detail->value, $verdict)) {
+            return WhatItSaysUnderneath::none();
+        }
+
+        $said = $verdict[WireField::Detail->value];
+
+        return is_string($said) ? WhatItSaysUnderneath::said($said) : WhatItSaysUnderneath::none();
     }
 
     /**

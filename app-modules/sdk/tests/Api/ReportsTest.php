@@ -25,6 +25,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Sdk\Api\ReportIsUnreadable;
 use Modules\Sdk\Api\Reports;
 
@@ -592,3 +593,76 @@ it('refuses a finding whose field is there and is not text', function (): void {
     expect(fn(): Report => Reports::in(doctorSaying($data)))
         ->toThrow(ReportIsUnreadable::class, 'Finding 1');
 });
+
+it('G4-R4 — reads the technical detail a verdict carried', function (): void {
+    $verdict = [
+        'outcome' => 'fail',
+        'code' => 'VPN-3',
+        'severity' => 'critical',
+        'state' => 'guided',
+        'summary' => 'The tunnel is down',
+        'meaning' => 'The tunnel is not carrying anything',
+        'remedies' => [['action' => 'Restart the tunnel']],
+        'detail' => 'dial tcp 10.0.0.4:8989: connect: connection refused',
+    ];
+
+    expect(whatOneFindingSaysUnderneath($verdict))
+        ->toBe('dial tcp 10.0.0.4:8989: connect: connection refused');
+});
+
+it('G4-R4 — a verdict with no detail is one the core added nothing to', function (): void {
+    // The one field here that does not refuse when it is absent. The contract
+    // marks it optional, so missing is a core with nothing to add rather than a
+    // conversation gone wrong — and `N2-R14` is about values a payload should
+    // have carried.
+    $verdict = [
+        'outcome' => 'fail',
+        'code' => 'VPN-3',
+        'severity' => 'critical',
+        'state' => 'guided',
+        'summary' => 'The tunnel is down',
+        'meaning' => 'The tunnel is not carrying anything',
+        'remedies' => [['action' => 'Restart the tunnel']],
+    ];
+
+    expect(whatOneFindingSaysUnderneath($verdict))->toBe('nothing')
+        ->and(whatOneFindingSaysUnderneath([...$verdict, 'detail' => null]))->toBe('nothing');
+});
+
+/**
+ * What the one finding in a report says underneath.
+ *
+ * @param array<string, mixed> $verdict
+ */
+function whatOneFindingSaysUnderneath(array $verdict): string
+{
+    $report = Reports::in(doctorSaying(aRun('broken', [
+        aFinding('vpn.egress', 'vpn', 'Egress', $verdict),
+    ])));
+
+    foreach ($report->findings() as $finding) {
+        return $finding->said()->either(
+            nothingWrong: static fn(): WhatWasAddedUnderneath => new WhatWasAddedUnderneath('nothing'),
+            wentWrong: static fn(
+                Code $code,
+                string $meaning,
+                Remedies $remedies,
+                Severity $severity,
+                Standing $standing,
+                WhatItSaysUnderneath $underneath,
+            ): WhatWasAddedUnderneath => new WhatWasAddedUnderneath($underneath->either(
+                said: static fn(string $detail): WhatWasAddedUnderneath => new WhatWasAddedUnderneath($detail),
+                none: static fn(): WhatWasAddedUnderneath => new WhatWasAddedUnderneath('nothing'),
+            )->said),
+            couldNotSay: static fn(): WhatWasAddedUnderneath => new WhatWasAddedUnderneath('nothing'),
+        )->said;
+    }
+
+    return 'no finding at all';
+}
+
+/** One answer carried out of an `either()` arm, which hands back objects. */
+final readonly class WhatWasAddedUnderneath
+{
+    public function __construct(public string $said) {}
+}

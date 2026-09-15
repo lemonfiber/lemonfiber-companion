@@ -66,8 +66,9 @@ final readonly class WhatTheCheckSaid
         Remedies $remedies,
         Severity $severity,
         Standing $standing,
+        WhatItSaysUnderneath $underneath,
     ): self {
-        return new self(WentWrong::of($code, $meaning, $remedies, $severity, $standing));
+        return new self(WentWrong::of($code, $meaning, $remedies, $severity, $standing, $underneath));
     }
 
     /**
@@ -89,7 +90,7 @@ final readonly class WhatTheCheckSaid
      * @template TCouldNotSay of object
      *
      * @param  Closure(): TNothingWrong  $nothingWrong
-     * @param  Closure(Code, string, Remedies, Severity, Standing): TWentWrong  $wentWrong
+     * @param  Closure(Code, string, Remedies, Severity, Standing, WhatItSaysUnderneath): TWentWrong  $wentWrong
      * @param  Closure(string, Remedies): TCouldNotSay  $couldNotSay
      * @return TNothingWrong|TWentWrong|TCouldNotSay
      */
@@ -107,6 +108,7 @@ final readonly class WhatTheCheckSaid
                 $this->said->remedies(),
                 $this->said->severity(),
                 $this->said->standing(),
+                $this->said->underneath(),
             ),
             $this->said instanceof CouldNotSay => $couldNotSay(
                 $this->said->reason(),

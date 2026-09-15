@@ -101,6 +101,17 @@
                     @endforelse
                 @endif
 
+                @if ($finding->underneath !== '')
+                    {{-- G4-R4: the technical detail, available and not leading.
+                         Last on the row, under the plain explanation and under
+                         what to try — which is what *must not lead* means on a
+                         surface with one column. Somebody who knows what the
+                         line says now has it; everybody else has already read
+                         the sentence that was written for them. --}}
+                    <native:text class="text-sm">{{ __('health.what_it_says_underneath') }}</native:text>
+                    <native:text class="text-sm">{{ $finding->underneath }}</native:text>
+                @endif
+
                 {{-- N2-R10: the logs, offered from the finding that is already
                      about this service. Only where there is one — a check about
                      the machine itself has no scrollback to read, and a button
