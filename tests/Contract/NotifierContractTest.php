@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhyNothingIsShown;
 use Tests\Support\Catalogue;
 use Tests\Support\Fakes\ANotificationCentre;
@@ -44,7 +45,7 @@ function whatBecameOfIt(Shown $shown): string
 
 function somethingWorthSaying(): Notification
 {
-    return Notification::fromTheCore(StackId::rememberedAs('the-loft'), Code::of('STACK-7'));
+    return Notification::fromTheCore(StackId::rememberedAs('the-loft'), WhatTheCoreDecided::toSay('backup.finished'));
 }
 
 /**
@@ -182,7 +183,7 @@ it('N4-R20 — the locked wording names no stack', function (): void {
     expect($sent)->toHaveCount(1)
         ->and($sent[0]->titleSaid())->not->toContain('the-loft')
         ->and($sent[0]->bodySaid())->not->toContain('the-loft')
-        ->and($sent[0]->bodySaid())->not->toContain('STACK-7');
+        ->and($sent[0]->bodySaid())->not->toContain('backup.finished');
 });
 
 it('names the stack when the device is not locked', function (): void {
@@ -195,7 +196,7 @@ it('names the stack when the device is not locked', function (): void {
 
     expect($sent)->toHaveCount(1)
         ->and($sent[0]->titleSaid())->toContain('the-loft')
-        ->and($sent[0]->bodySaid())->toContain('STACK-7');
+        ->and($sent[0]->bodySaid())->toContain('backup.finished');
 });
 
 it('keys a repeat of the same code onto the same notification', function (): void {
