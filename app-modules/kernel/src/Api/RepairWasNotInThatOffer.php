@@ -28,7 +28,7 @@ final class RepairWasNotInThatOffer extends InvalidArgumentException
     {
         return new self(sprintf(
             'The repair answering "%s" was confirmed against a listing that did not offer it.',
-            $repair->answers(),
+            $repair->answers()->shown(),
         ));
     }
 }

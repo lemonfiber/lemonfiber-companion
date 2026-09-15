@@ -9,6 +9,8 @@ use function implode;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Repair;
@@ -21,7 +23,7 @@ use function sprintf;
 function anOfferedRepair(Undoing $undoing = Undoing::Possible): Repair
 {
     return Repair::offered(
-        check: 'indexer-reachable',
+        check: Check::of('indexer-reachable'),
         does: 'restart the indexer',
         effects: Effects::of('downloads pause for about a minute'),
         undoing: $undoing,
@@ -54,7 +56,7 @@ it('N2-R4 — a repair that will not say what it does cannot be built', function
     // `does` renders as a button with no label above a list of consequences,
     // which is the worst version of this screen.
     expect(fn(): Repair => Repair::offered(
-        check: 'indexer-reachable',
+        check: Check::of('indexer-reachable'),
         does: '   ',
         effects: Effects::nothingElse(),
         undoing: Undoing::Possible,
@@ -62,28 +64,34 @@ it('N2-R4 — a repair that will not say what it does cannot be built', function
 });
 
 it('cannot be built without naming the check it answers', function (): void {
-    // Without it nothing can say which finding the repair belongs under, and a
-    // repair offered under the wrong finding is worse than one not offered.
+    // Refused a layer down now that the check is a `Check`: without a name
+    // nothing can say which finding the repair belongs under, and a repair
+    // offered under the wrong finding is worse than one not offered. Asserted
+    // here as well as in `CheckTest`, because what this pins is that the
+    // refusal is on the road a repair is built along.
     expect(fn(): Repair => Repair::offered(
-        check: ' ',
+        check: Check::of(' '),
         does: 'restart the indexer',
         effects: Effects::nothingElse(),
         undoing: Undoing::Possible,
-    ))->toThrow(RepairSaysNothing::class);
+    ))->toThrow(CheckIsUnnamed::class);
 });
 
 it('trims what it was given', function (): void {
     expect(Repair::offered(
-        check: '  indexer-reachable  ',
+        check: Check::of('  indexer-reachable  '),
         does: '  restart the indexer  ',
         effects: Effects::nothingElse(),
         undoing: Undoing::Possible,
-    )->answers())->toBe('indexer-reachable');
+    )->answers()->shown())->toBe('indexer-reachable');
 });
 
 it('publishes the check on its own and nothing else', function (): void {
     // The asymmetry is the design. `answers()` is how a screen files a repair
     // under a finding and teaches it nothing about what the repair would do;
     // the three things an operator reads leave together or not at all.
-    expect(anOfferedRepair()->answers())->toBe('indexer-reachable');
+    //
+    // Answered as the type a finding carries, so that *the same check* is one
+    // decision rather than a `===` written once per screen.
+    expect(anOfferedRepair()->answers()->is(Check::of('indexer-reachable')))->toBeTrue();
 });

@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\HowOften;
@@ -33,6 +34,7 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
+use function trim;
 use function view;
 
 /**
@@ -196,17 +198,25 @@ final class WhatWouldBePutRight extends NativeComponent
      * Silent where there is no listing held, which is a frame that has not read
      * one yet or one whose job ended — there is nothing to agree to, and a
      * refusal would be a sentence about a button the template does not draw.
+     *
+     * The name arrives as text because a template can hand over nothing else,
+     * and becomes a {@see Check} here after a blank is refused —
+     * {@see WhatThisStackRuns::row()}'s argument about a service name, and the
+     * same one. Nothing this screen listed is named nothing, so a blank is *no
+     * such repair* and comes away the same as any other name it never read.
      */
-    public function agreeTo(string $check): void
+    public function agreeTo(string $named): void
     {
         $offer = $this->offered;
 
-        if (! $offer instanceof Offer) {
+        if (! $offer instanceof Offer || trim($named) === '') {
             return;
         }
 
+        $check = Check::of($named);
+
         foreach ($offer->repairs() as $repair) {
-            if ($repair->answers() === $check) {
+            if ($repair->answers()->is($check)) {
                 $this->sendTheYes($offer, $repair);
 
                 return;

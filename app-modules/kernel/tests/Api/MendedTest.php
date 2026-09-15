@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\LeftBehind;
@@ -22,7 +23,7 @@ use function sprintf;
 /** A repair to have an outcome about. Named for this file (`G10`). */
 function aRepairThatWasAgreedTo(string $check = 'storage.one-filesystem'): Repair
 {
-    return Repair::offered($check, 'Move the library', Effects::nothingElse(), Undoing::Possible);
+    return Repair::offered(Check::of($check), 'Move the library', Effects::nothingElse(), Undoing::Possible);
 }
 
 /** One outcome folded to a word, so the three facts can be compared at once. */
@@ -30,8 +31,8 @@ function whatItCameTo(Mended $mended): string
 {
     return $mended->said(
         static fn(Repair $repair, WhatBecameOfIt $became, LeftBehind $left): Code => Code::of($left->either(
-            something: static fn(string $what): Code => Code::of(sprintf('%s/%s/%s', $repair->answers(), $became->value, $what)),
-            nothing: static fn(): Code => Code::of(sprintf('%s/%s', $repair->answers(), $became->value)),
+            something: static fn(string $what): Code => Code::of(sprintf('%s/%s/%s', $repair->answers()->shown(), $became->value, $what)),
+            nothing: static fn(): Code => Code::of(sprintf('%s/%s', $repair->answers()->shown(), $became->value)),
         )->shown()),
     )->shown();
 }

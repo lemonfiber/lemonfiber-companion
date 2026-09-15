@@ -33,7 +33,7 @@ final class RepairWasConfirmedAgainstAnOldReading extends InvalidArgumentExcepti
     {
         return new self(sprintf(
             'The repair offered for "%s" was confirmed over a retained reading, which N1-R39 does not allow to confirm an action.',
-            $repair->answers(),
+            $repair->answers()->shown(),
         ));
     }
 }

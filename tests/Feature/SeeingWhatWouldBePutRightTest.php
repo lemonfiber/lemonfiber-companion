@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowOften;
@@ -56,13 +57,13 @@ function aListingWorthReading(): Offer
 {
     return Offer::of('agreement-a-test-can-name', Repairs::of(
         Repair::offered(
-            'storage.one-filesystem',
+            Check::of('storage.one-filesystem'),
             'Move the library onto the larger disk',
             Effects::of('Downloads pause while it moves'),
             Undoing::Possible,
         ),
         Repair::offered(
-            'credentials.expired',
+            Check::of('credentials.expired'),
             'Forget the expired credential',
             Effects::nothingElse(),
             Undoing::Permanent,
@@ -313,14 +314,14 @@ it('N1-R17 — asking again before the first frame has read anything asks once',
 function aRunThatHalfWorked(): WhatWasMended
 {
     $moved = Repair::offered(
-        'storage.one-filesystem',
+        Check::of('storage.one-filesystem'),
         'Move the library onto the larger disk',
         Effects::of('Downloads pause while it moves'),
         Undoing::Possible,
     );
 
     $forgot = Repair::offered(
-        'credentials.expired',
+        Check::of('credentials.expired'),
         'Forget the expired credential',
         Effects::nothingElse(),
         Undoing::Permanent,
@@ -357,7 +358,7 @@ it('N2-R6 — the yes quotes the listing the operator was shown', function (): v
     $screen->agreeTo('storage.one-filesystem');
 
     expect($mending->agreedTo()?->quoting())->toBe(aListingWorthReading()->named())
-        ->and($mending->agreedTo()?->repair()->answers())->toBe('storage.one-filesystem');
+        ->and($mending->agreedTo()?->repair()->answers()->shown())->toBe('storage.one-filesystem');
 });
 
 it('N2-R5 — a repair named by a check that is not on offer agrees to nothing', function (): void {
@@ -369,6 +370,23 @@ it('N2-R5 — a repair named by a check that is not on offer agrees to nothing',
 
     $screen->offer();
     $screen->agreeTo('something.else-entirely');
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and($mending->agreements())->toBe(0);
+});
+
+it('N2-R5 — a name that is blank agrees to nothing rather than raising', function (): void {
+    // A template can send anything, and `Check::of()` raises on a blank —
+    // rightly, a check named as nothing is no check at all — so building the
+    // value before knowing there is a row would put that raise on a tap.
+    // Whitespace as well as empty, because the two reach `Check::of()` by
+    // different routes and only one of them is a length check away.
+    $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
+    $screen = theRepairsScreen($mending);
+
+    $screen->offer();
+    $screen->agreeTo('');
+    $screen->agreeTo('   ');
 
     expect($screen->wasAgreedTo())->toBeFalse()
         ->and($mending->agreements())->toBe(0);
@@ -541,7 +559,7 @@ it('N2-R5 — a second repair in the same listing can still be agreed to', funct
 
     expect($screen->wasAgreedTo())->toBeTrue()
         ->and($mending->agreements())->toBe(2)
-        ->and($mending->agreedTo()?->repair()->answers())->toBe('credentials.expired');
+        ->and($mending->agreedTo()?->repair()->answers()->shown())->toBe('credentials.expired');
 });
 
 it('looking again asks the stack afresh rather than reusing the listing', function (): void {

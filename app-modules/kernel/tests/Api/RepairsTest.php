@@ -19,7 +19,7 @@ use Modules\Kernel\Api\Undoing;
 function oneRepairAbout(string $check): Repair
 {
     return Repair::offered(
-        check: $check,
+        check: Check::of($check),
         does: 'restart the indexer',
         effects: Effects::of('downloads pause for about a minute'),
         undoing: Undoing::Possible,
@@ -56,7 +56,7 @@ it('keeps the order the stack offered them in', function (): void {
     $answered = [];
 
     foreach (Repairs::of(oneRepairAbout('first'), oneRepairAbout('second')) as $repair) {
-        $answered[] = $repair->answers();
+        $answered[] = $repair->answers()->shown();
     }
 
     expect($answered)->toBe(['first', 'second']);
