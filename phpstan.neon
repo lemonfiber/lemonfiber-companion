@@ -59,6 +59,11 @@ parameters:
     # way anything can.
     excludePaths:
         - */resources/views/*.blade.php
+        # Published by `native:install` rather than written here, and ignored by
+        # git — so it is absent in CI and present on every machine that has run
+        # a build. Analysed, the two disagree: a gate that is red locally and
+        # green on CI is read as noise, and then so is the next one.
+        - config/nativephp.php
 
     # Pest's own annotation, corrected. See the stub for why.
     stubFiles:

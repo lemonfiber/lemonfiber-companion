@@ -3,24 +3,32 @@
 declare(strict_types=1);
 
 /*
- * A debug build must not install the dependencies it then throws away.
+ * A build must not ship an autoloader that requires files the bundle excludes.
  *
- * NativePHP's iOS build runs `composer install` and adds `--no-dev` only for a
- * release, while the bundle excludes `tests/` either way. So a debug build
- * writes an autoloader that requires every entry in `autoload-dev.files` and
- * ships without the directory holding them. This application has one —
- * `tests/Support/rules.php`, which is where it belongs — and the result on a
- * real device is a fatal before the first frame:
+ * NativePHP assembles a bundle in steps that are asked different questions about
+ * development dependencies, and a device needs all of them answered the same way.
+ * Both lanes install them for a debug build; the dump that follows excludes them
+ * in neither; and the step after that removes everything the device has no use
+ * for, `tests/` among it.
  *
- *     Failed opening required '.../tests/Support/rules.php'
- *     PersistentPHPRuntime: boot FAILED (-2) -> falling back to classic mode
- *     [NativeBoot] Native session exited: status=500
+ * Disagreeing produces two fatals, and fixing either one alone produces the
+ * other. While the dump is asked to keep `autoload-dev`, it writes back the
+ * entry the bundle is about to delete the directory of — this application has
+ * one, `tests/Support/rules.php`, which is where it belongs:
  *
- * Every suite is green when that happens, because no suite builds a bundle.
- * Proved both ways on an iPhone 12 mini: the release build of the same commit
- * boots in 160ms with `booted=true`.
+ *     Warning: require(.../tests/Support/rules.php): Failed to open stream
  *
- * `--no-dev` in both lanes rather than shipping `tests/` in one, because a
+ * Once the dump excludes them but the install still fetches them, package
+ * discovery reads a vendor directory holding development packages and registers
+ * a provider the authoritative classmap was built without:
+ *
+ *     Class "…\Collision\Adapters\Laravel\CollisionServiceProvider" not found
+ *
+ * Either way `PHPBridge` reports an empty response, so the first frame never
+ * renders and the app returns to the launcher without saying anything. Every
+ * suite is green when that happens, because no suite builds a bundle.
+ *
+ * `--no-dev` in every lane rather than shipping `tests/` in one, because a
  * development dependency is useless to a device — the files that would use it
  * are the ones being excluded.
  *
@@ -31,50 +39,85 @@ declare(strict_types=1);
  * fatal came back with the patch still in the tree looking applied.
  */
 
-/** Where the build command lives, relative to this script. */
-const THE_BUILD_COMMAND = '/../vendor/nativephp/mobile/src/Commands/BuildIosAppCommand.php';
-
-/** What the package ships. */
-const INSTALLS_DEV_DEPENDENCIES = "                    ...(\$this->option('release') ? ['--no-dev'] : []),";
-
-/** What it is rewritten to. */
-const INSTALLS_NEITHER_LANES_DEV = "                    ...['--no-dev'],";
+/**
+ * Every line this rewrites, and what it becomes.
+ *
+ * A list rather than a map keyed by file, so that two edits to one file stay
+ * expressible. Each entry names its own file for the same reason the refusal
+ * does: a patch that cannot say *which* line moved sends the reader to search
+ * a package for it.
+ */
+const WHAT_THIS_REWRITES = [
+    [
+        'in' => '/../vendor/nativephp/mobile/src/Commands/BuildIosAppCommand.php',
+        'ships' => "                    ...(\$this->option('release') ? ['--no-dev'] : []),",
+        'becomes' => '                    ...[\'--no-dev\'],',
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/src/Concerns/RunsAndroid.php',
+        // The comment is part of what is matched and part of what is removed:
+        // it states the behaviour the line below it no longer has, and a reader
+        // who found it still there would believe the package rather than this.
+        'ships' => <<<'SHIPS'
+                // Include dev dependencies for debug builds (like iOS does)
+                $cleanCache = $this->buildType !== 'debug';
+                $excludeDevDependencies = $this->buildType !== 'debug';
+        SHIPS,
+        'becomes' => <<<'BECOMES'
+                $cleanCache = $this->buildType !== 'debug';
+                $excludeDevDependencies = true;
+        BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/src/Concerns/PreparesBuild.php',
+        'ships' => "->run('composer dump-autoload --optimize --classmap-authoritative');",
+        'becomes' => "->run('composer dump-autoload --optimize --classmap-authoritative --no-dev');",
+    ],
+];
 
 /**
- * What to do when the line this patch rewrites is not where it was.
+ * What to do when a line this patch rewrites is not where it was.
  *
  * One literal rather than several joined, because a join between two literals
  * is three mutants — drop either, swap them — and nothing asserts this sentence
  * word for word.
  */
-const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites is not in %s.\n\nEither the package fixed it, in which case delete this script and the two `composer.json` hooks that call it — or it moved, in which case a debug build is fatalling on a device again and nothing said so. Do not ignore this.\n";
+const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites is not in %s.\n\nEither the package fixed it, in which case delete that entry — and if it was the last one, this script and the two `composer.json` hooks that call it — or it moved, in which case a build is fatalling on a device again and nothing said so. Do not ignore this.\n";
 
-$path = sprintf('%s%s', __DIR__, THE_BUILD_COMMAND);
+$rewritten = 0;
 
-if (! file_exists($path)) {
-    fwrite(STDERR, sprintf("patch_nativephp: %s is not there; nothing to patch.\n", $path));
+foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => $becomes]) {
+    $path = sprintf('%s%s', __DIR__, $where);
 
-    exit(0);
+    if (! file_exists($path)) {
+        fwrite(STDERR, sprintf("patch_nativephp: %s is not there; nothing to patch.\n", $path));
+
+        continue;
+    }
+
+    $source = file_get_contents($path);
+
+    if (! is_string($source)) {
+        fwrite(STDERR, sprintf("patch_nativephp: could not read %s.\n", $path));
+
+        exit(1);
+    }
+
+    if (str_contains($source, $becomes)) {
+        continue;
+    }
+
+    if (! str_contains($source, $ships)) {
+        fwrite(STDERR, sprintf(WHEN_THE_LINE_HAS_MOVED, $path));
+
+        exit(1);
+    }
+
+    file_put_contents($path, str_replace($ships, $becomes, $source));
+
+    $rewritten++;
 }
 
-$source = file_get_contents($path);
-
-if (! is_string($source)) {
-    fwrite(STDERR, sprintf("patch_nativephp: could not read %s.\n", $path));
-
-    exit(1);
+if ($rewritten > 0) {
+    fwrite(STDOUT, sprintf("patch_nativephp: %d build step(s) now exclude dev dependencies.\n", $rewritten));
 }
-
-if (str_contains($source, INSTALLS_NEITHER_LANES_DEV)) {
-    exit(0);
-}
-
-if (! str_contains($source, INSTALLS_DEV_DEPENDENCIES)) {
-    fwrite(STDERR, sprintf(WHEN_THE_LINE_HAS_MOVED, $path));
-
-    exit(1);
-}
-
-file_put_contents($path, str_replace(INSTALLS_DEV_DEPENDENCIES, INSTALLS_NEITHER_LANES_DEV, $source));
-
-fwrite(STDOUT, "patch_nativephp: debug builds now install without dev dependencies.\n");

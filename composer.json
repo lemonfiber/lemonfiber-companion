@@ -59,6 +59,7 @@
         "shipmonk/composer-dependency-analyser": "^1.8",
         "shipmonk/phpstan-rules": "^4.4",
         "spaze/phpstan-disallowed-calls": "^4.14",
+        "symfony/process": "^8.1",
         "tomasvotruba/cognitive-complexity": "^1.2",
         "tomasvotruba/type-coverage": "^2.3"
     },
