@@ -18,6 +18,8 @@ use Modules\Sdk\Api\Lines;
 
 use function sprintf;
 
+use Tests\Support\WhatTheContractAccepts;
+
 /**
  * A window whose lines arrived on a wire version this app has never heard of.
  *
@@ -202,4 +204,22 @@ it('N1-R13 — a window on a wire version this app does not support is refused',
     ]);
 
     expect(fn(): Scrollback => Lines::in($window))->toThrow(EnvelopeIsNotRead::class);
+});
+
+it('stands in for a service with lines the contract would accept', function (): void {
+    // Every line rather than the first: a window is a document per line, and
+    // the one a fixture gets wrong is the one carrying the field the others
+    // leave at its usual value — here, the line the service did not time.
+    $rows = [
+        aLogRow('tunnel up', 'gluetun', 'stdout', '2026-09-14T04:00:00Z'),
+        aLogRow('no route to host', 'gluetun', 'stderr'),
+    ];
+
+    foreach ($rows as $at => $row) {
+        expect(WhatTheContractAccepts::complaintsAbout('LogEnvelope', ['kind' => 'log', 'data' => $row]))
+            ->toBe([], sprintf(
+                "The payload this suite stands in for a service with is not one a stack would send: line %d.\n",
+                $at,
+            ));
+    }
 });

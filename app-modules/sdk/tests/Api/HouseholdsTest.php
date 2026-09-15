@@ -17,6 +17,9 @@ use Modules\Sdk\Api\HouseholdIsUnreadable;
 use Modules\Sdk\Api\Households;
 
 use function sprintf;
+
+use Tests\Support\WhatTheContractAccepts;
+
 use function var_export;
 
 /**
@@ -36,14 +39,52 @@ function householdSaying(array $data): Envelope
 }
 
 /**
- * One member, with the requests they made.
+ * What one member may reach, which every member on the wire carries.
+ *
+ * Nothing here reads it. It is carried because a fixture short of a field the
+ * contract requires is a sample of a payload no stack sends, and a reader
+ * tested only against that has been tested against nothing.
+ *
+ * @return array<string, mixed>
+ */
+function whatOneMemberMayReach(): array
+{
+    return [
+        'administrator' => false,
+        'disabled' => false,
+        'every_library' => true,
+        'libraries' => [],
+        'restriction' => 'unrestricted',
+        'unrated' => 'let-through',
+    ];
+}
+
+/**
+ * One member, complete, with the requests they made.
  *
  * @param  list<mixed> $requests
  * @return array<string, mixed>
  */
 function aMember(string $name, array $requests): array
 {
-    return ['name' => $name, 'requests' => $requests];
+    return [
+        'name' => $name,
+        'access' => whatOneMemberMayReach(),
+        'claimed' => true,
+        'to_hand_over' => [],
+        'requests' => $requests,
+    ];
+}
+
+/**
+ * A whole house, around whatever members the case in hand is about.
+ *
+ * @param  list<mixed> $members
+ * @return array<string, mixed>
+ */
+function aHouseholdOf(array $members): array
+{
+    return ['available' => true, 'findings' => [], 'members' => $members];
 }
 
 /**
@@ -57,10 +98,10 @@ function aRequest(int $id, string $title, string $state): array
 }
 
 it('reads a house into the flat list the screens work in', function (): void {
-    $data = ['members' => [
+    $data = aHouseholdOf([
         aMember('Robin', [aRequest(1, 'A film', 'waiting-for-approval')]),
         aMember('Sam', [aRequest(2, 'A season', 'getting')]),
-    ]];
+    ]);
 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
 
@@ -413,4 +454,21 @@ it('a request that is not declined is read whatever `refused` says', function ()
     );
 
     expect($said->shown())->toBe('not refused');
+});
+
+it('stands in for a household with a payload the contract would accept', function (): void {
+    // Held to the generated types rather than to the reader, because a fixture
+    // is written by whoever wrote the reader: where the two agree about a field
+    // that is not there, both are wrong in the same direction and every case
+    // above is green against a machine nobody has run them against.
+    //
+    // A refused request as well as a plain one, because the refusal is a shape
+    // of its own and `N3-R7` is the requirement that reads inside it.
+    $payload = aHouseholdOf([aMember('Robin', [
+        aRequest(1, 'A film nobody has seen', 'waiting-for-approval'),
+        [...aRequest(2, 'A season', 'declined'), 'refused' => ['reason' => 'somebody said no']],
+    ])]);
+
+    expect(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', ['kind' => 'household', 'data' => $payload]))
+        ->toBe([], "The payload this suite stands in for a household with is not one a stack would send.\n");
 });

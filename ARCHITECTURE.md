@@ -527,6 +527,8 @@ app-modules/<name>/
   resources/views/        the screens this module navigates to
   tests/                  mirroring src/, one directory level for one
 lang/<locale>/<module>.php   every sentence a person reads
+native/src/               the plugin's own PHP, held to the same bar (R4)
+native/tests/             its suite, which is a suite like any other (R4)
 tests/Arch/               the rules
 tests/Templates/          Blade, which no analyser reads
 tests/Contract/           one suite per port, run against the adapter and the fake
@@ -588,6 +590,32 @@ fixes the class name and not the path.
 | R1 | Every documented rule has an artifact carrying its identifier, and every identifier an artifact carries is documented | test |
 | R2 | Every rule that claims to be enforced refuses a planted violation | test: the `Guards` suite, run on its own |
 | R3 | An architecture expectation names one symbol per rule, and every namespace it names resolves | arch |
+| R4 | Every tree `phpunit.xml` measures or runs is read by the analyser, by the refactorer and by the architecture rules — and where one of those places is exempted, all of them are | arch |
+
+**Why R4 exists.** A rule is only as wide as the list of where it looks, and
+there are five such lists: the analyser's `paths`, the refactorer's
+`withPaths`, the namespaces an architecture expectation resolves, the `allowIn`
+entries that let a test do what production code may not, and the file list each
+text-scanning rule builds for itself. Every one of them is a copy of a single
+fact — what is ours — and a copy that loses a tree loses it in the one way
+nothing reports: the rules resting on it keep passing, about the trees they
+still read.
+
+`native/src` is the case that made this a rule. It is production code, it ships
+inside the application, and `phpunit.xml` holds it to the same 100% coverage
+floor as everything else — *being a package is not a reason to be held to a
+lower bar than the code that calls it*, as the comment beside it says. It was in
+the analyser's paths, the refactorer's paths and the architecture namespaces in
+none of them. A `time()`, an `Illuminate\Support\Facades\Cache::get()` and an
+`echo` planted in `native/src/Screen.php` made `composer analyse` report *No
+errors*; a non-final class named `WindowManager` holding a mutable public static
+passed all 189 tests in the Arch suite. `bootstrap/Composition` was missing from
+the architecture namespaces for a different reason and cost the same thing, and
+`App` was in them, resolving to the formatter's own source under `vendor`.
+
+`phpunit.xml` is what the other lists are compared against, because it is the
+only one that cannot be narrowed quietly: a tree dropped from it stops being
+covered, and the coverage gate is loud.
 
 **Why R2 exists.** R1 asks whether an artifact exists. It cannot ask whether the
 artifact works, and the two are indistinguishable from the outside: a rule can
@@ -767,8 +795,39 @@ missing, and only the word is wrong.
 payload against them. The rule is over the suites rather than inside one: a
 check living in whichever suite last remembered would have `G12` claim a
 guarantee that one file's assertion was carrying, which is the same defect one
-level up. A suite is found by `api_version`, which nothing but an envelope
-writes, and the rule fails if that mark ever matches nothing at all.
+level up.
+
+**A suite is found by the body it builds, read over tokens rather than over
+text.** There are two ways to build one and the rule started by seeing one of
+them: a body written out whole spells the wire's version field, and a body
+built positionally hands three arguments to the envelope type and spells no
+field of an envelope anywhere. Ten suites wrote one the second way — every SDK
+reader suite, including the one whose payload is the reason this rule exists —
+and the register read as complete while half of it had never been looked at.
+Tokens rather than text because every comment on this page quotes code: a
+search for either mark finds this paragraph before it finds a payload.
+
+The kind a body is built under is resolved to an envelope out of the generated
+package, never from a map kept here. Each envelope declares the one kind it
+reads and the generated enum holds the word, so a kind neither of them has
+**fails by name** — a stand-in built under a word the contract has not got is
+judged against nothing and reads as covered. What fails there is an envelope
+being used as a carrier for a value a test needs out of a closure, and the fix
+is a readonly class rather than an exemption.
+
+Three things are asserted, and none of them is a figure written down. Every
+stand-in judges the body it builds. There is at least one stand-in, so a mark
+that matched nothing cannot read as compliance. And every envelope some reader
+here unwraps has at least one judged stand-in — grepped from the `::in(` call
+sites on each run, so a reader written for a new envelope tomorrow fails until
+something stands a payload in for it.
+
+Where a body is deliberately not one a stack sends — `Wire`'s version check is
+answered before the payload is read, so its fixture is empty on purpose — the
+fixture says so, naming the kind and the reason. Per kind and not per file: a
+suite that later builds a second kind of body is asked about that one on its
+own, because an exemption nobody can read is how a rule stops covering what it
+was written for.
 
 ```
 tests/Contract/ClockContractTest.php

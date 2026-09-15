@@ -81,6 +81,59 @@ function helpersByName(): array
     return $found;
 }
 
+/**
+ * Whether a source calls one of PHPUnit's assertions.
+ *
+ * Read as a call rather than as text, because `assert` followed by a capital is
+ * not PHPUnit's alone. `FakeBridge::assertCalled()` is the NativePHP plugin's
+ * own vocabulary and `native/tests/ScreenTest.php` writes three of them; a
+ * pattern that cannot tell the two apart refuses a package's API under a rule
+ * about which idiom this suite writes its own assertions in.
+ *
+ * What makes one PHPUnit's is where it is reached from. A bare call, `$this->`
+ * and `self::` all resolve to the TestCase a Pest file is bound to; anything
+ * reached on another object is that object's method and its own business.
+ */
+function callsAPhpunitAssertion(string $source): bool
+{
+    $tokens = token_get_all($source);
+
+    return array_any(
+        $tokens,
+        fn(string|array $token, int $at): bool => is_array($token)
+            && $token[0] === T_STRING
+            && preg_match('/^assert[A-Z]/', $token[1]) === 1
+            && Calls::argumentsAt($tokens, $at) !== []
+            && isReachedFromTheTestCase($tokens, $at),
+    );
+}
+
+/**
+ * Whether the name at `$at` is called on the test case rather than on an object.
+ *
+ * @param list<array{int, string, int}|string> $tokens
+ */
+function isReachedFromTheTestCase(array $tokens, int $at): bool
+{
+    $before = Calls::meaningful(array_slice($tokens, 0, $at));
+    $last = $before === [] ? null : $before[count($before) - 1];
+
+    if (! is_array($last)) {
+        return true;  // a bare call, which is Pest's binding of PHPUnit's own
+    }
+
+    if (! in_array($last[0], [T_OBJECT_OPERATOR, T_DOUBLE_COLON], strict: true)) {
+        // A declaration rather than a call — `function assertThing()` — is
+        // somebody writing one, not reaching for PHPUnit's.
+        return $last[0] !== T_FUNCTION;
+    }
+
+    $receiver = $before[count($before) - 2] ?? null;
+
+    return is_array($receiver)
+        && in_array($receiver[1], ['$this', 'self', 'static'], strict: true);
+}
+
 it('G5 — a test asserts one way', function (): void {
     $offenders = [];
 
@@ -89,7 +142,7 @@ it('G5 — a test asserts one way', function (): void {
             continue;  // this file names the idiom it refuses, in order to refuse it
         }
 
-        if (preg_match('/\bassert[A-Z]\w*\s*\(/', $contents) === 1) {
+        if (callsAPhpunitAssertion($contents)) {
             $offenders[] = $path;
         }
     }
@@ -103,6 +156,22 @@ it('G5 — a test asserts one way', function (): void {
         . 'mixing them is how a reversed expectation gets read as correct (G5).',
         implode("\n  ", $offenders),
     ));
+});
+
+it('G5 — the reading tells PHPUnit\'s assertion from somebody else\'s method', function (): void {
+    // The judgement, handed both shapes. A rule that answered yes to everything
+    // spelled `assert` would pass the file above just as well, and that is the
+    // reading this one replaced: `native/tests/ScreenTest.php` calls
+    // `assertCalled()` on the plugin's fake bridge three times, which is the
+    // package's API rather than a second assertion idiom.
+    expect(callsAPhpunitAssertion('<?php assertSame(1, 2);'))->toBeTrue()
+        ->and(callsAPhpunitAssertion('<?php $this->assertSame(1, 2);'))->toBeTrue()
+        ->and(callsAPhpunitAssertion('<?php self::assertSame(1, 2);'))->toBeTrue();
+
+    expect(callsAPhpunitAssertion('<?php $bridge->assertCalled(\'X\');'))->toBeFalse()
+        ->and(callsAPhpunitAssertion('<?php $bridge->assertCalled(\'X\')->assertCalled(\'Y\');'))->toBeFalse()
+        ->and(callsAPhpunitAssertion('<?php function assertItRan(): void {}'))->toBeFalse()
+        ->and(callsAPhpunitAssertion('<?php $said = \'assertSame(\';'))->toBeFalse();
 });
 
 it('G1 — nothing mocks a type we do not own', function (): void {

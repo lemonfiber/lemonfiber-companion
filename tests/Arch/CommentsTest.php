@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\OurCode;
 use Tests\Support\Tree;
 
 // The two files that must name what they refuse in order to refuse it: this
@@ -45,10 +46,13 @@ const TOO_ALIKE = 75.0;
 /**
  * The repository's own PHP and configuration, read once.
  *
- * Shared by every rule in this file. Each used to build its own file list, and
- * two lists of the directories a repository owns is one fact written twice —
- * the copy that gets a new directory added to it is whichever the person
- * editing happened to open.
+ * Shared by every rule in this file, and asked of {@see OurCode} rather than
+ * written out. Six directories were listed here and the repository owns more
+ * than six: `scripts/` and `config/` are both in the analyser's paths — *build
+ * tooling is code too*, as that file says — and were in none of these rules. A
+ * comment reading `TODO: this used to be broken, I found it previously` sat in
+ * `scripts/mutation.php` through a full Arch run, carrying four of `K1`'s nine
+ * markers, and every one of these rules reported a green tick (`R4`).
  *
  * @return array<string, string> path => contents
  */
@@ -56,15 +60,7 @@ function commentedFiles(): array
 {
     $found = [];
 
-    $files = [
-        ...Tree::filesUnder(Tree::at('app-modules'), '.php'),
-        ...Tree::filesUnder(Tree::at('tests'), '.php'),
-        ...Tree::filesUnder(Tree::at('phpstan'), '.php'),
-        ...Tree::filesUnder(Tree::at('bootstrap'), '.php'),
-        ...Tree::filesUnder(Tree::at('routes'), '.php'),
-        ...Tree::filesUnder(Tree::at('native'), '.php'),
-        Tree::at('phpstan.neon'),
-    ];
+    $files = [...OurCode::phpFiles(), Tree::at('phpstan.neon')];
 
     foreach ($files as $path) {
         $contents = file_get_contents($path);

@@ -12,6 +12,10 @@ use function file_get_contents;
 
 use FilesystemIterator;
 
+use function glob;
+
+use const GLOB_ONLYDIR;
+
 use function implode;
 use function in_array;
 use function is_array;
@@ -170,16 +174,34 @@ final readonly class Tree
     }
 
     /**
-     * Every test file in the repository, root suites and module suites alike.
+     * Every test file in the repository, wherever a suite lives.
+     *
+     * Read from the suites `phpunit.xml` declares rather than from a list of
+     * directories kept here. Three places, not the two that were written out:
+     * the root suites and each module's own are the obvious pair, and
+     * `native/tests` is the third — the plugin is a path package rather than a
+     * module, so neither of the two reached it. Every rule resting on this
+     * (`G1`, `G5`, `G6`, `G10`, `H7`) held two thirds of the suite to
+     * conventions the third was silently exempt from (`R4`).
+     *
+     * The tree a suite sits in rather than the suite's own directory, which is
+     * the wider of the two and the right one: a `*Test.php` under
+     * `tests/Support` is loaded by no suite and is still a test file — G10 and
+     * G12 are both planted there for exactly that reason, because their
+     * violations cannot be planted anywhere a suite would collect them.
      *
      * @return list<string>
      */
     public static function testFiles(): array
     {
-        $found = self::filesUnder(self::at('tests'), 'Test.php');
+        $found = [];
 
-        foreach (Module::all() as $module) {
-            $found = [...$found, ...$module->testFiles()];
+        foreach (OurCode::testRoots() as $tree) {
+            $directories = glob(self::at($tree), GLOB_ONLYDIR);
+
+            foreach ($directories === false ? [] : $directories as $directory) {
+                $found = [...$found, ...self::filesUnder($directory, 'Test.php')];
+            }
         }
 
         return $found;

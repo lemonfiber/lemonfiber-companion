@@ -18,6 +18,8 @@ use Modules\Sdk\Api\Rosters;
 
 use function sprintf;
 
+use Tests\Support\WhatTheContractAccepts;
+
 /**
  * A `status` envelope holding whatever the case under test is about.
  *
@@ -38,6 +40,11 @@ function aRosterSaying(array $data): Envelope
 /**
  * One service, complete, with whatever this case is about changed.
  *
+ * Complete means every field the contract requires, `describes` included —
+ * which nothing here reads. A fixture short of a required field is a sample of
+ * a payload no stack sends, and a reader tested only against it has been tested
+ * against nothing.
+ *
  * @param  array<mixed> $differently
  * @return array<mixed>
  */
@@ -46,6 +53,7 @@ function aServiceSaying(array $differently = []): array
     return [...[
         'id' => 'sonarr',
         'name' => 'Sonarr',
+        'describes' => 'Fetches the series somebody is following',
         'profile' => 'downloads',
         'state' => 'running',
         'criticality' => 'important',
@@ -117,7 +125,15 @@ function aRosterOf(array $differently = []): array
         'forms' => ['downloads'],
         'disturbs' => whatTheseVerbsCostOnTheWire(),
         'services' => [aServiceSaying($differently)],
-        'undeclared' => [],
+        // A container the machine is running that this stack's own
+        // configuration does not declare. Every stack sends the field, and it
+        // carries a row rather than none so that the shape of a row is part of
+        // what the contract is asked about here.
+        'undeclared' => [[
+            'id' => 'a-container-somebody-started',
+            'describes' => 'Something running beside the stack',
+            'state' => 'running',
+        ]],
     ];
 }
 
@@ -377,7 +393,11 @@ it('N2-R21 — a machine running only what the stack declares says so', function
     // Empty is the ordinary answer rather than an absence. A machine with
     // nothing unaccounted for is the expected shape, and reading it as *the
     // stack did not say* would put a question on the screen where there is none.
-    expect(Rosters::whatElseIsRunning(aRosterSaying(aRosterOf()))->isEmpty())->toBeTrue();
+    //
+    // The list is emptied here rather than left to the helper: `aRosterOf()`
+    // carries a container so that the contract stand-in is asked about the
+    // shape of a row, and this case is the one machine that has none.
+    expect(Rosters::whatElseIsRunning(aRosterSaying([...aRosterOf(), 'undeclared' => []]))->isEmpty())->toBeTrue();
 });
 
 it('N2-R21 — refuses a payload that is not a shape at all', function (): void {
@@ -409,4 +429,13 @@ it('N2-R21 — refuses a container the machine named but did not describe', func
         ...aRosterOf(),
         'undeclared' => [['id' => 'pihole', 'state' => 'running']],
     ])))->toThrow(RosterIsUnreadable::class);
+});
+
+it('stands in for a stack with a payload the contract would accept', function (): void {
+    // Held to the generated types rather than to the reader, because a fixture
+    // is written by whoever wrote the reader: where the two agree about a field
+    // that is not there, both are wrong in the same direction and every case
+    // above is green against a machine nobody has run them against.
+    expect(WhatTheContractAccepts::complaintsAbout('StatusEnvelope', ['kind' => 'status', 'data' => aRosterOf()]))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
