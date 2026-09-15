@@ -67,6 +67,21 @@ final class AStackThatSupervises implements Supervising
     }
 
     /**
+     * A machine running the listing, and other things nobody declared.
+     *
+     * A constructor of its own rather than a default on {@see with()}, because
+     * *the machine reported nothing undeclared* and *nobody said* are different
+     * answers and a default would spell them the same way.
+     */
+    public static function alsoRunning(Daemons $daemons, WhatElseIsRunning $elsewhere): self
+    {
+        return new self(
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, $elsewhere),
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+        );
+    }
+
+    /**
      * A stack running nothing at all, which is the answer worth its own name.
      *
      * {@see AStackThatStalled::withNothingStuck()}'s argument, and it lands the

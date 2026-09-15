@@ -100,6 +100,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Updates->forTheStack($this->stored);
     }
 
+    /** What is running here that this machine never declared (`N2-R21`). */
+    public function elsewhere(): string
+    {
+        return AStacksScreen::Elsewhere->forTheStack($this->stored);
+    }
+
     /** What one of this machine's services has been saying (`N2-R10`). */
     public function logsOf(ServiceId $service): string
     {

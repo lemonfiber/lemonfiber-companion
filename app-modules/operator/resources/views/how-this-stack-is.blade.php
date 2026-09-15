@@ -167,5 +167,15 @@
             label="{{ __('updates.how_current') }}"
             @navigate="{{ $this->goes()->updates() }}"
         />
+
+        {{-- N2-R21: what is running here that this machine never declared. The
+             requirement asks for these to be reachable, and this is where from
+             — beside what the stack runs rather than inside it, because a
+             container nobody declared is not one of the things this stack runs
+             and the screen it leads to offers no verb against one. --}}
+        <native:button
+            label="{{ __('health.what_else_is_running') }}"
+            @navigate="{{ $this->goes()->elsewhere() }}"
+        />
     @endunless
 </native:column>

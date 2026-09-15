@@ -55,6 +55,9 @@ enum AStacksScreen: string
     /** Where this machine stands on being up to date (`N2-R15`). */
     case Updates = '/stacks/{stack}/updates';
 
+    /** What is running here that this machine's own configuration never declared (`N2-R21`). */
+    case Elsewhere = '/stacks/{stack}/elsewhere';
+
     case Logs = '/stacks/{stack}/logs/{service}';
 
     /** What the router holds a machine under. */

@@ -96,6 +96,12 @@ return [
     'stuck_count' => '{0} Er komt niets vast te zitten|{1} Er is één ding blijven steken|[2,*] Er zijn :count dingen blijven steken',
     'stuck_in' => 'In :service',
     'stuck_for_good' => 'Hier gebeurt vanzelf niets meer mee.',
+    'undeclared_count' => '{0} Er draait hier verder niets|{1} Er draait hier nog één ding|[2,*] Er draaien hier nog :count dingen',
+    'undeclared_explained' => 'Deze draaien op de machine en de configuratie van deze stack noemt ze niet. lemonfiber heeft ze niet gestart en stopt ze niet.',
+    'nothing_undeclared' => 'Er draait hier verder niets.',
+    'nothing_undeclared_action' => 'Alles op deze machine is iets dat deze stack zelf heeft opgegeven.',
+    'what_else_is_running' => 'Wat draait hier nog meer',
+
     'nothing_stopped' => 'Er is niets blijven steken.',
     'nothing_stopped_action' => 'Alles waar het huishouden om vroeg is onderweg of al binnen.',
     'what_stopped' => 'Wat niet meer binnenkomt',
