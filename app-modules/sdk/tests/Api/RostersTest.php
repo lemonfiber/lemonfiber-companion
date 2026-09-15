@@ -420,6 +420,22 @@ it('N2-R21 — refuses an undeclared entry that is not a row', function (): void
     ])))->toThrow(RosterIsUnreadable::class, 'undeclared');
 });
 
+it('N2-R21 — names the first row where the machine keyed the list by name', function (): void {
+    // The reading takes a row's position from its key, which is what the
+    // contract's list gives it. A machine that sent an object instead has no
+    // position to give, and the reader falls back to the first — so a refusal
+    // still names a row rather than reading `somebody-elses-name` as one.
+    //
+    // Held to the number rather than to the class, because the number is the
+    // whole of what the fallback decides: a refusal that named the key, or the
+    // row after it, or the one before, would point an operator at a row that is
+    // not the one the machine got wrong.
+    expect(fn(): WhatElseIsRunning => Rosters::whatElseIsRunning(aRosterSaying([
+        ...aRosterOf(),
+        'undeclared' => ['somebody-elses-name' => ['id' => 'pihole', 'state' => 'running']],
+    ])))->toThrow(RosterIsUnreadable::class, 'Service 0');
+});
+
 it('N2-R21 — refuses a container the machine named but did not describe', function (): void {
     // `describes` is what the requirement means by *state what it is running*,
     // so a row without one cannot answer it. Refused by name rather than shown
