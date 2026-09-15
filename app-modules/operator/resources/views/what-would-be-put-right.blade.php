@@ -3,12 +3,11 @@
     :goes="$this->goes()"
     here="repairs"
 >
-    <x-operator::heading>{{ $this->stack()->name()->shown() }}</x-operator::heading>
 
     @unless ($this->isSignedIn())
         {{-- N1-R44: the session has ended, so nothing was asked. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
-        <native:button label="{{ __('connection.sign_in') }}" @navigate="$this->goes()->signIn()" />
+        <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
     @elseif ($this->offer()->met !== '')
         {{-- N1-R10: both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
@@ -18,7 +17,7 @@
         {{-- N1-R3: the action stays on the screen and the failure is reported
              beside it. An obstacle branch with nothing on it leaves an operator
              whose stack woke up two seconds later with no way to find out. --}}
-        <native:button label="{{ __('health.ask_again') }}" @tap="lookAgain()" />
+        <x-operator::action label="{{ __('health.ask_again') }}" tap="lookAgain()" />
     @elseif ($this->offer()->isWorking)
         {{-- N2-R7: the unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
@@ -30,7 +29,7 @@
         <x-operator::note>
             {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
         </x-operator::note>
-        <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
+        <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
     @elseif ($this->offer()->hasEnded)
         {{-- The stack has no outcome for that asking any more. Not a fault and
              not an answer: nothing was carried out, and the way forward is to
@@ -38,7 +37,7 @@
              as a machine that is broken. --}}
         <x-operator::emphasis>{{ __('health.nothing_came_back') }}</x-operator::emphasis>
         <native:text>{{ __('health.nothing_came_back_action') }}</native:text>
-        <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
+        <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
     @elseif ($this->wasAgreedTo())
         {{-- N2-R5: what the machine actually did, which is a different question
              from what it said it would do — and rendered from a different value
@@ -53,7 +52,7 @@
             <x-operator::note>
                 {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
             </x-operator::note>
-            <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
+            <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
         @elseif ($this->done()->met !== '')
             <x-operator::emphasis>{{ __($this->done()->met) }}</x-operator::emphasis>
             <native:text>{{ __($this->done()->remedy) }}</native:text>
@@ -62,7 +61,7 @@
                  between the operator and the answer to *did it work*. Taking
                  the action away leaves them with a machine they told to change
                  something and no way to ask what happened. --}}
-            <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
+            <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
         @elseif ($this->done()->hasEnded)
             {{-- The one state where *it failed* is certainly the wrong word.
                  The operator does not know what happened to their machine, and
@@ -106,7 +105,7 @@
                  rather than the old listing kept: the machine has just changed,
                  so what it would offer now is not necessarily what it offered
                  before. --}}
-            <native:button label="{{ __('health.look_again') }}" @tap="lookAgain()" />
+            <x-operator::action label="{{ __('health.look_again') }}" tap="lookAgain()" />
         @endif
     @else
         @forelse ($this->offer()->repairs as $repair)
@@ -129,10 +128,7 @@
                      by the check rather than by position, because the listing
                      is re-read every frame and a position is a fact about the
                      list rather than about the repair. --}}
-                <native:button
-                    label="{{ __('health.agree_to_it') }}"
-                    @tap="agreeTo('{{ $repair->answers }}')"
-                />
+                <x-operator::action label="{{ __('health.agree_to_it') }}" tap="agreeTo('{{ $repair->answers }}')" />
             </x-operator::entry>
         @empty
             {{-- A stack with nothing to put right is the healthy case, and it is
@@ -141,8 +137,8 @@
             <x-operator::emphasis>{{ __('health.nothing_to_put_right') }}</x-operator::emphasis>
         @endforelse
 
-        <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
+        <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
     @endunless
 
-    <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="$this->goes()->health()" />
+    <x-operator::action label="{{ __('health.back_to_the_stack') }}" :goes="$this->goes()->health()" />
 </x-operator::screen>

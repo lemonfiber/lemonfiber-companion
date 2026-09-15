@@ -120,7 +120,14 @@ function everyObstacleBranch(string $view): array
 /** Whether this markup gives the operator something to press. */
 function offersSomethingToDo(string $markup): bool
 {
-    return str_contains($markup, '@tap=') || str_contains($markup, '@navigate=');
+    // The component counts as much as the attributes do. An action is the thing
+    // whose whole purpose is to be pressed — it carries the handler inside its
+    // own template — and a rule that reads only the spelled-out attribute stops
+    // seeing controls the moment they are named instead, which is a rule going
+    // quiet exactly when the screens improve.
+    return str_contains($markup, '@tap=')
+        || str_contains($markup, '@navigate=')
+        || str_contains($markup, '<x-operator::action');
 }
 
 /** Enough of a branch to find it by, on one line. */

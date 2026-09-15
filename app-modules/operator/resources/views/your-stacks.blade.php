@@ -11,7 +11,7 @@
         {{-- N4-R4: a button rather than an automatic retry. An operator who
              dismissed the prompt meant it, and a screen that asked again
              immediately is what teaches people to turn a feature off. --}}
-        <native:button label="{{ __('device.unlock') }}" @tap="tryToUnlock()" />
+        <x-operator::action label="{{ __('device.unlock') }}" tap="tryToUnlock()" />
     @else
     {{-- N1-R37: what stood between this launch and the machine, shown rather
          than discarded. Producing the answer is half of the requirement; a
@@ -32,10 +32,7 @@
 
     @forelse ($this->configured() as $stack)
         <x-operator::entry>
-            <native:button
-                label="{{ $stack->name()->shown() }}"
-                @navigate="$this->tappingGoesTo($stack)"
-            />
+            <x-operator::action label="{{ $stack->name()->shown() }}" :goes="$this->tappingGoesTo($stack)" />
             {{-- N2-R1: the verdict, which is what the app opens on. `N2` calls
                  the ordering its whole design — is anything wrong, then what,
                  then may I fix it from here — and a first screen that leads
@@ -70,13 +67,13 @@
         <native:text>{{ __($this->sharingRemedy()) }}</native:text>
     @endif
 
-    <native:button label="{{ __('connection.pair') }}" @navigate="$this->scanningIsAt()" />
-    <native:button label="{{ __('connection.pair_by_typing') }}" @navigate="$this->typingIsAt()" />
+    <x-operator::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
+    <x-operator::action label="{{ __('connection.pair_by_typing') }}" :goes="$this->typingIsAt()" />
 
     {{-- N4-R13: assembled for the operator to send, and not sent by the app.
          On this screen because it is the one reachable from anywhere and the
          one that works when nothing else does — a stack that cannot be reached
          is exactly when somebody needs to ask for help. --}}
-    <native:button label="{{ __('device.share_diagnostics') }}" @tap="share()" />
+    <x-operator::action label="{{ __('device.share_diagnostics') }}" tap="share()" />
     @endif
 </x-operator::screen>

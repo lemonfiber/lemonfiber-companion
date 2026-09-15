@@ -42,8 +42,8 @@
         @endforelse
     @endif
 
-    <native:button label="{{ __('health.go_ahead') }}" @tap="agree()" />
-    <native:button label="{{ __('health.never_mind') }}" @tap="neverMind()" />
+    <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
+    <x-operator::action label="{{ __('health.never_mind') }}" tap="neverMind()" />
 @else
     {{-- N2-R15: the answer, first. Current, waiting, or not looked at
          recently — the stack's own word, not one worked out here from two
@@ -83,10 +83,7 @@
                      waiting. A screen that counted rows would offer one to a
                      stack that listed releases while calling itself current,
                      which is the case this requirement exists for. --}}
-                <native:button
-                    label="{{ __('updates.take_this_one') }}"
-                    @tap="wouldYouLike('{{ $release->version }}')"
-                />
+                <x-operator::action label="{{ __('updates.take_this_one') }}" tap="wouldYouLike('{{ $release->version }}')" />
             @endif
 
             {{-- N2-R16: whether somebody in the house would see the
@@ -158,6 +155,6 @@
          platform's own gesture may be there, and a screen that counts on it
          is a screen that works on one handset and traps somebody on
          another. --}}
-    <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="$this->goes()->health()" />
+    <x-operator::action label="{{ __('health.back_to_the_stack') }}" :goes="$this->goes()->health()" />
 @endif
 </x-operator::screen>

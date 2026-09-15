@@ -8,10 +8,7 @@
         {{-- Pairing is not signing in: the machine has been introduced and
              this device holds no session for it. So the way onwards is the
              password, not the report. --}}
-        <native:button
-            label="{{ __('connection.sign_in') }}"
-            @navigate="$this->onwardsTo()"
-        />
+        <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$this->onwardsTo()" />
     @endif
 
     @unless ($this->went()->isPaired())
@@ -36,11 +33,7 @@
             <native:text class="text-xl font-bold">{{ $this->toCompare() }}</native:text>
         @endif
 
-        <native:button
-            label="{{ __('connection.it_matches') }}"
-            :disabled="! $this->mayPair()"
-            @tap="confirm()"
-        />
+        <x-operator::action label="{{ __('connection.it_matches') }}" :disabled="! $this->mayPair()" tap="confirm()" />
     @endunless
     {{-- The way out. On a first run the list is empty and these two roads are
          the only things on it, so a person who starts pairing and changes their
@@ -48,5 +41,5 @@
          either — has nowhere to go. The platform's own gesture may be there,
          and a screen that counts on it works on one handset and traps somebody
          on another. --}}
-    <native:button label="{{ __('connection.back_to_your_stacks') }}" @navigate="$this->theListIsAt()" />
+    <x-operator::action label="{{ __('connection.back_to_your_stacks') }}" :goes="$this->theListIsAt()" />
 </x-operator::screen>

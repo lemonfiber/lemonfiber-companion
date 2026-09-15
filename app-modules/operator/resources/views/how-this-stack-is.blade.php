@@ -18,10 +18,7 @@
     <native:column class="w-full gap-2">
         @forelse ($this->families() as $family)
             <x-operator::entry>
-                <native:button
-                    label="{{ __('health.family_and_count', ['family' => __($family->said), 'count' => $family->howMany]) }}"
-                    @tap="read('{{ $family->family }}')"
-                />
+                <x-operator::action label="{{ __('health.family_and_count', ['family' => __($family->said), 'count' => $family->howMany]) }}" tap="read('{{ $family->family }}')" />
 
                 {{-- The accent is a fill, a bar, a selected state, and
                      never text (DES-R15). Written as its own element with
@@ -110,10 +107,7 @@
                  that led to an empty window would be the row teaching an
                  operator not to trust the row. --}}
             @if ($finding->service !== '')
-                <native:button
-                    label="{{ __('health.what_a_service_said') }}"
-                    @navigate="$this->logsOf($finding->service)"
-                />
+                <x-operator::action label="{{ __('health.what_a_service_said') }}" :goes="$this->logsOf($finding->service)" />
             @endif
         </x-operator::entry>
     @empty
@@ -123,61 +117,43 @@
     {{-- Under the findings rather than above them: somebody who has just
          fixed something scrolls to the end of what was wrong, and that is
          where they want to ask whether it took. --}}
-    <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
+    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 
     {{-- N2-R11: what the house asked for, one tap from the machine it is
          about. Here rather than on the list because requests belong to one
          stack and the list is about several — and an operator looking at a
          machine is already holding the question the household asks them. --}}
-    <native:button
-        label="{{ __('household.asked_for') }}"
-        @navigate="$this->goes()->requests()"
-    />
+    <x-operator::action label="{{ __('household.asked_for') }}" :goes="$this->goes()->requests()" />
 
     {{-- N2-R4: what this machine would put right, stated in full before
          anybody is asked to agree to any of it. --}}
-    <native:button
-        label="{{ __('health.would_put_right') }}"
-        @navigate="$this->goes()->repairs()"
-    />
+    <x-operator::action label="{{ __('health.would_put_right') }}" :goes="$this->goes()->repairs()" />
 
     {{-- N2-R9: what stopped coming in. Reachable from the machine it is
          about rather than from the list, for the reason the requests button
          is — and reachable at all is the requirement: a stack passing every
          check and a household getting nothing are not a contradiction, so
          this cannot live under the verdict above. --}}
-    <native:button
-        label="{{ __('health.what_stopped') }}"
-        @navigate="$this->goes()->stuck()"
-    />
+    <x-operator::action label="{{ __('health.what_stopped') }}" :goes="$this->goes()->stuck()" />
 
     {{-- N2-R7: what this machine is running, and the three verbs about it.
          Reachable from the machine rather than from the list, as the three
          above are. It is not under the verdict either: every check can pass
          on a machine where the one service somebody wants is switched off,
          which is exactly the evening this screen is for. --}}
-    <native:button
-        label="{{ __('health.what_it_runs') }}"
-        @navigate="$this->goes()->services()"
-    />
+    <x-operator::action label="{{ __('health.what_it_runs') }}" :goes="$this->goes()->services()" />
 
     {{-- N2-R15: where this machine stands on being up to date. Beside what
          it runs rather than under the verdict, for that one's reason turned
          around: every check can pass on a machine with an update waiting,
          and being out of date is not a finding — it is a decision somebody
          makes on an evening they choose. --}}
-    <native:button
-        label="{{ __('updates.how_current') }}"
-        @navigate="$this->goes()->updates()"
-    />
+    <x-operator::action label="{{ __('updates.how_current') }}" :goes="$this->goes()->updates()" />
 
     {{-- N2-R21: what is running here that this machine never declared. The
          requirement asks for these to be reachable, and this is where from
          — beside what the stack runs rather than inside it, because a
          container nobody declared is not one of the things this stack runs
          and the screen it leads to offers no verb against one. --}}
-    <native:button
-        label="{{ __('health.what_else_is_running') }}"
-        @navigate="$this->goes()->elsewhere()"
-    />
+    <x-operator::action label="{{ __('health.what_else_is_running') }}" :goes="$this->goes()->elsewhere()" />
 </x-operator::screen>

@@ -59,8 +59,8 @@
         @endif
     @endif
 
-    <native:button label="{{ __('health.go_ahead') }}" @tap="agree()" />
-    <native:button label="{{ __('health.never_mind') }}" @tap="neverMind()" />
+    <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
+    <x-operator::action label="{{ __('health.never_mind') }}" tap="neverMind()" />
 @else
     {{-- What it all amounts to, as the stack judged it — said before the
          rows, so an operator who opened this because a film would not play
@@ -98,26 +98,14 @@
                      host-managed service would be refused by the machine,
                      and offering it teaches an operator that the buttons
                      here are a guess. --}}
-                <native:button
-                    label="{{ __('health.do.start') }}"
-                    @tap="wouldYouLike('start', '{{ $service->id->named() }}')"
-                />
-                <native:button
-                    label="{{ __('health.do.stop') }}"
-                    @tap="wouldYouLike('stop', '{{ $service->id->named() }}')"
-                />
-                <native:button
-                    label="{{ __('health.do.restart') }}"
-                    @tap="wouldYouLike('restart', '{{ $service->id->named() }}')"
-                />
+                <x-operator::action label="{{ __('health.do.start') }}" tap="wouldYouLike('start', '{{ $service->id->named() }}')" />
+                <x-operator::action label="{{ __('health.do.stop') }}" tap="wouldYouLike('stop', '{{ $service->id->named() }}')" />
+                <x-operator::action label="{{ __('health.do.restart') }}" tap="wouldYouLike('restart', '{{ $service->id->named() }}')" />
             @else
                 <x-operator::note>{{ __('health.host_runs_it') }}</x-operator::note>
             @endif
 
-            <native:button
-                label="{{ __('health.read_its_logs') }}"
-                @navigate="$this->goes()->logsOf($service->id)"
-            />
+            <x-operator::action label="{{ __('health.read_its_logs') }}" :goes="$this->goes()->logsOf($service->id)" />
         </x-operator::entry>
     @empty
         {{-- Not the same screen as a stack that could not be asked. Nothing
@@ -134,18 +122,9 @@
     @forelse ($this->answer()->forms as $form)
         <x-operator::entry>
             <native:text>{{ $form }}</native:text>
-            <native:button
-                label="{{ __('health.do.start') }}"
-                @tap="wouldYouLike('start', '{{ $form }}')"
-            />
-            <native:button
-                label="{{ __('health.do.stop') }}"
-                @tap="wouldYouLike('stop', '{{ $form }}')"
-            />
-            <native:button
-                label="{{ __('health.do.restart') }}"
-                @tap="wouldYouLike('restart', '{{ $form }}')"
-            />
+            <x-operator::action label="{{ __('health.do.start') }}" tap="wouldYouLike('start', '{{ $form }}')" />
+            <x-operator::action label="{{ __('health.do.stop') }}" tap="wouldYouLike('stop', '{{ $form }}')" />
+            <x-operator::action label="{{ __('health.do.restart') }}" tap="wouldYouLike('restart', '{{ $form }}')" />
         </x-operator::entry>
     @empty
         {{-- A stack with no forms at all is a machine nothing has been set
@@ -154,6 +133,6 @@
         <native:text>{{ __('health.no_forms_at_all') }}</native:text>
     @endforelse
 
-    <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
+    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 @endif
 </x-operator::screen>
