@@ -45,6 +45,24 @@ interface Stacks
     public function configured(): Configured;
 
     /**
+     * Whether this device holds any pairing at all.
+     *
+     * Separate from {@see configured()} because the two are asked at different
+     * moments and one of them is asked while the app is shut. `N4-R22` needs to
+     * know whether there is anything behind the lock before raising it — a
+     * prompt over an empty store protects nothing and teaches an operator that
+     * the prompt is noise — and `N4-R23` says to read that from the store
+     * rather than from a flag the app maintains, so that the unlocked first run
+     * cannot outlive the empty store.
+     *
+     * What it must not do is answer by reading the pairings. A locked app that
+     * has already loaded the operator's machines to count them has read them,
+     * whatever it then does with the number. This asks only whether the record
+     * is empty.
+     */
+    public function holdsAny(): bool;
+
+    /**
      * Write a stack down, or refuse and say why.
      *
      * Answers {@see Remembered} rather than raising, for the reason `C1` gives

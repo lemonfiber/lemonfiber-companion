@@ -244,7 +244,17 @@ it('every screen offers a way off it', function (): void {
         // The composed screen, not the file: a screen whose way off is in the
         // chrome it stands in has a way off, and reading the file alone turns
         // a correct refactor into a false failure.
-        if (! str_contains($template->composedSource(), '@navigate=')) {
+        // Three spellings, because a way off is three things here: the
+        // attribute a screen writes, the component that carries one, and the
+        // navigation item, which takes a `url` rather than a handler so the
+        // platform can own the selected state and the back gesture.
+        $said = $template->composedSource();
+
+        if (
+            ! str_contains($said, '@navigate=')
+            && ! str_contains($said, '<x-operator::action')
+            && ! str_contains($said, '<native:bottom-nav-item')
+        ) {
             $trapped[] = $template->path;
         }
     }

@@ -70,7 +70,19 @@ final readonly class Opening
      */
     public function found(): Launch
     {
-        if ($this->heldShut()) {
+        // `N4-R19` requires the device's own authentication on a cold start, and
+        // read without a qualifier that is true of a freshly installed app
+        // holding nothing — where the prompt stands in front of a screen that
+        // says there are no stacks yet. `N4-R22` names that case: a lock over
+        // an empty store protects nothing, and a prompt protecting nothing is
+        // how an operator learns the prompt is noise.
+        //
+        // `holdsAny()` rather than the list, and it is the whole of why that
+        // method exists. The order below is the requirement — a shut app has
+        // not read the operator's machines — and asking whether the record is
+        // empty is not reading them. `N4-R23` wants exactly this: the store
+        // itself, not a flag, so the unlocked first run cannot outlive it.
+        if ($this->stacks->holdsAny() && $this->heldShut()) {
             return Launch::locked();
         }
 
