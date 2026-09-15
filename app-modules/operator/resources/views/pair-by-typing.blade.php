@@ -8,7 +8,7 @@
              password, not the report. --}}
         <native:button
             label="{{ __('connection.sign_in') }}"
-            @navigate="{{ $this->onwardsTo() }}"
+            @navigate="$this->onwardsTo()"
         />
     @endif
 
@@ -46,5 +46,5 @@
          either — has nowhere to go. The platform's own gesture may be there,
          and a screen that counts on it works on one handset and traps somebody
          on another. --}}
-    <native:button label="{{ __('connection.back_to_your_stacks') }}" @navigate="{{ $this->theListIsAt() }}" />
+    <native:button label="{{ __('connection.back_to_your_stacks') }}" @navigate="$this->theListIsAt()" />
 </native:column>

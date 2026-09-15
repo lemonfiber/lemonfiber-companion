@@ -7,7 +7,7 @@
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
         <native:button
             label="{{ __('connection.sign_in') }}"
-            @navigate="{{ $this->goes()->signIn() }}"
+            @navigate="$this->goes()->signIn()"
         />
     @elseif ($this->answer()->met !== '')
         {{-- N1-R10: what stood in the way, and what to do about it. Both come
@@ -128,7 +128,7 @@
 
                 <native:button
                     label="{{ __('health.read_its_logs') }}"
-                    @navigate="{{ $this->goes()->logsOf($service->id) }}"
+                    @navigate="$this->goes()->logsOf($service->id)"
                 />
             </native:column>
         @empty
@@ -169,5 +169,5 @@
         <native:button label="{{ __('health.ask_again') }}" @tap="again()" />
     @endunless
 
-    <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="{{ $this->goes()->health() }}" />
+    <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="$this->goes()->health()" />
 </native:column>

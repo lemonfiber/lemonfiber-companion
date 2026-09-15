@@ -7,7 +7,7 @@
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
         <native:button
             label="{{ __('connection.sign_in') }}"
-            @navigate="{{ $this->goes()->signIn() }}"
+            @navigate="$this->goes()->signIn()"
         />
     @elseif ($this->answer()->met !== '')
         {{-- N1-R10: what stood in the way, and what to do about it. Both come
@@ -170,6 +170,6 @@
              platform's own gesture may be there, and a screen that counts on it
              is a screen that works on one handset and traps somebody on
              another. --}}
-        <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="{{ $this->goes()->health() }}" />
+        <native:button label="{{ __('health.back_to_the_stack') }}" @navigate="$this->goes()->health()" />
     @endunless
 </native:column>

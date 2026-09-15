@@ -32,7 +32,7 @@
         <native:column class="w-full gap-1">
             <native:button
                 label="{{ $stack->name()->shown() }}"
-                @navigate="{{ $this->tappingGoesTo($stack) }}"
+                @navigate="$this->tappingGoesTo($stack)"
             />
             {{-- N2-R1: the verdict, which is what the app opens on. `N2` calls
                  the ordering its whole design — is anything wrong, then what,
@@ -68,8 +68,8 @@
         <native:text>{{ __($this->sharingRemedy()) }}</native:text>
     @endif
 
-    <native:button label="{{ __('connection.pair') }}" @navigate="{{ $this->scanningIsAt() }}" />
-    <native:button label="{{ __('connection.pair_by_typing') }}" @navigate="{{ $this->typingIsAt() }}" />
+    <native:button label="{{ __('connection.pair') }}" @navigate="$this->scanningIsAt()" />
+    <native:button label="{{ __('connection.pair_by_typing') }}" @navigate="$this->typingIsAt()" />
 
     {{-- N4-R13: assembled for the operator to send, and not sent by the app.
          On this screen because it is the one reachable from anywhere and the

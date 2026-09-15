@@ -7,7 +7,7 @@
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
         <native:button
             label="{{ __('connection.sign_in') }}"
-            @navigate="{{ $this->goes()->signIn() }}"
+            @navigate="$this->goes()->signIn()"
         />
     @elseif ($this->answer()->met !== '')
         <native:text class="font-bold">{{ __($this->answer()->met) }}</native:text>
@@ -120,7 +120,7 @@
                 @if ($finding->service !== '')
                     <native:button
                         label="{{ __('health.what_a_service_said') }}"
-                        @navigate="{{ $this->logsOf($finding->service) }}"
+                        @navigate="$this->logsOf($finding->service)"
                     />
                 @endif
             </native:column>
@@ -139,14 +139,14 @@
              machine is already holding the question the household asks them. --}}
         <native:button
             label="{{ __('household.asked_for') }}"
-            @navigate="{{ $this->goes()->requests() }}"
+            @navigate="$this->goes()->requests()"
         />
 
         {{-- N2-R4: what this machine would put right, stated in full before
              anybody is asked to agree to any of it. --}}
         <native:button
             label="{{ __('health.would_put_right') }}"
-            @navigate="{{ $this->goes()->repairs() }}"
+            @navigate="$this->goes()->repairs()"
         />
 
         {{-- N2-R9: what stopped coming in. Reachable from the machine it is
@@ -156,7 +156,7 @@
              this cannot live under the verdict above. --}}
         <native:button
             label="{{ __('health.what_stopped') }}"
-            @navigate="{{ $this->goes()->stuck() }}"
+            @navigate="$this->goes()->stuck()"
         />
 
         {{-- N2-R7: what this machine is running, and the three verbs about it.
@@ -166,7 +166,7 @@
              which is exactly the evening this screen is for. --}}
         <native:button
             label="{{ __('health.what_it_runs') }}"
-            @navigate="{{ $this->goes()->services() }}"
+            @navigate="$this->goes()->services()"
         />
 
         {{-- N2-R15: where this machine stands on being up to date. Beside what
@@ -176,7 +176,7 @@
              makes on an evening they choose. --}}
         <native:button
             label="{{ __('updates.how_current') }}"
-            @navigate="{{ $this->goes()->updates() }}"
+            @navigate="$this->goes()->updates()"
         />
 
         {{-- N2-R21: what is running here that this machine never declared. The
@@ -186,7 +186,7 @@
              and the screen it leads to offers no verb against one. --}}
         <native:button
             label="{{ __('health.what_else_is_running') }}"
-            @navigate="{{ $this->goes()->elsewhere() }}"
+            @navigate="$this->goes()->elsewhere()"
         />
     @endunless
 </native:column>

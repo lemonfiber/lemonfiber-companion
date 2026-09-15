@@ -8,7 +8,7 @@
              is an app asking somebody to navigate on its behalf. --}}
         <native:button
             label="{{ __('health.see_how_it_is') }}"
-            @navigate="{{ $this->onwardsTo() }}"
+            @navigate="$this->onwardsTo()"
         />
     @endif
 

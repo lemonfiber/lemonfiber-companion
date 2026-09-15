@@ -7,7 +7,7 @@
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
         <native:button
             label="{{ __('connection.sign_in') }}"
-            @navigate="{{ $this->goes()->signIn() }}"
+            @navigate="$this->goes()->signIn()"
         />
     @elseif ($this->answer()->met !== '')
         {{-- N1-R10: what stood in the way, and what to do about it. Both come
@@ -77,5 +77,5 @@
         @endforelse
     @endunless
 
-    <native:button label="{{ __('household.see_health') }}" @navigate="{{ $this->goes()->health() }}" />
+    <native:button label="{{ __('household.see_health') }}" @navigate="$this->goes()->health()" />
 </native:column>
