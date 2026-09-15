@@ -524,6 +524,27 @@ phpstan/Rules/            the rules that are easier to write than to find
 | W3 | Root `tests/` holds only the suites; root `resources/views/` holds no Blade | arch |
 | W4 | A module's tests are namespaced for that module | arch |
 | W5 | A file with no namespace imports no global name — the warning it raises fails the run silently | arch |
+| W6 | A source file declares one class, and it is the one its path names | arch: over the declarations of every file a class-name rule reads |
+
+**Why `W6` is not covered by the rule above it.** `Q-R66` asserts that a rule
+found subjects to judge, and that cures the three cases this repository has
+actually had — `L1` named two directories that did not exist, `F2` a namespace
+with no classes in it, `F5` five tag names no screen used. In each the selected
+set was wrong, so counting it catches them.
+
+A second class in a file is a different failure and a floor does not reach it.
+Discovery is working: `Module::classNames()` asks `Imports::declaredName()`
+which class a path names, gets an honest answer about the first one, and returns
+a set that is exactly right. The file's second class was never a candidate to be
+counted, so the count is correct and the class is still judged by nothing — not
+`every class is final`, not the readonly rule, not the boundary rules. The
+question that catches it is not *did this rule select anything* but *is there
+anything this rule could not have selected*.
+
+It is also a live fault rather than only a blind spot. PSR-4 maps the second
+class to a file that does not exist, so it resolves only because something
+already loaded the sibling it shares a file with — and the day a reference names
+it first, the autoloader has nowhere to look.
 
 **These are not tidiness.** Every rule on this page is derived from a path or a
 namespace: the kind rules read `app-modules/<name>/composer.json`, the published
