@@ -23,6 +23,18 @@ use Tests\Support\Module;
 // Only the half that can be decided from a signature is checked here. Whether a
 // screen's content changes while it is open is a fact about the stack, not
 // about the class, so `#[Poll]` is on the review list rather than pretended at.
+//
+// **`N1-R25`'s second clause rests on review too, and nothing here says it.**
+// The requirement has two halves — a screen publishes its first frame before
+// issuing the read, *and that frame is built from what the app already holds* —
+// and the rule below reads the first. `#[Lazy]` says a frame is drawn early; it
+// says nothing about where the frame's content came from, and no screen in this
+// repository overrides `placeholder()`, so there is no declaration to read. A
+// placeholder built from a second read would satisfy every gate here.
+//
+// It is written down rather than left implied because the two halves read as
+// one rule in the spec, and a reader who has seen `F4` enforced would take the
+// whole requirement as held.
 
 it('F4 — a screen that waits on a port paints something first', function (): void {
     $offenders = [];

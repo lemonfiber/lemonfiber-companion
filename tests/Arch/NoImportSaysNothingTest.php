@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\OurCode;
 use Tests\Support\Tree;
 
 // W5 — an import that does nothing fails the run without saying so.
@@ -26,14 +27,11 @@ use Tests\Support\Tree;
 it('W5 — no import in a global-namespace file says nothing', function (): void {
     $offenders = [];
 
-    $files = [
-        ...Tree::filesUnder(Tree::at('tests'), '.php'),
-        ...Tree::filesUnder(Tree::at('app-modules'), '.php'),
-        ...Tree::filesUnder(Tree::at('bootstrap'), '.php'),
-        ...Tree::filesUnder(Tree::at('phpstan'), '.php'),
-    ];
-
-    foreach ($files as $path) {
+    // Every PHP file this repository owns rather than four directories. The
+    // four left out `routes/` and `scripts/`, which are the two places outside
+    // a test that declare no namespace at all — so they are where this is most
+    // likely to be written and were the only places nothing looked (`R4`).
+    foreach (OurCode::phpFiles() as $path) {
         $said = (string) file_get_contents($path);
 
         if (preg_match('/^namespace\s+/m', $said) === 1) {

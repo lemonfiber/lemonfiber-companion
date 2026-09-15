@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Tests\Support\Module;
+use Tests\Support\OurCode;
 
 // The rules that are not about module boundaries — shape, naming, and the
 // habits that make a class hard to test. Boundaries live in
@@ -22,13 +22,22 @@ use Tests\Support\Module;
 // between a rule that holds and a rule that checked nothing is to plant a
 // violation under it.
 //
-// So the list is derived from the manifests, the same way the boundary rules
-// are. A module added tomorrow is covered without anyone editing this line,
-// and a module holding no classes yet is left out because Pest raises rather
-// than passing when asked about an empty namespace.
+// So the list is derived, and from the widest honest answer rather than from
+// the manifests: every PSR-4 prefix pointing into a tree `phpunit.xml` holds to
+// a coverage floor. A module added tomorrow is covered without anyone editing
+// this line, and a module holding no classes yet is left out because Pest
+// raises rather than passing when asked about an empty namespace.
+//
+// The manifests were the answer before, and they were the wrong width in both
+// directions. `Bootstrap\Composition` is registered, measured, and was in no
+// rule here — a non-final class named `ThingManager` sat in the composition
+// root, the directory this architecture calls its sharpest case, and the whole
+// Arch suite passed. `Lemonfiber\Native` was outside for the same reason: a
+// path package is not a module, so `app-modules` did not reach it. And `App`
+// was *in*, resolving to the formatter's own source under `vendor` (`R4`).
 // ---------------------------------------------------------------------------
 
-$ourCode = ['App', ...Module::namespaces()];
+$ourCode = OurCode::namespaces();
 
 // ---------------------------------------------------------------------------
 // A — framework coupling. Every rule here exists so a constructor tells the
@@ -45,10 +54,21 @@ foreach (['app', 'resolve'] as $located) {
         ->not->toBeUsedIn($ourCode);
 }
 
+// Everywhere but the composition root, which is where a facade is the
+// composition rather than a reach into one: `Route::native()` is how a screen
+// gets declared, and there is no constructor for a router to arrive through
+// before the application is built. `phpstan.neon` grants the same exemption by
+// path, and a rule here that did not would refuse what the analyser allows —
+// which is the shape of exemption somebody switches a rule off over.
+$outsideTheComposition = array_values(array_filter(
+    $ourCode,
+    static fn(string $namespace): bool => $namespace !== OurCode::THE_COMPOSITION_ROOT,
+));
+
 foreach (['Illuminate\Support\Facades', 'Illuminate\Container'] as $global) {
     arch(sprintf('A2/A4 — %s is a global lookup no constructor mentions', $global))
         ->expect($global)
-        ->not->toBeUsedIn($ourCode);
+        ->not->toBeUsedIn($outsideTheComposition);
 }
 
 arch('A5 — configuration is read from config, never from the environment')

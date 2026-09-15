@@ -527,6 +527,8 @@ app-modules/<name>/
   resources/views/        the screens this module navigates to
   tests/                  mirroring src/, one directory level for one
 lang/<locale>/<module>.php   every sentence a person reads
+native/src/               the plugin's own PHP, held to the same bar (R4)
+native/tests/             its suite, which is a suite like any other (R4)
 tests/Arch/               the rules
 tests/Templates/          Blade, which no analyser reads
 tests/Contract/           one suite per port, run against the adapter and the fake
@@ -587,6 +589,32 @@ fixes the class name and not the path.
 | R1 | Every documented rule has an artifact carrying its identifier, and every identifier an artifact carries is documented | test |
 | R2 | Every rule that claims to be enforced refuses a planted violation | test: the `Guards` suite, run on its own |
 | R3 | An architecture expectation names one symbol per rule, and every namespace it names resolves | arch |
+| R4 | Every tree `phpunit.xml` measures or runs is read by the analyser, by the refactorer and by the architecture rules — and where one of those places is exempted, all of them are | arch |
+
+**Why R4 exists.** A rule is only as wide as the list of where it looks, and
+there are five such lists: the analyser's `paths`, the refactorer's
+`withPaths`, the namespaces an architecture expectation resolves, the `allowIn`
+entries that let a test do what production code may not, and the file list each
+text-scanning rule builds for itself. Every one of them is a copy of a single
+fact — what is ours — and a copy that loses a tree loses it in the one way
+nothing reports: the rules resting on it keep passing, about the trees they
+still read.
+
+`native/src` is the case that made this a rule. It is production code, it ships
+inside the application, and `phpunit.xml` holds it to the same 100% coverage
+floor as everything else — *being a package is not a reason to be held to a
+lower bar than the code that calls it*, as the comment beside it says. It was in
+the analyser's paths, the refactorer's paths and the architecture namespaces in
+none of them. A `time()`, an `Illuminate\Support\Facades\Cache::get()` and an
+`echo` planted in `native/src/Screen.php` made `composer analyse` report *No
+errors*; a non-final class named `WindowManager` holding a mutable public static
+passed all 189 tests in the Arch suite. `bootstrap/Composition` was missing from
+the architecture namespaces for a different reason and cost the same thing, and
+`App` was in them, resolving to the formatter's own source under `vendor`.
+
+`phpunit.xml` is what the other lists are compared against, because it is the
+only one that cannot be narrowed quietly: a tree dropped from it stops being
+covered, and the coverage gate is loud.
 
 **Why R2 exists.** R1 asks whether an artifact exists. It cannot ask whether the
 artifact works, and the two are indistinguishable from the outside: a rule can

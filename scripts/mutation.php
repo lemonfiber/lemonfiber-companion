@@ -18,9 +18,9 @@ declare(strict_types=1);
  * A module whose floor differs gets its own run, because that is exactly where
  * a shared one would let the stricter module carry the looser.
  *
- * The paths come from the manifests. The list used to be written out in
- * composer.json, which is a second source of truth that goes stale the day a
- * module is added and goes stale silently — the run still passes, over less.
+ * The paths come from the manifests rather than from a list in composer.json. A
+ * list there is a second answer to where the modules are, and it goes stale the
+ * day a module is added — silently, because the run still passes, over less.
  *
  * **Two arguments, both for CI.** `--list` prints the modules worth mutating as
  * a JSON array, which is what a workflow matrix reads; `--module=<name>`
