@@ -25,18 +25,47 @@ use Closure;
  */
 final readonly class WhatIsRunning
 {
-    private function __construct(private Daemons|Obstacle $answer) {}
+    private function __construct(
+        private Daemons|Obstacle $answer,
+        private WhatElseIsRunning $elsewhere,
+    ) {}
 
-    /** The stack answered, and this is what it is running. */
-    public static function these(Daemons $daemons): self
+    /**
+     * The stack answered: what it is running, and what it is not.
+     *
+     * Both lists together because the machine reports them in one payload, and
+     * asking twice would be two moments — a container could be in neither
+     * answer or in both, and nothing downstream could tell.
+     *
+     * They arrive as two arguments rather than one widened list because they
+     * are two different kinds of thing. {@see Daemons} is everything *this
+     * stack* runs; a container it never declared is not that, and `N2-R21`
+     * forbids showing one as though it were. The contract draws the same line
+     * for the same reason — its `Undeclared` is its own shape rather than a
+     * service with the fields left blank, because a service carries a profile
+     * and a criticality and there is no honest value for either here.
+     */
+    public static function these(Daemons $daemons, WhatElseIsRunning $elsewhere): self
     {
-        return new self($daemons);
+        return new self($daemons, $elsewhere);
+    }
+
+    /**
+     * What the machine is running that this stack never declared.
+     *
+     * Outside {@see either()} because it is true whichever arm applies: a stack
+     * that could not be reached reports nothing undeclared, and that is an
+     * empty list rather than a question left open.
+     */
+    public function whatElseIsRunning(): WhatElseIsRunning
+    {
+        return $this->elsewhere;
     }
 
     /** It did not, and this is what the operator met instead. */
     public static function met(Obstacle $why): self
     {
-        return new self($why);
+        return new self($why, WhatElseIsRunning::nothing());
     }
 
     /**
