@@ -304,6 +304,25 @@ automatic and the operator never sees the question.
 | F9 | A class list is written out, never decided at runtime | arch: over the text of every template |
 | F10 | Every method a template calls is one its screen has, and every screen that renders is paired | `tests/Templates` |
 | F11 | Every component a screen uses is classified as a control or as furniture, so F5 cannot pass over one nobody thought about | `tests/Templates` |
+| F12 | Every screen can be reached from the one the app opens on, by following navigation from screen to screen | `tests/Feature`: the walk from the screen the router serves at launch |
+
+**Why F12 is a rule of its own, given the three beside it.** Three rules already
+ask about reachability and every one of them asks it of a single screen: each
+screen offers a way off it, each screen under a machine offers a way back to it,
+and each destination the app can describe is one some template navigates to. All
+three are local, and a cluster of screens wired to each other satisfies every one
+of them while sitting outside the application entirely — each has a way off, each
+has something pointing at it, and nobody can get to any of them from where a
+person actually starts. That is what a feature branch looks like halfway through,
+and the first report would be an operator who cannot find the screen.
+
+So F12 starts at the screen the router serves under the path a launch asks for —
+derived, never named, because a rule that started at a screen somebody wrote down
+would go on passing from a screen nobody sees — and follows every `@navigate`
+transitively. A `@navigate` names an accessor rather than a path, so following one
+means resolving the accessor to the case it hands out and the case to the screen
+registered under it; an accessor this cannot resolve fails the rule by name,
+because a silently dropped edge makes a stranded screen look reachable.
 
 **Why F9 exists, given F3.** Every rule about a class list is handed the answer
 of one function, `Template::classStrings()`, and that function drops any token

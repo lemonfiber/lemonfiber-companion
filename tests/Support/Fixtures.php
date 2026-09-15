@@ -95,6 +95,7 @@ final readonly class Fixtures
             ...self::sizeAndSuiteIntegrity(),
             ...self::placement(),
             ...self::templates(),
+            ...self::screensNobodyCanReach(),
             ...self::floors(),
             ...self::rulesAboutRules(),
             ...self::whatASurfaceIsNeverShown(),
@@ -2094,6 +2095,61 @@ final readonly class Fixtures
                     <native:text>This stack cannot be reached from here.</native:text>
                 </native:column>
                 BLADE, 'reads its text from the translator', 'english-sentence'),
+        ];
+    }
+
+    /**
+     * A screen a person cannot tap their way to.
+     *
+     * Deliberately a well-behaved one. It announces its control, holds no
+     * sentence of its own, calls nothing its class has not got, and offers a
+     * way off it — so `F5`, `L1`, `F10` and the rule that every screen goes
+     * somewhere all pass it; the destination it offers is one a template
+     * already navigates to, so the rules about what points where pass it too.
+     *
+     * Every local rule this repository has is therefore satisfied by a screen
+     * nobody can reach, which is the whole of what `F12` is for. Two files,
+     * because a screen is a class and a template, and a walk holding one
+     * without the other is walking half the graph.
+     *
+     * @return list<Fixture>
+     */
+    private static function screensNobodyCanReach(): array
+    {
+        $arrivesAt = 'can be reached from the one the app opens on';
+
+        return [
+            Fixture::suite('F12', 'app-modules/operator/src/Internal/Screens/Fixtures/AScreenNothingOpensOn.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Operator\Internal\Screens\Fixtures;
+
+                use Illuminate\View\View;
+                use Modules\Operator\Internal\AScreenWithoutAStack;
+
+                use function view;
+
+                final readonly class AScreenNothingOpensOn
+                {
+                    public function theListIsAt(): string
+                    {
+                        return AScreenWithoutAStack::TheList->value;
+                    }
+
+                    public function render(): View
+                    {
+                        return view('operator::Fixtures.a-screen-nothing-opens-on');
+                    }
+                }
+                PHP, $arrivesAt, 'AScreenNothingOpensOn'),
+
+            Fixture::suite('F12', 'app-modules/operator/resources/views/Fixtures/a-screen-nothing-opens-on.blade.php', <<<'BLADE'
+                <native:column class="w-full h-full p-4 gap-4 bg-theme-background">
+                    <native:button label="{{ __('connection.back_to_your_stacks') }}" @navigate="{{ $this->theListIsAt() }}" />
+                </native:column>
+                BLADE, $arrivesAt, 'a-screen-nothing-opens-on'),
         ];
     }
 
