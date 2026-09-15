@@ -42,7 +42,7 @@ use function trim;
 final readonly class Repair
 {
     private function __construct(
-        private string $check,
+        private Check $check,
         private string $does,
         private Effects $effects,
         private Undoing $undoing,
@@ -60,9 +60,17 @@ final readonly class Repair
      * A blank `does` is refused for {@see Remedy}'s reason: it renders as a
      * button with no label, and a button with no label above a list of
      * consequences is the worst version of this screen.
+     *
+     * **The check is a {@see Check} and `does` is prose, and that is why they
+     * are not both strings.** They arrive on one row, next to each other, and
+     * one is a name a machine matches on while the other is a sentence an
+     * operator reads — so a call that had them the wrong way round compiled,
+     * shipped, and showed somebody `vpn.egress-match` where a sentence
+     * belonged. That is the failure `Check` was written for, one type over on
+     * {@see Finding}, and a repair is the other half of the same match.
      */
     public static function offered(
-        string $check,
+        Check $check,
         string $does,
         Effects $effects,
         Undoing $undoing,
@@ -73,11 +81,7 @@ final readonly class Repair
             throw RepairSaysNothing::itDoes();
         }
 
-        if (trim($check) === '') {
-            throw RepairSaysNothing::whatItIsAbout();
-        }
-
-        return new self(trim($check), $trimmed, $effects, $undoing);
+        return new self($check, $trimmed, $effects, $undoing);
     }
 
     /**
@@ -87,8 +91,13 @@ final readonly class Repair
      * the point: this one is not something the operator reads. It is how a
      * screen knows which finding a repair belongs under, and a screen that has
      * it has learned nothing about what the repair would do.
+     *
+     * Answered as the type {@see Finding::check()} answers with, so that *the
+     * same check* is {@see Check::is()}'s one decision rather than a `===`
+     * written once per screen — which is how two surfaces come to disagree
+     * about which finding a repair belongs under.
      */
-    public function answers(): string
+    public function answers(): Check
     {
         return $this->check;
     }

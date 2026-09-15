@@ -3,13 +3,17 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Held;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Interrupted;
+use Modules\Kernel\Api\Notification;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Pairing;
+use Modules\Kernel\Api\Problem;
 use Modules\Kernel\Api\Reach;
 use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Repair;
@@ -99,8 +103,53 @@ function typesThatMustNotMeet(): array
             . 'operator earlier action again — at a moment nobody chose, against a stack '
             . 'whose state has moved on.',
         ],
+        [
+            Notification::class,
+            [Code::class, Problem::class, Obstacle::class],
+            'N4-R11',
+            'The app raises no alerts of its own. A notification carrying no text is only '
+            . 'half of that, because the app has codes: Obstacle::code() mints '
+            . 'COMPANION-NO-ANSWER about a server that did not answer, and Problem::code() '
+            . 'carries what a stack said when it refused a request the operator made. '
+            . 'Either one handed to fromTheCore() is an alert nobody in the core decided '
+            . 'to raise, so the identifier is a WhatTheCoreDecided and a Code cannot '
+            . 'become one.',
+        ],
     ];
 }
+
+it('N1-R17 — every type this table refuses is one this application has', function (): void {
+    // `Foo::class` is a string the compiler builds out of the `use` above it,
+    // and it resolves whether or not anything of that name exists. So a renamed
+    // type leaves a row here that matches nothing, and the rule below goes on
+    // passing while protecting one fewer thing than it says it does — which is
+    // worse than not listing it, because a reader stops checking.
+    //
+    // The subject half is caught already: `ApiSurface::reflect()` raises on a
+    // name nothing declares. The forbidden half is not, and it is the half that
+    // matters — it is the list a rule is read against, and an empty
+    // intersection is indistinguishable from a rule that holds.
+    //
+    // This is the floor and it cannot be edited down, because it counts nothing
+    // of its own: what it reads is the table, and a row removed takes its own
+    // check with it rather than leaving a number that no longer adds up.
+    $gone = [];
+
+    foreach (typesThatMustNotMeet() as [$subject, $forbidden, $requirement, $why]) {
+        foreach ([$subject, ...$forbidden] as $named) {
+            if (! class_exists($named) && ! interface_exists($named) && ! enum_exists($named)) {
+                $gone[] = sprintf('%s — %s', $requirement, $named);
+            }
+        }
+    }
+
+    expect(array_values(array_unique($gone)))->toBe([], sprintf(
+        "This table refuses types this application does not have:\n  %s\n\n"
+        . 'Find what each was renamed to and name it here. A row that matches nothing is a '
+        . "requirement that is written down and not enforced.\n",
+        implode("\n  ", $gone),
+    ));
+});
 
 it('N1-R38 — what a screen kept cannot be handed anything that could refetch it', function (): void {
     // The requirement's second clause: returning to a screen must not re-read
@@ -252,8 +301,18 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
     //
     // That design is worth nothing the day a getter is added for a template
     // that needed "just the one field", so it is checked rather than written
-    // down. Two properties, because `does` is a string and cannot be told from
-    // `answers()` by its type alone.
+    // down.
+    //
+    // `does` is the one clause with no type of its own — it is prose, and the
+    // only prose a repair holds — so the string is the shape to look for. This
+    // read `[Repair::answers()]` while a check was a string too, which meant
+    // the rule could not tell the identifier from the sentence and had to name
+    // the one method allowed to answer either. `answers()` is a {@see Check}
+    // now, for the reason `Check` exists at all: a check and a sentence both
+    // arrive on the same row and a call with them the wrong way round compiled.
+    // With that gone the list is empty, and an empty list is a stronger claim —
+    // *no string leaves a repair on its own* rather than *no string but this
+    // one*.
     $clauses = [];
     $strings = [];
 
@@ -276,12 +335,19 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
         implode("\n  ", $clauses),
     ));
 
-    expect($strings)->toBe(['Modules\Kernel\Api\Repair::answers()'], sprintf(
-        "A repair answers with a string somewhere other than `answers()`:\n  %s\n\n"
-        . '`answers()` is published alone because a check name is not something the '
-        . 'operator reads — it is how a screen files the repair under a finding, and a '
-        . 'screen holding it has learned nothing about what the repair would do. A '
-        . 'second string accessor is `does()` by another name (N2-R4).',
+    // Asserted before the emptiness, because an empty list is also what a rule
+    // reading nothing produces: a `Repair` that answered with no type at all
+    // would satisfy the expectation below and prove nothing.
+    expect(ApiSurface::answeredBy(ApiSurface::reflect(Repair::class)))
+        ->not->toBe([], 'Repair answers nothing, so this rule proved nothing');
+
+    expect($strings)->toBe([], sprintf(
+        "A repair answers with a string:\n  %s\n\n"
+        . 'The only prose a repair holds is `does`, and `N2-R4` has it leave with the '
+        . 'other two clauses or not at all — so a string coming out on its own is '
+        . "`does()` by another name.\nWhich check it answers is a `Check` and is "
+        . 'published alone, because that is not something the operator reads: it is how '
+        . 'a screen files the repair under a finding (N2-R4).',
         implode("\n  ", $strings),
     ));
 });

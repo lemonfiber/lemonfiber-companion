@@ -28,4 +28,17 @@ final class CodeIsBlank extends InvalidArgumentException
     {
         return new self('A problem arrived with no code, and the code is what an operator searches for a year later.');
     }
+
+    /**
+     * The same blank one step over, where the core decided to tell somebody.
+     *
+     * Its own sentence rather than the one above, because the two are different
+     * conversations: a problem with no code is a refusal nobody can look up,
+     * and an alert with none is a notification with nothing to key its words
+     * by — which renders as an empty banner rather than as a missing line.
+     */
+    public static function inAnAlert(): self
+    {
+        return new self('A notification decision arrived with no code, so there is nothing to key its words by and nothing an operator could search for.');
+    }
 }

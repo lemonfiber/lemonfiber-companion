@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\Carried;
+use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Effects;
@@ -26,7 +27,7 @@ use function sprintf;
 function theRepair(): Repair
 {
     return Repair::offered(
-        check: 'indexer-reachable',
+        check: Check::of('indexer-reachable'),
         does: 'restart the indexer',
         effects: Effects::of('downloads pause for about a minute'),
         undoing: Undoing::Possible,
@@ -55,10 +56,10 @@ function theOfferHolding(Repair $repair): Offer
 function foldCarried(Carried $carried): Code
 {
     return $carried->either(
-        out: static fn(Repair $repair): Code => Code::of(sprintf('out:%s', $repair->answers())),
+        out: static fn(Repair $repair): Code => Code::of(sprintf('out:%s', $repair->answers()->shown())),
         refused: static fn(Repair $repair, Reading $now): Code => Code::of(sprintf(
             'refused:%s:%s',
-            $repair->answers(),
+            $repair->answers()->shown(),
             $now->mayConfirmAnAction() ? 'live' : 'retained',
         )),
     );

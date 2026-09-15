@@ -24,7 +24,7 @@ use function sprintf;
 function aRepairOf(string $check = 'indexer-reachable'): Repair
 {
     return Repair::offered(
-        check: $check,
+        check: Check::of($check),
         does: 'restart the indexer',
         effects: Effects::of('downloads pause for about a minute'),
         undoing: Undoing::Possible,
@@ -68,7 +68,7 @@ it('keeps the repairs in the order the stack offered them', function (): void {
     $answered = [];
 
     foreach ($offer->repairs() as $repair) {
-        $answered[] = $repair->answers();
+        $answered[] = $repair->answers()->shown();
     }
 
     expect($answered)->toBe(['first', 'second']);

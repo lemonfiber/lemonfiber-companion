@@ -14,22 +14,23 @@ use InvalidArgumentException;
  * rather than refusals crossing a boundary, so there is nothing for a caller to
  * open (C1, C3).
  *
- * Two named constructors rather than one taking which field was blank, because
- * a message assembled from a field name is a message nobody wrote: what is
- * wrong with a repair that will not say what it does is different from what is
- * wrong with one that will not say what it is about, and a caller reading the
- * log deserves the difference.
+ * Named constructors rather than one taking which field was blank, because a
+ * message assembled from a field name is a message nobody wrote: what is wrong
+ * with a repair that will not say what it does is different from what is wrong
+ * with one that stopped part-way, and a caller reading the log deserves the
+ * difference.
+ *
+ * **A repair naming no check is not here.** The check is a {@see Check} before
+ * it reaches {@see Repair::offered()}, so the blank is refused a layer down —
+ * and the adapter refuses it a layer above that, where a payload short of a
+ * field is something it can report as an obstacle rather than raise past its
+ * own catch.
  */
 final class RepairSaysNothing extends InvalidArgumentException
 {
     public static function itDoes(): self
     {
         return new self('A repair arrived without saying what it does, and N2-R4 asks that to be stated before anybody is asked to agree to it.');
-    }
-
-    public static function whatItIsAbout(): self
-    {
-        return new self('A repair arrived naming no check, so nothing can say which finding it belongs under.');
     }
 
     public static function whetherItLeftAnything(): self
