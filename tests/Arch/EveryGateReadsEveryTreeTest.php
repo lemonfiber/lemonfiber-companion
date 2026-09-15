@@ -323,6 +323,15 @@ it('R4 — every tree the scanner is pointed at is on disk', function (): void {
     // as the sources are — and an exclusion matching nothing is the quieter
     // half: it does not fail the scan, it just stops excluding whatever it was
     // written to exclude.
+    //
+    // What is asked is whether the fixed part of each entry is there, not
+    // whether the pattern matches a file. `bootstrap/cache/**` matches nothing
+    // in a fresh checkout because the directory is generated and its contents
+    // are ignored, and a rule that failed on that would be red on CI and green
+    // on every machine that has run a build — which is the disagreement
+    // `phpstan.neon`'s own exclusion of `config/nativephp.php` is written
+    // against. A moved directory shows up in the fixed part either way: that is
+    // the whole of what `native/tests/**` became wrong about.
     $properties = file_get_contents(Tree::at('sonar-project.properties'));
 
     expect($properties)->toBeString('sonar-project.properties could not be read, so nothing below was checked.');
@@ -337,13 +346,11 @@ it('R4 — every tree the scanner is pointed at is on disk', function (): void {
         foreach (explode(',', trim($said[1])) as $tree) {
             $tree = trim($tree);
 
-            // An exclusion is a glob and a source is a path, so both are asked
-            // the question a glob answers. `GLOB_BRACE` is not passed because
-            // neither key uses braces; a pattern that gained one would report
-            // here rather than silently matching nothing.
-            if ($tree !== '' && glob(Tree::at(rtrim($tree, '/'))) === [] && glob(Tree::at($tree), GLOB_ONLYDIR) === []) {
-                $missing[] = sprintf('%s: %s', $key, $tree);
+            if ($tree === '' || file_exists(Tree::at(theFixedPartOf($tree)))) {
+                continue;
             }
+
+            $missing[] = sprintf('%s: %s', $key, $tree);
         }
     }
 
@@ -356,3 +363,18 @@ it('R4 — every tree the scanner is pointed at is on disk', function (): void {
         implode("\n  ", $missing),
     ));
 });
+
+/**
+ * The part of a glob before its first wildcard, which is the part a rename breaks.
+ *
+ * `native/tests/**` is wrong after the directory moves and `bootstrap/cache/**`
+ * is right while empty, and the difference between them is entirely in the text
+ * before the `*`. Asking a glob to match instead conflates *this path is gone*
+ * with *this path holds nothing today*.
+ */
+function theFixedPartOf(string $pattern): string
+{
+    $at = strpos($pattern, '*');
+
+    return rtrim($at === false ? $pattern : substr($pattern, 0, $at), '/');
+}
