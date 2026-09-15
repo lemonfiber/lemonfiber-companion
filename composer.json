@@ -123,10 +123,12 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "git config core.hooksPath .githooks"
+            "git config core.hooksPath .githooks",
+            "@php scripts/patch_nativephp.php"
         ],
         "post-update-cmd": [
-            "git config core.hooksPath .githooks"
+            "git config core.hooksPath .githooks",
+            "@php scripts/patch_nativephp.php"
         ],
         "analyse": "phpstan analyse",
         "ci": [
