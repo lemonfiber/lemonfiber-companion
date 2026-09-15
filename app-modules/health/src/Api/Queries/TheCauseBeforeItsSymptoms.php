@@ -101,17 +101,28 @@ final readonly class TheCauseBeforeItsSymptoms
             explained: static fn(Check $check): WhatExplainedIt => WhatExplainedIt::theCheck($check),
         );
 
-        if (! $named->isExplained()) {
-            return $named;
-        }
+        return $this->isOnTheScreen($named, $findings) ? $named : WhatExplainedIt::nothing();
+    }
 
+    /**
+     * Whether the check a finding points at is one the run has.
+     *
+     * The guard a caller would write first — *did anything explain this at
+     * all* — is not written, because it cannot be wrong here and a branch that
+     * cannot be wrong is a branch no test can hold to account. Nothing names
+     * the empty string, and a check's name is never blank, so a finding that
+     * stands on its own falls out of the search rather than being steered
+     * around it.
+     */
+    private function isOnTheScreen(WhatExplainedIt $named, Findings $findings): bool
+    {
         foreach ($findings as $other) {
             if ($other->check()->shown() === $named->check) {
-                return $named;
+                return true;
             }
         }
 
-        return WhatExplainedIt::nothing();
+        return false;
     }
 
 }

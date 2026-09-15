@@ -912,6 +912,36 @@ it('G4-R4 — the detail is on the row, under everything that leads', function (
         ->and($row->remedies->count())->toBe(1);
 });
 
+it('G4-R4 — a check with no verdict to explain carries no detail either', function (): void {
+    // The other two readings of a check, which reach this row by a different
+    // arm and were the two the detail was never asserted on. A check that
+    // passed has nothing underneath because nothing went wrong; a check that
+    // could not run has nothing underneath because it never got far enough to
+    // produce one. Both are the empty string, and the template branches on it.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.egress'),
+            Category::Vpn,
+            'Torrent traffic leaves through the tunnel',
+            Conclusion::Passed,
+            WhatTheCheckSaid::nothingWrong(),
+        ),
+        Finding::of(
+            Check::of('vpn.killswitch'),
+            Category::Vpn,
+            'The tunnel drops traffic when it goes down',
+            Conclusion::Unverified,
+            WhatTheCheckSaid::couldNotSay(
+                'The tunnel was down, so the killswitch could not be exercised',
+                Remedies::of(Remedy::of('Bring the tunnel up and ask again')),
+            ),
+        ),
+    ))));
+
+    expect($screen->findings()[0]->underneath)->toBe('')
+        ->and($screen->findings()[1]->underneath)->toBe('');
+});
+
 it('G4-R4 — a finding the core added nothing to carries no detail', function (): void {
     // The template branches on the empty string, so a row that carried a blank
     // heading would draw *what the check reported* with nothing under it —
