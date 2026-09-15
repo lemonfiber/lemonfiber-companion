@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\FrozenClock;
@@ -260,4 +261,11 @@ it('leads nowhere until something has actually been paired', function (): void {
     $screen->confirm();
 
     expect($screen->onwardsTo())->not->toBe('/stacks//sign-in');
+});
+
+it('offers a way out of pairing at any point', function (): void {
+    // The sibling of the case on the scanning road, and the same reason: the
+    // typed road is where somebody lands when the camera is refused, and being
+    // able to abandon it is what keeps that from being a trap.
+    expect(pairingScreen()->theListIsAt())->toBe(AScreenWithoutAStack::TheList->value);
 });

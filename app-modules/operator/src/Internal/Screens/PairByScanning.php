@@ -265,6 +265,18 @@ final class PairByScanning extends NativeComponent
         return WhereAStackIs::rememberedAs($this->paired)->signIn();
     }
 
+    /**
+     * Where the list of machines is.
+     *
+     * Read off the case the provider registers from, for the reason every
+     * other route here is: a rename cannot leave this button pointing at
+     * nothing.
+     */
+    public function theListIsAt(): string
+    {
+        return AScreenWithoutAStack::TheList->value;
+    }
+
     /** The frame, by name. */
     public function render(): View
     {

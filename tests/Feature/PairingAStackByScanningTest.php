@@ -324,3 +324,18 @@ it('sends the typed road to the screen the provider registers for it', function 
     expect(named(scanningScreen(ACameraInMemory::reading(scannedCode())))->typingIsAt())
         ->toBe(AScreenWithoutAStack::PairByTyping->value);
 });
+
+it('offers a way out of pairing at any point', function (): void {
+    // On a first run the list is empty and the two roads into pairing are the
+    // only things on it, so a person who starts and changes their mind has
+    // nowhere to go. Offered whatever happened — before the camera, after a
+    // refusal, and after pairing worked — because changing your mind is not a
+    // failure state.
+    $screen = named(scanningScreen(ACameraInMemory::reading(scannedCode())));
+
+    expect($screen->theListIsAt())->toBe(AScreenWithoutAStack::TheList->value);
+
+    $screen->scan();
+
+    expect($screen->theListIsAt())->toBe(AScreenWithoutAStack::TheList->value);
+});

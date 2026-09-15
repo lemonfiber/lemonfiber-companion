@@ -53,4 +53,11 @@
             />
         @endif
     @endunless
+    {{-- The way out. On a first run the list is empty and these two roads are
+         the only things on it, so a person who starts pairing and changes their
+         mind — or whose camera is refused and who does not want to type a code
+         either — has nowhere to go. The platform's own gesture may be there,
+         and a screen that counts on it works on one handset and traps somebody
+         on another. --}}
+    <native:button label="{{ __('connection.back_to_your_stacks') }}" @navigate="{{ $this->theListIsAt() }}" />
 </native:column>
