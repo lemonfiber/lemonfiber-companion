@@ -10114,21 +10114,14 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/dx",
-                "reference": "792e21821648b2f7dd92c81b951e0021e34b85be"
+                "reference": "1abc739b5fb1848a193038f06f030c24264041f8"
             },
             "require": {
-                "lemonfiber/sdk-php": "*",
                 "modules/kernel": "dev-main",
-                "php": "^8.5",
-                "saloonphp/saloon": "^4.0"
+                "php": "^8.5"
             },
             "type": "library",
             "extra": {
-                "laravel": {
-                    "providers": [
-                        "Modules\\Dx\\Providers\\DxServiceProvider"
-                    ]
-                },
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,

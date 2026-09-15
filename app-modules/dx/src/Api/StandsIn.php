@@ -10,8 +10,15 @@ namespace Modules\Dx\Api;
  * `Q-R72` asks for one place that local-only affordances live and for that
  * place to admit a new one without any release artefact changing. This is the
  * shape that makes the second half true: a new affordance is a class in this
- * module and a line in {@see WhatStandsIn}, and nothing outside `app-modules/dx`
- * is edited to add it.
+ * module implementing this, and nothing outside `app-modules/dx` is edited to
+ * add it.
+ *
+ * **Nothing implements it yet, and the module is deliberately inert until
+ * something does.** A registry holding nothing, a provider binding nothing and
+ * a loop with no iterations are three pieces of code no test can reach, and the
+ * coverage floor is right to refuse them — a scaffold is a claim that work has
+ * started rather than work that has. `N1-R57` is not met until a stack can
+ * actually be stood in for.
  *
  * **It names a port and answers with one.** Every seam this application has is
  * a port in `kernel`, so standing in for something is always the same move —

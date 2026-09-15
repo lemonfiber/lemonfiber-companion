@@ -5,9 +5,7 @@
     "type": "library",
     "require": {
         "php": "^8.5",
-        "lemonfiber/sdk-php": "*",
-        "modules/kernel": "dev-main",
-        "saloonphp/saloon": "^4.0"
+        "modules/kernel": "dev-main"
     },
     "autoload": {
         "psr-4": {
@@ -16,11 +14,6 @@
         }
     },
     "extra": {
-        "laravel": {
-            "providers": [
-                "Modules\\Dx\\Providers\\DxServiceProvider"
-            ]
-        },
         "lemonfiber": {
             "floors": {
                 "coverage": 100,
