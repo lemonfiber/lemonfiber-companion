@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomethingElseRunning;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
@@ -164,6 +165,35 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
         ->and($screen->answer()->remedy)->toBe('')
         ->and($screen->answer()->running)->toBe([])
         ->and($keychain->isHolding(theStackWhoseStrangersAreRead()->id()))->toBeFalse();
+});
+
+it('the machine is asked once for a frame, however often the screen reads it', function (): void {
+    // Every accessor on a screen is a template expression, so a screen that
+    // asked on each one would ask as many times as the page mentions it. What
+    // makes that invisible in a suite is that the answers would all agree —
+    // the count is the only thing that differs, so the count is what is read.
+    $supervising = AStackThatSupervises::alsoRunning(
+        Daemons::none(whatTheVerbsCostBesideTheStrangers()),
+        twoThingsNobodyDeclared(),
+    );
+    $screen = theStrangersScreen($supervising);
+
+    $screen->answer();
+    $screen->answer();
+    $screen->howMany();
+
+    expect($supervising->askings())->toBe(1);
+});
+
+it('refuses a route parameter that is not text', function (): void {
+    // A parameter arrives as `mixed`, because the navigation stack's own
+    // parameter array is untyped. Anything that is not a string names no stack,
+    // which is the same situation as a route with nothing in that segment. The
+    // three screens either side of this one make the same assertion.
+    $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
 it('N1-R3 — asking again after an obstacle asks the machine again', function (): void {
