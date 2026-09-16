@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
 use Tests\Support\Imports;
@@ -62,6 +63,16 @@ const MUTABLE_BY_DESIGN = [
     // wholesale — which is luck, not a rule. A name in this list is a line
     // somebody reads; a kind-shaped hole is one nobody would find.
     DxServiceProvider::class,
+    // A store that cannot be written to is not a store. This one stands in for
+    // the device keychain so a pairing can be made without one, and the whole
+    // reason it exists rather than a fixed answer at the `Stacks` port is that
+    // `remember()` has to stick: a screen that reported a pairing and then did
+    // not show it would be a lie on the glass.
+    //
+    // What it holds never leaves the process and never reaches a keychain,
+    // which is `N1-R60` — so the mutability buys a correct screen and costs
+    // nothing that outlives the run.
+    TheStoreThisRunKeeps::class,
 ];
 
 foreach ($modules as $module) {

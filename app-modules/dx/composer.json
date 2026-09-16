@@ -8,6 +8,8 @@
         "lemonfiber/sdk-php": "dev-main",
         "modules/kernel": "dev-main",
         "modules/sdk": "dev-main",
+        "modules/vault": "dev-main",
+        "nativephp/mobile": "^4.4",
         "saloonphp/saloon": "^4.0"
     },
     "autoload": {

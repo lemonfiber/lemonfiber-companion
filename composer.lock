@@ -10114,12 +10114,14 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/dx",
-                "reference": "ec6932e82e3cd83112a642e55b902be10f655e03"
+                "reference": "dd6f2f21b132caea76287ad42887e7c1aedf1ca6"
             },
             "require": {
                 "lemonfiber/sdk-php": "dev-main",
                 "modules/kernel": "dev-main",
                 "modules/sdk": "dev-main",
+                "modules/vault": "dev-main",
+                "nativephp/mobile": "^4.4",
                 "php": "^8.5",
                 "saloonphp/saloon": "^4.0"
             },

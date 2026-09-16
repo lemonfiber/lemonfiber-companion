@@ -6,7 +6,12 @@ use Modules\Dx\Api\ClientsThatReachNothing;
 use Modules\Dx\Internal\TheStandIns;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Reaching;
+use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\Stacks;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Vault\Api\PlatformStacks;
 
 // The register that goes red if the suite is ever pointed at a stand-in.
 //
@@ -37,11 +42,6 @@ use Modules\Sdk\Api\PinnedClients;
  * this rule failing, and it fails loudest with the container's own message,
  * which names what was missing.
  */
-function theConfigurationTheApplicationHolds(): object
-{
-    return whatTheContainerHandsBackFor('config');
-}
-
 function whatTheContainerHandsBackFor(string $port): object
 {
     $built = app()->make($port);
@@ -49,6 +49,55 @@ function whatTheContainerHandsBackFor(string $port): object
     return is_object($built)
         ? $built
         : throw new RuntimeException(sprintf('The container answered %s with something that is not an object.', $port));
+}
+
+/** The configuration repository, asked for the way every other binding is. */
+function theConfigurationTheApplicationHolds(): object
+{
+    return whatTheContainerHandsBackFor('config');
+}
+
+/**
+ * The `Stacks` the container currently answers with, narrowed.
+ *
+ * Narrowed with a check rather than declared, because the container answers
+ * `mixed` and these rules need the port's own methods — asking a device whether
+ * it holds a pairing is the whole assertion. It fails loudly if a binding ever
+ * answers with something else, which is the other thing worth knowing.
+ */
+function whateverIsBoundToStacks(): Stacks
+{
+    $bound = whatTheContainerHandsBackFor(Stacks::class);
+
+    return $bound instanceof Stacks
+        ? $bound
+        : throw new RuntimeException('Stacks is bound to something that is not a Stacks.');
+}
+
+/** The `SecureStorage` the container currently answers with, narrowed the same way. */
+function whateverIsBoundToSessions(): SecureStorage
+{
+    $bound = whatTheContainerHandsBackFor(SecureStorage::class);
+
+    return $bound instanceof SecureStorage
+        ? $bound
+        : throw new RuntimeException('SecureStorage is bound to something that is not one.');
+}
+
+/**
+ * The first stack this device holds, for a rule that needs one.
+ *
+ * Taken from the port rather than built here, so it is the stack the stand-in
+ * actually seeded — a stack assembled beside this would be a second opinion
+ * about what the device holds, and the two would drift.
+ */
+function theFirstStackThisDeviceHolds(): Stack
+{
+    foreach (whateverIsBoundToStacks()->configured() as $stack) {
+        return $stack;
+    }
+
+    throw new RuntimeException('This device holds no stack, so there is nothing to keep a session for.');
 }
 
 it('resolves the real adapter, because nothing asked for a stand-in', function (): void {
@@ -95,6 +144,61 @@ it('Q-R72 — binds every stand-in when one is asked for', function (): void {
     app()->register(new DxServiceProvider(app()), force: true);
 
     expect(whatTheContainerHandsBackFor(Reaching::class))->toBeInstanceOf(ClientsThatReachNothing::class);
+});
+
+it('N1-R57 — a device with stand-ins on is already introduced to a machine', function (): void {
+    // The rule below asks whether each port answers with the class its stand-in
+    // names, and for this one that question is too weak to mean anything: the
+    // stand-in *is* `PlatformStacks`, the same class the real binding gives,
+    // over a store that lives in this process instead of the keychain. Both
+    // answers are the same class and only one of them holds a pairing.
+    //
+    // So this asks the difference that matters, which is also the whole of what
+    // `N1-R57` wants: every screen of the app sits behind a pairing, and a
+    // device holding none reaches exactly one frame.
+    expect(whatTheContainerHandsBackFor(Stacks::class))->toBeInstanceOf(PlatformStacks::class);
+
+    config(['dx.stands_in' => true]);
+    app()->register(new DxServiceProvider(app()), force: true);
+
+    // Asked of a freshly built adapter rather than the one that seeded it, so
+    // this proves the store behind them is shared — which is what makes a
+    // pairing made on one screen still there on the next.
+    $stacks = whateverIsBoundToStacks();
+
+    expect($stacks->holdsAny())->toBeTrue()
+        ->and($stacks->configured()->isEmpty())->toBeFalse();
+});
+
+it('N1-R60 — a session kept with stand-ins on reaches no device', function (): void {
+    // The gap this closes is not hypothetical and not the stand-in's own doing:
+    // `SignIntoAStack` keeps what a sign-in came back with, and with stand-ins
+    // on what came back was assembled from the contract. Without a stand-in at
+    // this port a fabricated session would be written into the operator's
+    // actual keychain and outlive the run that made it — which `N1-R60` refuses
+    // in as many words.
+    //
+    // Proved by a round-trip rather than by naming the adapter, because the
+    // adapter is the shipped one either way: `PlatformKeychain` over a store
+    // that is the device's, or over one that lives in this process. The
+    // difference is observable only in that this works at all — the real
+    // platform store answers through a native bridge, and there is none here.
+    config(['dx.stands_in' => true]);
+    app()->register(new DxServiceProvider(app()), force: true);
+
+    $stack = theFirstStackThisDeviceHolds();
+    $kept = whateverIsBoundToSessions()->keep($stack->id(), Session::of('not-a-credential'));
+
+    expect($kept->either(static fn(): object => new stdClass(), static fn(object $why): object => $why))
+        ->toBeInstanceOf(stdClass::class);
+
+    // Resumed through a freshly built adapter, which is what proves the three
+    // ports share one store rather than each holding its own — the arrangement
+    // the device's single keychain actually has.
+    $resumed = whateverIsBoundToSessions()->resume($stack->id());
+
+    expect($resumed->either(static fn(): object => new stdClass(), static fn(): object => new RuntimeException()))
+        ->toBeInstanceOf(stdClass::class);
 });
 
 it('Q-R72 — takes the place of a port without being asked which', function (): void {

@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Internal;
 
+use Modules\Dx\Adapters\TheStoreThisRunKeeps;
+use Modules\Dx\Api\ADeviceAlreadyPaired;
+use Modules\Dx\Api\ASessionThisRunKeeps;
 use Modules\Dx\Api\AStackThatIsNotThere;
 use Modules\Dx\Api\StandsIn;
+use Modules\Dx\Api\VerdictsThisRunKeeps;
 
 /**
  * Everything this module can take the place of.
@@ -41,8 +45,17 @@ final readonly class TheStandIns
      */
     public static function all(): array
     {
+        // One store for the three ports that sit on one. The device's keychain
+        // is a single place, and stand-ins that each held their own would
+        // disagree with each other about what this device knows — a session
+        // kept under a stack the session store had never heard of.
+        $store = new TheStoreThisRunKeeps();
+
         return [
             new AStackThatIsNotThere(),
+            new ADeviceAlreadyPaired($store),
+            new ASessionThisRunKeeps($store),
+            new VerdictsThisRunKeeps($store),
         ];
     }
 }
