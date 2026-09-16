@@ -63,6 +63,7 @@ return [
     'no_store_for_a_session_action' => 'You are not signed in. A phone with a screen lock set has somewhere to keep it; set one and try again.',
     'session_would_not_keep' => 'This phone would not let the app keep the session.',
     'session_would_not_keep_action' => 'You are not signed in. Unlock the phone and try again.',
+    'open_stack' => 'Open :stack',
     'stack_is_open' => 'Signed in',
     'stack_wants_a_password' => 'Asks for your password',
     'session_has_ended' => 'You are signed out of this stack.',

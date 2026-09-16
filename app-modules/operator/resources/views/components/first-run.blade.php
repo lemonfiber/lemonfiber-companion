@@ -10,10 +10,10 @@
 
 <native:text>{{ __($at->explained()) }}</native:text>
 
-{{-- The pairing step draws no controls of its own: the two pairing roads below
-     are the same controls an operator with a stack already paired sees, and a
-     sequence that ended with its own copy of them would be two spellings of one
-     button and one of them untested. --}}
+{{-- The pairing step draws no control of its own: the pairing road below is
+     the same control an operator with a stack already paired sees, and a
+     sequence that ended with its own copy of it would be two spellings of one
+     button with one of them untested. --}}
 @unless ($at->isThePairing())
     <x-operator::action label="{{ __('onboarding.go_on') }}" tap="{{ $on }}" />
 

@@ -31,8 +31,30 @@
     @endif
 
     @forelse ($this->configured() as $stack)
-        <x-operator::entry>
-            <x-operator::action label="{{ $stack->name()->shown() }}" :goes="$this->tappingGoesTo($stack)" />
+        {{-- A row that is tapped, not a button that is pressed.
+
+             The platform paints every button the same fill and honours no
+             per-instance colour, so a machine drawn as a button is a full-width
+             filled bar — and a household with three of them opens the app on
+             three identical bars with the pairing controls under them, none of
+             which reads as more or less than any other. `DES-R15` is why there
+             is no second button style to reach for: hierarchy on this device is
+             how many controls are on the frame, and a list of machines is not a
+             list of calls to action.
+
+             So the whole row is the tap target and carries what it is about.
+             `F5` is answered by `a11y-label` rather than by a visible label,
+             because what a reader should hear is *open this machine* and what
+             the eye should read is the machine's state. The dimming under a
+             finger is what says it is tappable at all, in place of the fill
+             that used to say it. --}}
+        <native:pressable
+            class="w-full gap-1 py-2"
+            @navigate="$this->tappingGoesTo($stack)"
+            a11y-label="{{ __('connection.open_stack', ['stack' => $stack->name()->shown()]) }}"
+            :press-opacity="0.6"
+        >
+            <x-operator::emphasis>{{ $stack->name()->shown() }}</x-operator::emphasis>
             {{-- N2-R1: the verdict, which is what the app opens on. `N2` calls
                  the ordering its whole design — is anything wrong, then what,
                  then may I fix it from here — and a first screen that leads
@@ -44,7 +66,11 @@
                  age comes out of the same fold as the word, so a row cannot
                  have one without the other. --}}
             @if ($this->lastKnownOf($stack)->isKnown)
-                <x-operator::emphasis>{{ __($this->lastKnownOf($stack)->said) }}</x-operator::emphasis>
+                {{-- Said plainly, with the machine's name carrying the row's one
+                     emphasis. Two strong lines in a row is a row with no first
+                     line, and what tells three machines apart at a glance is
+                     which one this is. --}}
+                <native:text>{{ __($this->lastKnownOf($stack)->said) }}</native:text>
                 <x-operator::note>
                     {{ __('health.stale', [
                         'ago' => trans_choice($this->lastKnownOf($stack)->agoSaid, $this->lastKnownOf($stack)->agoCount),
@@ -52,10 +78,18 @@
                 </x-operator::note>
             @endif
 
-            <native:text>
+            <x-operator::note>
                 {{ __($this->isSignedInto($stack) ? 'connection.stack_is_open' : 'connection.stack_wants_a_password') }}
-            </native:text>
-        </x-operator::entry>
+            </x-operator::note>
+        </native:pressable>
+
+        {{-- Between machines rather than under each, so the last row does not
+             end on a line that separates it from nothing. `F6`'s empty state is
+             the arm below; this is what keeps three rows from reading as one
+             paragraph of nine lines. --}}
+        @unless ($loop->last)
+            <native:divider />
+        @endunless
     @empty
         {{-- N1-R54: a sequence rather than a wall — one frame carrying a
              heading, two sentences and three buttons at once says nothing about
@@ -79,8 +113,14 @@
          screen to add another, and the same two controls answer both — one
          spelling, one set of tests. --}}
     @if ($this->pairingIsOffered())
+        {{-- One road offered here and the other offered where it is used.
+             `N1-R6` asks for both and does not ask for both on this screen: an
+             operator who opens the app to add a machine is choosing to add one,
+             not choosing between a camera and a keyboard, and two controls of
+             equal weight side by side is this screen asking them to. The
+             scanning screen offers the typed road beside the camera, which is
+             where somebody is when the question is real. --}}
         <x-operator::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
-        <x-operator::action label="{{ __('connection.pair_by_typing') }}" :goes="$this->typingIsAt()" />
     @endif
 
     {{-- N4-R13: assembled for the operator to send, and not sent by the app.
