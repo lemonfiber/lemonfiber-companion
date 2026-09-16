@@ -41,8 +41,10 @@ use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Clients;
+use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
@@ -133,7 +135,8 @@ final class CompositionRoot extends ServiceProvider
         // handed a password, which is the shape `N1-R7`'s second clause exists
         // to prevent. It holds no state today — the binding is what keeps that
         // true of whatever it grows into.
-        $this->app->bind(Admitting::class, static fn(): Admitting => new Admissions());
+        $this->app->bind(Doors::class, PinnedDoors::class);
+        $this->app->bind(Admitting::class, Admissions::class);
 
         // Asking a stack how it is, which is what a session is opened for.
         //

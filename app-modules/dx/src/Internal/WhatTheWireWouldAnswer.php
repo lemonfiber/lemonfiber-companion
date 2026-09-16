@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Modules\Dx\Internal;
 
 use function implode;
+use function is_array;
 use function json_encode;
 
+use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Dx\Api\AStandInStack;
 use Saloon\Http\Faking\MockClient;
@@ -92,6 +94,35 @@ final readonly class WhatTheWireWouldAnswer
     private const string WHAT_WORK_BECOMES = 'RepairEnvelope';
 
     /**
+     * What a door answers a password with.
+     *
+     * The third endpoint the contract does not write down, and the one that is
+     * not on `Api` at all: `Admission::ENDPOINT` is the SDK's, because the door
+     * is a transport of its own. Answered from `AdmissionEnvelope`'s own
+     * declaration all the same, so the token and the ending are the shape the
+     * reader is about to insist on.
+     */
+    private const string WHAT_A_DOOR_ANSWERS = 'AdmissionEnvelope';
+
+    /**
+     * When a stand-in session ends.
+     *
+     * The one field in this whole surface whose *shape* a reader insists on:
+     * {@see \Lemonfiber\Sdk\Admitted::of()} puts `until` through `Stamp`, and
+     * a stamp it cannot read is an `UnreadableResponse` — which arrives at the
+     * sign-in screen as *this stack did not answer*, about a door that answered
+     * perfectly well. Every other string in a synthesised payload is free-form
+     * and carries its own field name, which is what makes a stand-in payload
+     * obvious on a screen; this one cannot.
+     *
+     * Far enough ahead that it is never a session that has already ended, and
+     * written rather than counted from a clock: `B1` keeps time behind a port,
+     * and a payload assembled from the moment it was built would make two runs
+     * of the same stand-in answer differently.
+     */
+    private const string LONG_AFTER_ANY_RUN = '2099-01-01T00:00:00Z';
+
+    /**
      * How many lines a stand-in scrollback carries.
      *
      * More than one, because a window showing a single line looks the same as
@@ -133,20 +164,43 @@ final readonly class WhatTheWireWouldAnswer
      */
     public static function to(string $endpoint, int $status): MockResponse
     {
-        if ($endpoint === Api::LOGS_ENDPOINT) {
-            return new MockResponse(self::aDocumentALine(), $status);
-        }
+        return new MockResponse(self::whatThatPathSends($endpoint), $status);
+    }
 
-        if (str_starts_with($endpoint, Api::JOBS_ENDPOINT)) {
-            return new MockResponse(self::oneEnvelope(self::WHAT_WORK_BECOMES), $status);
-        }
+    /**
+     * The body one path sends, whichever of the four shapes it has.
+     *
+     * Split from {@see to()} because that method had four ways out and this has
+     * one question (`H8`): the status is the machine's and belongs to every
+     * path, and which body a path sends is a property of the path.
+     *
+     * @return array<string, mixed>|string
+     */
+    private static function whatThatPathSends(string $endpoint): array|string
+    {
+        // The three paths whose body is not one envelope built from the
+        // contract's declaration, and then everything else. `match` rather than
+        // three early returns, because what this is doing is naming a path
+        // rather than deciding anything (`H8`, `C5`).
+        return match (true) {
+            $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
+            $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
+            str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
+            default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint)),
+        };
+    }
 
+    /**
+     * The envelope a path declares, or the name for work where it declares none.
+     *
+     * Three endpoints declare nothing, and two of them are the work pair above;
+     * this is what answers for the third and for any the SDK grows tomorrow.
+     */
+    private static function whateverTheContractSaysAbout(string $endpoint): string
+    {
         $envelope = WhichEnvelopeAnEndpointAnswersWith::at($endpoint);
 
-        return new MockResponse(
-            self::oneEnvelope($envelope === '' ? self::A_NAME_FOR_WORK : $envelope),
-            $status,
-        );
+        return $envelope === '' ? self::A_NAME_FOR_WORK : $envelope;
     }
 
     /**
@@ -166,6 +220,28 @@ final readonly class WhatTheWireWouldAnswer
             'kind' => WhatTheContractDeclares::kindOf($envelope),
             'data' => WhatAStackWouldSay::inside($envelope),
         ];
+    }
+
+    /**
+     * A door that opened, with an ending a reader can parse.
+     *
+     * Built from `AdmissionEnvelope`'s own declaration and then corrected in
+     * one field, rather than assembled here: the token, the shape and the kind
+     * stay the contract's, and only the ending is replaced — which is the only
+     * part of it the SDK reads as something other than text.
+     *
+     * @return array<string, mixed>
+     */
+    private static function aDoorThatOpened(): array
+    {
+        $envelope = self::oneEnvelope(self::WHAT_A_DOOR_ANSWERS);
+        $data = $envelope['data'];
+
+        $envelope['data'] = is_array($data)
+            ? [...$data, 'until' => self::LONG_AFTER_ANY_RUN]
+            : ['until' => self::LONG_AFTER_ANY_RUN];
+
+        return $envelope;
     }
 
     /**

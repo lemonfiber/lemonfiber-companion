@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AStacksScreen;
+use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -297,4 +299,62 @@ it('N3-R13 — a machine that refuses the session draws the way back in', functi
         . 'which is why the stand-in keychain holds one for the machine that refuses it.',
         implode("\n  ", $wrong),
     ));
+});
+
+/**
+ * The sign-in screen, built the way the application builds one.
+ *
+ * Outside the closure because the container declares that it may fail to build
+ * a screen and the analyser refuses a checked exception raised inside one —
+ * left to raise rather than caught, because a screen the container cannot build
+ * is this rule failing, and it fails loudest with the container's own message.
+ */
+function theSignInScreenFor(string $stack): SignIntoAStack
+{
+    $screen = app()->make(SignIntoAStack::class);
+    $screen->setParams(['stack' => $stack]);
+
+    return $screen;
+}
+
+it('N1-R7 — a password can be offered to a machine that is not running', function (): void {
+    // The one act the walk above leaves out, because it is not a reading: every
+    // other screen draws what a stack said, and this one offers the operator's
+    // password and keeps what came back.
+    //
+    // It was also the last flow that reached the network. `Admissions` built
+    // its own door inline — `Admission` is a transport of its own, with its own
+    // pin and its own connector — so standing in at the client left the door
+    // dialling the address of a machine that does not exist, with somebody's
+    // password on it. `ADoorThatIsNotThere` is the other half, and this is what
+    // says it is there.
+    withNoStackRunning();
+
+    $stack = AStandInStack::Answering->asAStack();
+    $screen = theSignInScreenFor($stack->id()->stored());
+
+    // Through the framework's own property sync, which is how a typed character
+    // reaches a screen on a device. A test assigning the property directly
+    // would be proving something about PHP.
+    $screen->__syncProperty('typed', 'not-a-password');
+
+    expect($screen->mayOffer())->toBeTrue('nothing was typed, so there is nothing to offer');
+
+    $screen->offer();
+
+    expect($screen->went())->toBe(
+        HowTheSignInWent::SignedIn,
+        'the stand-in door did not open, so the sign-in screen is the one frame of this '
+        . 'application that cannot be walked without a stack running',
+    );
+
+    // `N1-R7` exchanges the password once: what comes back is kept, so the next
+    // frame does not ask again. Read through the port rather than off the
+    // screen, because the screen's answer is what it just did and the store's
+    // is what the app will find on the frame after this one.
+    expect(thisDeviceStillHoldsASessionFor($stack->id()))->toBeTrue();
+
+    // And the field is cleared whatever happened, which is a password off the
+    // glass rather than one the next tap would offer again unchanged.
+    expect($screen->typed())->toBe('');
 });

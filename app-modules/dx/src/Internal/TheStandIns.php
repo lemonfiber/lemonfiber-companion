@@ -6,6 +6,7 @@ namespace Modules\Dx\Internal;
 
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Dx\Api\ADeviceAlreadyPaired;
+use Modules\Dx\Api\ADoorThatIsNotThere;
 use Modules\Dx\Api\ASessionThisRunKeeps;
 use Modules\Dx\Api\AStackThatIsNotThere;
 use Modules\Dx\Api\StandsIn;
@@ -53,6 +54,7 @@ final readonly class TheStandIns
 
         return [
             new AStackThatIsNotThere(),
+            new ADoorThatIsNotThere(),
             new ADeviceAlreadyPaired($store),
             new ASessionThisRunKeeps($store),
             new VerdictsThisRunKeeps($store),
