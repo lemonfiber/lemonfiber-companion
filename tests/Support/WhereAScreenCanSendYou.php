@@ -270,7 +270,16 @@ final readonly class WhereAScreenCanSendYou
         // have this walk go blind the moment a screen names its controls
         // instead of spelling them out — and a graph with no edges reports
         // every screen as unreachable rather than reporting nothing.
-        preg_match_all('/<x-operator::action\b[^>]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
+        //
+        // Bounded by `<` rather than by `>`, and that is not a detail. An
+        // attribute holding an array — `['name' => $service->name]` — carries a
+        // `>` of its own, so a reader that stopped at the first one stopped
+        // inside the tag and never reached the route beside it. The screen went
+        // on drawing its link and this walk reported the place it led to as
+        // somewhere nobody can get to. `<` cannot appear inside a tag, so it is
+        // the bound that means *this tag* rather than *up to the first angle
+        // bracket, whatever it belongs to*.
+        preg_match_all('/<x-operator::action\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
         $ways = [...$ways, ...$named[2]];
 
         return [...$ways, ...$this->waysOffTheChromeOf($source)];
@@ -297,7 +306,7 @@ final readonly class WhereAScreenCanSendYou
      */
     private function waysOffTheChromeOf(string $source): array
     {
-        if (preg_match('/<x-operator::screen-closes\b[^>]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $handed) !== 1) {
+        if (preg_match('/<x-operator::screen-closes\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $handed) !== 1) {
             return [];
         }
 

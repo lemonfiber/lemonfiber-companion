@@ -118,7 +118,11 @@
                 <x-operator::note>{{ __('health.host_runs_it') }}</x-operator::note>
             @endif
 
-            <x-operator::action label="{{ __('health.read_its_logs') }}" :goes="$this->goes()->logsOf($service->id)" />
+            <x-operator::action
+                label="{{ __('health.read_its_logs') }}"
+                answers-to="{{ __('health.read_what_it_said', ['name' => $service->name]) }}"
+                :goes="$this->goes()->logsOf($service->id)"
+            />
         </x-operator::entry>
     @empty
         {{-- Not the same screen as a stack that could not be asked. Nothing
@@ -140,9 +144,21 @@
                  thing to want and none of them is the guess a row's would
                  be. --}}
             <native:text>{{ $form }}</native:text>
-            <x-operator::action label="{{ __('health.do.start') }}" tap="wouldYouLike('start', '{{ $form }}')" />
-            <x-operator::action label="{{ __('health.do.stop') }}" tap="wouldYouLike('stop', '{{ $form }}')" />
-            <x-operator::action label="{{ __('health.do.restart') }}" tap="wouldYouLike('restart', '{{ $form }}')" />
+            <x-operator::action
+                label="{{ __('health.do.start') }}"
+                answers-to="{{ __('health.do_to.start', ['name' => $form]) }}"
+                tap="wouldYouLike('start', '{{ $form }}')"
+            />
+            <x-operator::action
+                label="{{ __('health.do.stop') }}"
+                answers-to="{{ __('health.do_to.stop', ['name' => $form]) }}"
+                tap="wouldYouLike('stop', '{{ $form }}')"
+            />
+            <x-operator::action
+                label="{{ __('health.do.restart') }}"
+                answers-to="{{ __('health.do_to.restart', ['name' => $form]) }}"
+                tap="wouldYouLike('restart', '{{ $form }}')"
+            />
         </x-operator::entry>
     @empty
         {{-- A stack with no forms at all is a machine nothing has been set

@@ -23,6 +23,7 @@ return [
     'changes_nothing' => 'This release changes no service on this machine.',
     'something_worth_noticing' => 'One of these is a change the household will see',
     'take_this_one' => 'Take this one',
+    'take_that_one' => 'Take :version',
     'last_update' => 'The last update',
     'did_not_arrive' => '{1} One service is not where you wanted it|[2,*] :count services are not where you wanted it',
     'unanswered' => 'Some services started and have not answered, so the stack cannot say what they are doing.',

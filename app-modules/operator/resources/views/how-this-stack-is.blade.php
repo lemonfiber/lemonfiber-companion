@@ -102,7 +102,11 @@
                  that led to an empty window would be the row teaching an
                  operator not to trust the row. --}}
             @if ($finding->service !== '')
-                <x-operator::action label="{{ __('health.what_a_service_said') }}" :goes="$this->logsOf($finding->service)" />
+                <x-operator::action
+                    label="{{ __('health.what_a_service_said') }}"
+                    answers-to="{{ __('health.what_that_service_said', ['service' => $finding->service]) }}"
+                    :goes="$this->logsOf($finding->service)"
+                />
             @endif
         </x-operator::entry>
     @empty
