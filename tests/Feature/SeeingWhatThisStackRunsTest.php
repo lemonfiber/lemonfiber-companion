@@ -663,3 +663,23 @@ it('N2-R8 — states no length once the reading it came from is gone', function 
     expect($screen->asking())->not->toBeNull()
         ->and($screen->whatItTakesAway())->toBeNull();
 });
+
+it('N2-R7 — a row carries only the verbs its own state can take', function (): void {
+    // The narrowing is the row's whole contribution here: the decision belongs
+    // to the state, and this asserts the fold asked it rather than handing the
+    // template all three and leaving a stopped service offered a stop. Read as
+    // *which verbs*, so a fold that stopped narrowing names one too many rather
+    // than passing on a list nobody compared.
+    $screen = theServicesScreen(AStackThatSupervises::with(Daemons::of(
+        HowTheStackIsRunning::Active,
+        Forms::these(Form::called('downloads')),
+        whatTheRunningVerbsCost(),
+        aServiceRunning('sonarr', HowAServiceRuns::Stopped),
+        aServiceRunning('jellyfin'),
+    )));
+
+    [$stopped, $running] = $screen->answer()->services;
+
+    expect($stopped->verbs)->toBe([WhatToDoWithIt::Start])
+        ->and($running->verbs)->toBe([WhatToDoWithIt::Stop, WhatToDoWithIt::Restart]);
+});
