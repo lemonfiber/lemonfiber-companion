@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Api;
 
-use Modules\Kernel\Api\Reaching;
+use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\PinnedClients;
 
 /**
@@ -23,13 +23,20 @@ use Modules\Sdk\Api\PinnedClients;
  * apart means somebody can look at the first run *and* at what a paired device
  * does, rather than only ever at the second.
  *
- * @implements StandsIn<Reaching>
+ * **It replaces {@see Clients} rather than the kernel's port.** The kernel's
+ * `Reaching` is the name a capability may use; every adapter that actually
+ * opens a connection takes the narrowed one, because it calls the client's own
+ * methods. Standing in at the kernel's port was resolved correctly and reached
+ * by nothing at all — with stand-ins on, the application dialled the addresses
+ * of machines that do not exist.
+ *
+ * @implements StandsIn<Clients>
  */
 final readonly class AStackThatIsNotThere implements StandsIn
 {
     public function insteadOf(): string
     {
-        return Reaching::class;
+        return Clients::class;
     }
 
     /**
@@ -41,7 +48,7 @@ final readonly class AStackThatIsNotThere implements StandsIn
      * difference between what is being looked at and what ships — which is the
      * whole thing this module exists not to be.
      */
-    public function which(): Reaching
+    public function which(): Clients
     {
         return new ClientsThatReachNothing(new PinnedClients());
     }

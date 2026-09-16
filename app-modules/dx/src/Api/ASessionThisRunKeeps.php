@@ -6,6 +6,7 @@ namespace Modules\Dx\Api;
 
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Session;
 use Modules\Vault\Api\PlatformKeychain;
 
 /**
@@ -32,7 +33,47 @@ use Modules\Vault\Api\PlatformKeychain;
  */
 final readonly class ASessionThisRunKeeps implements StandsIn
 {
-    public function __construct(private TheStoreThisRunKeeps $store) {}
+    /**
+     * What is held for each machine, and it is not a credential.
+     *
+     * Said in the value itself, because it travels: this is what goes out in
+     * the `Authorization` header of every request the stand-in client answers,
+     * and anybody reading a log of a run should be able to tell in a second
+     * that nothing here reached a stack. `N1-R60` is why it can only ever be
+     * this — a value that could authenticate against somebody's actual machine
+     * is the thing that requirement refuses, and a made-up one that looked
+     * plausible would be halfway there.
+     */
+    private const string NOT_A_CREDENTIAL = 'a-session-that-reached-no-stack';
+
+    /**
+     * The device is signed in to every machine it has been introduced to.
+     *
+     * Without this the app stops one frame past the list. `ADeviceAlreadyPaired`
+     * makes the pairing, and a paired device with no session reaches exactly
+     * the sign-in screen: every stack-scoped screen reads *you are signed out
+     * of this stack* and draws nothing of its own. That is one branch of one
+     * requirement, drawn eight times, in place of the application.
+     *
+     * **Every machine, including the one that refuses it.**
+     * `AStandInStack::RefusingTheSession` answers `401`, and a refusal can only
+     * be met by a device that had something to offer — with no session it
+     * would never make the call, and `N3-R13`'s whole sequence (offer, refuse,
+     * let go, sign in again) would be unreachable from a build meant to reach
+     * everything.
+     *
+     * Written through the shipped adapter for {@see ADeviceAlreadyPaired}'s
+     * reason: what the store holds is then the shape the adapter reads, rather
+     * than this class's idea of it.
+     */
+    public function __construct(private TheStoreThisRunKeeps $store)
+    {
+        $keychain = new PlatformKeychain($this->store);
+
+        foreach (AStandInStack::cases() as $standIn) {
+            $keychain->keep($standIn->asAStack()->id(), Session::of(self::NOT_A_CREDENTIAL));
+        }
+    }
 
     public function insteadOf(): string
     {

@@ -58,7 +58,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Questions implements Asking
 {
-    public function __construct(private PinnedClients $clients) {}
+    public function __construct(private Clients $clients) {}
 
     public function about(Stack $stack, Session $session): WhatCameBack
     {

@@ -44,7 +44,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Stalls implements Stalling
 {
-    public function __construct(private PinnedClients $clients) {}
+    public function __construct(private Clients $clients) {}
 
     public function stoppedOn(Stack $stack, Session $session): WhatIsStuck
     {

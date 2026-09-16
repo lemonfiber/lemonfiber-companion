@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Api;
 
+use Lemonfiber\Sdk\Client;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
-use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\PinnedClients;
 
 /**
@@ -20,7 +21,7 @@ use Modules\Sdk\Api\PinnedClients;
  * comparison, the required `kind`, the shape the envelope declares — is made.
  * Only the socket is missing.
  *
- * A fake bound at `Reaching` would skip all of that, and all of that is the
+ * A fake bound at the port would skip all of that, and all of that is the
  * part most likely to be wrong. A screen rendering against such a fake has
  * proved the screen works. A screen rendering against this has proved the
  * screen, the reader and the contract agree, which is the question worth asking
@@ -45,21 +46,21 @@ use Modules\Sdk\Api\PinnedClients;
  * WhatTheWireWouldAnswer} registers one catch-all, so there is no request this
  * can be asked for that reaches a socket and none that raises.
  */
-final readonly class ClientsThatReachNothing implements Reaching
+final readonly class ClientsThatReachNothing implements Clients
 {
     public function __construct(private PinnedClients $pinned) {}
 
     /**
-     * The port's `object` rather than the SDK's client type.
+     * The SDK's client, because {@see Clients} is what this stands in for.
      *
-     * The real adapter narrows this and rector is right to ask it to — that
-     * file may name the SDK. This one may not, for the reason the class
-     * docblock gives: naming the transport is what `N1-R20` reads to decide a
-     * file can open a connection, and the whole argument for this class is that
-     * it cannot. So the port's own spelling, which says as much as this file is
-     * allowed to say.
+     * Naming the type is what `N1-R20` used to read as *this file can open a
+     * connection*, and this file cannot: the client comes from
+     * {@see PinnedClients}, pinned, and is handed straight on.
+     * `MAY_NAME_A_CLIENT` is where that distinction is written down, and the
+     * rule beside it refuses this file the moment it names a way of building
+     * one.
      */
-    public function client(Stack $stack, Session $session): object
+    public function client(Stack $stack, Session $session): Client
     {
         $client = $this->pinned->client($stack, $session);
 

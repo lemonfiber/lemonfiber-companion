@@ -40,6 +40,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Sdk\Api\Admissions;
+use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Questions;
@@ -112,7 +113,14 @@ final class CompositionRoot extends ServiceProvider
         // `modules/sdk` is the only manifest that requires the SDK, and
         // `NothingReachesAStackUnpinnedTest` refuses any other file that names
         // its transport. This line is where those two facts meet the container.
-        $this->app->bind(Reaching::class, static fn(): Reaching => new PinnedClients());
+        $this->app->bind(Clients::class, PinnedClients::class);
+
+        // The kernel's name for the same thing, so a capability can say *a way
+        // to reach a stack* without naming the SDK (`A7`). One binding rather
+        // than two adapters: the narrowed interface extends the port, so what
+        // answers here is whatever answers above — and a stand-in put over one
+        // of them cannot be missed by a caller that asked for the other.
+        $this->app->bind(Reaching::class, Clients::class);
 
         // The one place a credential is offered to a stack, bound beside the
         // client for the same reason: `modules/sdk` is the only manifest that
@@ -135,7 +143,7 @@ final class CompositionRoot extends ServiceProvider
         // is for — and a caller needing to call a method on one would have to
         // narrow, which is a branch nothing can reach. Both classes live in
         // `modules/sdk`, so no boundary is crossed by using the real type.
-        $this->app->bind(Asking::class, static fn(): Asking => new Questions(new PinnedClients()));
+        $this->app->bind(Asking::class, Questions::class);
 
         // Handing a diagnostic report to the operator, which is the only way
         // one leaves this device. `N4-R13` says the app assembles and does not
@@ -180,7 +188,7 @@ final class CompositionRoot extends ServiceProvider
         // What the household has asked its stack for, which `N2-R11`'s screen
         // reads. Beside `Asking` and built the same way: both go through
         // `PinnedClients`, so there is one place a certificate is checked.
-        $this->app->bind(Wanting::class, static fn(): Wanting => new Requests(new PinnedClients()));
+        $this->app->bind(Wanting::class, Requests::class);
 
         // What a stack would put right, asked without changing anything.
         // `Repair::offer()` is the unconfirmed form and the SDK makes the two
@@ -189,7 +197,7 @@ final class CompositionRoot extends ServiceProvider
         //
         // The agreement half of it does change a stack, so it is handed the
         // randomness a key for one attempt is minted from (`B2`).
-        $this->app->bind(Mending::class, $this->mending(...));
+        $this->app->bind(Mending::class, Menders::class);
 
         // What has stopped coming in, which is the first of `N2-R9`'s four.
 
@@ -198,9 +206,9 @@ final class CompositionRoot extends ServiceProvider
         // share a constructor is the pin: one place decides whether a
         // certificate is checked, and a port that built its own client would be
         // a second.
-        $this->app->bind(Stalling::class, static fn(): Stalling => new Stalls(new PinnedClients()));
+        $this->app->bind(Stalling::class, Stalls::class);
 
-        $this->app->bind(Saying::class, static fn(): Saying => new Scrollbacks(new PinnedClients()));
+        $this->app->bind(Saying::class, Scrollbacks::class);
 
         // What a stack is running, and the three verbs `N2-R7` offers about it.
         // The one binding that both reads and writes, which is the shape the
@@ -211,16 +219,13 @@ final class CompositionRoot extends ServiceProvider
         // Handed randomness for the same reason the repairs adapter is: a verb
         // changes a stack, and an action that changes one names the attempt it
         // is part of (`B2`).
-        $this->app->bind(Supervising::class, $this->supervising(...));
+        $this->app->bind(Supervising::class, Supervisors::class);
 
         // Where a stack stands on being up to date, and taking one. Both halves
         // on one binding for the reason supervising is: an operator reads what
         // is waiting, agrees to it, and a second port for the agreeing would be
         // a second place a client could be reached for.
-        $this->app->bind(
-            KeepingCurrent::class,
-            static fn(): KeepingCurrent => new Upkeepers(new PinnedClients()),
-        );
+        $this->app->bind(KeepingCurrent::class, Upkeepers::class);
 
         $this->app->bind(
             Networking::class,
@@ -324,30 +329,6 @@ final class CompositionRoot extends ServiceProvider
         $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop();
 
         new ScreenRoutes($this->screen(...), $runloop)->declare();
-    }
-
-    /**
-     * What a stack is running, and the three verbs said about it.
-     *
-     * A method rather than the closure it replaces, for {@see self::theScanner()}'s
-     * reason: `Container::make()` raises a checked exception and the analyser
-     * refuses one raised inside a closure. The port is resolved rather than an
-     * adapter named, so what randomness *is* stays decided in one line above.
-     */
-    private function supervising(): Supervising
-    {
-        return new Supervisors(new PinnedClients(), $this->app->make(Entropy::class));
-    }
-
-    /**
-     * What a stack would put right, and the yes to some of it.
-     *
-     * A method for {@see self::supervising()}'s reason, and handed the same
-     * source of randomness.
-     */
-    private function mending(): Mending
-    {
-        return new Menders(new PinnedClients(), $this->app->make(Entropy::class));
     }
 
     /**
