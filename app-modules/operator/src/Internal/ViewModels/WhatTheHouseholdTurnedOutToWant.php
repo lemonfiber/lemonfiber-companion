@@ -22,16 +22,11 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatTheHouseholdTurnedOutToWant
 {
     /**
-     * @param bool                    $isSignedIn whether this device still holds a session for the stack
-     * @param string                  $met        the key for what stood in the way, or empty where nothing did
-     * @param string                  $remedy     the key for what to do about it, or empty where nothing did
      * @param list<WhatOneRequestSays> $requests every request the house has made, in the stack's order
      * @param int                      $waiting  how many of them want a decision (`N2-R11`)
      */
     public function __construct(
-        public bool $isSignedIn,
-        public string $met,
-        public string $remedy,
+        public HowTheReadingWent $went,
         public array $requests,
         public int $waiting,
     ) {}

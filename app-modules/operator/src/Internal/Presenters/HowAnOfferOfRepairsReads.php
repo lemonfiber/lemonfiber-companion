@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
 
 /**
@@ -28,13 +29,13 @@ final readonly class HowAnOfferOfRepairsReads
     /** No session for that stack, so nothing was asked (`N1-R44`). */
     public function signedOut(): WhatTheStackWouldPutRight
     {
-        return new WhatTheStackWouldPutRight(isSignedIn: false);
+        return new WhatTheStackWouldPutRight(went: HowTheReadingWent::theSessionEnded());
     }
 
     /** The stack is still working out what it would do. */
     public function stillWorkingItOut(): WhatTheStackWouldPutRight
     {
-        return new WhatTheStackWouldPutRight(isWorking: true);
+        return new WhatTheStackWouldPutRight(went: HowTheReadingWent::itCameBack(), isWorking: true);
     }
 
     /** It finished, and this is the listing. */
@@ -50,22 +51,28 @@ final readonly class HowAnOfferOfRepairsReads
         // `N2-R6` has a yes quote the listing it was given, and the screen that
         // will offer that yes reads it from here — a fold that dropped it would
         // have to ask the stack again to agree to what it is already showing.
-        return new WhatTheStackWouldPutRight(named: $offer->named(), repairs: $rows);
+        return new WhatTheStackWouldPutRight(
+            went: HowTheReadingWent::itCameBack(),
+            named: $offer->named(),
+            repairs: $rows,
+        );
     }
 
     /** The stack has no outcome for that job any more. */
     public function ended(): WhatTheStackWouldPutRight
     {
-        return new WhatTheStackWouldPutRight(hasEnded: true);
+        return new WhatTheStackWouldPutRight(went: HowTheReadingWent::itCameBack(), hasEnded: true);
     }
 
-    /** The machine could not be reached, and this is what the operator met. */
+    /**
+     * The machine could not be reached, and this is what the operator met.
+     *
+     * Whether a refused credential is an obstacle or being signed out is
+     * {@see HowTheReadingWent}'s to decide, not this fold's — it was asked here
+     * and in seven other presenters, which is eight places for one answer.
+     */
     public function met(Obstacle $why): WhatTheStackWouldPutRight
     {
-        if ($why->meansWeAreSignedOut()) {
-            return $this->signedOut();
-        }
-
-        return new WhatTheStackWouldPutRight(met: $why->said(), remedy: $why->remedy());
+        return new WhatTheStackWouldPutRight(went: HowTheReadingWent::somethingStopped($why));
     }
 }

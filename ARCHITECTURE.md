@@ -305,6 +305,9 @@ automatic and the operator never sees the question.
 | F10 | Every method a template calls is one its screen has, and every screen that renders is paired | `tests/Templates` |
 | F11 | Every component a screen uses is classified as a control or as furniture, so F5 cannot pass over one nobody thought about | `tests/Templates` |
 | F12 | Every screen can be reached from the one the app opens on, by following navigation from screen to screen | `tests/Feature`: the walk from the screen the router serves at launch |
+| F13 | A component draws its slot on every branch it has — Blade renders a slot before the component, so one behind an `@if` reaches the device anyway | arch |
+| F14 | Every step a template takes after its screen answered, and every step a component takes off what it was handed — a field or a further call — is one that value has | `tests/Templates`: the chain walked by declared type, from the screen's return type or the component's property onward |
+| F15 | Every screen the router serves is built the way the app builds it, drawn, and draws something — the render path is where a frame is actually decided | `tests/Feature`: every route's screen, rendered with stand-ins answering |
 
 **Why F12 is a rule of its own, given the three beside it.** Three rules already
 ask about reachability and every one of them asks it of a single screen: each

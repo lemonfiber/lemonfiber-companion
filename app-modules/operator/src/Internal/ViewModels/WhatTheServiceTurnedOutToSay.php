@@ -22,9 +22,6 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatTheServiceTurnedOutToSay
 {
     /**
-     * @param bool                  $isSignedIn whether this device still holds a session for the stack
-     * @param string                $met        the key for what stood in the way, or empty where nothing did
-     * @param string                $remedy     the key for what to do about it, or empty where nothing did
      * @param list<WhatOneLineSays> $lines      the lines to show, oldest first
      * @param int                   $arrived    how many came back before anything narrowed them
      * @param int                   $bound      how many were asked for (`N2-R10`)
@@ -32,9 +29,7 @@ final readonly class WhatTheServiceTurnedOutToSay
      * @param bool                  $isSearching whether a search is narrowing the lines
      */
     public function __construct(
-        public bool $isSignedIn,
-        public string $met,
-        public string $remedy,
+        public HowTheReadingWent $went,
         public array $lines,
         public int $arrived,
         public int $bound,

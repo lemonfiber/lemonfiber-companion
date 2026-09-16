@@ -17,15 +17,10 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatElseTurnedOutToBe
 {
     /**
-     * @param bool                             $isSignedIn whether this device still holds a session for the stack
-     * @param string                           $met        the key for what stood in the way, or empty where nothing did
-     * @param string                           $remedy     the key for what to do about it, or empty where nothing did
      * @param list<WhatOneOtherContainerSays>  $running    everything the stack did not declare, in the machine's order
      */
     public function __construct(
-        public bool $isSignedIn,
-        public string $met,
-        public string $remedy,
+        public HowTheReadingWent $went,
         public array $running,
     ) {}
 }

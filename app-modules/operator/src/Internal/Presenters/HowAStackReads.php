@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 
 /**
@@ -35,10 +36,8 @@ final readonly class HowAStackReads
     public function signedOut(): WhatTheStackTurnedOutToBe
     {
         return new WhatTheStackTurnedOutToBe(
-            isSignedIn: false,
+            went: HowTheReadingWent::theSessionEnded(),
             overall: '',
-            met: '',
-            remedy: '',
             findings: Findings::none(),
         );
     }
@@ -47,10 +46,8 @@ final readonly class HowAStackReads
     public function said(Report $report): WhatTheStackTurnedOutToBe
     {
         return new WhatTheStackTurnedOutToBe(
-            isSignedIn: true,
+            went: HowTheReadingWent::itCameBack(),
             overall: $report->overall()->saidOnTheScreen(),
-            met: '',
-            remedy: '',
             findings: $report->findings(),
         );
     }
@@ -64,15 +61,9 @@ final readonly class HowAStackReads
      */
     public function met(Obstacle $why): WhatTheStackTurnedOutToBe
     {
-        if ($why->meansWeAreSignedOut()) {
-            return $this->signedOut();
-        }
-
         return new WhatTheStackTurnedOutToBe(
-            isSignedIn: true,
+            went: HowTheReadingWent::somethingStopped($why),
             overall: '',
-            met: $why->said(),
-            remedy: $why->remedy(),
             findings: Findings::none(),
         );
     }

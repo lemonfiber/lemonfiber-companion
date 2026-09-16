@@ -27,16 +27,11 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatStoppedTurnedOutToBe
 {
     /**
-     * @param bool                        $isSignedIn whether this device still holds a session for the stack
-     * @param string                      $met        the key for what stood in the way, or empty where nothing did
-     * @param string                      $remedy     the key for what to do about it, or empty where nothing did
      * @param list<WhatOneStalledItemSays> $stalled   everything that stopped, in the stack's order
      * @param string                      $shownSaid  the key for how much of the listing this is
      */
     public function __construct(
-        public bool $isSignedIn,
-        public string $met,
-        public string $remedy,
+        public HowTheReadingWent $went,
         public array $stalled,
         public string $shownSaid,
     ) {}

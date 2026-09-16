@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Scrollback;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
 
 /**
@@ -31,9 +32,7 @@ final readonly class HowAScrollbackReads
     public function signedOut(): WhatTheServiceTurnedOutToSay
     {
         return new WhatTheServiceTurnedOutToSay(
-            isSignedIn: false,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::theSessionEnded(),
             lines: [],
             arrived: 0,
             bound: 0,
@@ -56,9 +55,7 @@ final readonly class HowAScrollbackReads
         // Every claim about the edge comes off the window rather than off the
         // rows, which is what keeps a search from quietly widening it.
         return new WhatTheServiceTurnedOutToSay(
-            isSignedIn: true,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::itCameBack(),
             lines: $rows,
             arrived: $shown->howManyArrived(),
             bound: $shown->asked()->figure(),
@@ -84,14 +81,8 @@ final readonly class HowAScrollbackReads
      */
     public function met(Obstacle $why): WhatTheServiceTurnedOutToSay
     {
-        if ($why->meansWeAreSignedOut()) {
-            return $this->signedOut();
-        }
-
         return new WhatTheServiceTurnedOutToSay(
-            isSignedIn: true,
-            met: $why->said(),
-            remedy: $why->remedy(),
+            went: HowTheReadingWent::somethingStopped($why),
             lines: [],
             arrived: 0,
             bound: 0,

@@ -1,13 +1,6 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
-<x-operator::what-stopped-the-reading
-    :signed-in="$this->answer()->isSignedIn"
-    :met="$this->answer()->met"
-    :remedy="$this->answer()->remedy"
-    :sign-in-goes-to="$this->goes()->signIn()"
-/>
-
-@if ($this->answer()->isSignedIn && $this->answer()->met === '')
+@if ($this->answer()->went->cameBack())
 <native:column class="w-full gap-4 px-6 py-4">
 @if ($this->asking() !== null)
     {{-- N2-R17: asked before it runs, and the question names the services
@@ -160,6 +153,11 @@
     <x-operator::action label="{{ __('health.back_to_the_stack') }}" :goes="$this->goes()->health()" />
 @endif
 </native:column>
+@else
+    <x-operator::what-stopped-the-reading
+        :went="$this->answer()->went"
+        :sign-in-goes-to="$this->goes()->signIn()"
+    />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" here="updates" />

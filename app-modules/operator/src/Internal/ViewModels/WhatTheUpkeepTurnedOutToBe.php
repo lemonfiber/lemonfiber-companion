@@ -23,9 +23,6 @@ use Modules\Kernel\Api\Services;
 final readonly class WhatTheUpkeepTurnedOutToBe
 {
     /**
-     * @param bool                     $isSignedIn whether this device still holds a session for the stack
-     * @param string                   $met        the key for what stood in the way, or empty where nothing did
-     * @param string                   $remedy     the key for what to do about it, or empty where nothing did
      * @param string                   $howSaid    the key for whether the stack is current, pending or stale
      * @param string                   $running    the version in use, or empty where the stack named none
      * @param bool                     $runningWasWithdrawn whether the version in use has been taken back
@@ -38,9 +35,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param bool                            $anyWorthNoticing whether any release waiting is one the household would see
      */
     public function __construct(
-        public bool $isSignedIn,
-        public string $met,
-        public string $remedy,
+        public HowTheReadingWent $went,
         public string $howSaid,
         public string $running,
         public bool $runningWasWithdrawn,

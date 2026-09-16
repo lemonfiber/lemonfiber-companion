@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stalled;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
 
 /**
@@ -27,9 +28,7 @@ final readonly class HowAStallReads
     public function signedOut(): WhatStoppedTurnedOutToBe
     {
         return new WhatStoppedTurnedOutToBe(
-            isSignedIn: false,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::theSessionEnded(),
             stalled: [],
             shownSaid: '',
         );
@@ -48,9 +47,7 @@ final readonly class HowAStallReads
         // is shown is decided where the stack said it and a fold that dropped a
         // row could never quietly turn a partial listing into a complete one.
         return new WhatStoppedTurnedOutToBe(
-            isSignedIn: true,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::itCameBack(),
             stalled: $rows,
             shownSaid: $stalled->howMuchIsShown()->saidOnTheScreen(),
         );
@@ -72,14 +69,8 @@ final readonly class HowAStallReads
      */
     public function met(Obstacle $why): WhatStoppedTurnedOutToBe
     {
-        if ($why->meansWeAreSignedOut()) {
-            return $this->signedOut();
-        }
-
         return new WhatStoppedTurnedOutToBe(
-            isSignedIn: true,
-            met: $why->said(),
-            remedy: $why->remedy(),
+            went: HowTheReadingWent::somethingStopped($why),
             stalled: [],
             shownSaid: '',
         );

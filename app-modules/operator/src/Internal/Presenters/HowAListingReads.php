@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 
 /**
@@ -32,9 +33,7 @@ final readonly class HowAListingReads
     public function signedOut(): WhatThisStackRunsTurnedOutToBe
     {
         return new WhatThisStackRunsTurnedOutToBe(
-            isSignedIn: false,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::theSessionEnded(),
             services: [],
             forms: [],
             overall: '',
@@ -66,9 +65,7 @@ final readonly class HowAListingReads
         // dropped a row could never quietly turn a degraded machine into a
         // healthy one.
         return new WhatThisStackRunsTurnedOutToBe(
-            isSignedIn: true,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::itCameBack(),
             services: $rows,
             forms: $forms,
             overall: $daemons->running()->saidOnTheScreen(),
@@ -95,14 +92,8 @@ final readonly class HowAListingReads
      */
     public function met(Obstacle $why): WhatThisStackRunsTurnedOutToBe
     {
-        if ($why->meansWeAreSignedOut()) {
-            return $this->signedOut();
-        }
-
         return new WhatThisStackRunsTurnedOutToBe(
-            isSignedIn: true,
-            met: $why->said(),
-            remedy: $why->remedy(),
+            went: HowTheReadingWent::somethingStopped($why),
             services: [],
             forms: [],
             overall: '',

@@ -69,12 +69,17 @@ final class PairByScanning extends NativeComponent
     /**
      * What the operator is calling this machine (`N1-R11`).
      *
-     * `protected` rather than public, and the template reads it through
-     * {@see called()}. A mutable public property is refused for a reason, and
-     * `NativeComponent::__syncProperty()` assigns from the parent class — which
-     * reaches a protected member of a subclass and does not reach a private
-     * one, so this is exactly as open as the framework needs and no more. It
-     * also leaves the template with one idiom rather than two.
+     * `protected` rather than public. A mutable public property is refused for
+     * a reason, and `NativeComponent::__syncProperty()` assigns from the parent
+     * class — which reaches a protected member of a subclass and does not reach
+     * a private one, so this is exactly as open as the framework needs and no
+     * more.
+     *
+     * **`render()` hands it to the view by name.** `native:model` expands to a
+     * bare `$called` in the compiled view, and the package fills the view's
+     * data from a component's *public* properties — so a protected one arrives
+     * undefined, which is a warning rather than a stop and draws an empty
+     * field.
      */
     protected string $called = '';
 
@@ -280,7 +285,7 @@ final class PairByScanning extends NativeComponent
     /** The frame, by name. */
     public function render(): View
     {
-        return view('operator::pair-by-scanning');
+        return view('operator::pair-by-scanning', ['called' => $this->called]);
     }
 
     /**

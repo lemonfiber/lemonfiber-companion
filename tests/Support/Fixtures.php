@@ -2214,6 +2214,19 @@ final readonly class Fixtures
                 </native:column>
                 BLADE, 'every list in', 'no-empty-state'),
 
+            // A slot echoed on one branch and not the other. Deliberately a
+            // component with nothing else in it: the trap is that both arms
+            // reach the device, so a fixture with a second control in it would
+            // read as a component that draws too much rather than as one that
+            // cannot drop what it was given.
+            Fixture::suite('F13', sprintf('%s/a-slot-behind-a-branch.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    @if ($went->cameBack())
+                        {{ $slot }}
+                    @endif
+                </native:column>
+                BLADE, 'draws its slot on every branch', 'a-slot-behind-a-branch'),
+
             Fixture::suite('L1', sprintf('%s/english-sentence.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">
                     <native:text>This stack cannot be reached from here.</native:text>
@@ -2358,6 +2371,48 @@ final readonly class Fixtures
             // silent about it. `lang/` is a real directory of real PHP and is
             // none of those things, so naming it as source is the smallest true
             // form of the mistake.
+            // The state a screen keeps, no longer handed to its view.
+            // `native:model` expands to a bare variable in the compiled view
+            // and the package fills a view's data from *public* properties, so
+            // taking the hand-off away leaves the field undefined — a warning
+            // rather than a stop, which is why nothing but a render can see it.
+            Fixture::edit(
+                'F15',
+                'app-modules/operator/src/Internal/Screens/PairByScanning.php',
+                "view('operator::pair-by-scanning', ['called' => \$this->called])",
+                "view('operator::pair-by-scanning')",
+                'every screen the router serves draws',
+                'PairByScanning',
+            ),
+
+            // The component half of the same rule. Its own fixture rather
+            // than one standing for both: the two walks start differently —
+            // one at a method a screen declares, one at a property a component
+            // was handed — and a fixture proving one proves nothing about the
+            // other.
+            Fixture::edit(
+                'F14',
+                'app-modules/operator/resources/views/components/what-stopped-the-reading.blade.php',
+                '{{ __($went->remedy) }}',
+                '{{ __($went->remedyish) }}',
+                'every step a component takes',
+                'remedyish',
+            ),
+
+            // A field renamed in the markup and nowhere else. An edit rather
+            // than a planted file, because the violation is a template that
+            // belongs to a screen — a new pair would need a screen written to
+            // hold the mistake, and then the rule would be reading a fixture's
+            // own class rather than the join this repository actually has.
+            Fixture::edit(
+                'F14',
+                'app-modules/operator/resources/views/how-this-stack-is.blade.php',
+                '{{ __($this->answer()->overall) }}',
+                '{{ __($this->answer()->overallish) }}',
+                'every step a template takes',
+                'overallish',
+            ),
+
             Fixture::edit(
                 'R4',
                 'phpunit.xml',

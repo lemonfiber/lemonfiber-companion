@@ -6,11 +6,11 @@
         {{-- N1-R44: the session has ended, so nothing was asked. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
         <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
-    @elseif ($this->offer()->met !== '')
+    @elseif ($this->offer()->went->met !== '')
         {{-- N1-R10: both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
-        <x-operator::emphasis>{{ __($this->offer()->met) }}</x-operator::emphasis>
-        <native:text>{{ __($this->offer()->remedy) }}</native:text>
+        <x-operator::emphasis>{{ __($this->offer()->went->met) }}</x-operator::emphasis>
+        <native:text>{{ __($this->offer()->went->remedy) }}</native:text>
 
         {{-- N1-R3: the action stays on the screen and the failure is reported
              beside it. An obstacle branch with nothing on it leaves an operator
@@ -51,9 +51,9 @@
                 {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
             </x-operator::note>
             <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-        @elseif ($this->done()->met !== '')
-            <x-operator::emphasis>{{ __($this->done()->met) }}</x-operator::emphasis>
-            <native:text>{{ __($this->done()->remedy) }}</native:text>
+        @elseif (! $this->done()->went->cameBack())
+            <x-operator::emphasis>{{ __($this->done()->went->met) }}</x-operator::emphasis>
+            <native:text>{{ __($this->done()->went->remedy) }}</native:text>
 
             {{-- N1-R3 again, and the sharper half of it: this obstacle stands
                  between the operator and the answer to *did it work*. Taking

@@ -28,13 +28,10 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatTheStackWouldPutRight
 {
     /**
-     * @param bool                   $isSignedIn whether this device still holds a session for the stack
      * @param bool                   $isWorking  whether the stack is still working out what it would do
      * @param bool                   $hasEnded   whether the stack has no outcome for that job any more
      * @param string                 $named      the listing's name, or empty where there is no listing
      * @param list<WhatOneRepairSays> $repairs   what it would put right, in the order offered
-     * @param string                 $met        the key for what stood in the way, or empty where nothing did
-     * @param string                 $remedy     the key for what to do about it, or empty where nothing did
      *
      * **Every field but the first has a default, and each fold in
      * {@see \Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads}
@@ -49,12 +46,10 @@ final readonly class WhatTheStackWouldPutRight
      * flip.
      */
     public function __construct(
-        public bool $isSignedIn = true,
+        public HowTheReadingWent $went,
         public bool $isWorking = false,
         public bool $hasEnded = false,
         public string $named = '',
         public array $repairs = [],
-        public string $met = '',
-        public string $remedy = '',
     ) {}
 }

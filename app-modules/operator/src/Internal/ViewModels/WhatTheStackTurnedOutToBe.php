@@ -29,17 +29,12 @@ use Modules\Kernel\Api\Findings;
 final readonly class WhatTheStackTurnedOutToBe
 {
     /**
-     * @param bool     $isSignedIn whether this device still holds a session for the stack
      * @param string   $overall  the key for the headline, or empty where nothing ran
-     * @param string   $met      the key for what the operator met, or empty
-     * @param string   $remedy   the key for what to do about it, or empty
      * @param Findings $findings what the checks produced, empty where they did not run
      */
     public function __construct(
-        public bool $isSignedIn,
+        public HowTheReadingWent $went,
         public string $overall,
-        public string $met,
-        public string $remedy,
         public Findings $findings,
     ) {}
 }

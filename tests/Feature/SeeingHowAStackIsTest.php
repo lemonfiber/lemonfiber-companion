@@ -128,8 +128,8 @@ it('N1-R2 — shows what the checks found, and what it amounts to', function ():
         // Neither of the obstacle's two keys, because nothing was met. The
         // template branches on these being empty, so a word here would put a
         // refusal above a report that arrived.
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('');
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('');
 });
 
 it('N2-R3 — says what the check meant and what to try, in the core\'s own words', function (): void {
@@ -281,12 +281,12 @@ it('N1-R44 — asking again notices a session that has ended underneath them', f
     $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
-    expect($screen->answer()->isSignedIn)->toBeTrue();
+    expect($screen->answer()->went->isSignedIn)->toBeTrue();
 
     $keychain->forget($stack->id());
     $screen->again();
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($asking->askings())->toBe(1);
 });
 
@@ -308,17 +308,17 @@ it('N1-R10 — says what the operator met where the stack did not answer', funct
     foreach ($standing as $why) {
         $screen = theHealthScreen(AStackThatWasAsked::met($why));
 
-        expect($screen->answer()->met)->toBe(sprintf('connection.%s', $why->value), $why->value)
-            ->and($screen->answer()->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
+        expect($screen->answer()->went->met)->toBe(sprintf('connection.%s', $why->value), $why->value)
+            ->and($screen->answer()->went->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
             ->and($screen->answer()->overall)->toBe('', $why->value)
             // Still signed in. An obstacle is the stack not answering, not this
             // device losing its session — and a screen that read the two as one
             // would send an operator to sign in again over a machine that is
             // merely switched off.
-            ->and($screen->answer()->isSignedIn)->toBeTrue($why->value)
+            ->and($screen->answer()->went->isSignedIn)->toBeTrue($why->value)
             ->and($screen->howMany())->toBe(0, $why->value)
-            ->and(__($screen->answer()->met))->not->toBe($screen->answer()->met, $why->value)
-            ->and(__($screen->answer()->remedy))->not->toBe($screen->answer()->remedy, $why->value);
+            ->and(__($screen->answer()->went->met))->not->toBe($screen->answer()->went->met, $why->value)
+            ->and(__($screen->answer()->went->remedy))->not->toBe($screen->answer()->went->remedy, $why->value);
     }
 });
 
@@ -332,9 +332,9 @@ it('N1-R44 — a session that has ended sends them to sign in rather than to an 
     $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), StacksInMemory::holding($stack));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
         ->and($screen->answer()->overall)->toBe('')
         ->and($asking->askings())->toBe(0);
 });
@@ -349,7 +349,7 @@ it('N4-R6 — a keychain that will not open asks for the password rather than br
     ] as $which => $keychain) {
         $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()), $keychain);
 
-        expect($screen->answer()->isSignedIn)->toBeFalse($which);
+        expect($screen->answer()->went->isSignedIn)->toBeFalse($which);
     }
 });
 
@@ -860,10 +860,10 @@ it('N3-R13 — a credential the stack refused signs this device out', function (
     $keychain = AKeychainInMemory::working();
     $screen = theHealthScreen(AStackThatWasAsked::met(Obstacle::CredentialWasRefused), $keychain);
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine.
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
         // And nothing already loaded: `N3-R13` names that half separately.
         ->and($screen->howMany())->toBe(0)
         ->and($screen->answer()->overall)->toBe('');
