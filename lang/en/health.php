@@ -164,15 +164,6 @@ return [
         'restart' => 'Restart it',
     ],
 
-    // The same three verbs, named for somebody who cannot see which row they
-    // are on. `F5`: a frame offering four services hears *Start it* four times
-    // and has nothing between them, and which one a control acts on is carried
-    // by where it sits — the one thing a person cannot read back to check.
-    'do_to' => [
-        'start' => 'Start :name',
-        'stop' => 'Stop :name',
-        'restart' => 'Restart :name',
-    ],
 
 
     // N2-R7's screen. The verbs above are the buttons; these are the sentences
@@ -182,10 +173,19 @@ return [
     'it_exited' => 'It ended with :code',
     'host_runs_it' => 'This machine runs it, not the stack',
     'read_its_logs' => 'Read what it has been saying',
-    'read_what_it_said' => 'Read what :name has been saying',
     'nothing_is_running' => 'Nothing is running on this machine',
     'no_forms_at_all' => 'Nothing has been set up on this machine yet',
     'by_form' => 'Or a whole form at once',
+
+    // N2-R7's second granularity, on the screen about one of them. A route
+    // can name something the machine has since stopped running, which is an
+    // answer rather than a blank frame.
+    'nothing_of_that_name' => 'This machine is not running anything called :name',
+    'back_to_what_runs' => 'Back to what is running',
+    'open_service' => 'Open :name',
+    'open_form' => 'Open the :name form',
+    'a_whole_form' => 'A form is every service in it. The verbs below reach all of them.',
+    'leaned_on_by' => ':name will not work without it',
 
     // N2-R8. Said before the yes and not after it.
     'about_to' => 'About to change :what',

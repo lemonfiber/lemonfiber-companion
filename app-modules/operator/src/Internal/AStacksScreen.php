@@ -48,16 +48,27 @@ enum AStacksScreen: string
     case Stuck = '/stacks/{stack}/stuck';
 
 
-    /** What this machine is running, and the verbs about it (`N2-R7`). */
+    /** What this machine is running, as a list of rows (`N2-R7`). */
     case Services = '/stacks/{stack}/services';
 
-    /** What one of this machine's services has been saying (`N2-R10`). */
+    /**
+     * One thing this machine runs, and the verbs about it (`N2-R7`).
+     *
+     * A service or a whole form, which is `N2-R7`'s two granularities arriving
+     * at one screen. The path says `{service}` for both because the name is all
+     * either is: {@see Screens\WhatToDoWithThis}
+     * reads a service first and a form second, which is the narrower reading
+     * and the safer one where a stack has named a service after its form.
+     */
+    case Doing = '/stacks/{stack}/do/{service}';
+
     /** Where this machine stands on being up to date (`N2-R15`). */
     case Updates = '/stacks/{stack}/updates';
 
     /** What is running here that this machine's own configuration never declared (`N2-R21`). */
     case Elsewhere = '/stacks/{stack}/elsewhere';
 
+    /** What one of this machine's services has been saying (`N2-R10`). */
     case Logs = '/stacks/{stack}/logs/{service}';
 
     /** What the router holds a machine under. */

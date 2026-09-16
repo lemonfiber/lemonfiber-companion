@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\HowOften;
+use Tests\Support\Screens;
 use Tests\Support\Tree;
 
 // N1-R27 — a screen whose content can change while it is open refreshes on a
@@ -35,7 +36,7 @@ use Tests\Support\Tree;
  * `HowOften` case rather than a key and a count, so the screen names the cadence
  * it keeps in one place and the sentence reads what it needs off the case.
  */
-const THE_CADENCE_ACCESSOR = 'cadence()';
+const THE_CADENCE_ACCESSOR = 'cadence';
 
 /**
  * Every source file in the application that declares a poll.
@@ -131,6 +132,25 @@ it('N1-R27 — the reading finds a poll however the attributes were grouped', fu
     expect(everyPollIntervalIn(' * **`#[Poll]`** because the answer moves while it is open.'))->toBe([]);
 });
 
+/**
+ * Whether the class in that file publishes the accessor a template reads.
+ *
+ * Matched by file rather than by name, so a screen renamed is a screen this
+ * still follows — and a file with no class behind it answers *no*, which is the
+ * safe way round: something polling that this cannot identify is exactly what
+ * wants a human to look.
+ */
+function whateverPollsHereOffersACadence(string $path): bool
+{
+    foreach (Screens::all() as $screen) {
+        if ($screen->getFileName() === $path) {
+            return $screen->hasMethod(THE_CADENCE_ACCESSOR);
+        }
+    }
+
+    return false;
+}
+
 it('N1-R27 — every screen that refreshes says how often', function (): void {
     $silent = [];
     $polling = 0;
@@ -140,7 +160,13 @@ it('N1-R27 — every screen that refreshes says how often', function (): void {
 
         $source = (string) file_get_contents($path);
 
-        if (! str_contains($source, THE_CADENCE_ACCESSOR)) {
+        // Asked of the class rather than of its file, because a screen may hold
+        // the accessor in a trait — two screens about one reading share the
+        // cadence exactly so they cannot state different ones — and a file
+        // search would call that silence. It is also the stricter question: a
+        // file mentioning `cadence()` in a docblock satisfied the search, and
+        // a docblock is where every screen carrying `#[Poll]` explains itself.
+        if (! whateverPollsHereOffersACadence($path)) {
             $silent[] = sprintf('%s — polls and offers no cadence to render', basename($path));
 
             continue;
@@ -157,7 +183,7 @@ it('N1-R27 — every screen that refreshes says how often', function (): void {
 
         $view = Tree::at(sprintf('app-modules/%s/resources/views/%s.blade.php', $named[1], $named[2]));
 
-        if (! is_file($view) || ! str_contains((string) file_get_contents($view), THE_CADENCE_ACCESSOR)) {
+        if (! is_file($view) || ! str_contains((string) file_get_contents($view), sprintf('%s()', THE_CADENCE_ACCESSOR))) {
             $silent[] = sprintf('%s — polls, and %s never says how often', basename($path), basename($view));
         }
     }

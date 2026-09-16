@@ -18,6 +18,7 @@ use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
+use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\YourStacks;
 
@@ -132,6 +133,20 @@ final class OperatorServiceProvider extends ServiceProvider
             // and what do I want on*, which an operator opens the app for even
             // when every check passes.
             Router::native(AStacksScreen::Services->value, WhatThisStackRuns::class);
+
+            // One of the things it runs, and the verbs about that one
+            // (`N2-R7`). Split out of the listing above rather than drawn on
+            // it: a stack running four services put fifteen controls on one
+            // frame, four of them named *Start it*, and which one a control
+            // acted on was carried by where it sat. A list is read, and a verb
+            // is chosen — two acts, and the frame each wants is not the same
+            // frame.
+            //
+            // It serves a form as well, under the same path. What the operator
+            // is choosing between is identical and what the stack is told
+            // differs only in which name it carries, so a second screen would
+            // be the same screen with one word changed.
+            Router::native(AStacksScreen::Doing->value, WhatToDoWithThis::class);
 
             // What is running here that this machine never declared (`N2-R21`).
             // Separate from the listing above rather than a section of it,
