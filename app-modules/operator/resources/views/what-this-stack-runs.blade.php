@@ -88,14 +88,32 @@
             @endif
 
             @if ($service->isOurs)
-                {{-- N2-R7: the three verbs, offered per service. Not drawn
-                     for something this stack does not run: a verb about a
-                     host-managed service would be refused by the machine,
-                     and offering it teaches an operator that the buttons
-                     here are a guess. --}}
-                <x-operator::action label="{{ __('health.do.start') }}" tap="wouldYouLike('start', '{{ $service->id->named() }}')" />
-                <x-operator::action label="{{ __('health.do.stop') }}" tap="wouldYouLike('stop', '{{ $service->id->named() }}')" />
-                <x-operator::action label="{{ __('health.do.restart') }}" tap="wouldYouLike('restart', '{{ $service->id->named() }}')" />
+                {{-- N2-R7's verbs, and only the ones this state can take.
+
+                     All three on every row put *Start it* on a service that is
+                     running and *Stop it* on one that has crashed, and both
+                     would be refused by the machine. The argument is the one
+                     the arm below already makes about a host-managed service:
+                     offering a verb the machine would refuse teaches an
+                     operator that the buttons here are a guess. A stack with
+                     three services drew twelve controls, nine of which did
+                     something and three of which did not, and nothing on the
+                     row said which was which.
+
+                     {@see \Modules\Kernel\Api\HowAServiceRuns::whatMayBeDoneToIt()}
+                     is what decides, because the state is what knows — a
+                     screen working it out from the word on the row would be a
+                     second opinion, and two screens could reach different
+                     ones. --}}
+                @forelse ($service->verbs as $verb)
+                    <x-operator::action label="{{ __($verb->saidOnTheScreen()) }}" tap="wouldYouLike('{{ $verb->value }}', '{{ $service->id->named() }}')" />
+                @empty
+                    {{-- No state has an empty answer today, and one added
+                         tomorrow might. Said rather than left blank, because a
+                         row that is this stack's and offers nothing reads as a
+                         row whose buttons failed to draw. --}}
+                    <x-operator::note>{{ __('health.nothing_to_do_with_it') }}</x-operator::note>
+                @endforelse
             @else
                 <x-operator::note>{{ __('health.host_runs_it') }}</x-operator::note>
             @endif
@@ -116,6 +134,11 @@
 
     @forelse ($this->answer()->forms as $form)
         <x-operator::entry>
+            {{-- All three here, and that is not an oversight. A form is a group
+                 of services with no single state of its own: some of what is in
+                 it may be up and some down, so every one of the three is a real
+                 thing to want and none of them is the guess a row's would
+                 be. --}}
             <native:text>{{ $form }}</native:text>
             <x-operator::action label="{{ __('health.do.start') }}" tap="wouldYouLike('start', '{{ $form }}')" />
             <x-operator::action label="{{ __('health.do.stop') }}" tap="wouldYouLike('stop', '{{ $form }}')" />

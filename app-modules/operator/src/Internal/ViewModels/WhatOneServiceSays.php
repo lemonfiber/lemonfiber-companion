@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\ViewModels;
 
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\WhatToDoWithIt;
 
 /**
  * One service a stack runs, flattened for a template to read.
@@ -44,6 +45,7 @@ final readonly class WhatOneServiceSays
      * @param bool         $wouldNotHelp whether restarting it now would make things worse
      * @param list<string> $leaning     the services that will not work without it
      * @param string       $exited      what it exited with, or empty where it did not
+     * @param list<WhatToDoWithIt> $verbs what this state can take, worst-case none
      */
     public function __construct(
         public ServiceId $id,
@@ -56,6 +58,7 @@ final readonly class WhatOneServiceSays
         public bool $wouldNotHelp,
         public array $leaning,
         public string $exited,
+        public array $verbs,
     ) {}
 
     /**

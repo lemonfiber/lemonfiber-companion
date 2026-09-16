@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function array_filter;
+use function array_values;
+
 use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 
@@ -45,6 +49,16 @@ final readonly class HowAServiceReads
             wouldNotHelp: $daemon->runs()->isAlreadyBeingRestarted(),
             leaning: $leaning,
             exited: $this->exited($daemon),
+            // Asked of the state rather than worked out here, so one screen
+            // cannot come to a different answer from another about what a
+            // stopped service can be told to do. A walk over the three rather
+            // than a list handed back, because `D1` refuses an array crossing a
+            // module boundary — the decision is still the enum's and this is
+            // only the shape it arrives in.
+            verbs: array_values(array_filter(
+                WhatToDoWithIt::cases(),
+                static fn(WhatToDoWithIt $verb): bool => $daemon->runs()->mayTake($verb),
+            )),
         );
     }
 
