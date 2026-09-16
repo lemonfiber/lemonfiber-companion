@@ -48,6 +48,7 @@ return [
     'no_findings' => 'Nothing needs attention.',
     'repair_refused' => 'The stack refused that repair: :reason',
     'what_it_says_underneath' => 'What the check reported',
+    'nothing_to_do_with_it' => 'There is nothing to do with it from here.',
     'nothing_to_try' => 'The stack did not suggest anything to try for this.',
     'ask_again' => 'Check again',
     'see_how_it_is' => 'See how this stack is doing',

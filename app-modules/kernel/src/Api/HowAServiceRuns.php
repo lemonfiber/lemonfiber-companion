@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function in_array;
 use function sprintf;
 
 /**
@@ -114,5 +115,73 @@ enum HowAServiceRuns: string
     public function isAlreadyBeingRestarted(): bool
     {
         return $this === self::CrashLooping;
+    }
+
+    /**
+     * Whether this state can take that one of `N2-R7`'s three verbs.
+     *
+     * Asked one verb at a time because `D1` refuses an array crossing a module
+     * boundary and is right to: a caller handed a list has to know what is in
+     * it, and a caller asking about a verb it already holds does not. The table
+     * itself stays whole, below, where it can be read as a table.
+     */
+    public function mayTake(WhatToDoWithIt $verb): bool
+    {
+        return in_array($verb, $this->whatMayBeDoneToIt(), strict: true);
+    }
+
+    /**
+     * Which of `N2-R7`'s three verbs this state can take.
+     *
+     * The screen used to offer all three on every row, which put *Start it* on
+     * a service that is running and *Stop it* on one that has crashed. Both
+     * would be refused by the machine, and the template already says what that
+     * costs where it hides every verb for a host-managed service: offering one
+     * the machine would refuse teaches an operator that the buttons here are a
+     * guess. The same argument, one level down — a state knows what can be done
+     * to it, and a row of three where only one applies is a row an operator
+     * reads twice.
+     *
+     * Here rather than on a presenter for the reason
+     * {@see isThisStacksToRun()} is here: a screen working it out from the word
+     * on the row would be a second opinion about a state this enum already
+     * holds, and two screens could come to different ones.
+     *
+     * **Every arm is written out.** A `default` would answer for a case added
+     * to this enum tomorrow with whatever the last author happened to think,
+     * and what a new state permits is exactly the question worth being asked at
+     * the moment it is added (`D4`).
+     *
+     * @return list<WhatToDoWithIt>
+     */
+    private function whatMayBeDoneToIt(): array
+    {
+        return match ($this) {
+            // The host's, so none of them: this stack does not start or stop
+            // what it does not run.
+            self::HostManaged => [],
+
+            // Down, for a fault or by decision. Starting is the only one of the
+            // three that means anything, and stopping something that is already
+            // stopped is the shape of a control that does nothing.
+            self::Failed, self::Absent, self::Stopped => [WhatToDoWithIt::Start],
+
+            // On its way up. Stopping is a real thing to want — it is how
+            // somebody changes their mind — and restarting something that has
+            // not finished starting is a start queued behind a start.
+            self::Starting => [WhatToDoWithIt::Stop],
+
+            // Already being started over and over, which
+            // {@see isAlreadyBeingRestarted()} is what a screen says out loud.
+            // Stopping it is the way out of the loop.
+            self::CrashLooping => [WhatToDoWithIt::Stop],
+
+            // Up. Both of the two that act on something running, and no start,
+            // which is the one that would be refused.
+            self::Unhealthy, self::Running, self::Healthy => [
+                WhatToDoWithIt::Stop,
+                WhatToDoWithIt::Restart,
+            ],
+        };
     }
 }

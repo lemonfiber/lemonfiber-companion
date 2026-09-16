@@ -48,6 +48,7 @@ return [
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',
     'what_it_says_underneath' => 'Wat de controle meldde',
+    'nothing_to_do_with_it' => 'Hier valt er niets mee te doen.',
     'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',
     'ask_again' => 'Opnieuw controleren',
     'see_how_it_is' => 'Bekijk hoe deze stack het doet',

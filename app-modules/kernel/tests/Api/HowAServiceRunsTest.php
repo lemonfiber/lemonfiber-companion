@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\WhatToDoWithIt;
 
 it('N2-R7 — says where a service stands, as a key', function (): void {
     foreach (HowAServiceRuns::cases() as $runs) {
@@ -73,5 +74,64 @@ it('N1-R27 — only a starting service becomes something else on its own', funct
         }
 
         expect($runs->isSettling())->toBeFalse($runs->value);
+    }
+});
+
+it('N2-R7 — a state takes only the verbs that mean something to it', function (): void {
+    // The whole table, written out, because that is what it is. A screen used
+    // to offer all three on every row, which put *start* on a service that is
+    // running and *stop* on one that has crashed — both refused by the machine,
+    // and both teaching an operator that the buttons there are a guess.
+    //
+    // Read as *which verbs* rather than asserted one call at a time, so a state
+    // that quietly gained one is a row in this table that stopped matching
+    // rather than an assertion nobody wrote.
+    $offered = [];
+
+    foreach (HowAServiceRuns::cases() as $runs) {
+        $taken = [];
+
+        foreach (WhatToDoWithIt::cases() as $verb) {
+            if ($runs->mayTake($verb)) {
+                $taken[] = $verb->value;
+            }
+        }
+
+        $offered[$runs->value] = $taken;
+    }
+
+    expect($offered)->toBe([
+        // Down, for a fault or by decision: starting is the only one of the
+        // three that means anything.
+        'failed' => ['start'],
+        // Already being started over and over, so stopping is the way out.
+        'crash-looping' => ['stop'],
+        // Up and answering badly, which both of the acting verbs address.
+        'unhealthy' => ['stop', 'restart'],
+        'absent' => ['start'],
+        'stopped' => ['start'],
+        // On its way up: stopping is how somebody changes their mind, and a
+        // restart is a start queued behind a start.
+        'starting' => ['stop'],
+        'running' => ['stop', 'restart'],
+        'healthy' => ['stop', 'restart'],
+        // The host's, so none of them.
+        'host-managed' => [],
+    ]);
+});
+
+it('N2-R7 — nothing this stack does not run can be told to do anything', function (): void {
+    // The same line `isThisStacksToRun()` draws, asked from the other side: a
+    // state that is not this stack's to run offers no verb, and one that is
+    // offers at least one. A row that is ours and offers nothing would draw an
+    // empty group of controls, which reads as buttons that failed to appear.
+    foreach (HowAServiceRuns::cases() as $runs) {
+        $any = false;
+
+        foreach (WhatToDoWithIt::cases() as $verb) {
+            $any = $any || $runs->mayTake($verb);
+        }
+
+        expect($any)->toBe($runs->isThisStacksToRun(), $runs->value);
     }
 });
