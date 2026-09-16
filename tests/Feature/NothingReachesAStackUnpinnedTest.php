@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Client;
 use Lemonfiber\Sdk\Http\BaseUrl;
 use Lemonfiber\Sdk\Http\LemonfiberConnector;
@@ -78,15 +79,91 @@ use Tests\Support\Tree;
  * @var array<string, string> path => the requirement or ADR that permits it
  */
 const MAY_REACH_A_STACK = [
+    'app-modules/sdk/src/Api/PinnedDoors.php' => 'ADR-0018, N1-R7, N1-R19 — the one file '
+        . 'that opens a door. It names `Admission::at()` and not `onPort()`, which builds one '
+        . 'with no pin, and takes the digest off the Stack rather than as an argument. This is '
+        . 'the transport that carries the password, so it is the last one that should ever '
+        . 'reach a peer whose identity nothing established.',
     'app-modules/sdk/src/Api/PinnedClients.php' => 'ADR-0018, N1-R16, N1-R19 — the one '
-        . 'file that opens a connection. It names `Client::pinnedAt()` and no other '
-        . 'constructor, and takes the pin off the Stack rather than as an argument, so '
-        . 'the digest is the one pairing material carried (N1-R18) and not one a caller '
-        . 'supplied from somewhere else.',
+    . 'file that opens a connection. It names `Client::pinnedAt()` and no other '
+    . 'constructor, and takes the pin off the Stack rather than as an argument, so '
+    . 'the digest is the one pairing material carried (N1-R18) and not one a caller '
+    . 'supplied from somewhere else.',
+];
+
+/**
+ * Files allowed to name the transport and not allowed to build one.
+ *
+ * A weaker permission than the one above, and the distinction is real: an
+ * interface has no body, and a decorator that asks the pinning adapter for a
+ * client and hands the result on opens nothing either. Neither can reach a
+ * stack, and a rule that could not tell them from {@see MAY_REACH_A_STACK}
+ * would have to grant both the strong permission to let either exist.
+ *
+ * It came up the first time something tried to stand in for the client. Every
+ * adapter that opens a connection took `PinnedClients` itself — a final class,
+ * which is a seam nothing can get into — so the stand-in bound at the kernel's
+ * port was resolved correctly and reached by nothing, and with stand-ins on the
+ * application dialled addresses that do not exist. The cure is an interface the
+ * adapters take, and an interface has to say what a client is.
+ *
+ * **The weaker permission is enforced rather than promised.** The rule below
+ * refuses a file on this list that names any way of building a client, so it
+ * cannot quietly become the strong list.
+ *
+ * @var array<string, string> path => why naming it opens no connection
+ */
+const MAY_NAME_A_CLIENT = [
+    'app-modules/dx/src/Internal/WhatTheWireWouldAnswer.php' => 'ADR-0018, N1-R20, Q-R72 — '
+        . 'it reads one constant. `Admission::ENDPOINT` is where the door\'s path is written '
+        . 'and the stand-in has to answer that path with the right envelope; copying the '
+        . 'string here instead would be a second spelling that goes stale silently. It opens '
+        . 'nothing: the rule below refuses this file the moment it names a constructor.',
+    'app-modules/sdk/src/Api/Doors.php' => 'ADR-0018, N1-R20 — an interface, so it has no '
+        . 'body to open a door with. It says what the one file that can open one answers '
+        . 'with, which is what lets that file be substituted at all.',
+    'app-modules/dx/src/Api/DoorsThatOpenOnNothing.php' => 'ADR-0018, N1-R20, Q-R72 — it '
+        . 'builds nothing. It asks `PinnedDoors` for a door, which is therefore pinned before '
+        . 'it arrives, and attaches a mock to that door\'s own connector so no request reaches '
+        . 'a socket. `modules/dx` is a development dependency and `NoStandInCanReachAReleaseTest` '
+        . 'is what keeps it out of a release.',
+    'app-modules/sdk/src/Api/Clients.php' => 'ADR-0018, N1-R20 — an interface, so it has '
+        . 'no body to open a connection with. It says what the one file that can open one '
+        . 'answers with, which is what lets that file be substituted at all: without it '
+        . 'every adapter names the concrete class and the seam does not exist.',
+    'app-modules/dx/src/Api/ClientsThatReachNothing.php' => 'ADR-0018, N1-R20, Q-R72 — it '
+        . 'builds nothing. It asks `PinnedClients` for a client, which is therefore pinned '
+        . 'before it arrives, and attaches a mock to the connector so no request reaches a '
+        . 'socket. It also ships nowhere: `modules/dx` is a development dependency and '
+        . '`NoStandInCanReachAReleaseTest` is what keeps it out of a release.',
+];
+
+/**
+ * What building one looks like, which is what the weaker list may not name.
+ *
+ * The SDK's three constructors and the connector's own. `Client::pinnedAt()` is
+ * the only one this application may use and it is named here too: the question
+ * this list answers is *did you build a client*, and building a pinned one in a
+ * file that promised to build none is the same broken promise.
+ */
+const BUILDING_ONE = [
+    'Admission::at',
+    'Admission::onPort',
+    'Client::pinnedAt',
+    'Client::at',
+    'Client::onPort',
+    'new Client(',
+    'new LemonfiberConnector(',
+    'BaseUrl::',
 ];
 
 /** What naming any of these means: this file opens a connection. */
 const THE_TRANSPORT = [
+    // The door as well as the client. It was absent for a long time and the
+    // absence was the dangerous kind: `Admission::onPort()` builds a door with
+    // no pin at all, and the one request that door carries is the operator's
+    // password. A file could have opened it and no rule would have said a word.
+    Admission::class,
     Client::class,
     LemonfiberConnector::class,
     BaseUrl::class,
@@ -110,7 +187,7 @@ it('N1-R20 — nothing opens a connection to a stack without pinning its certifi
             static fn(string $path): string => str_replace(sprintf('%s/', Tree::root()), '', $path),
             $files,
         ),
-        array_keys(MAY_REACH_A_STACK),
+        [...array_keys(MAY_REACH_A_STACK), ...array_keys(MAY_NAME_A_CLIENT)],
     ));
 
     foreach ($looking as $shown) {
@@ -149,12 +226,14 @@ it('N1-R20 — a file allowed to reach a stack says what permits it', function (
     // about `in_array`: an empty constant makes `foreach` provably empty to the
     // analyser, which reports it — an error present exactly while nothing is
     // allowed, which is the state this rule is written for.
+    $permitted = [...MAY_REACH_A_STACK, ...MAY_NAME_A_CLIENT];
+
     $cited = array_filter(
-        MAY_REACH_A_STACK,
+        $permitted,
         static fn(string $why): bool => preg_match('/\b(?:ADR-\d{3,4}|[A-Z]+\d*-R\d+)\b/', $why) === 1,
     );
 
-    $bare = array_values(array_diff(array_keys(MAY_REACH_A_STACK), array_keys($cited)));
+    $bare = array_values(array_diff(array_keys($permitted), array_keys($cited)));
 
     sort($bare);
 
@@ -166,5 +245,63 @@ it('N1-R20 — a file allowed to reach a stack says what permits it', function (
         . 'If the pinning adapter is written, say so here and name the ADR it implements '
         . '(N1-R20).',
         implode("\n  ", $bare),
+    ));
+});
+
+/**
+ * One file's code, with its comments taken out.
+ *
+ * The rule below asks whether a file *builds* a client, and a comment saying
+ * what a file used to build is not a file building one — the two files on the
+ * weaker list both explain the change that put them there, and a text match
+ * cannot tell the explanation from the thing explained.
+ *
+ * Tokenised rather than stripped with a pattern, because a comment can hold
+ * quotes and a string can hold `/*`, and a regex that got either wrong would
+ * either keep reporting prose or start ignoring code.
+ */
+function whatThisFileDoesRatherThanSays(string $shown): string
+{
+    $said = '';
+
+    foreach (token_get_all((string) file_get_contents(Tree::at($shown))) as $token) {
+        if (is_array($token) && in_array($token[0], [T_COMMENT, T_DOC_COMMENT], strict: true)) {
+            continue;
+        }
+
+        $said .= is_array($token) ? $token[1] : $token;
+    }
+
+    return $said;
+}
+
+it('N1-R20 — a file allowed only to name a client builds none', function (): void {
+    // The half that keeps the weaker permission weak. Naming the type and
+    // calling a constructor are different acts, and a list that permitted the
+    // first would be worth nothing if it quietly permitted the second — which
+    // is what it would do, silently, the day somebody added one line to a file
+    // already on it.
+    $building = [];
+
+    foreach (MAY_NAME_A_CLIENT as $shown => $why) {
+        $said = whatThisFileDoesRatherThanSays($shown);
+
+        foreach (BUILDING_ONE as $how) {
+            if (str_contains($said, $how)) {
+                $building[] = sprintf('%s names %s, and is allowed only to name a client', $shown, $how);
+            }
+        }
+    }
+
+    sort($building);
+
+    expect($building)->toBe([], sprintf(
+        "These promised to build no client and name a way of building one:\n  %s\n\n"
+        . 'MAY_NAME_A_CLIENT is the weaker permission: an interface with no body, and a '
+        . "decorator that asks the pinning adapter for a client it did not build.\n"
+        . 'A file that builds one belongs in MAY_REACH_A_STACK, where the reason it may is '
+        . 'read beside ADR-0018 rather than inherited from a list it was added to for '
+        . 'another reason (N1-R20).',
+        implode("\n  ", $building),
     ));
 });

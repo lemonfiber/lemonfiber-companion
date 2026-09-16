@@ -2365,6 +2365,20 @@ final readonly class Fixtures
                 PHP, 'R3 — every namespace an expectation names resolves', 'MalformedRuleTest'),
 
             // A tree held to a coverage floor that no gate reads, which is the
+            // A port on the waiting list that something now takes. An edit
+            // rather than a planted file: the register is about the repository
+            // as it stands, so the violation is a real adapter reaching for the
+            // kernel's spelling of a client rather than the narrowed one — which
+            // is also the mistake that made the stand-in unreachable.
+            Fixture::edit(
+                'G8',
+                'app-modules/sdk/src/Api/Questions.php',
+                'public function __construct(private Clients $clients) {}',
+                'public function __construct(private \\Modules\\Kernel\\Api\\Reaching $clients) {}',
+                'a port that has grown a consumer',
+                'Reaching',
+            ),
+
             // whole of what `R4` is about and is not a file: the violation is a
             // line in `phpunit.xml` saying a directory is measured, with the
             // analyser's paths, the refactorer's paths and the autoloader all

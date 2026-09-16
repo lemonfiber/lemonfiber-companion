@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Exception\PasswordWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\TooManyAttempts;
@@ -20,18 +19,17 @@ use Modules\Kernel\Api\Stack;
 /**
  * The one place a credential is offered to a stack.
  *
- * `N1-R16` says every call goes through the SDK, and `N1-R7` says the exchange
- * happens once — so this is the only file in the application that names
- * {@see Admission}, the SDK's door. It sits beside {@see PinnedClients} and for
- * the same reason: the module boundary is what keeps *reach a stack another
- * way* from having a spelling anywhere else.
+ * `N1-R16` says every call goes through the SDK and `N1-R7` says the exchange
+ * happens once, and this is where that exchange is written. The door itself
+ * comes from {@see PinnedDoors} — this file does not build one.
  *
- * **Pinned, with no unpinned spelling.** The SDK offers `at()` and `onPort()`,
- * and only the first is named here. `onPort()` is the loopback door, correct
- * for a surface running on the machine and wrong for every connection this app
- * makes — a phone is never on the machine. This is also the one request
- * carrying the operator's password, which makes it the last one that should
- * ever reach a peer whose identity nothing established.
+ * **It used to.** `Admission::at(...)` sat in the middle of the method below,
+ * which made two things impossible at once. `N1-R20` could not read it: the
+ * rule lists the client's transport and not the door's, so an unpinned door
+ * carrying somebody's password would have raised nothing. And nothing could be
+ * put in front of it: every screen of this application can be drawn against a
+ * stand-in and the sign-in screen could not, because the one flow carrying the
+ * password was the one flow that reached the network whatever the switch said.
  *
  * **Three refusals, because the operator meets three different things.** The
  * SDK goes out of its way to tell a wrong password from a door that has stopped
@@ -61,12 +59,11 @@ use Modules\Kernel\Api\Stack;
  */
 final readonly class Admissions implements Admitting
 {
+    public function __construct(private Doors $doors) {}
+
     public function admit(Stack $stack, Credential $said): Admitted
     {
-        $door = Admission::at(
-            $stack->at()->forTheClient(),
-            $stack->presents()->forComparingByEye(),
-        );
+        $door = $this->doors->door($stack);
 
         try {
             $opened = $door->open($said->forTheExchange());

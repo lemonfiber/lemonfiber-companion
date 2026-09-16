@@ -66,20 +66,16 @@ function aSessionThatOpensNothing(): Session
 /**
  * The stand-in's client, which is the application's client with no socket under it.
  *
- * Narrowed with a check rather than declared, because the port answers `object`
- * and that is deliberate: it is what keeps the kernel from naming the SDK at
- * all. This file may name it and needs the client's own methods, so the crossing
- * is made here, once, and it fails loudly if a stand-in ever hands back
- * something else.
+ * Declared rather than narrowed. {@see Modules\Sdk\Api\Clients} is what the
+ * stand-in implements and it says what a client is, so there is no crossing to
+ * make here — which is the point of the interface: every adapter that opens a
+ * connection used to name the concrete class instead, and a concrete final
+ * class is a seam nothing can be put into.
  */
 function aClientForNothing(): Client
 {
-    $client = new ClientsThatReachNothing(new PinnedClients())
+    return new ClientsThatReachNothing(new PinnedClients())
         ->client(aStackThatIsNotListening(), aSessionThatOpensNothing());
-
-    return $client instanceof Client
-        ? $client
-        : throw new RuntimeException('The stand-in handed back something that is not the SDK client.');
 }
 
 /**
@@ -94,10 +90,6 @@ function whatStoodInTheWayOf(AStandInStack $machine): ?Obstacle
 {
     $client = new ClientsThatReachNothing(new PinnedClients())
         ->client($machine->asAStack(), aSessionThatOpensNothing());
-
-    if (! $client instanceof Client) {
-        throw new RuntimeException('The stand-in handed back something that is not the SDK client.');
-    }
 
     try {
         $client->read(Api::STATUS_ENDPOINT);

@@ -46,7 +46,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Requests implements Wanting
 {
-    public function __construct(private PinnedClients $clients) {}
+    public function __construct(private Clients $clients) {}
 
     public function askedOf(Stack $stack, Session $session): WhatWasWanted
     {

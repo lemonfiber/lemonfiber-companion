@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Sdk\Api\Admissions;
+use Modules\Sdk\Api\PinnedDoors;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
@@ -134,7 +135,7 @@ function everyDoor(MockResponse $answered, ?Obstacle $why = null): array
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Admissions();
+            return new Admissions(new PinnedDoors());
         },
     ];
 }

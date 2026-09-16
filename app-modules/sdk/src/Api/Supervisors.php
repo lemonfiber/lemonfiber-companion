@@ -65,7 +65,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Supervisors implements Supervising
 {
-    public function __construct(private PinnedClients $clients, private Entropy $entropy) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function running(Stack $stack, Session $session): WhatIsRunning
     {

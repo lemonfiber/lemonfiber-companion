@@ -49,7 +49,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Scrollbacks implements Saying
 {
-    public function __construct(private PinnedClients $clients) {}
+    public function __construct(private Clients $clients) {}
 
     public function saidBy(Stack $stack, Session $session, ServiceId $service, HowManyLines $lines): WhatWasSaid
     {

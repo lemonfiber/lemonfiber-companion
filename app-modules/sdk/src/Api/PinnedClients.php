@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Client;
-use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 
@@ -39,7 +38,7 @@ use Modules\Kernel\Api\Stack;
  * here: a second copy of that rule is a second place for the two to disagree,
  * and the SDK's refusal already names the scheme it was given.
  */
-final readonly class PinnedClients implements Reaching
+final readonly class PinnedClients implements Clients
 {
     /**
      * `Client` rather than the port's `object`, which rector asked for and is
