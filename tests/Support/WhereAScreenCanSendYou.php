@@ -285,21 +285,35 @@ final readonly class WhereAScreenCanSendYou
      * argument it was handed, so reading them means putting back what the
      * screen passed in.
      *
+     * **The bar carries its destination in `url`, not in `@navigate`.** A
+     * `bottom-nav-item` is the platform's own navigation and takes the route as
+     * an ordinary attribute, so a reader looking only for the directive finds
+     * an empty bar — which is a walk that reports every reading of a machine as
+     * reachable only from whichever page happens to repeat it as a button. That
+     * is how a screen comes to carry a column of controls the bar under it
+     * already offers.
+     *
      * @return list<string>
      */
     private function waysOffTheChromeOf(string $source): array
     {
-        if (preg_match('/<x-operator::screen\b[^>]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $handed) !== 1) {
+        if (preg_match('/<x-operator::screen-closes\b[^>]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $handed) !== 1) {
             return [];
         }
 
-        $chrome = Tree::at('app-modules/operator/resources/views/components/screen.blade.php');
+        $chrome = Tree::at('app-modules/operator/resources/views/components/screen-closes.blade.php');
 
         if (! is_file($chrome)) {
             return [];
         }
 
-        preg_match_all('/@navigate[\w.]*\s*=\s*(["\'])(.*?)\1/s', (string) file_get_contents($chrome), $found);
+        $said = (string) file_get_contents($chrome);
+
+        preg_match_all('/@navigate[\w.]*\s*=\s*(["\'])(.*?)\1/s', $said, $found);
+
+        preg_match_all('/\burl\s*=\s*"\{\{\s*(.*?)\s*\}\}"/s', $said, $addressed);
+
+        $found[2] = [...$found[2], ...$addressed[1]];
 
         // Only what the handed-in destinations reach. The chrome's other way
         // off is the sign-in screen, and that one is written against an

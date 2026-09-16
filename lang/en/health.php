@@ -57,7 +57,6 @@ return [
     'nothing_came_back_action' => 'Nothing was carried out. Ask again.',
     'nothing_to_put_right' => 'This stack has nothing to put right.',
     'affects_nothing_else' => 'Affects nothing else.',
-    'would_put_right' => 'See what could be put right',
     'back_to_the_stack' => 'Back to this stack',
     'carrying_it_out' => 'This stack is doing it.',
     'carrying_it_out_action' => 'It takes a moment. Ask again shortly.',
@@ -163,7 +162,6 @@ return [
         'restart' => 'Restart it',
     ],
 
-    'what_it_runs' => 'What it is running',
 
     // N2-R7's screen. The verbs above are the buttons; these are the sentences
     // around them — what a row says about itself, and what a stop is stated to

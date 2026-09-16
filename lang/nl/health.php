@@ -57,7 +57,6 @@ return [
     'nothing_came_back_action' => 'Er is niets uitgevoerd. Vraag het opnieuw.',
     'nothing_to_put_right' => 'Deze stack heeft niets te herstellen.',
     'affects_nothing_else' => 'Raakt verder niets.',
-    'would_put_right' => 'Kijk wat er te herstellen valt',
     'back_to_the_stack' => 'Terug naar deze stack',
     'carrying_it_out' => 'Deze stack is ermee bezig.',
     'carrying_it_out_action' => 'Dit duurt even. Vraag het zo nog eens.',
@@ -163,7 +162,6 @@ return [
         'restart' => 'Opnieuw starten',
     ],
 
-    'what_it_runs' => 'Wat er draait',
 
     // N2-R7's screen. The verbs above are the buttons; these are the sentences
     // around them — what a row says about itself, and what a stop is stated to
