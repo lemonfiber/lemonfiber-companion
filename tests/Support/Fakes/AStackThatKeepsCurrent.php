@@ -24,7 +24,7 @@ use Modules\Kernel\Api\WhatIsCurrent;
  *
  * {@see AStackThatSupervises} one port over, and for the same reasons: a screen
  * test that had to stand up a client would be testing the client, and the
- * counters here are what let a test say *it asked once* — which `N1-R17` is
+ * counters here are what let a test say *it asked once* — which `N1-R65` is
  * about and no assertion on a rendered value can see.
  */
 final class AStackThatKeepsCurrent implements KeepingCurrent
@@ -105,7 +105,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
         return ($this->taking)();
     }
 
-    /** How many times the stack was read, which is what `N1-R17` is about. */
+    /** How many times the stack was read, which is what `N1-R65` is about. */
     public function askings(): int
     {
         return $this->askings;

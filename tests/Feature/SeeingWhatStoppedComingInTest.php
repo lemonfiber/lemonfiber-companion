@@ -168,7 +168,7 @@ it('N1-R44 — a device with no session for that stack is not asked to wait for 
         ->and($stalling->askings())->toBe(0);
 });
 
-it('N1-R17 — asks once however many accessors a frame reads', function (): void {
+it('N1-R65 — asks once however many accessors a frame reads', function (): void {
     $stalling = AStackThatStalled::with(aWeekOfStalledDownloads());
     $screen = theStalledScreen($stalling);
 

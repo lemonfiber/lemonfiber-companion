@@ -18,7 +18,7 @@ namespace Modules\Kernel\Api;
  * this surface arrive as a job: the stack acknowledges and names the work, and
  * the outcome is a separate reading at a separate moment. A port with one
  * method would have to hide a wait inside itself — which is `F4`'s socket in a
- * frame and `N1-R17`'s poller, both at once.
+ * frame and the second reading `N1-R65` refuses, both at once.
  *
  * **Asking what would be done changes nothing, and is still an action.** That
  * is the part worth knowing before reading the adapter: the unconfirmed form of

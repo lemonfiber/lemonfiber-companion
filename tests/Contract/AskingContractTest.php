@@ -219,7 +219,7 @@ it('answers exactly one way, and answers at all', function (): void {
     }
 });
 
-it('N1-R17 — asks once, because a screen is not a poller', function (): void {
+it('N1-R65 — asks once, because a frame reads a machine once', function (): void {
     // Only the fake can be asked this, and it is asked because every screen
     // test will trust the answer. A port asked twice per frame is four
     // connections to a machine over somebody's home network.

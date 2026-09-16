@@ -47,7 +47,7 @@ use function view;
  * means is *not in the last two hundred lines*.
  *
  * **Narrowing does not re-ask.** Typing filters what is already held, which is
- * `N1-R17` read strictly — a screen that asked again per keystroke would open a
+ * `N1-R66` exactly — a screen that asked again per keystroke would open a
  * connection per letter to a machine on a home network, and would also change
  * what is being searched underneath the person searching it.
  *

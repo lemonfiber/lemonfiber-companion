@@ -184,7 +184,7 @@ it('N1-R10 — an obstacle carries what stood in the way and what to do about it
         ->and($screen->answer()->went->isSignedIn)->toBeTrue();
 });
 
-it('N1-R17 — asks once per frame, however many fields the template reads', function (): void {
+it('N1-R65 — asks once per frame, however many fields the template reads', function (): void {
     $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
     $screen = theUpkeepScreen($keeping);
 

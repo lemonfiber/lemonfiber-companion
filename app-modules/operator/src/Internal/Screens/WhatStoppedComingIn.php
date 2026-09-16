@@ -39,8 +39,8 @@ use function view;
  * days look the same on that list.
  *
  * **It asks once, when the frame is built, and holds what came back**, which is
- * {@see WhatTheHouseholdAsked}'s shape and `N1-R17`'s requirement: a screen is
- * not a poller, and a home network with a machine that may be asleep is the
+ * {@see WhatTheHouseholdAsked}'s shape and `N1-R65`'s requirement: one read per
+ * frame, and a home network with a machine that may be asleep is the
  * wrong thing to talk to four times a second. Every accessor below reads what
  * one asking produced.
  *
@@ -116,7 +116,7 @@ final class WhatStoppedComingIn extends NativeComponent
      * `N1-R27` names separately as the thing a screen must not rely on.
      *
      * Forgetting what came back rather than re-reading here, so the next
-     * accessor asks. That keeps this one act and keeps `N1-R17` true: one
+     * accessor asks. That keeps this one act and keeps `N1-R65` true: one
      * asking per frame, and a frame that starts when somebody taps.
      */
     public function again(): void

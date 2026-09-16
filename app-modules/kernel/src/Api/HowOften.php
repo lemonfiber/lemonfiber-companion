@@ -23,8 +23,8 @@ use function sprintf;
  * every two seconds while telling somebody it looks every five would be stating
  * a cadence that is not the one it keeps. Both read from here.
  *
- * **This is not in tension with `N1-R17`.** That rule refuses a screen that
- * polls to fill in its own fields — four connections to draw one frame, on a
+ * **This is not in tension with `N1-R65`.** That rule refuses a screen that
+ * reads again to fill in its own fields — four connections to draw one frame, on a
  * home network, to a machine that may be asleep. This is the narrow opposite
  * case: work the stack is already carrying out, where the answer genuinely
  * changes without anybody touching the phone, and where *ask again* as the only

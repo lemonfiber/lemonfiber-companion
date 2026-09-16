@@ -253,7 +253,7 @@ it('answers exactly one way, and answers at all', function (): void {
     }
 });
 
-it('N1-R17 — asks once, because a screen is not a poller', function (): void {
+it('N1-R65 — asks once, because a frame reads a machine once', function (): void {
     $wanting = AHouseholdThatAsked::wanting(theSameRequests());
     $stack = aStackWithAHousehold();
 

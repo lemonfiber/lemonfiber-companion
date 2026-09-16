@@ -46,7 +46,7 @@ use Tests\Support\Tree;
 
 /** Every method this application calls on an SDK client, and why that one. */
 const DOORS_THE_APP_OPENS = [
-    // `N1-R17`'s shape: a screen asks once and renders what came back. Every
+    // `N1-R65`'s shape: a screen reads once and renders what came back. Every
     // read this app does — the doctor run, the household, what has stopped —
     // goes through this one.
     'read' => 'reads an envelope from a named endpoint, changing nothing',

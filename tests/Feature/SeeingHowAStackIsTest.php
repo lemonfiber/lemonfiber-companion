@@ -232,7 +232,7 @@ it('says which part of the machine every finding is about', function (): void {
     }
 });
 
-it('N1-R17 — asks once however many times the frame reads it', function (): void {
+it('N1-R65 — asks once however many times the frame reads it', function (): void {
     // A screen is not a poller. Every accessor reads what one asking produced,
     // and a screen that asked per accessor would open six connections to a
     // machine over somebody's home network to draw one frame.
@@ -255,7 +255,7 @@ it('N2-R1 — asks again when the operator asks it to, and not otherwise', funct
     // it took. A screen that could only be re-asked by leaving it and coming
     // back teaches them to distrust what it says — and one that asked on a
     // timer would be talking to a machine over a home network unprompted, which
-    // is what `N1-R17` refuses. A tap is a prompt.
+    // is what `N1-R66` refuses. A tap is a prompt.
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
     $screen = theHealthScreen($asking);
 

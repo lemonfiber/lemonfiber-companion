@@ -65,7 +65,7 @@ final readonly class HowTheOfferIsGoing
      *
      * Not a failure and not an answer. The remedy is to ask again, which is a
      * thing the operator does rather than something this app should do on their
-     * behalf — `N1-R17` keeps a screen from being a poller, and a job that
+     * behalf — `N1-R66` keeps a screen from being a poller, and a job that
      * ended is exactly where an automatic retry becomes one.
      */
     public static function ended(): self
