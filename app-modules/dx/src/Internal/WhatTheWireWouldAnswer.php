@@ -13,6 +13,8 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 
+use function str_starts_with;
+
 /**
  * An answer for every request, assembled out of the contract rather than typed.
  *
@@ -63,6 +65,33 @@ final readonly class WhatTheWireWouldAnswer
     private const string A_NAME_FOR_WORK = 'JobEnvelope';
 
     /**
+     * What work already begun redeems into.
+     *
+     * `/api/jobs/<name>` is one path with two shapes behind it, and neither the
+     * contract nor the name says which: a repair minted the job, or an action
+     * did, and a stand-in that reads only the path cannot tell them apart. The
+     * SDK decides by *kind* — {@see \Lemonfiber\Sdk\JobStanding::of()} reads a
+     * `job` envelope as *still going* at `202` and as *ended* at anything else,
+     * and anything that is not a `job` as the outcome itself.
+     *
+     * So answering with `job` at `200` tells every screen the work expired. It
+     * is a real state and it is the wrong one to be stuck in: the repairs
+     * screen is the one that draws a redemption on a frame — `N2-R4` states
+     * what a stack would put right and `N2-R5` what became of each — and it
+     * drew *that question has expired* and nothing else, against a machine
+     * answering everything.
+     *
+     * Repairs rather than actions, and the choice is forced rather than
+     * preferred. An action's redemption is what a tap produces; a repair's is
+     * what a frame draws, twice, and `RepairEnvelope` carries both halves of it
+     * — `offered` for the listing and `mended` for the outcomes — so one
+     * envelope answers the offer and the agreement. A verb told to a service
+     * reads its redemption as an unexpected kind and reports an obstacle, which
+     * is the honest cost of one path with two shapes.
+     */
+    private const string WHAT_WORK_BECOMES = 'RepairEnvelope';
+
+    /**
      * How many lines a stand-in scrollback carries.
      *
      * More than one, because a window showing a single line looks the same as
@@ -106,6 +135,10 @@ final readonly class WhatTheWireWouldAnswer
     {
         if ($endpoint === Api::LOGS_ENDPOINT) {
             return new MockResponse(self::aDocumentALine(), $status);
+        }
+
+        if (str_starts_with($endpoint, Api::JOBS_ENDPOINT)) {
+            return new MockResponse(self::oneEnvelope(self::WHAT_WORK_BECOMES), $status);
         }
 
         $envelope = WhichEnvelopeAnEndpointAnswersWith::at($endpoint);

@@ -96,6 +96,52 @@ function withNoStackRunning(): void
 }
 
 /**
+ * The sentences that mean the app never got an answer.
+ *
+ * Read off the catalogue rather than written here, so a rule about what a
+ * screen says cannot disagree with what the screen says.
+ *
+ * @return list<string>
+ */
+function whatNoAnswerLooksLike(): array
+{
+    return [
+        theSignedOutSentence(),
+        theExpiredSentence(),
+        whateverTheCatalogueSays(Obstacle::StackDidNotAnswer->said()),
+    ];
+}
+
+/**
+ * The sentence a screen draws when the work it asked about is gone.
+ *
+ * `/api/jobs/<name>` is one path with two shapes behind it, and a stand-in that
+ * answered with a name for the work rather than its outcome left the repairs
+ * screen stuck on this against a machine answering everything.
+ */
+function theExpiredSentence(): string
+{
+    return whateverTheCatalogueSays('health.nothing_came_back');
+}
+
+/**
+ * One line of the catalogue, narrowed.
+ *
+ * The translator answers a key with a sentence or with the array a key holding
+ * several lines carries, and only the first is a thing a screen says. Narrowed
+ * once here rather than cast at each call: a cast would turn the array into the
+ * word *Array* and quietly compare a screen against it.
+ */
+function whateverTheCatalogueSays(string $key): string
+{
+    $said = __($key);
+
+    return is_string($said)
+        ? $said
+        : throw new RuntimeException(sprintf('The catalogue answered %s with something that is not a sentence.', $key));
+}
+
+/**
  * The sentence a screen draws when this device is signed out of a stack.
  *
  * Read off the catalogue rather than written here, so a rule about what a
@@ -103,7 +149,7 @@ function withNoStackRunning(): void
  */
 function theSignedOutSentence(): string
 {
-    return __('connection.session_has_ended');
+    return whateverTheCatalogueSays('connection.session_has_ended');
 }
 
 it('Q-R72 — a machine that answers draws every screen it is behind', function (): void {
@@ -112,12 +158,15 @@ it('Q-R72 — a machine that answers draws every screen it is behind', function 
     $thin = [];
 
     foreach (whatEachScreenDrewOf(AStandInStack::Answering) as $name => $drawn) {
-        // The signed-out sentence is the tell, and it is a better one than a
-        // count: a screen drawing the obstacle or the sign-in prompt draws a
+        // The three sentences that mean *no answer* are the tell, and they are
+        // a better one than a count: a screen drawing an obstacle draws a
         // handful of nodes, and so does a reading that came back nearly empty.
-        // What must not happen is the app deciding it cannot ask.
-        if (in_array(theSignedOutSentence(), $drawn->said(), strict: true)) {
-            $thin[] = sprintf('%s — drew the signed-out prompt against the machine that answers', $name);
+        // What must not happen is the app saying it could not ask, or that what
+        // it asked about is gone, against a machine answering everything.
+        $silence = array_values(array_intersect(whatNoAnswerLooksLike(), $drawn->said()));
+
+        if ($silence !== []) {
+            $thin[] = sprintf('%s — drew "%s" against the machine that answers', $name, implode('", "', $silence));
         }
     }
 
@@ -126,7 +175,7 @@ it('Q-R72 — a machine that answers draws every screen it is behind', function 
     expect($thin)->toBe([], sprintf(
         "These could not be drawn against a machine that answers everything:\n  %s\n\n"
         . 'With stand-ins on the device is paired and signed in, so every one of these is a '
-        . "reading. A signed-out prompt here means the app never got as far as asking.\n"
+        . "reading that came back.\n"
         . 'That is what `modules/dx` exists to make possible: the whole application, on a '
         . 'device, with no stack running anywhere (Q-R72, N1-R57).',
         implode("\n  ", $thin),
@@ -153,7 +202,7 @@ it('N1-R10 — a machine that does not answer draws what stood in the way, and t
             continue;
         }
 
-        $met = in_array(__(Obstacle::StackDidNotAnswer->said()), $drawn->said(), strict: true);
+        $met = in_array(whateverTheCatalogueSays(Obstacle::StackDidNotAnswer->said()), $drawn->said(), strict: true);
 
         // `N1-R3`: an obstacle never takes the action away. A screen that
         // reported the failure and offered nothing leaves an operator whose
