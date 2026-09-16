@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Dx\Internal;
 
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
+use Modules\Dx\Api\ACameraThatSeesAStandIn;
 use Modules\Dx\Api\ADeviceAlreadyPaired;
 use Modules\Dx\Api\ADoorThatIsNotThere;
 use Modules\Dx\Api\ASessionThisRunKeeps;
@@ -55,6 +56,7 @@ final readonly class TheStandIns
         return [
             new AStackThatIsNotThere(),
             new ADoorThatIsNotThere(),
+            new ACameraThatSeesAStandIn(),
             new ADeviceAlreadyPaired($store),
             new ASessionThisRunKeeps($store),
             new VerdictsThisRunKeeps($store),
