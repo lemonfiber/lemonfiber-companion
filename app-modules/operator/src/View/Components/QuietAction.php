@@ -28,14 +28,23 @@ use function view;
  * `label` of its own, so `F5` reaches it through `a11y-label` — the same text,
  * because what the eye reads and what a reader hears are the same words here.
  *
- * `$tap` only. A quiet control is a decision somebody is making on this screen;
- * a road to another screen is a road, and roads are buttons.
+ * **A road can be quiet too**, which this took a screen to learn. The first
+ * version of it said that a decision belongs on the screen and a road to
+ * another one is a road, and roads are buttons. Pairing is where that comes
+ * apart: *open the camera*, *type the code instead* and *back to your stacks*
+ * are three filled bars, two of them roads, and the frame has one thing it
+ * wants an operator to do. What decides is not whether a control navigates —
+ * it is whether it is the way forward.
+ *
+ * `$tap` and `$goes` behave as {@see Action}'s do: exactly one is set, because
+ * a control that does two things on one press is two controls sharing a name.
  */
 final class QuietAction extends Component
 {
     public function __construct(
         public readonly string $label,
-        public readonly string $tap,
+        public readonly string $tap = '',
+        public readonly string $goes = '',
     ) {}
 
     public function render(): View

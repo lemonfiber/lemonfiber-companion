@@ -41,5 +41,5 @@
          either — has nowhere to go. The platform's own gesture may be there,
          and a screen that counts on it works on one handset and traps somebody
          on another. --}}
-    <x-operator::action label="{{ __('connection.back_to_your_stacks') }}" :goes="$this->theListIsAt()" />
+    <x-operator::quiet-action label="{{ __('connection.back_to_your_stacks') }}" :goes="$this->theListIsAt()" />
 </native:column>
