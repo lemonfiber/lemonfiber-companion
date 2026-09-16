@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\VersionInUse;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Updates\Api\Queries\NotArrivedFirst;
@@ -30,9 +31,7 @@ final readonly class HowUpkeepReads
     public function signedOut(): WhatTheUpkeepTurnedOutToBe
     {
         return new WhatTheUpkeepTurnedOutToBe(
-            isSignedIn: false,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::theSessionEnded(),
             howSaid: '',
             running: '',
             runningWasWithdrawn: false,
@@ -68,9 +67,7 @@ final readonly class HowUpkeepReads
         }
 
         return new WhatTheUpkeepTurnedOutToBe(
-            isSignedIn: true,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::itCameBack(),
             howSaid: $upkeep->how()->saidOnTheScreen(),
             running: $upkeep->inUse(
                 named: static fn(VersionInUse $inUse): WhatTheStackIsOn
@@ -106,14 +103,8 @@ final readonly class HowUpkeepReads
      */
     public function met(Obstacle $why): WhatTheUpkeepTurnedOutToBe
     {
-        if ($why->meansWeAreSignedOut()) {
-            return $this->signedOut();
-        }
-
         return new WhatTheUpkeepTurnedOutToBe(
-            isSignedIn: true,
-            met: $why->said(),
-            remedy: $why->remedy(),
+            went: HowTheReadingWent::somethingStopped($why),
             howSaid: '',
             running: '',
             runningWasWithdrawn: false,

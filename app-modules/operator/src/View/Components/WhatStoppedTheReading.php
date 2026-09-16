@@ -6,31 +6,38 @@ namespace Modules\Operator\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 
 use function view;
 
 /**
- * The two states a screen shows instead of its own reading.
+ * The reason a screen has nothing of its own to draw.
  *
- * A session that has ended (`N1-R44`) and an obstacle that stopped the reading
- * (`N1-R10`, `N1-R3`). Both were written out on twelve screens, which is twelve
- * places for one of them to drift and `N1-R1` asks for parity across surfaces
- * rather than parity by everybody remembering.
+ * Two of those, and they read differently: a session that has ended (`N1-R44`)
+ * is a screen with a way back in, and an obstacle that stopped the reading
+ * (`N1-R10`, `N1-R3`) is a sentence about a machine with the action still on
+ * offer. Which of the two a refusal is, is not decided here — it is decided in
+ * {@see HowTheReadingWent}, and this draws whichever arrived.
  *
- * It draws nothing when the reading succeeded, so a screen emits it
- * unconditionally and guards its own content on the same two facts — which is
- * the half of this that is still written out per screen, because the fields
- * live on seven separate answer types with no shape between them. Folding
- * `isSignedIn`, `met` and `remedy` into one value those seven hold is what
- * would put the decision in one place; until then the component owns what is
- * *drawn* and each screen owns whether to draw beside it.
+ * **The screen owns the branch and this owns one arm of it.** A template says
+ * `@`if with `cameBack()` and puts this in the `@`else, so the two arms are
+ * exclusive because Blade made them exclusive. The second guard this class used
+ * to carry — deciding for itself whether there was anything to say — was a
+ * second expression of one rule, and two expressions can disagree: both silent
+ * is a blank screen, both drawing is the obstacle and the content at once.
+ *
+ * **It cannot take the content as a slot, and that is a fact about the
+ * renderer rather than a preference.** Blade renders a slot before the
+ * component's own template runs, and the native renderer collects the elements
+ * as they render — so a slot dropped by an `@`if is still in the tree the
+ * device draws. A screen built that way draws both arms and no template rule
+ * can see it, because a template rule reads Blade as text.
+ * {@see \Tests\Support\WhatTheDeviceWouldDraw} is what sees it.
  */
 final class WhatStoppedTheReading extends Component
 {
     public function __construct(
-        public readonly bool $signedIn,
-        public readonly string $met,
-        public readonly string $remedy,
+        public readonly HowTheReadingWent $went,
         public readonly string $signInGoesTo,
         public readonly string $askAgain = 'again()',
     ) {}

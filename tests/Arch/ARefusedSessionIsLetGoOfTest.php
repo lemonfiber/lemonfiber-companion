@@ -38,8 +38,22 @@ use Tests\Support\Tree;
 // the code and kept the paragraph — a rule satisfied by its own documentation,
 // which is the shape this repository has paid for before.
 
-/** What a fold must ask before it renders an obstacle. */
-const THE_DECISION = '$why->meansWeAreSignedOut()';
+/**
+ * How a fold must turn an obstacle into a reading.
+ *
+ * Whether a refused credential is a signed-out app or a sentence about a
+ * machine is decided in exactly one place —
+ * {@see Modules\Operator\Internal\ViewModels\HowTheReadingWent::somethingStopped()}
+ * — and a fold's whole part in it is to hand the obstacle over. So the question
+ * this asks is not *did you ask* but *did you go through the one place that
+ * asks*.
+ *
+ * That is the stronger of the two, and deliberately so. A rule matching the
+ * `meansWeAreSignedOut()` call would pass a fold that asks and then ignores the
+ * answer. A fold that goes through this cannot spell the signed-out state
+ * wrongly, because it does not spell it at all.
+ */
+const THE_DECISION = 'HowTheReadingWent::somethingStopped($why)';
 
 /** What a screen must do about one. */
 const THE_EFFECT = '$this->letGoOfTheSession(';
@@ -78,7 +92,7 @@ function whatHandlesARefusal(): array
     return ['folds' => $folds, 'screens' => $screens];
 }
 
-it('N3-R13 — every fold that renders an obstacle asks whether it ended the session', function (): void {
+it('N3-R13 — every fold that renders an obstacle goes through the one place that decides', function (): void {
     $found = whatHandlesARefusal();
 
     expect($found['folds'])->not->toBe([], 'no fold takes an obstacle, so this rule read nothing');
@@ -94,8 +108,11 @@ it('N3-R13 — every fold that renders an obstacle asks whether it ended the ses
     expect($silent)->toBe([], sprintf(
         "These render an obstacle without asking whether it ended the session:\n  %s\n\n"
         . '`N3-R13` says a refused credential is a signed-out app rather than a sentence '
-        . 'about a machine. `Obstacle::meansWeAreSignedOut()` draws that line once so the '
-        . "folds cannot disagree about whether somebody is signed in.\n",
+        . "about a machine.\n"
+        . 'Hand the obstacle to `HowTheReadingWent::somethingStopped()` rather than reading '
+        . '`said()` and `remedy()` off it here. That is where the line is drawn, once, and '
+        . 'a fold that builds the state itself is a fold that can draw it differently from '
+        . "the seven beside it.\n",
         implode("\n  ", $silent),
     ));
 });
@@ -119,5 +136,72 @@ it('N3-R13 — every screen that resumes a session lets go of a refused one', fu
         . 'frame and refused again, so the operator sees a sign-in prompt over a device that '
         . "still believes it is signed in.\n",
         implode("\n  ", $keeping),
+    ));
+});
+
+/**
+ * How a screen must put the obstacle beside its own content.
+ *
+ * The component draws one arm and the screen draws the other, so the two must
+ * be arms of one conditional rather than two conditionals that happen to
+ * disagree in the right direction. `@else` is what makes them exclusive, and
+ * Blade is what enforces it.
+ *
+ * `F13` says why the component cannot simply take the content as a slot and
+ * choose: the slot is rendered before the component runs, so the arm it drops
+ * reaches the device anyway.
+ */
+const THE_BRANCH = '@else';
+
+/** @see THE_BRANCH */
+const THE_QUESTION = '$this->answer()->went->cameBack()';
+
+it('N3-R13 — a screen draws the obstacle instead of its content, never beside it', function (): void {
+    $drawing = [];
+
+    foreach (Tree::filesUnder(Tree::at('app-modules'), '.blade.php') as $path) {
+        $source = (string) file_get_contents($path);
+
+        if (str_contains($source, '<x-operator::what-stopped-the-reading')) {
+            $drawing[$path] = $source;
+        }
+    }
+
+    expect($drawing)->not->toBe([], 'no screen draws the obstacle, so this rule read nothing');
+
+    $wrong = [];
+
+    foreach ($drawing as $path => $source) {
+        $asks = mb_strpos($source, sprintf('@if (%s)', THE_QUESTION));
+        $branches = mb_strpos($source, THE_BRANCH);
+        $draws = mb_strpos($source, '<x-operator::what-stopped-the-reading');
+
+        // Positions rather than presence. A screen holding all three tokens in
+        // the wrong order — the component above the question, or outside the
+        // conditional entirely — draws both, which is the whole of what this
+        // refuses and is exactly what a presence check would pass.
+        $inOrder = is_int($asks)
+            && is_int($branches)
+            && is_int($draws)
+            && $asks < $branches
+            && $branches < $draws;
+
+        if (! $inOrder) {
+            $wrong[] = basename($path);
+        }
+    }
+
+    sort($wrong);
+
+    expect($wrong)->toBe([], sprintf(
+        "These draw the obstacle without putting it opposite their own content:\n  %s\n\n"
+        . 'The shape is `@if (%s)`, the screen\'s content, `@else`, the component, `@endif`. '
+        . 'One conditional with two arms, so the obstacle and the reading cannot both be '
+        . "drawn and cannot both be missing.\n"
+        . 'A screen that guards its content separately from the component is two expressions '
+        . 'of one rule, and nothing reads Blade closely enough to notice when they stop '
+        . 'agreeing.',
+        implode("\n  ", $wrong),
+        THE_QUESTION,
     ));
 });

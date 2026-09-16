@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 
 /**
@@ -28,7 +29,7 @@ final readonly class HowAMendingReads
     /** The stack is still carrying out what it was agreed to. */
     public function stillWorkingItOut(): WhatThisStackPutRight
     {
-        return new WhatThisStackPutRight(isWorking: true);
+        return new WhatThisStackPutRight(went: HowTheReadingWent::itCameBack(), isWorking: true);
     }
 
     /** It finished, and this is what became of each repair. */
@@ -44,13 +45,17 @@ final readonly class HowAMendingReads
         // line between *something happened* and *nothing did* is drawn once —
         // by `WhatBecameOfIt` — and this screen cannot come to disagree with
         // another about whether a run did anything.
-        return new WhatThisStackPutRight(outcomes: $rows, changed: $mended->changed());
+        return new WhatThisStackPutRight(
+            went: HowTheReadingWent::itCameBack(),
+            outcomes: $rows,
+            changed: $mended->changed(),
+        );
     }
 
     /** The stack has no outcome for that job any more. */
     public function ended(): WhatThisStackPutRight
     {
-        return new WhatThisStackPutRight(hasEnded: true);
+        return new WhatThisStackPutRight(went: HowTheReadingWent::itCameBack(), hasEnded: true);
     }
 
     /** The machine could not be reached, and this is what the operator met. */
@@ -58,13 +63,10 @@ final readonly class HowAMendingReads
     {
         // `N3-R13`: a refused credential is a signed-out app rather than a
         // sentence about a machine, and the screen must not go on rendering
-        // what it loaded before. Said as a flag rather than by returning an
-        // empty outcome, because the outcome is not the thing that changed —
-        // this device's standing with the stack is.
-        if ($why->meansWeAreSignedOut()) {
-            return new WhatThisStackPutRight(isSignedOut: true);
-        }
-
-        return new WhatThisStackPutRight(met: $why->said(), remedy: $why->remedy());
+        // what it loaded before. Which of the two an obstacle is is
+        // {@see HowTheReadingWent}'s to answer — the outcome is not the thing
+        // that changed, this device's standing with the stack is, and that is
+        // a fact about the reading rather than a flag on the mending.
+        return new WhatThisStackPutRight(went: HowTheReadingWent::somethingStopped($why));
     }
 }

@@ -139,7 +139,7 @@ final class WhatWouldBePutRight extends NativeComponent
     /** Whether this device still holds a session for it (`N1-R44`). */
     public function isSignedIn(): bool
     {
-        if (! $this->answer()->isSignedIn) {
+        if (! $this->answer()->went->isSignedIn) {
             return false;
         }
 
@@ -148,7 +148,7 @@ final class WhatWouldBePutRight extends NativeComponent
         // loaded a moment ago under a session the stack has stopped
         // recognising is exactly what the requirement forbids. Both folds are
         // asked, so whichever one met it is the one that answers.
-        return ! $this->agreed || ! $this->done()->isSignedOut;
+        return ! $this->agreed || $this->done()->went->isSignedIn;
     }
 
     /**

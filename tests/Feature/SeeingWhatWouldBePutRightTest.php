@@ -140,7 +140,7 @@ it('N2-R7 — work still going is a state of the screen, not a spinner', functio
     expect($screen->offer()->isWorking)->toBeTrue()
         ->and($screen->offer()->hasEnded)->toBeFalse()
         ->and(count($screen->offer()->repairs))->toBe(0)
-        ->and($screen->offer()->met)->toBe('');
+        ->and($screen->offer()->went->met)->toBe('');
 });
 
 it('N1-R17 — asking again while the work runs reads the same job, and starts none', function (): void {
@@ -184,7 +184,7 @@ it('a job the stack forgot is its own state, and asking again starts a new one',
 
     expect($screen->offer()->hasEnded)->toBeTrue()
         ->and($screen->offer()->isWorking)->toBeFalse()
-        ->and($screen->offer()->met)->toBe('');
+        ->and($screen->offer()->went->met)->toBe('');
 
     $screen->again();
     $screen->offer();
@@ -207,8 +207,8 @@ it('a stack with nothing to put right is not a job that ended', function (): voi
 it('N1-R10 — a stack that could not be asked says so, and says what to do', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::met(Obstacle::StackDidNotAnswer));
 
-    expect($screen->offer()->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($screen->offer()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+    expect($screen->offer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($screen->offer()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
         ->and(count($screen->offer()->repairs))->toBe(0)
         ->and($screen->offer()->isWorking)->toBeFalse()
         ->and($screen->offer()->hasEnded)->toBeFalse();
@@ -221,7 +221,7 @@ it('a stack that took the question on and then went away is an obstacle too', fu
     $mending = AStackThatWouldMend::thatWentAwayAfterwards(Obstacle::StackDidNotAnswer);
     $screen = theRepairsScreen($mending);
 
-    expect($screen->offer()->met)->toBe(Obstacle::StackDidNotAnswer->said())
+    expect($screen->offer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($mending->askings())->toBe(1)
         ->and($mending->readings())->toBe(1);
 });
@@ -500,8 +500,8 @@ it('N1-R10 — a stack that goes away between agreeing and reading says what was
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
 
-    expect($screen->done()->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($screen->done()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+    expect($screen->done()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($screen->done()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
         ->and($screen->done()->outcomes)->toBe([]);
 });
 
@@ -516,7 +516,7 @@ it('N2-R5 — a run still being carried out is its own state', function (): void
 
     expect($screen->done()->isWorking)->toBeTrue()
         ->and($screen->done()->hasEnded)->toBeFalse()
-        ->and($screen->done()->met)->toBe('');
+        ->and($screen->done()->went->met)->toBe('');
 });
 
 it('N1-R17 — what was done is held, so reading it twice asks once', function (): void {

@@ -1,13 +1,6 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
-<x-operator::what-stopped-the-reading
-    :signed-in="$this->answer()->isSignedIn"
-    :met="$this->answer()->met"
-    :remedy="$this->answer()->remedy"
-    :sign-in-goes-to="$this->goes()->signIn()"
-/>
-
-@if ($this->answer()->isSignedIn && $this->answer()->met === '')
+@if ($this->answer()->went->cameBack())
 <native:column class="w-full gap-4 px-6 py-4">
     {{-- N2-R11: what is waiting on the operator, said before the list. An
          operator who opened this screen because somebody in the house asked
@@ -63,6 +56,11 @@
         <native:text>{{ __('household.nothing_asked_action') }}</native:text>
     @endforelse
 </native:column>
+@else
+    <x-operator::what-stopped-the-reading
+        :went="$this->answer()->went"
+        :sign-in-goes-to="$this->goes()->signIn()"
+    />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" here="health" />

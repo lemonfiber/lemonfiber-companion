@@ -2214,6 +2214,19 @@ final readonly class Fixtures
                 </native:column>
                 BLADE, 'every list in', 'no-empty-state'),
 
+            // A slot echoed on one branch and not the other. Deliberately a
+            // component with nothing else in it: the trap is that both arms
+            // reach the device, so a fixture with a second control in it would
+            // read as a component that draws too much rather than as one that
+            // cannot drop what it was given.
+            Fixture::suite('F13', sprintf('%s/a-slot-behind-a-branch.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    @if ($went->cameBack())
+                        {{ $slot }}
+                    @endif
+                </native:column>
+                BLADE, 'draws its slot on every branch', 'a-slot-behind-a-branch'),
+
             Fixture::suite('L1', sprintf('%s/english-sentence.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">
                     <native:text>This stack cannot be reached from here.</native:text>

@@ -120,12 +120,12 @@ it('N2-R7 — shows every service, how it runs, and which form it is in', functi
         // the template's first branch, so a fold reporting otherwise would put
         // `N1-R44`'s sign-in prompt in front of a working session and the rows
         // would never be reached at all.
-        ->and($answer->isSignedIn)->toBeTrue()
-        ->and($answer->met)->toBe('')
+        ->and($answer->went->isSignedIn)->toBeTrue()
+        ->and($answer->went->met)->toBe('')
         // And no remedy, which is the pair `met` is read with: a template
         // branching on one and printing the other would put *what to do about
         // it* under a machine where nothing went wrong.
-        ->and($answer->remedy)->toBe('')
+        ->and($answer->went->remedy)->toBe('')
         ->and($answer->services[0]->id->named())->toBe('sonarr')
         ->and($answer->services[0]->form)->toBe('downloads')
         ->and($answer->services[0]->runsSaid)->toBe(HowAServiceRuns::Running->saidOnTheScreen());
@@ -382,7 +382,7 @@ it('N1-R44 — a device with no session for it asks nothing', function (): void 
     $supervising = AStackThatSupervises::with(aStackRunningTwoThings());
     $screen = theServicesScreen($supervising, signedIn: false);
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->services)->toBe([])
         ->and($supervising->askings())->toBe(0);
 });
@@ -391,11 +391,11 @@ it('N1-R10 — an obstacle is what stood in the way, with what to do about it', 
     $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork));
     $answer = $screen->answer();
 
-    expect($answer->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($answer->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+    expect($answer->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($answer->went->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
         // Signed in, and the listing is empty because nothing was read — not
         // because the machine is running nothing.
-        ->and($answer->isSignedIn)->toBeTrue()
+        ->and($answer->went->isSignedIn)->toBeTrue()
         ->and($answer->services)->toBe([])
         // Which is why there is no overall either. A stack that could not be
         // reached has not been found to be healthy, and a fold that carried a
@@ -417,19 +417,19 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeTrue();
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine — and
         // nothing already loaded, which matters more here than on a listing
         // nobody acts from: what is already loaded is six buttons that change
         // somebody's machine.
-        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->answer()->services)->toBe([])
         ->and($screen->answer()->overall)->toBe('')
         // The remedy and the cadence as well. A signed-out screen offering
         // *what to do about it* would be answering about a machine nobody
         // asked, and one that reported itself settling would poll a stack this
         // device has no session for, for ever.
-        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
         ->and($screen->answer()->isSettling)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeFalse();
 });
@@ -514,8 +514,8 @@ it('N3-R13 — a machine that cannot be reached keeps its session', function ():
     $keychain = AKeychainInMemory::working();
     $screen = theServicesScreen(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork), $keychain);
 
-    expect($screen->answer()->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+    expect($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(theStackWhoseServicesAreRead()->id()))->toBeTrue();
 });
 
@@ -534,7 +534,7 @@ it('a stack running nothing is an answer and not a gap', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::withNothingRunning());
 
     expect($screen->answer()->services)->toBe([])
-        ->and($screen->answer()->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue()
         ->and($screen->answer()->overall)->toBe(HowTheStackIsRunning::Inactive->saidOnTheScreen());
 });
 
@@ -553,7 +553,7 @@ it('a session that ended between the reading and the yes sends nothing', functio
     $screen->agree();
 
     expect($supervising->whatItWasToldToDo())->toBe([])
-        ->and($screen->answer()->isSignedIn)->toBeFalse();
+        ->and($screen->answer()->went->isSignedIn)->toBeFalse();
 });
 
 it('refuses a route parameter that is not text', function (): void {

@@ -87,10 +87,10 @@ it('N2-R9 — shows what stopped, where it stopped, and who has it', function ()
         // template's first branch, so a fold reporting otherwise here would put
         // `N1-R44`'s sign-in prompt in front of an operator whose session is
         // working and the rows would never be reached at all.
-        ->and($screen->answer()->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue()
         // Neither of the obstacle's two keys, because nothing was met.
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('');
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('');
 
     $rows = $screen->answer()->stalled;
 
@@ -133,7 +133,7 @@ it('nothing stuck is an answer, and not the same one as a stack that would not s
     $quiet = theStalledScreen(AStackThatStalled::withNothingStuck());
 
     expect($quiet->howMany())->toBe(0)
-        ->and($quiet->answer()->met)->toBe('')
+        ->and($quiet->answer()->went->met)->toBe('')
         ->and($quiet->answer()->shownSaid)->toBe(HowMuchIsShown::AllOfIt->saidOnTheScreen());
 });
 
@@ -144,9 +144,9 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
         // Meeting an obstacle is not losing the session either: the device
         // asked and was answered. Reporting otherwise would hide which of the
         // six was met behind a sign-in screen for a session that is fine.
-        ->and($screen->answer()->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($screen->answer()->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($screen->answer()->went->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
         // Nothing to be complete about, so the line is not rendered at all
         // rather than claiming a listing that was never read.
         ->and($screen->answer()->shownSaid)->toBe('');
@@ -156,12 +156,12 @@ it('N1-R44 — a device with no session for that stack is not asked to wait for 
     $stalling = AStackThatStalled::with(aWeekOfStalledDownloads());
     $screen = theStalledScreen($stalling, signedIn: false);
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->howMany())->toBe(0)
         // Nothing was met, because the app never got as far as asking — and a
         // remedy beside no obstacle would be an instruction about nothing.
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
         // Nothing to be complete about either, so the line the listing branch
         // always renders is not rendered here at all.
         ->and($screen->answer()->shownSaid)->toBe('')
@@ -251,10 +251,10 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($keychain->isHolding(theStackWhoseStallIsRead()->id()))->toBeTrue();
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine — and
         // nothing already loaded, which `N3-R13` names separately.
-        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->howMany())->toBe(0)
         ->and($screen->answer()->shownSaid)->toBe('')
         ->and($keychain->isHolding(theStackWhoseStallIsRead()->id()))->toBeFalse();

@@ -100,9 +100,9 @@ it('N2-R21 — names each one and says what it is running', function (): void {
     ));
 
     expect($screen->howMany())->toBe(2)
-        ->and($screen->answer()->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('');
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('');
 
     $rows = $screen->answer()->running;
 
@@ -122,8 +122,8 @@ it('N2-R21 — a machine running only what it declared says so', function (): vo
     ));
 
     expect($screen->howMany())->toBe(0)
-        ->and($screen->answer()->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->met)->toBe('');
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->met)->toBe('');
 });
 
 it('N2-R21 — a machine that could not be asked reports no strangers, not none', function (): void {
@@ -133,7 +133,7 @@ it('N2-R21 — a machine that could not be asked reports no strangers, not none'
     // question nobody got to ask.
     $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::StackDidNotAnswer));
 
-    expect($screen->answer()->met)->not->toBe('')
+    expect($screen->answer()->went->met)->not->toBe('')
         ->and($screen->answer()->running)->toBe([])
         ->and($screen->howMany())->toBe(0);
 });
@@ -149,8 +149,8 @@ it('N1-R3 — an obstacle that is not a refused credential leaves the session st
     // which is advice for a problem they do not have and hides the one they do.
     $screen = theStrangersScreen(AStackThatSupervises::met(Obstacle::StackDidNotAnswer));
 
-    expect($screen->answer()->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->met)->toBe(Obstacle::StackDidNotAnswer->said());
+    expect($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said());
 });
 
 it('N1-R44 — a session that has ended is not a machine running nothing', function (): void {
@@ -159,8 +159,8 @@ it('N1-R44 — a session that has ended is not a machine running nothing', funct
         signedIn: false,
     );
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
-        ->and($screen->answer()->met)->toBe('')
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->howMany())->toBe(0);
 });
 
@@ -175,9 +175,9 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($keychain->isHolding(theStackWhoseStrangersAreRead()->id()))->toBeTrue();
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
         ->and($screen->answer()->running)->toBe([])
         ->and($keychain->isHolding(theStackWhoseStrangersAreRead()->id()))->toBeFalse();
 });

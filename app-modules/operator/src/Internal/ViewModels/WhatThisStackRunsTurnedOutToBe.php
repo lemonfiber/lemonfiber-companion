@@ -24,18 +24,13 @@ use Modules\Kernel\Api\Disturbances;
 final readonly class WhatThisStackRunsTurnedOutToBe
 {
     /**
-     * @param bool                     $isSignedIn whether this device still holds a session for the stack
-     * @param string                   $met        the key for what stood in the way, or empty where nothing did
-     * @param string                   $remedy     the key for what to do about it, or empty where nothing did
      * @param list<WhatOneServiceSays> $services   everything it runs, in the stack's order
      * @param list<string>             $forms      the forms it has, whether or not anything in them runs
      * @param string                   $overall    the key for what it all amounts to, or empty where there is none
      * @param bool                     $isSettling whether anything here becomes something else by itself
      */
     public function __construct(
-        public bool $isSignedIn,
-        public string $met,
-        public string $remedy,
+        public HowTheReadingWent $went,
         public array $services,
         public array $forms,
         public string $overall,

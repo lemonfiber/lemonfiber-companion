@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheHouseholdTurnedOutToWant;
 
 /**
@@ -27,9 +28,7 @@ final readonly class HowTheHouseholdsAskingReads
     public function signedOut(): WhatTheHouseholdTurnedOutToWant
     {
         return new WhatTheHouseholdTurnedOutToWant(
-            isSignedIn: false,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::theSessionEnded(),
             requests: [],
             waiting: 0,
         );
@@ -49,9 +48,7 @@ final readonly class HowTheHouseholdsAskingReads
         // it belongs — and a fold that dropped a field could never quietly
         // change what this screen says is waiting.
         return new WhatTheHouseholdTurnedOutToWant(
-            isSignedIn: true,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::itCameBack(),
             requests: $rows,
             waiting: $wanted->waiting(),
         );
@@ -73,14 +70,8 @@ final readonly class HowTheHouseholdsAskingReads
      */
     public function met(Obstacle $why): WhatTheHouseholdTurnedOutToWant
     {
-        if ($why->meansWeAreSignedOut()) {
-            return $this->signedOut();
-        }
-
         return new WhatTheHouseholdTurnedOutToWant(
-            isSignedIn: true,
-            met: $why->said(),
-            remedy: $why->remedy(),
+            went: HowTheReadingWent::somethingStopped($why),
             requests: [],
             waiting: 0,
         );

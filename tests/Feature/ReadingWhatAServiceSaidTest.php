@@ -119,12 +119,12 @@ it('N2-R10 — shows the lines, oldest first, with the mouth each came out of', 
         Stream::Stdout->saidOnTheScreen(),
         Stream::Stderr->saidOnTheScreen(),
         Stream::Stdout->saidOnTheScreen(),
-    ))->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->isSignedIn)->toBeTrue()
+    ))->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue()
         // A read that worked leaves no obstacle and so nothing to do about one.
         // Asserted beside `met()` because the two are written together and only
         // one of them was read back, which is how a remedy for nothing survives.
-        ->and($screen->answer()->remedy)->toBe('');
+        ->and($screen->answer()->went->remedy)->toBe('');
 });
 
 it('N2-R10 — a line the service timed carries the moment, and one it did not says so', function (): void {
@@ -244,9 +244,9 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
         // was answered. Reporting otherwise would put the sign-in screen in
         // front of an operator whose session works, and `N1-R44`'s branch comes
         // first in the template — so which of the six was met is never reached.
-        ->and($screen->answer()->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
-        ->and($screen->answer()->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+        ->and($screen->answer()->went->remedy)->toBe(Obstacle::DeviceHasNoNetwork->remedy())
         // Nothing to be a window over, so no claim is made about an edge.
         ->and($screen->answer()->isAWindow)->toBeFalse()
         ->and($screen->answer()->bound)->toBe(0)
@@ -261,12 +261,12 @@ it('N1-R44 — a device with no session for that stack is not asked to wait for 
     $saying = AServiceThatSpoke::saying(aWindowWorthReading());
     $screen = theLogScreen($saying, signedIn: false);
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->howMany())->toBe(0)
         // Nothing was met, because the app never got as far as asking — and a
         // remedy beside no obstacle would be an instruction about nothing.
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
         // Every claim a window makes is a claim about a read that happened.
         // This state is the one where none did, so each of them is the empty
         // answer rather than a number carried over from a state it is not in.
@@ -371,14 +371,14 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine — and
         // nothing already loaded, which `N3-R13` names separately. A window is
         // the thing this screen most obviously has to drop: an operator reading
         // a service's log under *this stack refused the pairing of this app* is
         // reading lines the stack has just said it will not answer for.
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
         ->and($screen->answer()->lines)->toBe([])
         ->and($screen->howMany())->toBe(0)
         ->and($screen->answer()->isAWindow)->toBeFalse()
@@ -393,7 +393,7 @@ it('N3-R13 — an obstacle that is not a refused credential leaves the session a
     $keychain = AKeychainInMemory::working();
     $screen = theLogScreen(AServiceThatSpoke::met(Obstacle::DeviceHasNoNetwork), keychain: $keychain);
 
-    expect($screen->answer()->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
+    expect($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 });

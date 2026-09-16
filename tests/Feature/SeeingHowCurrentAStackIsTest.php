@@ -112,8 +112,8 @@ it('N2-R15 — opens on the stack\'s own answer rather than on a version to comp
         // A stack that answered is not a session that ended. `isSignedIn` is
         // the template's first branch, so a fold reporting otherwise would put
         // the sign-in prompt in front of an operator whose session is working.
-        ->and($screen->answer()->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->met)->toBe('');
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($screen->answer()->went->met)->toBe('');
 });
 
 it('N2-R16 — says which releases the household would notice', function (): void {
@@ -170,18 +170,18 @@ it('N2-R20 — offers nothing where the stack reported it is current', function 
 it('N1-R44 — a session that has ended is a sign-in rather than an obstacle', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting(), signedIn: false);
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Neither of the obstacle's keys, because nothing was met: the app did
         // not get as far as asking.
-        ->and($screen->answer()->met)->toBe('');
+        ->and($screen->answer()->went->met)->toBe('');
 });
 
 it('N1-R10 — an obstacle carries what stood in the way and what to do about it', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::StackDidNotAnswer));
 
-    expect($screen->answer()->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($screen->answer()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
-        ->and($screen->answer()->isSignedIn)->toBeTrue();
+    expect($screen->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($screen->answer()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+        ->and($screen->answer()->went->isSignedIn)->toBeTrue();
 });
 
 it('N1-R17 — asks once per frame, however many fields the template reads', function (): void {
@@ -367,8 +367,8 @@ it('N1-R46 — an obstacle meaning the session ended renders the sign-in', funct
     // different places, and only one of them offers a way back in.
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::CredentialWasRefused));
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
-        ->and($screen->answer()->met)->toBe('');
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->went->met)->toBe('');
 });
 
 it('reaches this machine\'s other screens', function (): void {
@@ -466,9 +466,9 @@ it('N1-R44 — a signed-out screen states nothing about the stack at all', funct
     // offer nothing can honour.
     $answer = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting(), signedIn: false)->answer();
 
-    expect($answer->isSignedIn)->toBeFalse()
-        ->and($answer->met)->toBe('')
-        ->and($answer->remedy)->toBe('')
+    expect($answer->went->isSignedIn)->toBeFalse()
+        ->and($answer->went->met)->toBe('')
+        ->and($answer->went->remedy)->toBe('')
         ->and($answer->howSaid)->toBe('')
         ->and($answer->running)->toBe('')
         ->and($answer->runningWasWithdrawn)->toBeFalse()
@@ -487,9 +487,9 @@ it('N1-R10 — an obstacle states what stood in the way and nothing about the st
     // reading that did not happen.
     $answer = theUpkeepScreen(AStackThatKeepsCurrent::met(Obstacle::StackDidNotAnswer))->answer();
 
-    expect($answer->isSignedIn)->toBeTrue()
-        ->and($answer->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($answer->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
+    expect($answer->went->isSignedIn)->toBeTrue()
+        ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($answer->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
         ->and($answer->howSaid)->toBe('')
         ->and($answer->running)->toBe('')
         ->and($answer->runningWasWithdrawn)->toBeFalse()
@@ -521,8 +521,8 @@ it('N2-R15 — a stack that named no release in use says so rather than showing 
         // They are read as a pair, and a template branching on one while
         // printing the other would put *what to do about it* under a machine
         // where nothing went wrong.
-        ->and($answer->met)->toBe('')
-        ->and($answer->remedy)->toBe('');
+        ->and($answer->went->met)->toBe('')
+        ->and($answer->went->remedy)->toBe('');
 });
 
 it('N2-R18 — reads what needs attention before what is fine', function (): void {

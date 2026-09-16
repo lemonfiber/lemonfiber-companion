@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SomethingElseRunning;
 use Modules\Kernel\Api\WhatElseIsRunning;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatElseTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatOneOtherContainerSays;
 
@@ -33,9 +34,7 @@ final readonly class HowSomethingElseReads
     public function signedOut(): WhatElseTurnedOutToBe
     {
         return new WhatElseTurnedOutToBe(
-            isSignedIn: false,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::theSessionEnded(),
             running: [],
         );
     }
@@ -50,9 +49,7 @@ final readonly class HowSomethingElseReads
         }
 
         return new WhatElseTurnedOutToBe(
-            isSignedIn: true,
-            met: '',
-            remedy: '',
+            went: HowTheReadingWent::itCameBack(),
             running: $rows,
         );
     }
@@ -67,14 +64,8 @@ final readonly class HowSomethingElseReads
      */
     public function met(Obstacle $why): WhatElseTurnedOutToBe
     {
-        if ($why->meansWeAreSignedOut()) {
-            return $this->signedOut();
-        }
-
         return new WhatElseTurnedOutToBe(
-            isSignedIn: true,
-            met: $why->said(),
-            remedy: $why->remedy(),
+            went: HowTheReadingWent::somethingStopped($why),
             running: [],
         );
     }

@@ -87,8 +87,8 @@ it('N2-R11 — shows what the house asked for, and how much of it wants deciding
         // Neither of the obstacle's two keys, because nothing was met. The
         // template branches on these being empty, so a word here would put an
         // error above a list that arrived perfectly well.
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('');
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('');
 });
 
 it('D7-R7 — every row says who asked, so a decline can reach them', function (): void {
@@ -201,17 +201,17 @@ it('a quiet week is an answer, and is not the same as a stack that did not answe
     $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::StackDidNotAnswer));
 
     expect($quiet->howMany())->toBe(0)
-        ->and($quiet->answer()->met)->toBe('')
+        ->and($quiet->answer()->went->met)->toBe('')
         ->and($unreachable->howMany())->toBe(0)
-        ->and($unreachable->answer()->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($unreachable->answer()->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy());
+        ->and($unreachable->answer()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($unreachable->answer()->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy());
 });
 
 it('N1-R44 — a device with no session for that stack is not asked to reach it', function (): void {
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting, signedIn: false);
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->howMany())->toBe(0)
         // The stack was never asked. A screen that reached out and then noticed
         // it had no session would have sent a request with nothing behind it.
@@ -296,9 +296,9 @@ it('N1-R44 — a signed-out frame carries no sentence and nothing waiting behind
     // guard it.
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()), signedIn: false);
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
         ->and($screen->answer()->requests)->toBe([])
         ->and($screen->answer()->waiting)->toBe(0);
 });
@@ -312,8 +312,8 @@ it('a stack that could not be reached is still a signed-in screen', function ():
     $answered = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
     $unreachable = theRequestsScreen(AHouseholdThatAsked::met(Obstacle::StackDidNotAnswer));
 
-    expect($answered->answer()->isSignedIn)->toBeTrue()
-        ->and($unreachable->answer()->isSignedIn)->toBeTrue()
+    expect($answered->answer()->went->isSignedIn)->toBeTrue()
+        ->and($unreachable->answer()->went->isSignedIn)->toBeTrue()
         ->and($unreachable->answer()->waiting)->toBe(0);
 });
 
@@ -396,8 +396,8 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($keychain->isHolding(theStackWhoseHouseholdIsRead()->id()))->toBeTrue();
 
-    expect($screen->answer()->isSignedIn)->toBeFalse()
-        ->and($screen->answer()->met)->toBe('')
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->howMany())->toBe(0)
         ->and($keychain->isHolding(theStackWhoseHouseholdIsRead()->id()))->toBeFalse();
 });
