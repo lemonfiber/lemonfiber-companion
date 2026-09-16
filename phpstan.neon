@@ -358,6 +358,16 @@ parameters:
             allowIn:
                 - app-modules/vault/src/*
                 - app-modules/device/src/*
+                # The third adapter that owns a filesystem, and the narrowest of
+                # the three: one directory holding one class. `modules/dx`
+                # stands a stack in by reading the installed SDK's own
+                # declarations — its envelopes and its endpoints — so it reads
+                # files at runtime on the device as well as in a suite, and B3
+                # is satisfied the way it asks to be: the IO is an adapter's and
+                # nothing above it opens a file. A module-wide entry would have
+                # been the easy answer and would have let a future stand-in do
+                # hidden IO in `Api/`, which is the rule's actual worry.
+                - app-modules/dx/src/Adapters/*
                 - scripts/*
                 - tests/*
                 - app-modules/*/tests/*

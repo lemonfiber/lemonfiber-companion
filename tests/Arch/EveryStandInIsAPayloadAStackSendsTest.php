@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Calls;
 use Tests\Support\Module;
 use Tests\Support\Tree;
-use Tests\Support\WhatTheContractDeclares;
 
 // G12 — a suite that stands a payload in for a stack reads it against the
 // contract.
@@ -294,8 +294,7 @@ function whichEnvelopeReadsEachKind(): array
 {
     $reads = [];
 
-    foreach (Tree::filesUnder(Tree::at(WhatTheContractDeclares::GENERATED), 'Envelope.php') as $path) {
-        $envelope = basename($path, '.php');
+    foreach (WhatTheContractDeclares::everyEnvelope() as $envelope) {
         $kind = WhatTheContractDeclares::kindOf($envelope);
 
         if ($kind !== '') {

@@ -16,6 +16,7 @@
     ],
     "require": {
         "php": "^8.5",
+        "ext-filter": "*",
         "ext-mbstring": "*",
         "ext-sodium": "*",
         "internachi/modular": "^3.0",

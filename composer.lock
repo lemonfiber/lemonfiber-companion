@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c58b94067c3655c6d4f0a4a10c18a012",
+    "content-hash": "12fd3dfb34c34eb2ef9b1694bf9736b9",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -10114,20 +10114,28 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/dx",
-                "reference": "1abc739b5fb1848a193038f06f030c24264041f8"
+                "reference": "ec6932e82e3cd83112a642e55b902be10f655e03"
             },
             "require": {
+                "lemonfiber/sdk-php": "dev-main",
                 "modules/kernel": "dev-main",
-                "php": "^8.5"
+                "modules/sdk": "dev-main",
+                "php": "^8.5",
+                "saloonphp/saloon": "^4.0"
             },
             "type": "library",
             "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Dx\\Providers\\DxServiceProvider"
+                    ]
+                },
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,
                         "mutation": 0
                     },
-                    "kind": "adapter"
+                    "kind": "stand-in"
                 }
             },
             "autoload": {
@@ -14650,6 +14658,7 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^8.5",
+        "ext-filter": "*",
         "ext-mbstring": "*",
         "ext-sodium": "*"
     },

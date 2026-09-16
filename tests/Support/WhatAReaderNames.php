@@ -13,6 +13,7 @@ use function in_array;
 use function is_string;
 use function json_encode;
 
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\StaticCall;

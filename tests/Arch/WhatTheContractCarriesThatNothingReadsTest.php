@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Tree;
-use Tests\Support\WhatTheContractDeclares;
 use Tests\Support\WhatTheReadersRead;
 
 // N1-R17 — what the wire carries that this app does not read, and why.

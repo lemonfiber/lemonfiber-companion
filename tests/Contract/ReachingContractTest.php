@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Dx\Api\ClientsThatReachNothing;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
@@ -50,6 +51,13 @@ function aSessionToCarry(): Session
 dataset('every way of reaching a stack', [
     'the pinned client' => [fn(): Reaching => new PinnedClients()],
     'the fake' => [fn(): Reaching => new AClientForWhicheverStack()],
+    // The stand-in is here for the reason the fake is, and it matters more:
+    // it is the one implementation somebody will be looking at a device
+    // through, so a promise it quietly broke would be a promise broken in the
+    // one place it is hardest to notice. It hands back the adapter's own
+    // client with the socket taken out, so it should satisfy every clause the
+    // adapter does — and if it ever does not, the divergence is the bug.
+    'the stand-in' => [fn(): Reaching => new ClientsThatReachNothing(new PinnedClients())],
 ]);
 
 it('builds something for a stack it was introduced to', function (Reaching $reaching): void {

@@ -96,6 +96,39 @@ function modulesWithNoCode(): array
     return $empty;
 }
 
+/**
+ * The `src` of every module the root installs for development only.
+ *
+ * A module under `require-dev` is development code in every sense the analyser
+ * cares about: it is absent from a release install, so nothing it names can be
+ * reached from a released build. Scanning its `src` as production inverts that
+ * — the module's own classes naming each other read as production code
+ * reaching a dev dependency, which is G4's failure reported against the one
+ * arrangement that cannot cause it.
+ *
+ * Derived from the root manifest rather than named, for the reason every other
+ * list in this file is derived: the day `modules/dx` moves to `require` — or
+ * another module arrives beside it — this answers correctly without anybody
+ * remembering the line exists.
+ *
+ * @return list<string>
+ */
+function modulesInstalledForDevelopmentOnly(): array
+{
+    /** @var array{require-dev?: array<string, string>} $manifest */
+    $manifest = json_decode((string) file_get_contents(__DIR__ . '/composer.json'), true);
+
+    $found = [];
+
+    foreach (array_keys($manifest['require-dev'] ?? []) as $package) {
+        if (str_starts_with($package, 'modules/')) {
+            $found[] = sprintf('%s/app-modules/%s/src', __DIR__, substr($package, strlen('modules/')));
+        }
+    }
+
+    return $found;
+}
+
 return (new Configuration())
     // A dev tool invoked from a composer script is never named in PHP, so the
     // default — reporting only unused production dependencies — cannot tell one
@@ -110,7 +143,16 @@ return (new Configuration())
     // reported as G4's own failure, on a package that is only ever a dev one.
     // Globbed so a module added tomorrow is scanned without anyone editing
     // this file.
-    ->addPathsToScan((array) glob(__DIR__ . '/app-modules/*/src'), isDev: false)
+    //
+    // A module the root installs under `require-dev` is subtracted and scanned
+    // as the dev path it is, for the reason `modulesInstalledForDevelopmentOnly`
+    // gives: it is absent from a release, so nothing in it can be reached from
+    // one.
+    ->addPathsToScan(
+        array_values(array_diff((array) glob(__DIR__ . '/app-modules/*/src'), modulesInstalledForDevelopmentOnly())),
+        isDev: false,
+    )
+    ->addPathsToScan(modulesInstalledForDevelopmentOnly(), isDev: true)
     ->addPathsToScan((array) glob(__DIR__ . '/app-modules/*/tests'), isDev: true)
     // The native expansion's PHP, held to the same rules as everything else. A
     // package written inside this repository is not a package exempt from them,
@@ -185,14 +227,6 @@ return (new Configuration())
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])
     ->ignoreErrorsOnPackage('laravel/tinker', [ErrorType::UNUSED_DEPENDENCY])
-    // Named by nothing, on purpose, and this ignore is where that is written
-    // down. `N1-R61` refuses a released build that can run against a stand-in,
-    // and what keeps it is that no composition reaches for this module: the
-    // provider is found by package discovery when the package is installed, and
-    // a release installs without development dependencies. A line in the
-    // composition naming it would be exactly the setting the requirement
-    // refuses, so this error firing forever is the correct state.
-    ->ignoreErrorsOnPackage('modules/dx', [ErrorType::UNUSED_DEPENDENCY])
     // Every dev tool that is real but never named in PHP, with what invokes it.
     // A package absent from both this list and the codebase is dead weight, and
     // that is the whole point of the switch above: captainhook sat in

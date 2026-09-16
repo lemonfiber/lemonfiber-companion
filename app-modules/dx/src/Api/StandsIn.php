@@ -32,7 +32,14 @@ namespace Modules\Dx\Api;
  * installs without it and the classes are not in the bundle at all. There is
  * nothing to switch off because there is nothing there.
  *
- * @template TPort of object
+ * `TPort` is covariant because it only ever appears in a return position —
+ * `insteadOf()` answers with its name and `which()` answers with one. That
+ * makes a `StandsIn<Reaching>` usable wherever a `StandsIn<object>` is wanted,
+ * which is what a registry holding several of them needs: they replace
+ * different ports and the only thing true of all of them is that each replaces
+ * something.
+ *
+ * @template-covariant TPort of object
  */
 interface StandsIn
 {

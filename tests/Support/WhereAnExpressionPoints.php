@@ -10,6 +10,7 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayDimFetch;

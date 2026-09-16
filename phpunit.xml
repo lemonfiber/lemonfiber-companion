@@ -146,6 +146,16 @@
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_STORE" value="array"/>
+        <!-- The suite runs against the real adapters, always. `modules/dx` is a
+             development dependency, so it is installed here and its provider is
+             discovered; this is what makes the whole suite's independence from
+             it a stated value rather than the config default happening to be
+             right. `TheSuiteNeverRunsAgainstAStandInTest` is what notices if it
+             ever stops being true. -->
+        <!-- `0` and not `false`: phpunit reads a `value` of `false` as a
+             boolean and stringifies it to set the variable, so the process sees
+             an empty string and anything strict about booleans refuses it. -->
+        <env name="DX_STANDS_IN" value="0"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

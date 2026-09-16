@@ -6,11 +6,11 @@ namespace Tests\Support;
 
 use function array_key_exists;
 use function count;
-use function implode;
-use function in_array;
 use function is_array;
 use function is_string;
-use function preg_match;
+
+use Modules\Dx\Internal\WhatTheContractDeclares;
+
 use function sprintf;
 use function str_starts_with;
 
@@ -61,6 +61,19 @@ final readonly class WhatTheContractAccepts
         }
 
         $data = $body['data'] ?? null;
+
+        // Not every envelope carries a shape. `PullEnvelope` and
+        // `StartEnvelope` declare `Data` as a bare `string`, and demanding an
+        // array of them refuses a body that is exactly what the contract says —
+        // so the two envelopes whose payload is a scalar had a rule that could
+        // only report them wrong. Nothing noticed because nothing had stood
+        // either of them in yet.
+        if (! WhatALeafCanBe::containsOthers($shape)) {
+            return [
+                ...self::underTheRightName($envelope, $body),
+                ...WhatALeafCanBe::whatDoesNotFit($shape, $data, 'data'),
+            ];
+        }
 
         if (! is_array($data)) {
             return [sprintf('`%s` was stood in for by a body with no `data`.', $envelope)];
@@ -198,48 +211,7 @@ final readonly class WhatTheContractAccepts
     {
         return is_array($value)
             ? self::against($against, $value, $path)
-            : self::said($against, $value, $path);
-    }
-
-    /**
-     * A value that is not an array, read against a type that may be a closed set.
-     *
-     * The half a shape check cannot do without, and the half that names the
-     * defect rather than a symptom of it. `Standings` read the `update`
-     * payload's top-level `state` for the *current, pending, stale* triple,
-     * which the contract puts under `changelog`; the top-level field exists and
-     * answers a different question, so no key was unknown and no key was
-     * missing there. What was wrong was the word: `pending` is not one of the
-     * five the contract allows at that path.
-     *
-     * Only closed sets are checked. A field typed `string` or `int` accepts
-     * whatever a fixture wants to say, and what it says is the reader's business
-     * and the suite's — this asks only whether the stack could have said it.
-     *
-     * @return list<string>
-     */
-    private static function said(string $type, mixed $value, string $path): array
-    {
-        $allowed = [];
-
-        foreach (WhatTheContractDeclares::alternatives($type) as $alternative) {
-            if (preg_match("/^'(.*)'$/s", $alternative, $said) !== 1) {
-                return [];
-            }
-
-            $allowed[] = $said[1];
-        }
-
-        if ($allowed === [] || ! is_string($value) || in_array($value, $allowed, strict: true)) {
-            return [];
-        }
-
-        return [sprintf(
-            '`%s` says `%s`, and the contract allows only `%s` there.',
-            $path,
-            $value,
-            implode('`, `', $allowed),
-        )];
+            : WhatALeafCanBe::outsideItsSet($against, $value, $path);
     }
 
     /**
