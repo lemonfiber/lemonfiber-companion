@@ -7,6 +7,7 @@ namespace Modules\Dx\Internal;
 use function count;
 use function is_numeric;
 use function mb_ucfirst;
+use function sprintf;
 use function str_contains;
 use function str_ends_with;
 use function str_replace;
@@ -66,7 +67,7 @@ final readonly class WhatAStackWouldSay
      * its own name and a payload full of the word `string` is one nobody can
      * read.
      */
-    public static function forThe(string $type, string $called): mixed
+    public static function forThe(string $type, string $called, int $at = 0): mixed
     {
         $type = trim($type);
 
@@ -83,8 +84,8 @@ final readonly class WhatAStackWouldSay
         // `until` at once, which is a payload no stack sends and every reader
         // would be right to refuse.
         return count(WhatTheContractDeclares::alternatives($type)) > 1
-            ? self::oneOf($type, $called)
-            : self::whicheverShapeItIs($type, $called);
+            ? self::oneOf($type, $called, $at)
+            : self::whicheverShapeItIs($type, $called, $at);
     }
 
     /**
@@ -95,10 +96,10 @@ final readonly class WhatAStackWouldSay
      * shapes*, which has to be asked first; here, *which shape*, where the
      * prefixes are mutually exclusive and the order is only convention.
      */
-    private static function whicheverShapeItIs(string $type, string $called): mixed
+    private static function whicheverShapeItIs(string $type, string $called, int $at = 0): mixed
     {
         if (str_starts_with($type, 'array{')) {
-            return self::theFields($type, $called);
+            return self::theFields($type, $called, $at);
         }
 
         if (str_starts_with($type, 'list<')) {
@@ -106,8 +107,8 @@ final readonly class WhatAStackWouldSay
         }
 
         return str_starts_with($type, 'array<')
-            ? self::keyedBy(WhatTheContractDeclares::inside($type, 'array<'), $called)
-            : self::oneOf($type, $called);
+            ? self::keyedBy(WhatTheContractDeclares::inside($type, 'array<'), $called, $at)
+            : self::oneOf($type, $called, $at);
     }
 
     /**
@@ -121,7 +122,7 @@ final readonly class WhatAStackWouldSay
      *
      * @return array<string, mixed>
      */
-    private static function theFields(string $type, string $called): array
+    private static function theFields(string $type, string $called, int $at = 0): array
     {
         $said = [];
 
@@ -129,7 +130,7 @@ final readonly class WhatAStackWouldSay
         // absent, and this builds it either way — the docblock above says why —
         // so it is skipped rather than bound to a name nothing reads.
         foreach (WhatTheContractDeclares::fieldsOf($type) as $field => [, $declared]) {
-            $said[$field] = self::forThe($declared, $field);
+            $said[$field] = self::forThe($declared, $field, $at);
         }
 
         return $said === [] ? [$called => null] : $said;
@@ -150,7 +151,7 @@ final readonly class WhatAStackWouldSay
         $said = [];
 
         for ($at = 0; $at < self::A_FEW; $at++) {
-            $said[] = self::forThe($type, $called);
+            $said[] = self::forThe($type, $called, $at);
         }
 
         return $said;
@@ -165,7 +166,7 @@ final readonly class WhatAStackWouldSay
      *
      * @return array<string, mixed>
      */
-    private static function keyedBy(string $type, string $called): array
+    private static function keyedBy(string $type, string $called, int $at = 0): array
     {
         // The last part rather than the second, which is the same answer
         // without asking whether a key type was written: `array<string, Foo>`
@@ -174,7 +175,7 @@ final readonly class WhatAStackWouldSay
         $parts = WhatTheContractDeclares::split($type, ',');
         $holds = $parts === [] ? 'string' : $parts[count($parts) - 1];
 
-        return [$called => self::forThe($holds, $called)];
+        return [$called => self::forThe($holds, $called, $at)];
     }
 
     /**
@@ -185,7 +186,7 @@ final readonly class WhatAStackWouldSay
      * than theirs. `null` is stepped over wherever anything else is offered:
      * a field that can be absent is most worth seeing present.
      */
-    private static function oneOf(string $type, string $called): mixed
+    private static function oneOf(string $type, string $called, int $at = 0): mixed
     {
         $arms = WhatTheContractDeclares::alternatives($type);
 
@@ -200,7 +201,7 @@ final readonly class WhatAStackWouldSay
             // list or a leaf and only the caller of `forThe()` knows which.
             // Recursion terminates because an arm of a union is never itself a
             // union — `split` has already taken it apart.
-            return $arm === $type ? self::aLeaf($arm, $called) : self::forThe($arm, $called);
+            return $arm === $type ? self::aLeaf($arm, $called, $at) : self::forThe($arm, $called, $at);
         }
 
         return null;
@@ -214,7 +215,7 @@ final readonly class WhatAStackWouldSay
      * answered by handing it back; below, *what is this type called*, which is
      * a vocabulary rather than a value.
      */
-    private static function aLeaf(string $type, string $called): mixed
+    private static function aLeaf(string $type, string $called, int $at = 0): mixed
     {
         // A quoted alternative is a literal the contract permits, and the
         // literal itself is the only correct value — a made-up string in its
@@ -225,7 +226,21 @@ final readonly class WhatAStackWouldSay
 
         return is_numeric($type)
             ? self::thatNumber($type)
-            : self::whateverThatTypeIsCalled($type, $called);
+            : self::whateverThatTypeIsCalled($type, $called, $at);
+    }
+
+    /**
+     * The field's own name, and which row of a list it is on.
+     *
+     * The first entry carries no number, so a field that is not in a list reads
+     * as it always did — and the second is the one that proves the rows are
+     * being told apart.
+     */
+    private static function named(string $called, int $at): string
+    {
+        $said = mb_ucfirst(str_replace('_', ' ', $called));
+
+        return $at > 0 ? sprintf('%s %d', $said, $at + 1) : $said;
     }
 
     /**
@@ -241,7 +256,7 @@ final readonly class WhatAStackWouldSay
     }
 
     /** A value for a type named rather than written out. */
-    private static function whateverThatTypeIsCalled(string $type, string $called): mixed
+    private static function whateverThatTypeIsCalled(string $type, string $called, int $at = 0): mixed
     {
         $named = WhatALeafIsCalled::tryFrom($type);
 
@@ -252,8 +267,13 @@ final readonly class WhatAStackWouldSay
         return match (true) {
             str_contains($type, 'int'), str_contains($type, 'float') => self::A_NUMBER,
             // Anything else is a string, and it says which field it is, so a
-            // screen full of these reads as a screen full of stand-ins.
-            default => mb_ucfirst(str_replace('_', ' ', $called)),
+            // screen full of these reads as a screen full of stand-ins. It also
+            // says which row of a list it is on, because a list whose entries
+            // are identical cannot show what a list is for — four services all
+            // called `Name` is a screen nobody can look at and see whether the
+            // rows are telling them apart. The first carries no number, so a
+            // field that is not in a list reads as it always did.
+            default => self::named($called, $at),
         };
     }
 }
