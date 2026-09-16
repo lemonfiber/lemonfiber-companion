@@ -764,7 +764,7 @@ there, and neither is read as a description of the current code.
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
 | G6 | No committed `->only(`, and no `->skip()` whose last argument is not the reason | arch |
 | G7 | Every module declares its own coverage and mutation floors | arch |
-| G8 | Every port in `Modules\Kernel` is bound, once, in the composition root | test: the booted composition root |
+| G8 | Every port in `Modules\Kernel` is bound, once, in the composition root, and something takes it — a port nothing is handed is a binding that resolves and changes nothing | test: the booted composition root; arch: every bound port read against what is handed one, with a register of those still waiting |
 | G9 | No module is below the coverage floor it declared | test: the `Floors` suite, over the clover report |
 | G10 | No two test files declare the same helper or file-level constant name | arch: over the text of the test files |
 | G11 | A diagnostic fails the run, and no setting exempts one | arch: the settings, read out of `phpunit.xml` |
