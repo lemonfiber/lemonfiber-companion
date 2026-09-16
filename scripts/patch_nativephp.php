@@ -88,6 +88,33 @@ SHIPS,
                     ->run('composer dump-autoload --optimize --classmap-authoritative'.($excludeDevDependencies ? ' --no-dev' : ''));
 BECOMES,
     ],
+    [
+        // An agent's git worktree inside the project is a second checkout of
+        // this repository — a `vendor/` of its own, its own `app-modules`, its
+        // own lockfile — and the bundler copies it. Measured on 2026-09-16: a
+        // debug bundle came to 243 MB, of which 225 MB was one worktree under
+        // `.claude/`, carried onto a handset and unpacked there.
+        //
+        // `.git` is already excluded at any depth and this is the same fact
+        // wearing a different name: a directory a tool keeps its own state in,
+        // which no build has a use for. It sits beside `.git` rather than in
+        // `PROJECT` because a worktree can be nested anywhere, and a
+        // project-root rule would miss one a directory deeper.
+        //
+        // The alternative was asking every agent to put its worktree somewhere
+        // else, which is a convention — and a convention is what this
+        // repository calls the thing that holds until somebody new arrives.
+        'in' => '/../vendor/nativephp/mobile/src/Support/BundleExclusions.php',
+        'ships' => <<<'SHIPS'
+    public const ANY_DEPTH = [
+        '.git',
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    public const ANY_DEPTH = [
+        '.git',
+        '.claude',
+BECOMES,
+    ],
 ];
 
 /**
@@ -134,5 +161,5 @@ foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => 
 }
 
 if ($rewritten > 0) {
-    fwrite(STDOUT, sprintf("patch_nativephp: %d build step(s) now ask the same question about dev dependencies.\n", $rewritten));
+    fwrite(STDOUT, sprintf("patch_nativephp: %d line(s) rewritten in the packager.\n", $rewritten));
 }
