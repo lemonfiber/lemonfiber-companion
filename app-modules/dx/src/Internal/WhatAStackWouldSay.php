@@ -125,7 +125,10 @@ final readonly class WhatAStackWouldSay
     {
         $said = [];
 
-        foreach (WhatTheContractDeclares::fieldsOf($type) as $field => [$ignoredRequired, $declared]) {
+        // The first of the pair is whether the contract allows the field to be
+        // absent, and this builds it either way — the docblock above says why —
+        // so it is skipped rather than bound to a name nothing reads.
+        foreach (WhatTheContractDeclares::fieldsOf($type) as $field => [, $declared]) {
             $said[$field] = self::forThe($declared, $field);
         }
 

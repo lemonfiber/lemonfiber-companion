@@ -89,7 +89,7 @@ final readonly class WhatTheContractDeclares
     {
         $case = self::whatIsDeclared(
             sprintf('%s.php', $envelope),
-            '/public\sconst\sKind\sKIND\s=\sKind::([A-Za-z0-9_]+);/',
+            '/public\sconst\sKind\sKIND\s=\sKind::(\w+);/',
         );
 
         return $case === ''
@@ -107,7 +107,7 @@ final readonly class WhatTheContractDeclares
         $fields = [];
 
         foreach (self::split(self::inside($type, 'array{'), ',') as $part) {
-            if (preg_match('/^([A-Za-z0-9_]+)(\??):\s*(.*)$/s', $part, $said) !== 1) {
+            if (preg_match('/^(\w+)(\??):\s*(.*)$/s', $part, $said) !== 1) {
                 continue;
             }
 
