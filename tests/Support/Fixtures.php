@@ -2371,6 +2371,20 @@ final readonly class Fixtures
             // silent about it. `lang/` is a real directory of real PHP and is
             // none of those things, so naming it as source is the smallest true
             // form of the mistake.
+            // A field renamed in the markup and nowhere else. An edit rather
+            // than a planted file, because the violation is a template that
+            // belongs to a screen — a new pair would need a screen written to
+            // hold the mistake, and then the rule would be reading a fixture's
+            // own class rather than the join this repository actually has.
+            Fixture::edit(
+                'F14',
+                'app-modules/operator/resources/views/how-this-stack-is.blade.php',
+                '{{ __($this->answer()->overall) }}',
+                '{{ __($this->answer()->overallish) }}',
+                'every step a template takes',
+                'overallish',
+            ),
+
             Fixture::edit(
                 'R4',
                 'phpunit.xml',

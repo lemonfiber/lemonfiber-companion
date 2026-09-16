@@ -51,9 +51,9 @@
                 {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
             </x-operator::note>
             <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-        @elseif ($this->done()->met !== '')
-            <x-operator::emphasis>{{ __($this->done()->met) }}</x-operator::emphasis>
-            <native:text>{{ __($this->done()->remedy) }}</native:text>
+        @elseif (! $this->done()->went->cameBack())
+            <x-operator::emphasis>{{ __($this->done()->went->met) }}</x-operator::emphasis>
+            <native:text>{{ __($this->done()->went->remedy) }}</native:text>
 
             {{-- N1-R3 again, and the sharper half of it: this obstacle stands
                  between the operator and the answer to *did it work*. Taking
