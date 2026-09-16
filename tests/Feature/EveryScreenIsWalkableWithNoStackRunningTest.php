@@ -6,7 +6,6 @@ use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
-use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -101,14 +100,18 @@ function theScreenASignedOutOperatorIsSentTo(string $stack): string
  */
 function thisDeviceStillHoldsASessionFor(StackId $stack): bool
 {
+    // Narrowed by the container rather than by a check afterwards: the binding
+    // is a class the analyser can see, so a check would be a branch nothing can
+    // reach — and a rule with an arm nobody reaches is one nobody can tell from
+    // a broken one.
     $storage = app()->make(SecureStorage::class);
 
-    if (! $storage instanceof SecureStorage) {
-        throw new RuntimeException('SecureStorage is bound to something that is not one.');
-    }
-
+    // `Resumed::either()` answers with an object either way, so the question
+    // *is there one* is asked by which of the two arms ran. Neither arm reads
+    // the session: what it holds is a credential, and a rule that took one out
+    // to look at it would be the one place in this suite that did.
     return $storage->resume($stack)->either(
-        static fn(Session $session): object => new stdClass(),
+        static fn(): object => new stdClass(),
         static fn(): object => new RuntimeException(),
     ) instanceof stdClass;
 }
