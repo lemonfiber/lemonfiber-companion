@@ -5,6 +5,9 @@ declare(strict_types=1);
 use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Edge\NativeComponent;
@@ -86,6 +89,28 @@ function theScreenASignedOutOperatorIsSentTo(string $stack): string
     }
 
     throw new RuntimeException('The sign-in prompt points somewhere the router serves no screen.');
+}
+
+/**
+ * Whether this device still holds a session for that machine.
+ *
+ * Asked of the port rather than of the stand-in that seeded it, so what is read
+ * is what a screen would read — and a freshly built adapter proves the store
+ * behind them is shared, which is what makes a session dropped on one frame
+ * still gone on the next.
+ */
+function thisDeviceStillHoldsASessionFor(StackId $stack): bool
+{
+    $storage = app()->make(SecureStorage::class);
+
+    if (! $storage instanceof SecureStorage) {
+        throw new RuntimeException('SecureStorage is bound to something that is not one.');
+    }
+
+    return $storage->resume($stack)->either(
+        static fn(Session $session): object => new stdClass(),
+        static fn(): object => new RuntimeException(),
+    ) instanceof stdClass;
 }
 
 /** The stand-ins, put over the ports, the way the switch does it. */
@@ -227,6 +252,15 @@ it('N1-R10 — a machine that does not answer draws what stood in the way, and t
 it('N3-R13 — a machine that refuses the session draws the way back in', function (): void {
     withNoStackRunning();
 
+    $refusing = AStandInStack::RefusingTheSession->asAStack()->id();
+
+    // Asserted before the walk as well as after, and the order is the whole
+    // proof: *no session* after a refusal means nothing unless there was one
+    // to lose. A stand-in that seeded none would make the assertion below pass
+    // without a refusal ever happening.
+    expect(thisDeviceStillHoldsASessionFor($refusing))
+        ->toBeTrue('the stand-in kept no session for the machine that refuses one, so nothing was refused');
+
     $wrong = [];
 
     $wayBackIn = theScreenASignedOutOperatorIsSentTo(AStandInStack::RefusingTheSession->asAStack()->id()->stored());
@@ -242,6 +276,14 @@ it('N3-R13 — a machine that refuses the session draws the way back in', functi
     }
 
     sort($wrong);
+
+    // The other half of `N3-R13`, and the half a screen cannot show: a fold
+    // that signs somebody out while the store keeps the session gives a screen
+    // that flips between signed-out and signed-in as they navigate. The
+    // stand-in keychain held one for this machine before the first frame, which
+    // is what makes the question askable at all.
+    expect(thisDeviceStillHoldsASessionFor($refusing))
+        ->toBeFalse('the stack refused this session and the device is still holding it');
 
     expect($wrong)->toBe([], sprintf(
         "These met a refused session and went on showing something else:\n  %s\n\n"
