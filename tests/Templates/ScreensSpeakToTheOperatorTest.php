@@ -61,7 +61,7 @@ const WHAT_A_COMPONENT_IS = [
     'divider' => false,
 
     // A row that is the tap target for everything inside it. A control, and
-    // one with no label of its own — what it says is the state it is showing,
+    // one with no label of its own — what it says is whatever is inside it,
     // so `F5` reaches it through `a11y-label` and nothing else.
     'pressable' => true,
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Blade;
 use Native\Mobile\Edge\NativeTagPrecompiler;
 use Symfony\Component\Process\Process;
+use Tests\Support\Template;
 
 // A screen is Blade, and Blade becomes PHP before anything renders it. Every
 // other suite here reads the *template* — that a screen names its controls, that
@@ -117,11 +118,37 @@ it('every screen compiles to PHP that parses', function (): void {
 
 it('finds the screens it claims to read', function (): void {
     // A selector that matches nothing passes silently, which is the one way a
-    // rule can claim more than it enforces. Twelve screens and the chrome they
-    // sit in is what the repository holds; the count is what stops the glob
-    // from quietly becoming a no-op, and what caught it reaching only the
-    // screens while the component every screen goes through went unread.
-    expect(everyScreenTemplate())->toHaveCount(21);
+    // rule can claim more than it enforces. What caught this glob was it
+    // reaching only the screens while the component every screen goes through
+    // went unread — so what is asserted is that both directories are in it,
+    // which is the property, rather than a total, which is a number somebody
+    // edits when a file is added.
+    //
+    // Compared against the reading every other template rule uses. Two readings
+    // that disagree is a state neither can see from its own side, and the one
+    // that goes wrong silently is the glob: `Template::all()` walks the tree
+    // and this matches a pattern.
+    $globbed = array_map(
+        basename(...),
+        everyScreenTemplate(),
+    );
+
+    $walked = [];
+
+    foreach (Template::all() as $template) {
+        if (str_starts_with($template->path, 'app-modules/')) {
+            $walked[] = basename($template->path);
+        }
+    }
+
+    sort($globbed);
+    sort($walked);
+
+    expect($globbed)->toBe($walked);
+
+    // And a floor under both, so two empty readings cannot agree with each
+    // other. The screens alone are twelve.
+    expect(count($globbed))->toBeGreaterThan(12);
 });
 
 it('refuses a template whose compiled form does not parse', function (): void {

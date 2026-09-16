@@ -20,6 +20,8 @@
     {{-- N1-R55: leavable, landing on pairing. Quieter than going on, because
          skipping is the thing somebody does when they already know — and a
          second filled button beside the first makes neither of them the way
-         forward. --}}
-    <x-operator::action label="{{ __('onboarding.skip') }}" tap="{{ $leave }}" />
+         forward. That sentence was here under two identical buttons;
+         {@see \Modules\Operator\View\Components\QuietAction} is what makes
+         it true. --}}
+    <x-operator::quiet-action label="{{ __('onboarding.skip') }}" tap="{{ $leave }}" />
 @endunless
