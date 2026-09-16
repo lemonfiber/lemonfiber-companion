@@ -29,7 +29,7 @@ use Tests\Support\Fakes\VerdictsInMemory;
 // the verdict two taps and a network round trip away behind whichever stack
 // they guessed at first.
 //
-// What makes it allowed is that it is held rather than asked. `N1-R17` says a
+// What makes it allowed is that it is held rather than asked. `N1-R66` says a
 // screen is not a poller and opening an app is not a reason to talk to four
 // machines, so the word comes out of a store — which makes every one of these a
 // retained reading, which is exactly the case `N1-R24` permits on opening and

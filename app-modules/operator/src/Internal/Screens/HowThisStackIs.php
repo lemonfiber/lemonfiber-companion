@@ -45,8 +45,8 @@ use function view;
  * away from the machine can see whether their stack is doing what it should,
  * and until this screen existed the app could get in and had nothing to show.
  *
- * **It asks once, when the frame is built, and holds what came back.** `N1-R17`
- * says a screen is not a poller: a home network and a machine that may be
+ * **It asks once, when the frame is built, and holds what came back.** `N1-R65`
+ * says the reading is one act per frame: a home network and a machine that may be
  * asleep are the wrong things to talk to four times a second, and `F4` says
  * a frame is not where a socket is opened. The answer is a value on this
  * screen, so every accessor below reads what one asking produced rather than
@@ -56,7 +56,7 @@ use function view;
  * is and why there is no timer beside it. Somebody who has just gone and
  * restarted a service wants to know whether it took, and a screen that could
  * only be re-asked by leaving it and coming back teaches them to distrust what
- * it says. `N1-R17` is about the app not talking to a machine unprompted; a tap
+ * it says. `N1-R66` is about the app not talking to a machine unprompted; a tap
  * is a prompt.
  *
  * **It reads the session back rather than being handed one.** A screen given a

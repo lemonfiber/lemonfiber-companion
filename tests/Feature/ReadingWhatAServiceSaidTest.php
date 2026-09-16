@@ -188,7 +188,7 @@ it('N2-R10 — searching narrows what is shown and not what was read', function 
         ->and($screen->answer()->isSearching)->toBeTrue();
 });
 
-it('N1-R17 — narrowing does not ask the stack again', function (): void {
+it('N1-R66 — narrowing does not ask the stack again', function (): void {
     // A screen that re-read per keystroke would open a connection per letter to
     // a machine on a home network — and would change what is being searched
     // underneath the person searching it.

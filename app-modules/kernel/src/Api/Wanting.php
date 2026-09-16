@@ -20,7 +20,7 @@ namespace Modules\Kernel\Api;
  *
  * **One method, and it asks for the household rather than for one member.**
  * The endpoint narrows to a member by name, and this port does not offer it —
- * `N1-R17` is emphatic that a screen asks once and renders what came back, and
+ * `N1-R65` has a screen read once per frame and render what came back, and
  * a port with a method per member is a screen opening a connection per row.
  * Narrowing is a question for whoever holds the answer, not another request.
  */

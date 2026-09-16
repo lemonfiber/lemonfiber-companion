@@ -148,8 +148,8 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section
-            // of the list, because `N1-R17` says the app asks a machine once
-            // per screen — a list that reported on every stack would ask every
+            // of the list, because `N1-R65` says the app reads a machine once
+            // per frame — a list that reported on every stack would ask every
             // machine on the network to draw one frame.
             Router::native(AStacksScreen::Health->value, HowThisStackIs::class);
         });

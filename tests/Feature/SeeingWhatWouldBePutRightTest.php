@@ -143,7 +143,7 @@ it('N2-R7 — work still going is a state of the screen, not a spinner', functio
         ->and($screen->offer()->went->met)->toBe('');
 });
 
-it('N1-R17 — asking again while the work runs reads the same job, and starts none', function (): void {
+it('N1-R66 — asking again while the work runs reads the same job, and starts none', function (): void {
     // The distinction that makes this port safe to hold a handle for: the work
     // is the stack's, and repeating the read changes nothing. Starting a second
     // job for one question would be two lots of work on a machine.
@@ -289,7 +289,7 @@ it('refuses a route parameter that is not text', function (): void {
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('N1-R17 — asking again before the first frame has read anything asks once', function (): void {
+it('N1-R65 — asking again before the first frame has read anything asks once', function (): void {
     // *Ask again* is an action, and an action can arrive before any accessor
     // has run — a frame that has been built and not yet resolved is a real
     // state, not a hypothetical one. Nothing has been read, so there is no
@@ -519,7 +519,7 @@ it('N2-R5 — a run still being carried out is its own state', function (): void
         ->and($screen->done()->went->met)->toBe('');
 });
 
-it('N1-R17 — what was done is held, so reading it twice asks once', function (): void {
+it('N1-R65 — what was done is held, so reading it twice asks once', function (): void {
     // The same rule as the offer, one question along: a frame reads several
     // fields off the outcome and each read must not be a trip to the machine.
     $mending = AStackThatWouldMend::carryingOut(aListingWorthReading(), aRunThatHalfWorked());
@@ -599,8 +599,8 @@ it('N1-R27 — while the stack is working it out, the screen looks again by itse
         ->and($screen->isWorking())->toBeTrue();
 });
 
-it('N1-R17 — the cadence costs nothing while there is nothing to wait for', function (): void {
-    // What keeps this from being the polling `N1-R17` refuses. A screen showing
+it('N1-R66 — the cadence costs nothing while there is nothing to wait for', function (): void {
+    // What keeps this from being the polling `N1-R66` refuses. A screen showing
     // an offer has nothing that changes on its own, so the poll does not reach
     // the machine at all.
     $mending = AStackThatWouldMend::offering(aListingWorthReading());

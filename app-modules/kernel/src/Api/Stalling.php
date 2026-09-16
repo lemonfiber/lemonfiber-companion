@@ -20,7 +20,7 @@ namespace Modules\Kernel\Api;
  * taking a client would let a caller pair the two up wrongly. This signature
  * makes that mistake unspellable.
  *
- * **One method, which is `N1-R17` on this side.** A screen asks once and
+ * **One method, which is `N1-R65` on this side.** A screen asks once and
  * renders what came back; it does not poll and it does not ask again to fill in
  * a column. A port with a method per stage would be a screen opening ten
  * connections to a machine on a home network to draw one list.

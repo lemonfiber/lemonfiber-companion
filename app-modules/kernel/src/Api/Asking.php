@@ -19,7 +19,7 @@ namespace Modules\Kernel\Api;
  * signature makes impossible. {@see Reaching} is what turns them into a
  * connection, behind the same module boundary.
  *
- * **One method, which is the whole of `N1-R17` on this side.** A screen showing
+ * **One method, which is the whole of `N1-R65` on this side.** A screen showing
  * health asks once and renders what came back; it does not poll, and it does
  * not ask again to fill in a field it forgot. A port with a method per section
  * of the screen is a screen that opens four connections to a machine over a

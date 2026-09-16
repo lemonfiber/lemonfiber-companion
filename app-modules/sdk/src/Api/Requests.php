@@ -27,8 +27,8 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * checked.
  *
  * **It asks for the whole household rather than for one member.** The endpoint
- * takes a `member` parameter and this does not offer it — `N1-R17` has a screen
- * ask once and render what came back, and narrowing is a question for whoever
+ * takes a `member` parameter and this does not offer it — `N1-R65` has a screen
+ * read once per frame and render what came back, and narrowing is a question for whoever
  * holds the answer rather than another trip to a machine on a home network.
  *
  * **Four raises, two answers**, which is {@see Questions}' collapse for its

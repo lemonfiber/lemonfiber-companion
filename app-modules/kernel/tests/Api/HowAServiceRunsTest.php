@@ -64,7 +64,7 @@ it('N1-R27 — only a starting service becomes something else on its own', funct
     // The one state that resolves without anybody touching the phone, which is
     // what a stated cadence is for. Every other case is a standing answer, so a
     // screen polling on any of them would be polling on a listing that cannot
-    // change — the thing `N1-R17` refuses.
+    // change — the thing `N1-R66` refuses.
     expect(HowAServiceRuns::Starting->isSettling())->toBeTrue();
 
     foreach (HowAServiceRuns::cases() as $runs) {

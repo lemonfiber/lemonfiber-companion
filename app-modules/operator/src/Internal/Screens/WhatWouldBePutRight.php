@@ -55,7 +55,7 @@ use function view;
  * **Asking again is a button, and which question it asks depends.** Where a job
  * is still running, it reads the same handle — the work is the stack's and
  * repeating the read changes nothing. Where the job ended, it starts a new one,
- * because there is nothing left to read. `N1-R17` keeps this from happening on
+ * because there is nothing left to read. `N1-R66` keeps this from happening on
  * a timer: an operator on a home network with a machine that may be asleep
  * decides when to ask, and `N4-R4`'s argument about not re-asking for something
  * declined is the same argument one requirement over.
@@ -260,7 +260,7 @@ final class WhatWouldBePutRight extends NativeComponent
      * something has to keep tapping to find out whether it did.
      *
      * **It does nothing unless the work is running**, which is what keeps this
-     * from being the polling `N1-R17` refuses. A finished run answers the same
+     * from being the polling `N1-R66` refuses. A finished run answers the same
      * thing however often it is read and a screen showing an offer has nothing
      * to wait for, so the cadence costs a machine on a home network nothing in
      * either state.

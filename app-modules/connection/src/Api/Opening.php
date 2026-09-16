@@ -40,7 +40,8 @@ use Modules\Kernel\Api\Stacks;
  * check would put the question to a device that has nothing to reach.
  *
  * **What this does not do is reach the stack.** `F4` says a frame is not where
- * a socket is opened and `N1-R17` says a screen is not a poller, and opening
+ * a socket is opened and `N1-R66` says nothing but a cadence or the operator
+ * makes a screen reach a machine, and opening
  * the app is the moment both are easiest to break — four paired machines, on a
  * home network, one of them asleep. So *ready* here means *paired, unlocked and
  * ready to be asked*, and the asking belongs to the screen the operator chose.

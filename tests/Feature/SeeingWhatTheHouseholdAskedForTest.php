@@ -218,7 +218,7 @@ it('N1-R44 — a device with no session for that stack is not asked to reach it'
         ->and($wanting->askings())->toBe(0);
 });
 
-it('N1-R17 — asks once per frame however many fields are read', function (): void {
+it('N1-R65 — asks once per frame however many fields are read', function (): void {
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting);
 

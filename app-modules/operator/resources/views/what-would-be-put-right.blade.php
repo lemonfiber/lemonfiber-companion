@@ -19,7 +19,7 @@
     @elseif ($this->offer()->isWorking)
         {{-- N2-R7: the unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
-             operator — N1-R17 keeps a screen from being a poller. --}}
+             operator — N1-R66 keeps a screen from being a poller. --}}
         <x-operator::emphasis>{{ __('health.working_it_out') }}</x-operator::emphasis>
         <native:text>{{ __('health.working_it_out_action') }}</native:text>
 

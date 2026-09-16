@@ -81,7 +81,7 @@ use function view;
  * to finding out is the reliance on leaving and returning that rule refuses.
  * Every other state here is standing, so the cadence costs a machine on a home
  * network nothing the rest of the time — which is what keeps this from being
- * the polling `N1-R17` refuses.
+ * the polling `N1-R66` refuses.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and `N4-R13`'s diagnostic report is
@@ -295,7 +295,7 @@ final class WhatThisStackRuns extends NativeComponent
      * Look again while the machine is settling into what it was told (`N1-R27`).
      *
      * It does nothing unless something is actually settling, which is what
-     * keeps this from being the polling `N1-R17` refuses: a stack whose
+     * keeps this from being the polling `N1-R66` refuses: a stack whose
      * services are all in standing states answers the same thing however often
      * it is read.
      */

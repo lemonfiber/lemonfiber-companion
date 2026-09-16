@@ -277,7 +277,7 @@ final class YourStacks extends NativeComponent
      * they guessed at first.
      *
      * **Held, never asked.** This screen opens the app and opening the app is
-     * not a reason to talk to four machines — `N1-R17` says a screen is not a
+     * not a reason to talk to four machines — `N1-R66` says a screen is not a
      * poller and `F4` says a frame is not where a socket is opened. So the word
      * comes out of the store, which makes every one of them a retained reading
      * and is exactly why `N1-R24` permits it: it may open a screen, and it

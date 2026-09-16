@@ -114,7 +114,7 @@ final class HowCurrentThisStackIs extends NativeComponent
      *
      * The action an obstacle must not take away. Forgetting what came back
      * rather than re-reading here, so the next accessor asks — which keeps this
-     * one act and keeps `N1-R17` true: one asking per frame, and a frame that
+     * one act and keeps `N1-R65` true: one asking per frame, and a frame that
      * starts when somebody taps.
      */
     public function again(): void

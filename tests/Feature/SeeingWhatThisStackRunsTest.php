@@ -364,7 +364,7 @@ it('N1-R27 — looks again only while something is settling', function (): void 
         ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
 });
 
-it('N1-R17 — a standing listing is not polled', function (): void {
+it('N1-R66 — a standing listing is not polled', function (): void {
     // Every state but `starting` is a standing answer, so a stack that is not
     // settling answers the same thing however often it is read — and the
     // cadence costs a machine on a home network nothing.
