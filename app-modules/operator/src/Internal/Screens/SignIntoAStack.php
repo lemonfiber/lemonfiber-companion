@@ -71,10 +71,16 @@ final class SignIntoAStack extends NativeComponent
     /**
      * The password, as it stands in the field.
      *
-     * `protected` rather than public, and read through {@see typed()}, matching
-     * {@see PairByTyping}: `NativeComponent::__syncProperty()` assigns from the
-     * parent class, which reaches a protected member of a subclass and does not
-     * reach a private one.
+     * `protected` rather than public, matching {@see PairByTyping}:
+     * `NativeComponent::__syncProperty()` assigns from the parent class, which
+     * reaches a protected member of a subclass and does not reach a private
+     * one.
+     *
+     * **`render()` hands it to the view by name.** `native:model` expands to a
+     * bare `$typed` in the compiled view, and the package fills the view's
+     * data from a component's *public* properties — so a protected one arrives
+     * undefined, which is a warning rather than a stop and draws an empty
+     * field.
      *
      * **A bare string rather than a {@see Credential}.** A field holds
      * characters; a credential is what they become, once, at the moment they
@@ -220,7 +226,7 @@ final class SignIntoAStack extends NativeComponent
     /** The frame, by name. */
     public function render(): View
     {
-        return view('operator::sign-into-a-stack');
+        return view('operator::sign-into-a-stack', ['typed' => $this->typed]);
     }
 
     /**

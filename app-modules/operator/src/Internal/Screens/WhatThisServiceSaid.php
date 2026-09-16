@@ -75,6 +75,12 @@ final class WhatThisServiceSaid extends NativeComponent
      * property syncing needs to reach — it assigns from the parent class, so a
      * private member of a subclass becomes a dynamic property and the screen
      * silently stops holding what it thinks it holds.
+     *
+     * **`render()` hands it to the view by name.** `native:model` expands to a
+     * bare `$looking` in the compiled view, and the package fills the view's
+     * data from a component's *public* properties — so a protected one arrives
+     * undefined, which is a warning rather than a stop and draws an empty
+     * field.
      */
     protected string $looking = '';
 
@@ -163,7 +169,7 @@ final class WhatThisServiceSaid extends NativeComponent
 
     public function render(): View
     {
-        return view('operator::what-this-service-said');
+        return view('operator::what-this-service-said', ['looking' => $this->looking]);
     }
 
     /**

@@ -67,15 +67,17 @@ final class PairByTyping extends NativeComponent
     /**
      * The pairing code, as it stands in the field.
      *
-     * `protected` rather than public, and the template reads it through
-     * {@see typed()}. A mutable public property is refused for a reason, and
-     * `NativeComponent::__syncProperty()` assigns from the parent class — which
-     * reaches a protected member of a subclass and does not reach a private
-     * one, so this is exactly as open as the framework needs and no more.
+     * `protected` rather than public. A mutable public property is refused for
+     * a reason, and `NativeComponent::__syncProperty()` assigns from the parent
+     * class — which reaches a protected member of a subclass and does not reach
+     * a private one, so this is exactly as open as the framework needs and no
+     * more.
      *
-     * It also leaves the template with one idiom. A screen exposing some state
-     * as bare variables and the rest as `$this->something()` is a screen where
-     * a reader has to know which is which.
+     * **That is why `render()` hands it to the view by name.**
+     * `native:model="typed"` expands to `:value="$typed"`, a bare variable in
+     * the compiled view, and the package fills the view's data from a
+     * component's *public* properties — so a protected one arrives undefined,
+     * which is a warning rather than a stop and draws an empty field.
      *
      * A bare string because a field holds characters rather than a value.
      * {@see Pairing} is what it becomes, and it becomes one in exactly one
@@ -278,7 +280,10 @@ final class PairByTyping extends NativeComponent
     /** The frame, by name. */
     public function render(): View
     {
-        return view('operator::pair-by-typing');
+        return view('operator::pair-by-typing', [
+            'typed' => $this->typed,
+            'called' => $this->called,
+        ]);
     }
 
     /**

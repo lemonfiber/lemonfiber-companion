@@ -2371,6 +2371,20 @@ final readonly class Fixtures
             // silent about it. `lang/` is a real directory of real PHP and is
             // none of those things, so naming it as source is the smallest true
             // form of the mistake.
+            // The state a screen keeps, no longer handed to its view.
+            // `native:model` expands to a bare variable in the compiled view
+            // and the package fills a view's data from *public* properties, so
+            // taking the hand-off away leaves the field undefined — a warning
+            // rather than a stop, which is why nothing but a render can see it.
+            Fixture::edit(
+                'F15',
+                'app-modules/operator/src/Internal/Screens/PairByScanning.php',
+                "view('operator::pair-by-scanning', ['called' => \$this->called])",
+                "view('operator::pair-by-scanning')",
+                'every screen the router serves draws',
+                'PairByScanning',
+            ),
+
             // The component half of the same rule. Its own fixture rather
             // than one standing for both: the two walks start differently —
             // one at a method a screen declares, one at a property a component
