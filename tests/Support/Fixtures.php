@@ -2371,6 +2371,20 @@ final readonly class Fixtures
             // silent about it. `lang/` is a real directory of real PHP and is
             // none of those things, so naming it as source is the smallest true
             // form of the mistake.
+            // The component half of the same rule. Its own fixture rather
+            // than one standing for both: the two walks start differently —
+            // one at a method a screen declares, one at a property a component
+            // was handed — and a fixture proving one proves nothing about the
+            // other.
+            Fixture::edit(
+                'F14',
+                'app-modules/operator/resources/views/components/what-stopped-the-reading.blade.php',
+                '{{ __($went->remedy) }}',
+                '{{ __($went->remedyish) }}',
+                'every step a component takes',
+                'remedyish',
+            ),
+
             // A field renamed in the markup and nowhere else. An edit rather
             // than a planted file, because the violation is a template that
             // belongs to a screen — a new pair would need a screen written to

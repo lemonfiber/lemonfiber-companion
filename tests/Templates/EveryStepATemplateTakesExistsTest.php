@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\Components;
 use Tests\Support\Screens;
 use Tests\Support\Template;
 use Tests\Support\Tree;
@@ -26,6 +27,11 @@ use Tests\Support\Tree;
 // The chain is walked by declared type — the screen's return type, then each
 // property's — which is what makes it a fact about the code rather than a list
 // here that goes stale.
+//
+// Components are walked too, from the other end. A screen's chain starts at a
+// method it declares; a component's starts at a property it was handed, and
+// `$went->met` in a component's markup drifts exactly as quietly. Components
+// are the worse half, in fact: one of them stands on seven screens.
 
 /**
  * Every step a template takes after its own screen has answered.
@@ -139,19 +145,37 @@ function howATemplateStepReads(string $step): string
 }
 
 /**
+ * What a screen answers a call with, as a class, or nothing where it is not one.
+ *
+ * Guarded by `hasMethod()` at its call site, so the checked exception
+ * reflection declares cannot arise — which the analyser can only be told by the
+ * call sitting outside a closure.
+ *
+ * @param ReflectionClass<object> $screen
+ * @return ReflectionClass<object>|null
+ */
+function whatThatScreenAnswersWith(ReflectionClass $screen, string $method): ?ReflectionClass
+{
+    return whateverThatTypeIs($screen->getMethod($method)->getReturnType());
+}
+
+/**
  * Where one chain steps onto something that is not there, and how far it got.
  *
  * A function rather than the body of the loop below, because reflection raises
  * a checked exception and the analyser refuses one thrown inside a closure —
  * rightly: a closure has nowhere to declare it.
  *
- * @param  ReflectionClass<object>                                  $screen
+ * Takes what the walk starts holding rather than working it out, because the
+ * two callers start differently: a screen's chain opens on what a method
+ * answered, and a component's opens on the component itself.
+ *
+ * @param  ReflectionClass<object>|null                             $holding
  * @param  array{method: string, steps: list<string>, said: string} $chain
  * @return array{said: ?string, followed: int}
  */
-function whereThisChainStopsBeingTrue(ReflectionClass $screen, array $chain, string $named): array
+function whereThisChainStopsBeingTrue(?ReflectionClass $holding, array $chain, string $named): array
 {
-    $holding = whateverThatTypeIs($screen->getMethod($chain['method'])->getReturnType());
     $followed = 0;
 
     foreach ($chain['steps'] as $step) {
@@ -204,7 +228,11 @@ it('F14 — every step a template takes after its screen answered is one that va
                 continue;
             }
 
-            $went = whereThisChainStopsBeingTrue($screen, $chain, $named);
+            $went = whereThisChainStopsBeingTrue(
+                whatThatScreenAnswersWith($screen, $chain['method']),
+                $chain,
+                $named,
+            );
             $followed += $went['followed'];
 
             if (is_string($went['said'])) {
@@ -227,6 +255,117 @@ it('F14 — every step a template takes after its screen answered is one that va
         . "sits in is decided by a field nobody has — usually the wrong way round. A missing "
         . "method is a crash instead, and both happen at render time, which is a phone.\n"
         . 'Every other template rule reads the markup as text, so nothing else will say so.',
+        implode("\n  ", $missing),
+    ));
+});
+
+/**
+ * Every step a component's markup takes off something it was handed.
+ *
+ * Rooted at a bare variable rather than at `$this`, because that is how a
+ * component receives everything it draws. Which of those variables is a
+ * property the component declares is decided by the caller — `$slot`,
+ * `$attributes` and a loop's own variable are all bare variables too, and none
+ * of them is this rule's business.
+ *
+ * @return list<array{method: string, steps: list<string>, said: string}>
+ */
+function everyStepAComponentTakes(Template $template): array
+{
+    preg_match_all(
+        '/(?<![\w$>])\$([a-z]\w*)((?:->[a-zA-Z_]\w*(?:\([^()]*\))?)+)/',
+        $template->source,
+        $found,
+        PREG_SET_ORDER,
+    );
+
+    $walked = [];
+
+    foreach ($found as [$said, $held, $chain]) {
+        if ($held === 'this') {
+            continue;
+        }
+
+        $walked[$said] = [
+            'method' => $held,
+            'steps' => array_values(array_filter(
+                explode('->', $chain),
+                static fn(string $step): bool => $step !== '',
+            )),
+            'said' => $said,
+        ];
+    }
+
+    return array_values($walked);
+}
+
+/**
+ * The type a component declares for one of the things it is handed.
+ *
+ * Guarded by `hasProperty()` at its call site, and outside the closure for the
+ * reason {@see whatThatScreenAnswersWith()} is.
+ *
+ * @param  ReflectionClass<object>      $component
+ * @return ReflectionClass<object>|null
+ */
+function whatThatComponentWasHanded(ReflectionClass $component, string $held): ?ReflectionClass
+{
+    return whateverThatTypeIs($component->getProperty($held)->getType());
+}
+
+it('F14 — every step a component takes is one the value it was handed has', function (): void {
+    $components = Components::byTheViewTheyRender();
+
+    expect($components)->not->toBe([], 'no component was paired with a view, so this rule read nothing');
+
+    $missing = [];
+    $followed = 0;
+
+    foreach ($components as $named => $component) {
+        $path = Tree::at(Screens::theFileBehindTheView($named));
+
+        if (! is_file($path)) {
+            continue;
+        }
+
+        $template = new Template($named, (string) file_get_contents($path));
+
+        foreach (everyStepAComponentTakes($template) as $chain) {
+            if (! $component->hasProperty($chain['method'])) {
+                // A loop's variable, a slot, or something a `@php` block made.
+                // None of the three has a declared type this can read, and a
+                // rule that guessed at one would report on a class the markup
+                // never touched.
+                continue;
+            }
+
+            $went = whereThisChainStopsBeingTrue(
+                whatThatComponentWasHanded($component, $chain['method']),
+                $chain,
+                $named,
+            );
+
+            $followed += $went['followed'];
+
+            if (is_string($went['said'])) {
+                $missing[] = $went['said'];
+            }
+        }
+    }
+
+    // Lower than the screens' floor and meaning the same thing. There are nine
+    // components and most draw only what they are given, so the number is small
+    // by nature — what it refuses is a walk that resolves nothing at all.
+    expect($followed)->toBeGreaterThan(3);
+
+    sort($missing);
+
+    expect($missing)->toBe([], sprintf(
+        "These components step onto something the value they were handed has not got:\n  %s\n\n"
+        . 'A component stands on every screen that names it, so a field renamed underneath '
+        . "one is a line that goes wrong in several places at once.\n"
+        . 'PHP warns and evaluates to null rather than stopping, so the branch it sits in is '
+        . 'decided by a field nobody has.',
         implode("\n  ", $missing),
     ));
 });
