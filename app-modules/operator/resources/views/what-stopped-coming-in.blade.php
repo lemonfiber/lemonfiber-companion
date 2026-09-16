@@ -44,6 +44,18 @@
         <x-operator::emphasis>{{ __('health.nothing_stopped') }}</x-operator::emphasis>
         <native:text>{{ __('health.nothing_stopped_action') }}</native:text>
     @endforelse
+
+    {{-- `N1-R27`: a screen an operator cannot ask again is a screen that relies
+         on being left and returned to, which is the one thing the requirement
+         names. It sat on the obstacle arm only — so a reading that failed could
+         be retried and a reading that came back could not, which is the wrong
+         way round: somebody watching a stuck download or an update land is
+         looking at a screen they want to ask again.
+
+         Last, under what it is about, for the health screen's reason: somebody
+         who has just changed something scrolls to the end of what they were
+         reading, and that is where they want to ask whether it took. --}}
+    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading

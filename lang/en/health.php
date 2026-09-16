@@ -57,7 +57,6 @@ return [
     'nothing_came_back_action' => 'Nothing was carried out. Ask again.',
     'nothing_to_put_right' => 'This stack has nothing to put right.',
     'affects_nothing_else' => 'Affects nothing else.',
-    'back_to_the_stack' => 'Back to this stack',
     'carrying_it_out' => 'This stack is doing it.',
     'carrying_it_out_action' => 'It takes a moment. Ask again shortly.',
     'nobody_knows_what_happened' => 'What became of this is not known.',
