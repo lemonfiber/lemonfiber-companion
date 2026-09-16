@@ -115,8 +115,13 @@
 
     {{-- Under the findings rather than above them: somebody who has just
          fixed something scrolls to the end of what was wrong, and that is
-         where they want to ask whether it took. --}}
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+         where they want to ask whether it took.
+
+         Quiet, with the three roads below it. What is filled on this frame is
+         the family filters, because those act on what is in front of the
+         operator; everything under the findings is a way onward, and seven
+         identical bars make none of them the way forward. --}}
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
 
     {{-- The three readings the bar under this screen does not carry.
 
@@ -137,21 +142,21 @@
          about. Here rather than on the list because requests belong to one
          stack and the list is about several — and an operator looking at a
          machine is already holding the question the household asks them. --}}
-    <x-operator::action label="{{ __('household.asked_for') }}" :goes="$this->goes()->requests()" />
+    <x-operator::quiet-action label="{{ __('household.asked_for') }}" :goes="$this->goes()->requests()" />
 
     {{-- N2-R9: what stopped coming in. Reachable from the machine it is
          about rather than from the list, for the reason the requests button
          is — and reachable at all is the requirement: a stack passing every
          check and a household getting nothing are not a contradiction, so
          this cannot live under the verdict above. --}}
-    <x-operator::action label="{{ __('health.what_stopped') }}" :goes="$this->goes()->stuck()" />
+    <x-operator::quiet-action label="{{ __('health.what_stopped') }}" :goes="$this->goes()->stuck()" />
 
     {{-- N2-R21: what is running here that this machine never declared. The
          requirement asks for these to be reachable, and this is where from
          — beside what the stack runs rather than inside it, because a
          container nobody declared is not one of the things this stack runs
          and the screen it leads to offers no verb against one. --}}
-    <x-operator::action label="{{ __('health.what_else_is_running') }}" :goes="$this->goes()->elsewhere()" />
+    <x-operator::quiet-action label="{{ __('health.what_else_is_running') }}" :goes="$this->goes()->elsewhere()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading
