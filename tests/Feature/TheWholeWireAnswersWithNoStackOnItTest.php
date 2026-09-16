@@ -5,19 +5,23 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Client;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Logs;
 use Lemonfiber\Sdk\LogWindow;
+use Modules\Dx\Api\AStandInStack;
 use Modules\Dx\Api\ClientsThatReachNothing;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Dx\Internal\WhichEnvelopeAnEndpointAnswersWith;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Internal\WhatARefusalMeant;
 use Tests\Support\WhatTheContractAccepts;
 
 // N1-R59 — the whole app can be run and looked at with nothing else running.
@@ -76,6 +80,32 @@ function aClientForNothing(): Client
     return $client instanceof Client
         ? $client
         : throw new RuntimeException('The stand-in handed back something that is not the SDK client.');
+}
+
+/**
+ * What the application made of one machine's answer, or nothing where it read.
+ *
+ * Outside a closure for {@see whatCameBackFrom()}'s reason, and it catches
+ * rather than letting the refusal through: a refusal is the expected result for
+ * two of the three, so raising here would be this rule failing on the case it
+ * was written for.
+ */
+function whatStoodInTheWayOf(AStandInStack $machine): ?Obstacle
+{
+    $client = new ClientsThatReachNothing(new PinnedClients())
+        ->client($machine->asAStack(), aSessionThatOpensNothing());
+
+    if (! $client instanceof Client) {
+        throw new RuntimeException('The stand-in handed back something that is not the SDK client.');
+    }
+
+    try {
+        $client->read(Api::STATUS_ENDPOINT);
+    } catch (RequestFailed $why) {
+        return WhatARefusalMeant::obstacle($why);
+    }
+
+    return null;
 }
 
 /**
@@ -162,6 +192,27 @@ it('answers the scrollback as a document a line', function (): void {
     $window = theScrollbackOf('a-service');
 
     expect($window->lines())->toHaveCount(3);
+});
+
+it('N1-R10 — a machine that is not answering reaches the obstacle for it', function (): void {
+    // The half a single stand-in cannot show. Every screen behind a stack that
+    // answers is reachable already; the screens an operator actually meets on a
+    // bad evening are behind one that does not, and a build where those cannot
+    // be reached is a build where nobody has looked at them.
+    //
+    // Asserted at the obstacle rather than at the status, because the status is
+    // the stand-in's own output and proves only that it did what it was told.
+    // What matters is that the application's own reading of it — the one
+    // sentence `WhatARefusalMeant` makes — comes out different for the two.
+    $met = [];
+
+    foreach (AStandInStack::cases() as $machine) {
+        $met[$machine->value] = whatStoodInTheWayOf($machine);
+    }
+
+    expect($met[AStandInStack::Answering->value])->toBeNull()
+        ->and($met[AStandInStack::NotAnswering->value])->toBe(Obstacle::StackDidNotAnswer)
+        ->and($met[AStandInStack::RefusingTheSession->value])->toBe(Obstacle::CredentialWasRefused);
 });
 
 it('finds endpoints to ask about', function (): void {

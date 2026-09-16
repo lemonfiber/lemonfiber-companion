@@ -33,6 +33,12 @@ use Modules\Sdk\Api\PinnedClients;
  * client and hands the result on, so the count of files that can reach a stack
  * is still one — and the client it decorates was pinned before it got here.
  *
+ * **What it answers with depends on which machine it was handed.**
+ * {@see AStandInStack} holds three, and the two that refuse are the point:
+ * `N1-R10`'s screens are the ones an operator meets on a bad evening, and a
+ * build where only the working machine is reachable is a build where they are
+ * never looked at.
+ *
  * **Nothing can leave the device once it has.** Saloon answers a mocked request
  * from the mock and never opens a connection; a request with no matching entry
  * raises rather than falling through to the network. {@see
@@ -62,7 +68,13 @@ final readonly class ClientsThatReachNothing implements Reaching
         // to call. Saloon holds the mock on the connector and consults it
         // before the sender, so a request written after this line is answered
         // from the contract and the sender is never reached.
-        $client->connector()->withMockClient(WhatTheWireWouldAnswer::toEverything());
+        //
+        // Which machine it is decides what it answers with, and a stack this
+        // module has never heard of behaves as the working one —
+        // {@see AStandInStack} says why that, rather than a decision made here.
+        $client->connector()->withMockClient(
+            WhatTheWireWouldAnswer::asFarAs(AStandInStack::howAStackOfThisIdentityBehaves($stack->id())),
+        );
 
         return $client;
     }

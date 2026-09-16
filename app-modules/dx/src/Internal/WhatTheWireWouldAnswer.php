@@ -8,6 +8,7 @@ use function implode;
 use function json_encode;
 
 use Lemonfiber\Sdk\Contract\Api;
+use Modules\Dx\Api\AStandInStack;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -28,10 +29,17 @@ use Saloon\Http\PendingRequest;
  * has proved that the screen works. A screen that renders against this one has
  * proved that the screen, the reader and the shape agree.
  *
- * **Every answer is a success.** What a stack says when it is unhappy is a
- * separate affordance — the interesting failures are refusals with particular
- * shapes, not a blanket 500 — and mixing the two into one stand-in would make
- * neither inspectable. This one answers as a healthy stack does.
+ * **A machine that is not answering answers the same way about everything.**
+ * The status comes from {@see AStandInStack}, which holds one
+ * per machine rather than one per endpoint: a stack that is down is down for
+ * all of it, and a stand-in where `/api/status` failed and `/api/checks` did
+ * not would be a machine no operator has ever met.
+ *
+ * The body is built either way, and deliberately. `RequestFailed` carries what
+ * came back beside the status, so a refusal answering with a conforming
+ * envelope is the shape a real stack has when something in front of it refuses
+ * — and it means the reader is exercised on the failing path too, rather than
+ * only where it succeeds.
  */
 final readonly class WhatTheWireWouldAnswer
 {
@@ -72,11 +80,14 @@ final readonly class WhatTheWireWouldAnswer
      * where a screen wanted an envelope. A closure asked at the moment of the
      * request answers for paths nobody has written yet.
      */
-    public static function toEverything(): MockClient
+    public static function asFarAs(AStandInStack $machine): MockClient
     {
+        $status = $machine->answersWith();
+
         return new MockClient([
             '*' => static fn(PendingRequest $asked): MockResponse => self::to(
                 $asked->getRequest()->resolveEndpoint(),
+                $status,
             ),
         ]);
     }
@@ -91,15 +102,18 @@ final readonly class WhatTheWireWouldAnswer
      * path and not of the `log` kind: one `log` envelope is a perfectly good
      * single document, and it is `/api/logs` that sends many.
      */
-    public static function to(string $endpoint): MockResponse
+    public static function to(string $endpoint, int $status): MockResponse
     {
         if ($endpoint === Api::LOGS_ENDPOINT) {
-            return new MockResponse(self::aDocumentALine());
+            return new MockResponse(self::aDocumentALine(), $status);
         }
 
         $envelope = WhichEnvelopeAnEndpointAnswersWith::at($endpoint);
 
-        return new MockResponse(self::oneEnvelope($envelope === '' ? self::A_NAME_FOR_WORK : $envelope));
+        return new MockResponse(
+            self::oneEnvelope($envelope === '' ? self::A_NAME_FOR_WORK : $envelope),
+            $status,
+        );
     }
 
     /**
