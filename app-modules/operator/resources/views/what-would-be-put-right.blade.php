@@ -138,7 +138,12 @@
         <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
     @endunless
 
-    <x-operator::action label="{{ __('health.back_to_the_stack') }}" :goes="$this->goes()->health()" />
+    {{-- No way back of its own. The bar under this screen carries the machine's
+         four readings and *Health* is the way back to it, so a button here was
+         the same destination twice on one frame — and this screen already
+         offers an agreement, a retry and whatever a finished run left behind.
+         `ScreensSpeakToTheOperatorTest` reads the composed screen, which is why
+         removing it leaves the leaf still reachable. --}}
 </native:column>
 
 <x-operator::screen-closes :goes="$this->goes()" here="repairs" />

@@ -145,12 +145,17 @@
         <native:text>{{ __('updates.nothing_applied') }}</native:text>
     @endforelse
 
-    {{-- The way back, which every screen under a machine offers. A leaf a
-         person can enter and not leave is a dead end on a handset: the
-         platform's own gesture may be there, and a screen that counts on it
-         is a screen that works on one handset and traps somebody on
-         another. --}}
-    <x-operator::action label="{{ __('health.back_to_the_stack') }}" :goes="$this->goes()->health()" />
+    {{-- `N1-R27`: a screen an operator cannot ask again is a screen that relies
+         on being left and returned to, which is the one thing the requirement
+         names. It sat on the obstacle arm only — so a reading that failed could
+         be retried and a reading that came back could not, which is the wrong
+         way round: somebody watching a stuck download or an update land is
+         looking at a screen they want to ask again.
+
+         Last, under what it is about, for the health screen's reason: somebody
+         who has just changed something scrolls to the end of what they were
+         reading, and that is where they want to ask whether it took. --}}
+    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 @endif
 </native:column>
 @else

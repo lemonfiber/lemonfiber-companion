@@ -36,6 +36,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // N1-R2 — an operator away from the machine can see whether their stack is
 // doing what it should.
@@ -947,4 +948,24 @@ it('G4-R4 — a finding the core added nothing to carries no detail', function (
     // heading would draw *what the check reported* with nothing under it —
     // which reads as the app knowing something and not saying it.
     expect(aFindingRowFor(WhatItSaysUnderneath::none())->underneath)->toBe('');
+});
+
+it('N1-R2 — the findings reach the glass, not only the view model', function (): void {
+    // Every assertion above this one reads the view model, which is the right
+    // shape for asking what the screen decided and cannot answer what it drew.
+    // The findings are a list, and a list is drawn by walking a collection
+    // inside a component — the one part of a frame that no template rule sees,
+    // because `F3`, `F5` and `F10` all read Blade as text and a `@forelse` with
+    // nothing in it reads exactly like one with three rows.
+    //
+    // So the tree is rendered and asked. `F15` draws every screen the router
+    // serves and reaches this one behind a session it does not hold, so what it
+    // proves is that the frame is drawn at all; this is what proves the reading
+    // is on it.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
+
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__(Overall::Degraded->saidOnTheScreen()))
+        ->and($drawn->said())->toContain($screen->findings()[0]->title);
 });

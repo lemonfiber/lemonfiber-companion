@@ -60,6 +60,11 @@ const WHAT_A_COMPONENT_IS = [
     // a space.
     'divider' => false,
 
+    // A row that is the tap target for everything inside it. A control, and
+    // one with no label of its own — what it says is the state it is showing,
+    // so `F5` reaches it through `a11y-label` and nothing else.
+    'pressable' => true,
+
     'button' => true,
     'outlined-text-input' => true,
     // Tapped to go somewhere, which is the whole of what it is for.

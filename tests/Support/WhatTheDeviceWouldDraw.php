@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use function array_key_exists;
+use function in_array;
 use function is_array;
 use function is_string;
 
@@ -51,6 +52,33 @@ final readonly class WhatTheDeviceWouldDraw
 
     /** The prop a control carries its words on. */
     private const string LABELLED = 'label';
+
+    /**
+     * The prop a control with no visible words carries its name on.
+     *
+     * A tappable row says what it is *showing* and not what tapping it does, so
+     * the only name it has for a reader is the one `F5` insists on. Read last,
+     * after the two visible props: where a control has both, what is drawn is
+     * what somebody sees and is the better answer to *what does this frame
+     * say*.
+     *
+     * Underscored, because that is the prop the collector writes — the markup
+     * spells it `a11y-label` and the tree carries `a11y_label`, and reading the
+     * markup's spelling here finds nothing at all.
+     */
+    private const string NAMED_FOR_A_READER = 'a11y_label';
+
+    /**
+     * Every kind of node a person operates.
+     *
+     * A button and a tappable row. The second is not a lesser form of the
+     * first: a list of machines drawn as buttons is a column of identical
+     * filled bars, and `offers()` that counted only buttons would report a
+     * screen of rows as offering nothing at all — which is how a rule about
+     * what a frame leaves an operator comes to pass on a frame with nothing on
+     * it.
+     */
+    private const array OPERATED = ['button', 'pressable'];
 
     /** Where a screen's children hang. */
     private const string BENEATH = 'children';
@@ -112,7 +140,7 @@ final readonly class WhatTheDeviceWouldDraw
         $controls = [];
 
         foreach ($this->nodes as $node) {
-            if ($node['type'] === 'button') {
+            if (in_array($node['type'], self::OPERATED, strict: true)) {
                 $controls[] = $node['said'];
             }
         }
@@ -227,7 +255,7 @@ final readonly class WhatTheDeviceWouldDraw
             return '';
         }
 
-        foreach ([self::SAID, self::LABELLED] as $prop) {
+        foreach ([self::SAID, self::LABELLED, self::NAMED_FOR_A_READER] as $prop) {
             if (array_key_exists($prop, $props) && is_string($props[$prop]) && $props[$prop] !== '') {
                 return $props[$prop];
             }

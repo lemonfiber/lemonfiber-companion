@@ -91,26 +91,23 @@ it('N1-R35 — the first frame is registered, and it is this screen', function (
     expect($resolved['class'] ?? null)->toBe(YourStacks::class);
 });
 
-it('both roads out of the first frame lead somewhere that is served', function (): void {
+it('the road out of the first frame leads somewhere that is served', function (): void {
     // The first frame is the only one a device with nothing paired can reach,
-    // so these two buttons are the whole way forward. Asking the screen rather
-    // than spelling the paths here is deliberate: this asserts that what the
-    // screen hands the template resolves, which is the question a hand-spelled
+    // so this button is the whole way forward. Asking the screen rather than
+    // spelling the path here is deliberate: this asserts that what the screen
+    // hands the template resolves, which is the question a hand-spelled
     // expectation cannot ask — it would compare one spelling against another
     // and agree with itself while both pointed at nothing.
+    //
+    // One road rather than two, and the typed one is asserted where it is now
+    // offered: `PairingAStackByScanningTest` asks the scanning screen for it,
+    // and `F12`'s walk is what says a person can still get there from here.
     $screen = theLaunchScreen(StacksInMemory::holding());
 
     expect(NativeRouter::resolve($screen->scanningIsAt()))->not->toBeNull(
         'The camera road out of the first frame is not registered. An operator with '
         . 'no stack paired would tap it and stay where they are.',
     );
-
-    expect(NativeRouter::resolve($screen->typingIsAt()))->not->toBeNull(
-        'The typed road out of the first frame is not registered, leaving a handset '
-        . 'whose camera is refused or absent with no way to pair at all (`N4-R3`).',
-    );
-
-    expect($screen->scanningIsAt())->not->toBe($screen->typingIsAt());
 });
 
 it('N1-R7 — says which stacks are already signed into, so nobody retypes a password', function (): void {

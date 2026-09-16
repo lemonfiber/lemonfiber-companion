@@ -108,6 +108,11 @@ it('N2-R1 — the verdict a frame opens on is drawn, with its age', function ():
     // network round trip — which is the whole of what `N2-R1` asks for and what
     // `N1-R24` permits: it came out of a store, so it is retained, so it
     // carries when it was read.
+    // The machine is a row rather than a button, so its name is something the
+    // frame *says* and the way into it is what the frame *offers* — and a
+    // reader hears the second, which is why it is asserted by the name `F5`
+    // gave it rather than by the row's own words.
     expect($drawn->said())->toContain(__(Overall::Broken->saidOnTheScreen()))
-        ->and($drawn->offers())->toContain($stack->name()->shown());
+        ->and($drawn->said())->toContain($stack->name()->shown())
+        ->and($drawn->offers())->toContain(__('connection.open_stack', ['stack' => $stack->name()->shown()]));
 });

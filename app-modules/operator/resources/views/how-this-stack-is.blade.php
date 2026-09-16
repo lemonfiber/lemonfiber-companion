@@ -114,15 +114,26 @@
          where they want to ask whether it took. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 
-    {{-- N2-R11: what the house asked for, one tap from the machine it is
+    {{-- The three readings the bar under this screen does not carry.
+
+         `N2-R7`'s services, `N2-R4`'s repairs and `N2-R15`'s updates are three
+         of the bar's four items, and this screen used to repeat all three as
+         full-width buttons — the same destinations offered twice, once where
+         the platform draws navigation and once in the middle of the reading.
+         Seven controls under the findings, four of them leading somewhere the
+         bar already leads.
+
+         The bar is how a person moves between the readings of one machine.
+         These three are the readings it has no room for, and they stay.
+         {@see \Tests\Support\WhereAScreenCanSendYou} reads the bar as edges,
+         so `F12` is what says removing the other three stranded nothing — a
+         walk blind to the bar would have insisted they stay.
+
+         N2-R11: what the house asked for, one tap from the machine it is
          about. Here rather than on the list because requests belong to one
          stack and the list is about several — and an operator looking at a
          machine is already holding the question the household asks them. --}}
     <x-operator::action label="{{ __('household.asked_for') }}" :goes="$this->goes()->requests()" />
-
-    {{-- N2-R4: what this machine would put right, stated in full before
-         anybody is asked to agree to any of it. --}}
-    <x-operator::action label="{{ __('health.would_put_right') }}" :goes="$this->goes()->repairs()" />
 
     {{-- N2-R9: what stopped coming in. Reachable from the machine it is
          about rather than from the list, for the reason the requests button
@@ -130,20 +141,6 @@
          check and a household getting nothing are not a contradiction, so
          this cannot live under the verdict above. --}}
     <x-operator::action label="{{ __('health.what_stopped') }}" :goes="$this->goes()->stuck()" />
-
-    {{-- N2-R7: what this machine is running, and the three verbs about it.
-         Reachable from the machine rather than from the list, as the three
-         above are. It is not under the verdict either: every check can pass
-         on a machine where the one service somebody wants is switched off,
-         which is exactly the evening this screen is for. --}}
-    <x-operator::action label="{{ __('health.what_it_runs') }}" :goes="$this->goes()->services()" />
-
-    {{-- N2-R15: where this machine stands on being up to date. Beside what
-         it runs rather than under the verdict, for that one's reason turned
-         around: every check can pass on a machine with an update waiting,
-         and being out of date is not a finding — it is a decision somebody
-         makes on an evening they choose. --}}
-    <x-operator::action label="{{ __('updates.how_current') }}" :goes="$this->goes()->updates()" />
 
     {{-- N2-R21: what is running here that this machine never declared. The
          requirement asks for these to be reachable, and this is where from

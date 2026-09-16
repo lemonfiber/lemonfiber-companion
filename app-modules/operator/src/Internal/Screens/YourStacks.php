@@ -354,17 +354,17 @@ final class YourStacks extends NativeComponent
      * Read off {@see AScreenWithoutAStack} rather than spelled in the template, for the
      * reason every other route here is: the provider registers from the same
      * case, so a rename cannot leave this button pointing at nothing. On a
-     * first run these two are the only way out of this screen.
+     * first run it is the only way out of this screen.
+     *
+     * The typed road is not handed out here. `N1-R6` asks for both and does not
+     * ask for both on this screen: the scanning screen offers the keyboard
+     * beside the camera, which is where somebody is when the question is real,
+     * and two controls of equal weight side by side here is this screen asking
+     * an operator to choose an input method before they have decided to pair.
      */
     public function scanningIsAt(): string
     {
         return AScreenWithoutAStack::PairByScanning->value;
-    }
-
-    /** Where the typed road is, for a camera that is refused or absent. */
-    public function typingIsAt(): string
-    {
-        return AScreenWithoutAStack::PairByTyping->value;
     }
 
     /** What became of the last attempt to hand a report over. */
