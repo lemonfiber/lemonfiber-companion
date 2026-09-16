@@ -397,3 +397,20 @@ it('N3-R13 — an obstacle that is not a refused credential leaves the session a
         ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(theStackWhoseServiceIsRead()->id()))->toBeTrue();
 });
+
+it('hands the view the state its markup reads by name', function (): void {
+    // `native:model="looking"` expands to `:value="$looking"` — a bare variable
+    // in the compiled view — and `NativeComponent::fromView()` fills a view's
+    // data from a component's **public** properties. The search box's state is
+    // `protected`, deliberately, so the view was handed nothing and `$looking`
+    // was undefined on every frame.
+    //
+    // An undefined variable is a warning rather than a stop: the field drew
+    // empty and nothing anywhere said why. `F15` is what saw it, by drawing
+    // every screen the router serves — and this screen is only reached there
+    // behind a session, so the fact is pinned here as well, where the session
+    // is a line in a builder rather than a stand-in keychain.
+    $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+
+    expect($screen->render()->getData())->toHaveKey('looking');
+});
