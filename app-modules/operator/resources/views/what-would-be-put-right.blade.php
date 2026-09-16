@@ -103,7 +103,7 @@
                  rather than the old listing kept: the machine has just changed,
                  so what it would offer now is not necessarily what it offered
                  before. --}}
-            <x-operator::action label="{{ __('health.look_again') }}" tap="lookAgain()" />
+            <x-operator::quiet-action label="{{ __('health.look_again') }}" tap="lookAgain()" />
         @endif
     @else
         @forelse ($this->offer()->repairs as $repair)
@@ -132,6 +132,10 @@
                     tap="agreeTo('{{ $repair->answers }}')"
                 />
             </x-operator::entry>
+
+            @unless ($loop->last)
+                <native:divider />
+            @endunless
         @empty
             {{-- A stack with nothing to put right is the healthy case, and it is
                  told apart from a job that ended: there is nothing to fix, which
@@ -139,7 +143,11 @@
             <x-operator::emphasis>{{ __('health.nothing_to_put_right') }}</x-operator::emphasis>
         @endforelse
 
-        <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+        {{-- Quiet, under the yeses. Every repair above is a commitment and this
+             is not one of them: a bar that looks like a yes and re-reads the
+             machine is the control an operator taps when they meant the one
+             above it. --}}
+        <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
     @endunless
 
     {{-- No way back of its own. The bar under this screen carries the machine's
