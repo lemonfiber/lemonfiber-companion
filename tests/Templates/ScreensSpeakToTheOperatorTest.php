@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Tests\Support\Template;
-use Tests\Support\Tree;
 
 // F5, F6, F11 and L1 — the things a screen owes the person reading it.
 //
@@ -41,8 +40,30 @@ const WHAT_A_COMPONENT_IS = [
     'column' => false,
     'text' => false,
 
+    // The chrome's containers, for the same reason a column is furniture: a
+    // bar announced as a bar is a word between the reader and the title inside
+    // it, and a scroll view is a box the platform already describes by moving.
+    'top-bar' => false,
+    'top-bar-title' => false,
+    'scroll-view' => false,
+    'bottom-nav' => false,
+    // The platform's own grouped container and the group inside it. Both are
+    // boxes, and a box announced as a box is a word between the reader and
+    // what it holds — the same reason a column is furniture.
+    'list' => false,
+    'list-section' => false,
+
+    // A rule between two groups. Furniture by the same argument and one more:
+    // what a divider says is *these are not the same kind of thing*, and a
+    // reader who is being read to hears that from the order and the labels
+    // rather than from a line — announcing it would be a word standing in for
+    // a space.
+    'divider' => false,
+
     'button' => true,
     'outlined-text-input' => true,
+    // Tapped to go somewhere, which is the whole of what it is for.
+    'bottom-nav-item' => true,
 ];
 
 /**
@@ -58,7 +79,11 @@ foreach ($templates as $template) {
         $silent = [];
         $controls = 0;
 
-        foreach ($template->elements() as $element) {
+        // The composed screen, because a screen whose only control is the
+        // chrome's still reaches the operator with a control on it — and the
+        // floor below asks whether the operator has one, not which file it
+        // was typed in.
+        foreach ($template->composed()->elements() as $element) {
             if (! isAControl($element['tag'], $element['attributes'])) {
                 continue;
             }
@@ -76,10 +101,16 @@ foreach ($templates as $template) {
         // the operator a way off it, a way off is something that navigates, and
         // something that navigates is operated — so a screen this rule finds no
         // control on is a screen where the reading, not the screen, is wrong.
-        expect($controls)->toBeGreaterThan(0, sprintf(
-            '%s has no control this rule can see, so it read nothing here',
-            $template->path,
-        ));
+        // The floor is a screen's, not a component's. A heading owes the
+        // operator nothing to act on, and asking it for one fails a file this
+        // rule was never about — which is a rule claiming more than it
+        // enforces, pointed the other way.
+        if (! $template->isAComponent()) {
+            expect($controls)->toBeGreaterThan(0, sprintf(
+                '%s has no control this rule can see, so it read nothing here',
+                $template->path,
+            ));
+        }
 
         expect($silent)->toBe([], sprintf(
             "These controls are silent to a screen reader:\n  %s\n\n"
@@ -213,9 +244,29 @@ it('every screen offers a way off it', function (): void {
     $asked = 0;
 
     foreach (Template::all() as $template) {
+        // A component is not somewhere a person arrives, so it is not somewhere
+        // they can be stranded. The screens that stand in it are where this is
+        // answered.
+        if ($template->isAComponent()) {
+            continue;
+        }
+
         $asked++;
 
-        if (! str_contains((string) file_get_contents(Tree::at($template->path)), '@navigate=')) {
+        // The composed screen, not the file: a screen whose way off is in the
+        // chrome it stands in has a way off, and reading the file alone turns
+        // a correct refactor into a false failure.
+        // Three spellings, because a way off is three things here: the
+        // attribute a screen writes, the component that carries one, and the
+        // navigation item, which takes a `url` rather than a handler so the
+        // platform can own the selected state and the back gesture.
+        $said = $template->composedSource();
+
+        if (
+            ! str_contains($said, '@navigate=')
+            && ! str_contains($said, '<x-operator::action')
+            && ! str_contains($said, '<native:bottom-nav-item')
+        ) {
             $trapped[] = $template->path;
         }
     }
@@ -242,7 +293,12 @@ it('every screen under a machine offers a way back to it', function (): void {
     $trapped = [];
 
     foreach (whichTemplatesSitUnderAMachine() as $path => $said) {
-        if (! str_contains($said, 'goes()->health()')) {
+        // `->health()` rather than the whole `goes()->health()`, because the
+        // way back is now the chrome's and the chrome holds the destination as
+        // the argument it was handed — `$goes->health()`. What the rule is
+        // asking is whether the composed screen reaches the machine, not which
+        // of the two spellings it got there by.
+        if (! str_contains($said, '->health()')) {
             $trapped[] = $path;
         }
     }
@@ -277,9 +333,9 @@ function whichTemplatesSitUnderAMachine(): array
     $under = [];
 
     foreach (Template::all() as $template) {
-        $said = (string) file_get_contents(Tree::at($template->path));
+        $said = $template->composedSource();
 
-        if (! str_contains($said, '$this->stack()')) {
+        if (! str_contains($template->source, '$this->stack()')) {
             continue;
         }
 

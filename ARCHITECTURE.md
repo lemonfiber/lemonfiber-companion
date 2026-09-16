@@ -527,8 +527,8 @@ app-modules/<name>/
   resources/views/        the screens this module navigates to
   tests/                  mirroring src/, one directory level for one
 lang/<locale>/<module>.php   every sentence a person reads
-native/src/               the plugin's own PHP, held to the same bar (R4)
-native/tests/             its suite, which is a suite like any other (R4)
+bridge/src/               the plugin's own PHP, held to the same bar (R4)
+bridge/tests/             its suite, which is a suite like any other (R4)
 tests/Arch/               the rules
 tests/Templates/          Blade, which no analyser reads
 tests/Contract/           one suite per port, run against the adapter and the fake
@@ -546,6 +546,7 @@ phpstan/Rules/            the rules that are easier to write than to find
 | W4 | A module's tests are namespaced for that module | arch |
 | W5 | A file with no namespace imports no global name — the warning it raises fails the run silently | arch |
 | W6 | A source file declares one class, and it is the one its path names | arch: over the declarations of every file a class-name rule reads |
+| W7 | Every reader puts its envelope through the wire gate before reading the payload | arch: over the SDK module's own sources |
 
 **Why `W6` is not covered by the rule above it.** `Q-R66` asserts that a rule
 found subjects to judge, and that cures the three cases this repository has
@@ -600,13 +601,13 @@ fact — what is ours — and a copy that loses a tree loses it in the one way
 nothing reports: the rules resting on it keep passing, about the trees they
 still read.
 
-`native/src` is the case that made this a rule. It is production code, it ships
+`bridge/src` is the case that made this a rule. It is production code, it ships
 inside the application, and `phpunit.xml` holds it to the same 100% coverage
 floor as everything else — *being a package is not a reason to be held to a
 lower bar than the code that calls it*, as the comment beside it says. It was in
 the analyser's paths, the refactorer's paths and the architecture namespaces in
 none of them. A `time()`, an `Illuminate\Support\Facades\Cache::get()` and an
-`echo` planted in `native/src/Screen.php` made `composer analyse` report *No
+`echo` planted in `bridge/src/Screen.php` made `composer analyse` report *No
 errors*; a non-final class named `WindowManager` holding a mutable public static
 passed all 189 tests in the Arch suite. `bootstrap/Composition` was missing from
 the architecture namespaces for a different reason and cost the same thing, and

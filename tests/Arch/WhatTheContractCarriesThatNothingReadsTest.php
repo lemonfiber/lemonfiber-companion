@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Tree;
-use Tests\Support\WhatTheContractDeclares;
 use Tests\Support\WhatTheReadersRead;
 
 // N1-R17 — what the wire carries that this app does not read, and why.
@@ -335,13 +335,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'What became of a repair is read from its outcome, which says what happened rather '
             . 'than whether anything did. A boolean beside it is a second answer to one question, and '
             . '`N2-R4` has the app state what a repair did in the words the core produced.',
-    ],
-    [
-        'path' => 'StatusEnvelope.undeclared',
-        'because' => 'Containers the machine is running that this stack\'s own configuration does not '
-            . 'declare. Genuinely operator-facing — something is running here that is not part of your '
-            . 'stack — and no requirement in `N1` to `N4` asks the app to say so. Raise it against the '
-            . 'spec before reading it, which is `N1-R17`.',
     ],
     [
         'path' => 'StatusEnvelope.unsupported',

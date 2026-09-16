@@ -121,7 +121,17 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'member **may do** — `household.members[].access` has `administrator`, `disabled`, '
             . '`libraries`, `restriction` — and does not carry **who is asking**. That distinction '
             . 'is the row: an app holding the access list could read `administrator` and hide the '
-            . 'controls, and hiding them is exactly what `N3-R3` refuses to let anything rest on.',
+            . "controls, and hiding them is exactly what `N3-R3` refuses to let anything rest on.\n\n"
+            . 'Three more wait on it and are named here so the day this closes names all six. '
+            . '`N3-R6` has a member\'s own requests carry their state in household terms, and '
+            . '*their own* is the part with nothing behind it — the app reads every member\'s '
+            . 'requests for the operator already (`N2-R11`), and cannot tell whose is whose. '
+            . '`N3-R9` is the one of the six that **is** answered, ahead of the module existing, '
+            . 'by refusing a member-facing type that holds an operator\'s — and it is named here '
+            . 'so nobody reads its absence from this list as an oversight. `N3-R10` is answered in '
+            . 'half: a member is not shown the fault, which is a rule about types and is kept, and '
+            . 'is not yet told that it did not work and that the operator has been told, which '
+            . 'needs somebody to tell.',
     ],
     [
         'requirement' => 'N3-R3',

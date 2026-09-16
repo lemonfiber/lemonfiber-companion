@@ -66,6 +66,17 @@ final readonly class PlatformStacks implements Stacks
     /** The shape this build writes, and the only one it reads (`N1-R32`). */
     private const int SHAPE = 1;
 
+    /**
+     * What the record holds once every pairing has been forgotten.
+     *
+     * The store keeps the key and writes an empty list into it, so a device
+     * that has been unpaired answers `Found` with something in it. Named rather
+     * than compared against inline: `D4` refuses a value checked against a
+     * literal, and the reason applies here — this is the encoding's word for
+     * empty, and it belongs beside the encoding.
+     */
+    private const string NOTHING_WRITTEN_DOWN = '[]';
+
     public function __construct(private Platform $store) {}
 
     public function configured(): Configured
@@ -77,6 +88,24 @@ final readonly class PlatformStacks implements Stacks
         }
 
         return $this->read($held->value ?? '');
+    }
+
+    /**
+     * Whether the record exists and holds something, without reading what.
+     *
+     * The status and the emptiness of the value, and nothing parsed: a shut app
+     * asking this has asked whether there is anything behind its lock, and
+     * decoding the pairings to answer would be the reading `N4-R19` puts the
+     * lock in front of.
+     */
+    public function holdsAny(): bool
+    {
+        $held = $this->store->read(self::UNDER);
+
+        return $held->status === SecureStorageStatus::Found
+            && $held->value !== null
+            && $held->value !== ''
+            && $held->value !== self::NOTHING_WRITTEN_DOWN;
     }
 
     public function remember(Stack $stack): Remembered

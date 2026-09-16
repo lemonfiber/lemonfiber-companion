@@ -31,6 +31,25 @@ enum Kind: string
     case Adapter = 'adapter';
 
     /**
+     * Takes the place of an adapter while somebody is working on the app.
+     *
+     * Its own kind because it fits none of the five above and the difference
+     * matters in every direction. It names other adapters, which an adapter may
+     * not; it names the outside vocabulary, which only the one adapter that
+     * owns each may; and it is absent from a release, which none of the others
+     * is. Calling it an adapter would have been the easy answer and would have
+     * meant either widening what every adapter may reach, or a pile of
+     * exceptions carrying this module's name.
+     *
+     * **What earns it those permissions is that nothing ships it.** A module of
+     * this kind is installed under `require-dev`, so its provider is not
+     * discovered in a release and its classes are not in the bundle. `N1-R61`
+     * rests on that absence: there is no setting to get wrong, because there is
+     * nothing there to switch on.
+     */
+    case StandIn = 'stand-in';
+
+    /**
      * Vendor namespaces a module of this kind may never name.
      *
      * `Lemonfiber\Sdk` is absent from the adapter list on purpose: the sdk
@@ -61,7 +80,12 @@ enum Kind: string
                 'GuzzleHttp',
             ],
             // Knows exactly one outside thing, which its own manifest declares.
-            self::Adapter => [],
+            //
+            // A stand-in names the outside vocabulary for the opposite reason
+            // an adapter does — to put something in front of it rather than to
+            // reach it — and `N1-R20` is what actually keeps the socket shut:
+            // exactly one file may build a transport, whatever else names one.
+            self::Adapter, self::StandIn => [],
         };
     }
 
@@ -76,6 +100,12 @@ enum Kind: string
             self::Kernel => [],
             self::Capability, self::Adapter, self::Design => [self::Kernel],
             self::Surface => [self::Kernel, self::Design, self::Capability],
+            // The adapters too, because standing in for one means holding the
+            // real one: the stand-in asks it for what it would have built and
+            // replaces only the part that reaches outside. Building its own
+            // instead would put a second constructor for the outside thing in
+            // this repository, which is the one thing `N1-R20` refuses.
+            self::StandIn => [self::Kernel, self::Adapter],
         };
     }
 
@@ -105,8 +135,9 @@ enum Kind: string
             self::Kernel, self::Capability, self::Surface => 100,
             // A component holds state and an adapter forwards a call. Mutating
             // either measures the fake rather than the application, which is a
-            // number that looks like rigour and is not.
-            self::Design, self::Adapter => 0,
+            // number that looks like rigour and is not. A stand-in is a fake by
+            // construction, so the argument is the same one twice over.
+            self::Design, self::Adapter, self::StandIn => 0,
         };
     }
 

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use function class_exists;
+
+use Modules\Dx\Internal\WhatTheContractDeclares;
+
 use function preg_match;
 
 use ReflectionClass;

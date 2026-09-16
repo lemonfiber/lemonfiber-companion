@@ -15,14 +15,14 @@ use Tests\Support\Tree;
 // copy that loses a tree loses it in the one way nothing reports: every rule
 // resting on it keeps passing, about the trees it still reads.
 //
-// That is not a worry. It was the state of this repository. `native/src` is
+// That is not a worry. It was the state of this repository. `bridge/src` is
 // production code, ships inside the application, and is held to the same 100%
 // coverage floor as everything else — `phpunit.xml` says so in as many words,
 // *being a package is not a reason to be held to a lower bar than the code that
 // calls it* — and it was in the analyser's paths, the refactorer's paths and
 // the architecture namespaces in exactly none of them. `time()`, an
 // `Illuminate\Support\Facades\Cache::get()` and an `echo` planted in
-// `native/src/Screen.php` made `composer analyse` report *No errors*; a
+// `bridge/src/Screen.php` made `composer analyse` report *No errors*; a
 // non-final `WindowManager` holding a mutable public static passed all 189 Arch
 // tests. `bootstrap/Composition` was outside the architecture namespaces for a
 // different reason and cost the same thing, and `App` was inside them,
@@ -214,7 +214,7 @@ it('R4 — the refactorer reads them too', function (): void {
 it('R4 — an exemption for the tests names every place tests live', function (): void {
     // This repository keeps its tests in three homes: the root suites under
     // `tests/`, each module's own under `app-modules/<name>/tests`, and the
-    // plugin's under `native/tests`. All three are testsuites in `phpunit.xml`
+    // plugin's under `bridge/tests`. All three are testsuites in `phpunit.xml`
     // and all three are analysed.
     //
     // An exemption naming some of them holds the rest to the rules written for
@@ -304,4 +304,77 @@ function namesSomethingIn(string $directory): bool
     }
 
     return false;
+}
+
+it('R4 — every tree the scanner is pointed at is on disk', function (): void {
+    // `sonar-project.properties` names its trees in a file no other rule here
+    // reads, and the scanner refuses to start on one that is not there:
+    //
+    //     ERROR Invalid value of sonar.sources
+    //     ERROR The folder 'native/src' does not exist
+    //
+    // Which makes it the same failure shape as an analyser that will not
+    // bootstrap — one red job, nothing measured, and a summary saying `Q-R64`
+    // was not enforced on that run. A directory rename caught every reader in
+    // PHP, XML, YAML and neon and missed this one, because a `.properties` file
+    // was in nobody's pattern.
+    //
+    // Both keys, because the exclusions are as able to name a tree that moved
+    // as the sources are — and an exclusion matching nothing is the quieter
+    // half: it does not fail the scan, it just stops excluding whatever it was
+    // written to exclude.
+    //
+    // What is asked is whether the fixed part of each entry is there, not
+    // whether the pattern matches a file. `bootstrap/cache/**` matches nothing
+    // in a fresh checkout because the directory is generated and its contents
+    // are ignored, and a rule that failed on that would be red on CI and green
+    // on every machine that has run a build — which is the disagreement
+    // `phpstan.neon`'s own exclusion of `config/nativephp.php` is written
+    // against. A moved directory shows up in the fixed part either way: that is
+    // the whole of what `native/tests/**` became wrong about.
+    $properties = file_get_contents(Tree::at('sonar-project.properties'));
+
+    expect($properties)->toBeString('sonar-project.properties could not be read, so nothing below was checked.');
+
+    $missing = [];
+
+    foreach (['sonar.sources', 'sonar.exclusions'] as $key) {
+        if (preg_match(sprintf('/^%s=(.*)$/m', preg_quote($key, '/')), (string) $properties, $said) !== 1) {
+            continue;
+        }
+
+        foreach (explode(',', trim($said[1])) as $tree) {
+            $tree = trim($tree);
+
+            if ($tree === '' || file_exists(Tree::at(theFixedPartOf($tree)))) {
+                continue;
+            }
+
+            $missing[] = sprintf('%s: %s', $key, $tree);
+        }
+    }
+
+    expect($missing)->toBe([], sprintf(
+        "sonar-project.properties names these and nothing on disk matches:\n  %s\n\n"
+        . 'A source tree that is not there stops the scanner starting, so the run '
+        . "measures nothing and reports that `Q-R64` was not enforced.\nAn exclusion "
+        . 'that matches nothing is quieter and still wrong: it excludes whatever it '
+        . 'was written to exclude, which is now something else (R4).',
+        implode("\n  ", $missing),
+    ));
+});
+
+/**
+ * The part of a glob before its first wildcard, which is the part a rename breaks.
+ *
+ * `native/tests/**` is wrong after the directory moves and `bootstrap/cache/**`
+ * is right while empty, and the difference between them is entirely in the text
+ * before the `*`. Asking a glob to match instead conflates *this path is gone*
+ * with *this path holds nothing today*.
+ */
+function theFixedPartOf(string $pattern): string
+{
+    $at = strpos($pattern, '*');
+
+    return rtrim($at === false ? $pattern : substr($pattern, 0, $at), '/');
 }

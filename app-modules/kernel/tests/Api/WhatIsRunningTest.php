@@ -12,6 +12,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
@@ -63,7 +64,7 @@ it('N2-R7 — a listing takes the arm that renders rows', function (): void {
         aServiceThatIsRunning(),
     );
 
-    expect(whatCameBackAboutWhatRuns(WhatIsRunning::these($daemons)))->toBe('1 running');
+    expect(whatCameBackAboutWhatRuns(WhatIsRunning::these($daemons, WhatElseIsRunning::nothing())))->toBe('1 running');
 });
 
 it('a stack running nothing is an answer and not a gap', function (): void {
@@ -71,7 +72,7 @@ it('a stack running nothing is an answer and not a gap', function (): void {
     // thing to do is start something. It must not fold together with *this
     // phone cannot reach the machine*, which looks identical on a screen and
     // means the opposite.
-    expect(whatCameBackAboutWhatRuns(WhatIsRunning::these(Daemons::none(whatTheRunningVerbsCostHere()))))->toBe('0 running');
+    expect(whatCameBackAboutWhatRuns(WhatIsRunning::these(Daemons::none(whatTheRunningVerbsCostHere()), WhatElseIsRunning::nothing())))->toBe('0 running');
 });
 
 it('N1-R10 — an obstacle takes the other arm, carrying which one it was', function (): void {

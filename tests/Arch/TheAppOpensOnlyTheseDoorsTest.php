@@ -72,6 +72,18 @@ const DOORS_THE_APP_OPENS = [
     // composed by `Api::action()` from a `WhatToDoWithIt` case, which is a
     // closed set this app cannot add a name to at a call site.
     'act' => 'asks for one of the three verbs `N2-R7` names, by a name the rule below holds it to',
+
+    // The one door that does nothing to anybody's machine: it hands back the
+    // client's own transport. Opened in exactly one place and for the opposite
+    // of the usual reason — `Modules\Dx\Api\ClientsThatReachNothing` takes the
+    // transport to put a mock under it, so that a build somebody is looking at
+    // answers every screen without a stack and without a socket.
+    //
+    // Listed rather than exempted, because `N1-R4` is about what this app *can*
+    // do and reaching a client's transport is a real capability. What bounds it
+    // is `N1-R20`: the transport can be taken but not built, and a request
+    // written through it still carries the pin that stack was introduced under.
+    'connector' => 'takes the client\'s own transport, so a stand-in can answer from the contract instead of the network',
 ];
 
 /** Every verb this application can ask a stack for, and why that one. */

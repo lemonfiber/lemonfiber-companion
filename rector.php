@@ -6,6 +6,7 @@ use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstCl
 use Rector\Config\RectorConfig;
 use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
 use Rector\Privatization\Rector\Property\PrivatizeFinalClassPropertyRector;
+use Rector\TypeDeclaration\Rector\ClassMethod\NarrowObjectReturnTypeRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -18,10 +19,10 @@ return RectorConfig::configure()
         __DIR__ . '/routes',
         __DIR__ . '/tests',
         // The plugin's own PHP. A path package rather than a module, so the
-        // entry above does not reach it — and `phpunit.xml` holds `native/src`
+        // entry above does not reach it — and `phpunit.xml` holds `bridge/src`
         // to the same coverage floor as everything else. `R4` compares the two
         // lists so a tree cannot be in one and not the other again.
-        __DIR__ . '/native',
+        __DIR__ . '/bridge',
     ])
     ->withPhpSets()
     ->withPreparedSets(
@@ -58,6 +59,11 @@ return RectorConfig::configure()
     // nine tests in `PairingAStackByScanningTest` fail. Scoped to the screens,
     // because everywhere else in a final class the rule is right and stays on.
     ->withSkip([
+        // Published by `native:install` rather than written here, and ignored by
+        // git — absent in CI and present on every machine that has run a build.
+        // Refactoring it would rewrite a file the next install overwrites, and
+        // leaving it in makes this gate red locally and green on CI.
+        __DIR__ . '/config/nativephp.php',
         StringClassNameToClassConstantRector::class => [__DIR__ . '/tests/Arch'],
         ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [__DIR__ . '/tests/Contract'],
         // Globbed rather than named, because `household` is a surface too and a
@@ -66,6 +72,23 @@ return RectorConfig::configure()
         // expansion happens here, where a surface added tomorrow is covered
         // without anybody remembering this file.
         PrivatizeFinalClassPropertyRector::class => (array) glob(__DIR__ . '/app-modules/*/src/Internal/Screens'),
+        // Two gates want opposite things here and `N1-R20` is the one that wins.
+        //
+        // The method answers `object` because that is what the `Reaching` port
+        // promises, and rector is right that the body only ever produces an SDK
+        // client — everywhere else. Here, narrowing means writing
+        // `Lemonfiber\Sdk\Client` into the file, and that name is precisely
+        // what `NothingReachesAStackUnpinnedTest` reads to decide a file can
+        // open a connection to a stack. The whole argument for this class is
+        // that it cannot: it asks `PinnedClients` for a client and puts a mock
+        // under it, and it builds no transport of its own.
+        //
+        // So the type stays wide and the reason is written twice — once in the
+        // method's own docblock, where somebody narrowing it by hand will read
+        // it, and once here, where the tool that would do it automatically is
+        // told not to. A style rule and a trust model disagreed; the trust
+        // model is not the one to bend.
+        NarrowObjectReturnTypeRector::class => [__DIR__ . '/app-modules/dx/src/Api/ClientsThatReachNothing.php'],
     ])
     ->withImportNames(importShortClasses: false)
     ->withCache(__DIR__ . '/.rector-cache');

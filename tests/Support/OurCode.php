@@ -200,7 +200,7 @@ final readonly class OurCode
      * Every PHP file in a tree the coverage floor measures.
      *
      * The production half of {@see phpFiles()}, for the rules that are about
-     * what the application does rather than about how it is written. `native/src`
+     * what the application does rather than about how it is written. `bridge/src`
      * and `bootstrap/Composition` are both in here and were in neither of the
      * two lists that asked this question before.
      *

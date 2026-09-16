@@ -108,3 +108,44 @@ it('the fake refuses for whichever reason it was given', function (): void {
         ->toBe(WhyAStackCannotBeRemembered::DeviceHasNoSecureStorage->value)
         ->and($refusing->configured()->isEmpty())->toBeTrue();
 });
+
+// `N4-R22`, `N4-R23` — whether the device holds a pairing, asked of the store.
+//
+// In the contract rather than in the adapter's own tests, because the whole
+// point of the method is that two implementations agree: `Opening` asks it
+// before a lock, every screen test asks the fake, and a fake that answered more
+// readily than the platform would put the prompt in front of a first run on a
+// device and never in a test.
+
+it('N4-R22 — says a device holding nothing holds nothing', function (Stacks $stacks): void {
+    expect($stacks->holdsAny())->toBeFalse();
+})->with('every stacks implementation');
+
+it('N4-R23 — says a device holds one the moment the store does', function (Stacks $stacks): void {
+    $stacks->remember(aStackCalled('The loft'));
+
+    expect($stacks->holdsAny())->toBeTrue();
+})->with('every stacks implementation');
+
+it('N4-R23 — never disagrees with the record it is asked about', function (Stacks $stacks): void {
+    // The property, rather than the two answers above restated. `N4-R23` asks
+    // for the store itself rather than a flag, and the way a flag goes wrong is
+    // not by being absent — it is by being right until something forgets to
+    // maintain it, which is a disagreement between these two and nothing else.
+    expect($stacks->holdsAny())->toBe(! $stacks->configured()->isEmpty());
+
+    $stacks->remember(aStackCalled('The loft'));
+
+    expect($stacks->holdsAny())->toBe(! $stacks->configured()->isEmpty());
+})->with('every stacks implementation');
+
+it('N4-R22 — reads a record written down as empty as holding nothing', function (): void {
+    // The adapter's own, because it is about an encoding the fake does not
+    // have: a store can hold the record and the record can be the empty list —
+    // a device that paired a machine and then forgot it. A status check alone
+    // reads that as *holds something*, which is a lock in front of nothing.
+    $store = APlatformStore::working();
+    $store->set('stacks', '[]');
+
+    expect(new PlatformStacks($store)->holdsAny())->toBeFalse();
+});

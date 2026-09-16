@@ -1,0 +1,138 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * Every step of a build must be asked the same question about development
+ * dependencies.
+ *
+ * NativePHP assembles a bundle in three steps. Both platform lanes decide
+ * whether to install development dependencies from the build type — debug keeps
+ * them, release does not — and the dump that follows is not asked at all: it
+ * passes no flag, so it always keeps `autoload-dev`.
+ *
+ * That disagreement is a fatal on a release build. The install has dropped the
+ * development packages and the dump writes an authoritative classmap that
+ * expects them, so package discovery registers a provider the classmap was
+ * built without:
+ *
+ *     Class "…\Collision\Adapters\Laravel\CollisionServiceProvider" not found
+ *
+ * `PHPBridge` then reports an empty response, so the first frame never renders
+ * and the app returns to the launcher without saying anything. Every suite is
+ * green when that happens, because no suite builds a bundle.
+ *
+ * So the dump is asked the same question the install was, from the same
+ * variable, in the same method. A debug build keeps its development
+ * dependencies through all three steps and a release build drops them through
+ * all three — which is what lets a stand-in for a stack reach a handset while
+ * being absent from anything shipped (`N1-R57`, `N1-R61`).
+ *
+ * **What the bundle removes is the other half of this, and it is not patched
+ * here.** The cleanup drops `tests` at any depth, so an autoloader entry
+ * pointing into it is a file that is gone by the time anything reads it. Only
+ * `autoload-dev.files` is `require`d unconditionally at boot, so that is the
+ * entry this application must not have — see {@see \Tests\Support\Rules},
+ * which is a class for exactly that reason. A classmap entry naming a dropped
+ * file is inert until something autoloads it, and on a device nothing does.
+ *
+ * Run from `post-install-cmd` and `post-update-cmd`, so it survives the next
+ * `composer install` rather than being a thing somebody remembers. It refuses
+ * to be a no-op: an edit that matches nothing is the failure this repository
+ * keeps finding in its own rules, and a silent one here would mean the device
+ * fatal came back with the patch still in the tree looking applied.
+ */
+
+/**
+ * Every line this rewrites, and what it becomes.
+ *
+ * A list rather than a map keyed by file, so that two edits to one file stay
+ * expressible. Each entry names its own file for the same reason the refusal
+ * does: a patch that cannot say *which* line moved sends the reader to search
+ * a package for it.
+ */
+const WHAT_THIS_REWRITES = [
+    [
+        // A bundle carrying development dependencies is a bigger bundle, and
+        // the copy that assembles it passes no timeout of its own — so it takes
+        // Laravel's default sixty seconds, which a debug build exceeds. Sixty
+        // seconds is a budget rather than a correctness property, and what it
+        // produces when it runs out is an rsync killed halfway: a partial tree,
+        // a build that fails somewhere later, and nothing saying the copy is
+        // what ended.
+        'in' => '/../vendor/nativephp/mobile/src/Support/BundleFileManager.php',
+        'ships' => <<<'SHIPS'
+        $result = Process::run("rsync -a --copy-links {$excludeFlags} \"{$source}/\" \"{$destination}/\"");
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        $result = Process::timeout(600)->run("rsync -a --copy-links {$excludeFlags} \"{$source}/\" \"{$destination}/\"");
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/src/Concerns/PreparesBuild.php',
+        // The closing marker sits at column zero so that nothing is stripped:
+        // PHP removes the marker's own indentation from every line of a
+        // heredoc, and these lines have to arrive with the twelve, sixteen and
+        // twenty spaces the package wrote them with or the match is a match
+        // against text that exists nowhere.
+        'ships' => <<<'SHIPS'
+            $this->components->task('Optimizing autoloader', function () use ($tempDir) {
+                $result = Process::path($tempDir)
+                    ->timeout(60)
+                    ->run('composer dump-autoload --optimize --classmap-authoritative');
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            $this->components->task('Optimizing autoloader', function () use ($tempDir, $excludeDevDependencies) {
+                $result = Process::path($tempDir)
+                    ->timeout(60)
+                    ->run('composer dump-autoload --optimize --classmap-authoritative'.($excludeDevDependencies ? ' --no-dev' : ''));
+BECOMES,
+    ],
+];
+
+/**
+ * What to do when a line this patch rewrites is not where it was.
+ *
+ * One literal rather than several joined, because a join between two literals
+ * is three mutants — drop either, swap them — and nothing asserts this sentence
+ * word for word.
+ */
+const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites is not in %s.\n\nEither the package fixed it, in which case delete that entry — and if it was the last one, this script and the two `composer.json` hooks that call it — or it moved, in which case a build is fatalling on a device again and nothing said so. Do not ignore this.\n";
+
+$rewritten = 0;
+
+foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => $becomes]) {
+    $path = sprintf('%s%s', __DIR__, $where);
+
+    if (! file_exists($path)) {
+        fwrite(STDERR, sprintf("patch_nativephp: %s is not there; nothing to patch.\n", $path));
+
+        continue;
+    }
+
+    $source = file_get_contents($path);
+
+    if (! is_string($source)) {
+        fwrite(STDERR, sprintf("patch_nativephp: could not read %s.\n", $path));
+
+        exit(1);
+    }
+
+    if (str_contains($source, $becomes)) {
+        continue;
+    }
+
+    if (! str_contains($source, $ships)) {
+        fwrite(STDERR, sprintf(WHEN_THE_LINE_HAS_MOVED, $path));
+
+        exit(1);
+    }
+
+    file_put_contents($path, str_replace($ships, $becomes, $source));
+
+    $rewritten++;
+}
+
+if ($rewritten > 0) {
+    fwrite(STDOUT, sprintf("patch_nativephp: %d build step(s) now ask the same question about dev dependencies.\n", $rewritten));
+}

@@ -86,7 +86,7 @@ function helpersByName(): array
  *
  * Read as a call rather than as text, because `assert` followed by a capital is
  * not PHPUnit's alone. `FakeBridge::assertCalled()` is the NativePHP plugin's
- * own vocabulary and `native/tests/ScreenTest.php` writes three of them; a
+ * own vocabulary and `bridge/tests/ScreenTest.php` writes three of them; a
  * pattern that cannot tell the two apart refuses a package's API under a rule
  * about which idiom this suite writes its own assertions in.
  *
@@ -161,7 +161,7 @@ it('G5 — a test asserts one way', function (): void {
 it('G5 — the reading tells PHPUnit\'s assertion from somebody else\'s method', function (): void {
     // The judgement, handed both shapes. A rule that answered yes to everything
     // spelled `assert` would pass the file above just as well, and that is the
-    // reading this one replaced: `native/tests/ScreenTest.php` calls
+    // reading this one replaced: `bridge/tests/ScreenTest.php` calls
     // `assertCalled()` on the plugin's fake bridge three times, which is the
     // package's API rather than a second assertion idiom.
     expect(callsAPhpunitAssertion('<?php assertSame(1, 2);'))->toBeTrue()

@@ -90,7 +90,7 @@ final readonly class Manifests
     public static function localNetworkPurpose(): string
     {
         $manifest = json_decode(
-            (string) file_get_contents(sprintf('%s/native/nativephp.json', Tree::root())),
+            (string) file_get_contents(sprintf('%s/bridge/nativephp.json', Tree::root())),
             associative: true,
         );
 

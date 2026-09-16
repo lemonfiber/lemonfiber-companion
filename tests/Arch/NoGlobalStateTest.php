@@ -56,7 +56,7 @@ it('A6/I1 — nor a static variable inside a method', function (): void {
     $sources = [
         ...Tree::filesUnder(Tree::at('app-modules'), '.php'),
         ...Tree::filesUnder(Tree::at('bootstrap'), '.php'),
-        ...Tree::filesUnder(Tree::at('native/src'), '.php'),
+        ...Tree::filesUnder(Tree::at('bridge/src'), '.php'),
     ];
 
     foreach ($sources as $path) {

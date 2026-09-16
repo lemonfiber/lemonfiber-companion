@@ -11,7 +11,7 @@ the surface says who is asking.
 session, and the `admission` envelope says what the session is — `{token,
 until}` — and not who holds it. Every caller carrying it is the operator.
 
-That takes three requirements at once:
+That takes three requirements at once, and holds three more behind them:
 
 | | |
 |---|---|
@@ -35,7 +35,21 @@ right and is not, which is worse than the empty directory.
 `N3-R4` and `N3-R5` are held on the same shelf for a narrower reason: nothing on
 the wire says what a member has left of an allowance or when it resets.
 
-All five are in `tests/Arch/WhatTheContractDoesNotCarryTest.php`, which reads
+**Three more wait on the same subject, and are named so the day it arrives names
+all of them.** `N3-R6` has a member's own requests carry their state in
+household terms — the app already reads every member's requests for the operator
+(`N2-R11`) and cannot tell whose is whose, so *their own* is the half with
+nothing behind it. `N3-R10` is answered in half: a member is not shown the fault,
+which is a rule about types and is kept in
+`tests/Feature/WhatAMemberIsNeverShownTest.php`, and is not yet told that it did
+not work and that the operator has been told, which needs somebody to tell.
+
+`N3-R9` is the exception and is answered now rather than waiting: that suite
+refuses a member-facing type that holds an operator's, written **before** the
+module exists on purpose. A rule added afterwards is a rule written around
+whatever is already there.
+
+All of them are in `tests/Arch/WhatTheContractDoesNotCarryTest.php`, which reads
 the generated contract and **fails the day any of them arrives** — so this
 paragraph stops being true in a run rather than in somebody's memory.
 

@@ -78,7 +78,10 @@ final readonly class Supervisors implements Supervising
             // {@see Stalls::stoppedOn()} makes. A payload the client fetched
             // and this side could not read is the same thing to an operator as
             // one that never arrived.
-            return WhatIsRunning::these(Rosters::in($envelope));
+            return WhatIsRunning::these(
+                Rosters::in($envelope),
+                Rosters::whatElseIsRunning($envelope),
+            );
         } catch (RequestFailed $why) {
             return WhatIsRunning::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|RosterIsUnreadable) {

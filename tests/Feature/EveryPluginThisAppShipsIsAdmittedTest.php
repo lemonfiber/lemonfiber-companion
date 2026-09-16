@@ -16,7 +16,7 @@ use Native\Mobile\Plugins\PluginRegistry;
 // and binds; its Kotlin and Swift are collected by the plugin compilers, which
 // read the allow-list. Every test passes either way.
 //
-// This application shipped in that state. `lemonfiber/native` carries the window
+// This application shipped in that state. `lemonfiber/bridge` carries the window
 // protection N4-R18 needs and the device authentication N4-R8 needs, and
 // `nativephp/mobile-local-notifications` is what `Modules\Device\Api\
 // PlatformNotifier` is written against. Neither was being discovered.
@@ -75,7 +75,7 @@ it('admits our own expansion, whose bridge functions are the two requirements', 
     // a list that stays green after somebody swaps an entry, and the entry that
     // matters here is the one carrying Lemonfiber.Conceal and
     // Lemonfiber.Authenticate.
-    $found = app(PluginRegistry::class)->find('lemonfiber/native');
+    $found = app(PluginRegistry::class)->find('lemonfiber/bridge');
 
     expect($found)->toBeInstanceOf(Plugin::class)
         ->and($found instanceof Plugin && $found->hasAndroidCode())->toBeTrue()

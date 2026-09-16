@@ -23,6 +23,16 @@ use Tests\Support\Tree;
 // seventy-seven of them in this repository are fine and were left alone. The
 // rule is narrow on purpose: only a file with no namespace of its own, which in
 // practice means every Pest test file.
+//
+// **All three spellings, because PHP warns about all three.** `use Closure;`,
+// `use function sprintf;` and `use const PHP_EOL;` are the same statement about
+// three kinds of name, and a non-compound one in a global-namespace file has no
+// effect in every case. This rule read only the first for a while and said it
+// covered the problem, which is worse than not having looked: a file importing
+// `expect`, `implode`, `it` and `sprintf` sat under a green rule until the
+// parallel runner — the one runner that raises the warning as an error — went
+// red with no message. A rule that names a failure and catches one spelling of
+// it is a rule that stops anybody looking for the other two.
 
 it('W5 — no import in a global-namespace file says nothing', function (): void {
     $offenders = [];
@@ -38,7 +48,10 @@ it('W5 — no import in a global-namespace file says nothing', function (): void
             continue;
         }
 
-        if (preg_match_all('/^use\s+(?!function\s|const\s)([A-Za-z_][A-Za-z0-9_]*)\s*;/m', $said, $found) !== 0) {
+        // `function` and `const` optional rather than excluded. A compound
+        // name cannot match either way: the name part stops at the first
+        // backslash and the `;` that follows it is not there.
+        if (preg_match_all('/^use\s+(?:function\s+|const\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*;/m', $said, $found) !== 0) {
             foreach ($found[1] as $name) {
                 $offenders[] = sprintf(
                     '%s imports %s into the namespace it is already in',

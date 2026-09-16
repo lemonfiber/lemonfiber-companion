@@ -45,11 +45,11 @@ parameters:
         - tests
         # The plugin's own PHP and its tests. It is a path package rather than a
         # module, so `app-modules` does not reach it and neither did this list —
-        # while `phpunit.xml` holds `native/src` to the same coverage floor as
+        # while `phpunit.xml` holds `bridge/src` to the same coverage floor as
         # everything else and says in as many words that being a package is not
         # a reason to be held to a lower bar. `R4` is what keeps the two lists
         # saying the same thing.
-        - native
+        - bridge
 
     # A Blade template is a `.php` file by extension and is not PHP the
     # analyser can read: it is a tree of `native:` tags compiled by EDGE at
@@ -59,6 +59,19 @@ parameters:
     # way anything can.
     excludePaths:
         - */resources/views/*.blade.php
+        # Published by `native:install` rather than written here, and ignored by
+        # git — so it is absent in CI and present on every machine that has run
+        # a build. Analysed, the two disagree: a gate that answers differently
+        # on two machines is read as noise, and then so is the next one.
+        #
+        # `(?)` marks it as a path that may not be there, and it is load-bearing
+        # rather than tidy. Without it the analyser does not skip the file, it
+        # refuses to start — and a bootstrap failure is not one red rule, it is
+        # every rule reporting nothing. That takes `composer analyse` and the
+        # guards suite down together, and the second of those fails saying the
+        # analyser produced no readable output, which is the only reason the
+        # cause is findable at all.
+        - config/nativephp.php (?)
 
     # Pest's own annotation, corrected. See the stub for why.
     stubFiles:
@@ -151,6 +164,13 @@ parameters:
                 # NativePHP components are extended by the framework's own
                 # contract; a component that did not extend it is not a screen.
                 - Native\Mobile\Edge\NativeComponent
+                # A Blade component, for the reason a screen extends its own
+                # base: the framework instantiates it and reads `render()` off
+                # it. It is also what avoids the alternative — an anonymous
+                # component, which Blade resolves by first guessing a class from
+                # the application namespace, and guessing reads an `app/`
+                # directory this repository does not have.
+                - Illuminate\View\Component
                 # The platform's secure store, extended once, in a test fake.
                 # There is no Keychain behind a PHP process on a laptop, so
                 # without a hand-written stand-in `PlatformKeychain` is a file
@@ -255,7 +275,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- B2: randomness is an input too --------------------------------
         -
@@ -279,7 +299,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- B4: waiting is a port, not a syscall ---------------------------
         -
@@ -338,10 +358,20 @@ parameters:
             allowIn:
                 - app-modules/vault/src/*
                 - app-modules/device/src/*
+                # The third adapter that owns a filesystem, and the narrowest of
+                # the three: one directory holding one class. `modules/dx`
+                # stands a stack in by reading the installed SDK's own
+                # declarations — its envelopes and its endpoints — so it reads
+                # files at runtime on the device as well as in a suite, and B3
+                # is satisfied the way it asks to be: the IO is an adapter's and
+                # nothing above it opens a file. A module-wide entry would have
+                # been the easy answer and would have let a future stand-in do
+                # hidden IO in `Api/`, which is the rule's actual worry.
+                - app-modules/dx/src/Adapters/*
                 - scripts/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- A3/A4: service location hides what a class needs ---------------
         -
@@ -390,7 +420,7 @@ parameters:
                 - config/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- A4: `view()`, where the framework owns the signature -----------
         #
@@ -414,11 +444,17 @@ parameters:
             message: "A4 — `view()` reaches the container for a view factory. Inside a screen's render() it is the framework's own contract and is allowed; anywhere else, name the frame some other way. A class that reaches the container stops telling the truth about what it needs (A4)."
             allowIn:
                 - app-modules/*/src/Internal/Screens/*
+                # A Blade component's `render()` is the same contract as a
+                # screen's, arrived at the same way: the framework builds the
+                # object and asks it for a view. The directory is the one
+                # `internachi/modular` registers components from, so this
+                # reaches components and nothing else.
+                - app-modules/*/src/View/Components/*
                 - bootstrap/Composition/*
                 - config/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- S1: the execution bundle, scoped -------------------------------
         #
@@ -468,7 +504,7 @@ parameters:
                 - config/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- P3: a class whose shape is a runtime question ------------------
         -
@@ -506,7 +542,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- L4: a format string is one locale's answer ----------------------
         -
@@ -518,7 +554,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- L5: so is a decimal separator -----------------------------------
         -
@@ -529,7 +565,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- L6: byte order is not alphabetical ------------------------------
         -
@@ -554,7 +590,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
     disallowedStaticCalls:
         # --- B1 ------------------------------------------------------------
@@ -570,7 +606,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- B2 ------------------------------------------------------------
         -
@@ -587,7 +623,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- N4-R11 -------------------------------------------------------
         #
@@ -625,7 +661,7 @@ parameters:
                 - routes/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- A8: the platform's facades are facades too ---------------------
         #
@@ -643,7 +679,7 @@ parameters:
                 - app-modules/vault/src/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- B3: Storage is the filesystem with a nicer name ----------------
         -
@@ -654,7 +690,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- P4: reflection is the analyser's blind spot ---------------------
         -
@@ -667,7 +703,7 @@ parameters:
             allowIn:
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
                 - phpstan/*
 
         # --- A3: the container, named directly ------------------------------
@@ -680,7 +716,7 @@ parameters:
                 - bootstrap/Composition/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
         # --- B1: the clock, as a type ---------------------------------------
         -
@@ -697,7 +733,7 @@ parameters:
                 - app-modules/device/src/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
     disallowedSuperglobals:
         # --- Q2: the runtime fills some of these in itself -------------------
@@ -718,7 +754,7 @@ parameters:
                 - bootstrap/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
 
     disallowedAttributes:
         # --- P3: a property that exists only at runtime -----------------------
@@ -778,7 +814,7 @@ parameters:
                 - routes/*
                 - tests/*
                 - app-modules/*/tests/*
-                - native/tests/*
+                - bridge/tests/*
             # A module-owned exception constructing itself is the cure, not the
             # disease — and `new self(...)` inside a subclass of RuntimeException
             # resolves to the parent's constructor. Ordinary module code is not

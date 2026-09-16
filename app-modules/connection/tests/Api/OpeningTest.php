@@ -66,6 +66,29 @@ it('N4-R19 — nothing is asked of the stacks while the app is shut', function (
     expect($stacks->timesAsked())->toBe(0);
 });
 
+it('N4-R22 — a device holding nothing is not asked to authenticate', function (): void {
+    // The first launch of a freshly installed app. The device would refuse if
+    // asked, and the point is that it is not asked: a lock over an empty store
+    // stands in front of a screen that says there are no stacks yet, and an
+    // authentication protecting nothing is how somebody learns to turn it off.
+    expect(howItOpened(new Opening(
+        ADeviceThatKnowsYou::refusing(),
+        StacksInMemory::working(),
+        ADeviceOnANetwork::connected(),
+    )))->toBe('unpaired');
+});
+
+it('N4-R22 — a device holding a pairing is asked, on the same refusal', function (): void {
+    // The counterfactual, and the half that keeps the carve-out from becoming
+    // the rule: the only difference from the case above is that the store holds
+    // something, and that is what puts the question.
+    expect(howItOpened(new Opening(
+        ADeviceThatKnowsYou::refusing(),
+        StacksInMemory::holding(aPairedMachine()),
+        ADeviceOnANetwork::connected(),
+    )))->toBe('locked');
+});
+
 it('N1-R35 — a device with no stack opens unpaired, which is not a fault', function (): void {
     // A first run rather than a failure to reach. Reporting it as an obstacle
     // would be the app describing its own first launch as broken.

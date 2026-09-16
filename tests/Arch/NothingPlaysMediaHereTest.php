@@ -45,7 +45,7 @@ function platformSources(): array
     $found = [];
 
     foreach (['.kt', '.swift'] as $suffix) {
-        foreach (Tree::filesUnder(Tree::at('native/resources'), $suffix) as $path) {
+        foreach (Tree::filesUnder(Tree::at('bridge/resources'), $suffix) as $path) {
             $contents = file_get_contents($path);
 
             if (is_string($contents)) {
@@ -101,7 +101,7 @@ it('N3-R8 — no platform source reaches for a media player', function (): void 
 
 it('N3-R8 — each player is one this rule would recognise', function (): void {
     // Q-R66 against the matcher rather than against the tree. Planting a player
-    // in `native/resources` would leave a real source file wrong for the length
+    // in `bridge/resources` would leave a real source file wrong for the length
     // of a run, and this repository has been bitten by a killed run leaving its
     // fixtures behind.
     //

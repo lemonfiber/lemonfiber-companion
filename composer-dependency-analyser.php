@@ -96,6 +96,39 @@ function modulesWithNoCode(): array
     return $empty;
 }
 
+/**
+ * The `src` of every module the root installs for development only.
+ *
+ * A module under `require-dev` is development code in every sense the analyser
+ * cares about: it is absent from a release install, so nothing it names can be
+ * reached from a released build. Scanning its `src` as production inverts that
+ * — the module's own classes naming each other read as production code
+ * reaching a dev dependency, which is G4's failure reported against the one
+ * arrangement that cannot cause it.
+ *
+ * Derived from the root manifest rather than named, for the reason every other
+ * list in this file is derived: the day `modules/dx` moves to `require` — or
+ * another module arrives beside it — this answers correctly without anybody
+ * remembering the line exists.
+ *
+ * @return list<string>
+ */
+function modulesInstalledForDevelopmentOnly(): array
+{
+    /** @var array{require-dev?: array<string, string>} $manifest */
+    $manifest = json_decode((string) file_get_contents(__DIR__ . '/composer.json'), true);
+
+    $found = [];
+
+    foreach (array_keys($manifest['require-dev'] ?? []) as $package) {
+        if (str_starts_with($package, 'modules/')) {
+            $found[] = sprintf('%s/app-modules/%s/src', __DIR__, substr($package, strlen('modules/')));
+        }
+    }
+
+    return $found;
+}
+
 return (new Configuration())
     // A dev tool invoked from a composer script is never named in PHP, so the
     // default — reporting only unused production dependencies — cannot tell one
@@ -110,14 +143,23 @@ return (new Configuration())
     // reported as G4's own failure, on a package that is only ever a dev one.
     // Globbed so a module added tomorrow is scanned without anyone editing
     // this file.
-    ->addPathsToScan((array) glob(__DIR__ . '/app-modules/*/src'), isDev: false)
+    //
+    // A module the root installs under `require-dev` is subtracted and scanned
+    // as the dev path it is, for the reason `modulesInstalledForDevelopmentOnly`
+    // gives: it is absent from a release, so nothing in it can be reached from
+    // one.
+    ->addPathsToScan(
+        array_values(array_diff((array) glob(__DIR__ . '/app-modules/*/src'), modulesInstalledForDevelopmentOnly())),
+        isDev: false,
+    )
+    ->addPathsToScan(modulesInstalledForDevelopmentOnly(), isDev: true)
     ->addPathsToScan((array) glob(__DIR__ . '/app-modules/*/tests'), isDev: true)
     // The native expansion's PHP, held to the same rules as everything else. A
     // package written inside this repository is not a package exempt from them,
     // and without these two lines the plugin's `src` is the one production path
     // nothing here reads.
-    ->addPathToScan(__DIR__ . '/native/src', isDev: false)
-    ->addPathToScan(__DIR__ . '/native/tests', isDev: true)
+    ->addPathToScan(__DIR__ . '/bridge/src', isDev: false)
+    ->addPathToScan(__DIR__ . '/bridge/tests', isDev: true)
     ->addPathToScan(__DIR__ . '/config', isDev: false)
     ->addPathToScan(__DIR__ . '/routes', isDev: false)
     ->addPathToScan(__DIR__ . '/tests', isDev: true)
@@ -176,11 +218,11 @@ return (new Configuration())
     // `autoload.files` entry and in no class map, and the analyser reports it as
     // a symbol it cannot check.
     //
-    // Scoped to `native/src`, which is the only place in this repository that
+    // Scoped to `bridge/src`, which is the only place in this repository that
     // may call the bridge at all — everything else reaches it through
     // `Modules\Kernel\Api\Capture`. A blanket ignore would also cover a future
     // undeclared function somewhere it has no business being.
-    ->ignoreErrorsOnPath(__DIR__ . '/native/src', [ErrorType::UNKNOWN_FUNCTION])
+    ->ignoreErrorsOnPath(__DIR__ . '/bridge/src', [ErrorType::UNKNOWN_FUNCTION])
     // Resolved through the container rather than named, so the analyser cannot
     // see the use. Narrower than disabling the check.
     ->ignoreErrorsOnPackage('internachi/modular', [ErrorType::UNUSED_DEPENDENCY])

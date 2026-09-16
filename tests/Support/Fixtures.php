@@ -2038,6 +2038,29 @@ final readonly class Fixtures
                 });
                 PHP, 'W5 —', 'SaysNothingTest'),
 
+            // Inside the SDK module, because that is where W7 looks — a reader
+            // planted anywhere else would prove the rule green while refusing
+            // nothing. It reaches a payload and never names the gate, which is
+            // the whole of what the rule refuses.
+            Fixture::suite('W7', 'app-modules/sdk/src/Api/Fixtures/ReadsUnchecked.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Sdk\Api\Fixtures;
+
+                use Lemonfiber\Sdk\Envelope\Envelope;
+
+                final readonly class ReadsUnchecked
+                {
+                    /** @param Envelope<mixed> $envelope */
+                    public static function in(Envelope $envelope): mixed
+                    {
+                        return $envelope->data;
+                    }
+                }
+                PHP, 'W7 —', 'ReadsUnchecked'),
+
             // A source file, not a test: C10 exempts tests deliberately, so a
             // fixture planted under `tests/` would prove the rule green while
             // refusing nothing.
@@ -2338,8 +2361,8 @@ final readonly class Fixtures
             Fixture::edit(
                 'R4',
                 'phpunit.xml',
-                '            <directory>native/src</directory>',
-                "            <directory>native/src</directory>\n            <directory>lang</directory>",
+                '            <directory>bridge/src</directory>',
+                "            <directory>bridge/src</directory>\n            <directory>lang</directory>",
                 'R4 —',
                 'lang',
             ),
@@ -2431,7 +2454,7 @@ final readonly class Fixtures
                 }
                 PHP, 'N1-R41 — nothing holds a collection of actions', 'HoldsUndelivered'),
 
-            Fixture::suite('N3-R8', 'native/resources/android/PlaysMedia.kt', <<<'KOTLIN'
+            Fixture::suite('N3-R8', 'bridge/resources/android/PlaysMedia.kt', <<<'KOTLIN'
                 package app.lemonfiber.native
 
                 class PlaysMedia(private val context: Context) {
@@ -2592,10 +2615,10 @@ final readonly class Fixtures
             Fixture::edit(
                 'L7',
                 'app-modules/operator/resources/views/your-stacks.blade.php',
-                "{{ __('connection.setup_is_at_the_machine') }}",
-                "{{ __('connection.setup_happens_at_the_machine') }}",
+                "{{ __('connection.pair') }}",
+                "{{ __('connection.pair_up') }}",
                 'L7 —',
-                'connection.setup_happens_at_the_machine',
+                'connection.pair_up',
             ),
 
             // Nothing to drop in: a listener is only a listener once something

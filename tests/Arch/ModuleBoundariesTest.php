@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Modules\Dx\Adapters\TheStoreThisRunKeeps;
+use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
 use Tests\Support\Imports;
 use Tests\Support\Kind;
@@ -51,6 +53,26 @@ const MUTABLE_BY_DESIGN = [
     // exchange, which is the thing the requirement forbids. The immutability
     // that is right for every other value here is exactly wrong for this one.
     Credential::class,
+    // A service provider cannot be readonly, and the reason is the language's
+    // rather than a judgement: `Illuminate\Support\ServiceProvider` declares
+    // `$app` and `$booted` as ordinary properties, and a readonly class may
+    // only extend a readonly one.
+    //
+    // Named here rather than exempted by kind. Every module's provider is in
+    // this position and `operator`'s escapes only because a surface is skipped
+    // wholesale — which is luck, not a rule. A name in this list is a line
+    // somebody reads; a kind-shaped hole is one nobody would find.
+    DxServiceProvider::class,
+    // A store that cannot be written to is not a store. This one stands in for
+    // the device keychain so a pairing can be made without one, and the whole
+    // reason it exists rather than a fixed answer at the `Stacks` port is that
+    // `remember()` has to stick: a screen that reported a pairing and then did
+    // not show it would be a lie on the glass.
+    //
+    // What it holds never leaves the process and never reaches a keychain,
+    // which is `N1-R60` — so the mutability buys a correct screen and costs
+    // nothing that outlives the run.
+    TheStoreThisRunKeeps::class,
 ];
 
 foreach ($modules as $module) {
@@ -192,15 +214,41 @@ function reachesOutside(Module $module, array $forbidden): array
 // API contract and does not implement a second client of its own (`ADR-0013`).
 // One module naming the SDK is what makes a second client impossible to write
 // without this failing.
-arch('E3 — the SDK is named in exactly one module')
+// N1-R16 — every call to lemonfiber goes through the SDK, and one module makes
+// them. `Modules\Dx` is named beside it for the reason its kind exists: a
+// stand-in reads the SDK's own declarations to answer as a stack would, so it
+// names the package without calling it. What keeps N1-R16 whole is that the one
+// door to a stack is still `Modules\Sdk\Api\PinnedClients` — `N1-R20` refuses
+// every other file that builds a transport, stand-in included, and
+// `NothingReachesAStackUnpinnedTest` is where that is enforced.
+//
+// Two names rather than a prefix, so a third module cannot arrive here by
+// accident: this list is short enough that adding to it is a decision somebody
+// makes on purpose.
+arch('E3 — the SDK is named in exactly one module, and read by the one that stands in for it')
     ->expect('Lemonfiber\Sdk')
-    ->toOnlyBeUsedIn('Modules\Sdk');
+    ->toOnlyBeUsedIn(['Modules\Sdk', 'Modules\Dx']);
 
 it('E3 — only the sdk adapter speaks HTTP', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
         if ($module->name === 'sdk') {
+            continue;
+        }
+
+        // A stand-in names the transport to stop it being used, which is the
+        // opposite of what this rule is about. `Saloon\Http\Faking` answers a
+        // request from a value and never opens a connection, and attaching one
+        // to a client is the only way to be sure the client cannot reach
+        // anything — the alternative would be a second client that does not
+        // send, which is exactly the fourth consumer this rule refuses.
+        //
+        // What actually keeps the socket shut is `N1-R20`: one file may build a
+        // transport and `NothingReachesAStackUnpinnedTest` refuses every other
+        // that names one. That rule has no exception for this kind, so the
+        // guarantee is unchanged and this is a narrowing rather than a hole.
+        if ($module->kind === Kind::StandIn) {
             continue;
         }
 
@@ -273,7 +321,15 @@ it('E1 — only the composition root names an adapter', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
-        if ($module->kind === Kind::Adapter) {
+        // A stand-in names one on purpose, and naming it is the whole design.
+        // It asks the real adapter for what it would have built and replaces
+        // only the part that reaches outside, so what somebody looks at on a
+        // device is the shipped code with one thing missing rather than a
+        // second implementation that resembles it. Building its own would be
+        // the untestable decision this rule is about — and would put a second
+        // constructor for the outside thing in the repository, which `N1-R20`
+        // refuses outright.
+        if ($module->kind === Kind::Adapter || $module->kind === Kind::StandIn) {
             continue;
         }
 

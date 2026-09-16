@@ -65,7 +65,7 @@ it('C10 — nothing passes an argument that cannot change the answer', function 
     $sources = [
         ...Tree::filesUnder(Tree::at('app-modules'), '.php'),
         ...Tree::filesUnder(Tree::at('bootstrap'), '.php'),
-        ...Tree::filesUnder(Tree::at('native'), '.php'),
+        ...Tree::filesUnder(Tree::at('bridge'), '.php'),
     ];
 
     foreach ($sources as $path) {

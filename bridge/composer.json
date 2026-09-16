@@ -1,5 +1,5 @@
 {
-    "name": "lemonfiber/native",
+    "name": "lemonfiber/bridge",
     "description": "The native capabilities lemonfiber uses",
     "type": "nativephp-plugin",
     "license": "proprietary",

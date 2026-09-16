@@ -31,6 +31,7 @@ use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Tests\Support\Catalogue;
 use Tests\Support\Tree;
 
@@ -196,6 +197,13 @@ function everyDerivedKey(): array
             WhyNothingWasShared::cases(),
             static fn(WhyNothingWasShared $why): array => [$why->saidOnTheScreen(), $why->remedy()],
         ),
+        // The first run, which is the one sequence whose steps are copy and
+        // nothing else — a step with no sentence behind it is a blank frame
+        // between two that read, and `N1-R54` is the requirement it breaks.
+        WhereTheFirstRunIs::class => aPairPerCase(
+            WhereTheFirstRunIs::cases(),
+            static fn(WhereTheFirstRunIs $at): array => [$at->said(), $at->explained()],
+        ),
     ];
 }
 
@@ -294,6 +302,11 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
     foreach (WhyNothingWasScanned::cases() as $why) {
         expect($why->saidOnTheScreen())->toBe(sprintf('connection.%s', $why->value), $why->name)
             ->and($why->remedy())->toBe(sprintf('connection.%s_action', $why->value), $why->name);
+    }
+
+    foreach (WhereTheFirstRunIs::cases() as $at) {
+        expect($at->said())->toBe(sprintf('onboarding.%s', $at->value), $at->name)
+            ->and($at->explained())->toBe(sprintf('onboarding.%s_explained', $at->value), $at->name);
     }
 });
 
