@@ -216,10 +216,17 @@ it('N2-R10 — comes away with the lines, in the order the service wrote them', 
     }
 });
 
-it('N2-R10 — names the service and says the view is a window rather than the whole', function (): void {
+it('N2-R10, G3-R10 — names the service and says the view is a window rather than the whole', function (): void {
     // Three clauses of the requirement in one assertion, because they are one
     // sentence: the bound that was given, what arrived against it, and the
     // service it is all about.
+    //
+    // `G3-R10` is the other requirement here: a value must not be truncated in
+    // a way that changes its meaning. A scrollback is always truncated — the
+    // whole of it is unbounded and a phone is not — so what this asks is not
+    // that the cut be avoided but that it be said. `3 of 3, a window` is the
+    // saying: an operator who reads it knows whether the line they are looking
+    // for could be above the top, and one shown a bare list does not.
     foreach (everyWayOfReadingAService(aScrollbackAnswer()) as $which => $make) {
         expect(whatTheWindowClaims($make()))->toBe('gluetun 3 of 3, a window', $which);
     }
