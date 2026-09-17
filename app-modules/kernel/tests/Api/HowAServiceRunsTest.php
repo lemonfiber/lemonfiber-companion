@@ -135,3 +135,38 @@ it('N2-R7 — nothing this stack does not run can be told to do anything', funct
         expect($any)->toBe($runs->isThisStacksToRun(), $runs->value);
     }
 });
+
+it('B2-R10 — the seven states an operator must be told apart are each here', function (): void {
+    // `B2-R10` names a minimum rather than a set: absent, stopped, starting,
+    // healthy, unhealthy, crash-looping, failed. This enum carries nine of
+    // them, because the contract lists nine — so the requirement is met by a
+    // shape nothing in this repository chose, and would stop being met the day
+    // the contract collapsed two states and this followed it without anybody
+    // reading the requirement again.
+    //
+    // Held as the seven names rather than as a count, because a count survives
+    // a rename and the harm is in the distinction and not the number. The pair
+    // that matters most is already argued on the enum itself: `Stopped` and
+    // `Failed` drawn the same way is an operator restarting a service that is
+    // off on purpose, while the crashed one sits beside it untouched.
+    $said = array_map(
+        static fn(HowAServiceRuns $runs): string => $runs->value,
+        HowAServiceRuns::cases(),
+    );
+
+    $missing = array_values(array_diff(
+        ['absent', 'stopped', 'starting', 'healthy', 'unhealthy', 'crash-looping', 'failed'],
+        $said,
+    ));
+
+    expect($missing)->toBe([], sprintf(
+        "These states an operator must be able to tell apart are no longer here:\n  %s\n\n"
+        . "What this enum says instead: %s\n\n"
+        . 'A state that is gone has not stopped happening — it has been folded into another one, '
+        . 'and the screen now draws two different situations the same way. `B2-R10` names these '
+        . 'seven as a floor for that reason. If the contract really dropped one, that is a '
+        . 'conversation with the contract and not a case to delete here (B2-R10).',
+        implode(', ', $missing),
+        implode(', ', $said),
+    ));
+});
