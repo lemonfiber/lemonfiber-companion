@@ -126,7 +126,11 @@
                      by the check rather than by position, because the listing
                      is re-read every frame and a position is a fact about the
                      list rather than about the repair. --}}
-                <x-operator::action label="{{ __('health.agree_to_it') }}" tap="agreeTo('{{ $repair->answers }}')" />
+                <x-operator::action
+                    label="{{ __('health.agree_to_it') }}"
+                    answers-to="{{ __('health.agree_to_that', ['repair' => $repair->does]) }}"
+                    tap="agreeTo('{{ $repair->answers }}')"
+                />
             </x-operator::entry>
         @empty
             {{-- A stack with nothing to put right is the healthy case, and it is

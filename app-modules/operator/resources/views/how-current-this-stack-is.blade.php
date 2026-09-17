@@ -78,7 +78,11 @@
                      waiting. A screen that counted rows would offer one to a
                      stack that listed releases while calling itself current,
                      which is the case this requirement exists for. --}}
-                <x-operator::action label="{{ __('updates.take_this_one') }}" tap="wouldYouLike('{{ $release->version }}')" />
+                <x-operator::action
+                    label="{{ __('updates.take_this_one') }}"
+                    answers-to="{{ __('updates.take_that_one', ['version' => $release->version]) }}"
+                    tap="wouldYouLike('{{ $release->version }}')"
+                />
             @endif
 
             {{-- N2-R16: whether somebody in the house would see the

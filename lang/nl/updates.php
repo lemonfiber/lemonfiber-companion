@@ -23,6 +23,7 @@ return [
     'changes_nothing' => 'Deze release verandert geen enkele dienst op deze machine.',
     'something_worth_noticing' => 'Een hiervan is een verandering die het huishouden ziet',
     'take_this_one' => 'Neem deze',
+    'take_that_one' => 'Neem :version',
     'last_update' => 'De laatste update',
     'did_not_arrive' => '{1} Eén dienst staat niet waar je hem wilde|[2,*] :count diensten staan niet waar je ze wilde',
     'unanswered' => 'Sommige diensten zijn gestart en geven geen antwoord, dus de stack kan niet zeggen wat ze doen.',

@@ -65,6 +65,7 @@ return [
     'changed_count' => '{0} Nothing was changed|{1} One thing was put right|[2,*] :count things were put right',
     'worth_another_go' => 'Trying again could give a different answer.',
     'agree_to_it' => 'Do this',
+    'agree_to_that' => 'Do this: :repair',
     'mended' => [
         'fixed' => 'Put right',
         'fix_failed' => 'Could not be put right',
@@ -113,6 +114,7 @@ return [
         'stderr' => 'Noticed',
     ],
     'what_a_service_said' => 'See what this service said',
+    'what_that_service_said' => 'See what :service said',
     'logs_for' => 'What :service has been saying',
     'window_of' => 'The last :count lines this stack kept. There may be more behind them.',
     'the_whole_of_it' => 'All :count lines this stack has for this service.',
@@ -162,6 +164,16 @@ return [
         'restart' => 'Restart it',
     ],
 
+    // The same three verbs, named for somebody who cannot see which row they
+    // are on. `F5`: a frame offering four services hears *Start it* four times
+    // and has nothing between them, and which one a control acts on is carried
+    // by where it sits — the one thing a person cannot read back to check.
+    'do_to' => [
+        'start' => 'Start :name',
+        'stop' => 'Stop :name',
+        'restart' => 'Restart :name',
+    ],
+
 
     // N2-R7's screen. The verbs above are the buttons; these are the sentences
     // around them — what a row says about itself, and what a stop is stated to
@@ -170,6 +182,7 @@ return [
     'it_exited' => 'It ended with :code',
     'host_runs_it' => 'This machine runs it, not the stack',
     'read_its_logs' => 'Read what it has been saying',
+    'read_what_it_said' => 'Read what :name has been saying',
     'nothing_is_running' => 'Nothing is running on this machine',
     'no_forms_at_all' => 'Nothing has been set up on this machine yet',
     'by_form' => 'Or a whole form at once',

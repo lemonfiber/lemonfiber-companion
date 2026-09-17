@@ -65,6 +65,7 @@ return [
     'changed_count' => '{0} Er is niets gewijzigd|{1} Eén ding is hersteld|[2,*] :count dingen zijn hersteld',
     'worth_another_go' => 'Opnieuw proberen kan een ander resultaat geven.',
     'agree_to_it' => 'Voer dit uit',
+    'agree_to_that' => 'Voer dit uit: :repair',
     'mended' => [
         'fixed' => 'Hersteld',
         'fix_failed' => 'Herstellen is mislukt',
@@ -113,6 +114,7 @@ return [
         'stderr' => 'Opgemerkt',
     ],
     'what_a_service_said' => 'Bekijk wat deze dienst zei',
+    'what_that_service_said' => 'Bekijk wat :service zei',
     'logs_for' => 'Wat :service heeft gezegd',
     'window_of' => 'De laatste :count regels die deze stack bewaarde. Er kan meer achter zitten.',
     'the_whole_of_it' => 'Alle :count regels die deze stack voor deze dienst heeft.',
@@ -162,6 +164,16 @@ return [
         'restart' => 'Opnieuw starten',
     ],
 
+    // The same three verbs, named for somebody who cannot see which row they
+    // are on. `F5`: a frame offering four services hears *Starten* four times
+    // and has nothing between them, and which one a control acts on is carried
+    // by where it sits — the one thing a person cannot read back to check.
+    'do_to' => [
+        'start' => ':name starten',
+        'stop' => ':name stoppen',
+        'restart' => ':name opnieuw starten',
+    ],
+
 
     // N2-R7's screen. The verbs above are the buttons; these are the sentences
     // around them — what a row says about itself, and what a stop is stated to
@@ -170,6 +182,7 @@ return [
     'it_exited' => 'Gestopt met :code',
     'host_runs_it' => 'Deze machine draait hem, niet de stack',
     'read_its_logs' => 'Lees wat hij gezegd heeft',
+    'read_what_it_said' => 'Lees wat :name gezegd heeft',
     'nothing_is_running' => 'Er draait niets op deze machine',
     'no_forms_at_all' => 'Er is nog niets ingericht op deze machine',
     'by_form' => 'Of een heel formulier tegelijk',
