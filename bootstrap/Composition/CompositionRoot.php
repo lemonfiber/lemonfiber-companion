@@ -8,6 +8,9 @@ use Bootstrap\Composition\NativePHP\ScreenRoutes;
 use Bootstrap\Composition\NativePHP\TheHarnessInstead;
 use Bootstrap\Composition\NativePHP\TheRunloop;
 use Bootstrap\Composition\NativePHP\TheTheme;
+
+use function config;
+
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Screen;
 use Modules\Device\Api\PlatformAuth;
@@ -55,7 +58,6 @@ use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
 use Native\Mobile\Network as PlatformNetworkFacade;
-use Native\Mobile\Scanner;
 /**
  * The composition root.
  *
@@ -71,13 +73,33 @@ use Native\Mobile\Scanner;
  * is what makes a capability module testable without a device, a network or a
  * stack to talk to.
  */
+use Native\Mobile\Scanner;
 use Native\Mobile\SecureStorage as PlatformStore;
 use Native\Mobile\Share;
 
 final class CompositionRoot extends ServiceProvider
 {
+    /** Where the platform reads what to install this application as. */
+    private const string WHAT_THE_PLATFORM_INSTALLS_US_AS = 'nativephp.app_id';
+
     public function register(): void
     {
+        // `N1-R52` and `N1-R53`, before anything is wired. `config/nativephp.php`
+        // is written by `native:install` and is not in this repository, so what
+        // it says about the identity is whatever the environment of whoever ran
+        // that command said — which is the one thing the requirement names. The
+        // declared identity is applied over it here, and a build configured as
+        // another application is refused rather than quietly overridden.
+        //
+        // Not work, which `A9` refuses in a provider: no read of the
+        // environment, no file, no socket. It is one value replaced with the
+        // one this repository declares, and the build commands that assemble a
+        // bundle read the config after this has run.
+        config()->set(
+            self::WHAT_THE_PLATFORM_INSTALLS_US_AS,
+            WhatThisBuildInstallsAs::orRefuse(config(self::WHAT_THE_PLATFORM_INSTALLS_US_AS)),
+        );
+
         // The one line that says which clock the application runs on, and the
         // only place in the codebase allowed to say it. Everything else takes a
         // `Clock` and never learns it got the platform's rather than a frozen

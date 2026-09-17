@@ -25,17 +25,17 @@ use Tests\Support\Tree;
 // two checks below are the join: that the application really runs under the
 // declared identity, and that the config cannot go back to reading one.
 
-/** Where the platform is told what to install this application as. */
-const WHERE_THE_IDENTITY_IS_SET = 'config/nativephp.php';
+/** Where the declared identity is applied over whatever the config says. */
+const WHERE_THE_IDENTITY_IS_SET = 'bootstrap/Composition/CompositionRoot.php';
 
 it('N1-R53 — the identity is not taken from whoever ran the build', function (): void {
-    // `env()` is legal in this directory and that is the point: the value may
-    // be *read* there, and what may not happen is it being used. A config
-    // handing the platform whatever the environment said is the shape this
-    // whole pair of requirements is about, and it is one edit away.
+    // Read here rather than at the config, which is the point of the whole
+    // change: `config/nativephp.php` is written by `native:install` and is not
+    // in this repository, so a rule reading it would be a rule reading a file a
+    // clean checkout has not got — green on the one machine that has one.
     $said = (string) file_get_contents(Tree::at(WHERE_THE_IDENTITY_IS_SET));
 
-    preg_match("/'app_id'\s*=>\s*(.*?),\n/s", $said, $set);
+    preg_match('/WHAT_THE_PLATFORM_INSTALLS_US_AS,\s*(.*?),\n/s', $said, $set);
 
     $written = $set[1] ?? '';
 
@@ -43,7 +43,7 @@ it('N1-R53 — the identity is not taken from whoever ran the build', function (
     // argument to `toContain` is another needle, so a message there is a string
     // this rule would go looking for and never find.
     expect(str_contains($written, 'WhatThisBuildInstallsAs::orRefuse'))->toBeTrue(sprintf(
-        "`app_id` in %s is set to `%s`.\n\n"
+        "The identity in %s is set from `%s`.\n\n"
         . 'It must go through `WhatThisBuildInstallsAs::orRefuse()`, which answers the declared identity '
         . "and refuses a build configured as another application (`N1-R53`).\n",
         WHERE_THE_IDENTITY_IS_SET,
