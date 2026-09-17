@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\Stack;
@@ -20,6 +23,7 @@ use Modules\Sdk\Api\Requests;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AHouseholdThatAsked;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\WhatTheContractAccepts;
 
 // The Wanting contract, run against the adapter and against the fake.
@@ -164,10 +168,125 @@ function everyWayOfAskingTheHousehold(MockResponse $answered, ?Obstacle $why = n
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
 
-            return new Requests(new PinnedClients());
+            return new Requests(new PinnedClients(), SequencedEntropy::counting());
         },
     ];
 }
+
+/**
+ * What a stack answers when it takes a decision on.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackTakingADecisionSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'job',
+        'data' => ['action' => 'household-approve', 'job' => AHouseholdThatAsked::THE_JOB],
+    ];
+}
+
+/** What the far end answers when a decision reaches it. */
+function aDecidedAnswer(): MockResponse
+{
+    return MockResponse::make((string) json_encode(whatAStackTakingADecisionSends()));
+}
+
+/** What came of telling a stack what was decided, as a word. */
+function whatCameOfDeciding(Wanting $wanting, Decided $decided): string
+{
+    return $wanting->decided(aStackWithAHousehold(), theSessionTheHouseholdIsAskedWith(), $decided)->either(
+        started: static fn(Job $job): WhatTheHouseholdTurnedOutToSay
+            => new WhatTheHouseholdTurnedOutToSay($job->shown()),
+        met: static fn(Obstacle $why): WhatTheHouseholdTurnedOutToSay
+            => new WhatTheHouseholdTurnedOutToSay($why->value),
+    )->said;
+}
+
+it('N2-R11 — takes an approval and comes away with a name to ask about', function (): void {
+    $decided = Decided::toApprove(RequestId::numbered(41));
+
+    foreach (everyWayOfAskingTheHousehold(aDecidedAnswer()) as $which => $make) {
+        expect(whatCameOfDeciding($make(), $decided))->toBe(AHouseholdThatAsked::THE_JOB, $which);
+    }
+});
+
+it('D7-R7 — takes a refusal, which carries the sentence it owes', function (): void {
+    // The other of `N2-R11`'s two, and the one that carries something extra. A
+    // port taking only the approval would have a screen turning a request down
+    // by leaving it alone, which is what `D7-R7` exists to prevent.
+    $decided = Decided::toDecline(RequestId::numbered(41), 'No room this month');
+
+    foreach (everyWayOfAskingTheHousehold(aDecidedAnswer()) as $which => $make) {
+        expect(whatCameOfDeciding($make(), $decided))->toBe(AHouseholdThatAsked::THE_JOB, $which);
+    }
+});
+
+it('N1-R10 — says the same about a decision it could not deliver', function (): void {
+    $table = [
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+    ];
+
+    foreach ($table as [$answered, $met]) {
+        foreach (everyWayOfAskingTheHousehold($answered, $met) as $which => $make) {
+            expect(whatCameOfDeciding($make(), Decided::toApprove(RequestId::numbered(41))))
+                ->toBe($met->value, $which);
+        }
+    }
+});
+
+/**
+ * What the adapter actually put on the wire for a decision.
+ *
+ * Asserted here and nowhere else in this suite, because it is the one call
+ * whose *body* carries a decision: a reading asks for nothing, and a verb names
+ * its subject in a list the other contract suite reads. A decision sent with
+ * the wrong number is one made about somebody else's request, and nothing on
+ * the way back would say so — the stack answers with a job either way.
+ *
+ * @return array<string, mixed>
+ */
+function whatTheWireCarriedForADecision(Decided $decided): array
+{
+    MockClient::destroyGlobal();
+    MockClient::global([aDecidedAnswer()]);
+
+    new Requests(new PinnedClients(), SequencedEntropy::counting())
+        ->decided(aStackWithAHousehold(), theSessionTheHouseholdIsAskedWith(), $decided);
+
+    $sent = MockClient::getGlobal()?->getLastPendingRequest()?->body()?->all();
+
+    if (! is_array($sent)) {
+        // Raised rather than answered with `[]`. A decision that never reached
+        // the wire would otherwise read as a body with the wrong fields in it,
+        // and the fault named would be the wrong one.
+        throw new RuntimeException('No decision reached the wire.');
+    }
+
+    // A body carrying a numeric key is a list where the endpoint reads a map,
+    // which the equality check reports as a wrong value rather than as the
+    // wrong shape.
+    expect(array_keys($sent))->each->toBeString();
+
+    /** @var array<string, mixed> $sent */
+    return $sent;
+}
+
+it('N2-R11 — an approval names the request and nothing else', function (): void {
+    expect(whatTheWireCarriedForADecision(Decided::toApprove(RequestId::numbered(41))))
+        ->toBe(['request' => 41]);
+});
+
+it('D7-R7 — a refusal names the request and carries the sentence with it', function (): void {
+    // Both keys, and the number among them: a refusal sent without its reason
+    // is the wire half of the thing `D7-R7` forbids, and one sent with the
+    // wrong number turns somebody else's request down.
+    expect(whatTheWireCarriedForADecision(Decided::toDecline(RequestId::numbered(41), 'No room this month')))
+        ->toBe(['request' => 41, 'reason' => 'No room this month']);
+});
 
 /** One word carried out of an `either()` arm. */
 final readonly class WhatTheHouseholdTurnedOutToSay

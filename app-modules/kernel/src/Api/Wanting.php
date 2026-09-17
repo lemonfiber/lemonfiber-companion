@@ -18,7 +18,14 @@ namespace Modules\Kernel\Api;
  * taking a client would let a caller pair the two up wrongly. This signature
  * makes that mistake unspellable.
  *
- * **One method, and it asks for the household rather than for one member.**
+ * **Two methods: a reading and a decision.** `N2-R11` asks that a waiting
+ * request be surfaced with enough to decide on *and* be approvable and
+ * refusable from the app, and for a long time this port did only the first —
+ * so the screen said *waiting for your decision* and offered nothing to decide
+ * with. The two are one errand from an operator's side and two calls on the
+ * wire, which is why they are two methods rather than one.
+ *
+ * **The reading asks for the household rather than for one member.**
  * The endpoint narrows to a member by name, and this port does not offer it —
  * `N1-R65` has a screen read once per frame and render what came back, and
  * a port with a method per member is a screen opening a connection per row.
@@ -35,4 +42,16 @@ interface Wanting
      * told which of them they met.
      */
     public function askedOf(Stack $stack, Session $session): WhatWasWanted;
+
+    /**
+     * Tell a stack what the operator decided about one of them (`N2-R11`).
+     *
+     * Answers {@see Underway} rather than raising, for the reason the reading
+     * does: a stack asleep and a session that has ended are states of the
+     * world. The decision arrives as a {@see Decided}, which cannot be built
+     * without naming both the request and what was decided about it — so a
+     * screen cannot hand this a request it never read, and cannot decline one
+     * without the sentence `D7-R7` owes the person who asked.
+     */
+    public function decided(Stack $stack, Session $session, Decided $decided): Underway;
 }

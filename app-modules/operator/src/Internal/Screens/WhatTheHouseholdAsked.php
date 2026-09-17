@@ -11,21 +11,27 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\Decided;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Wanting;
+use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheHouseholdsAskingReads;
+use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHouseholdTurnedOutToWant;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
+use function trim;
 use function view;
 
 /**
@@ -71,6 +77,19 @@ final class WhatTheHouseholdAsked extends NativeComponent
      * silently stops holding what it thinks it holds.
      */
     protected ?WhatTheHouseholdTurnedOutToWant $answered = null;
+
+    /** The request an operator is being asked to give a reason for, if any. */
+    protected ?WhatOneRequestSays $turningDown = null;
+
+    /**
+     * What they have typed as that reason.
+     *
+     * `protected` for the reason above and one more: `native:model` syncs into
+     * it from the parent class, so a private member would become a dynamic
+     * property and the field would go on looking filled while this held
+     * nothing.
+     */
+    protected string $because = '';
 
     public function __construct(
         private readonly Wanting $wanting,
@@ -120,6 +139,88 @@ final class WhatTheHouseholdAsked extends NativeComponent
     }
 
     /**
+     * Approve one of them, which is half of `N2-R11` and all of `D7-R6`.
+     *
+     * `D7-R6` is that a pending request be approvable from lemonfiber without
+     * opening Seerr. This is the method that makes it true on a phone: the
+     * approval goes to the stack's own endpoint, and nothing here links out to
+     * the tool the request came from. An operator asked about it in the kitchen
+     * answers in the kitchen.
+     *
+     * The request is found in what was actually read before anything is sent,
+     * for {@see WhatToDoWithThis::wouldYouLike()}'s reason: a number a template
+     * passed in is a number this screen may never have shown, and a decision
+     * about a request nobody was looking at is the whole harm `N2-R11` is
+     * about. An approval owes the person who asked the thing they asked for and
+     * nothing else, so there is no question in front of it.
+     */
+    public function approve(string $numbered): void
+    {
+        $request = $this->waitingOn($numbered);
+
+        if (! $request instanceof WhatOneRequestSays) {
+            return;
+        }
+
+        $this->send(Decided::toApprove(RequestId::numbered($request->number)));
+    }
+
+    /**
+     * Start turning one down, which is a question rather than an act.
+     *
+     * `D7-R7` makes the reason part of declining, so this cannot send anything:
+     * it holds the request while an operator writes the sentence the person who
+     * asked is owed. {@see Decided::toDecline()} refuses a blank one, so no
+     * road from here produces *declined* with nothing beside it.
+     */
+    public function wouldDecline(string $numbered): void
+    {
+        $this->because = '';
+        $this->turningDown = $this->waitingOn($numbered);
+    }
+
+    /** Whether there is enough typed to turn it down with. */
+    public function mayDecline(): bool
+    {
+        return trim($this->because) !== '';
+    }
+
+    /** The request being turned down, or nothing where none is. */
+    public function turningDown(): ?WhatOneRequestSays
+    {
+        return $this->turningDown;
+    }
+
+    /**
+     * Turn it down, with the sentence that was typed.
+     *
+     * It sends what was held rather than anything a template passes in, so the
+     * request an operator read the reason against and the one the stack is told
+     * about are the same request.
+     */
+    public function decline(): void
+    {
+        $request = $this->turningDown;
+
+        if (! $request instanceof WhatOneRequestSays || ! $this->mayDecline()) {
+            return;
+        }
+
+        $this->turningDown = null;
+        $said = $this->because;
+        $this->because = '';
+
+        $this->send(Decided::toDecline(RequestId::numbered($request->number), $said));
+    }
+
+    /** Put the question away without deciding anything. */
+    public function neverMind(): void
+    {
+        $this->turningDown = null;
+        $this->because = '';
+    }
+
+    /**
      * Where this machine's screens are.
      *
      * One accessor rather than one per destination, and {@see WhereAStackIs}
@@ -134,7 +235,11 @@ final class WhatTheHouseholdAsked extends NativeComponent
 
     public function render(): View
     {
-        return view('operator::what-the-household-asked');
+        // Handed the typed field, because `native:model` expands to a bare
+        // variable and a screen that only held it would render a frame where
+        // it was never defined — a warning rather than a stop, so the field
+        // draws empty and the control beside it never enables.
+        return view('operator::what-the-household-asked', ['because' => $this->because]);
     }
 
     /**
@@ -150,6 +255,67 @@ final class WhatTheHouseholdAsked extends NativeComponent
     public function answer(): WhatTheHouseholdTurnedOutToWant
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /**
+     * The row of that number in what was read, where it is waiting on a yes.
+     *
+     * Two refusals in one: a request this screen never showed, and one it
+     * showed that is not waiting on anybody. The second matters as much as the
+     * first — a request already declined is one an operator would be deciding
+     * about twice, and the stack would be right to refuse the second.
+     */
+    private function waitingOn(string $numbered): ?WhatOneRequestSays
+    {
+        foreach ($this->answer()->requests as $request) {
+            if ((string) $request->number === trim($numbered) && $request->wantsADecision) {
+                return $request;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Tell the stack, and forget what was read.
+     *
+     * The listing in front of the operator is about the household as it was
+     * before they decided anything, so the next accessor asks again. What the
+     * decision answered is not kept: what an operator wants to know is where
+     * the request stands, which the next reading says.
+     */
+    private function send(Decided $decided): void
+    {
+        $stack = $this->stack();
+
+        $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): AsText => $this->tell($stack, $session, $decided),
+            notHeld: static fn(): AsText => AsText::nothing(),
+        );
+
+        $this->answered = null;
+    }
+
+    /**
+     * Hand it to the port, and fold both arms to the same shape.
+     *
+     * Split out because `either()` wants two arms answering one type and a
+     * closure that assigned a property in one of them would be doing the work
+     * where the shape is being decided.
+     */
+    private function tell(Stack $stack, Session $session, Decided $decided): AsText
+    {
+        return $this->wanting->decided($stack, $session, $decided)->either(
+            started: static fn(Job $job): AsText => AsText::of($job->shown()),
+            met: function (Obstacle $why) use ($stack): AsText {
+                // A credential refused the moment somebody taps approve is the
+                // same signed-out device as one refused on a read, and this is
+                // the call that happens on the tap.
+                $this->letGoOfTheSession($why, $stack);
+
+                return AsText::of($why->said());
+            },
+        );
     }
 
     /**

@@ -56,6 +56,7 @@ final readonly class HowARequestReads
 
         return $wanted->size()->either(
             measured: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
+                number: $wanted->number(),
                 title: $wanted->forWhat(),
                 by: $wanted->by(),
                 standing: $standing->saidOnTheScreen(),
@@ -67,6 +68,7 @@ final readonly class HowARequestReads
                 refusedAt: $at,
             ),
             guessed: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
+                number: $wanted->number(),
                 title: $wanted->forWhat(),
                 by: $wanted->by(),
                 standing: $standing->saidOnTheScreen(),
@@ -78,6 +80,7 @@ final readonly class HowARequestReads
                 refusedAt: $at,
             ),
             unknown: static fn(): WhatOneRequestSays => new WhatOneRequestSays(
+                number: $wanted->number(),
                 title: $wanted->forWhat(),
                 by: $wanted->by(),
                 standing: $standing->saidOnTheScreen(),

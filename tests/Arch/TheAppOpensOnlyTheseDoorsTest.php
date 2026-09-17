@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhatWasDecided;
 use Tests\Support\Tree;
 
 // N1-R4 and N2-R12 — the doors this application is allowed to open on a stack.
@@ -99,6 +100,22 @@ const VERBS_THE_APP_ASKS_FOR = [
     // `N2-R7`. A stop that means to come back, and still a gap the household
     // is in — so it is asked about as the stop is.
     'restart' => 'stops and starts it again',
+
+    // `N2-R11`'s two, which are not verbs about a machine at all. They settle
+    // one thing somebody in the house already asked for, and they are here
+    // because this list is about what may go through `Api::action()` rather
+    // than about services — a second list would be a second answer to *what
+    // can this app ask a stack to do*, and the two would drift.
+    // `D7-R6` is this line: a pending request is approvable from lemonfiber
+    // without opening Seerr. The verb going to the stack's own endpoint is what
+    // makes that true — there is no road from this app to the tool the request
+    // came from, and this is the one that replaces it.
+    'household-approve' => 'gives one waiting request the thing it asked for',
+
+    // `D7-R7` is why this one carries a sentence: a refusal owes the person who
+    // asked a reason, and {@see \Modules\Kernel\Api\Decided} cannot be built
+    // without one.
+    'household-decline' => 'turns one waiting request down, with the reason it was turned down for',
 ];
 
 /**
@@ -330,15 +347,19 @@ it('N1-R4, N2-R12 — the door that writes whatever it is told is never told a n
     ));
 });
 
-it('N2-R7 — every verb this app asks for has a reason, and every reason a verb', function (): void {
+it('N2-R7 — every action this app asks for has a reason, and every reason an action', function (): void {
     // Both directions, because they catch different mistakes. The forward check
     // finds a case that lost its reason; only the reverse finds the fourth verb
     // somebody adds to this list by hand, which is the edit that would widen
     // what this app can ask for without widening the enum.
-    $asked = array_map(
-        static fn(WhatToDoWithIt $doing): string => $doing->asked(),
-        WhatToDoWithIt::cases(),
-    );
+    // Both closed sets, because both reach `Api::action()` and the rule is
+    // about that door rather than about services. A set left out here is a set
+    // this app can ask for and this rule does not explain, which is the shape
+    // of a rule claiming more than it enforces.
+    $asked = [
+        ...array_map(static fn(WhatToDoWithIt $doing): string => $doing->asked(), WhatToDoWithIt::cases()),
+        ...array_map(static fn(WhatWasDecided $decided): string => $decided->asked(), WhatWasDecided::cases()),
+    ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
 
     sort($asked);
