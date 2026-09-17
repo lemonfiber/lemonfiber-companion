@@ -45,7 +45,7 @@
 
              It is also what lets the list screen offer one road instead of two:
              the choice belongs where somebody is making it. --}}
-        <x-operator::action label="{{ __('connection.pair_by_typing') }}" :goes="$this->typingIsAt()" />
+        <x-operator::quiet-action label="{{ __('connection.pair_by_typing') }}" :goes="$this->typingIsAt()" />
     @endunless
     {{-- The way out. On a first run the list is empty and these two roads are
          the only things on it, so a person who starts pairing and changes their
@@ -53,5 +53,5 @@
          either — has nowhere to go. The platform's own gesture may be there,
          and a screen that counts on it works on one handset and traps somebody
          on another. --}}
-    <x-operator::action label="{{ __('connection.back_to_your_stacks') }}" :goes="$this->theListIsAt()" />
+    <x-operator::quiet-action label="{{ __('connection.back_to_your_stacks') }}" :goes="$this->theListIsAt()" />
 </native:column>

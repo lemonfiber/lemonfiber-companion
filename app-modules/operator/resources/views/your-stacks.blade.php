@@ -143,7 +143,7 @@
              needs to say is not *press me less*, it is *this one is not part
              of the pairing above*. --}}
         <native:divider />
-        <x-operator::action label="{{ __('device.share_diagnostics') }}" tap="share()" />
+        <x-operator::quiet-action label="{{ __('device.share_diagnostics') }}" tap="share()" />
     @endunless
     @endif
 </native:column>

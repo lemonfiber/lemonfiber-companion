@@ -271,6 +271,11 @@ final readonly class WhereAScreenCanSendYou
         // instead of spelling them out — and a graph with no edges reports
         // every screen as unreachable rather than reporting nothing.
         //
+        // Both spellings of a control, because a road may be the quiet one.
+        // What makes a control filled or quiet is whether it is the way
+        // forward, and a walk reading only the loud ones would report the way
+        // *past* a screen as no way at all.
+        //
         // Bounded by `<` rather than by `>`, and that is not a detail. An
         // attribute holding an array — `['name' => $service->name]` — carries a
         // `>` of its own, so a reader that stopped at the first one stopped
@@ -279,7 +284,7 @@ final readonly class WhereAScreenCanSendYou
         // somewhere nobody can get to. `<` cannot appear inside a tag, so it is
         // the bound that means *this tag* rather than *up to the first angle
         // bracket, whatever it belongs to*.
-        preg_match_all('/<x-operator::action\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
+        preg_match_all('/<x-operator::(?:quiet-)?action\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
         $ways = [...$ways, ...$named[2]];
 
         return [...$ways, ...$this->waysOffTheChromeOf($source)];
