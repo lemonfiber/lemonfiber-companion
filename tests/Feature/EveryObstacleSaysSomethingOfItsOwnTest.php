@@ -18,6 +18,15 @@ use Tests\Support\Catalogue;
 // It sits outside the module because it reads `lang/`, which a capability may
 // not do, and because the pairing it checks is between a module and the
 // application's text rather than anything inside either.
+//
+// **`G4-R1` is the other requirement this keeps.** Every user-facing error must
+// state what happened, what it means, and what to do. The sentence is the first
+// two and the `_action` key is the third, and the second test is what makes the
+// middle one true — three obstacles that all said the same thing would each
+// state *something*, and none would tell an operator which of the three they
+// had met. Named here because the pair of tests is where the requirement
+// actually lives; nothing else in this repository reads an error for what it
+// says.
 
 it('N1-R10 — every obstacle has a sentence and a remedy, in every language', function (): void {
     $missing = [];
