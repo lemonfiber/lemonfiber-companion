@@ -9,11 +9,16 @@ use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Modules\Kernel\Api\Decided;
+use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\WhatWasWanted;
+use Modules\Sdk\Internal\WhatADecisionAsksWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -46,7 +51,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Requests implements Wanting
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function askedOf(Stack $stack, Session $session): WhatWasWanted
     {
@@ -66,5 +71,51 @@ final readonly class Requests implements Wanting
         } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable) {
             return WhatWasWanted::met(Obstacle::StackDidNotAnswer);
         }
+    }
+
+    public function decided(Stack $stack, Session $session, Decided $decided): Underway
+    {
+        $client = $this->clients->client($stack, $session);
+
+        try {
+            $envelope = $client->act(
+                Api::action($decided->asked()),
+                $this->saying($decided),
+                // Built inline rather than into a variable, for
+                // {@see Supervisors::told()}'s reason: a key held for the
+                // length of a method is a key a second statement can reach, and
+                // this method's whole obligation is that no second send ever
+                // sees the first one's name.
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            );
+
+            return Underway::as(Handles::in($envelope));
+        } catch (RequestFailed $why) {
+            return Underway::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable) {
+            return Underway::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
+    /**
+     * What the action is asked with, which is the request and sometimes a
+     * sentence.
+     *
+     * Read off the decision through its own pair of closures rather than by
+     * comparing a reason against a blank: a stack sending nothing and an
+     * approval carrying nothing would otherwise come away the same, and one of
+     * them is a fault.
+     *
+     * @return array<string, int|string>
+     */
+    private function saying(Decided $decided): array
+    {
+        $asking = [WireField::Request->value => $decided->about()->number()];
+
+        return $decided->why(
+            was: static fn(string $because): WhatADecisionAsksWith
+                => new WhatADecisionAsksWith([...$asking, WireField::Reason->value => $because]),
+            wasNot: static fn(): WhatADecisionAsksWith => new WhatADecisionAsksWith($asking),
+        )->said;
     }
 }

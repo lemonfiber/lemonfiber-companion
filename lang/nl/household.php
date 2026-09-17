@@ -22,6 +22,19 @@ return [
     'megabytes' => 'MB',
     'gigabytes' => 'GB',
     'terabytes' => 'TB',
+    // N2-R11: a waiting request is approvable and refusable from here, and
+    // D7-R7 makes the sentence part of turning one down rather than
+    // something beside it.
+    'approve' => 'Goedkeuren',
+    'approve_that' => ':title goedkeuren',
+    'turn_down' => 'Afwijzen',
+    'turning_down' => ':title afwijzen',
+    'turning_down_owes' => ':who ziet wat je hier schrijft, dus zeg genoeg zodat diegene het niet hoeft te komen vragen.',
+    'reason_label' => 'Waarom niet',
+    'reason_placeholder' => 'Deze maand is er geen ruimte voor',
+    'reason_is_shown' => 'Zichtbaar voor wie erom vroeg.',
+    'turn_it_down' => 'Afwijzen',
+    'never_mind' => 'Laat maar',
     'nothing_asked' => 'Niemand heeft iets gevraagd.',
     'nothing_asked_action' => 'Wat het huishouden vraagt, verschijnt hier zodra iemand iets aanvraagt.',
     'asked_for' => 'Wat het huishouden vroeg',

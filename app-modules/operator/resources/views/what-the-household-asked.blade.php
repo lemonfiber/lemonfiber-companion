@@ -10,6 +10,32 @@
         {{ trans_choice('household.waiting_count', $this->answer()->waiting) }}
     </x-operator::emphasis>
 
+    @if ($this->turningDown() !== null)
+        {{-- D7-R7: a refusal owes the person who asked a sentence, and this is
+             where it is written. Its own frame rather than a field on the row,
+             because what an operator is doing here is composing something
+             somebody will read — and because a screen that turned a request
+             down from the row it sits on would be one tap from doing it by
+             accident. --}}
+        <x-operator::heading>
+            {{ __('household.turning_down', ['title' => $this->turningDown()->title]) }}
+        </x-operator::heading>
+        <native:text>{{ __('household.turning_down_owes', ['who' => $this->turningDown()->by]) }}</native:text>
+
+        <native:outlined-text-input
+            native:model="because"
+            label="{{ __('household.reason_label') }}"
+            placeholder="{{ __('household.reason_placeholder') }}"
+            supporting="{{ __('household.reason_is_shown') }}"
+        />
+
+        <x-operator::action
+            label="{{ __('household.turn_it_down') }}"
+            :disabled="! $this->mayDecline()"
+            tap="decline()"
+        />
+        <x-operator::quiet-action label="{{ __('household.never_mind') }}" tap="neverMind()" />
+    @else
     @forelse ($this->answer()->requests as $request)
         <x-operator::entry>
             <x-operator::emphasis>{{ $request->title }}</x-operator::emphasis>
@@ -47,6 +73,24 @@
                     </x-operator::note>
                 @endif
             @endif
+
+            @if ($request->wantsADecision)
+                {{-- N2-R11: approvable and refusable from the app, which for a
+                     long time this screen said and did not offer. The approval
+                     is the filled one: it is what the person who asked is
+                     hoping for, and it owes them nothing but the thing itself.
+                     Turning one down is quiet because it opens a question
+                     rather than settling one. --}}
+                <x-operator::action
+                    label="{{ __('household.approve') }}"
+                    answers-to="{{ __('household.approve_that', ['title' => $request->title]) }}"
+                    tap="approve('{{ $request->number }}')"
+                />
+                <x-operator::quiet-action
+                    label="{{ __('household.turn_down') }}"
+                    tap="wouldDecline('{{ $request->number }}')"
+                />
+            @endif
         </x-operator::entry>
     @empty
         {{-- Not the same screen as a stack that could not be asked. A quiet
@@ -55,6 +99,7 @@
         <x-operator::emphasis>{{ __('household.nothing_asked') }}</x-operator::emphasis>
         <native:text>{{ __('household.nothing_asked_action') }}</native:text>
     @endforelse
+    @endif
 
     {{-- `N1-R27`: a screen an operator cannot ask again is a screen that relies
          on being left and returned to, which is the one thing the requirement

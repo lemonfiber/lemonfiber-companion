@@ -50,6 +50,7 @@ final readonly class WhatOneRequestSays
      * twice, with thresholds that had to agree and nothing holding them to it.
      */
     public function __construct(
+        public int $number,
         public string $title,
         public string $by,
         public string $standing,

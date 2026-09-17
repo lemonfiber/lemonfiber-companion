@@ -92,6 +92,18 @@ enum WireField: string
     /** What a stack calls one request, for naming it when acting on it. */
     case Id = 'id';
 
+    /**
+     * Which request a decision is about, when one is sent (`N2-R11`).
+     *
+     * A second case for one number, because the wire says it twice under two
+     * names: a reading calls it `id` inside the row it belongs to, and an
+     * action asks for `request` because nothing around it says which kind of
+     * thing is being named. One case serving both would be this app deciding
+     * they are the same word, which is a fact about the contract and not about
+     * this enum.
+     */
+    case Request = 'request';
+
     /** The people in a household, each with what they have asked for. */
     case Members = 'members';
 
