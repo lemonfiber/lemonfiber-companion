@@ -56,7 +56,6 @@ use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
 use Native\Mobile\Network as PlatformNetworkFacade;
 use Native\Mobile\Scanner;
-use Native\Mobile\SecureStorage as PlatformStore;
 /**
  * The composition root.
  *
@@ -72,6 +71,7 @@ use Native\Mobile\SecureStorage as PlatformStore;
  * is what makes a capability module testable without a device, a network or a
  * stack to talk to.
  */
+use Native\Mobile\SecureStorage as PlatformStore;
 use Native\Mobile\Share;
 
 final class CompositionRoot extends ServiceProvider
