@@ -21,7 +21,7 @@
              somebody scanning the list is looking for: which thing, and
              whether it is on. --}}
         <native:pressable
-            class="w-full gap-1 py-2"
+            class="w-full min-h-12 justify-center gap-1 py-2"
             @navigate="$this->goes()->doingWith($service->id)"
             a11y-label="{{ __('health.open_service', ['name' => $service->name]) }}"
             :press-opacity="0.6"
@@ -47,7 +47,7 @@
 
     @forelse ($this->answer()->forms as $form)
         <native:pressable
-            class="w-full py-2"
+            class="w-full min-h-12 justify-center py-2"
             @navigate="$this->goes()->doingWithTheForm($form)"
             a11y-label="{{ __('health.open_form', ['name' => $form]) }}"
             :press-opacity="0.6"

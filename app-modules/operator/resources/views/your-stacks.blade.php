@@ -49,7 +49,7 @@
              finger is what says it is tappable at all, in place of the fill
              that used to say it. --}}
         <native:pressable
-            class="w-full gap-1 py-2"
+            class="w-full min-h-12 justify-center gap-1 py-2"
             @navigate="$this->tappingGoesTo($stack)"
             a11y-label="{{ __('connection.open_stack', ['stack' => $stack->name()->shown()]) }}"
             :press-opacity="0.6"
