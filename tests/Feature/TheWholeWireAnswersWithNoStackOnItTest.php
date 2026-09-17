@@ -24,7 +24,18 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Tests\Support\WhatTheContractAccepts;
 
-// N1-R59 — the whole app can be run and looked at with nothing else running.
+// N1-R58, N1-R59 — the seam sits below the transport, and the app runs on it.
+//
+// Two requirements, and this file is where both are held. `N1-R59` is that the
+// whole app can be run and looked at with nothing else running. `N1-R58` is
+// where the thing it runs on is allowed to sit: below the transport the app's
+// client uses, so that the client, the envelope reading and the wire-version
+// check are the ones a real stack would meet.
+//
+// The second was argued in `ClientsThatReachNothing` and asserted here without
+// being named, which is the shape a requirement has the day before it quietly
+// stops being true. Naming it costs a line and makes the rule findable from the
+// requirement rather than only from the file.
 //
 // The point of the seam being below the SDK rather than above it, asserted
 // rather than argued. What these ask is not *did the stand-in produce the bytes
@@ -133,7 +144,7 @@ function theScrollbackOf(string $service): LogWindow
     return aClientForNothing()->logs(Logs::ofService($service, 3));
 }
 
-it('answers a read with an envelope the real reader accepts', function (): void {
+it('N1-R58 — a read through the stand-in is read by the SDK, version check and all', function (): void {
     $envelope = whatCameBackFrom(Api::STATUS_ENDPOINT);
 
     expect($envelope)->toBeInstanceOf(Envelope::class)
