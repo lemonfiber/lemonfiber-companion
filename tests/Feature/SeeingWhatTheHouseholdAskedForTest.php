@@ -545,3 +545,68 @@ final readonly class WhatTheRefusalCarried
 {
     public function __construct(public string $said) {}
 }
+
+it('D7-R7 — a reason of nothing but spaces is no reason at all', function (): void {
+    // `trim` rather than a bare comparison: a field holding three spaces looks
+    // filled and says nothing, and *declined* with three spaces beside it is
+    // the answer `D7-R7` exists to prevent, spelled differently.
+    $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
+    $screen = theRequestsScreen($wanting);
+
+    $screen->wouldDecline('41');
+    $screen->__syncProperty('because', '   ');
+
+    expect($screen->mayDecline())->toBeFalse();
+
+    $screen->decline();
+
+    expect($wanting->whatItWasToldWasDecided())->toBe([]);
+});
+
+it('D7-R7 — a reason with no question open turns nothing down', function (): void {
+    // The guard that makes the question load-bearing: a reason typed with
+    // nothing being asked about is a sentence with no subject, and sending it
+    // would turn down whichever request happened to be first.
+    $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
+    $screen = theRequestsScreen($wanting);
+
+    $screen->__syncProperty('because', 'No room this month');
+    $screen->decline();
+
+    expect($wanting->whatItWasToldWasDecided())->toBe([]);
+});
+
+it('D7-R7 — the reason is put away once it has been sent', function (): void {
+    // So the next refusal starts empty rather than carrying the last one's
+    // sentence into a decision about somebody else's request.
+    $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
+    $screen = theRequestsScreen($wanting);
+
+    $screen->wouldDecline('41');
+    $screen->__syncProperty('because', 'No room this month');
+    $screen->decline();
+
+    expect($screen->mayDecline())->toBeFalse();
+});
+
+it('N2-R11 — a number arriving with spaces around it is the same number', function (): void {
+    // A route and a template both carry text, and text picks up whitespace on
+    // the way. A screen that read `41` and ` 41 ` as two requests would refuse
+    // a decision an operator made on the row in front of them.
+    $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
+    $screen = theRequestsScreen($wanting);
+
+    $screen->approve('  41  ');
+
+    expect($wanting->whatItWasToldWasDecided())->toHaveCount(1);
+});
+
+it('the frame is handed what was typed, so the field draws it', function (): void {
+    // `native:model` expands to a bare variable, so a screen that only held the
+    // value would render a frame where it was never defined — a warning rather
+    // than a stop, and a field that looks empty while this holds a sentence.
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
+    $screen->__syncProperty('because', 'No room this month');
+
+    expect($screen->render()->getData()['because'] ?? null)->toBe('No room this month');
+});

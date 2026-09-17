@@ -238,6 +238,56 @@ it('N1-R10 — says the same about a decision it could not deliver', function ()
     }
 });
 
+/**
+ * What the adapter actually put on the wire for a decision.
+ *
+ * Asserted here and nowhere else in this suite, because it is the one call
+ * whose *body* carries a decision: a reading asks for nothing, and a verb names
+ * its subject in a list the other contract suite reads. A decision sent with
+ * the wrong number is one made about somebody else's request, and nothing on
+ * the way back would say so — the stack answers with a job either way.
+ *
+ * @return array<string, mixed>
+ */
+function whatTheWireCarriedForADecision(Decided $decided): array
+{
+    MockClient::destroyGlobal();
+    MockClient::global([aDecidedAnswer()]);
+
+    new Requests(new PinnedClients(), SequencedEntropy::counting())
+        ->decided(aStackWithAHousehold(), theSessionTheHouseholdIsAskedWith(), $decided);
+
+    $sent = MockClient::getGlobal()?->getLastPendingRequest()?->body()?->all();
+
+    if (! is_array($sent)) {
+        // Raised rather than answered with `[]`. A decision that never reached
+        // the wire would otherwise read as a body with the wrong fields in it,
+        // and the fault named would be the wrong one.
+        throw new RuntimeException('No decision reached the wire.');
+    }
+
+    // A body carrying a numeric key is a list where the endpoint reads a map,
+    // which the equality check reports as a wrong value rather than as the
+    // wrong shape.
+    expect(array_keys($sent))->each->toBeString();
+
+    /** @var array<string, mixed> $sent */
+    return $sent;
+}
+
+it('N2-R11 — an approval names the request and nothing else', function (): void {
+    expect(whatTheWireCarriedForADecision(Decided::toApprove(RequestId::numbered(41))))
+        ->toBe(['request' => 41]);
+});
+
+it('D7-R7 — a refusal names the request and carries the sentence with it', function (): void {
+    // Both keys, and the number among them: a refusal sent without its reason
+    // is the wire half of the thing `D7-R7` forbids, and one sent with the
+    // wrong number turns somebody else's request down.
+    expect(whatTheWireCarriedForADecision(Decided::toDecline(RequestId::numbered(41), 'No room this month')))
+        ->toBe(['request' => 41, 'reason' => 'No room this month']);
+});
+
 /** One word carried out of an `either()` arm. */
 final readonly class WhatTheHouseholdTurnedOutToSay
 {

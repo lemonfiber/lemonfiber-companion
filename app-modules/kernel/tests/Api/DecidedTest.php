@@ -19,12 +19,14 @@ it('N2-R11 — an approval names the request and owes nothing else', function ()
 
     $why = $decided->why(
         was: static fn(string $because): object => new WhatItCarried($because),
-        wasNot: static fn(): object => new WhatItCarried(''),
+        // A word of its own rather than a blank, so that swapping the arms is
+        // a failure rather than two ways of saying nothing.
+        wasNot: static fn(): object => new WhatItCarried('nothing was owed'),
     );
 
     expect($decided->asked())->toBe('household-approve')
         ->and($decided->about()->number())->toBe(41)
-        ->and($why->said)->toBe('');
+        ->and($why->said)->toBe('nothing was owed');
 });
 
 it('D7-R7 — a refusal cannot be built without the sentence it owes', function (): void {
@@ -40,7 +42,7 @@ it('D7-R7 — and carries it, trimmed, where there is one', function (): void {
 
     $why = $decided->why(
         was: static fn(string $because): object => new WhatItCarried($because),
-        wasNot: static fn(): object => new WhatItCarried(''),
+        wasNot: static fn(): object => new WhatItCarried('nothing was owed'),
     );
 
     expect($decided->asked())->toBe('household-decline')
