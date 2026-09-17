@@ -46,6 +46,13 @@ use Tests\Support\Template;
 // says it is open is its contents being on the screen; the accent bar is beside
 // that rather than instead of it.
 //
+// **`G3-R14` comes with it**, for the surface this app is. Severity in log
+// output must be present as text and not only as colour. The scrollback names
+// the stream in words beside every line, and what makes a line stand out is
+// weight rather than a red mark — deliberately, because plenty of well-behaved
+// services write progress to `stderr`. Colour distinguishes nothing here, so
+// there is no severity it could be carrying alone.
+//
 // Named here because the implication runs one way only. Relax this rule — allow
 // one ternary, once — and `G3-R1` stops being held by anything, silently, with
 // no other rule going red. A requirement that survives only as a side effect is
