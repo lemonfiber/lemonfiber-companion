@@ -139,7 +139,13 @@ final class WhatTheHouseholdAsked extends NativeComponent
     }
 
     /**
-     * Approve one of them, which is half of `N2-R11`.
+     * Approve one of them, which is half of `N2-R11` and all of `D7-R6`.
+     *
+     * `D7-R6` is that a pending request be approvable from lemonfiber without
+     * opening Seerr. This is the method that makes it true on a phone: the
+     * approval goes to the stack's own endpoint, and nothing here links out to
+     * the tool the request came from. An operator asked about it in the kitchen
+     * answers in the kitchen.
      *
      * The request is found in what was actually read before anything is sent,
      * for {@see WhatToDoWithThis::wouldYouLike()}'s reason: a number a template

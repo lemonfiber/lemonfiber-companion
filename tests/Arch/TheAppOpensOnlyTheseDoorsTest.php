@@ -106,6 +106,10 @@ const VERBS_THE_APP_ASKS_FOR = [
     // because this list is about what may go through `Api::action()` rather
     // than about services — a second list would be a second answer to *what
     // can this app ask a stack to do*, and the two would drift.
+    // `D7-R6` is this line: a pending request is approvable from lemonfiber
+    // without opening Seerr. The verb going to the stack's own endpoint is what
+    // makes that true — there is no road from this app to the tool the request
+    // came from, and this is the one that replaces it.
     'household-approve' => 'gives one waiting request the thing it asked for',
 
     // `D7-R7` is why this one carries a sentence: a refusal owes the person who
