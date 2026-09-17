@@ -4,7 +4,16 @@ declare(strict_types=1);
 
 use Tests\Support\Catalogue;
 
-// G2-R14 — a translated screen keeps the words that are also names.
+// G2-R3, G2-R14 — a translated screen keeps the words that are also names.
+//
+// `G2-R3` is that one concept use one term consistently across all surfaces and
+// messages. A locale is where that is hardest to see: the term stays consistent
+// *within* the translated screens, so nothing inside them disagrees, and the
+// disagreement is with the compose file, the subcommand and the documentation —
+// surfaces this suite cannot read. `G2-R14` is the same requirement made
+// checkable from here, by asking that the source locale and every other one
+// name the same things.
+//
 //
 // `G2` already asks that the plain phrasing not stop an operator learning the
 // real term, because they will need it to search for help. A second language
