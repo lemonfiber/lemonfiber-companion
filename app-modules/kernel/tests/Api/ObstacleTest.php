@@ -30,7 +30,12 @@ it('is the six an operator must be able to tell apart', function (): void {
     ]);
 });
 
-it('names each one differently in the identifier an operator searches for', function (): void {
+it('G4-R6 — names each one differently in the identifier an operator searches for', function (): void {
+    // `G4-R6` is that every error kind carry a stable identifier, and this test
+    // is what makes *stable* mean something: the codes are written out, so a
+    // rename is a failing test rather than a search that stops finding the page
+    // somebody wrote about the error last year. The uniqueness check below is
+    // the other half — an identifier two kinds share identifies neither.
     $codes = array_map(
         static fn(Obstacle $obstacle): string => $obstacle->code()->shown(),
         Obstacle::cases(),
