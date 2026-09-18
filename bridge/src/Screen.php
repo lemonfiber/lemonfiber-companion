@@ -53,7 +53,7 @@ final readonly class Screen
     /**
      * Stop protecting for that screen.
      *
-     * Backgrounding still protects afterwards (`N4-R9`), which is why this
+     * Backgrounding still protects afterwards, which is why this
      * answers with the window's resulting state rather than with nothing: on a
      * backgrounded app the answer to "did revealing unprotect the window" is no.
      */

@@ -184,7 +184,7 @@ final class CompositionRoot extends ServiceProvider
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,
         // because the two have opposite obligations: a session is what this app
-        // may hold and must not spread (`N1-R23`, `N4-R5`), and a stack is what
+        // may hold and must not spread, and a stack is what
         // it must retain and `N1-R34` refuses to let a discard take with it. One
         // port for both would be the place where the first piece of code to
         // write one out takes the other with it.
@@ -226,7 +226,7 @@ final class CompositionRoot extends ServiceProvider
 
         // What has stopped coming in, which is the first of `N2-R9`'s four.
 
-        // What one service has been saying, bounded and named (`N2-R10`).
+        // What one service has been saying, bounded and named.
         // Beside the two above and built the same way, because the reason they
         // share a constructor is the pin: one place decides whether a
         // certificate is checked, and a port that built its own client would be
@@ -290,7 +290,7 @@ final class CompositionRoot extends ServiceProvider
             static fn(): Capture => new PlatformScreen(new Screen()),
         );
 
-        // The camera, reading a pairing code (`N1-R6`).
+        // The camera, reading a pairing code.
         //
         // Handed *how to open a scanner* rather than the scanner itself, and
         // the reason is `Scanner::scan()`'s shape: it is static, so an adapter

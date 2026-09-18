@@ -49,7 +49,7 @@ final readonly class PlatformNotifier implements Notifier
      * replaces the notification already showing. One per stack per code means
      * a second alert about the same thing updates the first rather than
      * stacking — which is what an operator wants — while two different stacks
-     * never overwrite each other (`N1-R11`).
+     * never overwrite each other.
      */
     private const string UNDER = 'lemonfiber';
 

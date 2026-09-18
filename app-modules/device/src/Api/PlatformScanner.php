@@ -21,7 +21,7 @@ use Native\Mobile\PendingScanner;
  * become one {@see WhatTheCameraSaw}, and the interesting half of that is the
  * refusal: `ScannerCancelled` is dispatched both when somebody presses back and
  * when the camera permission is denied, so the reason string is what tells a
- * screen offering the typed road (`N4-R3`) from one offering another go.
+ * screen offering the typed road from one offering another go.
  * {@see WhatTheScannerSaid} is where that word is read.
  *
  * **One format, and which one is not this class's to decide.** The plugin

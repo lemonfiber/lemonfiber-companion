@@ -7,7 +7,7 @@ namespace Modules\Updates\Api\Queries;
 use Modules\Kernel\Api\Releases;
 
 /**
- * The releases somebody in the house would see the difference from (`N2-R16`).
+ * The releases somebody in the house would see the difference from.
  *
  * The distinction that makes an update a decision rather than a chore, and the
  * second thing this module knows that the stack does not: the stack says which

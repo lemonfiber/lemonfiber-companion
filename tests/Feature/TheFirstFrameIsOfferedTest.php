@@ -499,7 +499,7 @@ it('N1-R36 — a launch that is ready has nothing standing in the way', function
 
 it('N1-R35 — a first run has nothing standing in the way either', function (): void {
     // Nothing is wrong on a first run, and an obstacle drawn here would be the
-    // app describing its own first launch as a fault (`N1-R35`).
+    // app describing its own first launch as a fault.
     $stacks = StacksInMemory::working();
     $screen = theLaunchScreen(
         $stacks,

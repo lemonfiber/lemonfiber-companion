@@ -87,7 +87,7 @@ function theSameStanding(): Upkeep
 }
 
 /**
- * What became of the last update, which both implementations report (`N2-R18`).
+ * What became of the last update, which both implementations report.
  *
  * Two endings and not one, and the second is not *failed*: a service that took
  * the image and would not come back up sends somebody to its logs, and one that

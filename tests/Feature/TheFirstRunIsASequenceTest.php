@@ -30,9 +30,9 @@ use Tests\Support\Fakes\VerdictsInMemory;
 // makes the reading optional.
 //
 // The three requirements are three separate claims and each is asked here
-// separately: that there are steps and they arrive in an order (`N1-R54`), that
-// a step says where it is and can be left (`N1-R55`), and that none of it
-// exists for a device that already holds a pairing (`N1-R56`).
+// separately: that there are steps and they arrive in an order, that
+// a step says where it is and can be left, and that none of it
+// exists for a device that already holds a pairing.
 
 /** The moment the sequence is read at. Named for this file (`G10`). */
 const WHEN_IT_WAS_FIRST_RUN = 1_770_000_000;

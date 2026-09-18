@@ -94,7 +94,7 @@ function waitsOnAPort(ReflectionClass $class): bool
 
 // N1-R39 — a screen says which stack it is showing.
 //
-// The app holds more than one stack (N1-R11) and must never attribute a reading
+// The app holds more than one stack and must never attribute a reading
 // from one to another. Every other guard on that is in the kernel: `StackId` is
 // a type, `Capabilities` carries the stack that declared it, `Stack::is()`
 // compares identity rather than address. A screen is where all of that can still

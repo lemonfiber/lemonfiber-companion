@@ -23,17 +23,17 @@ namespace Lemonfiber\Native;
  */
 enum Call: string
 {
-    /** A screen holding a secret has come up (`N4-R18`). */
+    /** A screen holding a secret has come up. */
     case Conceal = 'Lemonfiber.Conceal';
 
-    /** That screen has gone. Backgrounding still protects (`N4-R9`). */
+    /** That screen has gone. Backgrounding still protects. */
     case Reveal = 'Lemonfiber.Reveal';
 
     /** Whether the window is protected from capture right now. */
     case IsProtected = 'Lemonfiber.IsProtected';
 
     /**
-     * Ask the device who this is (`N4-R7`, `N4-R8`).
+     * Ask the device who this is.
      *
      * Answers immediately and sends the real result as an event: the dialog is
      * the operator's to answer in their own time, and a bridge call that waited

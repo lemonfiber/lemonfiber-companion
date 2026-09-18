@@ -171,7 +171,7 @@ it('N1-R35 — a first run is never asked about the network either', function ()
 });
 
 it('N1-R37 — a connected device is asked once and then left alone', function (): void {
-    // A launch is not a poller (`N1-R66`). Asking twice is how a cheap question
+    // A launch is not a poller. Asking twice is how a cheap question
     // becomes a habit, and the answer can change between the two — which would
     // make a launch that reported *ready* about a device that had since left
     // the network.

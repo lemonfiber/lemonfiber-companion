@@ -12,7 +12,7 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 
 /**
- * Findings that share a cause, put together, with the cause first (`G4-R3`).
+ * Findings that share a cause, put together, with the cause first.
  *
  * The rule says errors sharing a root cause must be **grouped**, with the cause
  * reported rather than each symptom independently — and the feature's own edge

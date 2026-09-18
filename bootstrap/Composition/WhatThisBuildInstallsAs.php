@@ -11,7 +11,7 @@ use Modules\Kernel\Api\WhoThisAppIs;
 use function trim;
 
 /**
- * The check that a build is this application and not a second one (`N1-R53`).
+ * The check that a build is this application and not a second one.
  *
  * {@see WhoThisAppIs} declares the identity; this is what happens when a build
  * says something else.

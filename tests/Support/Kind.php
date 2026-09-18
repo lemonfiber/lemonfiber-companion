@@ -53,7 +53,7 @@ enum Kind: string
      * Vendor namespaces a module of this kind may never name.
      *
      * `Lemonfiber\Sdk` is absent from the adapter list on purpose: the sdk
-     * module is an adapter and is the one place permitted to name it (N1-R16).
+     * module is an adapter and is the one place permitted to name it.
      * That single exception is asserted separately, by name, so it cannot be
      * widened by adding another adapter.
      *

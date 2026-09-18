@@ -63,7 +63,7 @@ final readonly class PlatformStacks implements Stacks
     /** The one key the whole record lives under. */
     private const string UNDER = 'lemonfiber.stacks';
 
-    /** The shape this build writes, and the only one it reads (`N1-R32`). */
+    /** The shape this build writes, and the only one it reads. */
     private const int SHAPE = 1;
 
     /**
@@ -127,7 +127,7 @@ final readonly class PlatformStacks implements Stacks
      *
      * The address is taken with `forTheClient()` rather than by letting
      * `json_encode` reach `Address::jsonSerialize()`, which answers with a
-     * placeholder on purpose (`N1-R15`). Writing it down has to be a deliberate
+     * placeholder on purpose. Writing it down has to be a deliberate
      * act in one visible place, and this is the place.
      *
      * @return array{shape: int, stacks: list<array{id: string, name: string, address: string, fingerprint: string}>}

@@ -421,7 +421,7 @@ it('D7-R7 — a declined request carrying no reason is refused, not shown short'
     // `declined` with nothing after it is the screen that sends somebody to ask
     // their operator in person, which is the whole thing the requirement exists
     // to prevent — and substituting *no reason given* would be this app writing
-    // a sentence on a stack's behalf (`N2-R14`).
+    // a sentence on a stack's behalf.
     $each = [
         'no refused key at all' => ['id' => 1, 'title' => 'A film', 'state' => 'declined'],
         'a refusal that is not one' => ['id' => 1, 'title' => 'A film', 'state' => 'declined', 'refused' => 'no'],

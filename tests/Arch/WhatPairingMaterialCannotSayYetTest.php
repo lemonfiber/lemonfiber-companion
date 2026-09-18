@@ -7,7 +7,7 @@ use Modules\Kernel\Api\WhatPairingMaterialSays;
 // N1-R17 — the one thing pairing material does not say, and what waits on it.
 //
 // Material carries an address, a fingerprint and an expiry, and nothing that
-// says *which machine*. The app holds several (`N1-R11`), so it has to decide
+// says *which machine*. The app holds several, so it has to decide
 // that anyway, and both fields it could decide from are the ones re-pairing
 // exists to change: an address DHCP moved, a certificate the stack announced it
 // would replace. Matching on either identifies a stack by exactly the thing

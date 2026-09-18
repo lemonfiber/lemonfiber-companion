@@ -42,7 +42,7 @@ use Tests\Support\Module;
  * renders a `Report` because a `Report` was what the caller had.
  *
  * Four of the five clauses name types here. A credential is the fifth and is
- * held elsewhere: one cannot reach any screen at all (`N2-R12`), so the two
+ * held elsewhere: one cannot reach any screen at all, so the two
  * named below are the shapes a session takes rather than the value itself.
  *
  * Lifecycle controls and logs were once absent from this list because there was

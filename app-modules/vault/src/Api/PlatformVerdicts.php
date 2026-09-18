@@ -44,7 +44,7 @@ use Native\Mobile\SecureStorageStatus;
  * that happens anyway.
  *
  * **A shape number, because `N1-R32` asks for one**, and an unrecognised shape
- * is discarded rather than interpreted (`N1-R33`). Discarding here costs
+ * is discarded rather than interpreted. Discarding here costs
  * nothing at all: the opening screen shows the stack with no verdict yet, which
  * is a state it already draws, and the first ask refills it. That is a cheaper
  * failure than the one this avoids, which is opening on a verdict assembled
@@ -55,7 +55,7 @@ final readonly class PlatformVerdicts implements Verdicts
     /** The one key the whole record lives under. */
     private const string UNDER = 'lemonfiber.verdicts';
 
-    /** The shape this build writes, and the only one it reads (`N1-R32`). */
+    /** The shape this build writes, and the only one it reads. */
     private const int SHAPE = 1;
 
     public function __construct(private Platform $store) {}

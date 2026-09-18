@@ -45,7 +45,7 @@ use Tests\Support\Tree;
  * to. It reaches zero when the last comment is rewritten, and this file and the
  * count go together when the org's gate takes over.
  */
-const IDENTIFIERS_STILL_IN_COMMENTS = 543;
+const IDENTIFIERS_STILL_IN_COMMENTS = 499;
 
 /**
  * Whether a line is a comment, by the four markers this repository writes one

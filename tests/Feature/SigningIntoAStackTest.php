@@ -259,7 +259,7 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::NoStoreOnThisDevice, true, false],
         [HowTheSignInWent::TheStoreWouldNotOpen, true, false],
         // No field and no way back: the remedy is in the phone's settings, so
-        // both controls this screen could offer would do nothing (`N4-R17`).
+        // both controls this screen could offer would do nothing.
         [HowTheSignInWent::TheNetworkIsNotPermitted, false, true],
     ];
 

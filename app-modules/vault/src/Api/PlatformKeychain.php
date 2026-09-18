@@ -95,7 +95,7 @@ final readonly class PlatformKeychain implements SecureStorage
                 : WhySessionCannotBeKept::StoreWouldNotOpen;
     }
 
-    /** One key per stack, so two paired stacks never share a session (`N1-R11`). */
+    /** One key per stack, so two paired stacks never share a session. */
     private function keyFor(StackId $stack): string
     {
         return sprintf('%s.%s', self::UNDER, $stack->stored());

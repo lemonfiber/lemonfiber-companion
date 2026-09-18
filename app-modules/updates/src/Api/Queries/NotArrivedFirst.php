@@ -7,7 +7,7 @@ namespace Modules\Updates\Api\Queries;
 use Modules\Kernel\Api\HowServicesTookIt;
 
 /**
- * What became of each service, with what needs attention first (`N2-R18`).
+ * What became of each service, with what needs attention first.
  *
  * The one decision this module makes about an applied update that the stack has
  * not already made for it. The stack sends what became of every service and it
