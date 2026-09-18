@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "12fd3dfb34c34eb2ef9b1694bf9736b9",
+    "content-hash": "0b2d35879e50b6e1ef459eb6263bf169",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -4032,6 +4032,61 @@
             ],
             "description": "Local notifications for NativePHP Mobile with Laravel Notification channel integration",
             "time": "2026-07-15T18:46:26+00:00"
+        },
+        {
+            "name": "nativephp/mobile-secure-storage",
+            "version": "1.0.2",
+            "dist": {
+                "type": "zip",
+                "url": "https://plugins.nativephp.com/dist/nativephp/mobile-secure-storage/nativephp-mobile-secure-storage-6314188fc911615396cecbf25497dd0a608b1521-zip-3ae14b.zip",
+                "reference": "6314188fc911615396cecbf25497dd0a608b1521",
+                "shasum": "1690e0957cafb32ecbfc71ad4707ddb191e5a567"
+            },
+            "require": {
+                "nativephp/mobile": "^3.0 || ^4.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^2.7|^3.0|^4.0"
+            },
+            "type": "nativephp-plugin",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Native\\Mobile\\Providers\\SecureStorageServiceProvider"
+                    ]
+                },
+                "nativephp": {
+                    "manifest": "nativephp.json"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Native\\Mobile\\Providers\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "pest"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "NativePHP",
+                    "email": "support@nativephp.com"
+                }
+            ],
+            "description": "Secure storage plugin for NativePHP Mobile (Keychain/EncryptedSharedPreferences)",
+            "time": "2026-07-15T18:46:27+00:00"
         },
         {
             "name": "nativephp/mobile-ui",

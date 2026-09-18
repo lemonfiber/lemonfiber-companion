@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\NativeServiceProvider as OurOwnExpansion;
+use Native\Mobile\Providers\SecureStorageServiceProvider as SecureStore;
 use Native\Mobile\UI\NativeUIServiceProvider as Controls;
 use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notifications;
 
@@ -34,6 +35,13 @@ use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notificati
  *   A build made without it has the adapters and not the functions they call.
  * - **`nativephp/mobile-local-notifications`**, which `Modules\Device\Api\
  *   PlatformNotifier` is written against.
+ * - **`nativephp/mobile-secure-storage`**, which is where the keychain comes
+ *   from. It was core until NativePHP 4 and is a plugin now, and the facade
+ *   `Native\Mobile\SecureStorage` stayed behind in `nativephp/mobile` — so the
+ *   PHP half resolves, the adapters bind, every test passes against a fake, and
+ *   the device answers *function not found* to every read. Nothing this app
+ *   retains works without it: no session kept, no stack remembered, no verdict
+ *   shown.
  * - **`nativephp/mobile-ui`**, which is where a text input comes from.
  *   `nativephp/mobile` registers `pressable` and no field: `text_input`,
  *   `toggle` and the rest are left to this plugin by name, in a comment in
@@ -79,6 +87,7 @@ final class NativeServiceProvider extends ServiceProvider
         return [
             OurOwnExpansion::class,
             Notifications::class,
+            SecureStore::class,
             Controls::class,
         ];
     }
