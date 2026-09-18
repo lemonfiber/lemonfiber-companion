@@ -21,9 +21,9 @@ use Lemonfiber\Native\WhyNothingWasTold;
  * {@see AHandsetsWindow} gives: closures capturing by reference start from a
  * literal and the analyser reads the first branch as permanently dead.
  *
- * **It counts.** `N4-R4` is not a question about a return value, it is a
- * question about how many times somebody was interrupted — so the assertion
- * that matters is a count, and something has to be keeping it.
+ * **It counts.** Not asking a second time is not a question about a return
+ * value, it is a question about how many times somebody was interrupted — so
+ * the assertion that matters is a count, and something has to be keeping it.
  */
 final class ANotificationCentreOnAHandset
 {
@@ -85,8 +85,8 @@ final class ANotificationCentreOnAHandset
      * therefore most likely to survive review.
      *
      * It refuses to prompt twice, because a stand-in that re-asks happily is a
-     * stand-in that lets a caller breaking `N4-R4` pass every test it appears
-     * in.
+     * stand-in that lets a caller who prompts a second time pass every test it
+     * appears in.
      *
      * @return array{outcome: string}
      */
