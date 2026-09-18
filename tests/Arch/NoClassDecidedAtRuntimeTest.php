@@ -36,6 +36,27 @@ use Tests\Support\Template;
 // rather than a class list, and `@class([...])` is not an attribute for the
 // expression to match. A class name hidden in either is hidden the same way and
 // costs the same thing.
+//
+// **It holds `G3-R1` as well, by being stricter than it.** No state may be
+// conveyed by colour alone; a symbol or text must also carry it. A class list
+// that cannot be decided at runtime is a colour that cannot change with a
+// state, so on this surface colour carries no state at all — which is more than
+// the requirement asks and therefore satisfies it. The one place a state is
+// drawn rather than written is the open family in `how-this-stack-is`, and what
+// says it is open is its contents being on the screen; the accent bar is beside
+// that rather than instead of it.
+//
+// **`G3-R14` comes with it**, for the surface this app is. Severity in log
+// output must be present as text and not only as colour. The scrollback names
+// the stream in words beside every line, and what makes a line stand out is
+// weight rather than a red mark — deliberately, because plenty of well-behaved
+// services write progress to `stderr`. Colour distinguishes nothing here, so
+// there is no severity it could be carrying alone.
+//
+// Named here because the implication runs one way only. Relax this rule — allow
+// one ternary, once — and `G3-R1` stops being held by anything, silently, with
+// no other rule going red. A requirement that survives only as a side effect is
+// one nobody will think to check when the side effect goes.
 
 it('F9 — no class list in a template is decided at runtime', function (): void {
     $refused = [

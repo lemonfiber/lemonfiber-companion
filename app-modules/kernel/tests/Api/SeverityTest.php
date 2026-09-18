@@ -10,7 +10,14 @@ use function it;
 
 use Modules\Kernel\Api\Severity;
 
-it('reads the four the server sends, worst first', function (): void {
+it('G4-R2 — reads the four the server sends, worst first', function (): void {
+    // `G4-R2` is that errors use exactly the four defined levels, and this is
+    // where *exactly* is kept: the enum could grow a fifth without anything
+    // else in the repository objecting, and a fifth level is a severity no
+    // other surface of this product knows how to draw. Pinned by name rather
+    // than counted, because a rename is the same harm as an addition — a screen
+    // sorting by a level nobody else has is a screen disagreeing with the tool
+    // beside it about how bad something is.
     // The values are the wire's. A rename here would make every refusal
     // unparsable, and the parse is in an adapter where nothing else is
     // looking at these strings.

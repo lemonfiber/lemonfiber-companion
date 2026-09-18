@@ -5,7 +5,15 @@ declare(strict_types=1);
 use Tests\Support\OneDestination;
 use Tests\Support\Template;
 
-// F7 — a template reads nothing that has one destination.
+// F7, G4-R8 — a template reads nothing that has one destination.
+//
+// `G4-R8` is that an error must carry no credential and no secret, and this
+// holds it by being stricter: the three values are refused on every screen,
+// which includes the ones an operator only ever sees because something failed.
+// The implication runs one way — narrow this to a subset of screens and
+// `G4-R8` stops being held, with no rule going red — so it is named here rather
+// than left to be rediscovered.
+//
 //
 // N1-R15, N1-R8 and N1-R7 name the three values, and the one destination each
 // has is never a screen.
