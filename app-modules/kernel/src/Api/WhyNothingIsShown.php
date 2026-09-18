@@ -31,6 +31,12 @@ enum WhyNothingIsShown
      * Which of those two applies is {@see Asked}'s to answer, and the
      * difference matters: never asked and declined are the same to a caller
      * wanting to show something and opposite to one deciding whether to ask.
+     *
+     * A channel the operator switched off arrives here too, from a bridge that
+     * tells it apart on the wire. It is the same sentence on a screen — this
+     * application's alerts are off, and here is where to turn them on — and
+     * the same answer to whether asking could help, which is what makes them
+     * one case here and two words there.
      */
     case NotificationsAreNotPermitted;
 
@@ -43,6 +49,18 @@ enum WhyNothingIsShown
      * than saying nothing.
      */
     case TheStackIsGone;
+
+    /**
+     * The platform would not show it, and asking anybody would not help.
+     *
+     * The case a boolean could not carry and the reason the bridge answers a
+     * word. A notification centre refuses for reasons that have nothing to do
+     * with permission — a channel the operator switched off, a platform that
+     * declined the request — and the remedy is *try again, and if it keeps
+     * happening something is wrong with the device*, which is not the remedy
+     * for a permission and must not reach the same screen.
+     */
+    case TheDeviceWouldNotShowIt;
 
     /**
      * Whether asking the operator could change this answer.

@@ -1,71 +1,97 @@
 import Foundation
 
-/// What the device would do with a notification, read rather than asked.
+/// Whether a notification would be seen, and whether anybody may still be asked.
 ///
-/// The distinction this exists for is between *nobody has been asked* and *the
-/// operator said no*. An app that cannot tell them apart prompts a second time
-/// on a device where somebody already refused, which is the one thing the rule
-/// about a declined permission forbids.
+/// The four facts a platform can report about notifications, and what they mean
+/// together. Reconstructing the three answers out of them is
+/// `WhatTheOperatorSaid`'s, because the camera asks the identical question and
+/// two copies of that decision would be two capabilities disagreeing quietly.
+/// What is here is the part that belongs to telling somebody: which facts are
+/// gathered, and what the answer is called once the subject is a notification.
 ///
-/// iOS answers the question directly — `UNAuthorizationStatus` has a
-/// `.notDetermined` of its own — so the two states this has to reconstruct on
-/// Android arrive here already separated. The rule is written anyway, and takes
-/// the same four inputs, because the failure these files exist to catch is the
-/// two platforms quietly disagreeing, and a rule that exists on one side only
-/// cannot disagree visibly.
+/// No UserNotifications, no UIKit. Everything is a reading of four booleans a
+/// caller passes in, which is what lets it be run on a laptop rather than
+/// demonstrated on a handset.
+///
+/// Deliberately mirrors `NotificationRule.kt` line for line.
 public struct NotificationRule: Equatable, Sendable {
-    /// Whether a notification posted now would actually appear.
+    /// Whether a notification posted right now would be seen.
     ///
-    /// The whole answer where it is true, and deliberately the first question:
-    /// authorisation is not the only switch, and any of them being off means
-    /// the same thing to somebody waiting to be told something.
+    /// One fact covering every switch that could stop it, because the operator
+    /// turning any of them off means the same thing to a caller with something
+    /// to show.
     public let wouldAppear: Bool
 
-    /// Whether this platform has an authorisation to ask for at all.
+    /// Whether this platform has a runtime permission to ask for at all.
     ///
-    /// Always true on iOS, where notifications have always required one. The
-    /// input exists so that the two rules take the same shape; Android's answer
-    /// is false below API 33, where silence is a refusal already given rather
-    /// than a question still open.
+    /// Always true here. It is false below Android 33, where notifications are
+    /// granted at install time and turned off in settings afterwards, and it is
+    /// carried on both sides so that both answer the same question.
     public let permissionIsAsked: Bool
 
     /// Whether the platform says an explanation would help.
     ///
-    /// Always false on iOS, which offers no equivalent of Android's rationale
-    /// flag — and needs none, because `.notDetermined` is answered directly.
+    /// Always false here; iOS has nothing of the kind. On Android it is true
+    /// only after a refusal and never before the first prompt or after a
+    /// permanent one, so it identifies exactly one of the three states and
+    /// cannot stand alone.
     public let wouldExplain: Bool
 
     /// Whether this application has ever raised the prompt.
     ///
-    /// Recorded by this plugin where the prompt is raised. iOS does not need it
-    /// to reach the right answer; it is carried so that a disagreement between
-    /// the platforms is a disagreement about the same four facts.
+    /// Kept by this plugin because nothing else can keep it on Android: there
+    /// is no call that answers it, and the two states it separates — never
+    /// asked, and refused so firmly the platform stopped offering — are
+    /// identical from the outside. Recorded here too, so that the two platforms
+    /// answer from the same kind of record rather than one of them answering
+    /// from a better one.
     public let everAsked: Bool
 
-    /// The four facts a platform reports, in the order the rule reads them.
-    public init(wouldAppear: Bool, permissionIsAsked: Bool, wouldExplain: Bool, everAsked: Bool) {
+    /// - Parameters:
+    ///   - wouldAppear: whether a notification posted now would be seen.
+    ///   - permissionIsAsked: whether this platform has a runtime permission.
+    ///   - wouldExplain: whether the platform says an explanation would help.
+    ///   - everAsked: whether this application has ever raised the prompt.
+    public init(
+        wouldAppear: Bool,
+        permissionIsAsked: Bool,
+        wouldExplain: Bool,
+        everAsked: Bool
+    ) {
         self.wouldAppear = wouldAppear
         self.permissionIsAsked = permissionIsAsked
         self.wouldExplain = wouldExplain
         self.everAsked = everAsked
     }
 
-    /// The three answers the application reasons in, as the wire spells them.
-    public func said() -> String {
-        if wouldAppear { return NotificationRule.granted }
-        if !permissionIsAsked { return NotificationRule.denied }
-        if wouldExplain { return NotificationRule.denied }
-        if everAsked { return NotificationRule.denied }
-
-        return NotificationRule.notDetermined
+    /// What the operator has said, as far as anything can tell.
+    public var said: WhatTheOperatorSaid {
+        WhatTheOperatorSaid.readFrom(
+            wouldAppear: wouldAppear,
+            permissionIsAsked: permissionIsAsked,
+            wouldExplain: wouldExplain,
+            everAsked: everAsked
+        )
     }
 
-    /// A notification posted now would appear.
-    public static let granted = "granted"
+    /// Whether the prompt may be raised now.
+    ///
+    /// Named here as well as on the answer because the shim asks this question
+    /// of the rule rather than of the word: what a caller has in hand is the
+    /// four facts, and the two readings of them belong side by side.
+    public var mayAsk: Bool { said.mayAsk }
 
-    /// It would not, and nothing may ask again.
-    public static let denied = "denied"
+    /// Whether something posted now would reach the operator.
+    public var mayShow: Bool { said.mayProceed }
 
-    /// Nobody has been asked; the point of first use is still ahead.
-    public static let notDetermined = "not_determined"
+    /// A device nobody has asked anything, on a platform that asks.
+    ///
+    /// What a first launch looks like, and the state the other cases are
+    /// written as a departure from.
+    public static let unasked = NotificationRule(
+        wouldAppear: false,
+        permissionIsAsked: true,
+        wouldExplain: false,
+        everAsked: false
+    )
 }

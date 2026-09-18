@@ -2,61 +2,96 @@ package app.lemonfiber.native
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
- * Telling *nobody has been asked* from *the operator said no*.
+ * What telling somebody adds to the answer every permission gives.
  *
- * The same cases as `NotificationRuleTests.swift`, in the same order. Keeping
- * them aligned is the point: the failure these two files exist to catch is the
- * platforms quietly disagreeing about whether somebody has already refused, and
- * a disagreement is only visible if the questions are the same.
+ * The three states and the order they are read in belong to
+ * `WhatTheOperatorSaidTest`, because the camera asks the same question and two
+ * copies of that decision would be two capabilities disagreeing quietly. What
+ * is asked here is the part that is this capability's: that the four facts a
+ * notification is judged on reach that reading unshuffled, and that the answer
+ * is readable in the words a caller with something to show uses.
+ *
+ * The same six cases as `NotificationRuleTests.swift`, in the same order.
  */
 class NotificationRuleTest {
-    private fun rule(
-        wouldAppear: Boolean = false,
-        permissionIsAsked: Boolean = true,
-        wouldExplain: Boolean = false,
-        everAsked: Boolean = false,
-    ) = NotificationRule(wouldAppear, permissionIsAsked, wouldExplain, everAsked)
-
     @Test
-    fun `a notification that would appear is granted, whatever else is true`() {
-        // First question and usually the last. It covers the runtime
-        // permission, the per-channel switch and the app-level switch at once,
-        // and any of them being off means the same thing to somebody waiting.
-        assertEquals("granted", rule(wouldAppear = true).said())
-        assertEquals("granted", rule(wouldAppear = true, everAsked = true, wouldExplain = true).said())
+    fun `a notification that would appear may be shown`() {
+        val allowed = NotificationRule.UNASKED.copy(wouldAppear = true)
+
+        assertEquals(WhatTheOperatorSaid.GRANTED, allowed.said)
+        assertTrue(allowed.mayShow)
+        assertFalse(allowed.mayAsk)
     }
 
     @Test
-    fun `nobody asked yet is not a refusal`() {
-        // The state that must not read as denied. Without it the app would
-        // never raise its first prompt, and every other case here would still
-        // pass — an app that silently never asks looks exactly like an app
-        // whose operator refused.
-        assertEquals("not_determined", rule().said())
+    fun `a refusal is not a reason to show anything`() {
+        val refused = NotificationRule.UNASKED.copy(everAsked = true)
+
+        assertEquals(WhatTheOperatorSaid.DENIED, refused.said)
+        assertFalse(refused.mayShow)
+        assertFalse(refused.mayAsk)
     }
 
     @Test
-    fun `an explanation the platform would offer is evidence of a refusal`() {
-        // True only after a refusal, which is what makes it evidence of one.
-        assertEquals("denied", rule(wouldExplain = true).said())
+    fun `nobody asked is a question still open and nothing to show yet`() {
+        // The one state that must answer "ask me". Without it the rule could
+        // report a refusal unconditionally, every other case here would still
+        // pass, and an application that never asks anybody anything would ship.
+        assertEquals(WhatTheOperatorSaid.NOT_DETERMINED, NotificationRule.UNASKED.said)
+        assertTrue(NotificationRule.UNASKED.mayAsk)
+        assertFalse(NotificationRule.UNASKED.mayShow)
     }
 
     @Test
-    fun `asked once and still silent is a refusal`() {
-        // The permanent refusal. Android answers this identically to never
-        // having asked, which is the whole reason the asking is written down.
-        assertEquals("denied", rule(everAsked = true).said())
+    fun `each fact reaches the reading it belongs to`() {
+        // The shuffle this catches: four booleans gathered in one place and
+        // handed on in another is an argument order that compiles whichever way
+        // round it is written. Each fact is moved on its own, and each one
+        // changes the answer differently.
+        assertEquals(
+            WhatTheOperatorSaid.GRANTED,
+            NotificationRule.UNASKED.copy(wouldAppear = true).said,
+        )
+        assertEquals(
+            WhatTheOperatorSaid.DENIED,
+            NotificationRule.UNASKED.copy(permissionIsAsked = false).said,
+        )
+        assertEquals(
+            WhatTheOperatorSaid.DENIED,
+            NotificationRule.UNASKED.copy(wouldExplain = true).said,
+        )
+        assertEquals(
+            WhatTheOperatorSaid.DENIED,
+            NotificationRule.UNASKED.copy(everAsked = true).said,
+        )
     }
 
     @Test
-    fun `silence where there is nothing to ask for is a refusal already given`() {
-        // Below API 33 there is no runtime permission. Notifications off means
-        // the operator turned them off in settings — a refusal already given,
-        // and prompting for a permission the platform does not have would do
-        // nothing at all.
-        assertEquals("denied", rule(permissionIsAsked = false).said())
-        assertEquals("denied", rule(permissionIsAsked = false, everAsked = false).said())
+    fun `a first launch on a platform that asks has asked nothing`() {
+        assertEquals(
+            NotificationRule(
+                wouldAppear = false,
+                permissionIsAsked = true,
+                wouldExplain = false,
+                everAsked = false,
+            ),
+            NotificationRule.UNASKED,
+        )
+    }
+
+    @Test
+    fun `an older platform has been answered rather than left open`() {
+        // Below Android 33 there is no notification permission to prompt for,
+        // so notifications off is a decision taken in settings. Carried as an
+        // input rather than a version check inside the rule, which is what lets
+        // the case be asked at all off a handset.
+        val old = NotificationRule.UNASKED.copy(permissionIsAsked = false)
+
+        assertFalse(old.mayAsk)
+        assertFalse(old.mayShow)
     }
 }

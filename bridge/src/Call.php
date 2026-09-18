@@ -49,4 +49,43 @@ enum Call: string
      * again.
      */
     case CanAuthenticate = 'Lemonfiber.CanAuthenticate';
+
+    /**
+     * What the operator has already said about notifications.
+     *
+     * Reads and never prompts, which is what makes it a separate function from
+     * {@see self::Ask}. A capability that cannot read the standing answer
+     * without raising a dialog has no way to obey one.
+     */
+    case Standing = 'Lemonfiber.Telling.Standing';
+
+    /**
+     * Raise the notification prompt, and record that it was raised.
+     *
+     * The recording is the part nothing in Android can otherwise supply: it
+     * reports *never asked* and *refused for good* identically, so the
+     * difference has to be remembered by whoever raised the dialog.
+     */
+    case Ask = 'Lemonfiber.Telling.Ask';
+
+    /** Put a notification in front of the operator now, or say why not. */
+    case Show = 'Lemonfiber.Telling.Show';
+
+    /** Put one in front of them at a moment, or say why not. */
+    case Schedule = 'Lemonfiber.Telling.Schedule';
+
+    /** Put one in front of them over and over, or say why not. */
+    case ScheduleRecurring = 'Lemonfiber.Telling.ScheduleRecurring';
+
+    /** Take one back, whether it is showing, scheduled or neither. */
+    case Cancel = 'Lemonfiber.Telling.Cancel';
+
+    /** Take back everything this application scheduled. */
+    case CancelAll = 'Lemonfiber.Telling.CancelAll';
+
+    /** What is still to come. */
+    case Pending = 'Lemonfiber.Telling.Pending';
+
+    /** Take the count off this application's icon. */
+    case ClearBadge = 'Lemonfiber.Telling.ClearBadge';
 }

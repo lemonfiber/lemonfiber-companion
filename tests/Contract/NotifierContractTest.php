@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Native\Telling;
+use Lemonfiber\Native\WhyNothingWasTold;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
@@ -11,17 +13,18 @@ use Modules\Kernel\Api\Shown;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhyNothingIsShown;
+use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Catalogue;
-use Tests\Support\Fakes\ANotificationCentre;
+use Tests\Support\Fakes\ANotificationCentreOnAHandset;
 use Tests\Support\Fakes\ANotifierInMemory;
-use Tests\Support\Fakes\APermissionAnswer;
 
 // The Notifier contract, run against the adapter and against the fake.
 //
 // `G2`'s shape. Every other test that needs "the operator was told" will hand
 // its subject an `ANotifierInMemory` and never see a notification centre, so a
-// fake easier to satisfy than the platform would make *a refusal is never asked
-// again* green against a centre that always says yes.
+// fake easier to satisfy than the platform would make the refusal green
+// against a centre that always says yes — and the refusal is the one somebody
+// who already declined depends on.
 //
 // What is asserted is only what both must promise. The adapter composes words
 // from the catalogue and the fake records an arm, so "the title reads like
@@ -49,6 +52,27 @@ function somethingWorthSaying(): Notification
 }
 
 /**
+ * The adapter, over a centre scripted into the real bridge.
+ *
+ * `FakeBridge` is `nativephp/mobile`'s own seam: it intercepts
+ * `nativephp_call()` in-process, so this arm of the contract runs the function
+ * names from the manifest, the JSON out and the decoding of the answer —
+ * the whole path — rather than something built to resemble it.
+ *
+ * Named for this file: the root suites share one namespace (`G10`).
+ */
+function overAHandset(ANotificationCentreOnAHandset $centre): PlatformNotifier
+{
+    FakeBridge::disable();
+    FakeBridge::enable()
+        ->respondTo('Lemonfiber.Telling.Standing', $centre->standing(...))
+        ->respondTo('Lemonfiber.Telling.Ask', $centre->ask(...))
+        ->respondTo('Lemonfiber.Telling.Show', $centre->show(...));
+
+    return new PlatformNotifier(new Telling(), Catalogue::words());
+}
+
+/**
  * Every implementation of the port, in each of the three standings.
  *
  * A plain function rather than a Pest dataset, matching the other contract
@@ -71,15 +95,11 @@ function everyNotifier(Asked $standing): array
             Asked::Declined => ANotifierInMemory::refused(),
             Asked::NotYet => ANotifierInMemory::unasked(),
         },
-        'the adapter' => function () use ($standing): Notifier {
-            $answer = match ($standing) {
-                Asked::Granted => APermissionAnswer::granted(),
-                Asked::Declined => APermissionAnswer::denied(),
-                Asked::NotYet => APermissionAnswer::notDetermined(),
-            };
-
-            return new PlatformNotifier(ANotificationCentre::on($answer), $answer, Catalogue::words());
-        },
+        'the adapter' => fn(): Notifier => overAHandset(match ($standing) {
+            Asked::Granted => ANotificationCentreOnAHandset::allowed(),
+            Asked::Declined => ANotificationCentreOnAHandset::refused(),
+            Asked::NotYet => ANotificationCentreOnAHandset::unasked(),
+        }),
     ];
 }
 
@@ -96,18 +116,18 @@ it('N4-R4 — asking is separate from reading, so reading never prompts', functi
     // `isPermitted()` asked in order to answer, and `show()` called it — so a
     // notification arriving re-prompted somebody who had already declined.
     //
-    // Counted on the adapter, because the count is the requirement: never
-    // asking again is not about a return value, it is about how many times
-    // somebody was interrupted.
-    $answer = APermissionAnswer::denied();
-    $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer, Catalogue::words());
+    // Counted on the adapter, because the count is what is being promised:
+    // not asking again is not a question about a return value, it is a question
+    // about how many times somebody was interrupted.
+    $centre = ANotificationCentreOnAHandset::refused();
+    $notifier = overAHandset($centre);
 
     $notifier->standing();
     $notifier->standing();
     $notifier->show(somethingWorthSaying());
     $notifier->show(somethingWorthSaying());
 
-    expect($answer->prompts())->toBe(0);
+    expect($centre->prompts())->toBe(0);
 });
 
 it('N4-R4 — a declined permission is not asked for again', function (): void {
@@ -120,15 +140,15 @@ it('N4-R4 — a declined permission is not asked for again', function (): void {
 });
 
 it('N4-R4 — the prompt is raised once, and not again once answered', function (): void {
-    $answer = APermissionAnswer::notDetermined();
-    $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer, Catalogue::words());
+    $centre = ANotificationCentreOnAHandset::unasked();
+    $notifier = overAHandset($centre);
 
     expect($notifier->ask())->toBe(Asked::Granted)
-        ->and($answer->prompts())->toBe(1);
+        ->and($centre->prompts())->toBe(1);
 
     // The second ask finds a standing answer and returns it without asking.
     expect($notifier->ask())->toBe(Asked::Granted)
-        ->and($answer->prompts())->toBe(1);
+        ->and($centre->prompts())->toBe(1);
 });
 
 it('N4-R1 — asks where nothing has been asked yet', function (): void {
@@ -173,46 +193,60 @@ it('shows the guarded form without complaint', function (): void {
 // exists.
 
 it('N4-R20 — the locked wording names no stack', function (): void {
-    $answer = APermissionAnswer::granted();
-    $centre = ANotificationCentre::on($answer);
+    $centre = ANotificationCentreOnAHandset::allowed();
 
-    new PlatformNotifier($centre, $answer, Catalogue::words())->show(somethingWorthSaying()->whileLocked());
+    overAHandset($centre)->show(somethingWorthSaying()->whileLocked());
 
-    $sent = $centre->sent();
+    $shown = $centre->shown();
 
-    expect($sent)->toHaveCount(1)
-        ->and($sent[0]->titleSaid())->not->toContain('the-loft')
-        ->and($sent[0]->bodySaid())->not->toContain('the-loft')
-        ->and($sent[0]->bodySaid())->not->toContain('backup.finished');
+    expect($shown)->toHaveCount(1)
+        ->and($shown[0]['title'])->not->toContain('the-loft')
+        ->and($shown[0]['body'])->not->toContain('the-loft')
+        ->and($shown[0]['body'])->not->toContain('backup.finished');
 });
 
 it('names the stack when the device is not locked', function (): void {
-    $answer = APermissionAnswer::granted();
-    $centre = ANotificationCentre::on($answer);
+    $centre = ANotificationCentreOnAHandset::allowed();
 
-    new PlatformNotifier($centre, $answer, Catalogue::words())->show(somethingWorthSaying());
+    overAHandset($centre)->show(somethingWorthSaying());
 
-    $sent = $centre->sent();
+    $shown = $centre->shown();
 
-    expect($sent)->toHaveCount(1)
-        ->and($sent[0]->titleSaid())->toContain('the-loft')
-        ->and($sent[0]->bodySaid())->toContain('backup.finished');
+    expect($shown)->toHaveCount(1)
+        ->and($shown[0]['title'])->toContain('the-loft')
+        ->and($shown[0]['body'])->toContain('backup.finished');
+});
+
+it('tells a device that would not show it from one that was not allowed to', function (): void {
+    // The distinction a boolean could not carry, and the reason this whole
+    // capability is ours. A channel the operator switched off and a platform
+    // that declined outright reach a screen as two different sentences, and the
+    // plugin this replaced reported both — and a missing permission — as the
+    // same `false`.
+    foreach ([
+        [WhyNothingWasTold::NotPermitted, WhyNothingIsShown::NotificationsAreNotPermitted],
+        [WhyNothingWasTold::NoSuchChannel, WhyNothingIsShown::NotificationsAreNotPermitted],
+        [WhyNothingWasTold::TheDeviceRefused, WhyNothingIsShown::TheDeviceWouldNotShowIt],
+    ] as [$said, $means]) {
+        $notifier = overAHandset(ANotificationCentreOnAHandset::allowedButRefusing($said));
+
+        expect(whatBecameOfIt($notifier->show(somethingWorthSaying())))->toBe($means->name, $said->value);
+    }
 });
 
 it('keys a repeat of the same code onto the same notification', function (): void {
-    // The plugin replaces a notification whose id it has seen. Two alerts about
-    // the same thing should update one entry rather than stack two, and an id
-    // built from anything varying — a timestamp, a counter — would quietly give
-    // the operator a pile.
-    $answer = APermissionAnswer::granted();
-    $centre = ANotificationCentre::on($answer);
-    $notifier = new PlatformNotifier($centre, $answer, Catalogue::words());
+    // Both platforms replace a notification whose id they have seen. Two alerts
+    // about the same thing should update one entry rather than stack two, and
+    // an id built from anything varying — a timestamp, a counter — would
+    // quietly give the operator a pile.
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = overAHandset($centre);
 
     $notifier->show(somethingWorthSaying());
     $notifier->show(somethingWorthSaying());
 
-    $sent = $centre->sent();
+    $shown = $centre->shown();
 
-    expect($sent)->toHaveCount(2)
-        ->and($sent[0]->id)->toBe($sent[1]->id);
+    expect($shown)->toHaveCount(2)
+        ->and($shown[0]['id'])->toBe($shown[1]['id']);
 });

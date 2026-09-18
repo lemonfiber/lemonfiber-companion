@@ -2,14 +2,23 @@ import Testing
 
 @testable import LemonfiberNative
 
-// Telling *nobody has been asked* from *the operator said no*.
+// What telling somebody adds to the answer every permission gives.
 //
-// The same cases as `NotificationRuleTest.kt`, in the same order. Keeping them
-// aligned is the point: what these two files exist to catch is the platforms
-// quietly disagreeing about whether somebody has already refused, and a
-// disagreement is only visible if the questions are the same.
+// The three states and the order they are read in belong to
+// `WhatTheOperatorSaidTests`, because the camera asks the same question and two
+// copies of that decision would be two capabilities disagreeing quietly. What is
+// asked here is the part that is this capability's: that the four facts a
+// notification is judged on reach that reading unshuffled, and that the answer
+// is readable in the words a caller with something to show uses.
+//
+// The same six cases as `NotificationRuleTest.kt`, in the same order.
 
-private func rule(
+/// The unasked state with one fact changed.
+///
+/// Kotlin's `data class` gives this away in a `copy()`; a Swift `struct` with
+/// `let` properties does not, and writing four arguments out at every call site
+/// would make the one that differs the hardest thing on the line to find.
+private func unasked(
     wouldAppear: Bool = false,
     permissionIsAsked: Bool = true,
     wouldExplain: Bool = false,
@@ -23,42 +32,67 @@ private func rule(
     )
 }
 
-@Test("a notification that would appear is granted, whatever else is true")
-func wouldAppearIsGranted() {
-    // First question and usually the last. It covers the runtime permission,
-    // the channel switch and the app switch at once, and any of them being off
-    // means the same thing to somebody waiting to be told something.
-    #expect(rule(wouldAppear: true).said() == "granted")
-    #expect(rule(wouldAppear: true, wouldExplain: true, everAsked: true).said() == "granted")
+@Test("a notification that would appear may be shown")
+func appearingMayBeShown() {
+    let allowed = unasked(wouldAppear: true)
+
+    #expect(allowed.said == .granted)
+    #expect(allowed.mayShow)
+    #expect(!allowed.mayAsk)
 }
 
-@Test("nobody asked yet is not a refusal")
-func neverAskedIsNotDetermined() {
-    // The state that must not read as denied. Without it the app would never
-    // raise its first prompt, and every other case here would still pass — an
-    // app that silently never asks looks exactly like one whose operator
-    // refused.
-    #expect(rule().said() == "not_determined")
+@Test("a refusal is not a reason to show anything")
+func refusalShowsNothing() {
+    let refused = unasked(everAsked: true)
+
+    #expect(refused.said == .denied)
+    #expect(!refused.mayShow)
+    #expect(!refused.mayAsk)
 }
 
-@Test("an explanation the platform would offer is evidence of a refusal")
-func wouldExplainIsDenied() {
-    // True only after a refusal, which is what makes it evidence of one.
-    #expect(rule(wouldExplain: true).said() == "denied")
+@Test("nobody asked is a question still open and nothing to show yet")
+func theUnaskedNotificationState() {
+    // The one state that must answer "ask me". Without it the rule could report
+    // a refusal unconditionally, every other case here would still pass, and an
+    // application that never asks anybody anything would ship.
+    #expect(NotificationRule.unasked.said == .notDetermined)
+    #expect(NotificationRule.unasked.mayAsk)
+    #expect(!NotificationRule.unasked.mayShow)
 }
 
-@Test("asked once and still silent is a refusal")
-func everAskedAndSilentIsDenied() {
-    // The permanent refusal. Android answers this identically to never having
-    // asked, which is why the asking is written down rather than inferred.
-    #expect(rule(everAsked: true).said() == "denied")
+@Test("each fact reaches the reading it belongs to")
+func everyFactArrivesWhereItBelongs() {
+    // The shuffle this catches: four booleans gathered in one place and handed
+    // on in another is an argument order that compiles whichever way round it is
+    // written. Each fact is moved on its own, and each one changes the answer
+    // differently.
+    #expect(unasked(wouldAppear: true).said == .granted)
+    #expect(unasked(permissionIsAsked: false).said == .denied)
+    #expect(unasked(wouldExplain: true).said == .denied)
+    #expect(unasked(everAsked: true).said == .denied)
 }
 
-@Test("silence where there is nothing to ask for is a refusal already given")
-func noRuntimePermissionIsDenied() {
-    // Below Android 33 there is no runtime permission. Notifications off means
-    // the operator turned them off in settings, and prompting for a permission
-    // the platform does not have would do nothing at all.
-    #expect(rule(permissionIsAsked: false).said() == "denied")
-    #expect(rule(permissionIsAsked: false, everAsked: false).said() == "denied")
+@Test("a first launch on a platform that asks has asked nothing")
+func theFirstLaunch() {
+    #expect(
+        NotificationRule.unasked
+            == NotificationRule(
+                wouldAppear: false,
+                permissionIsAsked: true,
+                wouldExplain: false,
+                everAsked: false
+            )
+    )
+}
+
+@Test("an older platform has been answered rather than left open")
+func anOlderPlatform() {
+    // Below Android 33 there is no notification permission to prompt for, so
+    // notifications off is a decision taken in settings. Carried as an input
+    // rather than a version check inside the rule, which is what lets the case
+    // be asked at all off a handset.
+    let old = unasked(permissionIsAsked: false)
+
+    #expect(!old.mayAsk)
+    #expect(!old.mayShow)
 }
