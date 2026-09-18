@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
 
@@ -110,5 +111,29 @@ final readonly class WhereAStackIs
     public function logsOf(ServiceId $service): string
     {
         return AStacksScreen::Logs->forTheStacksService($this->stored, $service->named());
+    }
+
+    /** One service of this machine, and the verbs about it (`N2-R7`). */
+    public function doingWith(ServiceId $service): string
+    {
+        return AStacksScreen::Doing->forTheStacksService($this->stored, $service->named());
+    }
+
+    /**
+     * One whole form of this machine, and the verbs about it (`N2-R7`).
+     *
+     * The same screen as the one above, because what an operator is choosing
+     * between is identical and only the name the stack is told differs.
+     *
+     * Text rather than a {@see Form}, which is the one place on this class it
+     * is. A form reaches a screen as the name the stack sent — the listing
+     * carries `list<string>` and the verb has always been asked for by that
+     * name — and {@see Form::called()} refuses a blank, so building the value
+     * to make a route would put a raise on a tap. The screen refuses a name it
+     * never read, which is where that refusal belongs.
+     */
+    public function doingWithTheForm(string $named): string
+    {
+        return AStacksScreen::Doing->forTheStacksService($this->stored, $named);
     }
 }
