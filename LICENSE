@@ -3,6 +3,12 @@ Copyright (c) 2026 NightWorks.io
 This software is licensed under the Hippocratic License 3.0 (HL3-CORE),
 an ethical-source license. Full text below; see also https://firstdonoharm.dev
 
+ONE EXCEPTION: `bridge/` is not covered by this licence. It is the native half
+of this application — the Kotlin and the Swift the device answers — and it
+carries its own terms in `bridge/LICENSE`, which grant no right to use it at
+all. Anyone wanting those capabilities should buy them from the NativePHP plugin
+marketplace: https://nativephp.com/plugins
+
 ----------------------------------------------------------------------
 
 HIPPOCRATIC LICENSE
