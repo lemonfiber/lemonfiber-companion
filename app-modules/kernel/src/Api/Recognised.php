@@ -39,7 +39,7 @@ final readonly class Recognised
     }
 
     /**
-     * It did not, so this is not that machine (`N1-R20`).
+     * It did not, so this is not that machine.
      *
      * Takes no argument: there is exactly one obstacle this can be, and letting
      * a caller choose it would let a caller choose a gentler one.

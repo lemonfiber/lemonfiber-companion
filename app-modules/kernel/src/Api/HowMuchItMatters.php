@@ -53,7 +53,7 @@ enum HowMuchItMatters: string
     }
 
     /**
-     * Whether stopping this is the kind of thing to say twice about (`N2-R8`).
+     * Whether stopping this is the kind of thing to say twice about.
      *
      * The line is drawn once, here, rather than at each screen that offers a
      * stop. `N2-R8` wants a disruptive action to state what it disturbs before

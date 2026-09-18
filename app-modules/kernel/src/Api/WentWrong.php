@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * The three things the core says when a check did not pass (`N2-R3`).
+ * The three things the core says when a check did not pass.
  *
  * Together rather than as three fields on {@see WhatTheCheckSaid}, because they
  * arrive together and are absent together. The version that kept them

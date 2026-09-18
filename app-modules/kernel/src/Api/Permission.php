@@ -11,7 +11,7 @@ use function sprintf;
  *
  * Named here rather than in `device`, because what the app *needs* is a fact
  * about the app and what the platform *calls* it is a fact about the platform.
- * An adapter translates; a screen explaining why the app is asking (`N4-R2`)
+ * An adapter translates; a screen explaining why the app is asking
  * needs the concept, not the Android string.
  *
  * **A closed set**, which is what makes it an enum: the app asks for what it
@@ -30,7 +30,7 @@ enum Permission: string
      */
     case LocalNetwork = 'local_network';
 
-    /** Showing a notification the core decided to send (`N4-R11`). */
+    /** Showing a notification the core decided to send. */
     case Notifications = 'notifications';
 
     /** Reading a pairing code with the camera. */
@@ -58,7 +58,7 @@ enum Permission: string
     }
 
     /**
-     * The key for what this permission is for, in the app's own words (`N4-R2`).
+     * The key for what this permission is for, in the app's own words.
      *
      * **Derived rather than written, and that is the whole point of it being
      * here.** The key was spelled twice — once by `PermissionsAreExplainedTest`,
@@ -77,7 +77,7 @@ enum Permission: string
     }
 
     /**
-     * The key for what still works without it (`N4-R3`).
+     * The key for what still works without it.
      *
      * Only meaningful where {@see self::hasAnAlternative()} is true, and it does
      * not guard against being asked otherwise: a case answering false would have

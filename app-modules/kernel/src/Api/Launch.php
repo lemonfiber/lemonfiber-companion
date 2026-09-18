@@ -58,7 +58,7 @@ final readonly class Launch
         return new self(locked: true, obstacle: null, stack: null);
     }
 
-    /** No stack is paired, which is a first run rather than a fault (`N1-R35`). */
+    /** No stack is paired, which is a first run rather than a fault. */
     public static function unpaired(): self
     {
         return new self(locked: false, obstacle: null, stack: null);
@@ -70,7 +70,7 @@ final readonly class Launch
         return new self(locked: false, obstacle: $obstacle, stack: null);
     }
 
-    /** A stack is paired and was reached (`N1-R36`). */
+    /** A stack is paired and was reached. */
     public static function ready(StackId $stack): self
     {
         return new self(locked: false, obstacle: null, stack: $stack);

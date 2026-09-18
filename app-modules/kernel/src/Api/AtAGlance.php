@@ -82,7 +82,7 @@ final readonly class AtAGlance
     private function __construct(private string $shown) {}
 
     /**
-     * Fold a fingerprint down to something checkable (`N1-R51`).
+     * Fold a fingerprint down to something checkable.
      *
      * Every byte of the digest contributes: the fold walks the whole of it, so
      * a certificate differing anywhere produces a different set of groups. That

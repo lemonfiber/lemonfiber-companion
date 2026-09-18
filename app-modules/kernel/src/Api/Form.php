@@ -13,7 +13,7 @@ use function trim;
  * is declared by the machine at runtime, so an enum would be a closed list of
  * what this build had heard of and a form it had not heard of would arrive as a
  * `tryFrom` returning null — which reads as *this stack has no such form* and
- * means *this app does not recognise it* (`ARCH-R79`).
+ * means *this app does not recognise it*.
  *
  * **It exists because `N2-R7` asks for start, stop and restart by form.** A
  * form is the unit an operator reaches for when they want everything to do with

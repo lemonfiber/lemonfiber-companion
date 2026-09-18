@@ -76,7 +76,7 @@ enum HowAServiceRuns: string
     }
 
     /**
-     * Whether this stack is the thing that starts and stops it (`N2-R7`).
+     * Whether this stack is the thing that starts and stops it.
      *
      * The one decision that belongs here rather than on a screen. `N2-R7` asks
      * the app to offer start, stop and restart — and a service the host runs

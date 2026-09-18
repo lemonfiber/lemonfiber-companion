@@ -111,7 +111,7 @@ final readonly class Wanted
         return $this->forWhat;
     }
 
-    /** How big it is, and whether anybody measured (`D7-R3`, `D7-R4`). */
+    /** How big it is, and whether anybody measured. */
     public function size(): Size
     {
         return $this->size;
@@ -143,7 +143,7 @@ final readonly class Wanted
     }
 
     /**
-     * Say why it was refused, or say that it was not (`N3-R7`).
+     * Say why it was refused, or say that it was not.
      *
      * Two arms rather than a nullable getter, for `C2`'s reason and for a
      * sharper one here: a screen handed a null would render an empty line where

@@ -27,12 +27,12 @@ namespace Modules\Kernel\Api;
  */
 enum WhatPairingMaterialSays: string
 {
-    /** Where the app should reach the stack (`N1-R48`). */
+    /** Where the app should reach the stack. */
     case Address = 'address';
 
-    /** The certificate that address will present (`N1-R18`, `N1-R48`). */
+    /** The certificate that address will present. */
     case Fingerprint = 'fingerprint';
 
-    /** When the invitation stops being one (`N1-R49`). */
+    /** When the invitation stops being one. */
     case Expires = 'expires';
 }

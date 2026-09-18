@@ -27,7 +27,7 @@ enum Asked: string
     /** Asked and granted. */
     case Granted = 'granted';
 
-    /** Asked and declined, and not to be asked again by the app (`N4-R4`). */
+    /** Asked and declined, and not to be asked again by the app. */
     case Declined = 'declined';
 
     /**

@@ -28,7 +28,7 @@ final readonly class IdempotencyKey
     private function __construct(private string $key) {}
 
     /**
-     * What `serialize()` writes, which is nothing (`N1-R42`).
+     * What `serialize()` writes, which is nothing.
      *
      * The key is not a secret — it is sent in a header and anybody watching the
      * connection has it — so this is not the redaction `Session` does. It is the

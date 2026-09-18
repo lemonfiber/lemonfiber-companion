@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * The two things an operator can decide about a waiting request (`N2-R11`).
+ * The two things an operator can decide about a waiting request.
  *
  * A closed set, so an enum — `D4`. It is `WhatToDoWithIt`'s shape one screen
  * over, and for the same reason: the name this app shows and the name a stack

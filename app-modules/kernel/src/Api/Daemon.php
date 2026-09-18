@@ -108,7 +108,7 @@ final readonly class Daemon
         return $this->name;
     }
 
-    /** Which form it belongs to, for reading a stack by form (`N2-R7`). */
+    /** Which form it belongs to, for reading a stack by form. */
     public function profile(): Form
     {
         return $this->profile;
@@ -126,7 +126,7 @@ final readonly class Daemon
         return $this->matters;
     }
 
-    /** What stopping this would take with it (`N2-R8`). */
+    /** What stopping this would take with it. */
     public function whatLeansOnIt(): WhatLeansOnIt
     {
         return $this->leaning;

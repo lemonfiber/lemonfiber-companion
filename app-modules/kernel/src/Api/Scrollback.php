@@ -127,7 +127,7 @@ final readonly class Scrollback implements IteratorAggregate
         return new self($this->service, $this->asked, $this->arrived, $held, $looking);
     }
 
-    /** The service this window is over (`N2-R10`). */
+    /** The service this window is over. */
     public function service(): ServiceId
     {
         return $this->service;
@@ -140,7 +140,7 @@ final readonly class Scrollback implements IteratorAggregate
     }
 
     /**
-     * Whether the view stops where it was told to stop (`N2-R10`).
+     * Whether the view stops where it was told to stop.
      *
      * True where as many lines came back as were asked for: the bound is the
      * edge of what is shown, and what lies behind it is not carried on the wire

@@ -29,11 +29,11 @@ use function sprintf;
  */
 enum HowItWasRead: string
 {
-    /** The camera read it (`N1-R6`). */
+    /** The camera read it. */
     case Scanned = 'scanned';
 
     /**
-     * Somebody typed it (`N1-R6`, `N4-R3`).
+     * Somebody typed it.
      *
      * The route that has to work on a device with no camera, and on one whose
      * operator declined the permission.

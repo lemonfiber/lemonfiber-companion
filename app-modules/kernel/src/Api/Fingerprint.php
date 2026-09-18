@@ -61,7 +61,7 @@ final readonly class Fingerprint
     }
 
     /**
-     * The digest, for folding into a form a person can check (`N1-R50`).
+     * The digest, for folding into a form a person can check.
      *
      * The one reader this type has, and named for the single thing it is for.
      * `ADR-0018` rejects the human-read fingerprint — sixty-four hex characters

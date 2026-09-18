@@ -31,7 +31,7 @@ enum WhyNothingWasScanned: string
     case TheOperatorClosedIt = 'the_operator_closed_it';
 
     /**
-     * The platform would not let this app have the camera (`N4-R3`).
+     * The platform would not let this app have the camera.
      *
      * Answered by offering the typed road, and by saying where the decision is
      * reversed — which is the platform's settings and not this app, because

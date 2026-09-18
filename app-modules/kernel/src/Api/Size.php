@@ -54,7 +54,7 @@ final readonly class Size
         return new self($bytes, measured: true);
     }
 
-    /** It was worked out rather than measured, and must be said to be (`D7-R4`). */
+    /** It was worked out rather than measured, and must be said to be. */
     public static function guessedAt(int $bytes): self
     {
         return new self($bytes, measured: false);

@@ -44,7 +44,7 @@ interface Wanting
     public function askedOf(Stack $stack, Session $session): WhatWasWanted;
 
     /**
-     * Tell a stack what the operator decided about one of them (`N2-R11`).
+     * Tell a stack what the operator decided about one of them.
      *
      * Answers {@see Underway} rather than raising, for the reason the reading
      * does: a stack asleep and a session that has ended are states of the

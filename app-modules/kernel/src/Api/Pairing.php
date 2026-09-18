@@ -17,12 +17,12 @@ use function trim;
  *
  * Two things, and the pairing of them is the whole point: where the stack is,
  * and which certificate it will present. `ADR-0018` is the design —
- * **the fingerprint comes from this material and never from the network**
- * (`N1-R18`), because a fingerprint learned from the connection it is meant to
+ * **the fingerprint comes from this material and never from the network**,
+ * because a fingerprint learned from the connection it is meant to
  * validate proves nothing at all. Somebody carries it across the gap by eye or
  * by camera, and that gap is what makes it trustworthy.
  *
- * **Both routes in (`N1-R6`).** A camera reads it, or a person types it, and
+ * **Both routes in.** A camera reads it, or a person types it, and
  * {@see HowItWasRead} records which — not to change the parsing, which is
  * identical, but because the two fail differently and a screen has to say so.
  * Typed entry is not a courtesy: it is the route on a device with no camera and
@@ -127,7 +127,7 @@ final readonly class Pairing
     }
 
     /**
-     * The certificate the stack promised to present (`N1-R18`, `N1-R19`).
+     * The certificate the stack promised to present.
      *
      * Taken from here and pinned against the stack, then checked on every later
      * connection whether or not the platform's trust store would accept it.
@@ -144,7 +144,7 @@ final readonly class Pairing
     }
 
     /**
-     * Refuses material that has expired (`N1-R49`).
+     * Refuses material that has expired.
      *
      * The check is here, at the one moment a payload becomes a `Pairing`,
      * rather than on a reader the caller is trusted to ask. A type that can

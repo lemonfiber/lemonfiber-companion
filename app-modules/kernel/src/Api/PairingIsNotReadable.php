@@ -83,7 +83,7 @@ final class PairingIsNotReadable extends InvalidArgumentException
     }
 
     /**
-     * It carried something the format does not define (`N1-R48`).
+     * It carried something the format does not define.
      *
      * The requirement says material must not carry a credential, and the
      * tempting enforcement is a list of names — `credential`, `token`,

@@ -142,7 +142,7 @@ final readonly class Upkeep
      *
      * Both halves, because either alone would be wrong: a stack that says
      * pending with every release withdrawn has nothing to offer, and a stack
-     * that says current is not asked further (`N2-R20`).
+     * that says current is not asked further.
      */
     public function hasSomethingToOffer(): bool
     {
@@ -150,7 +150,7 @@ final readonly class Upkeep
     }
 
     /**
-     * What became of each service the last applied update touched (`N2-R18`).
+     * What became of each service the last applied update touched.
      *
      * Part of this reading rather than a second errand because it arrives in
      * the same payload and answers the other half of the same question. An

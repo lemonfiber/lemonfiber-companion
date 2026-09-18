@@ -16,7 +16,7 @@ use Closure;
  * network and one whose session has ended are ordinary states of the world
  * (`C1`), and an {@see Obstacle} rather than a vocabulary of its own, because
  * the operator meets the same six situations whether they were signing in,
- * asking after the machine, or asking what it could fix (`N1-R10`).
+ * asking after the machine, or asking what it could fix.
  *
  * **The offer is carried beside the repairs, and that is the point of the
  * type.** `N2-R6` says a confirmation made against one reading must not be

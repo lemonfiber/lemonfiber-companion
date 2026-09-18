@@ -68,7 +68,7 @@ final readonly class Notification
      *
      * Asked here rather than by each caller comparing ids, so the comparison
      * deciding whether somebody is told about a machine they removed exists in
-     * one place instead of once per notification surface (`N4-R15`).
+     * one place instead of once per notification surface.
      *
      * Variadic rather than an array, because `D1` refuses an array across a
      * module boundary and is right to: `array` says nothing about what is in
@@ -100,7 +100,7 @@ final readonly class Notification
      * `$plain` is given the stack it is about, `$guarded` is given only the
      * code. A lock-screen renderer therefore has no stack to name, no service
      * to name and no reading to quote — not because it was told not to, but
-     * because none of it arrived (`N4-R20`).
+     * because none of it arrived.
      *
      * @template TPlain of object
      * @template TGuarded of object

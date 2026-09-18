@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * What the operating system installs this application as (`N1-R52`).
+ * What the operating system installs this application as.
  *
  * An application's identity is not a label. Two builds carrying two identities
  * are two applications: they install beside one another, each with its own
@@ -39,6 +39,6 @@ final readonly class WhoThisAppIs
      */
     public const string IDENTITY = 'app.lemonfiber.companion';
 
-    /** What the environment may name it, where it names it at all (`N1-R53`). */
+    /** What the environment may name it, where it names it at all. */
     public const string CONFIGURED_AS = 'NATIVEPHP_APP_ID';
 }

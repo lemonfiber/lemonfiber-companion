@@ -10,7 +10,7 @@ use Closure;
  * What came of trying to reach a stack: it worked, or something stood in the way.
  *
  * The type exists so that the three obstacles cannot be collapsed on the way to
- * a screen (`N1-R10`). A caller reads it by saying what happens in both cases,
+ * a screen. A caller reads it by saying what happens in both cases,
  * and the blocked arm is handed the `Obstacle` itself rather than a flag — so
  * there is no point at which "it did not work" exists as a value on its own,
  * which is the form the three collapse into.

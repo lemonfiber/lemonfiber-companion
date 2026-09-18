@@ -39,7 +39,7 @@ interface SecureStorage
     public function isAvailable(): bool;
 
     /**
-     * Keep a session, or refuse and say why (`N4-R6`).
+     * Keep a session, or refuse and say why.
      *
      * Answers with {@see Kept} rather than raising, which `C1` requires and
      * which is right for a second reason: a device with no secure storage is an

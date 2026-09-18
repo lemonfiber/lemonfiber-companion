@@ -31,7 +31,7 @@ namespace Modules\Kernel\Api;
 interface Capture
 {
     /**
-     * Protect the window while a guarded screen is up (`N4-R18`).
+     * Protect the window while a guarded screen is up.
      *
      * Answers whether the window ended up protected. On iOS that is true for a
      * screen recording and for the task switcher and false for a deliberate

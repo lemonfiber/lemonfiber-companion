@@ -142,7 +142,7 @@ final readonly class Finding
     }
 
     /**
-     * What the core said about it, in the core's own words (`N2-R3`).
+     * What the core said about it, in the core's own words.
      *
      * A `WhatTheCheckSaid` rather than three readers, so a screen cannot ask
      * for the meaning without having established that there is one. The words

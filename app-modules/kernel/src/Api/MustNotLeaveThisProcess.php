@@ -33,7 +33,7 @@ use LogicException;
 final class MustNotLeaveThisProcess extends LogicException
 {
     /**
-     * A key that was asked to outlive the attempt it belongs to (`N1-R42`).
+     * A key that was asked to outlive the attempt it belongs to.
      *
      * Different from the others above, and worth saying why it is here at all.
      * A key is not a secret — it goes on the wire in a header, and anybody
@@ -62,7 +62,7 @@ final class MustNotLeaveThisProcess extends LogicException
     }
 
     /**
-     * A credential is spent once and is gone (`N1-R7`).
+     * A credential is spent once and is gone.
      *
      * The strictest of the three, because a credential that reached a cache is a
      * credential that can be replayed — and unlike a session, nothing on the

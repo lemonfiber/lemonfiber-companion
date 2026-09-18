@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * What the core says when a check produced no verdict at all (`N2-R3`).
+ * What the core says when a check produced no verdict at all.
  *
  * Two of the five outcomes are not judgements: `unverified` is a check that
  * could not be established, and `skipped` is one whose prerequisite was absent

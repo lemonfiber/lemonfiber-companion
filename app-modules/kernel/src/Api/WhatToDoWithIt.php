@@ -79,7 +79,7 @@ enum WhatToDoWithIt: string
     }
 
     /**
-     * Whether doing this takes something away (`N2-R8`).
+     * Whether doing this takes something away.
      *
      * The line is drawn once, here. `N2-R8` wants a disruptive action to state
      * what it disturbs before it is confirmed, and a screen deciding for itself

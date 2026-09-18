@@ -30,7 +30,7 @@ final readonly class Carried
     }
 
     /**
-     * The reading moved between the confirmation and the act (`N2-R6`).
+     * The reading moved between the confirmation and the act.
      *
      * Takes the repair as well as what the reading is *now*, because "refuse"
      * and "re-offer" are one requirement rather than two. The operator

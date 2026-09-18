@@ -41,7 +41,7 @@ use function trim;
  * hole gets lost among three imaginary ones. That is worth writing down rather
  * than implying a guarantee this type does not give. What
  * actually closes it is the thing that assembles a diagnostic report refusing
- * to walk a `Session` at all (`N4-R13`), and there is no report assembler yet.
+ * to walk a `Session` at all, and there is no report assembler yet.
  * This narrows the surface; it does not seal it.
  */
 final readonly class Session implements JsonSerializable

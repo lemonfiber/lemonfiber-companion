@@ -48,7 +48,7 @@ final readonly class Decided
      * The operator turned it down, and this is what they are owed instead.
      *
      * The reason is refused blank here rather than at the screen, so no road to
-     * this value can produce a refusal with nothing on it (`D7-R7`).
+     * this value can produce a refusal with nothing on it.
      */
     public static function toDecline(RequestId $request, string $because): self
     {

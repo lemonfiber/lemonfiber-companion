@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use Closure;
 
 /**
- * What the core said about a check, in the core's own words (`N2-R3`).
+ * What the core said about a check, in the core's own words.
  *
  * Every finding shown must carry its code, its plain-language meaning and its
  * remedy — and "in the words the core produced" is the clause that makes this a

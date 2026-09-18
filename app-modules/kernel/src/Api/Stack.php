@@ -12,18 +12,18 @@ namespace Modules\Kernel\Api;
  * cannot be attributed to the wrong stack if the thing that holds it holds a
  * `StackId` too.
  *
- * **Four parts, and each is a rule.** The identity is not the address
- * (`N1-R22`), because a machine reached by another route is the same machine.
+ * **Four parts, and each is a rule.** The identity is not the address, because
+ * a machine reached by another route is the same machine.
  * The name is what an operator picked, because "192.168.1.42" and
  * "192.168.1.43" are not two names. The address is where to dial and is treated
- * as private (`N1-R15`). The fingerprint is the certificate that machine
+ * as private. The fingerprint is the certificate that machine
  * promised, checked on every connection whether or not the platform would
  * accept it (`ADR-0018`).
  *
  * **The session is deliberately not here.** `N1-R11` keeps each stack's session
  * separate and this would be the obvious place to keep it — which is exactly
  * why it is not: a stack is what the app remembers between launches, and a
- * session is what it may not (`N1-R23`, `N4-R5`). Putting them in one value
+ * session is what it may not. Putting them in one value
  * makes the thing that must be persisted and the thing that must not be the
  * same object, and the first piece of code to write one out takes the other
  * with it.
@@ -64,7 +64,7 @@ final readonly class Stack
     }
 
     /**
-     * Whether the machine that just answered is this one (`N1-R19`, `N1-R20`).
+     * Whether the machine that just answered is this one.
      *
      * The pinned fingerprint came from pairing material somebody carried across
      * a gap (`ADR-0018`), and this is where it earns its keep: **every**

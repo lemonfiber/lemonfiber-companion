@@ -18,8 +18,8 @@ use Traversable;
  * promises: the app holds more than one configured stack, and a reading from
  * one is never attributed to another. The third — that each stack's session is
  * kept separate — is deliberately not here, for the reason
- * {@see Stack} gives: a session is the thing the app may not retain
- * (`N1-R23`, `N4-R5`), and putting it beside the thing the app does retain
+ * {@see Stack} gives: a session is the thing the app may not retain, and
+ * putting it beside the thing the app does retain
  * makes the first piece of code to write one out take the other with it.
  *
  * **There is no current stack, and that is the design.** The obvious shape for

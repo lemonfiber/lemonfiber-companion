@@ -42,7 +42,7 @@ final readonly class Attempted
     }
 
     /**
-     * It never reached the stack, so it did not happen (`N1-R40`).
+     * It never reached the stack, so it did not happen.
      *
      * Takes the stack because the refusal has to name it, and the problem
      * because what went wrong is the server's or the network's to describe.

@@ -90,7 +90,7 @@ final readonly class Interrupted
     }
 
     /**
-     * Where to put the operator back, once they are admitted again (`N1-R44`).
+     * Where to put the operator back, once they are admitted again.
      *
      * On both arms, because the requirement makes no distinction: a session
      * that was rejected and one that ended both end with the operator back on

@@ -92,7 +92,7 @@ final class Credential
     }
 
     /**
-     * The value, once, for the one exchange it exists for (`N1-R7`).
+     * The value, once, for the one exchange it exists for.
      *
      * Named for where it goes rather than for what it is, which is the same
      * argument `Session::forTheHeader()` makes: a general-purpose accessor makes
