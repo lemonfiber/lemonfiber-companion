@@ -115,6 +115,24 @@ envelope. The screen then said *"The camera closed before it read a code."* and
 *"Open it again when you are ready, or type the code instead."* — the reason and
 its own remedy, rather than one sentence for all four ways of getting nothing.
 
+**A defect the handset found, and the fix watched.** Revoking the camera with
+`adb shell pm revoke` leaves the platform in the state a single *Don't allow*
+leaves it: refused, but `shouldShowRequestPermissionRationale` true, so Android
+is still willing to show the dialog. The shim raised no prompt there — it asked
+only on `mayAsk`, which is true only where nobody has been asked at all — so it
+answered *not permitted, you may ask again* and the screen offered *"Open it
+again to allow the camera"*. Opening it again gave the identical refusal. The
+advice was honest about the platform and impossible to act on, for ever, on the
+most common path after somebody declines once.
+
+Both shims now raise the prompt on `mayAskAgain`, which is the fact that means
+*asking could still change the answer*. Watched end to end afterwards: the
+system dialog came up, allowing it granted the permission, and the scanner
+opened inside the same call rather than refusing and making the operator tap a
+second time. The two readings stay separate on the rule — `mayAsk` is still the
+narrower *has anybody been asked at all* — and the shim now uses the one that
+answers the question it is actually asking.
+
 **What was not watched: a code actually being read.** That needs somebody to
 hold the phone up to a stack's pairing screen, and this was driven over `adb`
 from a machine that cannot point a camera. The `read` outcome and the `payload`

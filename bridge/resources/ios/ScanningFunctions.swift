@@ -74,6 +74,13 @@ enum ScanningFunctions {
 
     /// Raise the camera prompt and wait for the operator to answer it.
     ///
+    /// Asked for on `CameraRule.mayAskAgain` rather than `CameraRule.mayAsk`.
+    /// The two are the same here, because this platform shows the prompt once
+    /// and has nothing that says an explanation would help — but they are not
+    /// the same on the other, where asking on the narrower reading answers *not
+    /// permitted, you may ask again* and then never asks. Both halves read the
+    /// same fact so that neither can drift into that.
+    ///
     /// The record is written before the prompt goes up rather than after it is
     /// answered, because a process killed while the prompt is on screen has
     /// still asked.
@@ -178,7 +185,7 @@ enum ScanningFunctions {
         func execute(parameters: [String: Any]) throws -> [String: Any] {
             let prompt = parameters["prompt"] as? String ?? ""
 
-            if rule().mayAsk {
+            if rule().mayAskAgain {
                 ask()
             }
 

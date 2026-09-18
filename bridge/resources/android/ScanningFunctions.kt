@@ -94,6 +94,15 @@ public object ScanningFunctions {
     /**
      * Raise the camera prompt and wait for it to go away.
      *
+     * Asked for on [CameraRule.mayAskAgain] rather than [CameraRule.mayAsk],
+     * and the difference is a screen that works from one that cannot. `mayAsk`
+     * is only true where nobody has been asked at all; `mayAskAgain` also
+     * covers the operator who declined the dialog once, which is where Android
+     * leaves somebody who taps *Don't allow* — and the platform is still
+     * willing to show it. Asking on the narrower reading answers *not
+     * permitted, you may ask again* and then never asks, so the screen offers
+     * another go that can never change anything.
+     *
      * The record is written before the dialog goes up rather than after it is
      * answered, because a process killed while the prompt is on screen has
      * still asked — and a record written afterwards would let this application
@@ -144,7 +153,7 @@ public object ScanningFunctions {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
             val prompt = parameters["prompt"] as? String ?: ""
 
-            if (rule(activity).mayAsk) {
+            if (rule(activity).mayAskAgain) {
                 ask(activity)
             }
 
