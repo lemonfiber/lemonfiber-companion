@@ -5,13 +5,13 @@
             "name": "Lemonfiber.Conceal",
             "android": "app.lemonfiber.native.LemonfiberFunctions.Conceal",
             "ios": "LemonfiberFunctions.Conceal",
-            "description": "Protect the window from capture while a screen holding a credential, a session token or pairing material is up (N4-R18)"
+            "description": "Protect the window from capture while a screen holding a credential, a session token or pairing material is up"
         },
         {
             "name": "Lemonfiber.Reveal",
             "android": "app.lemonfiber.native.LemonfiberFunctions.Reveal",
             "ios": "LemonfiberFunctions.Reveal",
-            "description": "Stop protecting for that screen. Backgrounding still protects (N4-R9)"
+            "description": "Stop protecting for that screen. A backgrounded application is still protected"
         },
         {
             "name": "Lemonfiber.IsProtected",
@@ -23,7 +23,7 @@
             "name": "Lemonfiber.Authenticate",
             "android": "app.lemonfiber.native.LemonfiberAuth.Authenticate",
             "ios": "LemonfiberAuth.Authenticate",
-            "description": "Ask the device who this is, falling back to the passcode when biometry fails (N4-R8)"
+            "description": "Ask the device who this is, falling back to the passcode where biometry fails rather than to unlocked"
         },
         {
             "name": "Lemonfiber.CanAuthenticate",

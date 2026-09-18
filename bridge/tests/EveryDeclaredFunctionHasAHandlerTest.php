@@ -22,6 +22,14 @@ declare(strict_types=1);
 // It reads the sources as text. A declaration is a line, the files are small,
 // and the alternative is a Kotlin parser and a Swift parser in PHP — which
 // would be two more things able to go quiet.
+//
+// It also reads what the manifest *says*, because it is the only thing that
+// reads the manifest at all. `NoRequirementIdInACommentTest` walks PHP and
+// matches the four markers this repository writes a comment with; JSON has
+// none of them, so a description carrying a requirement identifier sat outside
+// every rule there is. A description is read by people — and by anybody who
+// takes this plugin from the marketplace the licence points at, for whom an
+// identifier names a requirement in a specification they cannot open.
 
 /**
  * The plugin's manifest, whole.
@@ -36,7 +44,7 @@ declare(strict_types=1);
  *
  * @return array{
  *     namespace: string,
- *     bridge_functions: list<array{name: string, android?: string, ios?: string}>,
+ *     bridge_functions: list<array{name: string, android?: string, ios?: string, description?: string}>,
  *     android?: array{init_function?: string},
  *     ios?: array{init_function?: string},
  * }
@@ -46,7 +54,7 @@ function theBridgeManifest(): array
     /**
      * @var array{
      *     namespace: string,
-     *     bridge_functions: list<array{name: string, android?: string, ios?: string}>,
+     *     bridge_functions: list<array{name: string, android?: string, ios?: string, description?: string}>,
      *     android?: array{init_function?: string},
      *     ios?: array{init_function?: string},
      * } $said
@@ -228,6 +236,12 @@ function whatTheSourcesHoldOn(string $under, string $extension, string $interfac
 }
 
 it('carries an Android handler for every function the manifest declares', function (): void {
+    // A floor before the comparison, stated rather than left to the two tests
+    // below to imply. Every assertion here answers `[]` for a manifest that
+    // agrees with its sources, and a manifest with no entries at all would too
+    // — having compared nothing.
+    expect(theBridgeManifest()['bridge_functions'])->not->toBeEmpty();
+
     $missing = whatNothingAnswers(
         whatTheManifestNamesOn('android'),
         sprintf('%s/resources/android', dirname(__DIR__)),
@@ -245,6 +259,8 @@ it('carries an Android handler for every function the manifest declares', functi
 });
 
 it('carries an iOS handler for every function the manifest declares', function (): void {
+    expect(theBridgeManifest()['bridge_functions'])->not->toBeEmpty();
+
     $missing = whatNothingAnswers(
         whatTheManifestNamesOn('ios'),
         sprintf('%s/resources/ios', dirname(__DIR__)),
@@ -299,6 +315,33 @@ it('declares every handler the sources hold', function (): void {
     ));
 });
 
+it('says what each function does without naming a requirement', function (): void {
+    // A requirement identifier gestures at a page rather than saying anything,
+    // and rots the moment that page is superseded — silently, because nothing
+    // reads a description. What is worth keeping is the sentence, which says
+    // what the function does; the number belongs on a page a link can reach.
+    $named = [];
+
+    foreach (theBridgeManifest()['bridge_functions'] as $function) {
+        if (! array_key_exists('description', $function)) {
+            continue;
+        }
+
+        if (preg_match('/\b[A-Z]+\d*-R\d+\b/', $function['description']) === 1) {
+            $named[] = sprintf('%s — %s', $function['name'], $function['description']);
+        }
+    }
+
+    expect($named)->toBe([], sprintf(
+        "These descriptions name a requirement:\n  %s\n\n"
+        . 'A manifest description is read by people, and by anybody who takes this plugin '
+        . 'from the marketplace its licence points at — for whom the identifier names a '
+        . "requirement in a specification they cannot open. Say what the function does, in "
+        . 'words that stand on their own.',
+        implode("\n  ", $named),
+    ));
+});
+
 it('names a symbol that is not there', function (): void {
     // The check's own violation, handed to the check. Every assertion above
     // answers `[]` for a manifest that agrees with its sources, and so would a
@@ -328,6 +371,14 @@ it('names a symbol that is not there', function (): void {
         sprintf('%s/resources/android', dirname(__DIR__)),
         'kt',
     ))->toHaveCount(1);
+});
+
+it('names a description that gestures at a page', function (): void {
+    // The rule above answers `[]` for a manifest that says what it does, and
+    // so would one that read no descriptions at all. This is the reading of
+    // the pattern itself, so the check cannot pass by finding nothing.
+    expect(preg_match('/\b[A-Z]+\d*-R\d+\b/', 'Protect the window from capture (N4-R18)'))->toBe(1)
+        ->and(preg_match('/\b[A-Z]+\d*-R\d+\b/', 'Protect the window from capture'))->toBe(0);
 });
 
 it('reads a declaration and not a mention of one', function (): void {
