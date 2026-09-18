@@ -9,14 +9,14 @@ use Modules\Kernel\Api\AtAGlance;
 /**
  * The operator said the fingerprint on their phone is the one on the stack.
  *
- * `N1-R50` requires it for typed pairing and requires that the app not proceed
+ * Typed pairing requires it, and requires that the app not proceed
  * without it. A `bool` would satisfy the requirement in the reading that counts
  * calls and not in the one that counts mistakes: `confirmed: false` is a value
  * somebody can pass, and `$confirmed` is a variable somebody can leave `true`
  * from a branch above. A type that only exists where an operator answered yes
  * cannot be conjured by either.
  *
- * **It carries what was compared, not merely that something was.** `N1-R51`
+ * **It carries what was compared, not merely that something was.** What is
  * asks for a short form derived from the whole fingerprint, and the whole
  * mechanism turns on the operator having compared *this* stack's — so the
  * confirmation names it, and {@see Introducing} can be handed a confirmation

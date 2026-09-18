@@ -39,6 +39,7 @@ already has.
 | Page | What it covers |
 |------|----------------|
 | [reaching-a-stack.md](reaching-a-stack.md) | Every call this app makes to a machine, and everything it reads back |
+| [pairing-a-machine.md](pairing-a-machine.md) | How this device comes to know a stack, and what it decides on launch |
 
 More follow as each module is converted; `tests/Arch/NoRequirementIdInACommentTest.php`
 is what stops the count going back up while that happens.

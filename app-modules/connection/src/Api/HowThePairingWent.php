@@ -17,7 +17,7 @@ use function sprintf;
  * nothing on the next launch has been lied to by an app that had the
  * information at the time.
  *
- * **The two refusals are named rather than merged.** `N1-R10`'s habit applied
+ * **The two refusals are named rather than merged.** An obstacle's habit applied
  * to storage: a device offering no store at all is a thing the operator cannot
  * fix by trying again, and a store that would not open — locked, full, refusing
  * — is a thing they very often can. One sentence for both is the sentence that
@@ -80,7 +80,7 @@ enum HowThePairingWent: string
     /**
      * The key for what to do about it.
      *
-     * Separate from {@see said()} because `N1-R10` asks for both and they are
+     * Separate from {@see said()} because an obstacle owes both and they are
      * not the same sentence: what happened is a fact, and what to do about it
      * is advice. `_action` is the suffix every remedy in this catalogue carries.
      */

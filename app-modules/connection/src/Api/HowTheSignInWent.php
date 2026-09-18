@@ -69,7 +69,7 @@ enum HowTheSignInWent: string
     /**
      * This device will not let the app onto the network the stack is on.
      *
-     * `N4-R17` says a refused local-network permission is reported as a
+     * A refused local-network permission is reported as a
      * condition **distinct** from an unreachable stack. It used to arrive here
      * as `StackDidNotAnswer`, which is the collapse the requirement names: the
      * two are indistinguishable at the socket — both are a request that goes
@@ -99,7 +99,7 @@ enum HowTheSignInWent: string
     /**
      * Whether offering the same password again is worth doing.
      *
-     * `N1-R10`'s distinction where it costs the operator most. A refused
+     * The obstacle distinction where it costs the operator most. A refused
      * password is answered by typing it again; a door counting attempts is
      * made worse by it, and a stack that is not answering is not a password
      * question at all. This is what keeps a screen from putting *try again*
@@ -139,7 +139,7 @@ enum HowTheSignInWent: string
     /**
      * The key for what to do about it.
      *
-     * Separate from {@see said()} because `N1-R10` asks for both and they are
+     * Separate from {@see said()} because an obstacle owes both and they are
      * not the same sentence: what happened is a fact about the world, and what
      * to do about it is advice — advice that differs sharply between a password
      * worth retyping and a door that is counting how often you try.
@@ -182,7 +182,7 @@ enum HowTheSignInWent: string
             self::TooManyAttempts, self::StackDidNotAnswer => Standing::Guided,
             self::NoStoreOnThisDevice, self::TheStoreWouldNotOpen => Standing::Actionable,
             // `Guided` rather than `Actionable`, which is the distinction that
-            // makes `N4-R17` worth having: the operator must act, and not here.
+            // makes the distinction worth having: the operator must act, and not here.
             // Offering a password field over a network the app is not allowed
             // onto would be the screen offering to do something it cannot do —
             // and the remedy is one screen further away than any other state
@@ -229,7 +229,7 @@ enum HowTheSignInWent: string
         return match ($why) {
             Obstacle::CredentialWasRefused => self::CredentialWasRefused,
             Obstacle::TooManyAttempts => self::TooManyAttempts,
-            // `N4-R17` — its own state rather than folded in with a stack that
+            // Its own state rather than folded in with a stack that
             // did not answer. They look alike at the socket and are opposite
             // everywhere that matters: one is a machine to go and check, the
             // other is a switch on the phone the operator is holding.

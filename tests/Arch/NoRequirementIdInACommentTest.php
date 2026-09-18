@@ -21,8 +21,8 @@ use Tests\Support\Tree;
 // reach it, and a reader can find the requirement from the code and the code
 // from the requirement.
 //
-// **A ratchet rather than a sweep, because the sweep is long.** Four hundred
-// and forty-three files still hold one. Converting them is editorial — the
+// **A ratchet rather than a sweep, because the sweep is long.** Most of this
+// repository still holds one, and converting them is editorial — the
 // identifiers are woven into the sentences rather than sitting beside them —
 // and a rule that failed until the last one was done would be switched off on
 // the first afternoon. So this pins what is left and refuses any increase, and
@@ -45,7 +45,7 @@ use Tests\Support\Tree;
  * to. It reaches zero when the last comment is rewritten, and this file and the
  * count go together when the org's gate takes over.
  */
-const IDENTIFIERS_STILL_IN_COMMENTS = 1443;
+const IDENTIFIERS_STILL_IN_COMMENTS = 1401;
 
 /**
  * Whether a line is a comment, by the four markers this repository writes one

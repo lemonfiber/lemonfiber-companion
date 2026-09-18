@@ -32,7 +32,7 @@ use function trim;
  * this is that boundary.
  *
  * **It is the only place a {@see FingerprintWasConfirmed} is made.** That is
- * the design rather than a convenience: `N1-R50` requires the operator to have
+ * the design rather than a convenience: the operator has to have
  * been *shown* the comparable form, and the thing that showed it is this. A
  * confirmation therefore cannot be constructed by a caller that never rendered
  * one — {@see confirmedByTheOperator()} is the only road, and it exists only in
@@ -60,7 +60,7 @@ final readonly class WhatTheCodeSaysSoFar
      * address had no scheme, or the fingerprint was not sixty-four hex
      * characters — and each is answered by checking what was typed.
      * {@see PairingIsSpent} is caught first and answered differently: that code
-     * was typed perfectly and `N1-R49` has expired it, so telling somebody to
+     * was typed perfectly and has since expired, so telling somebody to
      * check the characters sends them to look for a mistake that is not there.
      *
      * Neither catch is broad. `Throwable` here would absorb a misspelled method
@@ -84,7 +84,7 @@ final readonly class WhatTheCodeSaysSoFar
         return new self(null, WhereTheCodeGot::Unreadable);
     }
 
-    /** It was pairing material, and it is past its moment (`N1-R49`). */
+    /** It was pairing material, and it is past its moment. */
     public static function expired(): self
     {
         return new self(null, WhereTheCodeGot::Expired);

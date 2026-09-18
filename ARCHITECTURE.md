@@ -766,8 +766,8 @@ So the sentence stays and the number moves, to a page under
 requirement asks and what in this repository keeps it. A citation belongs in a
 commit trailer and a pull request body, which is where the gate reads it.
 
-Four hundred and forty-three files still hold one, and converting them is
-editorial rather than mechanical — the identifiers are woven into the sentences.
+Most of this repository still holds one, and converting them is editorial rather
+than mechanical — the identifiers are woven into the sentences.
 `NoRequirementIdInACommentTest` is the ratchet in the meantime: it pins what is
 left, refuses any increase, and refuses a decrease that was not written down.
 

@@ -13,22 +13,22 @@ use Modules\Kernel\Api\Stacks;
 /**
  * What the app found when it opened, decided once.
  *
- * `N1-R37` wants a launch with no network, a launch that cannot reach the stack
- * and a launch where the app is locked told apart. `N1-R35` and `N1-R36` add the
+ * A launch with no network, a launch that cannot reach the stack
+ * and a launch where the app is locked are told apart, and two more add the
  * two that are not failures at all: no stack paired yet, and a stack paired and
  * ready. {@see Launch} is the shape those five collapse into four of, and until
  * this existed nothing produced one — the first screen looked at the stack list
- * and drew a conclusion from its length, which answers `N1-R35` and none of the
+ * and drew a conclusion from its length, which answers the first run and none of the
  * others.
  *
  * **The order is the requirement, not a convenience.** Locked is asked first,
- * and asked before anything touches a network. `N4-R19` requires the device's
+ * and asked before anything touches a network. The device's
  * own authentication on a cold start, and an app that reached a stack and then
  * asked for a passcode has already sent the credential it was holding — the
  * check would be theatre over a request that already happened.
  *
  * Pairing is asked second, because a device with no stack has nothing to reach
- * and no reason to ask the network anything. `N1-R35` sends that launch to a
+ * and no reason to ask the network anything. A first run goes to a
  * screen offering pairing, and reporting it as a failure to reach would be the
  * app describing its own first run as a fault.
  *
@@ -36,11 +36,11 @@ use Modules\Kernel\Api\Stacks;
  * the one question about reaching a machine that can be answered without
  * sending anything, which is exactly why it belongs at a launch: a phone in
  * flight mode and a machine that is switched off produce the same silence at
- * the socket, and `N1-R37` wants them told apart. Asking it before the pairing
+ * the socket, and they are told apart. Asking it before the pairing
  * check would put the question to a device that has nothing to reach.
  *
  * **What this does not do is reach the stack.** `F4` says a frame is not where
- * a socket is opened and `N1-R66` says nothing but a cadence or the operator
+ * a socket is opened, and nothing but a stated cadence or the operator
  * makes a screen reach a machine, and opening
  * the app is the moment both are easiest to break — four paired machines, on a
  * home network, one of them asleep. So *ready* here means *paired, unlocked and
@@ -71,17 +71,17 @@ final readonly class Opening
      */
     public function found(): Launch
     {
-        // `N4-R19` requires the device's own authentication on a cold start, and
+        // The device's own authentication is required on a cold start, and
         // read without a qualifier that is true of a freshly installed app
         // holding nothing — where the prompt stands in front of a screen that
-        // says there are no stacks yet. `N4-R22` names that case: a lock over
+        // says there are no stacks yet, which is its own case: a lock over
         // an empty store protects nothing, and a prompt protecting nothing is
         // how an operator learns the prompt is noise.
         //
         // `holdsAny()` rather than the list, and it is the whole of why that
         // method exists. The order below is the requirement — a shut app has
         // not read the operator's machines — and asking whether the record is
-        // empty is not reading them. `N4-R23` wants exactly this: the store
+        // empty is not reading them. This is exactly what is wanted: the store
         // itself, not a flag, so the unlocked first run cannot outlive it.
         if ($this->stacks->holdsAny() && $this->heldShut()) {
             return Launch::locked();
@@ -93,7 +93,7 @@ final readonly class Opening
         // is a line no test can reach and no mutation can be caught on.
         //
         // Which stack: the first the device holds, which is the order they were
-        // paired in. Not a choice made on the operator's behalf — `N1-R31` is
+        // paired in. Not a choice made on the operator's behalf — the rule is
         // emphatic that two stacks are not interchangeable — but the answer to
         // *which one is this launch about*, which the screen needs before it can
         // say anything. An operator with four machines meets the list.
@@ -114,7 +114,7 @@ final readonly class Opening
                 : Launch::blockedBy(Obstacle::DeviceHasNoNetwork);
         }
 
-        // No stack paired, which is a first run rather than a fault (`N1-R35`).
+        // No stack paired, which is a first run rather than a fault.
         // Reached by falling out of the loop, so it is the ordinary answer for
         // an empty record rather than a guard against one.
         return Launch::unpaired();
@@ -123,7 +123,7 @@ final readonly class Opening
     /**
      * Whether the device refused to let the operator in.
      *
-     * A device that offers no authentication at all is not locked. `N4-R3` says
+     * A device that offers no authentication at all is not locked. The rule says
      * every permission is optional and the app offers a working alternative for
      * each declined one, and a handset with no passcode set is the same
      * situation one step further back — refusing to open would be this app

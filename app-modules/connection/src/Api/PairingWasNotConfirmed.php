@@ -9,7 +9,7 @@ use RuntimeException;
 /**
  * Typed pairing reached the point of becoming a stack without a confirmation.
  *
- * `N1-R50` is explicit that the app must not proceed on an unconfirmed
+ * The app must not proceed on an unconfirmed
  * fingerprint, and this is the one path where that could happen: material read
  * by camera carried its own digest, and material read by a person did not —
  * somebody has to have compared it.
