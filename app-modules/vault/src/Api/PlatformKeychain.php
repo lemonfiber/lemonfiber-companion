@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Vault\Api;
 
-use Lemonfiber\Native\Storage;
+use Lemonfiber\Native\Keeps;
 use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\WhyNothingWasKept;
 use Modules\Kernel\Api\Kept;
@@ -43,7 +43,7 @@ final readonly class PlatformKeychain implements SecureStorage
     /** What a stored key is prefixed with, so nothing else in the store collides. */
     private const string UNDER = 'lemonfiber.session';
 
-    public function __construct(private Storage $store) {}
+    public function __construct(private Keeps $store) {}
 
     public function isAvailable(): bool
     {

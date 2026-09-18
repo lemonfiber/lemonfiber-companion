@@ -36,7 +36,7 @@ use function nativephp_call;
  * convenient: a stand-in claiming a session would make a test about resuming one
  * pass on a machine with nowhere to keep it.
  */
-final readonly class Storage
+final readonly class Storage implements Keeps
 {
     /** The word the store answers a successful write with. */
     private const string KEPT = 'kept';

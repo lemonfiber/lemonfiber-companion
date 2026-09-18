@@ -14,6 +14,9 @@ use function is_string;
 use function json_decode;
 use function json_encode;
 
+use Lemonfiber\Native\Keeps;
+use Lemonfiber\Native\WhenAValueMayBeRead;
+use Lemonfiber\Native\WhyNothingWasKept;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Fingerprint;
@@ -23,8 +26,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
-use Native\Mobile\SecureStorage as Platform;
-use Native\Mobile\SecureStorageStatus;
+use Modules\Vault\Internal\WhetherAnythingIsHeld;
 
 /**
  * The stacks this device is paired with, kept in the platform's own store.
@@ -77,17 +79,30 @@ final readonly class PlatformStacks implements Stacks
      */
     private const string NOTHING_WRITTEN_DOWN = '[]';
 
-    public function __construct(private Platform $store) {}
+    public function __construct(private Keeps $store) {}
 
+    /**
+     * Every stack this device is paired with, as far as it can tell.
+     *
+     * **A store that could not be asked answers the same as a store holding
+     * nothing, and that is a known collapse rather than an oversight.** The two
+     * are opposite — one device is unpaired, the other cannot say whether it is
+     * — and telling them apart here means `Configured` carrying a refusal to
+     * every screen that draws a stack list. That is a change to the port and to
+     * around a dozen call sites, so it is not made on the way past; the arm is
+     * written out so that the collapse is visible at the point it happens
+     * rather than hidden behind a status comparison.
+     *
+     * {@see holdsAny()} is the one question where the distinction already
+     * matters enough to be made, because getting it wrong there unlocks the app.
+     */
     public function configured(): Configured
     {
-        $held = $this->store->read(self::UNDER);
-
-        if ($held->status !== SecureStorageStatus::Found) {
-            return Configured::none();
-        }
-
-        return $this->read($held->value ?? '');
+        return $this->store->read(self::UNDER)->either(
+            found: fn(string $written): Configured => $this->read($written),
+            nothing: static fn(): Configured => Configured::none(),
+            refused: static fn(): Configured => Configured::none(),
+        );
     }
 
     /**
@@ -108,27 +123,27 @@ final readonly class PlatformStacks implements Stacks
      */
     public function holdsAny(): bool
     {
-        $held = $this->store->read(self::UNDER);
-
-        // A store that cannot be read is not a store that is empty. The two
-        // arrive here as the same absence and they are opposite answers to the
-        // question this method is actually asked: `Opening` uses it to decide
-        // whether there is anything worth locking, so reading an unreadable
-        // store as *nothing* is the lock letting itself off on exactly the
-        // device where something is already wrong — the pairings are still in
-        // the store, the app simply cannot see them this launch.
-        //
-        // Unknown is answered as *there may be*. Being wrong in that direction
-        // costs a prompt in front of somebody who has paired nothing; being
-        // wrong the other way costs them an unlocked application.
-        if ($held->status === SecureStorageStatus::Unavailable) {
-            return true;
-        }
-
-        return $held->status === SecureStorageStatus::Found
-            && $held->value !== null
-            && $held->value !== ''
-            && $held->value !== self::NOTHING_WRITTEN_DOWN;
+        return $this->store->read(self::UNDER)->either(
+            found: static fn (string $written): WhetherAnythingIsHeld => $written === ''
+                || $written === self::NOTHING_WRITTEN_DOWN
+                    ? WhetherAnythingIsHeld::itIsNot()
+                    : WhetherAnythingIsHeld::itIs(),
+            nothing: static fn (): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+            // A store that cannot be read is not a store that is empty. The two
+            // arrive here as the same absence and they are opposite answers to
+            // the question this method is actually asked: `Opening` uses it to
+            // decide whether there is anything worth locking, so reading an
+            // unreadable store as *nothing* is the lock letting itself off on
+            // exactly the device where something is already wrong — the
+            // pairings are still in the store, the app simply cannot see them
+            // this launch.
+            //
+            // Unknown is answered as *there may be*, and for both refusals
+            // rather than one. Being wrong in that direction costs a prompt in
+            // front of somebody who has paired nothing; being wrong the other
+            // way costs them an unlocked application.
+            refused: static fn (): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+        )->held;
     }
 
     public function remember(Stack $stack): Remembered
@@ -138,11 +153,29 @@ final readonly class PlatformStacks implements Stacks
         // the rule lives in `Configured::with()` and this does not restate it.
         $written = json_encode($this->shaped($this->configured()->with($stack)));
 
-        if ($written === false || ! $this->store->set(self::UNDER, $written)) {
-            return Remembered::refused($this->whyItRefused());
+        // Every part of the record is a string this build validated on its way
+        // into a value type, so there is no input an operator can supply that
+        // reaches this branch. It is still answered rather than asserted, and
+        // `StoreWouldNotOpen` is the honest word: nothing was written down, and
+        // the remedy offered — try again — is the right one for a condition
+        // this application cannot describe any better than that.
+        if ($written === false) {
+            return Remembered::refused(WhyAStackCannotBeRemembered::StoreWouldNotOpen);
         }
 
-        return Remembered::safely();
+        return $this->store->keep(self::UNDER, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+            done: static fn(): Remembered => Remembered::safely(),
+            refused: static fn(WhyNothingWasKept $why): Remembered => Remembered::refused(self::meaning($why)),
+        );
+    }
+
+    /** What one of the store's refusals means in the terms this application reasons in. */
+    private static function meaning(WhyNothingWasKept $why): WhyAStackCannotBeRemembered
+    {
+        return match ($why) {
+            WhyNothingWasKept::NoStoreOnThisDevice => WhyAStackCannotBeRemembered::DeviceHasNoSecureStorage,
+            WhyNothingWasKept::StoreWouldNotOpen => WhyAStackCannotBeRemembered::StoreWouldNotOpen,
+        };
     }
 
     /**
@@ -313,11 +346,4 @@ final readonly class PlatformStacks implements Stacks
         return $value;
     }
 
-    /** Which of the two refusals this was, read from the store rather than guessed. */
-    private function whyItRefused(): WhyAStackCannotBeRemembered
-    {
-        return $this->store->read(self::UNDER)->status === SecureStorageStatus::Unavailable
-            ? WhyAStackCannotBeRemembered::DeviceHasNoSecureStorage
-            : WhyAStackCannotBeRemembered::StoreWouldNotOpen;
-    }
 }

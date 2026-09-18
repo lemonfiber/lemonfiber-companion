@@ -7,85 +7,109 @@ namespace Tests\Support\Fakes;
 use function array_key_exists;
 use function array_keys;
 
-use Native\Mobile\SecureStorage as Platform;
-use Native\Mobile\SecureStorageAccessibility;
-use Native\Mobile\SecureStorageResult;
-use Native\Mobile\SecureStorageStatus;
+use Lemonfiber\Native\Keeps;
+use Lemonfiber\Native\WasRead;
+use Lemonfiber\Native\WhenAValueMayBeRead;
+use Lemonfiber\Native\WhyNothingWasKept;
+use Lemonfiber\Native\Wrote;
+use Override;
 
 /**
- * A stand-in for the platform's own store, written by hand.
+ * A stand-in for the device's own store, written by hand.
  *
- * `G1` forbids *mocking* a type we do not own, and this is not one: it is a
- * subclass with the three methods written out, which is the same thing
- * `FrozenClock` is to a clock. The distinction matters — a mock asserts on calls
- * and drifts silently when the real class changes, and this fails to compile.
+ * `G1` forbids *mocking*, and this is not one: it is an implementation of
+ * {@see Keeps} with the four methods written out, which is the same thing
+ * `FrozenClock` is to a clock. The distinction matters — a mock asserts on
+ * calls and drifts silently when the real shape changes, and this fails to
+ * compile.
  *
- * It exists because `PlatformKeychain` cannot otherwise be run at all. There is
- * no Keychain behind a PHP process on a laptop, so without this the adapter is
- * a file nothing executes, and the three things it actually decides — which key
- * a stack gets, which refusal a failure is, that forgetting ignores the
- * result — go unchecked until somebody holds a phone.
+ * It exists because the three adapters over the store cannot otherwise be run
+ * at all. There is no keychain behind a PHP process on a laptop, so without
+ * this they are files nothing executes, and what they actually decide — which
+ * key a stack gets, which refusal a failure is, that forgetting ignores the
+ * result, that an unreadable store is not a device holding nothing — goes
+ * unchecked until somebody holds a phone.
+ *
+ * **Three devices rather than a switch per method.** A store is one of these
+ * for the whole of a test, which is what a device is: the combination *reads
+ * fine and refuses every write* describes no handset, and a fake able to
+ * express it is a fake that makes an adapter pass against a device that does
+ * not exist.
  */
-final class APlatformStore extends Platform
+final class APlatformStore implements Keeps
 {
     /** @var array<string, string> */
     private array $held = [];
 
-    private function __construct(
-        private readonly SecureStorageStatus $answering,
-        private readonly bool $accepting,
-    ) {}
+    private function __construct(private readonly ?WhyNothingWasKept $refusing) {}
 
     /** A store that works, on a device that has one. */
     public static function working(): self
     {
-        return new self(SecureStorageStatus::NotFound, accepting: true);
+        return new self(refusing: null);
     }
 
     /** A device with no secure store at all. */
     public static function absent(): self
     {
-        return new self(SecureStorageStatus::Unavailable, accepting: false);
+        return new self(refusing: WhyNothingWasKept::NoStoreOnThisDevice);
     }
 
-    /** A store that is present and will not accept a write. */
+    /** A store that is there and will not open. */
     public static function refusing(): self
     {
-        return new self(SecureStorageStatus::Failed, accepting: false);
+        return new self(refusing: WhyNothingWasKept::StoreWouldNotOpen);
     }
 
-    public function set(string $key, ?string $value, ?SecureStorageAccessibility $accessibility = null): bool
+    /**
+     * A store that will not open still answers that there is somewhere to keep
+     * a session, because there is — what is wrong is a condition trying again
+     * can clear. Only a device with no store at all answers no, which is what
+     * {@see \Lemonfiber\Native\Storage::canBeAsked()} does.
+     */
+    #[Override]
+    public function canBeAsked(): bool
     {
-        if (! $this->accepting || $value === null) {
-            return false;
+        return $this->refusing !== WhyNothingWasKept::NoStoreOnThisDevice;
+    }
+
+    #[Override]
+    public function keep(string $key, string $value, WhenAValueMayBeRead $when): Wrote
+    {
+        if ($this->refusing instanceof WhyNothingWasKept) {
+            return Wrote::refused($this->refusing);
         }
 
         $this->held[$key] = $value;
 
-        return true;
+        return Wrote::done($when);
     }
 
-    public function get(string $key): ?string
+    #[Override]
+    public function read(string $key): WasRead
     {
-        return $this->held[$key] ?? null;
-    }
-
-    public function read(string $key): SecureStorageResult
-    {
-        if ($this->answering === SecureStorageStatus::Unavailable) {
-            return new SecureStorageResult(SecureStorageStatus::Unavailable);
+        if ($this->refusing instanceof WhyNothingWasKept) {
+            return WasRead::refused($this->refusing);
         }
 
         return array_key_exists($key, $this->held)
-            ? new SecureStorageResult(SecureStorageStatus::Found, $this->held[$key])
-            : new SecureStorageResult($this->answering);
+            ? WasRead::found($this->held[$key])
+            : WasRead::nothing();
     }
 
-    public function delete(string $key): bool
+    /**
+     * Forgetting works on a store that refuses everything else.
+     *
+     * The one thing that must always work: a refusal leaves the app holding a
+     * session it could not store, and getting rid of it cannot depend on the
+     * store that just refused to take it.
+     */
+    #[Override]
+    public function forget(string $key): Wrote
     {
         unset($this->held[$key]);
 
-        return true;
+        return Wrote::done(WhenAValueMayBeRead::WhileUnlocked);
     }
 
     /**
