@@ -14,7 +14,7 @@ namespace Modules\Operator\Internal\ViewModels;
  *
  * **Three states, and the silent service is one of them.** A service that has
  * said nothing in the lines that were asked for is running quietly; a session
- * that has ended is `N1-R44`'s screen; an obstacle is `N1-R10`'s. Folding the
+ * that has ended is the sign-in screen; an obstacle is its own. Folding the
  * first two together would have a signed-out phone report a quiet service,
  * which is the collapse {@see \Modules\Kernel\Api\WhatWasSaid} refuses one
  * layer up and this one must not rebuild.
@@ -24,7 +24,7 @@ final readonly class WhatTheServiceTurnedOutToSay
     /**
      * @param list<WhatOneLineSays> $lines      the lines to show, oldest first
      * @param int                   $arrived    how many came back before anything narrowed them
-     * @param int                   $bound      how many were asked for (`N2-R10`)
+     * @param int                   $bound      how many were asked for
      * @param bool                  $isAWindow  whether the view stops where it was told to
      * @param bool                  $isSearching whether a search is narrowing the lines
      */

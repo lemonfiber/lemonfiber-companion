@@ -29,7 +29,7 @@ use Modules\Kernel\Api\Remedies;
  * about it whichever outcome produced it. The empty code is the difference, and
  * it is a true one: there is no identifier to search for.
  *
- * **The detail the core added is last.** `G4-R4` wants it available and not
+ * **The detail the core added is last.** It has to be available and not
  * leading, and on a surface with one column that is a question about order: the
  * plain explanation and what to try come first, and this sits under them, so
  * whoever wants it has it and everybody else has already read the sentence

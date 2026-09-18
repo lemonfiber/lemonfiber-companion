@@ -14,7 +14,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneOtherContainerSays;
 /**
  * What a screen says about containers this stack never declared.
  *
- * `N2-R21` asks for two things of each — a name, and what it is running — and
+ * Two things are asked of each — a name, and what it is running — and
  * forbids a third: presenting one as part of the stack or offering a verb
  * against it. The first two are folded here. The third is not enforced here at
  * all, and deliberately so: {@see SomethingElseRunning} carries a

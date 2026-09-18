@@ -13,18 +13,18 @@ use function view;
 /**
  * One step of the first run: where somebody is, what it says, and the way on.
  *
- * `N1-R54` refuses a first run that is one frame — three sentences and two
+ * A first run that is one frame is refused — three sentences and two
  * buttons at once, with nothing saying which of them somebody is supposed to
  * read first. A sequence says one thing per frame and states its own end, which
  * is the difference between being told something and being handed a wall.
  *
- * **It takes the step rather than the sentences.** `N1-R55` asks every step to
+ * **It takes the step rather than the sentences.** Every step has to
  * say which it is and how many there are, and a component handed a number and a
  * total is a component two call sites can disagree with. {@see
  * WhereTheFirstRunIs} counts its own cases, so a fourth step changes the
  * denominator everywhere by existing.
  *
- * **The way out is a method name, not a route.** `N1-R55` says leaving lands on
+ * **The way out is a method name, not a route.** Leaving lands on
  * pairing rather than on nothing, and pairing is the last step of this same
  * sequence — so leaving is a move within the screen and not a navigation. A
  * route here would have been a second spelling of somewhere this screen already

@@ -19,7 +19,7 @@
             supporting="{{ __('connection.name_this_stack') }}"
         />
 
-        {{-- N4-R2 and N4-R3 together, and said before the prompt rather than
+        {{-- The app's own sentence and the typed road together, said before the prompt rather than
              after a refusal: what the camera is for, and what still works
              without it. An operator who reads this and declines anyway has
              chosen the typed road knowingly. --}}
@@ -36,7 +36,7 @@
 
         <x-operator::action label="{{ __('connection.open_the_camera') }}" :disabled="! $this->mayScan()" tap="scan()" />
 
-        {{-- `N1-R6`'s second road, offered beside the first rather than after
+        {{-- The second road, offered beside the first rather than after
              it has failed. It used to appear only once the camera came back
              with nothing or with something unreadable, which is the app making
              somebody fail before it admits the other way exists — and a phone

@@ -13,9 +13,9 @@ use function view;
 /**
  * The reason a screen has nothing of its own to draw.
  *
- * Two of those, and they read differently: a session that has ended (`N1-R44`)
+ * Two of those, and they read differently: a session that has ended
  * is a screen with a way back in, and an obstacle that stopped the reading
- * (`N1-R10`, `N1-R3`) is a sentence about a machine with the action still on
+ * is a sentence about a machine with the action still on
  * offer. Which of the two a refusal is, is not decided here — it is decided in
  * {@see HowTheReadingWent}, and this draws whichever arrived.
  *

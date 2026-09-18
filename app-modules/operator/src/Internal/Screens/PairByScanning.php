@@ -29,28 +29,28 @@ use function view;
 /**
  * Pairing a stack by pointing the camera at the code on its screen.
  *
- * `N1-R6`'s first road, and the one `ADR-0018` built the design around: the
+ * The first road, and the one `ADR-0018` built the design around: the
  * digest arrives in the payload rather than being read off a screen by a
  * person, so the comparison happens in software and **nobody compares hex**.
  * That is why this screen has no confirmation step and {@see PairByTyping} does
  * — the two are not the same flow with a different input widget.
  *
- * **The order is `N4-R2`'s.** The app's own sentence goes up first, in front of
+ * **The order is fixed.** The app's own sentence goes up first, in front of
  * a button; the button is what opens the camera; and opening the camera is what
- * raises the platform's prompt, which is `N4-R1`'s point of first use. Nothing
+ * raises the platform's prompt, which is the point of first use. Nothing
  * here asks on launch, because the screen draws before anything is called.
  *
- * **`N4-R3` is the refusal arm and it is the reason the refusals are told
+ * **Typing is the refusal arm and it is the reason the refusals are told
  * apart.** A declined camera is answered by offering the typed road, which
  * exists; a scanner somebody simply closed is answered by offering another go;
  * a device with no camera is answered by neither, because there is nothing to
  * turn on and nothing to retry. One sentence for the three is the sentence that
  * is wrong for two of them.
  *
- * **The name is asked for before the camera opens, not after.** `N1-R11` needs
+ * **The name is asked for before the camera opens, not after.** A device needs
  * one, and a screen that scanned first would have to hold the material while
  * somebody types — which is a paired stack waiting on a text field, and the
- * material is the thing `N4-R18` says must not sit on a frame the task switcher
+ * material is the thing that must not sit on a frame the task switcher
  * keeps. Asking first also means the scan either completes the pairing or does
  * not, with no state in between.
  *
@@ -60,14 +60,14 @@ use function view;
  *
  * **`#[Lazy]`** because two of the three things it is handed are ports, and the
  * store behind one of them is a keychain — a call across a process boundary
- * that can wait on a locked store (`F4`, `N1-R36`).
+ * that can wait on a locked store (`F4`).
  */
 #[Lazy]
 #[Concealed]
 final class PairByScanning extends NativeComponent
 {
     /**
-     * What the operator is calling this machine (`N1-R11`).
+     * What the operator is calling this machine.
      *
      * `protected` rather than public. A mutable public property is refused for
      * a reason, and `NativeComponent::__syncProperty()` assigns from the parent
@@ -103,7 +103,7 @@ final class PairByScanning extends NativeComponent
      * store afterwards, which would be asking *which one did I just add* of a
      * list that does not say. `protected` for `NativeComponent`'s property
      * syncing, and the identifier rather than the {@see Stack} because a screen
-     * that held a stack would be holding an address (`N1-R15`).
+     * that held a stack would be holding an address.
      */
     protected string $paired = '';
 
@@ -163,7 +163,7 @@ final class PairByScanning extends NativeComponent
     /**
      * Whether the camera may be offered at all.
      *
-     * `N1-R11` needs a name and the material carries none — an address and a
+     * A device needs a name and the material carries none — an address and a
      * digest are not two names. Offering the button and refusing the tap would
      * be worse: a control that does nothing teaches an operator the app is
      * broken, and they have no way to discover which field it is waiting on.
@@ -312,7 +312,7 @@ final class PairByScanning extends NativeComponent
      * Pair with what was read, or record that it was not pairing material.
      *
      * Parsed through the same named constructor the typed road goes through,
-     * which is what keeps `N1-R49`'s expiry and every refusal along the way
+     * which is what keeps expiry and every refusal along the way
      * true of both roads. A second parser here would be the one that stopped
      * being tested.
      *
@@ -323,7 +323,7 @@ final class PairByScanning extends NativeComponent
     private function paired(string $payload): HowThePairingWent
     {
         // `material()` rather than `confirmedByTheOperator()`, and the
-        // difference is the whole of N1-R50. That method mints a
+        // difference is the whole of the confirmation. That method mints a
         // `FingerprintWasConfirmed`, which may only exist where a person
         // compared something; nobody compared anything here, because the digest
         // arrived in the payload. Reaching for it to get at the material would

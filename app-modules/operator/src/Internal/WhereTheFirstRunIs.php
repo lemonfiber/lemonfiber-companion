@@ -10,16 +10,16 @@ use function sprintf;
 /**
  * Where somebody is in the first run, and how much of it is left.
  *
- * `N1-R35` already refuses an empty operator surface on a launch with no stack,
+ * An empty operator surface is already refused on a launch with no stack,
  * and one screen with two buttons on it satisfies that while leaving somebody
  * to work out what this application is and why pairing needs a machine they may
- * not be standing at. `N1-R54` makes it a sequence with a stated end.
+ * not be standing at, so it is a sequence with a stated end.
  *
  * **An enum rather than an integer**, because the set is closed and a closed set
  * is a type (`D4`) — and because the step a screen is on is the sort of thing an
  * off-by-one turns into a blank screen nobody can name.
  *
- * It carries its own position: `N1-R55` asks every step to say which it is and
+ * It carries its own position: every step says which it is and
  * how many there are, and a step that had to be told its number would be a
  * number kept somewhere else and corrected when the sequence changed.
  */
@@ -31,7 +31,7 @@ enum WhereTheFirstRunIs: string
     /**
      * That setup happens at the machine.
      *
-     * `N1-R4` puts first-run setup on the host, so somebody who installed the
+     * First-run setup happens on the host, so somebody who installed the
      * app first has arrived in the wrong place. They are told once, in a
      * sentence, rather than discovering it by pairing and finding nothing.
      */
@@ -114,7 +114,7 @@ enum WhereTheFirstRunIs: string
     /**
      * The key for the sentence under it.
      *
-     * A heading and a sentence rather than one block, because `N1-R54` asks
+     * A heading and a sentence rather than one block, because what is asked for
      * each step to say a thing and `F5` asks a screen to be readable aloud in
      * the order it is drawn — a paragraph carrying its own title is one node to
      * a screen reader and two to a person.

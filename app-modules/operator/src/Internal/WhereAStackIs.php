@@ -26,7 +26,7 @@ use Modules\Kernel\Api\StackId;
  * **One accessor per screen rather than one per destination on each screen.**
  * `HowThisStackIs` is the screen every other is reached from, so each new
  * destination arrived on it as another `somethingAreAt()` — three of them, on
- * the way to the twenty-method ceiling `Q-R64` refuses. Handing out one of
+ * the way to the twenty-method ceiling that is refused. Handing out one of
  * these instead means the next destination costs no method at all.
  *
  * **It holds the stored identifier rather than a {@see StackId}.** Two screens
@@ -71,43 +71,43 @@ final readonly class WhereAStackIs
         return AStacksScreen::SignIn->forTheStack($this->stored);
     }
 
-    /** What the household has asked this machine for (`N2-R11`). */
+    /** What the household has asked this machine for. */
     public function requests(): string
     {
         return AStacksScreen::Requests->forTheStack($this->stored);
     }
 
-    /** What this machine would put right, stated before any yes (`N2-R4`). */
+    /** What this machine would put right, stated before any yes. */
     public function repairs(): string
     {
         return AStacksScreen::Repairs->forTheStack($this->stored);
     }
 
-    /** What has stopped coming in to this machine (`N2-R9`). */
+    /** What has stopped coming in to this machine. */
     public function stuck(): string
     {
         return AStacksScreen::Stuck->forTheStack($this->stored);
     }
 
-    /** What this machine is running, and the verbs about it (`N2-R7`). */
+    /** What this machine is running, and the verbs about it. */
     public function services(): string
     {
         return AStacksScreen::Services->forTheStack($this->stored);
     }
 
-    /** Where this machine stands on being up to date (`N2-R15`). */
+    /** Where this machine stands on being up to date. */
     public function updates(): string
     {
         return AStacksScreen::Updates->forTheStack($this->stored);
     }
 
-    /** What is running here that this machine never declared (`N2-R21`). */
+    /** What is running here that this machine never declared. */
     public function elsewhere(): string
     {
         return AStacksScreen::Elsewhere->forTheStack($this->stored);
     }
 
-    /** What one of this machine's services has been saying (`N2-R10`). */
+    /** What one of this machine's services has been saying. */
     public function logsOf(ServiceId $service): string
     {
         return AStacksScreen::Logs->forTheStacksService($this->stored, $service->named());

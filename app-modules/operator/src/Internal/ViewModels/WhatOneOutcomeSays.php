@@ -15,7 +15,7 @@ namespace Modules\Operator\Internal\ViewModels;
  *
  * **It carries the repair's own row rather than restating one clause of it.**
  * The first draft took only what the repair *does* and dropped what else it
- * affected and whether it could be undone, on the ground that `N2-R4`'s three
+ * affected and whether it could be undone, on the ground that the three
  * statements are what somebody reads *before* agreeing. The analyser refused
  * the closure that ignored two of its three arguments, and it was right twice
  * over: an arm that ignores what it is handed is not reading the fold, and the

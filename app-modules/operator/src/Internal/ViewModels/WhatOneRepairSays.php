@@ -8,7 +8,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * One repair a stack offered, flattened for a template to read.
  *
  * {@see \Modules\Kernel\Api\Repair} publishes its three clauses through one
- * closure rather than three accessors, because `N2-R4`'s three statements are
+ * closure rather than three accessors, because the three statements are
  * one requirement and three getters are three chances to call two of them.
  * Blade cannot call a closure, so the fold happens once per row in
  * {@see \Modules\Operator\Internal\Presenters\HowARepairReads} —

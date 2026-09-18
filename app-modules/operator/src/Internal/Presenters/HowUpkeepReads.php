@@ -26,7 +26,7 @@ final readonly class HowUpkeepReads
      * This device no longer holds a session for that stack.
      *
      * No obstacle, because nothing was met: the app did not get as far as
-     * asking. `N1-R46` has this told apart from a credential that was refused.
+     * asking. This is told apart from a credential that was refused.
      */
     public function signedOut(): WhatTheUpkeepTurnedOutToBe
     {
@@ -80,12 +80,12 @@ final readonly class HowUpkeepReads
             applied: $applied,
             didNotArrive: $upkeep->howItWent()->thatDidNotArrive()->count(),
             anythingUnanswered: $upkeep->howItWent()->anythingUnanswered(),
-            // `N2-R20`, asked of the reading rather than worked out from the
+            // Asked of the reading rather than worked out from the
             // list below. A stack that says it is current is not asked further,
             // and a screen counting rows would offer an update to one that
             // listed releases while reporting itself up to date.
             canTakeOne: $upkeep->hasSomethingToOffer(),
-            // `N2-R16`'s distinction, asked rather than counted: a screen
+            // The distinction is asked rather than counted: a screen
             // deciding whether tonight is worth an evening should not have to
             // build a list to find out that it is empty.
             anyWorthNoticing: ! new WorthNoticing()->over($upkeep->waiting())->isEmpty(),
@@ -93,10 +93,10 @@ final readonly class HowUpkeepReads
     }
 
     /**
-     * Something stood in the way of asking (`N1-R10`).
+     * Something stood in the way of asking.
      *
      * An obstacle that means the session has ended renders the signed-out
-     * screen rather than an obstacle, which `N1-R46` is about: *your session
+     * screen rather than an obstacle, which is the distinction: *your session
      * ended, sign in again* and *the stack refused that credential* send an
      * operator to two different places, and the one that offers a sign-in is
      * the one that is any use.

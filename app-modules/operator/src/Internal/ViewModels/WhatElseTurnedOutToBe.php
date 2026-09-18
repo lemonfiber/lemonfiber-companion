@@ -9,7 +9,7 @@ namespace Modules\Operator\Internal\ViewModels;
  *
  * Empty is the ordinary answer and the screen says so in words: a machine
  * running only what its stack declares is the expected shape, and a blank list
- * would read as *nobody looked*. `N2-R21` is answered by naming what is there;
+ * would read as *nobody looked*. The question is answered by naming what is there;
  * saying clearly that nothing is, is the same answer.
  *
  * @see \Modules\Operator\Internal\Presenters\HowSomethingElseReads

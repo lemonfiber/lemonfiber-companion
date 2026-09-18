@@ -11,7 +11,7 @@ use Modules\Kernel\Api\Services;
  *
  * **Three states, and *nothing waiting* is one of them.** A stack that is
  * current is the answer an operator wants; a session that has ended is
- * `N1-R44`'s screen; an obstacle is `N1-R10`'s. Folding the first two together
+ * the sign-in screen; an obstacle is its own. Folding the first two together
  * would have a signed-out phone report a house that is up to date, which is the
  * collapse {@see \Modules\Kernel\Api\WhatIsCurrent} refuses one layer up.
  *

@@ -8,7 +8,7 @@
         {{ trans_choice('health.undeclared_count', $this->howMany()) }}
     </x-operator::emphasis>
 
-    {{-- N2-R21: what these are, said once and above them. The sentence is
+    {{-- What these are, said once and above them. The sentence is
          the whole point of the screen — a list of names an operator does
          not recognise, with nothing saying why they are here, is what this
          replaces. --}}
@@ -16,7 +16,7 @@
 
     @forelse ($this->answer()->running as $container)
         <x-operator::entry>
-            {{-- N2-R21 asks for each to be named and for what it is running
+            {{-- Each is named, and what it is running
                  to be stated, and for no verb against it. There is no
                  button on this row and no identifier on the value that a
                  verb would accept. --}}
@@ -32,7 +32,7 @@
         <native:text>{{ __('health.nothing_undeclared_action') }}</native:text>
     @endforelse
 
-    {{-- `N1-R27`: a screen an operator cannot ask again is a screen that relies
+    {{-- A screen an operator cannot ask again is a screen that relies
          on being left and returned to, which is the one thing the requirement
          names. It sat on the obstacle arm only — so a reading that failed could
          be retried and a reading that came back could not, which is the wrong

@@ -34,7 +34,7 @@ use function view;
 /**
  * What one of a stack's services has been saying.
  *
- * `N2-R10` in four clauses: a read that is **bounded**, that is **searchable**,
+ * Four clauses: a read that is **bounded**, that is **searchable**,
  * that **names the service**, and that **states the view is a window rather
  * than the whole**. Three of them are held by {@see Scrollback}, where a screen
  * cannot drop them; this is where they reach somebody.
@@ -47,7 +47,7 @@ use function view;
  * means is *not in the last two hundred lines*.
  *
  * **Narrowing does not re-ask.** Typing filters what is already held, which is
- * `N1-R66` exactly — a screen that asked again per keystroke would open a
+ * the cadence rule exactly — a screen that asked again per keystroke would open a
  * connection per letter to a machine on a home network, and would also change
  * what is being searched underneath the person searching it.
  *
@@ -59,8 +59,8 @@ use function view;
  * `Concealed` for the reason every stack-facing screen here is — and with more
  * force than most. A log line is whatever a service chose to print, which is the
  * one surface in this app where a secret could appear without anybody having
- * decided to put it there, so `N4-R18` keeps it off the app switcher and
- * `N4-R13`'s report is assembled from what the operator chooses to send.
+ * decided to put it there, so it is kept off the app switcher and
+ * the report is assembled from what the operator chooses to send.
  */
 #[Lazy]
 #[Concealed]
@@ -111,7 +111,7 @@ final class WhatThisServiceSaid extends NativeComponent
     }
 
     /**
-     * The service this screen is about (`N2-R10`).
+     * The service this screen is about.
      *
      * Read from the route for the same reason the stack is. A screen holding
      * the service it was opened with, on a frame whose URI names another, would
@@ -138,13 +138,13 @@ final class WhatThisServiceSaid extends NativeComponent
     }
 
     /**
-     * Read the tail again (`N1-R3`).
+     * Read the tail again.
      *
-     * The action an obstacle must not take away. `N1-R3` says a control is not
+     * The action an obstacle must not take away. A control is not
      * hidden because the stack is unreachable — the app offers it and reports
      * the failure — and an obstacle screen with nothing on it does exactly what
      * the rule forbids: the only way back is leaving and returning, which
-     * `N1-R27` names separately as the thing a screen must not rely on.
+     * is named separately as the thing a screen must not rely on.
      *
      * It forgets the window as well as the fold, which the other screens have
      * no equivalent of. A held window is what lets this one search without

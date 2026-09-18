@@ -18,7 +18,7 @@ use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
  * rather than arranging a port and hoping.
  *
  * **A credential the stack refused is a signed-out app, not an obstacle.**
- * `N3-R13` says an identity removed from the household results in a
+ * An identity removed from the household results in a
  * signed-out app at the next refused call and that nothing already loaded
  * goes on being rendered. {@see Obstacle::meansWeAreSignedOut()} draws that
  * line once, so this fold and every one beside it cannot come to disagree
@@ -26,7 +26,7 @@ use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
  */
 final readonly class HowAnOfferOfRepairsReads
 {
-    /** No session for that stack, so nothing was asked (`N1-R44`). */
+    /** No session for that stack, so nothing was asked. */
     public function signedOut(): WhatTheStackWouldPutRight
     {
         return new WhatTheStackWouldPutRight(went: HowTheReadingWent::theSessionEnded());
@@ -48,7 +48,7 @@ final readonly class HowAnOfferOfRepairsReads
         }
 
         // The listing's name is carried even though no template shows it.
-        // `N2-R6` has a yes quote the listing it was given, and the screen that
+        // A yes quotes the listing it was given, and the screen that
         // will offer that yes reads it from here — a fold that dropped it would
         // have to ask the stack again to agree to what it is already showing.
         return new WhatTheStackWouldPutRight(
