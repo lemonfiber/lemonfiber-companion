@@ -22,7 +22,7 @@ use Override;
  * stand-in written at the `Stacks` port instead would skip the serialising,
  * which is where a stored pairing has actually gone wrong before.
  *
- * **It writes nothing to the device, which `N1-R60` requires in as many
+ * **It writes nothing to the device, which is required in as many
  * words.** An operator who pairs a real machine while stand-ins are on gets a
  * pairing that works for the rest of the run and is gone on the next launch —
  * the conservative direction, and the one that means turning this on can never

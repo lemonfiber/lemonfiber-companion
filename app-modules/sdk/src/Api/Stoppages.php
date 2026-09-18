@@ -22,7 +22,7 @@ use function trim;
 /**
  * The `stuck` envelope, as the listing this app can show.
  *
- * The sibling of {@see Households} for `N2-R9`'s payload, and written the same
+ * The sibling of {@see Households} for a stall's payload, and written the same
  * way: a static fold with no state, reading through {@see WireField} so no
  * field name is spelled twice, and refusing rather than salvaging.
  *
@@ -181,7 +181,7 @@ final readonly class Stoppages
      * How far one row got, as a case rather than as the word it arrived as.
      *
      * A stage this app does not recognise is refused rather than passed
-     * through, which is `ARCH-R79`'s distinction applied to a closed set: a
+     * through, which is the contract's own distinction applied to a closed set: a
      * word this build has not heard of means the contract moved, and rendering
      * it raw would put a field value on somebody's screen.
      *

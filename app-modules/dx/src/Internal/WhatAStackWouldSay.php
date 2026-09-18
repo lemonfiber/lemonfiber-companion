@@ -17,7 +17,7 @@ use function trim;
 /**
  * A payload of the shape one envelope declares, built from the declaration.
  *
- * `N1-R59` refuses material written by hand. The reason is one this repository
+ * Material written by hand is refused. The reason is one this repository
  * has already paid for: a fixture written by the author of its reader proves
  * that both are wrong in the same way, and a stand-in is nothing but fixtures —
  * so a hand-written one would let every screen render beautifully against a
@@ -117,7 +117,7 @@ final readonly class WhatAStackWouldSay
      * Included rather than omitted, because what this is for is looking at
      * screens: a field left out is a row that does not render, and a stand-in
      * whose job is to make every screen reachable would be hiding the parts
-     * most worth looking at. `N1-R59` is satisfied either way — both are shapes
+     * most worth looking at. Either way is satisfying — both are shapes
      * the contract declares — so the one that shows more is the one to build.
      *
      * @return array<string, mixed>

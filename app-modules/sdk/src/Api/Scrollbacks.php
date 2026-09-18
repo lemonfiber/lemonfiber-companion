@@ -22,7 +22,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
 /**
  * The one place this application reads what a service has been saying.
  *
- * `N1-R16` says every call goes through the SDK, so this sits beside
+ * Every call to a stack goes through the SDK, so this sits beside
  * {@see Stalls} and is written the same way: it asks {@see PinnedClients} for
  * the connection rather than building one, which is what keeps the certificate
  * pin in a single file. This class never names a client constructor, so it

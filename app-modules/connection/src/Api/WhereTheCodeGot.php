@@ -39,7 +39,7 @@ enum WhereTheCodeGot: string
     case Unreadable = 'unreadable';
 
     /**
-     * It parsed, and it is past its moment (`N1-R49`).
+     * It parsed, and it is past its moment.
      *
      * Told apart from `Unreadable` because the remedy is the opposite one.
      * Checking the characters is wasted effort on a code that was typed
@@ -50,7 +50,7 @@ enum WhereTheCodeGot: string
     /**
      * It parsed, it is still good, and the operator has a fingerprint to check.
      *
-     * `N1-R50`'s step. Reaching this state is not pairing — it is the app
+     * the confirmation step. Reaching this state is not pairing — it is the app
      * having something to show, and the operator still has to say it matches.
      */
     case Comparing = 'comparing';
@@ -75,7 +75,7 @@ enum WhereTheCodeGot: string
      *
      * The pairing worth reading twice is `Unreadable` against `Expired`. An
      * expired code was typed perfectly, and sending its operator to check the
-     * characters sends them looking for a mistake that is not there (`N1-R49`).
+     * characters sends them looking for a mistake that is not there.
      */
     public function saidUnderTheField(): string
     {

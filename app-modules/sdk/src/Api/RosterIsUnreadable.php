@@ -17,7 +17,7 @@ use function sprintf;
 /**
  * The `status` envelope did not hold what the contract says it holds.
  *
- * The same refusal {@see StuckIsUnreadable} is, for `N2-R7`'s payload, and for
+ * The same refusal {@see StuckIsUnreadable} is, for the roster's payload, and for
  * its reason: every one of these is a bug somewhere other than here, and the
  * message names the field and what arrived because that is the only thing that
  * shortens the search. A developer reads it, so it is `sprintf` and never

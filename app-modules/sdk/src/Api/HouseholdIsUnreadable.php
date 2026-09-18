@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * The `household` envelope did not hold what the contract says it holds.
  *
- * The same refusal {@see ReportIsUnreadable} is, for the payload `N2-R11`'s
+ * The same refusal {@see ReportIsUnreadable} is, for the payload the household
  * screen reads, and for its reason: every one of these is a bug somewhere other
  * than here, and the message names the field and what arrived because that is
  * the only thing that shortens the search. A developer reads it, so it is

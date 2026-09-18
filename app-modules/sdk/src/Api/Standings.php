@@ -32,7 +32,7 @@ use function trim;
  *
  * **A withdrawn release is read, not dropped.** The wire says when a release was
  * taken back rather than whether it was, and this turns the presence of that
- * date into the fact `N2-R16` is about. Dropping the release here instead would
+ * date into the fact this is about. Dropping the release here instead would
  * leave a stack that is *running* a withdrawn one with nothing to say about it.
  */
 final readonly class Standings
@@ -62,7 +62,7 @@ final readonly class Standings
     }
 
     /**
-     * The block the stack answers `N2-R15` and `N2-R16` in.
+     * The block the stack answers what is installed and what is available in.
      *
      * Read once and handed down rather than found again by each reader, so
      * there is one answer to *where the changelog is* — and because the payload
@@ -96,7 +96,7 @@ final readonly class Standings
     }
 
     /**
-     * Which of the three states the stack reported (`N2-R15`).
+     * Which of the three states the stack reported.
      *
      * @param  array<array-key, mixed>  $changelog
      */
@@ -127,7 +127,7 @@ final readonly class Standings
      * under one shape and a second reader for it is a second place for it to
      * drift. What the narrowing takes away is the apply path: a
      * {@see VersionInUse} is not something {@see Upkeep::waiting()} offers and
-     * not something an update can be agreed about (`N2-R20`).
+     * not something an update can be agreed about.
      *
      * @param  array<array-key, mixed>  $changelog
      */
@@ -180,7 +180,7 @@ final readonly class Standings
      * A change the stack has already refused is left out. It is not something
      * an update would do, and naming it in a confirmation would have somebody
      * agree to a service that was never going to move — which is the same
-     * false promise `N2-R19` refuses about undoing.
+     * false promise about undoing.
      *
      * @param array<array-key, mixed> $data
      */

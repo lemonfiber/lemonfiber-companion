@@ -49,7 +49,7 @@ final readonly class Offers
      * What a stack said it would put right, and the name of the listing.
      *
      * The name travels with the repairs rather than beside them because
-     * `N2-R6` has a yes quote the listing it was given: an {@see Offer} that
+     * A yes quotes the listing it was given: an {@see Offer} that
      * could be built without the name would be one a confirmation could not
      * quote, and the failure would appear at the moment of agreeing.
      *
@@ -206,7 +206,7 @@ final readonly class Offers
     }
 
     /**
-     * One repair, with all three of `N2-R4`'s clauses or none of it.
+     * One repair, with all three of the offer's clauses or none of it.
      *
      * @param array<mixed> $row
      */
@@ -264,7 +264,7 @@ final readonly class Offers
     /**
      * Whether it can be taken back, as the word rather than the boolean.
      *
-     * Absent is refused rather than assumed either way. `N2-R4` requires the
+     * Absent is refused rather than assumed either way. The offer requires the
      * app to state this, and a repair that arrived without it is one this app
      * cannot make the required statement about — guessing *permanent* would
      * frighten somebody off a reversible fix, and guessing *possible* would

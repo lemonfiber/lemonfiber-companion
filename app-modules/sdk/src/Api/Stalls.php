@@ -19,14 +19,14 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
 /**
  * The one place this application asks a stack what has stopped coming in.
  *
- * `N1-R16` says every call goes through the SDK, so this sits beside
+ * Every call to a stack goes through the SDK, so this sits beside
  * {@see Requests} and is written the same way: it asks {@see PinnedClients} for
  * the connection rather than building one, which is what keeps the certificate
  * pin in a single file. This class never names a client constructor, so it
  * cannot make a decision about whether a certificate is checked.
  *
  * **The endpoint takes nothing**, which is the whole of why this is the first
- * of `N2-R9`'s four to be built: there is no filter to get wrong and no
+ * of the four to be built: there is no filter to get wrong and no
  * narrowing for a screen to be tempted into asking for row by row.
  *
  * **Four raises, two answers**, which is {@see Requests}' collapse for its

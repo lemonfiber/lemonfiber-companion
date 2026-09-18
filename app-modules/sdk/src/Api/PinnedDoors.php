@@ -10,7 +10,7 @@ use Modules\Kernel\Api\Stack;
 /**
  * The one place a door to a stack is opened.
  *
- * {@see PinnedClients} for the reading half and this for the exchange. `N1-R7`
+ * {@see PinnedClients} for the reading half and this for the exchange. The exchange
  * offers the operator's password once, and the offering has a transport of its
  * own — the SDK calls it {@see Admission}, with its own pin and its own
  * connector.
@@ -23,7 +23,7 @@ use Modules\Kernel\Api\Stack;
  * reach a peer whose identity nothing established.
  *
  * That argument used to live in {@see Admissions}, which built its own door in
- * the middle of the method that offers the password. `N1-R20` never read it:
+ * the middle of the method that offers the password. The pinning rule never read it:
  * the rule listed the client's transport and not the door's, so a file could
  * have opened an unpinned door carrying a credential and nothing would have
  * said a word. The split is what makes the rule able to ask — one file builds a

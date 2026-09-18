@@ -28,7 +28,7 @@ use Modules\Sdk\Api\PinnedDoors;
  *
  * **What it answers with depends on which machine it was handed.**
  * {@see AStandInStack} holds three and one of them refuses the session — which
- * for a door is a refused password, and is the whole of `N1-R7`'s unhappy path.
+ * for a door is a refused password, and is the whole of the exchange's unhappy path.
  */
 final readonly class DoorsThatOpenOnNothing implements Doors
 {

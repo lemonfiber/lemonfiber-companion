@@ -37,7 +37,7 @@ interface Clients extends Reaching
      * A client for this stack, held to the certificate it was introduced under.
      *
      * Narrowed from the port's `object` to the SDK's own type. `modules/sdk` is
-     * the one module whose manifest requires the SDK (`E3`, `N1-R20`), so this
+     * the one module whose manifest requires the SDK (`E3`), so this
      * is the one interface that may say what a client is.
      */
     public function client(Stack $stack, Session $session): Client;

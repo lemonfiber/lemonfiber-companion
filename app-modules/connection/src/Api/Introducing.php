@@ -20,13 +20,13 @@ use Modules\Kernel\Api\StackName;
  * and the certificate it promised — and exactly one is decided here, which is
  * the identity.
  *
- * **`N1-R18` is why the fingerprint is carried rather than looked up.** It
+ * **The fingerprint is carried rather than looked up.** It
  * comes from the material and never from the network: a fingerprint learned
  * from the connection it is meant to validate proves nothing at all. Nothing
  * in this class reads anything.
  *
  * **The identity is minted from entropy, and that is three decisions in one.**
- * It is not the address, because `N1-R22` pins trust to the stack rather than
+ * It is not the address, because trust is pinned to the stack rather than
  * to where it answers — a stack keyed on its address becomes a different stack
  * the morning the router renumbers it, and every reading retained against it
  * silently belongs to something else. It is not the fingerprint either, which
@@ -37,17 +37,17 @@ use Modules\Kernel\Api\StackName;
  * cannot have named itself to it, and two stacks that never met each other
  * could otherwise arrive carrying the same identifier.
  *
- * **Two roads, because `N1-R6` has two and they are not equally safe.** A
+ * **Two roads, and they are not equally safe.** A
  * camera comparing a digest is the software comparison `ADR-0018` chose the
- * whole design around; a person typing one is the route `N4-R3` requires to
+ * whole design around; a person typing one is the route required to
  * exist on a device whose operator declined the camera, and it has no software
  * comparison in it. So {@see Stack()} is the scanned road and refuses typed
  * material outright, and {@see confirmed()} is the road that takes the
- * operator's own answer. `N1-R50`'s *must not proceed on an unconfirmed
+ * operator's own answer. The *must not proceed on an unconfirmed
  * fingerprint* is then a thing the type system says rather than a thing a
  * reviewer checks.
  *
- * **Re-pairing is deliberately not here.** `N1-R20` offers it as the remedy for
+ * **Re-pairing is deliberately not here.** It is the remedy for
  * a certificate that changed, and it differs from this by one thing: the
  * identity is kept rather than minted, because the machine is the one the
  * operator has been using. Writing it now would mean a second pair of roads —
@@ -63,7 +63,7 @@ final readonly class Introducing
      * The stack this scanned material describes, under a name the operator picked.
      *
      * Scanned material only. A camera reading a code is the software comparison
-     * `N1-R50` contrasts with: the digest arrived in the payload rather than
+     * the confirmation contrasts with: the digest arrived in the payload rather than
      * being read off a screen by a person, so there is nothing for anybody to
      * confirm and nothing this class would be assuming.
      *
@@ -73,7 +73,7 @@ final readonly class Introducing
      * stop. A `Reach`-shaped outcome here would make *proceed anyway* a branch
      * somebody could take.
      *
-     * The name is asked for rather than derived. `N1-R11` holds more than one
+     * The name is asked for rather than derived. A device holds more than one
      * stack and a person has to tell them apart, and the two things the material
      * carries are both unusable for that — `192.168.1.42` and `192.168.1.43` are
      * not two names, and a certificate digest is sixty-four hex characters.
@@ -90,10 +90,10 @@ final readonly class Introducing
     /**
      * The same, where the operator has confirmed the fingerprint they were shown.
      *
-     * The typed road (`N1-R6`, `N4-R3`), and the reason {@see
+     * The typed road, and the reason {@see
      * FingerprintWasConfirmed} is a type rather than a flag: a caller that has
      * not been told yes has nothing to pass, so `confirmed: false` is a sentence
-     * with no spelling and `N1-R50` is structural rather than checked.
+     * with no spelling and the confirmation is structural rather than checked.
      *
      * **The confirmation has to be about this material.** It carries the form
      * that was compared, and a confirmation naming another certificate is
@@ -104,7 +104,7 @@ final readonly class Introducing
      * value rather than a `true` nobody can interrogate.
      *
      * Scanned material is accepted here too. A screen that both scanned and
-     * showed the fingerprint has done more than `N1-R50` asks rather than less,
+     * showed the fingerprint has done more than is asked rather than less,
      * and refusing the extra care would be this class having an opinion about
      * how careful a surface may be.
      */

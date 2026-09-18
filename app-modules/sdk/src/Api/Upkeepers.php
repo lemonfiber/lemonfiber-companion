@@ -22,8 +22,8 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * The stack's own upkeep, asked through the SDK.
  *
  * {@see Supervisors} one conversation over, and built the same way: the client
- * is fetched per stack and session so that `N1-R11`'s separate sessions and
- * `N1-R19`'s pinning cannot be paired up wrongly.
+ * is fetched per stack and session so that separate sessions and separate
+ * pinning cannot be paired up wrongly.
  */
 final readonly class Upkeepers implements KeepingCurrent
 {

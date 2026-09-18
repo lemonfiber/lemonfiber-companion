@@ -67,7 +67,7 @@ final readonly class Handles
      * A named field, as text.
      *
      * Blank is not refused here. A name present and empty is the one state
-     * `N1-R41` has no answer for — the action was delivered and there is
+     * there is no answer for — the action was delivered and there is
      * nothing to ask after it by — and {@see Job::named()} is where that is
      * said, one layer further in, so it is said once for every caller.
      *

@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * A `log` envelope did not hold what the contract says it holds.
  *
- * The same refusal {@see StuckIsUnreadable} is, for `N2-R10`'s payload, and for
+ * The same refusal {@see StuckIsUnreadable} is, for the log window's payload, and for
  * its reason: every one of these is a bug somewhere other than here, and the
  * message names the field and the position because that is the only thing that
  * shortens the search. A developer reads it, so it is `sprintf` and never

@@ -24,7 +24,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
 /**
  * The one place this application asks a stack what the house wants.
  *
- * `N1-R16` says every call goes through the SDK, so this sits beside
+ * Every call to a stack goes through the SDK, so this sits beside
  * {@see Questions} and is written the same way: it asks {@see PinnedClients}
  * for the connection rather than building one, which is what keeps the
  * certificate pin in a single file. This class never names a client
@@ -32,7 +32,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * checked.
  *
  * **It asks for the whole household rather than for one member.** The endpoint
- * takes a `member` parameter and this does not offer it — `N1-R65` has a screen
+ * takes a `member` parameter and this does not offer it — a screen
  * read once per frame and render what came back, and narrowing is a question for whoever
  * holds the answer rather than another trip to a machine on a home network.
  *

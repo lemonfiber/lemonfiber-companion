@@ -7,7 +7,7 @@ namespace Modules\Dx\Api;
 /**
  * Something that takes the place of a real thing while the app is being worked on.
  *
- * `Q-R72` asks for one place that local-only affordances live and for that
+ * One place is asked for where local-only affordances live, and for that
  * place to admit a new one without any release artefact changing. This is the
  * shape that makes the second half true: a new affordance is a class in this
  * module implementing this, and nothing outside `app-modules/dx` is edited to
@@ -17,7 +17,7 @@ namespace Modules\Dx\Api;
  * something does.** A registry holding nothing, a provider binding nothing and
  * a loop with no iterations are three pieces of code no test can reach, and the
  * coverage floor is right to refuse them — a scaffold is a claim that work has
- * started rather than work that has. `N1-R57` is not met until a stack can
+ * started rather than work that has. *Operate* is not met until a stack can
  * actually be stood in for.
  *
  * **It names a port and answers with one.** Every seam this application has is
@@ -27,7 +27,7 @@ namespace Modules\Dx\Api;
  * that would make what is being looked at differ from what ships.
  *
  * **What it is not.** Not a mode, not a setting, not a flag the app reads.
- * `N1-R61` refuses a released build that can run against one of these, and the
+ * A released build that can run against one of these is refused, and the
  * way that is kept is that this module is a development dependency: a release
  * installs without it and the classes are not in the bundle at all. There is
  * nothing to switch off because there is nothing there.

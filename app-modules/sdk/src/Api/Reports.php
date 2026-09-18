@@ -31,7 +31,7 @@ use Modules\Sdk\Internal\Wire;
 /**
  * The `doctor` envelope, read as the report the health module works in.
  *
- * The other half of the seam `Problems` opened: `N1-R16` puts the client behind
+ * The other half of the seam `Problems` opened: the client sits behind
  * this module, so this is where a diagnostic run stops being a shape the wire
  * describes and becomes one the screens do.
  *
@@ -43,7 +43,7 @@ use Modules\Sdk\Internal\Wire;
  * expired with it: the words crossed the wire and stopped here, so an operator
  * saw that a check failed and nothing about what or what to do.
  *
- * The `pass` note is still dropped, and deliberately — `N2-R3` is about what a
+ * The `pass` note is still dropped, and deliberately — the rule is about what a
  * finding must carry when something is wrong, and a note on a passing check is
  * the core being chatty. `caused_by`, `said` and `service` go the same way,
  * with the same note in `Finding`.
@@ -240,11 +240,11 @@ final readonly class Reports
     }
 
     /**
-     * What the core said about the check, off the same verdict (`N2-R3`).
+     * What the core said about the check, off the same verdict.
      *
      * The verdict is a union on the wire: the passing arm carries an optional
      * note, and every other arm carries a `code`, a `meaning` and a list of
-     * `remedies`. All three are what `N2-R3` asks a finding to carry, and a
+     * `remedies`. All three are what a finding has to carry, and a
      * screen without them can say a check failed and nothing about what or what
      * to do.
      *
@@ -291,7 +291,7 @@ final readonly class Reports
      *
      * Absent on most findings and optional on the wire, so its absence is the
      * ordinary case rather than a payload gone wrong — which is why this is the
-     * one field here that does not refuse. `G4-R4` asks for it to be available
+     * one field here that does not refuse. Technical detail has to be available
      * where there is one, and says nothing about a core that has nothing to add.
      *
      * Blank is absent, for the reason {@see WhatItSaysUnderneath} gives: a core
@@ -443,7 +443,7 @@ final readonly class Reports
      * The tag off the verdict, which is all this one reads.
      *
      * What the verdict also carries — the code, the meaning, the remedies — is
-     * read by {@see self::said()}, which is where `N2-R3` is answered.
+     * read by {@see self::said()}, which is where a finding is assembled.
      *
      * @param array<mixed> $verdict
      */

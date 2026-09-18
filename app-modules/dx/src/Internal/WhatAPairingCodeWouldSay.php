@@ -16,7 +16,7 @@ use function str_repeat;
 /**
  * Pairing material for a machine nobody has met, written the way a stack writes it.
  *
- * `N1-R54` ends its sequence at pairing, and with stand-ins on the sequence
+ * The first-run sequence ends at pairing, and with stand-ins on the sequence
  * could be walked and not finished: {@see \Modules\Dx\Api\ADeviceAlreadyPaired}
  * seeds three machines, so the first run is reachable only with that affordance
  * off — and with it off there is nothing to pair with either. The one screen
@@ -34,14 +34,14 @@ final readonly class WhatAPairingCodeWouldSay
     /**
      * Reserved by RFC 2606, so it resolves nowhere.
      *
-     * `N1-R60` refuses pairing material that could reach a real stack. An
+     * Pairing material that could reach a real stack is refused. An
      * address that cannot be resolved is the strongest form of that: were a
      * request ever to escape the stand-in, the failure would be a name that
      * does not exist rather than a connection to somebody's actual machine.
      */
     private const string AT = 'https://a-machine-you-have-not-met.invalid:8443';
 
-    /** How many bytes a SHA-256 digest is, doubled by `N1-R18`'s hex spelling. */
+    /** How many bytes a SHA-256 digest is, doubled by its hex spelling. */
     private const int A_SHA256 = 32;
 
     /**

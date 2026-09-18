@@ -11,7 +11,7 @@ use Modules\Kernel\Api\WireVersion;
 /**
  * The one gate every answer passes before anything reads it.
  *
- * `N1-R13` refuses an envelope whose wire version this app does not support.
+ * An envelope whose wire version this app does not support is refused.
  * Here rather than in each translator, because "each translator checks" is the
  * arrangement that holds until somebody adds the third one — and the failure of
  * the missing check is not an error, it is a field read out of a payload whose

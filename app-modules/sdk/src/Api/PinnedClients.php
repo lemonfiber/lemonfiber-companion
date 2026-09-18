@@ -11,7 +11,7 @@ use Modules\Kernel\Api\Stack;
 /**
  * The one place in this application that opens a connection to a stack.
  *
- * `N1-R16` says every call goes through the SDK and this app issues no request
+ * Every call to a stack goes through the SDK, and this app issues no request
  * of its own; `ADR-0018` says every connection is checked against the
  * certificate pairing material promised, whether or not the platform's trust
  * store would accept it. Both are structural here rather than remembered:
@@ -27,7 +27,7 @@ use Modules\Kernel\Api\Stack;
  * being a mistake somebody could make.
  *
  * That is also why the pin is not a parameter. It comes off the {@see Stack},
- * which got it from the pairing material, which is where `N1-R18` says it comes
+ * which got it from the pairing material, which is where it has to come
  * from — never from the network, because a fingerprint learned from the
  * connection it is meant to validate proves nothing. A signature taking a stack
  * and a digest would let a caller supply a digest from somewhere else.

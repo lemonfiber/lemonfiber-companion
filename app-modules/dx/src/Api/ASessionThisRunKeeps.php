@@ -12,7 +12,7 @@ use Modules\Vault\Api\PlatformKeychain;
 /**
  * Somewhere a session may go that is not the device's keychain.
  *
- * `N1-R60` is the reason this exists and it says so in as many words: a
+ * Keeping nothing on the device is the reason this exists, said in as many words: a
  * stand-in MUST NOT write a credential, a session or pairing material to the
  * device's store. Without this it would. Signing in to the stand-in stack runs
  * the real sign-in screen, which keeps what came back — and what came back was
@@ -24,8 +24,8 @@ use Modules\Vault\Api\PlatformKeychain;
  * affordance existed was trying to prevent: turning stand-ins on has to leave
  * the device as it found it.
  *
- * The adapter is the shipped one, so `N4-R6`'s refusal when there is nowhere to
- * keep a session, the per-stack separation `N1-R11` asks for and the shape it
+ * The adapter is the shipped one, so the refusal when there is nowhere to
+ * keep a session, the per-stack separation that is asked for, and the shape it
  * writes are all the real ones. Only the keychain underneath is replaced, which
  * is {@see ClientsThatReachNothing}'s argument at a different port.
  *
@@ -39,7 +39,7 @@ final readonly class ASessionThisRunKeeps implements StandsIn
      * Said in the value itself, because it travels: this is what goes out in
      * the `Authorization` header of every request the stand-in client answers,
      * and anybody reading a log of a run should be able to tell in a second
-     * that nothing here reached a stack. `N1-R60` is why it can only ever be
+     * that nothing here reached a stack, which is why it can only ever be
      * this — a value that could authenticate against somebody's actual machine
      * is the thing that requirement refuses, and a made-up one that looked
      * plausible would be halfway there.
@@ -58,7 +58,7 @@ final readonly class ASessionThisRunKeeps implements StandsIn
      * **Every machine, including the one that refuses it.**
      * `AStandInStack::RefusingTheSession` answers `401`, and a refusal can only
      * be met by a device that had something to offer — with no session it
-     * would never make the call, and `N3-R13`'s whole sequence (offer, refuse,
+     * would never make the call, and the whole sequence (offer, refuse,
      * let go, sign in again) would be unreachable from a build meant to reach
      * everything.
      *

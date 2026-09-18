@@ -19,7 +19,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
 /**
  * The one place this application asks a stack how it is.
  *
- * `N1-R16` says every call goes through the SDK, so this sits beside
+ * Every call to a stack goes through the SDK, so this sits beside
  * {@see PinnedClients} and {@see Admissions} for the reason the module boundary
  * exists: *reach a stack another way* has no spelling outside this directory.
  *
@@ -41,7 +41,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * refusing, the answer being unreadable, and the client and the stack
  * disagreeing about the API version are three faults with one meaning for
  * somebody looking at a phone: they cannot see their stack and the machine is
- * where to look. `N1-R10`'s distinctions are the ones an operator can act on
+ * where to look. An obstacle's distinctions are the ones an operator can act on
  * differently, and *upgrade one of the two halves* is not advice a companion
  * app can give from here — it is what the diagnostic report itself would say.
  *

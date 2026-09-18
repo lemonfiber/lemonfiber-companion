@@ -60,7 +60,7 @@ final readonly class WhatTheWireWouldAnswer
      * So this is the one piece of the mapping read out of prose a human wrote
      * for another human. It is named here, once, rather than being pattern
      * matched out of `Client.php`: the payload underneath it is still built
-     * from `JobEnvelope`'s own declaration, which is what `N1-R59` is about,
+     * from `JobEnvelope`'s own declaration, which is the point of it,
      * and a regex over a different file's paragraphs would be a second thing to
      * keep true for no gain.
      */
@@ -78,8 +78,8 @@ final readonly class WhatTheWireWouldAnswer
      *
      * So answering with `job` at `200` tells every screen the work expired. It
      * is a real state and it is the wrong one to be stuck in: the repairs
-     * screen is the one that draws a redemption on a frame — `N2-R4` states
-     * what a stack would put right and `N2-R5` what became of each — and it
+     * screen is the one that draws a redemption on a frame — the contract states
+     * what a stack would put right and what became of each — and it
      * drew *that question has expired* and nothing else, against a machine
      * answering everything.
      *

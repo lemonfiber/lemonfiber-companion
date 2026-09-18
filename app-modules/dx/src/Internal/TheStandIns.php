@@ -16,7 +16,7 @@ use Modules\Dx\Api\VerdictsThisRunKeeps;
 /**
  * Everything this module can take the place of.
  *
- * `Q-R72` asks for one place local-only affordances live and for that place to
+ * One place is asked for where local-only affordances live, and for that place to
  * admit a new one without any release artefact changing. This is the first
  * half; {@see StandsIn} is the second. Adding one is a class in `Api/`
  * implementing that interface and a line here — and nothing outside

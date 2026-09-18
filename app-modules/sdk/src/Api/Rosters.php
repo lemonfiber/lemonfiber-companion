@@ -31,7 +31,7 @@ use function trim;
 /**
  * The `status` envelope, as the listing an operator picks a verb from.
  *
- * The sibling of {@see Stoppages} for `N2-R7`'s payload, and written the same
+ * The sibling of {@see Stoppages} for the roster's payload, and written the same
  * way: a static fold with no state, reading through {@see WireField} so no
  * field name is spelled twice, and refusing rather than salvaging.
  *
@@ -77,7 +77,7 @@ final readonly class Rosters
      * What else is running on the machine, which this stack did not put there.
      *
      * A second reading of the same envelope rather than a corner of the first,
-     * because `N2-R21` forbids presenting one of these as part of the stack and
+     * because presenting one of these as part of the stack is forbidden and
      * the surest way to keep that true is to give a caller no way to spell it.
      * {@see Daemons} cannot hold one and {@see WhatElseIsRunning} cannot hold a
      * service, so a screen that mixed them would not compile.

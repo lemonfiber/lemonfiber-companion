@@ -93,7 +93,7 @@ enum WireField: string
     case Id = 'id';
 
     /**
-     * Which request a decision is about, when one is sent (`N2-R11`).
+     * Which request a decision is about, when one is sent.
      *
      * A second case for one number, because the wire says it twice under two
      * names: a reading calls it `id` inside the row it belongs to, and an
@@ -128,7 +128,7 @@ enum WireField: string
     /**
      * That something was turned down, in the two places the wire says it.
      *
-     * What a household request's decline carried (`D7-R7`), and whether the
+     * What a household request's decline carried, and whether the
      * stack has already said it will not make one of an update's changes. One
      * case because it is one word on the wire, and named here for both so the
      * next reader does not add a second case for the meaning this docblock

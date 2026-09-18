@@ -13,7 +13,7 @@ use Modules\Kernel\Api\WhatTheCameraSaw;
  * A camera that always sees a code for a machine nobody has met.
  *
  * The first run was the one sequence this module could be walked *to* and not
- * *through*. `N1-R54` ends at pairing, `N1-R56` says a paired device never sees
+ * *through*. The sequence ends at pairing, a paired device never sees
  * the sequence again, and {@see ADeviceAlreadyPaired} seeds three machines — so
  * looking at the first run meant turning that affordance off, and with it off
  * there was no code to pair with either. The screen an operator meets first was

@@ -10,7 +10,7 @@ use Modules\Kernel\Api\Stack;
 /**
  * A way to open one stack's door, built for that stack and nothing else.
  *
- * {@see Clients} for the reading half, and this is the other: `N1-R7` exchanges
+ * {@see Clients} for the reading half, and this is the other: the exchange turns
  * a credential for a session, once, and the exchange has a transport of its own.
  * The SDK calls it {@see Admission} and it is a separate object from the client,
  * with a separate pin and a separate connector.
@@ -22,7 +22,7 @@ use Modules\Kernel\Api\Stack;
  * not: the one flow carrying the operator's password was the one flow that
  * reached the network whatever the switch said.
  *
- * **And it is what `N1-R20` now reads.** `Admission` offers `at()` and
+ * **And it is what the pinning rule now reads.** `Admission` offers `at()` and
  * `onPort()`, and the second builds a door with no pin at all. That was true
  * before this existed and nothing refused it — the rule listed the client's
  * transport and not the door's — so a file could have opened an unpinned door
