@@ -5,78 +5,72 @@ declare(strict_types=1);
 namespace Modules\Device\Api;
 
 use Closure;
+use Lemonfiber\Native\Scanning as TheCamera;
+use Lemonfiber\Native\WhyNothingWasRead;
 use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\Scanning;
-use Modules\Kernel\Api\WhatCarriesPairingMaterial;
 use Modules\Kernel\Api\WhatTheCameraSaw;
-use Native\Mobile\Events\Scanner\CodeScanned;
-use Native\Mobile\Events\Scanner\ScannerCancelled;
-use Native\Mobile\PendingScanner;
+use Modules\Kernel\Api\WhyNothingWasScanned;
 
 /**
- * The platform's own scanner, reading one pairing code.
+ * This application's own scanner, reading one pairing code.
  *
- * Thin, like every adapter here. What it decides is how two NativePHP events
- * become one {@see WhatTheCameraSaw}, and the interesting half of that is the
- * refusal: `ScannerCancelled` is dispatched both when somebody presses back and
- * when the camera permission is denied, so the reason string is what tells a
- * screen offering the typed road from one offering another go.
- * {@see WhatTheScannerSaid} is where that word is read.
+ * Thin, like every adapter here. What it decides is how the bridge's answer
+ * becomes one {@see WhatTheCameraSaw}, and the interesting half of that is the
+ * refusal: a camera declined in the dialog a moment ago and one settled in
+ * settings some time ago come back under the same word, and the second fact the
+ * bridge carries is what tells them apart. They need opposite sentences — try
+ * again, or go to Settings — and a screen has nothing else to choose on.
  *
- * **One format, and which one is not this class's to decide.** The plugin
- * scans eight; {@see WhatCarriesPairingMaterial} says what lemonfiber's material
- * travels in and {@see WhatTheScannerReads} says how this package spells it.
- * That was a `['qr']` here, which made a fact about pairing material look like
- * a setting on a scanner.
+ * **The prompt is this application's own sentence, asked for by the case rather
+ * than by a key written here.** The platform paints it over the camera preview,
+ * and on the first scan the same call is what raises the permission dialog — so
+ * it is the last thing the operator reads before the system takes over. A key
+ * spelled as a literal is one nothing checks: `PermissionsAreExplainedTest`
+ * proves every permission has that line in every locale, and it can only prove
+ * it about the string {@see Permission::reason()} builds.
  *
- * **The prompt sentence comes from the case rather than from a key written
- * here.** The platform paints it over the camera preview, and on
- * the first scan this call is also what raises the permission dialog — so it is
- * the last thing the operator reads before the system takes over. A key spelled
- * as a literal is one nothing checks: `PermissionsAreExplainedTest` proves every
- * permission has that line in every locale, and it can only prove it about the
- * string {@see Permission::reason()} builds. A scanner captioned in English on a
- * Dutch device, or captioned with a key, is what `L1` exists to prevent.
- *
- * **Both callbacks are registered before the scan starts.** `PendingScanner`
- * runs `scan()` from `__destruct()` where it was not called explicitly, so a
- * builder that goes out of scope mid-chain opens the camera with only the
- * handlers registered so far — the same destructor-shaped trap
- * {@see PlatformNotifier} documents from the other side. Built and started in
- * one statement for that reason.
+ * **The code comes back in the answer rather than on an event.** That is the
+ * bridge's doing rather than this class's, and it is the reason this adapter is
+ * eight lines instead of a pair of callbacks: there is one call, it blocks while
+ * the camera is on screen, and what it answers is what was read.
  */
 final readonly class PlatformScanner implements Scanning
 {
-    /**
-     * @param Closure(): PendingScanner $open how a scanner is started
-     *
-     * @param-later-invoked-callable $open Called once per attempt, from
-     * {@see forAPairingCode()} below.
-     *
-     * **A closure rather than the `Scanner` itself, and the reason is its
-     * shape.** `Scanner::scan()` is static, so holding one would mean calling a
-     * static method through an instance — which the analyser refuses for this
-     * repository's own code and which reads as an instance method to everybody
-     * afterwards. Taking the act instead of the object also means a test can
-     * hand over a scanner that does not open a camera, which is otherwise
-     * impossible: there is no seam in a static call.
-     */
-    public function __construct(private Closure $open, private Words $words) {}
+    public function __construct(private TheCamera $camera, private Words $words) {}
 
     public function forAPairingCode(Closure $saw): void
     {
-        ($this->open)()
-            ->formats([WhatTheScannerReads::forMaterialCarriedBy(WhatCarriesPairingMaterial::QrCode)->value])
-            ->prompt($this->words->for(Permission::Camera->reason()))
-            ->codeScanned(static function (CodeScanned $found) use ($saw): void {
-                $saw(WhatTheCameraSaw::read($found->data));
-            })
-            ->scannerCancelled(static function (ScannerCancelled $stopped) use ($saw): void {
-                $saw(WhatTheCameraSaw::nothing(
-                    WhatTheScannerSaid::orSimplyDismissed($stopped->reason)->means(),
-                ));
-            })
-            ->scan();
+        $read = $this->camera->forAPairingCode($this->words->for(Permission::Camera->reason()));
+
+        $saw($read->either(
+            read: static fn(string $payload): WhatTheCameraSaw => WhatTheCameraSaw::read($payload),
+            nothing: static fn(WhyNothingWasRead $why, bool $again): WhatTheCameraSaw
+                => WhatTheCameraSaw::nothing(self::meaning($why, $again)),
+        ));
+    }
+
+    /**
+     * What one of the bridge's words means in the terms the app reasons in.
+     *
+     * A `match` with no default arm, so a word added to the bridge fails here by
+     * name rather than falling silently into whichever case was written last —
+     * and the case written last here would offer another go for ever without
+     * ever mentioning the typed road.
+     *
+     * The refused camera splits on the second fact rather than on a fourth
+     * word, because the platform gives one refusal and two situations: what
+     * differs is not what happened but what can still be done about it.
+     */
+    private static function meaning(WhyNothingWasRead $why, bool $mayAskAgain): WhyNothingWasScanned
+    {
+        return match ($why) {
+            WhyNothingWasRead::TheOperatorClosedIt => WhyNothingWasScanned::TheOperatorClosedIt,
+            WhyNothingWasRead::ThereIsNoCamera => WhyNothingWasScanned::ThereIsNoCamera,
+            WhyNothingWasRead::TheCameraIsNotPermitted => $mayAskAgain
+                ? WhyNothingWasScanned::TheCameraWasDeclined
+                : WhyNothingWasScanned::TheCameraIsNotPermitted,
+        };
     }
 }

@@ -9,9 +9,17 @@ use function sprintf;
 /**
  * Why the camera came back without a pairing code.
  *
- * An obstacle's habit applied to a scanner: three ways to get nothing, and three
+ * An obstacle's habit applied to a scanner: four ways to get nothing, and four
  * different things for the operator to do about it. One sentence for all of
  * them is the sentence that is unhelpful for whichever they are actually in.
+ *
+ * **Two of the four are the same refusal.** A camera declined in the dialog a
+ * moment ago and one settled in settings some time ago arrive at this
+ * application identically, and they need opposite advice: the first can be
+ * asked again at the point of first use, and the second cannot be and has to
+ * send the operator to Settings. Keeping them as one case meant every operator
+ * who had just pressed *Don't allow* was sent to a settings page to undo a
+ * decision they had made ten seconds earlier.
  *
  * **A working alternative is why the middle case cannot be a dead end.** A declined camera is
  * a permission this app may not have, and it promises a working alternative for
@@ -31,11 +39,25 @@ enum WhyNothingWasScanned: string
     case TheOperatorClosedIt = 'the_operator_closed_it';
 
     /**
-     * The platform would not let this app have the camera.
+     * The operator declined the camera, and can still be asked again.
+     *
+     * The narrow window between a first refusal and a settled one. The platform
+     * will still put its dialog up, so the useful advice is *try again* — and
+     * sending somebody to a settings page for a decision they made ten seconds
+     * ago is the advice that reads as the app not having noticed.
+     *
+     * Told apart from {@see self::TheCameraIsNotPermitted} by the second fact
+     * the bridge answers with, because the two arrive at this application as
+     * the same refusal and need opposite sentences.
+     */
+    case TheCameraWasDeclined = 'the_camera_was_declined';
+
+    /**
+     * The platform would not let this app have the camera, and will not ask.
      *
      * Answered by offering the typed road, and by saying where the decision is
      * reversed — which is the platform's settings and not this app, because
-     * Asking again is not something the app may do.
+     * asking again is not something the app may do here.
      */
     case TheCameraIsNotPermitted = 'the_camera_is_not_permitted';
 
