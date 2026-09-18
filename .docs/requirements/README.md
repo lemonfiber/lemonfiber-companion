@@ -46,6 +46,8 @@ already has.
 | [the-model-of-a-machine.md](the-model-of-a-machine.md) | The types this app thinks in: stacks, pairing, retained state, actions |
 | [what-a-machine-says.md](what-a-machine-says.md) | The values read back: verdicts, services, repairs, releases, requests |
 | [what-this-device-keeps-to-itself.md](what-this-device-keeps-to-itself.md) | Permissions, notifications, the lock, and what never leaves |
+| [what-the-rules-keep.md](what-the-rules-keep.md) | The requirements nothing in a module answers, because a rule reading this repository from outside it does |
 
-More follow as each module is converted; `tests/Arch/NoRequirementIdInACommentTest.php`
-is what stops the count going back up while that happens.
+`tests/Arch/NoRequirementIdInACommentTest.php` is what keeps a number from
+coming back: no comment in this repository names a requirement, and the failure
+names the file and the line.
