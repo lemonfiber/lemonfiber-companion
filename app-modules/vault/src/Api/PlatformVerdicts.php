@@ -64,7 +64,7 @@ final readonly class PlatformVerdicts implements Verdicts
 
     public function lastKnownOf(StackId $stack): Showing
     {
-        $record = $this->held();
+        $record = $this->whatEachStackCameTo()->rows;
         $under = $stack->stored();
 
         // Written out rather than coalesced, which `C9` refuses by name: a `??`
@@ -79,7 +79,7 @@ final readonly class PlatformVerdicts implements Verdicts
 
     public function remember(StackId $stack, Overall $overall, Instant $at): Noted
     {
-        $record = $this->held();
+        $record = $this->whatEachStackCameTo()->rows;
         $record[$stack->stored()] = ['overall' => $overall->value, 'at' => $at->epochSeconds()];
 
         $written = json_encode(['shape' => self::SHAPE, 'verdicts' => $record]);
@@ -163,10 +163,8 @@ final readonly class PlatformVerdicts implements Verdicts
      * refuses by name: a `??` chain folds absent, present-and-null and
      * present-and-the-wrong-type into one answer, and the one it picks reads as
      * *carry on*.
-     *
-     * @return array<mixed>
      */
-    private function held(): array
+    private function whatEachStackCameTo(): TheRowsHeld
     {
         return $this->store->read(self::UNDER)->either(
             found: fn(string $written): TheRowsHeld => TheRowsHeld::of(
@@ -179,7 +177,7 @@ final readonly class PlatformVerdicts implements Verdicts
             // somebody for: this record is the quiet half, and the screens that
             // must not collapse the two refusals are the ones about pairing.
             refused: static fn(): TheRowsHeld => TheRowsHeld::none(),
-        )->rows;
+        );
     }
 
     /**

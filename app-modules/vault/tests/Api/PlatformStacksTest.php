@@ -47,7 +47,7 @@ function aStack(string $called = 'The loft', string $seed = 'a', string $at = 'h
 function holding(string $written): APlatformStore
 {
     $store = APlatformStore::working();
-    $store->set(UNDER, $written);
+    $store->alreadyHolding(UNDER, $written);
 
     return $store;
 }
@@ -83,14 +83,14 @@ it('N1-R15 — writes the address down deliberately, rather than by serialising 
     $store = APlatformStore::working();
     new PlatformStacks($store)->remember(aStack(at: 'https://192.168.1.77'));
 
-    expect($store->get(UNDER))->toContain('192.168.1.77');
+    expect($store->whatIsUnder(UNDER))->toContain('192.168.1.77');
 });
 
 it('N1-R32 — carries the version of the shape it was written in', function (): void {
     $store = APlatformStore::working();
     new PlatformStacks($store)->remember(aStack());
 
-    $written = json_decode($store->get(UNDER) ?? '', associative: true);
+    $written = json_decode($store->whatIsUnder(UNDER) ?? '', associative: true);
 
     expect($written)->toBeArray()->toHaveKey('shape');
 });

@@ -222,7 +222,7 @@ it('reads a store that answered Found with nothing as holding nothing', function
     // cannot be blank, so this is the branch a contract run against both would
     // never reach.
     $store = APlatformStore::working();
-    $store->set(sprintf('lemonfiber.session.%s', A_PAIRED_STACK), '');
+    $store->alreadyHolding(sprintf('lemonfiber.session.%s', A_PAIRED_STACK), '');
 
     expect(whatWasResumed(new PlatformKeychain($store)->resume(aStackThatIsPaired())))->toBe('nothing');
 });

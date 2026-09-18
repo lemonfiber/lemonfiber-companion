@@ -124,11 +124,11 @@ final readonly class PlatformStacks implements Stacks
     public function holdsAny(): bool
     {
         return $this->store->read(self::UNDER)->either(
-            found: static fn (string $written): WhetherAnythingIsHeld => $written === ''
+            found: static fn(string $written): WhetherAnythingIsHeld => $written === ''
                 || $written === self::NOTHING_WRITTEN_DOWN
                     ? WhetherAnythingIsHeld::itIsNot()
                     : WhetherAnythingIsHeld::itIs(),
-            nothing: static fn (): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+            nothing: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
             // A store that cannot be read is not a store that is empty. The two
             // arrive here as the same absence and they are opposite answers to
             // the question this method is actually asked: `Opening` uses it to
@@ -142,7 +142,7 @@ final readonly class PlatformStacks implements Stacks
             // rather than one. Being wrong in that direction costs a prompt in
             // front of somebody who has paired nothing; being wrong the other
             // way costs them an unlocked application.
-            refused: static fn (): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+            refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
         )->held;
     }
 

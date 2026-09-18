@@ -113,6 +113,27 @@ final class APlatformStore implements Keeps
     }
 
     /**
+     * Seed a value, as though an earlier run had kept it.
+     *
+     * Separate from {@see keep()} so that a test arranging a starting state
+     * cannot be mistaken for one exercising a write, and so that arranging one
+     * works on a store that refuses every write — which is how a test reaches
+     * *there is a record here and it cannot be read*.
+     */
+    public function alreadyHolding(string $key, string $value): self
+    {
+        $this->held[$key] = $value;
+
+        return $this;
+    }
+
+    /** What is under one key, for a test to check what an adapter wrote. */
+    public function whatIsUnder(string $key): ?string
+    {
+        return $this->held[$key] ?? null;
+    }
+
+    /**
      * Which keys this store is holding — for a test to check one per stack.
      *
      * @return list<string>

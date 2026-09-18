@@ -12,6 +12,8 @@ use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\Wrote;
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 
+use function sprintf;
+
 // The store, held to the four things `Keeps` promises.
 //
 // Its own suite rather than only the round-trips the stand-ins exercise. Three
@@ -24,7 +26,7 @@ use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 function whatItAnswered(WasRead $read): string
 {
     return $read->either(
-        found: static fn(string $value): Answered => Answered::saying('found:' . $value),
+        found: static fn(string $value): Answered => Answered::saying(sprintf('found:%s', $value)),
         nothing: static fn(): Answered => Answered::saying('nothing'),
         refused: static fn(): Answered => Answered::saying('refused'),
     )->word;
@@ -90,7 +92,7 @@ it('answers back the accessibility it was asked for', function (): void {
 it('says there is somewhere to keep a value', function (): void {
     // The answer that lets a run reach the screens past pairing. A stand-in
     // answering otherwise would put every one of them behind a refusal.
-    expect((new TheStoreThisRunKeeps())->canBeAsked())->toBeTrue();
+    expect(new TheStoreThisRunKeeps()->canBeAsked())->toBeTrue();
 });
 
 it('keeps one key apart from another', function (): void {

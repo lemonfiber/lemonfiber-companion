@@ -63,7 +63,7 @@ function whatItHolds(PlatformVerdicts $verdicts, StackId $stack): string
 function aStoreHolding(mixed $record): APlatformStore
 {
     $store = APlatformStore::working();
-    $store->set(VERDICTS_UNDER, (string) json_encode($record));
+    $store->alreadyHolding(VERDICTS_UNDER, (string) json_encode($record));
 
     return $store;
 }
@@ -74,7 +74,7 @@ it('N1-R32 — writes the shape it reads, so a record names the build that made 
 
     $verdicts->remember(aStackWithAVerdict(), Overall::Degraded, Instant::atEpochSeconds(1_770_000_000));
 
-    expect($store->get(VERDICTS_UNDER))->toContain('"shape":1');
+    expect($store->whatIsUnder(VERDICTS_UNDER))->toContain('"shape":1');
 });
 
 it('N1-R33 — discards a record written in a shape this build does not know', function (): void {
