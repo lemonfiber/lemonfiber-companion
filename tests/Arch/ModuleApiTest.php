@@ -76,24 +76,16 @@ it('C1 — no Api method changes something and says nothing', function (): void 
  * is the reason — not this codebase's design. The list is the prompt: adding to
  * it means writing down whose `?string` it is.
  *
- * `WhatTheDeviceSaid::orNothingSaid()` takes what
- * `PushNotifications::checkPermission()` answers, and that is a third-party
- * method returning `?string`. The null means a bridge with no device behind it
- * — every machine that is not a handset — and this method exists precisely to
- * end it: null and an unrecognised word both become `NotDetermined`, which
- * withholds the notification and leaves asking still possible.
- *
- * `WhatTheScannerSaid::orSimplyDismissed()` is the same shape one package over:
+ * `WhatTheScannerSaid::orSimplyDismissed()` is where one arrives:
  * `ScannerCancelled::$reason` is a third-party `?string`, and the null is the
  * ordinary case rather than an edge — the plugin leaves the reason unset when
  * somebody simply dismissed the scanner. This method is where that ends, and
  * where an unrecognised word ends too.
  *
  * That is C2 being obeyed rather than broken. The rule wants exactly one place
- * where a foreign null becomes one of our types, and each of these is one.
+ * where a foreign null becomes one of our types, and this is one.
  */
 const NULL_ARRIVES_FROM_OUTSIDE = [
-    'Modules\Device\Api\WhatTheDeviceSaid::orNothingSaid()',
     'Modules\Device\Api\WhatTheScannerSaid::orSimplyDismissed()',
 ];
 

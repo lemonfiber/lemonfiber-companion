@@ -7,17 +7,18 @@ namespace Lemonfiber\Native;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Registers the window with the container.
+ * Registers this plugin's faces with the container.
  *
- * Bound rather than a singleton, for the same reason the keychain and the
- * notification centre are: this is a handle to something outside the process,
- * and the runtime here is persistent — a long-running app that held one from
- * launch would go on answering with the state it saw then.
+ * Bound rather than singletons, and for the same reason in each case: every one
+ * of these is a handle to something outside the process, and the runtime here
+ * is persistent — a long-running application that held one from launch would go
+ * on answering with the state it saw then.
  */
 final class NativeServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->app->bind(Screen::class, static fn(): Screen => new Screen());
+        $this->app->bind(Telling::class, static fn(): Telling => new Telling());
     }
 }

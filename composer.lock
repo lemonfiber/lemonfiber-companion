@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "57ff3f585ffbc1d5a095ea5e2742c204",
+    "content-hash": "27c2c882fe4c47090fabe40be5ecef0c",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3977,61 +3977,6 @@
                 "source": "https://github.com/NativePHP/mobile-air/tree/4.4.0"
             },
             "time": "2026-09-11T12:34:30+00:00"
-        },
-        {
-            "name": "nativephp/mobile-local-notifications",
-            "version": "0.0.3",
-            "dist": {
-                "type": "zip",
-                "url": "https://plugins.nativephp.com/dist/nativephp/mobile-local-notifications/nativephp-mobile-local-notifications-e8296118ea20a6125d96073ec9443d8a15383bb1-zip-5d47bd.zip",
-                "reference": "e8296118ea20a6125d96073ec9443d8a15383bb1",
-                "shasum": "cc235d7c9d8b29ccbabc9db913cbe4252746b80e"
-            },
-            "require": {
-                "nativephp/mobile": "^3.2.1 || ^4.0",
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "orchestra/testbench": "^10.0",
-                "pestphp/pest": "^2.7|^3.0|^4.0"
-            },
-            "type": "nativephp-plugin",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "NativePHP\\LocalNotifications\\LocalNotificationsServiceProvider"
-                    ]
-                },
-                "nativephp": {
-                    "manifest": "nativephp.json"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "NativePHP\\LocalNotifications\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "pest"
-                ]
-            },
-            "license": [
-                "proprietary"
-            ],
-            "authors": [
-                {
-                    "name": "NativePHP",
-                    "email": "support@nativephp.com"
-                }
-            ],
-            "description": "Local notifications for NativePHP Mobile with Laravel Notification channel integration",
-            "time": "2026-07-15T18:46:26+00:00"
         },
         {
             "name": "nativephp/mobile-network",

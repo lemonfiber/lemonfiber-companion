@@ -25,6 +25,7 @@ let package = Package(
                 "LemonfiberFunctions.swift",
                 "LemonfiberInit.swift",
                 "LemonfiberAuth.swift",
+                "TellingFunctions.swift",
             ]
         ),
         .testTarget(
@@ -41,6 +42,21 @@ let package = Package(
             name: "NotificationRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/NotificationRuleTests"
+        ),
+        .testTarget(
+            name: "EnvelopeTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/EnvelopeTests"
+        ),
+        .testTarget(
+            name: "RecurrenceTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/RecurrenceTests"
+        ),
+        .testTarget(
+            name: "WhatTheOperatorSaidTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/WhatTheOperatorSaidTests"
         ),
     ]
 )

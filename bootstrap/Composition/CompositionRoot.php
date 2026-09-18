@@ -257,7 +257,7 @@ final class CompositionRoot extends ServiceProvider
         );
 
         // Bound, not a singleton, for the same reason the store above is not:
-        // the plugin's centre is a handle to something outside this process,
+        // the bridge's centre is a handle to something outside this process,
         // and this runtime is persistent (I1).
         //
         // Local rather than pushed, which is the decision this line records. A
@@ -267,12 +267,12 @@ final class CompositionRoot extends ServiceProvider
         // notification is composed and shown on the device and never leaves it.
         $this->app->bind(
             Notifier::class,
-            // Named by class rather than built by a closure here. Every one of
-            // this adapter's dependencies is a concrete class with no
-            // alternative — the notification centre, the permission handle, and
-            // the catalogue reader — so there is no implementation choice for a
-            // closure to state. The decision this line makes is the one that
-            // matters and is still written down: `Notifier` is `PlatformNotifier`.
+            // Named by class rather than built by a closure here. Both of this
+            // adapter's dependencies are concrete classes with no alternative —
+            // lemonfiber's own notification centre and the catalogue reader —
+            // so there is no implementation choice for a closure to state. The
+            // decision this line makes is the one that matters and is still
+            // written down: `Notifier` is `PlatformNotifier`.
             PlatformNotifier::class,
         );
 

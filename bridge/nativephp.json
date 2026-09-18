@@ -30,6 +30,60 @@
             "android": "app.lemonfiber.native.LemonfiberAuth.CanAuthenticate",
             "ios": "LemonfiberAuth.CanAuthenticate",
             "description": "Whether the device has a screen lock configured and can authenticate at all"
+        },
+        {
+            "name": "Lemonfiber.Telling.Show",
+            "android": "app.lemonfiber.native.TellingFunctions.Show",
+            "ios": "TellingFunctions.Show",
+            "description": "Show a notification now, or say why it was withheld"
+        },
+        {
+            "name": "Lemonfiber.Telling.Schedule",
+            "android": "app.lemonfiber.native.TellingFunctions.Schedule",
+            "ios": "TellingFunctions.Schedule",
+            "description": "Show one at a time, or say why it was withheld"
+        },
+        {
+            "name": "Lemonfiber.Telling.ScheduleRecurring",
+            "android": "app.lemonfiber.native.TellingFunctions.ScheduleRecurring",
+            "ios": "TellingFunctions.ScheduleRecurring",
+            "description": "Show one over and over, or say why it was withheld"
+        },
+        {
+            "name": "Lemonfiber.Telling.Cancel",
+            "android": "app.lemonfiber.native.TellingFunctions.Cancel",
+            "ios": "TellingFunctions.Cancel",
+            "description": "Take one back, whether it is showing, scheduled or neither"
+        },
+        {
+            "name": "Lemonfiber.Telling.CancelAll",
+            "android": "app.lemonfiber.native.TellingFunctions.CancelAll",
+            "ios": "TellingFunctions.CancelAll",
+            "description": "Take back everything this application scheduled"
+        },
+        {
+            "name": "Lemonfiber.Telling.Pending",
+            "android": "app.lemonfiber.native.TellingFunctions.Pending",
+            "ios": "TellingFunctions.Pending",
+            "description": "What is still to come"
+        },
+        {
+            "name": "Lemonfiber.Telling.ClearBadge",
+            "android": "app.lemonfiber.native.TellingFunctions.ClearBadge",
+            "ios": "TellingFunctions.ClearBadge",
+            "description": "Take the count off the application's icon"
+        },
+        {
+            "name": "Lemonfiber.Telling.Standing",
+            "android": "app.lemonfiber.native.TellingFunctions.Standing",
+            "ios": "TellingFunctions.Standing",
+            "description": "What the operator has already said about notifications, read without asking"
+        },
+        {
+            "name": "Lemonfiber.Telling.Ask",
+            "android": "app.lemonfiber.native.TellingFunctions.Ask",
+            "ios": "TellingFunctions.Ask",
+            "description": "Raise the notification prompt, record that it was raised, and answer what they said"
         }
     ],
     "android": {
@@ -37,13 +91,21 @@
         "permissions": [
             "android.permission.INTERNET",
             "android.permission.ACCESS_NETWORK_STATE",
-            "android.permission.USE_BIOMETRIC"
+            "android.permission.USE_BIOMETRIC",
+            "android.permission.POST_NOTIFICATIONS",
+            "android.permission.SCHEDULE_EXACT_ALARM"
         ],
         "dependencies": {
             "implementation": [
                 "androidx.biometric:biometric:1.1.0"
             ]
-        }
+        },
+        "receivers": [
+            {
+                "name": "app.lemonfiber.native.TellingFunctions$WhenTheTimeComes",
+                "exported": false
+            }
+        ]
     },
     "ios": {
         "min_version": "15.0",

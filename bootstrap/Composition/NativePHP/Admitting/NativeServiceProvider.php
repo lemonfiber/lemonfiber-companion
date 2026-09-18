@@ -11,7 +11,6 @@ use Native\Mobile\Providers\ScannerServiceProvider as ReadingACode;
 use Native\Mobile\Providers\SecureStorageServiceProvider as SecureStore;
 use Native\Mobile\Providers\ShareServiceProvider as HandingOver;
 use Native\Mobile\UI\NativeUIServiceProvider as Controls;
-use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notifications;
 
 /**
  * Which NativePHP plugins this application admits.
@@ -28,16 +27,17 @@ use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notificati
  * `type: nativephp-plugin`, both declare native halves, and neither was reaching
  * a build:
  *
- * - **`lemonfiber/bridge`** carries `Lemonfiber.Conceal`, `Lemonfiber.Reveal`
+ * - **`lemonfiber/bridge`** carries the notification capability — nine
+ *   functions under `Lemonfiber.Telling.*`, which replaced
+ *   `nativephp/mobile-local-notifications` once they were watched working on a
+ *   handset — and `Lemonfiber.Conceal`, `Lemonfiber.Reveal`
  *   and `Lemonfiber.IsProtected` — the protection for a screen showing a
  *   session token or pairing material — and
- *   `Lemonfiber.Authenticate` / `Lemonfiber.CanAuthenticate`, which is the app
- *   lock. The PHP half is discovered by Laravel and binds normally,
+ *   `Lemonfiber.Authenticate` / `Lemonfiber.CanAuthenticate`, which are the
+ *   device's own authentication and the app lock. The PHP half is discovered by Laravel and binds normally,
  *   so every test passes; the Kotlin and the Swift are collected by
  *   `AndroidPluginCompiler` and `IOSPluginCompiler`, which read this list.
  *   A build made without it has the adapters and not the functions they call.
- * - **`nativephp/mobile-local-notifications`**, which `Modules\Device\Api\
- *   PlatformNotifier` is written against.
  * - **`nativephp/mobile-secure-storage`**, which is where the keychain comes
  *   from. It was core until NativePHP 4 and is a plugin now, and the facade
  *   `Native\Mobile\SecureStorage` stayed behind in `nativephp/mobile` — so the
@@ -58,8 +58,9 @@ use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notificati
  *   `nativephp/mobile` registers `pressable` and no field: `text_input`,
  *   `toggle` and the rest are left to this plugin by name, in a comment in
  *   `registerCoreElements()`. Without it there is no way to type anything into
- *   this application at all — which means no `StackName`, which means two
- *   machines cannot be told apart and pairing cannot complete by either road.
+ *   this application at all — which means no `StackName`, so a stack cannot be
+ *   given the name it is listed under and pairing cannot complete by either
+ *   road.
  *
  * **Named by class rather than by string.** The vendor compares against the
  * first entry of a package's `extra.laravel.providers`, which is a string — so
@@ -98,7 +99,6 @@ final class NativeServiceProvider extends ServiceProvider
     {
         return [
             OurOwnExpansion::class,
-            Notifications::class,
             ReadingACode::class,
             SecureStore::class,
             WhetherThereIsANetwork::class,

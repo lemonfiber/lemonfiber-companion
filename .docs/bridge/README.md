@@ -25,9 +25,11 @@ defect.
 
 ## What is ours and what is not
 
-Ours: the fourteen capability functions — telling somebody, keeping a secret,
-reading a code, whether there is a link, handing something over — and the five
-for capture protection and the app lock.
+Ours: the sixteen capability functions — telling somebody nine, keeping a
+secret three, reading a code one, whether there is a link one, handing
+something over two — and the five for capture protection and the app lock.
+[the-wire.md](the-wire.md) names each of them; `bridge/nativephp.json` declares
+them, and a build fails where one has no handler.
 
 Not ours, deliberately: `nativephp/mobile`, which is the runtime, the element
 collector and the Blade precompiler; and `nativephp/mobile-ui`, which is some

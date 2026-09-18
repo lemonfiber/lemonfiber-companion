@@ -1,84 +1,94 @@
 package app.lemonfiber.native
 
 /**
- * What the device would do with a notification, read rather than asked.
+ * Whether a notification would be seen, and whether anybody may still be asked.
  *
- * The distinction this exists for is between *nobody has been asked* and *the
- * operator said no*. An app that cannot tell them apart prompts a second time on
- * a device where somebody already refused, which is the one thing the rule about
- * a declined permission forbids — and it is the easy mistake, because Android
- * answers both with the same `false`.
+ * The four facts a platform can report about notifications, and what they mean
+ * together. Reconstructing the three answers out of them is
+ * [WhatTheOperatorSaid]'s, because the camera asks the identical question and
+ * two copies of that decision would be two capabilities disagreeing quietly.
+ * What is here is the part that belongs to telling somebody: which facts are
+ * gathered, and what the answer is called once the subject is a notification.
  *
- * No Android framework here. Everything is arithmetic on values a caller passes
- * in, which is what lets the decision be tested on a JVM in two seconds rather
- * than demonstrated on a handset with its notifications switched off.
+ * No Android framework in sight. Everything is a reading of four booleans a
+ * caller passes in, which is what lets it be run on a JVM in two seconds rather
+ * than demonstrated on a handset.
  *
- * Deliberately mirrors `NotificationRule.swift` line for line, for the reason
- * the capture rule and the lock rule are mirrored: two platforms disagreeing
- * about whether somebody has been asked is a bug nobody finds, because each half
- * looks right on its own.
+ * Deliberately mirrors `NotificationRule.swift` line for line.
  */
 public data class NotificationRule(
     /**
-     * Whether a notification posted now would actually appear.
+     * Whether a notification posted right now would be seen.
      *
-     * The whole answer where it is true, and deliberately the first question:
-     * it covers the runtime permission, the per-channel switch and the
-     * app-level switch at once, and any of those being off means the same thing
-     * to somebody waiting to be told something.
+     * One fact covering three switches — the runtime permission, the channel,
+     * and the application's own toggle in system settings — because the
+     * operator turning any of them off means the same thing to a caller with
+     * something to show.
      */
     public val wouldAppear: Boolean,
     /**
-     * Whether this Android has a runtime permission for notifications at all.
+     * Whether this platform has a runtime permission to ask for at all.
      *
-     * False below API 33, where there is nothing to ask for. Notifications off
-     * there means the operator turned them off in settings, which is a refusal
-     * already given rather than a question still open — and prompting for a
-     * permission the platform does not have would do nothing at all.
+     * False below Android 33, where notifications are granted at install time
+     * and turned off in settings afterwards; always true on iOS. Taken as an
+     * input rather than branched on inside, so that the version check stays in
+     * the shim where the platform is and the decision stays here where it can
+     * be run.
      */
     public val permissionIsAsked: Boolean,
     /**
-     * Whether Android says an explanation would help.
+     * Whether the platform says an explanation would help.
      *
-     * True only after a refusal, which makes it evidence of one. It is never
-     * true before the first prompt and never true after a permanent refusal, so
-     * it identifies exactly one of the three states and cannot stand alone.
+     * True only after a refusal, which is what makes it evidence of one rather
+     * than a suggestion. It is never true before the first prompt and never
+     * true after a permanent one, so it identifies exactly one of the three
+     * states and cannot stand alone. Always false on iOS, which has nothing of
+     * the kind.
      */
     public val wouldExplain: Boolean,
     /**
      * Whether this application has ever raised the prompt.
      *
-     * Kept by this plugin because nothing else can keep it: Android has no call
-     * that answers it, and the two states it separates — never asked, and
-     * refused so firmly that the platform stopped offering — are identical from
-     * the outside. Recorded where the prompt is raised rather than inferred.
+     * Kept by this plugin because nothing else can keep it: Android has no
+     * call that answers it, and the two states it separates — never asked, and
+     * refused so firmly the platform stopped offering — are identical from the
+     * outside. Recorded where the prompt is raised rather than inferred
+     * afterwards.
      */
     public val everAsked: Boolean,
 ) {
+    /** What the operator has said, as far as anything can tell. */
+    public val said: WhatTheOperatorSaid
+        get() = WhatTheOperatorSaid.readFrom(wouldAppear, permissionIsAsked, wouldExplain, everAsked)
+
     /**
-     * The three answers the application reasons in, as the wire spells them.
+     * Whether the prompt may be raised now.
      *
-     * Strings rather than an enum across the bridge, matching what the platform
-     * facade already answers, so the reading side keeps one vocabulary.
+     * Named here as well as on the answer because the shim asks this question
+     * of the rule rather than of the word: what a caller has in hand is the
+     * four facts, and the two readings of them belong side by side.
      */
-    public fun said(): String =
-        when {
-            wouldAppear -> GRANTED
-            !permissionIsAsked -> DENIED
-            wouldExplain -> DENIED
-            everAsked -> DENIED
-            else -> NOT_DETERMINED
-        }
+    public val mayAsk: Boolean
+        get() = said.mayAsk
 
-    /** The three words the wire spells these answers with. */
+    /** Whether something posted now would reach the operator. */
+    public val mayShow: Boolean
+        get() = said.mayProceed
+
+    /** Where the starting state lives, named so it reads at a call site. */
     public companion object {
-        /** A notification posted now would appear. */
-        public const val GRANTED: String = "granted"
-
-        /** It would not, and nothing may ask again. */
-        public const val DENIED: String = "denied"
-
-        /** Nobody has been asked; the point of first use is still ahead. */
-        public const val NOT_DETERMINED: String = "not_determined"
+        /**
+         * A device nobody has asked anything, on a platform that asks.
+         *
+         * What a first launch looks like on Android 33 and above, and the state
+         * the other cases are written as a departure from.
+         */
+        public val UNASKED: NotificationRule =
+            NotificationRule(
+                wouldAppear = false,
+                permissionIsAsked = true,
+                wouldExplain = false,
+                everAsked = false,
+            )
     }
 }
