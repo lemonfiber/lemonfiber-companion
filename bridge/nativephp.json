@@ -118,6 +118,7 @@
     ],
     "android": {
         "min_version": 26,
+        "init_function": "app.lemonfiber.native.installLemonfiber",
         "permissions": [
             "android.permission.INTERNET",
             "android.permission.ACCESS_NETWORK_STATE",
