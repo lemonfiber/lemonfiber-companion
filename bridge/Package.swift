@@ -56,6 +56,11 @@ let package = Package(
             path: "ios/Tests/EnvelopeTests"
         ),
         .testTarget(
+            name: "StorageRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/StorageRuleTests"
+        ),
+        .testTarget(
             name: "RecurrenceTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/RecurrenceTests"
