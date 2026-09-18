@@ -3,7 +3,6 @@ package app.lemonfiber.native
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 /**
  * The shape every answer this bridge gives has.
@@ -67,16 +66,24 @@ class EnvelopeTest {
     }
 
     @Test
-    fun `a refusal carries nothing at all`() {
-        // Structural rather than asserted: there is no factory taking a reason
-        // and a payload together, so a refusal that handed over the value it
+    fun `a refusal carries nothing a caller handed in`() {
+        // Structural rather than asserted: no factory takes a reason and an
+        // arbitrary payload together, so a refusal that handed over the value it
         // refused to hand over is not something anybody can write. This is the
-        // reading of that, so the day somebody adds the third factory it fails
-        // here rather than on a handset.
+        // reading of that, so the day somebody adds a factory that would allow
+        // it, it fails here rather than on a handset.
         val refused = Envelope.refusing("refused", because = "store_would_not_open").asAnswer()
 
-        assertEquals(2, refused.size)
-        assertTrue(refused.containsKey("outcome"))
-        assertTrue(refused.containsKey("because"))
+        assertEquals(setOf("outcome", "because"), refused.keys)
+
+        // The one exception, and it is an exception by being named here rather
+        // than by being a payload. `may_ask_again` is a fact about the refusal —
+        // closed, decided by the rule, and the only thing a screen can choose
+        // between "try again" and "open Settings" on. Asserted as the whole key
+        // set so that a second field smuggled in beside it fails.
+        val declined = Envelope.refusing("nothing", because = "not_permitted", mayAskAgain = true).asAnswer()
+
+        assertEquals(setOf("outcome", "because", "may_ask_again"), declined.keys)
+        assertEquals(true, declined["may_ask_again"])
     }
 }

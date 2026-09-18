@@ -75,6 +75,30 @@ public struct Envelope {
         Envelope(outcome: outcome, because: because, carrying: [:])
     }
 
+    /// A refusal that also says whether asking again could change it.
+    ///
+    /// The one thing a refusal may carry, and it has a factory of its own
+    /// rather than a payload parameter on the one above. The distinction is the
+    /// whole reason: `may_ask_again` is a fact about the refusal, closed and
+    /// named here, while a payload is whatever a caller handed in. A general
+    /// `refusing(outcome, because, carrying:)` would make the two
+    /// indistinguishable at a call site and put the general payload slot back
+    /// on the arm that must never have one.
+    ///
+    /// The question it answers is the same on every permission: a refusal given
+    /// in the dialog a moment ago can be put again, and one settled in settings
+    /// cannot and has to send the operator there instead. A screen has no other
+    /// way to choose between those two sentences.
+    ///
+    /// - Parameters:
+    ///   - outcome: the capability's word for a refusal.
+    ///   - because: the closed word for why.
+    ///   - mayAskAgain: whether putting the prompt up again could change it.
+    /// - Returns: the answer, ready to hand back.
+    public static func refusing(_ outcome: String, because: String, mayAskAgain: Bool) -> Envelope {
+        Envelope(outcome: outcome, because: because, carrying: ["may_ask_again": mayAskAgain])
+    }
+
     /// This answer as the bridge hands it back.
     ///
     /// The keys are built here rather than at each handler so that `because`

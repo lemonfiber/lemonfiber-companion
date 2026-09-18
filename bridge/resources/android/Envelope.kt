@@ -86,5 +86,32 @@ public data class Envelope private constructor(
             outcome: String,
             because: String,
         ): Envelope = Envelope(outcome = outcome, because = because, carrying = emptyMap())
+
+        /**
+         * A refusal that also says whether asking again could change it.
+         *
+         * The one thing a refusal may carry, and it has a factory of its own
+         * rather than a payload parameter on the one above. The distinction is
+         * the whole reason: `may_ask_again` is a fact about the refusal, closed
+         * and named here, while a payload is whatever a caller handed in. A
+         * general `refusing(outcome, because, carrying)` would make the two
+         * indistinguishable at a call site and put the general payload slot
+         * back on the arm that must never have one.
+         *
+         * The question it answers is the same on every permission: a refusal
+         * given in the dialog a moment ago can be put again, and one settled in
+         * settings cannot and has to send the operator there instead. A screen
+         * has no other way to choose between those two sentences.
+         */
+        public fun refusing(
+            outcome: String,
+            because: String,
+            mayAskAgain: Boolean,
+        ): Envelope =
+            Envelope(
+                outcome = outcome,
+                because = because,
+                carrying = mapOf("may_ask_again" to mayAskAgain),
+            )
     }
 }
