@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Template;
 
-// G3-R16 — a target is bigger than the words on it.
+// A target is bigger than the words on it.
 //
 // The platform paints one button style, so a screen with a second thing to
 // offer draws it as text that is tapped. What that costs is a target the size
