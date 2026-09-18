@@ -11,7 +11,7 @@ use Modules\Kernel\Api\Obstacle;
  * What the operator met, given what the far end refused with.
  *
  * One place rather than one per adapter. Every reader in this module makes the
- * same call — a stack that refused, and which of `N1-R10`'s conditions that is
+ * same call — a stack that refused, and which obstacle that is
  * — and two adapters deciding it independently is how one screen comes to say
  * *sign in again* where another says *the machine is not answering*, for the
  * same response. The operator meets both screens in one session.
@@ -20,7 +20,7 @@ use Modules\Kernel\Api\Obstacle;
  * apart.** It is answered by signing in again, on a machine that is working
  * perfectly. Everything else — a stack asleep, a network that dropped, an
  * endpoint answering five hundred — is the same sentence, and it is the one
- * `N1-R10` gives for a stack that is not answering.
+ * an obstacle gives for a stack that is not answering.
  *
  * `Internal` because which status means what is a detail of how this module
  * talks to a stack; the {@see Obstacle} it answers with is the shared word.

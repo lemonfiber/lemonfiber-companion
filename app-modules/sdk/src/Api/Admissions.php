@@ -19,12 +19,12 @@ use Modules\Kernel\Api\Stack;
 /**
  * The one place a credential is offered to a stack.
  *
- * `N1-R16` says every call goes through the SDK and `N1-R7` says the exchange
+ * Every call to a stack goes through the SDK, and the credential exchange
  * happens once, and this is where that exchange is written. The door itself
  * comes from {@see PinnedDoors} — this file does not build one.
  *
  * **It used to.** `Admission::at(...)` sat in the middle of the method below,
- * which made two things impossible at once. `N1-R20` could not read it: the
+ * which made two things impossible at once. The pinning rule could not read it: the
  * rule lists the client's transport and not the door's, so an unpinned door
  * carrying somebody's password would have raised nothing. And nothing could be
  * put in front of it: every screen of this application can be drawn against a
@@ -33,7 +33,7 @@ use Modules\Kernel\Api\Stack;
  *
  * **Three refusals, because the operator meets three different things.** The
  * SDK goes out of its way to tell a wrong password from a door that has stopped
- * listening, and `N1-R10` asks for exactly that kind of distinction. Flattening
+ * listening, and an obstacle is required to keep that kind of distinction. Flattening
  * them would have somebody typing carefully into a door that is not answering —
  * and each attempt extends the wait.
  *
@@ -87,7 +87,7 @@ final readonly class Admissions implements Admitting
      * A `match` rather than four `catch` blocks, so the mapping reads as one
      * table. `RequestFailed` and `UnreadableResponse` share an answer: both mean
      * the operator did not get in and nothing about their password is known,
-     * which is `N1-R10`'s stack-did-not-answer rather than its refused
+     * which is *the stack did not answer* rather than *the credential was refused*
      * credential. The remedy on that screen — check the machine is on and on
      * this network — is the right one for either.
      */

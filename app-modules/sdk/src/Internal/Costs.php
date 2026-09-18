@@ -22,14 +22,14 @@ use Modules\Sdk\Api\WireField;
  * one had reached the complexity a class is allowed: this answers a different
  * question from the rest of the payload. The services are what the stack *is*
  * doing; this is what doing something to them would cost, which is the sentence
- * `N2-R8` wants said before an operator confirms.
+ * has to be said before an operator confirms.
  */
 final readonly class Costs
 {
     /**
      * What each verb would take away, as the stack reported it.
      *
-     * Refused rather than defaulted when it is absent, which is `N2-R14`: a
+     * Refused rather than defaulted when it is absent: a
      * verb this side cannot read a bound for is a payload gone wrong, not a
      * verb that costs nothing — and *it costs nothing* is the reassuring answer
      * an operator would confirm on.

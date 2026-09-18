@@ -22,10 +22,10 @@ use Modules\Sdk\Api\WireField;
  * Its own reader rather than more of {@see \Modules\Sdk\Api\Standings}, for the
  * reason {@see Costs} is one: this answers a different question from the rest of
  * the payload. What is waiting is a decision an operator has yet to make, and
- * this is what happened the last time they made one — and `N2-R18` turns on
+ * this is what happened the last time they made one — and the rule turns on
  * keeping the two apart on the screen as well as here.
  *
- * **Every field is required and none is defaulted.** `N2-R14` refuses a
+ * **Every field is required and none is defaulted.** The app must not substitute a
  * substituted value, and each of the three has a reassuring direction to guess
  * in: an ending nobody could read would become *updated*, a way back nobody
  * could read would become *rollback*, and both are the answer somebody would

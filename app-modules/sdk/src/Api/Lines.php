@@ -20,14 +20,14 @@ use function trim;
 /**
  * A log window, as the lines this app can show.
  *
- * The sibling of {@see Stoppages} for `N2-R10`'s payload, and written the same
+ * The sibling of {@see Stoppages} for the log window's payload, and written the same
  * way: a static fold with no state, reading through {@see WireField} so no
  * field name is spelled twice, and refusing rather than salvaging.
  *
  * **It is handed the SDK's own window rather than a list of envelopes.** That
  * window already pairs what was asked for with what arrived, which is the only
  * honest thing that can be said about the edge of a view — and rebuilding the
- * pairing here from a count would be a second copy of the one decision `N2-R10`
+ * pairing here from a count would be a second copy of the one decision a window
  * turns on.
  *
  * **A line missing a field is refused, not skipped.** A log read is what an
@@ -55,7 +55,7 @@ final readonly class Lines
         $position = 0;
 
         foreach ($window->lines() as $envelope) {
-            // Every line, not the window. `N1-R13` refuses a wire version this
+            // Every line, not the window. A wire version this build does not
             // app does not support, and a window is many envelopes rather than
             // one — the client asserts each line's *kind* as it builds the
             // window and says nothing about its version, so this is the only
@@ -122,7 +122,7 @@ final readonly class Lines
      * Which mouth one line came out of, as a case rather than as the word.
      *
      * A stream this app does not recognise is refused rather than passed
-     * through, which is `ARCH-R79`'s distinction applied to a closed set: a word
+     * through, which is the contract's own distinction applied to a closed set: a word
      * this build has not heard of means the contract moved, and rendering it raw
      * would put a field value on somebody's screen.
      *

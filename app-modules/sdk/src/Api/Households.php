@@ -24,13 +24,13 @@ use function trim;
 /**
  * The `household` envelope, as the requests this app can show.
  *
- * The sibling of {@see Reports} for `N2-R11`'s payload, and written the same
+ * The sibling of {@see Reports} for the household's payload, and written the same
  * way: a static fold with no state, reading through {@see WireField} so no
  * field name is spelled twice, and refusing rather than salvaging.
  *
  * **The household is flattened into one list.** The envelope nests requests
  * under the member who made them, and this app un-nests them because a request
- * carries who asked (`D7-R7` has a decline reach them by name) and an operator
+ * carries who asked — a decline has to reach them by name — and an operator
  * deciding on six requests is deciding on six requests, not on three people.
  * Grouping them back by member is a screen's decision and reversible; losing
  * the requester is not, which is why {@see Wanted} takes the name rather than
@@ -271,7 +271,7 @@ final readonly class Households
      * One request, refused or not, which are two different values.
      *
      * The branch is on the standing rather than on whether a `refused` key
-     * happens to be there, because `D7-R7` ties the two together: a decline
+     * happens to be there, because the two are tied together: a decline
      * *is* a reason, so a row saying `declined` and carrying none is a stack
      * that broke the rule and is refused here rather than shown as a word an
      * operator cannot explain to the person who asked.
@@ -303,10 +303,10 @@ final readonly class Households
     }
 
     /**
-     * What they were told, and when, where the stack said when (`N3-R7`).
+     * What they were told, and when, where the stack said when.
      *
      * A declined row with no readable reason is refused rather than given one,
-     * which is `N2-R14` exactly: the app must not substitute a value the
+     * which is the rule exactly: the app must not substitute a value the
      * contract did not carry, and the substitute available here — *no reason
      * given* — is a sentence this application would have written on a stack's
      * behalf and shown to the person who asked.
@@ -322,7 +322,7 @@ final readonly class Households
         }
 
         // Through `under()` rather than a coalesce on the subscript: `C9` refuses
-        // the shape and `N2-R14` refuses what it usually means, which is this
+        // the shape, and substituting what it usually means is refused, which is this
         // app filling a gap the contract left.
         $reason = self::under($refused, WireField::Reason);
 
@@ -359,7 +359,7 @@ final readonly class Households
      *
      * An absent estimate is {@see Size::unknown()} rather than a refusal, which
      * is the one optional field here that has a real answer: a request nothing
-     * has sized yet is an ordinary state of a queue, and `D7-R3` wants *we do
+     * has sized yet is an ordinary state of a queue, and what is wanted is *we do
      * not know* shown rather than guessed at.
      *
      * @param array<mixed> $row

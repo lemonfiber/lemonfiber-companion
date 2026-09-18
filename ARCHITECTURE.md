@@ -753,6 +753,24 @@ way it is, what it costs, what would make it wrong.
 The exception is a commit message and a decision record. History is the point
 there, and neither is read as a description of the current code.
 
+**A requirement identifier is not a comment's to carry.** `GOV-R6` says a
+citation may not appear in one, and this repository was the org's only exception
+— `sdk-php`, `sdk-ts` and `lemonfiber-web` have none in source at all, and the
+Rust stack keeps a middle layer precisely so that its code needs none. The
+argument is the same one K1 makes about recollections: an identifier gestures at
+a page rather than saying anything, and it rots the moment that page is
+superseded, silently, because nothing reads a comment.
+
+So the sentence stays and the number moves, to a page under
+[`.docs/requirements/`](.docs/requirements/README.md) that says what the
+requirement asks and what in this repository keeps it. A citation belongs in a
+commit trailer and a pull request body, which is where the gate reads it.
+
+Four hundred and forty-three files still hold one, and converting them is
+editorial rather than mechanical — the identifiers are woven into the sentences.
+`NoRequirementIdInACommentTest` is the ratchet in the meantime: it pins what is
+left, refuses any increase, and refuses a decrease that was not written down.
+
 ### Tests
 
 | | Rule | Enforced by |

@@ -27,7 +27,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
 /**
  * The one place this application asks a stack what it would put right.
  *
- * `N1-R16` says every call goes through the SDK, so this sits beside
+ * Every call to a stack goes through the SDK, so this sits beside
  * {@see Questions} and {@see Requests} and is built the same way: it asks
  * {@see PinnedClients} for the connection rather than naming a client
  * constructor, which is what keeps the certificate pin in a single file.
@@ -45,7 +45,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * would spin on a handle nothing will ever answer for. It becomes
  * {@see HowTheOfferIsGoing::ended()}, whose remedy is to ask again.
  *
- * **The yes carries a key; the question does not.** `N1-R42` puts one on every
+ * **The yes carries a key; the question does not.** An idempotency key goes on every
  * action that changes a stack, and {@see self::agreeTo()} is this class's only
  * one. {@see self::wouldPutRight()} travels the same door and changes nothing:
  * `Repair::offer()` asks what *would* be done and carries out none of it, so a
@@ -56,7 +56,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  *
  * **A {@see \Modules\Kernel\Api\JobHasNoName} is not caught**, and the asymmetry is deliberate. It means
  * a stack acknowledged an action and named it with nothing — the one state
- * `N1-R41` has no answer for, since the action *was* delivered and so must not
+ * there is no answer for, since the action *was* delivered and so must not
  * be sent again, and there is no handle to ask after it by. Swallowing it into
  * an obstacle would present *the machine is not answering* for a machine that
  * answered, and would lose the only evidence that the exchange is broken.
@@ -84,7 +84,7 @@ final readonly class Menders implements Mending
 
         try {
             // The listing's name and the repair's check, which is exactly what
-            // `Confirmed` publishes and nothing else. `N2-R6` has the yes quote
+            // `Confirmed` publishes and nothing else. A yes must quote
             // the listing it was given, and the SDK's signature is that
             // requirement in a parameter list: there is no way to name a repair
             // without naming the listing it came from.

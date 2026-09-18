@@ -24,7 +24,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * The one place this application asks a stack what it is running, and tells it
  * to change that.
  *
- * `N1-R16` says every call goes through the SDK, so this sits beside
+ * Every call to a stack goes through the SDK, so this sits beside
  * {@see Stalls} and {@see Menders} and is written the same way: it asks
  * {@see PinnedClients} for the connection rather than building one, which is
  * what keeps the certificate pin in a single file. This class never names a
@@ -53,7 +53,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * down, and catching it would turn a fault in retained state into an ordinary
  * screen about an unreachable machine.
  *
- * **The key that names an attempt is minted here and nowhere else.** `N1-R42`
+ * **The key that names an attempt is minted here and nowhere else.** An idempotency key
  * wants one on every action that changes a stack, and wants it to serve the
  * retry inside a single attempt rather than a replay across a reconnection.
  * Those are the same sentence read twice: a key is only safe while it names

@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * The `stuck` envelope did not hold what the contract says it holds.
  *
- * The same refusal {@see HouseholdIsUnreadable} is, for `N2-R9`'s payload, and
+ * The same refusal {@see HouseholdIsUnreadable} is, for a stall's payload, and
  * for its reason: every one of these is a bug somewhere other than here, and
  * the message names the field and what arrived because that is the only thing
  * that shortens the search. A developer reads it, so it is `sprintf` and never

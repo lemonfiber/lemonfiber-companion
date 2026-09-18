@@ -23,7 +23,7 @@ use Modules\Sdk\Internal\Wire;
  *
  * This is the seam the whole design turns on. `Problem` is the shape every
  * screen in this app works in, and it is deliberately not the wire type —
- * `N1-R16` puts the SDK behind this module and nothing else may name it. So
+ * The SDK sits behind this module and nothing else may name it. So
  * one direction of that translation lives here, and it is the only place the
  * two vocabularies are held against each other.
  *
