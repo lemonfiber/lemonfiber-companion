@@ -7,16 +7,16 @@ import Testing
 // Written as a table rather than as four `#expect`s because the interesting
 // property is the shape of the whole truth table: three of the four states
 // protect, and the single state that does not is the ordinary one. A reader
-// checking this against N4-R9 and N4-R18 is checking a grid, so the test is a
-// grid.
+// checking this against the two rules that want the flag is checking a grid, so
+// the test is a grid.
 
-@Test("N4-R9 — a backgrounded app is protected, whatever it was showing")
+@Test("a backgrounded app is protected, whatever it was showing")
 func backgroundedIsAlwaysProtected() {
     #expect(CaptureRule(concealed: false, foreground: false).mustProtect)
     #expect(CaptureRule(concealed: true, foreground: false).mustProtect)
 }
 
-@Test("N4-R18 — a guarded screen is protected while it is in front of you")
+@Test("a guarded screen is protected while it is in front of you")
 func concealedInForegroundIsProtected() {
     // The case a rule written as `concealed && !foreground` gets wrong, and the
     // reason that expression is not repeated at call sites. A screen recording
@@ -55,8 +55,9 @@ func concealmentOutlivesBackgrounding() {
 
 @Test("leaving a guarded screen while backgrounded stays protected")
 func revealingWhileAwayKeepsTheCover() {
-    // Revealing takes away N4-R18's reason and leaves N4-R9's. The window must
-    // still be protected, because the app is still in the task switcher.
+    // Revealing takes away the guarded screen's reason to protect and leaves the
+    // task switcher's. The window must still be protected, because the app is
+    // still in the task switcher.
     let away = CaptureRule.launched.concealing().backgrounded().revealing()
 
     #expect(!away.concealed)

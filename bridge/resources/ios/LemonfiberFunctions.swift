@@ -13,13 +13,13 @@ import UIKit
 /// both requirements; here they are two different mechanisms and it is worth
 /// being clear which is which.
 ///
-/// `N4-R9` — the task-switcher snapshot — is answered by covering the window as
-/// the app resigns active. The system takes its snapshot after that notification,
-/// so a view added there is what ends up in the switcher. This is reliable and
-/// is what every banking app does.
+/// **The task-switcher snapshot** is answered by covering the window as the
+/// app resigns active. The system takes its snapshot after that
+/// notification, so a view added there is what ends up in the switcher. This
+/// is reliable and is what every banking app does.
 ///
-/// `N4-R18` — screen recording and screenshots — has no complete answer on iOS,
-/// and pretending otherwise would be the dangerous thing to do. `UIScreen.isCaptured`
+/// **Screen recording and screenshots** have no complete answer on iOS, and
+/// pretending otherwise would be the dangerous thing to do. `UIScreen.isCaptured`
 /// reports that a recording or mirroring is running, and this covers the window
 /// while it is true, which stops a guarded screen reaching the recording. A
 /// *screenshot* cannot be blocked at all; `userDidTakeScreenshotNotification`
@@ -39,7 +39,7 @@ enum LemonfiberFunctions {
 
     /// Start watching the app move in and out of the foreground.
     ///
-    /// Called once from `LemonfiberInit`. Without it `N4-R9` is never enforced,
+    /// Called once from `LemonfiberInit`. Without it the window is never covered,
     /// and the failure is invisible: every screen looks right, and the task
     /// switcher quietly holds the last frame.
     static func install() {
@@ -64,7 +64,8 @@ enum LemonfiberFunctions {
         }
 
         // A recording can start while the app is in front of you, which is the
-        // case N4-R18 is about and the one a backgrounding observer never sees.
+        // case a guarded screen is about and the one a backgrounding observer
+        // never sees.
         centre.addObserver(
             forName: UIScreen.capturedDidChangeNotification,
             object: nil,
@@ -118,7 +119,7 @@ enum LemonfiberFunctions {
         return over
     }
 
-    /// `Lemonfiber.Conceal` — a screen holding a secret has come up (`N4-R18`).
+    /// `Lemonfiber.Conceal` — a screen holding a secret has come up.
     class Conceal: BridgeFunction {
         func execute(parameters: [String: Any]) throws -> [String: Any] {
             DispatchQueue.main.async {

@@ -3,12 +3,11 @@ package app.lemonfiber.native
 /**
  * Whether the app must be locked, and whether it may ask right now.
  *
- * Two questions rather than one, and keeping them apart is the whole of
- * `N4-R19`. "Must the app be locked" is about time and about whether anybody has
+ * Two questions rather than one, and keeping them apart is the whole of the
+ * rule. "Must the app be locked" is about time and about whether anybody has
  * authenticated yet. "May the app prompt" is about what the operator is in the
- * middle of — and a prompt raised over an action in flight is the failure the
- * requirement names, because the operator answers it to get rid of it rather
- * than because they meant to.
+ * middle of — and a prompt raised over an action in flight is refused, because
+ * the operator answers it to get rid of it rather than because they meant to.
  *
  * No Android framework here. Everything is arithmetic on values a caller passes
  * in, which is what lets the decision be tested on a JVM in two seconds rather
@@ -22,9 +21,9 @@ public data class LockRule(
     /**
      * Whether the device has authenticated somebody since the app started.
      *
-     * False on a cold start, which `N4-R19` says must always require the
-     * device's own authentication — there is no grace period across a launch,
-     * because the app that was open before is not the app that is open now.
+     * False on a cold start, which must always require the device's own
+     * authentication — there is no grace period across a launch, because the
+     * app that was open before is not the app that is open now.
      */
     public val everAuthenticated: Boolean,
     /**
@@ -38,16 +37,16 @@ public data class LockRule(
     /**
      * How long the operator chose to allow before being asked again.
      *
-     * Configurable per `N4-R19`. Zero means ask on every resume, which is a
+     * Configurable by the operator. Zero means ask on every resume, which is a
      * legitimate choice and is why this is not clamped to a minimum.
      */
     public val grace: Int,
     /**
      * Whether the operator is in the middle of something.
      *
-     * A command sent to a stack, a pairing half finished. `N4-R19` refuses a
-     * prompt here: an operator interrupted mid-action answers to get rid of the
-     * dialog, which is not authentication, it is an obstacle.
+     * A command sent to a stack, a pairing half finished. A prompt is refused
+     * here: an operator interrupted mid-action answers to get rid of the dialog,
+     * which is not authentication, it is an obstacle.
      */
     public val actionInFlight: Boolean,
 ) {
@@ -67,7 +66,7 @@ public data class LockRule(
      *
      * Never merely [mustLock]. A locked app with an action in flight stays
      * locked and stays quiet — the lock screen is shown, and the prompt waits
-     * until the action has finished (`N4-R19`).
+     * until the action has finished.
      */
     public val mayPrompt: Boolean
         get() = mustLock && !actionInFlight

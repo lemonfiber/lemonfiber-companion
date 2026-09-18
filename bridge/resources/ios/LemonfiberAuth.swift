@@ -5,10 +5,10 @@ import LocalAuthentication
 ///
 /// Namespace: `Lemonfiber.Authenticate`
 ///
-/// **Why this exists rather than the stock biometric call.** `N4-R8` says a
-/// biometric failure falls back to the device passcode and must not fall back to
-/// unlocked. On iOS that is one enum case chosen before the dialog is shown, and
-/// the two differ in exactly the way the requirement cares about:
+/// **Why this exists rather than the stock biometric call.** A biometric failure
+/// falls back to the device's passcode and must never fall back to unlocked. On
+/// iOS that is one enum case chosen before the dialog is shown, and the two
+/// differ in exactly the way that matters:
 ///
 /// - `.deviceOwnerAuthenticationWithBiometrics` is Face ID or Touch ID **only**.
 ///   A device with no biometry enrolled fails `canEvaluatePolicy` outright, and
@@ -18,19 +18,19 @@ import LocalAuthentication
 ///   The system offers the passcode when biometry fails or is unavailable, and
 ///   handles the fallback itself.
 ///
-/// The second is the one `N4-R8` describes, and it is what this uses. Every
-/// published example of this API reaches for the first, which is why the choice
-/// is written down here rather than left to look like a detail.
+/// The second is the one that provides the fallback, and it is what this uses.
+/// Every published example of this API reaches for the first, which is why the
+/// choice is written down here rather than left to look like a detail.
 ///
 /// **There is no third answer.** Every path answers `authenticated: true` or
-/// `false`, and every error is false. The second clause — must not fall back to
-/// unlocked — is kept by there being nowhere in this file that answers true
+/// `false`, and every error is false. The second clause — must never fall back
+/// to unlocked — is kept by there being nowhere in this file that answers true
 /// without `LAContext` having said so.
 public enum LemonfiberAuth {
     /// What this app accepts as the device's own authentication.
     ///
-    /// `N4-R8` in one enum case. See the type's own documentation for why the
-    /// biometrics-only policy is the wrong one.
+    /// That fallback in one enum case. See the type's own documentation for why
+    /// the biometrics-only policy is the wrong one.
     private static let accepted: LAPolicy = .deviceOwnerAuthentication
 
     /// `Lemonfiber.Authenticate` — ask the device who this is.

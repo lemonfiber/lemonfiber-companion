@@ -7,18 +7,18 @@ import Foundation
 /// sight — is what makes it a thing that can be tested rather than a thing that
 /// has to be demonstrated on a handset.
 ///
-/// `N4-R9` — the task-switcher representation of the app must show no
-/// application content. The platform takes that snapshot as the app leaves the
+/// **The task switcher.** What the app shows there must be no application
+/// content at all. The platform takes that snapshot as the app leaves the
 /// foreground, so the protection is needed *while backgrounded* and is not
 /// needed before. Holding it permanently would also refuse every deliberate
-/// screenshot, which the requirement does not ask for and an operator wanting to
+/// screenshot, which neither rule asks for and which an operator wanting to
 /// send a support screenshot would resent.
 ///
-/// `N4-R18` — a screen showing a credential, a session token or pairing
-/// material is excluded from the snapshot *and* from screen recording. A
-/// recording runs while the app is in front of you, so this one is needed in the
-/// foreground too, and it is why `concealed` is separate from `foreground`
-/// rather than derived from it.
+/// **A screen holding a secret.** One showing a credential, a session token or
+/// pairing material is kept out of that snapshot *and* out of a screen
+/// recording. A recording runs while the app is in front of you, so this one is
+/// needed in the foreground too, and it is why `concealed` is separate from
+/// `foreground` rather than derived from it.
 public struct CaptureRule: Equatable, Sendable {
     /// Whether a screen declaring `#[Concealed]` is on top.
     public let concealed: Bool

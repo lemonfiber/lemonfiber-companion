@@ -766,10 +766,15 @@ So the sentence stays and the number moves, to a page under
 requirement asks and what in this repository keeps it. A citation belongs in a
 commit trailer and a pull request body, which is where the gate reads it.
 
-Most of this repository still holds one, and converting them is editorial rather
-than mechanical — the identifiers are woven into the sentences.
-`NoRequirementIdInACommentTest` is the ratchet in the meantime: it pins what is
-left, refuses any increase, and refuses a decrease that was not written down.
+This repository holds none. `NoRequirementIdInACommentTest` is what keeps it
+that way, and it is a flat refusal rather than a ratchet: a floor that has
+reached the ground is a rule rather than a promise.
+
+The Kotlin and Swift under `bridge/` are held by the same file, and the rule is
+wider on that side. A native source may not name a requirement anywhere — in a
+comment or in a test's own title. Both languages write their test names as
+sentences a reader reads, and neither has a middle layer to put a citation in, so
+there is nowhere in either that a number would be doing anything but gesturing.
 
 ### Tests
 

@@ -7,6 +7,11 @@ Each row says what the requirement asks and what in this repository answers it.
 The spec is canonical; where this page and a requirement disagree, the
 requirement is right and this page is a defect.
 
+Four of these are kept in Kotlin and Swift rather than in PHP, and the platform
+sources under `bridge/` carry no identifiers either. The rows below are the only
+link between those files and the requirement they answer, which is why they name
+the file and not just the type.
+
 ## Asking for a permission
 
 | Requirement | What it asks | What keeps it |
@@ -20,9 +25,9 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N4-R19` | The device's own authentication on a cold start | `Lock` — a newly built app is held rather than let through |
-| `N4-R7` | That authentication is the device's, and testable | `DeviceAuth`, with a fake |
-| `N4-R8` | A biometric failure does not fall back to nothing | `Authenticated`, a type whose only purpose is to be hard to obtain |
+| `N4-R19` | The device's own authentication on a cold start | `Lock` — a newly built app is held rather than let through; `LockRule.kt` and `LockRule.swift` decide it on the device |
+| `N4-R7` | That authentication is the device's, and testable | `DeviceAuth`, with a fake; `LemonfiberAuth` on both platforms is what asks the device |
+| `N4-R8` | A biometric failure does not fall back to nothing | `Authenticated`, a type whose only purpose is to be hard to obtain; the accepted policy is one constant in each half of `LemonfiberAuth` |
 | `N4-R22` | A lock over an empty store protects nothing | `Stacks` can be asked whether there is anything to protect, while the app is shut |
 | `N4-R23` | That is read from the store rather than from a flag the app maintains | `Stacks` |
 
@@ -41,8 +46,8 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N4-R5` | Retained state is discardable, and what is discarded is stated | `Configured` |
 | `N4-R6` | Where there is nowhere to keep a session, the app refuses **and says why** | `Kept` — both in one value |
-| `N4-R9` | The app is protected while backgrounded, whatever a screen declared | `Capture`, enforced by the native half on its own |
+| `N4-R9` | The app is protected while backgrounded, whatever a screen declared | `Capture`, enforced by the native half on its own — `CaptureRule` decides, `LemonfiberFunctions` applies |
 | `N4-R12` | Nothing is sent off the device on the app's initiative | `Assembled` — a type that could send itself would put the two one line apart |
 | `N4-R13` | A report is assembled *for the operator to send*, not sent | `Assembled` |
-| `N4-R18` | Credentials and pairing material stay out of a capture | `Capture` |
+| `N4-R18` | Credentials and pairing material stay out of a capture | `Capture`, and the `concealed` half of `CaptureRule` on both platforms |
 | `N4-R17` | A refused local-network permission is its own condition, not an unreachable stack | `Obstacle` |
