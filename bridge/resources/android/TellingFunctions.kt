@@ -3,7 +3,6 @@ package app.lemonfiber.native
 import android.Manifest
 import android.app.Activity
 import android.app.AlarmManager
-import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -20,8 +19,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.FragmentActivity
 import com.nativephp.mobile.bridge.BridgeError
 import com.nativephp.mobile.bridge.BridgeFunction
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 /**
  * Telling somebody something, on Android.
@@ -66,9 +63,6 @@ public object TellingFunctions {
 
     /** The code the permission result is reported back under. */
     private const val ASKING = 0x1EA0
-
-    /** How long the prompt is waited on before its answer is read anyway. */
-    private const val PATIENCE_SECONDS = 120L
 
     /** Milliseconds to the second, where the wire counts in seconds. */
     private const val MILLISECONDS = 1_000L
@@ -289,16 +283,7 @@ public object TellingFunctions {
 
             settings(activity).edit().putBoolean(EVER_ASKED, true).apply()
 
-            val answered = CountDownLatch(1)
-            val application = activity.application
-
-            application.registerActivityLifecycleCallbacks(WhenTheyComeBack(application, answered))
-            ActivityCompat.requestPermissions(
-                activity,
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                ASKING,
-            )
-            answered.await(PATIENCE_SECONDS, TimeUnit.SECONDS)
+            askFor(activity, Manifest.permission.POST_NOTIFICATIONS, ASKING)
 
             Log.d(TAG, "telling: the prompt was raised")
 
@@ -470,42 +455,6 @@ public object TellingFunctions {
                     month = intent.getIntExtra("month", 1),
                 )
             }
-    }
-
-    /**
-     * The one-shot watch that ends the wait for an answer.
-     *
-     * Registered as the prompt goes up and taken off again the moment this
-     * application is in front of somebody once more, which is what happens when
-     * the platform's own dialog is dismissed. Without taking itself off it
-     * would count down on every resume for the life of the process.
-     */
-    private class WhenTheyComeBack(
-        private val application: Application,
-        private val answered: CountDownLatch,
-    ) : Application.ActivityLifecycleCallbacks {
-        override fun onActivityResumed(activity: Activity) {
-            application.unregisterActivityLifecycleCallbacks(this)
-            answered.countDown()
-        }
-
-        override fun onActivityCreated(
-            activity: Activity,
-            state: Bundle?,
-        ): Unit = Unit
-
-        override fun onActivityStarted(activity: Activity): Unit = Unit
-
-        override fun onActivityPaused(activity: Activity): Unit = Unit
-
-        override fun onActivityStopped(activity: Activity): Unit = Unit
-
-        override fun onActivitySaveInstanceState(
-            activity: Activity,
-            out: Bundle,
-        ): Unit = Unit
-
-        override fun onActivityDestroyed(activity: Activity): Unit = Unit
     }
 }
 
