@@ -50,6 +50,43 @@ final readonly class Storage
     /** The word the store answers a successful removal with. */
     private const string FORGOTTEN = 'forgotten';
 
+    /** A key nothing is ever kept under, for asking whether the store answers at all. */
+    private const string A_KEY_NOTHING_IS_KEPT_UNDER = 'lemonfiber.probe';
+
+    /**
+     * Whether this device has a secure store at all.
+     *
+     * Asked by reading a key nothing is ever kept under. A store that is there
+     * answers *nothing under that key*; a device with none answers a refusal
+     * and says which of the two it is. That is the distinction being asked
+     * about, read rather than inferred from a write that failed.
+     *
+     * **A store that exists and would not open answers yes.** What is wrong
+     * there is a condition trying again can clear, and telling an operator
+     * their phone cannot keep a session is the advice that makes them give up
+     * on a phone that works. A caller with a session in hand learns the
+     * difference from {@see keep()}, where the two remedies genuinely differ.
+     *
+     * **Nothing answering at all is not a store.** That is every machine which
+     * is not a handset, and answering yes there would let a test about keeping
+     * a session pass where there is nowhere to keep one.
+     *
+     * A bool rather than a word because there is no third thing to say: either
+     * there is somewhere a session may go or there is not, and what to do about
+     * it is the refusal's job rather than this one's.
+     */
+    public function canBeAsked(): bool
+    {
+        $said = $this->answering(Call::Kept, ['key' => self::A_KEY_NOTHING_IS_KEPT_UNDER]);
+        $outcome = $this->wordUnder($said, 'outcome');
+
+        if ($outcome === self::FOUND || $outcome === self::NOTHING) {
+            return true;
+        }
+
+        return $this->wordUnder($said, 'because') === WhyNothingWasKept::StoreWouldNotOpen->value;
+    }
+
     /**
      * Keep one value, or say why not.
      *
