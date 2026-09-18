@@ -12,8 +12,8 @@ namespace Modules\Kernel\Api;
  * that records, which is what lets the rest of the suite assert "the operator
  * was told" without a device.
  *
- * **Local, never pushed.** `N4-R11` says every notification originates in the
- * core's decisions, and `N4-R10` and `N4-R20` bound what one may carry — but the
+ * **Local, never pushed.** Every notification originates in the
+ * core's decisions, and what one may carry is bounded — but the
  * reason this port exists at all, rather than a push subscription, is narrower
  * than any of them. A push notification's payload travels through Google's or
  * Apple's relay to reach the handset, which is a third party reading what a
@@ -24,11 +24,11 @@ namespace Modules\Kernel\Api;
  * **Permission is two questions, not one.** {@see self::standing()} reads what
  * the operator has said; {@see self::ask()} raises the prompt. They were one
  * `isPermitted()` that did both, which meant every notification re-asked
- * somebody who had already declined — the behaviour `N4-R4` names — and it read
+ * somebody who had already declined — the behaviour that is forbidden — and it read
  * as correct because the platform usually suppresses the second dialog itself.
  * A `MUST NOT` kept by the operating system's good manners is not kept.
  *
- * **`N4-R15` is the caller's, and deliberately so.** Whether a stack is still
+ * **Whether it is shown is the caller's, and deliberately so.** Whether a stack is still
  * configured is a fact about this device, not about the notification centre, and
  * an adapter asking it would need the whole list of stacks to display one alert.
  * {@see Notification::concernsOneOf()} is where that question is answered, and
@@ -41,7 +41,7 @@ interface Notifier
      * What the operator has already said about notifications.
      *
      * Reads the answer and never raises a prompt, which is the whole of
-     * `N4-R4`: a declined permission must not be requested again
+     * A declined permission must not be requested again
      * automatically, and a method that asks in order to report cannot keep
      * that promise. {@see Asked} is the type because "never asked" and
      * "declined" are opposite answers to "should I ask?" and identical
@@ -55,8 +55,8 @@ interface Notifier
      *
      * Separate from {@see self::standing()} so that raising a system prompt is
      * something a screen decides to do rather than a side effect of wanting to
-     * know. `N4-R1` says the prompt belongs at first use and not on launch, and
-     * `N4-R2` says the app explains itself first — both are decisions for a
+     * know. The prompt belongs at first use and not on launch, and
+     * the app explains itself first — both are decisions for a
      * screen with something to show, and neither is available to an adapter
      * reached from a notification that has already arrived.
      *

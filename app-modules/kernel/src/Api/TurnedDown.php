@@ -11,15 +11,15 @@ use function trim;
 /**
  * Why a request was refused, in the words somebody gave.
  *
- * `D7-R7` says declining requires a reason and that the reason reaches the
- * requester; `N3-R7` says a refused request carries the reason that was given.
+ * Declining requires a reason, and the reason reaches the
+ * requester; a refused request carries the reason that was given.
  * The wire has carried `refused: {at, reason}` all along and this app dropped
  * it, so a household member asking their operator *what happened to that film*
  * got the word `declined` and nothing else — which is the answer that sends
  * them to ask again in person, which is the whole thing the requirement exists
  * to prevent.
  *
- * **A refusal with no reason cannot be built.** `D7-R7` makes the reason part of
+ * **A refusal with no reason cannot be built.** The reason is part of
  * declining rather than an extra beside it, so a decline without one is a stack
  * that broke the rule rather than a row to render short. {@see RequestWasRefusedForNothing}
  * says so where the wire is read.
@@ -46,7 +46,7 @@ final readonly class TurnedDown
         return new self(self::said($reason), $when);
     }
 
-    /** What they were told, which is what `N3-R7` is about. */
+    /** What they were told. */
     public function reason(): string
     {
         return $this->reason;

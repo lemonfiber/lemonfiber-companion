@@ -13,7 +13,7 @@ namespace Modules\Kernel\Api;
  * snapshot, which brings the evening's data back with it.
  *
  * **There is no case here for *no way back*, and that is the contract's doing
- * rather than an omission.** `N2-R19` refuses to offer undoing where the stack
+ * rather than an omission.** Undoing is not offered where the stack
  * named neither way, and the wire names one on every service it reports: the
  * `applied` list's `reversal` is required and says `rollback` or `restore`. A
  * nullable here would be this side inventing a situation the stack cannot

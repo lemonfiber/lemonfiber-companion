@@ -67,8 +67,8 @@ it('N1-R46 — an ended session and a refused credential are read differently', 
 
 it('N1-R46 — the ended arm is handed no obstacle to show', function (): void {
     // Not an oversight — the mechanism. `Obstacle` holds the three things
-    // N1-R10 names as blocking a connection, and a session expiring is not one
-    // of them: it is routine, and it is exactly what N1-R46 says must read
+    // are named as blocking a connection, and a session expiring is not one
+    // of them: it is routine, and it is exactly what must read
     // differently from a refusal. A fourth obstacle case would invite the
     // conflation the requirement forbids.
     //
@@ -149,7 +149,7 @@ it('N1-R45 — names its stack and nothing that could re-pin a certificate', fun
     // reflection loop written per subject is how one of them ends up reading
     // only the shapes its author happened to think of. What is checked here is
     // the positive half: naming the stack is enough to come back to the same
-    // pinned certificate, because N1-R22 pins trust to the stack rather than to
+    // pinned certificate, because trust is pinned to the stack rather than to
     // where it answers.
     $on = theStackTheOperatorWasOn();
 

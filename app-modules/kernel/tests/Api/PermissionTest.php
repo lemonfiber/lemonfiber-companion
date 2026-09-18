@@ -16,7 +16,7 @@ it('N4-R3 — every permission has a working alternative when it is declined', f
     // Where "working alternative" stops being a promise in a document. A case
     // answering false would be a permission this app cannot honestly call
     // optional, and the test is here so that adding one is a decision taken in
-    // front of N4-R3 rather than by writing a new case.
+    // front of the alternative rather than by writing a new case.
     $without = [];
 
     foreach (Permission::cases() as $permission) {
@@ -38,7 +38,7 @@ it('N4-R3 — every permission has a working alternative when it is declined', f
 
 it('N4-R1 — the app names what it asks for, and asks for nothing else', function (): void {
     // A closed set is the point: a permission the app has no use for is one it
-    // must not request, and N4-R1 puts each request at its own point of first
+    // must not request, and each request goes at its own point of first
     // use — so every case here has exactly one place that asks.
     expect(Permission::cases())->toBe([
         Permission::LocalNetwork,

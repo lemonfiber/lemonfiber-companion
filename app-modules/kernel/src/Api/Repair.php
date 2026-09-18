@@ -11,7 +11,7 @@ use function trim;
 /**
  * A repair the stack is offering, and the three things it has to be offered with.
  *
- * `N2-R4` is one sentence with three clauses in it: where the core offers a
+ * One sentence with three clauses in it: where the core offers a
  * repair the app must offer it, and must state **what it does**, **what else it
  * affects**, and **whether it can be undone**, before asking for confirmation.
  * The contract sends all three — `repair.offered[]` is
@@ -51,7 +51,7 @@ final readonly class Repair
     /**
      * The one place a repair the stack offered becomes one this app can offer.
      *
-     * Every clause of `N2-R4` is a parameter, so a repair missing one cannot be
+     * Every clause is a parameter, so a repair missing one cannot be
      * built rather than being built and rendered short. `$undoing` is an enum
      * rather than the wire's boolean because a bare `true` at a call site says
      * nothing about which way round it goes (`D5`) and, more to the point, has
@@ -105,7 +105,7 @@ final readonly class Repair
     /**
      * Say all three, and get whatever saying them produced.
      *
-     * One closure rather than three accessors. `N2-R4`'s three clauses are one
+     * One closure rather than three accessors. The three clauses are one
      * requirement, and three getters are three chances to call two of them.
      *
      * @template TSaid of object

@@ -11,8 +11,8 @@ use InvalidArgumentException;
  *
  * Refused rather than carried, because of what the name is for: a confirmation
  * quotes it so the engine can tell whether the machine has moved since the
- * operator looked (`N2-R6`). Without it, the only yes this app could send is
- * the one with no listing attached — standing consent — and `N2-R5` says this
+ * operator looked. Without it, the only yes this app could send is
+ * the one with no listing attached — standing consent — and this
  * surface never sends that.
  *
  * So an unnamed offer is not a listing with a field missing. It is a listing

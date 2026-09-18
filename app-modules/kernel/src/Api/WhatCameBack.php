@@ -15,7 +15,7 @@ use Closure;
  * of the world. A method answering with a {@see Report} could report them only
  * by throwing, which makes the common case the one nothing checks.
  *
- * **The reason is an {@see Obstacle}**, which is the set `N1-R10` already draws
+ * **The reason is an {@see Obstacle}**, which is the set already drawn
  * and the set every other screen in this application reads. A second vocabulary
  * for *why you cannot see your stack right now* would be a second set of
  * sentences to write, translate and keep in step — and the operator meets the

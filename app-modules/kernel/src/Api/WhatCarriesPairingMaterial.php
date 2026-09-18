@@ -38,6 +38,6 @@ namespace Modules\Kernel\Api;
  */
 enum WhatCarriesPairingMaterial
 {
-    /** A QR code on the stack's own screen (`ADR-0018`, `N1-R6`). */
+    /** A QR code on the stack's own screen (`ADR-0018`). */
     case QrCode;
 }

@@ -19,7 +19,7 @@ use Traversable;
  * A typed collection rather than an array, which is `D1`: an array has no name
  * and nowhere to put the rules, so what is in it lives in whoever last wrote a
  * foreach. Here that matters more than usual, because this list is the whole of
- * `N2-R8`'s sentence — *stopping this will also stop these* — and a screen
+ * The sentence — *stopping this will also stop these* — and a screen
  * that got the shape wrong would either say nothing or say the wrong names.
  *
  * **By id rather than by name.** That is what the wire carries and what the

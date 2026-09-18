@@ -19,20 +19,20 @@ use function trim;
  * Where a stack is, as pairing material carried it.
  *
  * Treated like a secret and it is not one, which is worth saying plainly.
- * `N1-R15` names a stack address in the same breath as a credential and a
+ * A stack address is named in the same breath as a credential and a
  * session token: never logged, never transmitted, never in a diagnostic
  * report. The reason is not confidentiality — it is that an address is where
  * somebody lives, and a support bundle full of them is a map of private
  * networks. So this carries the same redaction `Session` does, and for a
  * different reason.
  *
- * The only accessor is named for where the value goes. `N1-R8` keeps the
+ * The only accessor is named for where the value goes, which keeps the
  * session out of the URL, and this is the other half of that: a type whose
  * single reader says `forTheClient()` makes building a string out of an address
  * for any other purpose read wrong at the call site.
  *
  * **Whether the connection is encrypted is read off the scheme, here.**
- * `N1-R12` says the app must state it and must not imply protection it does not
+ * The app must state it and must not imply protection it does not
  * have, and the answer is a property of the address rather than a judgement a
  * screen makes — so it is answered once, where the address is, instead of by
  * each screen that wants to show a padlock.
@@ -40,7 +40,7 @@ use function trim;
  * Plain `http` is accepted rather than refused. A stack on a local network may
  * genuinely be reached that way, and refusing the address would tell an
  * operator their pairing code is broken when what is true is that their
- * connection is not private. That distinction is exactly what `N1-R12` exists
+ * connection is not private. That distinction is exactly what the rule exists
  * to keep, and it is lost if the value cannot be constructed.
  *
  * A scheme {@see Scheme} does not name is refused, which is the other side of
@@ -126,7 +126,7 @@ final readonly class Address implements JsonSerializable
     /**
      * Whether what travels to this address is encrypted.
      *
-     * The question `N1-R12` asks, handed to the type that owns the answer. This
+     * The question, handed to the type that owns the answer. This
      * is not a second implementation of {@see Scheme::isEncrypted()} — it is the
      * address saying which scheme to ask, which is the only part of the question
      * an address knows.

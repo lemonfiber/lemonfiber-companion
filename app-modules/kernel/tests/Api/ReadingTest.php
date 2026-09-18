@@ -46,7 +46,7 @@ it('takes the live branch when it was read just now', function (): void {
 it('hands the retained arm the value and when it was read, together', function (): void {
     // The point of the type. A screen holding the value has been handed the
     // age in the same call, so rendering it without one is a decision somebody
-    // made rather than a call they forgot (N1-R9).
+    // made rather than a call they forgot.
     expect(foldReading(Reading::retained(readValue(), Instant::atEpochSeconds(1_700_000_000)))->shown())
         ->toBe(sprintf('retained:%s:1700000000', Code::class));
 });
@@ -76,7 +76,7 @@ it('hands the retained arm the value itself', function (): void {
 });
 
 it('lets only a live reading confirm an action', function (): void {
-    // N1-R24. A remembered "running", shown after a restart that failed, is
+    // A remembered "running", shown after a restart that failed, is
     // the application lying about the one moment somebody was watching.
     expect(Reading::live(readValue())->mayConfirmAnAction())->toBeTrue();
     expect(Reading::retained(readValue(), Instant::atEpochSeconds(1))->mayConfirmAnAction())->toBeFalse();

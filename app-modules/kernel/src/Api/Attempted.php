@@ -9,7 +9,7 @@ use Closure;
 /**
  * What became of an action the operator asked for.
  *
- * `ADR-0020` is the design and `N1-R40` is the requirement: an action the app
+ * `ADR-0020` is the design, and the requirement is this: an action the app
  * could not deliver is **refused rather than retained**. The obvious kindness —
  * hold it and send it when the stack comes back — is the thing the ADR spends
  * its length rejecting, because an action queued on a phone is an action the
@@ -17,12 +17,12 @@ use Closure;
  * stack whose state has moved on.
  *
  * So there are two arms and neither of them is "pending". That absence is the
- * requirement: `N1-R41` forbids retaining an undelivered action, replaying one
+ * requirement: retaining an undelivered action is forbidden, and so is replaying one
  * on reconnecting, **and presenting one as pending** — and a type with no arm
  * for it cannot present one.
  *
  * **The refusal names the stack and says nothing changed.** Both halves are
- * `N1-R40`'s, and both are carried here rather than left to a screen: an
+ * the other's, and both are carried here rather than left to a screen: an
  * operator who pressed a button and saw a red message needs to know which
  * machine it was about and whether to worry that it half-happened. "Nothing was
  * changed" is the sentence that makes the difference between an error and a
@@ -42,7 +42,7 @@ final readonly class Attempted
     }
 
     /**
-     * It never reached the stack, so it did not happen (`N1-R40`).
+     * It never reached the stack, so it did not happen.
      *
      * Takes the stack because the refusal has to name it, and the problem
      * because what went wrong is the server's or the network's to describe.
@@ -57,7 +57,7 @@ final readonly class Attempted
      *
      * Available on both arms, because a screen showing several stacks needs it
      * either way — and because a refusal that cannot name its stack is the
-     * failure `N1-R40` describes.
+     * failure described.
      */
     public function on(): StackId
     {

@@ -27,7 +27,7 @@ it('names every way a stack is dialled, and no others', function (): void {
 });
 
 it('is a decision each case answers for itself', function (): void {
-    // A case added without a thought about N1-R12 inherits whichever answer the
+    // A case added without a thought about privacy inherits whichever answer the
     // implementation happens to give it. This will not say which answer is
     // right — nothing can — but it does say that both answers are in use, so a
     // vocabulary that had drifted to one of them fails here.

@@ -43,6 +43,9 @@ already has.
 | [running-with-nothing-else-running.md](running-with-nothing-else-running.md) | The stand-ins: the whole app on a device with no stack near it |
 | [what-a-screen-owes.md](what-a-screen-owes.md) | The rules a screen obeys whatever it is about |
 | [the-screens-themselves.md](the-screens-themselves.md) | What each screen is for, and the requirement that put it there |
+| [the-model-of-a-machine.md](the-model-of-a-machine.md) | The types this app thinks in: stacks, pairing, retained state, actions |
+| [what-a-machine-says.md](what-a-machine-says.md) | The values read back: verdicts, services, repairs, releases, requests |
+| [what-this-device-keeps-to-itself.md](what-this-device-keeps-to-itself.md) | Permissions, notifications, the lock, and what never leaves |
 
 More follow as each module is converted; `tests/Arch/NoRequirementIdInACommentTest.php`
 is what stops the count going back up while that happens.

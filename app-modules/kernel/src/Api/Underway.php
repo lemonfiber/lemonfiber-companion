@@ -9,14 +9,14 @@ use Closure;
 /**
  * A stack took the action on, or the reason it did not.
  *
- * What {@see Mending} answers when something is asked of a stack. `N2-R7` has
+ * What {@see Mending} answers when something is asked of a stack. There is
  * every action on this surface arrive as a job, so there is no arm here saying
  * *done*: the stack acknowledged the work and named it, and what became of it
  * is {@see HowTheOfferIsGoing}'s question.
  *
  * A value rather than a raise, which is `C1` and every other port here: a stack
  * asleep, one on another network and a session that has ended are ordinary
- * states of the world, and `N1-R10` says an operator is told which.
+ * states of the world, and an operator is told which.
  *
  * **There is no third arm for *it refused the action itself*.** A stack that
  * answered and declined is `Obstacle::CredentialWasRefused` or a refusal

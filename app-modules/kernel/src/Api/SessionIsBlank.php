@@ -17,7 +17,7 @@ use InvalidArgumentException;
  * The message says nothing about what arrived, which is the one place in this
  * repository where a message is deliberately less useful than it could be. An
  * exception carrying a token puts it in a stack trace, and a stack trace is
- * exactly what ends up in a diagnostic report (`N1-R15`).
+ * exactly what ends up in a diagnostic report.
  */
 final class SessionIsBlank extends InvalidArgumentException
 {

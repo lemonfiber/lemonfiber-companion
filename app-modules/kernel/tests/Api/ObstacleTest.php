@@ -17,7 +17,7 @@ use Modules\Kernel\Api\Standing;
 
 it('is the six an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
-    // being proposed and keeps belonging elsewhere, while `N4-R17` asked for
+    // being proposed and keeps belonging elsewhere, while the permission case asked for
     // the permission case by name — and it should be made against a failing
     // test rather than noticed later on a screen with an unlabelled state.
     expect(Obstacle::cases())->toBe([
@@ -31,7 +31,7 @@ it('is the six an operator must be able to tell apart', function (): void {
 });
 
 it('G4-R6 — names each one differently in the identifier an operator searches for', function (): void {
-    // `G4-R6` is that every error kind carry a stable identifier, and this test
+    // Every error kind carries a stable identifier, and this test
     // is what makes *stable* mean something: the codes are written out, so a
     // rename is a failing test rather than a search that stops finding the page
     // somebody wrote about the error last year. The uniqueness check below is
@@ -79,8 +79,8 @@ it('calls a condition that clears itself a warning, and a fault an error', funct
 
 it('offers a button only where the app can press it', function (): void {
     // Turning on Wi-Fi and waking a machine happen somewhere this application
-    // cannot reach. Pairing again is a thing it does — `N1-R20` names it as the
-    // remedy for exactly that case — and `N4-R17` obliges the app to offer the
+    // cannot reach. Pairing again is a thing it does — it is named as the
+    // remedy for exactly that case — and the app is obliged to offer the
     // way to grant a refused permission, which is a button by definition.
     expect(Obstacle::DeviceHasNoNetwork->standing())->toBe(Standing::Guided);
     expect(Obstacle::StackDidNotAnswer->standing())->toBe(Standing::Guided);
@@ -96,7 +96,7 @@ it('N1-R10 — gives each one its own sentence and its own advice', function ():
     // Derived from the case rather than spelled, so a case added here has both
     // by existing and cannot be given a sentence at one call site that
     // disagrees with another's. Two of these sharing a key would be the
-    // collapse `N1-R10` refuses, rebuilt in the catalogue after the enum had
+    // collapse that is refused, rebuilt in the catalogue after the enum had
     // refused it.
     $said = array_map(static fn(Obstacle $why): string => $why->said(), Obstacle::cases());
     $remedies = array_map(static fn(Obstacle $why): string => $why->remedy(), Obstacle::cases());
@@ -105,7 +105,7 @@ it('N1-R10 — gives each one its own sentence and its own advice', function ():
         ->and(count(array_unique($remedies)))->toBe(count($remedies));
 
     // What happened and what to do about it are not the same sentence, which
-    // is the other half of what `N1-R10` asks for.
+    // is the other half of what is asked for.
     expect(array_intersect($said, $remedies))->toBe([]);
 
     expect(Obstacle::DeviceHasNoNetwork->said())->toBe('connection.no_network')

@@ -93,7 +93,7 @@ it('says whether it has been introduced to a stack, without raising', function (
 });
 
 it('N1-R22 — a stack that comes back on another address is the same stack', function (): void {
-    // Re-pairing, which is what N1-R20 offers as the remedy for a changed
+    // Re-pairing, which is the remedy for a changed
     // certificate. A second entry here would be a device holding one machine
     // twice, and the operator choosing between two rows that are the same
     // house.

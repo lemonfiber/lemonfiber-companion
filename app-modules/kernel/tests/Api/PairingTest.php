@@ -122,10 +122,10 @@ it('lets the address and the fingerprint refuse in their own words', function ()
 });
 
 it('N1-R48 — material promising a certificate for an unencrypted address is refused', function (): void {
-    // The material contradicts itself. N1-R48 calls the fingerprint "the
+    // The material contradicts itself. The fingerprint is "the
     // certificate that address will present", and an `http://` address presents
     // none — so the digest would be pinned against a connection with nothing to
-    // compare it to, and N1-R19's "validate every subsequent connection against
+    // compare it to, and "validate every subsequent connection against
     // it" could never be kept for this stack.
     //
     // Refused here rather than at the first connection, which is the only

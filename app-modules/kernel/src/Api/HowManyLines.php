@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * How much of a service's scrollback to ask for.
  *
- * `N2-R10` says a log read is bounded, and a bound is only a bound if something
+ * A log read is bounded, and a bound is only a bound if something
  * holds it. The SDK refuses a window of no lines and names a ceiling of its own
  * in the refusal; this is the app's side of the same sentence — the number said
  * once, where a screen can read it back and put it on the page.

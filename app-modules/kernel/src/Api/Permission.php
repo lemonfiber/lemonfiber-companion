@@ -11,12 +11,12 @@ use function sprintf;
  *
  * Named here rather than in `device`, because what the app *needs* is a fact
  * about the app and what the platform *calls* it is a fact about the platform.
- * An adapter translates; a screen explaining why the app is asking (`N4-R2`)
+ * An adapter translates; a screen explaining why the app is asking
  * needs the concept, not the Android string.
  *
  * **A closed set**, which is what makes it an enum: the app asks for what it
  * asks for, and a permission it has no use for is a permission it must not
- * request. `N4-R1` puts the request at the point of first use, so every case
+ * request. The request goes at the point of first use, so every case
  * here has exactly one place that asks.
  */
 enum Permission: string
@@ -30,7 +30,7 @@ enum Permission: string
      */
     case LocalNetwork = 'local_network';
 
-    /** Showing a notification the core decided to send (`N4-R11`). */
+    /** Showing a notification the core decided to send. */
     case Notifications = 'notifications';
 
     /** Reading a pairing code with the camera. */
@@ -39,7 +39,7 @@ enum Permission: string
     /**
      * Whether the app still works with this one declined.
      *
-     * `N4-R3` requires every permission to be optional with a working
+     * Every permission is optional with a working
      * alternative, and this is where "working alternative" stops being a
      * promise in a document. All three are true, and each has a different
      * alternative: a pairing code can be typed instead of scanned, the app can
@@ -48,7 +48,7 @@ enum Permission: string
      *
      * A case answering false would be a permission this app cannot honestly
      * call optional, and it is here so that adding one is a decision somebody
-     * makes in front of `N4-R3` rather than by writing a new case.
+     * makes in front of that rather than by writing a new case.
      */
     public function hasAnAlternative(): bool
     {
@@ -58,7 +58,7 @@ enum Permission: string
     }
 
     /**
-     * The key for what this permission is for, in the app's own words (`N4-R2`).
+     * The key for what this permission is for, in the app's own words.
      *
      * **Derived rather than written, and that is the whole point of it being
      * here.** The key was spelled twice — once by `PermissionsAreExplainedTest`,
@@ -77,7 +77,7 @@ enum Permission: string
     }
 
     /**
-     * The key for what still works without it (`N4-R3`).
+     * The key for what still works without it.
      *
      * Only meaningful where {@see self::hasAnAlternative()} is true, and it does
      * not guard against being asked otherwise: a case answering false would have

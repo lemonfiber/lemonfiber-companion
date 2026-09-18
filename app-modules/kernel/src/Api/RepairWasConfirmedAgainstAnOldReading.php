@@ -11,7 +11,7 @@ use function sprintf;
 /**
  * A repair was confirmed over a reading the app already knew was old.
  *
- * `N1-R39` keeps a retained reading from confirming an action at all, and
+ * A retained reading cannot confirm an action at all, and
  * `Reading::mayConfirmAnAction()` is how a screen asks. Reaching
  * {@see Confirmed::against()} with one means the screen offered a confirmation
  * it should not have offered — so this is a fault in the surface rather than a
@@ -23,7 +23,7 @@ final class RepairWasConfirmedAgainstAnOldReading extends InvalidArgumentExcepti
     /**
      * Named by the check it answers rather than by what it does.
      *
-     * `Repair` publishes no `does()` — `N2-R4`'s three clauses leave together
+     * `Repair` publishes no `does()` — the three clauses leave together
      * or not at all ({@see Repair::stated()}) — and this message wants an
      * identifier rather than the sentence an operator reads. The check is the
      * identifier: it is what the repair was offered under, so it is what names

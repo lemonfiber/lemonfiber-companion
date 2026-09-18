@@ -42,7 +42,7 @@ it('takes the made branch when the stack answered', function (): void {
 it('hands the blocked arm the obstacle itself, not the fact of one', function (): void {
     // The whole point: there is no moment at which "it did not work" exists as
     // a value on its own, so there is nothing for a caller to render one
-    // sentence from — which is the collapse N1-R10 forbids.
+    // sentence from — which is the collapse that is forbidden.
     expect(foldReach(Reach::blockedBy(Obstacle::CredentialWasRefused))->shown())
         ->toBe('blocked:credential_refused');
 

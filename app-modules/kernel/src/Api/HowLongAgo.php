@@ -12,7 +12,7 @@ use function sprintf;
 /**
  * The unit an age is said in, and the only place the bands are decided.
  *
- * `N1-R9` says a value not read in this session carries when it was read, and
+ * A value not read in this session carries when it was read, and
  * *when* has to become words somewhere. This is that somewhere — for every
  * screen rather than for one, because the requirement is about the app and a
  * second screen phrasing an age its own way is how two screens come to

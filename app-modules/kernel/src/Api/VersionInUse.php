@@ -11,13 +11,13 @@ namespace Modules\Kernel\Api;
  * and one reader in the adapter reads them both. {@see TakingAnUpdate::agreed()}
  * takes a `Release`, so handing the version already in use out as one would make
  * *take this one* spellable against the thing the machine is already running —
- * and `N2-R20` says an update the stack did not report as pending is never
+ * and an update the stack did not report as pending is never
  * applied. Two types that cannot be substituted is what turns that from a rule
  * the update screen has to remember into a sentence that will not compile.
  *
  * **It refuses to answer with a `Release`, and that is the whole of it.**
  * Narrowing one on the way in is how it is built; there is no way back out,
- * because every way back out is a way to the apply path. `N2-R16` closes with
+ * because every way back out is a way to the apply path. It closes with
  * the same door: a stack standing on a release that has since been taken back
  * is a real state an operator has to be told about, and a value that could say
  * so *and* be applied is one somebody would eventually offer them as an update.
@@ -25,7 +25,7 @@ namespace Modules\Kernel\Api;
  * It answers no comparison with a `Release` either. Whether the version in use
  * is also listed as waiting is a real question and it is not this type's — the
  * stack decides what is pending, and an app that worked that out by comparing
- * two version strings is what `N2-R15` refuses by name.
+ * two version strings is refused by name.
  */
 final readonly class VersionInUse
 {
@@ -55,7 +55,7 @@ final readonly class VersionInUse
      * Whether the release this stack is standing on has been taken back.
      *
      * Copied off the release rather than answered by reaching back to it, for
-     * the reason the class docblock gives. `N2-R16` is two errands and this is
+     * the reason the class docblock gives. There are two errands and this is
      * the second one: the list of what to take next leaves a withdrawn release
      * out, and somebody standing on one still has to be told.
      */

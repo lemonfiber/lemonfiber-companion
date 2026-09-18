@@ -7,9 +7,9 @@ namespace Modules\Kernel\Api;
 /**
  * Where a session may be kept, if anywhere.
  *
- * `N4-R5` says a session token goes in the platform's secure storage and
+ * A session token goes in the platform's secure storage and
  * nowhere else — not application preferences, not an app-readable file, not an
- * unencrypted backup. `N4-R6` says that where the device offers no secure
+ * unencrypted backup. Where the device offers no secure
  * storage, the app refuses to persist a session **and says why**.
  *
  * That second clause is what makes this a port rather than a call. An adapter
@@ -21,7 +21,7 @@ namespace Modules\Kernel\Api;
  * **`resume()` answers {@see Resumed} rather than a nullable `Session`.** This
  * port held no reader at all for as long as nothing resumed a stack, on the
  * argument that a port which both stores and returns a session invites a caller
- * to ask for one speculatively — and `Session` is the type `N1-R15` will not
+ * to ask for one speculatively — and `Session` is the type that will not
  * let anybody print. The argument was about the *shape* of the reader rather
  * than about having one, and the shape is what answers it: a caller cannot pull
  * a session out of `Resumed` without saying what happens when there is none, so
@@ -32,14 +32,14 @@ interface SecureStorage
     /**
      * Whether this device has somewhere a session may legitimately go.
      *
-     * Asked before a session exists, so that `N4-R6`'s refusal happens at
+     * Asked before a session exists, so that the refusal happens at
      * pairing — where an operator is already being told how this works — rather
      * than after a successful sign-in that then cannot be remembered.
      */
     public function isAvailable(): bool;
 
     /**
-     * Keep a session, or refuse and say why (`N4-R6`).
+     * Keep a session, or refuse and say why.
      *
      * Answers with {@see Kept} rather than raising, which `C1` requires and
      * which is right for a second reason: a device with no secure storage is an
@@ -62,13 +62,13 @@ interface SecureStorage
     /**
      * The session this device holds for one stack, if it holds one.
      *
-     * Per stack, because `N1-R11` keeps them separate and a reader taking no
+     * Per stack, because they are kept separate and a reader taking no
      * argument would be the place two stacks come to share one session.
      *
      * **A store that will not open answers `notHeld()` rather than raising.**
      * As far as this question goes a keychain that cannot be read is a keychain
      * with no session in it: the operator is asked for the password, which is
-     * both the honest outcome and the only useful one. `N4-R6`'s two refusals
+     * both the honest outcome and the only useful one. The two refusals
      * are told apart where a session is being *kept*, because the remedies
      * differ there; here there is one remedy.
      */

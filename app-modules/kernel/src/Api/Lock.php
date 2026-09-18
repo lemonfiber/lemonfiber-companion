@@ -9,8 +9,8 @@ use Closure;
 /**
  * Whether the app is open, and the one way it becomes so.
  *
- * `N4-R7` locks on backgrounding and requires biometric or passcode to resume.
- * `N4-R8` is the clause that needs a type: biometric failure falls back to the
+ * The app locks on backgrounding and requires biometric or passcode to resume.
+ * One clause needs a type: biometric failure falls back to the
  * device passcode and **must not fall back to unlocked**.
  *
  * That is not a rule about what the code does — it is a rule about what the code
@@ -46,7 +46,7 @@ final readonly class Lock
     /**
      * The state the app starts in and returns to.
      *
-     * `N4-R19` requires the device's own authentication on a cold start, so a
+     * The device's own authentication is required on a cold start, so a
      * newly built app is held rather than open. That is the default because the
      * safe state should be the one you get by forgetting to decide.
      */

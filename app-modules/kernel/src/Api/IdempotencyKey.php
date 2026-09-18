@@ -28,7 +28,7 @@ final readonly class IdempotencyKey
     private function __construct(private string $key) {}
 
     /**
-     * What `serialize()` writes, which is nothing (`N1-R42`).
+     * What `serialize()` writes, which is nothing.
      *
      * The key is not a secret — it is sent in a header and anybody watching the
      * connection has it — so this is not the redaction `Session` does. It is the
@@ -37,7 +37,7 @@ final readonly class IdempotencyKey
      * reads it back sends the operator's earlier action again, at a moment
      * nobody chose, against a stack whose state has moved on.
      *
-     * `N1-R41` already refuses to retain an undelivered action, and `Attempted`
+     * Retaining an undelivered action is already refused, and `Attempted`
      * has no arm for a pending one. This closes the same door from the other
      * side: even if a command were held, its key could not be written down.
      *

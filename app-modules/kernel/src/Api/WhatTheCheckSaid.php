@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use Closure;
 
 /**
- * What the core said about a check, in the core's own words (`N2-R3`).
+ * What the core said about a check, in the core's own words.
  *
  * Every finding shown must carry its code, its plain-language meaning and its
  * remedy — and "in the words the core produced" is the clause that makes this a
@@ -43,7 +43,7 @@ final readonly class WhatTheCheckSaid
      * The check passed, so there is nothing to explain and nothing to do.
      *
      * No note is carried even though the wire offers one. A note on a passing
-     * check is the core being chatty, and `N2-R3` is about what a finding must
+     * check is the core being chatty, and the rule is about what a finding must
      * carry when there is something wrong; reading it here would put text on a
      * screen that the requirement never asked for and that nothing pins.
      */

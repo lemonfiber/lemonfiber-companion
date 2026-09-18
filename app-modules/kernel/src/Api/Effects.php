@@ -16,7 +16,7 @@ use function trim;
 /**
  * What a repair touches besides the thing it fixes.
  *
- * The middle clause of `N2-R4`, as a type. The stack sends these as sentences
+ * The middle clause of what a repair owes, as a type. The stack sends these as sentences
  * and they are carried without rewording, for the reason {@see Remedy} gives:
  * a layer that rephrases a consequence is a place for it to become subtly
  * wrong, and this is the sentence somebody agrees to something on.
@@ -27,7 +27,7 @@ use function trim;
  *
  * **Empty is a legitimate value and is not the same as absent.** A repair that
  * affects nothing else is a real answer and {@see self::nothingElse()} is how
- * it is said. What `N2-R4` forbids is a repair whose effects were never
+ * it is said. What is forbidden is a repair whose effects were never
  * established — and that is refused by {@see Repair::offered()} needing one of
  * these rather than by any state this can be in.
  *

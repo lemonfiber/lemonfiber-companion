@@ -9,11 +9,11 @@ use function trim;
 /**
  * The name a stack gave a piece of work it agreed to do.
  *
- * `N2-R7` is that every action on this surface arrives as a job: a stack does
+ * Every action on this surface arrives as a job: a stack does
  * not answer *done*, it answers *I have started, ask me about this name*. So a
  * handle is what an action produces, and the outcome is a separate reading.
  *
- * **A handle is not a pending action.** `N1-R41` refuses to retain an
+ * **A handle is not a pending action.** Retaining an
  * undelivered action, to replay one on reconnecting, or to present one as
  * pending — and a job is none of those, which is the distinction that makes
  * this type safe to hold. The action was delivered: the stack acknowledged it

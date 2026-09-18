@@ -9,7 +9,7 @@ use InvalidArgumentException;
 /**
  * Somebody asked a credential for its value a second time.
  *
- * `N1-R7` says the credential is exchanged for a session **once** and is not
+ * The credential is exchanged for a session **once** and is not
  * retained for re-sending, and this is what makes "once" a fact rather than an
  * intention. The second read is refused rather than answered, because the
  * alternative — answering with the value again — is precisely the retention the

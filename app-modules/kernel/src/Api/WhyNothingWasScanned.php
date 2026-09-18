@@ -9,13 +9,13 @@ use function sprintf;
 /**
  * Why the camera came back without a pairing code.
  *
- * `N1-R10`'s habit applied to a scanner: three ways to get nothing, and three
+ * An obstacle's habit applied to a scanner: three ways to get nothing, and three
  * different things for the operator to do about it. One sentence for all of
  * them is the sentence that is unhelpful for whichever they are actually in.
  *
- * **`N4-R3` is why the middle case cannot be a dead end.** A declined camera is
+ * **A working alternative is why the middle case cannot be a dead end.** A declined camera is
  * a permission this app may not have, and it promises a working alternative for
- * every one of those — which is the typed road `N1-R6` requires and
+ * every one of those — which is the typed road required, and
  * {@see \Modules\Connection\Api\WhatTheCodeSaysSoFar} implements. The refusal
  * has to say so, or the alternative exists and is never offered.
  */
@@ -31,11 +31,11 @@ enum WhyNothingWasScanned: string
     case TheOperatorClosedIt = 'the_operator_closed_it';
 
     /**
-     * The platform would not let this app have the camera (`N4-R3`).
+     * The platform would not let this app have the camera.
      *
      * Answered by offering the typed road, and by saying where the decision is
      * reversed — which is the platform's settings and not this app, because
-     * `N4-R4` means asking again is not something the app may do.
+     * Asking again is not something the app may do.
      */
     case TheCameraIsNotPermitted = 'the_camera_is_not_permitted';
 
@@ -52,7 +52,7 @@ enum WhyNothingWasScanned: string
      * What to do about it, as a key the template resolves.
      *
      * Beside {@see saidOnTheScreen()} and derived the same way, because
-     * `N1-R10` asks for both and they are not the same sentence: what happened
+     * Both are owed and they are not the same sentence: what happened
      * is a fact, and what to do about it is advice.
      *
      * **This replaced a `settingsWouldHelp()` boolean and a template branch.**

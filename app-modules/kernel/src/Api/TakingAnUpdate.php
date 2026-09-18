@@ -8,7 +8,7 @@ namespace Modules\Kernel\Api;
  * An update the operator said yes to, against what it will change.
  *
  * {@see Confirmed}'s argument applied to an update, and the same argument
- * {@see AgreedTo} makes for a verb: the way `N2-R17` gets broken is never
+ * {@see AgreedTo} makes for a verb: the way this gets broken is never
  * deliberate — a screen draws the pending release, the button is right there,
  * and a tap handler calls the thing that applies it.
  *
@@ -16,7 +16,7 @@ namespace Modules\Kernel\Api;
  * one names the release and the services together. Rendering an upkeep reading
  * produces no `TakingAnUpdate` and cannot be made to.
  *
- * **The services are carried rather than looked up later.** `N2-R17` wants the
+ * **The services are carried rather than looked up later.** The
  * confirmation to name what it would change, which is only worth anything if
  * what was named is what gets done. An update applied against a list re-read
  * after the yes would be an update to whatever the stack had by then, confirmed
@@ -25,7 +25,7 @@ namespace Modules\Kernel\Api;
  * **A {@see Release} is a release the stack listed as waiting, and nothing
  * else.** That is what makes this parameter safe to take by type: the only
  * other version a reading carries is the one the machine is standing on, and
- * {@see VersionInUse} is what keeps it from arriving here. `N2-R20` refuses an
+ * {@see VersionInUse} is what keeps it from arriving here. It refuses an
  * update the stack did not report as pending, and a screen scanning its own
  * list for the version a template sent is a screen that has to remember to.
  */
@@ -54,7 +54,7 @@ final readonly class TakingAnUpdate
      * Here rather than on an enum of its own, because there is exactly one
      * thing to do about an update and a single-case enum would be a shape
      * pretending at a choice that does not exist. What matters is that the name
-     * is spelled once, in the kernel, and never at a call site — `N1-R4`
+     * is spelled once, in the kernel, and never at a call site — the app
      * refuses an app that can name any action a stack offers, `setup` among
      * them, and the way that happens is a literal in an adapter.
      *

@@ -52,7 +52,7 @@ final readonly class Requested implements IteratorAggregate
     }
 
     /**
-     * How many of them are waiting on the operator, which is `N2-R11`'s number.
+     * How many of them are waiting on the operator.
      *
      * Counted here rather than at each screen that wants it, so two surfaces
      * cannot disagree about what is waiting — the argument

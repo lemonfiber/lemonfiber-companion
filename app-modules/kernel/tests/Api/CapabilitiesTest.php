@@ -107,7 +107,7 @@ it('a stack that has declared nothing is not a stack that can do nothing', funct
 });
 
 it('ARCH-R79 — absence is read by saying what happens, not by checking for null', function (): void {
-    // `C2`'s reason, in the one place `ARCH-R79` makes it load-bearing: a null
+    // `C2`'s reason, in the one place it is load-bearing: a null
     // is checked at the honest call sites and skipped at the one written in a
     // hurry, and the skipped one shows a button for something the stack cannot
     // do. There is no accessor that hands back the availability on its own, so

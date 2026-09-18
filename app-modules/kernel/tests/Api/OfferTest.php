@@ -20,7 +20,7 @@ use Modules\Kernel\Api\WhatIsOnOffer;
 
 use function sprintf;
 
-/** A repair the stack offered, stated the way `N2-R4` requires. */
+/** A repair the stack offered, stated the way one has to be. */
 function aRepairOf(string $check = 'indexer-reachable'): Repair
 {
     return Repair::offered(

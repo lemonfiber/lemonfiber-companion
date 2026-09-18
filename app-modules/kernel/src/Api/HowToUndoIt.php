@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * The way back from an update, where the stack named one.
  *
- * `N2-R19` refuses to flatten these into *undo*, and the reason is that they
+ * Flattening these into *undo* is refused, and the reason is that they
  * put back different things. A rollback returns the service to the version it
  * was on. A restore returns it to the snapshot taken before the run — which
  * carries the data with it, and is therefore a larger promise and a different

@@ -16,7 +16,7 @@ use Traversable;
 /**
  * A look at what one service has been saying, and the edge of that look.
  *
- * `N2-R10` is three clauses and this type is where two of them stop being
+ * A log read is three clauses and this type is where two of them stop being
  * possible to drop: a read that is bounded, that names the service, and that
  * says the view is a window rather than the whole.
  *
@@ -127,7 +127,7 @@ final readonly class Scrollback implements IteratorAggregate
         return new self($this->service, $this->asked, $this->arrived, $held, $looking);
     }
 
-    /** The service this window is over (`N2-R10`). */
+    /** The service this window is over. */
     public function service(): ServiceId
     {
         return $this->service;
@@ -140,7 +140,7 @@ final readonly class Scrollback implements IteratorAggregate
     }
 
     /**
-     * Whether the view stops where it was told to stop (`N2-R10`).
+     * Whether the view stops where it was told to stop.
      *
      * True where as many lines came back as were asked for: the bound is the
      * edge of what is shown, and what lies behind it is not carried on the wire

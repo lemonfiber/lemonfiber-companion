@@ -16,7 +16,7 @@ use function sprintf;
  * constructed, so there is nothing for a caller to open (`C1`, `C3`).
  *
  * A stack numbers what it holds from one. Zero is what a missing field reads as
- * and what an empty form field sends, and `N2-R11`'s decision is one where
+ * and what an empty form field sends, and the decision is one where
  * acting on the wrong subject is the whole harm — so it is refused rather than
  * sent and found out about afterwards.
  */

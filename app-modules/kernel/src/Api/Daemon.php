@@ -11,7 +11,7 @@ use function trim;
 /**
  * One thing a stack runs, and what an operator needs before touching it.
  *
- * `N2-R7` asks the app to offer start, stop and restart by service, and a
+ * The app offers start, stop and restart by service, and a
  * button is only offerable if the row above it says enough to decide with. The
  * contract sends `{criticality, depends_on, exit?, id, name, profile, state}`
  * and four of those are that decision: **what it is called**, **where it
@@ -31,7 +31,7 @@ use function trim;
  * somebody to that service's scrollback.
  *
  * **What leans on it is carried, because stopping is not a local act.**
- * `N2-R8` wants a disruptive action to state what it disturbs, and the honest
+ * A disruptive action states what it disturbs, and the honest
  * answer to *what does stopping this disturb* is the list of things that stop
  * with it. A screen offering a stop without it would be asking somebody to
  * confirm something they were not told.
@@ -108,7 +108,7 @@ final readonly class Daemon
         return $this->name;
     }
 
-    /** Which form it belongs to, for reading a stack by form (`N2-R7`). */
+    /** Which form it belongs to, for reading a stack by form. */
     public function profile(): Form
     {
         return $this->profile;
@@ -126,7 +126,7 @@ final readonly class Daemon
         return $this->matters;
     }
 
-    /** What stopping this would take with it (`N2-R8`). */
+    /** What stopping this would take with it. */
     public function whatLeansOnIt(): WhatLeansOnIt
     {
         return $this->leaning;

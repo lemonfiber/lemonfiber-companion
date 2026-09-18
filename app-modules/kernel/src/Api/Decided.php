@@ -11,7 +11,7 @@ use function trim;
 /**
  * What an operator decided about one thing the household asked for.
  *
- * {@see AgreedTo}'s argument applied to a request. `N2-R11` has a waiting
+ * {@see AgreedTo}'s argument applied to a request. A waiting
  * request be approvable and refusable from the app, and the way a decision goes
  * to the wrong subject is never a deliberate choice: a template draws a row,
  * the button is right there, and a handler passes its argument straight to the
@@ -19,7 +19,7 @@ use function trim;
  * make one name the request together with what was decided about it.
  *
  * **Two constructors, because approving and declining are different acts.** Not
- * one taking a nullable reason (`C2`): `D7-R7` makes the reason part of
+ * one taking a nullable reason (`C2`): the reason is part of
  * declining rather than something beside it, so a refusal that could be built
  * without one is a refusal this app could send half of. *Declined*, with no
  * reason, is exactly the screen that sends somebody to ask their operator in
@@ -48,7 +48,7 @@ final readonly class Decided
      * The operator turned it down, and this is what they are owed instead.
      *
      * The reason is refused blank here rather than at the screen, so no road to
-     * this value can produce a refusal with nothing on it (`D7-R7`).
+     * this value can produce a refusal with nothing on it.
      */
     public static function toDecline(RequestId $request, string $because): self
     {

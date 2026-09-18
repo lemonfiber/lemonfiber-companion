@@ -14,7 +14,7 @@ use function sprintf;
 /**
  * An answer arrived in a wire version this app does not read.
  *
- * `N1-R13` asks for both halves and this carries both: the version that
+ * Both halves are asked for and this carries both: the version that
  * arrived, and the versions that are read. One without the other is the error
  * message people file bugs about — "unsupported version" tells an operator
  * nothing they can act on, and a support thread then spends two replies

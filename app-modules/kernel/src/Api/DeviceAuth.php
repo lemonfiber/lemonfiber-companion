@@ -9,9 +9,9 @@ namespace Modules\Kernel\Api;
  *
  * A port because there is nobody to authenticate on a laptop. Behind it on a
  * handset is lemonfiber's own native expansion; behind it everywhere else is a
- * fake, which is what lets a test about `N4-R7` be written at all.
+ * fake, which is what lets a test about the device's own lock be written at all.
  *
- * **`N4-R8` is kept by the return type having no third case.** The requirement
+ * **It is kept by the return type having no third case.** The requirement
  * has two clauses — a biometric failure falls back to the device passcode, and
  * it must not fall back to unlocked — and they are kept in different places.
  * The fallback is one constant chosen in the native half, where the platform is

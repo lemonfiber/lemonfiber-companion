@@ -53,10 +53,10 @@ enum HowMuchItMatters: string
     }
 
     /**
-     * Whether stopping this is the kind of thing to say twice about (`N2-R8`).
+     * Whether stopping this is the kind of thing to say twice about.
      *
      * The line is drawn once, here, rather than at each screen that offers a
-     * stop. `N2-R8` wants a disruptive action to state what it disturbs before
+     * stop. A disruptive action states what it disturbs before
      * it is confirmed, and *disruptive* is not a property of the verb: stopping
      * an optional service disturbs nobody, and stopping a critical one takes
      * the house's evening with it.

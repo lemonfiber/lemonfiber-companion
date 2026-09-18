@@ -14,14 +14,14 @@ use function mb_str_split;
 /**
  * A fingerprint in a form a person can actually check.
  *
- * `N1-R50` needs this and `Fingerprint` deliberately refuses to provide it, and
+ * The confirmation needs this and `Fingerprint` deliberately refuses to provide it, and
  * the tension between those two is the whole design. `ADR-0018` rejects the
  * human-read fingerprint by name — it "asks a person to compare sixty-four hex
  * characters across two screens. People check the first four and the last four,
  * or they press accept." That is why `Fingerprint` has no `shown()`.
  *
  * But typed pairing has no software comparison available: nothing was scanned,
- * so nothing carried the digest to compare against. `N1-R50` is what is left —
+ * so nothing carried the digest to compare against. The confirmation is what is left —
  * the operator confirms, and the app must not proceed on an unconfirmed
  * fingerprint. If somebody has to compare, the comparison has to be one they
  * will really do.
@@ -30,7 +30,7 @@ use function mb_str_split;
  * to display a fingerprint cannot be reached from a `Fingerprint`. Getting one
  * is an explicit act naming this class, which is a line a reviewer sees.
  *
- * **`N1-R51` sets the two constraints and they pull against each other.** Short
+ * **Two constraints, and they pull against each other.** Short
  * enough to check at a glance, and derived from the *whole* fingerprint so two
  * different certificates cannot share one. Truncation satisfies the first and
  * fails the second — the first eight characters of a SHA-256 are eight
@@ -82,7 +82,7 @@ final readonly class AtAGlance
     private function __construct(private string $shown) {}
 
     /**
-     * Fold a fingerprint down to something checkable (`N1-R51`).
+     * Fold a fingerprint down to something checkable.
      *
      * Every byte of the digest contributes: the fold walks the whole of it, so
      * a certificate differing anywhere produces a different set of groups. That
@@ -136,7 +136,7 @@ final readonly class AtAGlance
      * is −1 modulo 32. The position index came out as a fixed arithmetic walk
      * with one free number in it, and sixteen characters carried five bits.
      *
-     * That is `N1-R51` failing in the exact way its own docblock warns about:
+     * That is the short form failing in the exact way its own docblock warns about:
      * two certificates share a code one time in thirty-two, and an attacker
      * grinding a certificate to match a shown one needs about sixteen tries —
      * far cheaper than the truncation this class rejects by name.
