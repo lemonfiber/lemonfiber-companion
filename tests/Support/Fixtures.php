@@ -2532,6 +2532,24 @@ final readonly class Fixtures
                 }
                 KOTLIN, 'N3-R8 — no platform source reaches for a media player'),
 
+            // A test's own title, in the Kotlin harness, which is the half of
+            // that rule the ratchet over the PHP deliberately does not hold: a
+            // PHP test's description is read by a runner, and a backticked
+            // Kotlin function name is the sentence somebody reads in the file.
+            // Planting it here rather than as a comment also keeps it out of the
+            // ratchet's count, which reads every PHP file including this one.
+            Fixture::suite('GOV-R6', 'bridge/android/src/test/kotlin/NamesARequirementTest.kt', <<<'KOTLIN'
+                package app.lemonfiber.native
+
+                import kotlin.test.Test
+
+                class NamesARequirementTest {
+                    @Test
+                    fun `N4-R9 - a backgrounded app is protected`() {
+                    }
+                }
+                KOTLIN, 'GOV-R6 — no Kotlin or Swift source names a requirement'),
+
             // The violation is a method added to a type this repository already
             // has, so there is no file to drop in beside it — which is why this
             // was answered with a paragraph for as long as the harness could
