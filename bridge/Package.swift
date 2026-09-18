@@ -37,5 +37,10 @@ let package = Package(
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/LockRuleTests"
         ),
+        .testTarget(
+            name: "NotificationRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/NotificationRuleTests"
+        ),
     ]
 )

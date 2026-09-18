@@ -9,11 +9,11 @@
      centred in it rather than sitting at the top, because a target whose ink
      is at one end of it is a target people aim at the wrong half of. --}}
 @if ($goes !== '')
-    <native:pressable class="w-full min-h-12 justify-center py-2" @navigate="$goes" a11y-label="{{ $label }}" :press-opacity="0.6">
+    <native:pressable native:key="{{ $label }}" class="w-full min-h-12 justify-center py-2" @navigate="$goes" a11y-label="{{ $label }}" :press-opacity="0.6">
         <x-operator::note>{{ $label }}</x-operator::note>
     </native:pressable>
 @else
-    <native:pressable class="w-full min-h-12 justify-center py-2" @press="{{ $tap }}" a11y-label="{{ $label }}" :press-opacity="0.6">
+    <native:pressable native:key="{{ $label }}" class="w-full min-h-12 justify-center py-2" @press="{{ $tap }}" a11y-label="{{ $label }}" :press-opacity="0.6">
         <x-operator::note>{{ $label }}</x-operator::note>
     </native:pressable>
 @endif

@@ -6,6 +6,10 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\NativeServiceProvider as OurOwnExpansion;
+use Native\Mobile\Providers\NetworkServiceProvider as WhetherThereIsANetwork;
+use Native\Mobile\Providers\ScannerServiceProvider as ReadingACode;
+use Native\Mobile\Providers\SecureStorageServiceProvider as SecureStore;
+use Native\Mobile\Providers\ShareServiceProvider as HandingOver;
 use Native\Mobile\UI\NativeUIServiceProvider as Controls;
 use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notifications;
 
@@ -34,6 +38,22 @@ use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notificati
  *   A build made without it has the adapters and not the functions they call.
  * - **`nativephp/mobile-local-notifications`**, which `Modules\Device\Api\
  *   PlatformNotifier` is written against.
+ * - **`nativephp/mobile-secure-storage`**, which is where the keychain comes
+ *   from. It was core until NativePHP 4 and is a plugin now, and the facade
+ *   `Native\Mobile\SecureStorage` stayed behind in `nativephp/mobile` — so the
+ *   PHP half resolves, the adapters bind, every test passes against a fake, and
+ *   the device answers *function not found* to every read. Nothing this app
+ *   retains works without it: no session kept, no stack remembered, no verdict
+ *   shown.
+ * - **`nativephp/mobile-scanner`**, which is the camera road into pairing. The
+ *   typed road is the other one and works without it, but a device offering a
+ *   control that does nothing at all is worse than a device offering one road.
+ * - **`nativephp/mobile-network`**, which answers whether this device has one.
+ *   The launch asks before it asks anything of a stack, so without it the app
+ *   cannot tell *no network here* from *that machine is not answering* — the
+ *   two sentences with the two different remedies.
+ * - **`nativephp/mobile-share`**, which is the sheet a diagnostic report is
+ *   handed to. Both were core until NativePHP 4 and are plugins now.
  * - **`nativephp/mobile-ui`**, which is where a text input comes from.
  *   `nativephp/mobile` registers `pressable` and no field: `text_input`,
  *   `toggle` and the rest are left to this plugin by name, in a comment in
@@ -79,6 +99,10 @@ final class NativeServiceProvider extends ServiceProvider
         return [
             OurOwnExpansion::class,
             Notifications::class,
+            ReadingACode::class,
+            SecureStore::class,
+            WhetherThereIsANetwork::class,
+            HandingOver::class,
             Controls::class,
         ];
     }
