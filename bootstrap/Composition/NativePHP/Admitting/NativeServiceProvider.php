@@ -6,7 +6,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\NativeServiceProvider as OurOwnExpansion;
+use Native\Mobile\Providers\NetworkServiceProvider as WhetherThereIsANetwork;
 use Native\Mobile\Providers\SecureStorageServiceProvider as SecureStore;
+use Native\Mobile\Providers\ShareServiceProvider as HandingOver;
 use Native\Mobile\UI\NativeUIServiceProvider as Controls;
 use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notifications;
 
@@ -42,6 +44,12 @@ use NativePHP\LocalNotifications\LocalNotificationsServiceProvider as Notificati
  *   the device answers *function not found* to every read. Nothing this app
  *   retains works without it: no session kept, no stack remembered, no verdict
  *   shown.
+ * - **`nativephp/mobile-network`**, which answers whether this device has one.
+ *   The launch asks before it asks anything of a stack, so without it the app
+ *   cannot tell *no network here* from *that machine is not answering* — the
+ *   two sentences with the two different remedies.
+ * - **`nativephp/mobile-share`**, which is the sheet a diagnostic report is
+ *   handed to. Both were core until NativePHP 4 and are plugins now.
  * - **`nativephp/mobile-ui`**, which is where a text input comes from.
  *   `nativephp/mobile` registers `pressable` and no field: `text_input`,
  *   `toggle` and the rest are left to this plugin by name, in a comment in
@@ -88,6 +96,8 @@ final class NativeServiceProvider extends ServiceProvider
             OurOwnExpansion::class,
             Notifications::class,
             SecureStore::class,
+            WhetherThereIsANetwork::class,
+            HandingOver::class,
             Controls::class,
         ];
     }
