@@ -15,7 +15,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function str_contains;
 
 /**
- * N2-R14 — a reader never substitutes a value the contract did not carry.
+ * A reader never substitutes a value the contract did not carry.
  *
  * "Where the contract does not carry something a requirement here asks the app
  * to state, the app MUST NOT substitute a value of its own; the gap MUST be
