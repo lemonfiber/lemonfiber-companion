@@ -18,9 +18,9 @@ use Native\Mobile\PushNotifications as Permissions;
  * Without it the adapter's permission path has exactly one reachable answer,
  * and the three that matter go untested.
  *
- * **It also counts.** `N4-R4` is not a question about a return value, it is a
- * question about how many times somebody was interrupted — so the assertion
- * that matters is a count, and something has to be keeping it.
+ * **It also counts.** Never asking again is not a question about a return
+ * value, it is a question about how many times somebody was interrupted — so
+ * the assertion that matters is a count, and something has to be keeping it.
  */
 final class APermissionAnswer extends Permissions
 {

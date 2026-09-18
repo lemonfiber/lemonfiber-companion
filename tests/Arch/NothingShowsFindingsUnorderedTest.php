@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// F8 — a screen shows findings in the order the capability decided (N2-R2).
+// F8 — a screen shows findings in the order the capability decided.
 //
 // `WorstFirst` is that decision and the only one `health` makes about a report:
 // what it costs first, the verdict to break the tie, equals left in the order

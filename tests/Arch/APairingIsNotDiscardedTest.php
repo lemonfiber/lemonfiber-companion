@@ -6,12 +6,12 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Vault\Api\PlatformStacks;
 
-// N1-R34 — discarding retained state must not discard a pairing or its pinned
+// Discarding retained state must not discard a pairing or its pinned
 // fingerprint; where those cannot be carried forward, the app must say that
 // re-pairing is required and why.
 //
 // Two ports keep retained state and they have opposite obligations. `SecureStorage`
-// keeps a session, which `N1-R23` and `N4-R5` say the app may hold and must not
+// keeps a session, which the app may hold and must not
 // spread — so it has `forget()`, and signing out is a real thing an operator
 // does. `Stacks` keeps the pairing: an identity, a name somebody typed, an
 // address and a pinned certificate, which is exactly what must survive.
@@ -76,7 +76,7 @@ it('N1-R34 — nor does the adapter that writes it down', function (): void {
 
 it('the port that keeps a session still offers one, which is the distinction', function (): void {
     // Without this the rule above passes just as well on a codebase where
-    // nothing can be forgotten at all — including a session, which `N1-R23`
+    // nothing can be forgotten at all — including a session, which
     // expects to be. The two ports are separate precisely so one may forget and
     // the other may not, and a rule that could not tell them apart would be
     // describing an accident.

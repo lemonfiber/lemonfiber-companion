@@ -31,7 +31,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R4 — what a repair does, what else it affects and whether it can be undone,
+// What a repair does, what else it affects and whether it can be undone,
 // stated before anybody is asked to confirm.
 //
 // The types for this have been built and tested since the health screen landed
@@ -581,7 +581,7 @@ it('looking again asks the stack afresh rather than reusing the listing', functi
 });
 
 it('N1-R27 — while the stack is working it out, the screen looks again by itself', function (): void {
-    // The half of `N1-R27` that is not a button. An operator who told a machine
+    // The half of the cadence rule that is not a button. An operator who told a machine
     // to do something should not have to keep tapping to find out whether it
     // did, and leaving and returning is what the rule refuses by name.
     $mending = AStackThatWouldMend::stillWorkingItOut();
@@ -600,7 +600,7 @@ it('N1-R27 — while the stack is working it out, the screen looks again by itse
 });
 
 it('N1-R66 — the cadence costs nothing while there is nothing to wait for', function (): void {
-    // What keeps this from being the polling `N1-R66` refuses. A screen showing
+    // What keeps this from being the polling that is refused. A screen showing
     // an offer has nothing that changes on its own, so the poll does not reach
     // the machine at all.
     $mending = AStackThatWouldMend::offering(aListingWorthReading());
@@ -642,7 +642,7 @@ it('N3-R13 — a refused credential on the outcome read signs this device out', 
     // The case the offer read cannot cover. A screen that read an offer
     // successfully and then met a refusal while asking what became of the work
     // would, for one frame, render what it loaded a moment ago under a session
-    // the stack has stopped recognising — which is the half of `N3-R13` that is
+    // the stack has stopped recognising — which is the half that is
     // about rendering rather than about storage.
     $keychain = AKeychainInMemory::working();
     $mending = AStackThatWouldMend::goneAfterAgreeing(

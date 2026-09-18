@@ -20,8 +20,8 @@ use Tests\Support\Fakes\APermissionAnswer;
 //
 // `G2`'s shape. Every other test that needs "the operator was told" will hand
 // its subject an `ANotifierInMemory` and never see a notification centre, so a
-// fake easier to satisfy than the platform would make `N4-R4`'s refusal green
-// against a centre that always says yes.
+// fake easier to satisfy than the platform would make *a refusal is never asked
+// again* green against a centre that always says yes.
 //
 // What is asserted is only what both must promise. The adapter composes words
 // from the catalogue and the fake records an arm, so "the title reads like
@@ -96,9 +96,9 @@ it('N4-R4 — asking is separate from reading, so reading never prompts', functi
     // `isPermitted()` asked in order to answer, and `show()` called it — so a
     // notification arriving re-prompted somebody who had already declined.
     //
-    // Counted on the adapter, because the count is the requirement: `N4-R4` is
-    // not about a return value, it is about how many times somebody was
-    // interrupted.
+    // Counted on the adapter, because the count is the requirement: never
+    // asking again is not about a return value, it is about how many times
+    // somebody was interrupted.
     $answer = APermissionAnswer::denied();
     $notifier = new PlatformNotifier(ANotificationCentre::on($answer), $answer, Catalogue::words());
 

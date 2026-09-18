@@ -20,8 +20,8 @@ use function property_exists;
  *
  * **The kind of connection is dropped on purpose.** The platform reports
  * whether the link is wifi, cellular or ethernet, whether it is metered, and
- * whether Low Data Mode is on. None of it is read. `N4-R12` keeps this app from
- * reporting anything about the operator's device, and a value held but not sent
+ * whether Low Data Mode is on. None of it is read. Nothing about the operator's
+ * device is ever reported, and a value held but not sent
  * is one commit away from being sent — so the narrowest thing that answers the
  * question is what crosses the boundary.
  *

@@ -18,7 +18,7 @@ namespace Modules\Design\Api;
  * the accessibility tree, the reader's text size, the system's contrast and
  * reduced-motion settings and its light and dark modes without any of them
  * being built a second time. Overriding that look to reach the web palette
- * would spend exactly what it was chosen for (DES-R24, DES-R26, ADR-0017).
+ * would spend exactly what it was chosen for (ADR-0017).
  *
  *   | Brand token   | Companion mapping                                        |
  *   |---------------|----------------------------------------------------------|
@@ -58,7 +58,7 @@ enum ThemeToken: string
      * lemon for hover and lift, not as a dark-mode value. The pair below needs
      * none: ink on lemon measures 10.9:1 whichever way the reader has their
      * phone set, so the accent carries its own legibility instead of borrowing
-     * the ground's (DES-R15, DES-R24).
+     * the ground's.
      */
     public function hex(): string
     {
@@ -75,7 +75,7 @@ enum ThemeToken: string
      *
      * `lemon` on `paper` measures 1.6:1. It is an accent — a fill, a bar, a
      * selected state — and never text, for the same measured reason amber is
-     * never text (DES-R15, DES-R18). The resolver cannot tell which prefix
+     * never text. The resolver cannot tell which prefix
      * asked it, so this is where the distinction is kept and
      * `tests/Templates` is what enforces it.
      *

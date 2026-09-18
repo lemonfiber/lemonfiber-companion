@@ -7,7 +7,7 @@ use Tests\Support\Tree;
 // W7 — every answer passes the wire gate before anything reads it.
 //
 // `Wire::checked()` refuses an envelope whose wire version this app does not
-// support (`N1-R13`), and its own docblock calls itself *the one gate every
+// support, and its own docblock calls itself *the one gate every
 // answer passes before anything reads it*. That was true of every reader but
 // one, and nothing was checking: `Lines` read `$envelope->data` straight out of
 // a log window, so a window on a version this app has never heard of was read

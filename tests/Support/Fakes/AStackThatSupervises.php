@@ -22,13 +22,14 @@ use Modules\Kernel\Api\WhatItTakesAway;
  * A stack where a test says what is running, and which remembers what it was
  * told to do about it.
  *
- * {@see AStackThatStalled}'s sibling for `N2-R7`, and it remembers the same
- * half a screen cannot assert about itself — which stack was asked — for the
- * same reason: a screen holding two stacks and stopping a service on the wrong
- * machine is `N1-R11` broken exactly where it costs the most.
+ * {@see AStackThatStalled}'s sibling for starting and stopping, and it
+ * remembers the same half a screen cannot assert about itself — which stack was
+ * asked — for the same reason: a screen holding two stacks and stopping a
+ * service on the wrong machine is two machines mistaken for each other, exactly
+ * where it costs the most.
  *
  * **What it was told is kept, in order.** That is this fake's own half, and it
- * is what a test of `N2-R8` stands on: the thing worth proving about a
+ * is what a test of a confirmation stands on: the thing worth proving about a
  * confirmation is that nothing reached the port before the operator agreed, and
  * only the port can say whether it did.
  *
@@ -240,8 +241,8 @@ final class AStackThatSupervises implements Supervising
 
         // The session is read and the value dropped, which is
         // {@see AStackThatStalled::stoppedOn()}'s argument: a fake holding one
-        // is the one place a fixture could teach the habit `N4-R5` exists to
-        // prevent, and reading it is what proves the port was handed one.
+        // is the one place a fixture could teach the habit of keeping a secret
+        // past its use, and reading it is what proves the port was handed one.
         $this->carried = $session->forTheHeader() !== '';
     }
 }

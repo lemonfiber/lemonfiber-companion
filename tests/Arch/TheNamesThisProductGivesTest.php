@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use Tests\Support\Catalogue;
 
-// G2-R3, G2-R14 — a translated screen keeps the words that are also names.
+// A translated screen keeps the words that are also names.
 //
-// `G2-R3` is that one concept use one term consistently across all surfaces and
+// One concept uses one term consistently across all surfaces and
 // messages. A locale is where that is hardest to see: the term stays consistent
 // *within* the translated screens, so nothing inside them disagrees, and the
 // disagreement is with the compose file, the subcommand and the documentation —
-// surfaces this suite cannot read. `G2-R14` is the same requirement made
+// surfaces this suite cannot read. The locale rule is the same requirement made
 // checkable from here, by asking that the source locale and every other one
 // name the same things.
 //
@@ -38,7 +38,7 @@ use Tests\Support\Catalogue;
 /**
  * The names lemonfiber gives its own things.
  *
- * Declared rather than inferred, which `G2-R14` asks for and which is the only
+ * Declared rather than inferred, which is asked for and is the only
  * way this can work: nothing in a sentence says whether a noun is text or a
  * label, and a name added to the product without being written down here is a
  * name a translator will reasonably translate.

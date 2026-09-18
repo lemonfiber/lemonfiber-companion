@@ -248,9 +248,9 @@ it('F14 — every step a template takes after its screen answered is one that va
         }
     }
 
-    // The floor `Q-R66` asks for, and the one that matters most here: the whole
-    // rule is a walk of declared types, and a walk that resolves nothing
-    // reports nothing. A regex that stopped matching, a screen whose return
+    // The floor every rule of this shape owes, and the one that matters most
+    // here: the whole rule is a walk of declared types, and a walk that
+    // resolves nothing reports nothing. A regex that stopped matching, a screen whose return
     // types went to `mixed` — either is a green run over markup nobody read.
     expect($followed)->toBeGreaterThan(20);
 

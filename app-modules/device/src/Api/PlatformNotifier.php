@@ -29,8 +29,8 @@ use function sprintf;
  * **The words come from the translator, keyed by the type.** A {@see Notification}
  * carries a {@see Code} and nothing else sayable, so there is no sentence to
  * pass through — this looks up two keys and fills them in. `L1` wants the words
- * in the catalogue; `N4-R10` wants nowhere to smuggle a credential or a name
- * through; the same design serves both.
+ * in the catalogue; a notification must carry no credential and no name; the
+ * same design serves both.
  *
  * **A notification is sent by letting the builder go out of scope.** The
  * plugin's `ScheduledNotification` fires in `__destruct()` — `execute()` is
@@ -49,7 +49,7 @@ final readonly class PlatformNotifier implements Notifier
      * replaces the notification already showing. One per stack per code means
      * a second alert about the same thing updates the first rather than
      * stacking — which is what an operator wants — while two different stacks
-     * never overwrite each other (`N1-R11`).
+     * never overwrite each other.
      */
     private const string UNDER = 'lemonfiber';
 
@@ -79,8 +79,8 @@ final readonly class PlatformNotifier implements Notifier
     {
         $standing = $this->standing();
 
-        // Guarded rather than trusted. `N4-R4` says a declined permission is
-        // not asked again automatically, and the platform usually suppresses a
+        // Guarded rather than trusted. A declined permission is not asked again
+        // automatically, and the platform usually suppresses a
         // second dialog on its own — usually, and not on Android after a single
         // decline. A rule kept by the operating system's good manners is not
         // kept.
@@ -100,8 +100,8 @@ final readonly class PlatformNotifier implements Notifier
     public function show(Notification $notification): Shown
     {
         // Reads, never asks. A notification arriving is not the point of first
-        // use — the operator is not looking at the app, and `N4-R1` and `N4-R2`
-        // both want the prompt somewhere they are.
+        // use — the operator is not looking at the app, and a prompt belongs
+        // somewhere they are.
         if (! $this->standing()->mayProceed()) {
             return Shown::withheld(WhyNothingIsShown::NotificationsAreNotPermitted);
         }
@@ -117,10 +117,9 @@ final readonly class PlatformNotifier implements Notifier
                 return $says;
             },
             guarded: function (WhatTheCoreDecided $says): WhatTheCoreDecided {
-                // No stack reaches this arm, so nothing here can name one
-                // (`N4-R20`). The wording is the guarded pair for the same
-                // reason — it must hold on a screen anybody walking past can
-                // read.
+                // No stack reaches this arm, so nothing here can name one at
+                // all. The wording is the guarded pair for the same reason — it
+                // must hold on a screen anybody walking past can read.
                 $this->centre->send($this->idFor($says))
                     ->title($this->words->for('notifications.guarded.title'))
                     ->body($this->words->for('notifications.guarded.body'));

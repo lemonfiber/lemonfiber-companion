@@ -21,10 +21,10 @@ use function sys_get_temp_dir;
 /**
  * The platform's own share sheet, given a report to put in front of somebody.
  *
- * `N4-R13`'s second clause made concrete: the app writes the report where the
- * platform can read it, asks for the sheet, and stops. Where it goes is a
+ * A report handed over rather than sent, made concrete: the app writes the
+ * report where the platform can read it, asks for the sheet, and stops. Where it goes is a
  * choice a person makes in an app this one does not know about, which is the
- * whole difference between this and the crash reporter `N4-R12` refuses.
+ * whole difference between this and the crash reporter this app may not have.
  *
  * **The file is written because the platform takes a path**, not because this
  * application wanted a file. `Share::file()` is the only call that carries text

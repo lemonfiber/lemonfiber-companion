@@ -36,7 +36,7 @@ final class AKeychainInMemory implements SecureStorage
         return new self(null);
     }
 
-    /** A device with nowhere safe to put a session (`N4-R6`). */
+    /** A device with nowhere safe to put a session. */
     public static function withNowhereSafe(): self
     {
         return new self(WhySessionCannotBeKept::DeviceHasNoSecureStorage);

@@ -24,7 +24,7 @@ use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R11 — the requests awaiting a decision are visible from a phone.
+// The requests awaiting a decision are visible from a phone.
 //
 // The part of a stack an operator gets asked about in person: somebody in the
 // house asked for something last Tuesday and wants to know what happened. Until
@@ -229,7 +229,7 @@ it('N1-R65 — asks once per frame however many fields are read', function (): v
 
     // By identifier rather than by instance: the screen reads its stack out of
     // the list the device holds, so the object it hands the port is that one
-    // and not the one this file built. `N1-R11` is about *which machine*, and
+    // and not the one this file built. The rule is about *which machine*, and
     // the identifier is what answers that.
     expect($wanting->askings())->toBe(1)
         ->and($wanting->askedAbout()?->id()->stored())
@@ -349,7 +349,7 @@ it('N1-R3 — asking again after an obstacle asks the stack again', function ():
 it('N3-R7 — a refused request shows the reason on the row', function (): void {
     // The answer the household actually asks its operator for. `declined` on
     // its own is what sends somebody to ask in person, which is the whole thing
-    // `D7-R7` and `N3-R7` exist to prevent.
+    // a decline's reason exists to prevent.
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
         Wanted::turnedDown(
             41,
@@ -549,7 +549,7 @@ final readonly class WhatTheRefusalCarried
 it('D7-R7 — a reason of nothing but spaces is no reason at all', function (): void {
     // `trim` rather than a bare comparison: a field holding three spaces looks
     // filled and says nothing, and *declined* with three spaces beside it is
-    // the answer `D7-R7` exists to prevent, spelled differently.
+    // the answer a reason exists to prevent, spelled differently.
     $wanting = AHouseholdThatAsked::wanting(aHouseholdMidWeek());
     $screen = theRequestsScreen($wanting);
 

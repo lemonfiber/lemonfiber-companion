@@ -41,12 +41,12 @@ function keyedBy(array $cases): array
  * Named once because both rules below ask the same question of the same enums,
  * and a second list is the one that stops being updated.
  *
- * `Overall` earns its row from N2-R1: the app opens on the verdict, and
+ * `Overall` earns its row from the opening: the app opens on the verdict, and
  * `Unknown` has to arrive as a sentence of its own. Left out of the catalogue
  * it renders as `health.overall.unknown`, which a person reads as this app
  * having broken rather than as the stack having declined to say.
  *
- * `Undoing` earns its row from N2-R4, and is the reason that clause is an enum
+ * `Undoing` earns its row from a repair's clauses, and is the reason that clause is an enum
  * rather than the wire's boolean: "whether it can be undone" has to reach the
  * operator as a sentence before they agree to something permanent, and a
  * boolean has no sentence to reach them with.

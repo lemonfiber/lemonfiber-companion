@@ -10,7 +10,7 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Session;
 
-// N4-R13 — a report the operator sends, and the app does not.
+// A report the operator sends, and the app does not.
 //
 // Two clauses, and each is kept by a different absence.
 //
@@ -18,7 +18,7 @@ use Modules\Kernel\Api\Session;
 // `Assembled` is text and a filename. This asserts the absence, because the
 // pressure to add a `send()` is real and reasonable — somebody will want the
 // report to go straight to support, and the difference between that and a crash
-// reporter is only who pressed the button. `N4-R12` refuses the other one.
+// reporter is only who pressed the button. The other one is refused.
 //
 // The report must not carry a secret. A report is useful in proportion to what
 // it holds, which is exactly the pressure that puts a session token in a support

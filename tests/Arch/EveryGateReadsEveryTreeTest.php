@@ -314,7 +314,7 @@ it('R4 — every tree the scanner is pointed at is on disk', function (): void {
     //     ERROR The folder 'native/src' does not exist
     //
     // Which makes it the same failure shape as an analyser that will not
-    // bootstrap — one red job, nothing measured, and a summary saying `Q-R64`
+    // bootstrap — one red job, nothing measured, and a summary saying the ceiling
     // was not enforced on that run. A directory rename caught every reader in
     // PHP, XML, YAML and neon and missed this one, because a `.properties` file
     // was in nobody's pattern.

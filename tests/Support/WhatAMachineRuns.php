@@ -21,7 +21,7 @@ use function ucfirst;
 /**
  * A machine with services on it, as the screens about them read one.
  *
- * `N2-R7` has two frames — the list of what a machine runs and the one thing
+ * There are two frames — the list of what a machine runs and the one thing
  * behind a row of it — and both need the same listing to be about. Written
  * twice, the two files drift: a state changed in one and not the other is two
  * suites agreeing with themselves and with nothing else, and the screens they

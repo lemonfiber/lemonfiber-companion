@@ -25,7 +25,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AServiceThatSpoke;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R10 — logs offered as a bounded, searchable read that names the service
+// Logs offered as a bounded, searchable read that names the service
 // and states the view is a window rather than the whole.
 //
 // Here rather than in the operator module's own tests because a screen renders,
@@ -242,7 +242,7 @@ it('N1-R10 — a stack that could not be asked says which of the six it met', fu
     expect($screen->howMany())->toBe(0)
         // Meeting an obstacle is not losing the session: the device asked and
         // was answered. Reporting otherwise would put the sign-in screen in
-        // front of an operator whose session works, and `N1-R44`'s branch comes
+        // front of an operator whose session works, and the sign-in branch comes
         // first in the template — so which of the six was met is never reached.
         ->and($screen->answer()->went->isSignedIn)->toBeTrue()
         ->and($screen->answer()->went->met)->toBe(Obstacle::DeviceHasNoNetwork->said())
@@ -373,7 +373,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine — and
-        // nothing already loaded, which `N3-R13` names separately. A window is
+        // nothing already loaded, which is named separately. A window is
         // the thing this screen most obviously has to drop: an operator reading
         // a service's log under *this stack refused the pairing of this app* is
         // reading lines the stack has just said it will not answer for.

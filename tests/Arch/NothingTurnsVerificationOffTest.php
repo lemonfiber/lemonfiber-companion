@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Companion\PHPStan\Rules\NoWeakenedTlsRule;
 use Tests\Support\Tree;
 
-// N1-R21 — one vocabulary for certificate verification, read by both gates.
+// One vocabulary for certificate verification, read by both gates.
 //
 // Three gates hold this requirement and they read different things.
 // `NoWeakenedTlsRule` reads a call's options and knows each spelling's
@@ -95,7 +95,7 @@ const WAIVES_VERIFICATION = ['allow_', 'insecure', 'skip_', 'no_'];
  * Tokens rather than prose, which is the line this repository draws and has paid
  * for: `verify_peer` and `curlopt_ssl_verifypeer` are identifiers a client
  * defines, not sentences somebody wrote, so reading them is not the mistake the
- * deleted `N1-R17` checker was.
+ * deleted gap checker was.
  *
  * The waivers are asked first, because `skip_verify` and `no_verify` contain
  * `verify` and mean the opposite of it.

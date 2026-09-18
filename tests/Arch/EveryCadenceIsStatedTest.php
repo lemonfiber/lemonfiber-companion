@@ -6,7 +6,7 @@ use Modules\Kernel\Api\HowOften;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
 
-// N1-R27 — a screen whose content can change while it is open refreshes on a
+// A screen whose content can change while it is open refreshes on a
 // **stated** cadence, and does not rely on the operator leaving and returning
 // to see a change.
 //
@@ -73,7 +73,7 @@ function everyFileThatPolls(): array
  * is one `#[` and two attributes — and an expression that required `)]` to
  * follow the arguments reads that as no poll at all. The file still counts as
  * one that polls, so the rule below examines it, finds no interval to judge and
- * passes: the one half of `N1-R27` a number could break, gone, on a screen that
+ * passes: the one half a number could break, gone, on a screen that
  * is visibly refreshing.
  *
  * @return list<string>

@@ -6,7 +6,7 @@ use Modules\Operator\View\Components\WhatStoppedTheReading;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
 
-// N1-R27 — a screen that can be asked again offers it where the reading came back.
+// A screen that can be asked again offers it where the reading came back.
 //
 // The requirement is that a screen must not rely on being left and returned to.
 // Five screens had `again()` and no way to reach it: the retry lived on the
@@ -92,8 +92,8 @@ function theRetryTheObstacleArmOffers(): string
 }
 
 it('finds screens that can be asked again', function (): void {
-    // The floor `Q-R66` asks for: a reading that found none passes the rule
-    // below with no iterations, which is what it would do on the day
+    // The floor every rule of this shape owes: a reading that found none passes
+    // the rule below with no iterations, which is what it would do on the day
     // `byTheViewTheyRender()` went quiet.
     expect(count(whatEachScreenThatCanBeAskedAgainSays()))->toBeGreaterThan(3);
 });

@@ -11,8 +11,8 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 
 // The Sharing contract, run against the adapter and against the fake.
 //
-// `G2`'s shape, and the reason this one matters: `N4-R13` says a diagnostic
-// report is assembled for the operator to send and must not be transmitted by
+// `G2`'s shape, and the reason this one matters: a diagnostic report is
+// assembled for the operator to send and must not be transmitted by
 // the app. Every screen test will hand its subject an
 // `AShareSheetThatWasOffered` and never open a share sheet, so a fake easier to
 // satisfy than the platform would enforce that against something that always

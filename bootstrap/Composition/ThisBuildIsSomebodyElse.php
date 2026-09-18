@@ -15,8 +15,7 @@ use function sprintf;
  * Refused at the moment it is read rather than carried to a caller, because
  * there is no caller that could do anything sensible with it: an application
  * under the wrong identity is a second application, and every screen after this
- * point would be operating on storage the operator's own app cannot see
- * (`N1-R53`).
+ * point would be operating on storage the operator's own app cannot see.
  *
  * Both names are in the sentence. A refusal saying only *that is wrong* leaves
  * whoever hits it opening two files to find out what it disagreed with, and the

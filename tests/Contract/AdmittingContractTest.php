@@ -25,7 +25,8 @@ use Tests\Support\WhatTheContractAccepts;
 // `G2`'s shape, and this port carries the application's only password. Every
 // test of a sign-in screen will hand its subject an `ADoorThatWasKnockedOn` and
 // never open a socket, so a fake easier to satisfy than the adapter would make
-// `N1-R7` green against a door that keeps what it was given.
+// *the password is exchanged once* green against a door that keeps what it was
+// given.
 //
 // Both arms are driven from the same table of what the far end did, which is
 // what makes the two comparable at all: the adapter is given a response and the
@@ -40,8 +41,9 @@ use Tests\Support\WhatTheContractAccepts;
 // the deps gate asks for and is right to — a package used and not named is one
 // that disappears the day the SDK swaps its client.
 //
-// It does not weaken `N1-R16`. Nothing in `app-modules/` or `bootstrap/` may
-// name it, `NothingReachesAStackUnpinnedTest` is what refuses that, and a test
+// It does not weaken the rule that nothing but the SDK reaches a stack.
+// Nothing in `app-modules/` or `bootstrap/` may name it,
+// `NothingReachesAStackUnpinnedTest` is what refuses that, and a test
 // that could not script an answer would be a test asserting the fake against
 // itself.
 //
@@ -226,7 +228,8 @@ it('answers exactly one way, and answers at all', function (): void {
 it('knocks on the stack it was handed, which is the half a screen cannot check', function (): void {
     // Only the fake can be asked this, and it is asked because every screen test
     // will trust the answer. A screen holding two stacks and offering the
-    // password to the wrong one is `N1-R11` broken where it costs most.
+    // password to the wrong one is two machines mistaken for each other, where
+    // it costs most.
     $door = ADoorThatWasKnockedOn::opening(theSessionOpened(), Instant::atEpochSeconds(UNTIL_TEN));
     $stack = aStackWithADoor();
 

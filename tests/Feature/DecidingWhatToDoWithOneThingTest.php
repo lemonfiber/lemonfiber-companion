@@ -25,14 +25,14 @@ use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
 
-// N2-R7 and N2-R8 — one thing this machine runs, and the verbs about it.
+// One thing this machine runs, and the verbs about it.
 //
 // The frame an operator reaches by tapping a row on the listing. It exists
 // because the listing did not have room to be both: four services with their
 // verbs drawn per row put fifteen controls on one screen, four of them called
 // *Start it*, and which one a control acted on was carried by where it sat.
 //
-// A service and a form both arrive here, which is `N2-R7`'s two granularities
+// A service and a form both arrive here, which is the two granularities
 // meeting at one screen — the decision is the same and only the name the stack
 // is told differs.
 
@@ -116,7 +116,7 @@ it('N2-R7 — only the verbs this one state can take', function (): void {
 });
 
 it('N2-R7 — a service this stack does not run is offered no verb at all', function (): void {
-    // `N2-R7` is about what this stack runs. A verb about something the host
+    // The verbs are about what this stack runs. A verb about something the host
     // runs would be refused by the machine, and offering it teaches an operator
     // that the buttons here are a guess.
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::HostManaged, HowTheStackIsRunning::Active)));
@@ -135,7 +135,7 @@ it('N2-R7 — a whole form takes all three, because it has no state of its own',
 });
 
 it('N2-R7 — a whole form is agreed to as a form', function (): void {
-    // The other granularity `N2-R7` names, and it must not arrive at the port
+    // The other granularity, and it must not arrive at the port
     // as a service: a form's name sent under `services` would stop nothing and
     // report that it had.
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
@@ -236,7 +236,7 @@ it('N2-R8 — says a restart will not help where it is already looping', functio
 
 it('N2-R8 — the confirmation says how long the verb takes it away for', function (): void {
     // The number is the stack's: a length worked out here would be a guess at
-    // something the stack knows, which is what `N2-R14` refuses.
+    // something the stack knows, which is what is refused.
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
 
@@ -272,7 +272,7 @@ it('N2-R8 — nothing is stated where nothing is being asked', function (): void
 it('N2-R8 — states no length once the reading it came from is gone', function (): void {
     // The bound is the listing's, so a reading that met an obstacle carries
     // none — and a sentence built from a number this app invented is exactly
-    // what `N2-R14` refuses.
+    // what substitution refuses.
     $screen = theThingScreen(AStackThatSupervises::thenMeeting(
         WhatAMachineRuns::twoThings(),
         Obstacle::DeviceHasNoNetwork,
@@ -408,9 +408,9 @@ it('N3-R13 — a machine that cannot be reached keeps its session', function ():
 });
 
 it('a session that ended between the reading and the yes sends nothing', function (): void {
-    // The narrow path `N3-R13` opens: the listing was read while the session
+    // The narrow path a removed identity opens: the listing was read while the session
     // worked, and the stack refused it in between. This must come away quietly
-    // rather than raise on a tap — the frame after it is `N1-R44`'s screen.
+    // rather than raise on a tap — the frame after it is the sign-in screen.
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
     $keychain = AKeychainInMemory::working();
     $screen = theThingScreen($supervising, keychain: $keychain);

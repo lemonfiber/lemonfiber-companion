@@ -47,7 +47,7 @@ it('has modules to check', function () use ($modules): void {
  * a diff.
  */
 const MUTABLE_BY_DESIGN = [
-    // `N1-R7` — a credential is exchanged for a session once and nothing is
+    // A credential is exchanged for a session once and nothing is
     // kept to re-send. Forgetting is a mutation, and it is the entire point: a
     // readonly credential is one that still holds its secret after the
     // exchange, which is the thing the requirement forbids. The immutability
@@ -70,7 +70,7 @@ const MUTABLE_BY_DESIGN = [
     // not show it would be a lie on the glass.
     //
     // What it holds never leaves the process and never reaches a keychain,
-    // which is `N1-R60` — so the mutability buys a correct screen and costs
+    // which is keeping nothing on the device — so the mutability buys a correct screen and costs
     // nothing that outlives the run.
     TheStoreThisRunKeeps::class,
 ];
@@ -205,20 +205,20 @@ function reachesOutside(Module $module, array $forbidden): array
 // The exceptions, asserted by name so they cannot be widened by accident.
 // ---------------------------------------------------------------------------
 
-// `N1-R16` and `N1-R1`. The composer manifests already make this true —
+// Two rules at once. The composer manifests already make this true —
 // modules/sdk is the only one requiring lemonfiber/sdk-php — but that only fails
 // when the dependency analyser runs. This fails in the test suite, which runs
 // first.
 //
-// `N1-R1` is the same fact from the other side: the app speaks the published web
+// Parity is the same fact from the other side: the app speaks the published web
 // API contract and does not implement a second client of its own (`ADR-0013`).
 // One module naming the SDK is what makes a second client impossible to write
 // without this failing.
-// N1-R16 — every call to lemonfiber goes through the SDK, and one module makes
+// Every call to lemonfiber goes through the SDK, and one module makes
 // them. `Modules\Dx` is named beside it for the reason its kind exists: a
 // stand-in reads the SDK's own declarations to answer as a stack would, so it
-// names the package without calling it. What keeps N1-R16 whole is that the one
-// door to a stack is still `Modules\Sdk\Api\PinnedClients` — `N1-R20` refuses
+// names the package without calling it. What keeps it whole is that the one
+// door to a stack is still `Modules\Sdk\Api\PinnedClients` — the pinning rule refuses
 // every other file that builds a transport, stand-in included, and
 // `NothingReachesAStackUnpinnedTest` is where that is enforced.
 //
@@ -244,7 +244,7 @@ it('E3 — only the sdk adapter speaks HTTP', function (): void {
         // anything — the alternative would be a second client that does not
         // send, which is exactly the fourth consumer this rule refuses.
         //
-        // What actually keeps the socket shut is `N1-R20`: one file may build a
+        // What actually keeps the socket shut is the pinning rule: one file may build a
         // transport and `NothingReachesAStackUnpinnedTest` refuses every other
         // that names one. That rule has no exception for this kind, so the
         // guarantee is unchanged and this is a narrowing rather than a hole.
@@ -264,7 +264,7 @@ it('E3 — only the sdk adapter speaks HTTP', function (): void {
     ));
 });
 
-// `N1-R17` — where the SDK does not expose something, the app waits.
+// Where the SDK does not expose something, the app waits.
 //
 // Three things must not happen, and two of them are already impossible here.
 // Reaching past the SDK and re-implementing the call both mean speaking HTTP
@@ -327,7 +327,7 @@ it('E1 — only the composition root names an adapter', function (): void {
         // device is the shipped code with one thing missing rather than a
         // second implementation that resembles it. Building its own would be
         // the untestable decision this rule is about — and would put a second
-        // constructor for the outside thing in the repository, which `N1-R20`
+        // constructor for the outside thing in the repository, which the pinning rule
         // refuses outright.
         if ($module->kind === Kind::Adapter || $module->kind === Kind::StandIn) {
             continue;

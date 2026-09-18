@@ -43,7 +43,7 @@ use function sprintf;
  * **A fallback for a native route reached with no native runtime** — a shared
  * link opened in a browser — which the vendor answers through a
  * `NativeRouteFallback` binding. This application binds none and will not:
- * `N1-R4` says setup happens at the machine, and there is no web surface here
+ * Setup happens at the machine, and there is no web surface here
  * to land on. The contract does not exist in the installed version either, so
  * carrying the branch would mean naming a class that is not there.
  *

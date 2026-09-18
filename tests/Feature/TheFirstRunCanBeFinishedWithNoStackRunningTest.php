@@ -7,10 +7,10 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\YourStacks;
 
-// Q-R72 — the first run, walked through rather than only walked to.
+// The first run, walked through rather than only walked to.
 //
-// `N1-R54` builds the opening sequence a step at a time and ends it at pairing.
-// `N1-R56` says a paired device never sees it again. `ADeviceAlreadyPaired`
+// The opening sequence is built a step at a time and ends at pairing.
+// A paired device never sees it again. `ADeviceAlreadyPaired`
 // seeds three machines, which is what makes every other screen reachable — and
 // what made this one reachable only with that affordance off, at which point
 // there was nothing to pair with either.
@@ -68,7 +68,7 @@ it('N1-R6 — the camera sees a code for a machine this device has not met', fun
     $before = howManyMachinesAreHeld();
     $screen = theScanningScreen();
 
-    // `N1-R11` wants a name and the material carries none, so the field is what
+    // A device needs a name and the material carries none, so the field is what
     // the control waits on — typed through the framework's own property sync,
     // which is how a character reaches a screen on a device.
     $screen->__syncProperty('called', 'The one in the cupboard');

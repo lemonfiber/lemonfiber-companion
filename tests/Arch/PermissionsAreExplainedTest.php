@@ -6,15 +6,15 @@ use Modules\Kernel\Api\Permission;
 use Tests\Support\Catalogue;
 use Tests\Support\Manifests;
 
-// N4-R2 and N4-R3 — the app explains itself before the platform interrupts.
+// The app explains itself before the platform interrupts.
 //
 // The platform's own prompt is one line the app does not write, shown at the
 // moment it is least welcome, and on iOS it is shown exactly once — decline it
-// and there is no second chance to explain. `N4-R2` puts the app's own words
+// and there is no second chance to explain. The app's own words go
 // first, which means a sentence has to exist whether or not anybody has been
 // asked yet.
 //
-// `N4-R3` is the half that is easy to write down and hard to keep: every
+// The alternative is the half that is easy to write down and hard to keep: every
 // permission is optional, and each declined one has a *working alternative*.
 // `Permission::hasAnAlternative()` already says all three do. This is what stops
 // that being a promise nobody can read — an alternative the operator is never

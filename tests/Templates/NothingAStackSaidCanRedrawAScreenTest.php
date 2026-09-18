@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Template;
 
-// G3-R15 — text this product did not author cannot alter the surface showing it.
+// Text this product did not author cannot alter the surface showing it.
 //
 // The requirement is written for terminals and then says *on any surface that
 // shows it*, which is this one. A phone has no escape sequences, so the same

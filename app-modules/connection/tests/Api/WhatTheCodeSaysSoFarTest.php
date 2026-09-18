@@ -94,7 +94,7 @@ it('refuses material whose fingerprint is the wrong length', function (): void {
 });
 
 it('tells an expired code apart from an unreadable one', function (): void {
-    // N1-R49. The two remedies are opposite: checking the characters is wasted
+    // The two remedies are opposite: checking the characters is wasted
     // effort on a code that was typed perfectly, and the only way forward is a
     // new code from the stack.
     expect(WhatTheCodeSaysSoFar::read(aCode(expires: NOW), HowItWasRead::Typed, stopped())->got())
@@ -109,7 +109,7 @@ it('reads a scanned code by the same road as a typed one', function (): void {
 });
 
 it('shows the operator a form derived from the fingerprint it read', function (): void {
-    // N1-R51 — short enough to check at a glance, and derived from the whole
+    // Short enough to check at a glance, and derived from the whole
     // fingerprint. The point of asserting the exact string is that it is the one
     // the stack's own screen has to be producing.
     $shown = WhatTheCodeSaysSoFar::comparing(parsed(digestOf('a')))->toCompare();
@@ -146,7 +146,7 @@ it('hands the scanned road the material without minting a confirmation', functio
     // The two roads take two doors. `material()` is the scanned one: the digest
     // arrived in the payload, nobody compared anything, and reaching for
     // `confirmedByTheOperator()` to get at the material would conjure the one
-    // value N1-R50 rests on being unconjurable.
+    // value that must not be conjurable.
     $said = parsed(digestOf('c'));
 
     $answered = WhatTheCodeSaysSoFar::comparing($said)->material(
@@ -178,7 +178,7 @@ it('has no material to hand over where the code did not parse', function (): voi
 });
 
 it('makes no confirmation about a code that never reached the comparison', function (): void {
-    // N1-R50's "must not proceed on an unconfirmed fingerprint", from the side
+    // *Must not proceed on an unconfirmed fingerprint*, from the side
     // that makes it hard to arrange: there was no form on the screen, so there
     // is nothing the operator could have compared.
     //

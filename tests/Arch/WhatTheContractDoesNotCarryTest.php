@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// N2-R14 — the requirements this app cannot answer, and the field each waits on.
+// The requirements this app cannot answer, and the field each waits on.
 //
-// `N2-R14` says that where the contract does not carry something a requirement
+// Where the contract does not carry something a requirement
 // asks the app to state, the app must not substitute a value of its own: the
 // gap is raised against the contract and the requirement is answered there.
 // `NoSubstitutedWireValueRule` enforces the first half in the readers. This is
@@ -25,7 +25,7 @@ use Tests\Support\Tree;
 //
 // **Name an envelope only where the field could not land anywhere else.** A row
 // that names one is searched in that one alone, so a guess about *where* an
-// answer will arrive becomes a condition for noticing that it has. The `N2-R8`
+// answer will arrive becomes a condition for noticing that it has. The bound's
 // row below named `LifecycleEnvelope` on good reasoning — that is where what an
 // operation touched already arrives — and the bound landed on the status
 // reading instead, because it is worth having before the verb runs rather than
@@ -139,7 +139,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // The row above is pinned to `AdmissionEnvelope`, which catches the
         // answer arriving as a field on the envelope that exists and misses it
         // arriving as an envelope of its own. A second row rather than a
-        // widened first one, the way `N3-R5` sits beside `N3-R4`: a row watches
+        // widened first one, the way one member rule sits beside another: a row watches
         // one thing, and a row that watched two could half-fire.
         'envelope' => null,
         'field' => 'member',

@@ -24,7 +24,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R21 — what is running here that this stack never declared.
+// What is running here that this stack never declared.
 //
 // Reachable, named, and saying what each is running — and never shown as part
 // of the stack or offered a verb. The last of those is not asserted here
@@ -139,7 +139,7 @@ it('N2-R21 — a machine that could not be asked reports no strangers, not none'
 });
 
 it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
-    // The other half of `N3-R13`, and the half a screen shows rather than the
+    // The other half of a removed identity, and the half a screen shows rather than the
     // half it stores. A stack that did not answer says nothing about whether
     // this device is still signed into it — `Obstacle` owns that decision and
     // only the refused credential means signed out.

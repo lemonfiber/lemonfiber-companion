@@ -20,7 +20,7 @@ use Modules\Dx\Internal\WhatAStackWouldSay;
 it('builds nothing for an envelope it cannot read', function (): void {
     // A stand-in answering confidently about an envelope nobody has is worse
     // than one answering nothing: the payload would be invented rather than
-    // derived, which is the one thing `N1-R59` exists to prevent.
+    // derived, which is the one thing that may not happen.
     expect(WhatAStackWouldSay::inside('NoSuchEnvelope'))->toBeNull();
 });
 

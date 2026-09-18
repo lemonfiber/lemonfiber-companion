@@ -20,8 +20,8 @@ use Tests\Support\Fakes\StacksInMemory;
 //
 // G2's shape. Every test that needs a paired device will hand its subject a
 // `StacksInMemory` and never see a keychain — so if the fake is easier to
-// satisfy than the platform, N1-R11 is being enforced against a store that
-// always says yes.
+// satisfy than the platform, *two stacks are never mistaken for one* is being
+// enforced against a store that always says yes.
 //
 // What is asserted is only what both must promise. The platform's store
 // survives a launch and the fake does not, so "it is still there tomorrow"
@@ -109,7 +109,7 @@ it('the fake refuses for whichever reason it was given', function (): void {
         ->and($refusing->configured()->isEmpty())->toBeTrue();
 });
 
-// `N4-R22`, `N4-R23` — whether the device holds a pairing, asked of the store.
+// Whether the device holds a pairing, asked of the store.
 //
 // In the contract rather than in the adapter's own tests, because the whole
 // point of the method is that two implementations agree: `Opening` asks it
@@ -128,8 +128,9 @@ it('N4-R23 — says a device holds one the moment the store does', function (Sta
 })->with('every stacks implementation');
 
 it('N4-R23 — never disagrees with the record it is asked about', function (Stacks $stacks): void {
-    // The property, rather than the two answers above restated. `N4-R23` asks
-    // for the store itself rather than a flag, and the way a flag goes wrong is
+    // The property, rather than the two answers above restated. The answer
+    // comes from the store itself rather than a flag, and the way a flag goes
+    // wrong is
     // not by being absent — it is by being right until something forgets to
     // maintain it, which is a disagreement between these two and nothing else.
     expect($stacks->holdsAny())->toBe(! $stacks->configured()->isEmpty());

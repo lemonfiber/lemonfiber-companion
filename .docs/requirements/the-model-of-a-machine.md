@@ -83,3 +83,20 @@ requirement is right and this page is a defect.
 | `N1-R65` | One reading per frame | `Asking`, which publishes one method |
 | `N1-R66` | Nothing polls on the app's behalf | `HowTheOfferIsGoing` — a job that ended is where an automatic one would start |
 | `N3-R13` | An identity removed from the household is a signed-out app at the next refused call | `Obstacle` |
+
+## What is not built, and what it waits on
+
+Two rules in `tests/Arch` are registers rather than checks: they pass while a
+gap is open and go red the day it closes, so the closing announces itself
+instead of being something somebody has to remember.
+
+| Requirement | What it asks | What holds it open |
+|---|---|---|
+| `N1-R17` | Where the contract does not carry something the app needs, the work stops and the gap is raised rather than approximated from a neighbour | `WhatPairingMaterialCannotSayYetTest` and `WhatTheContractDoesNotCarryTest` |
+| `N1-R62` | Pairing material carries an identifier that is the stack's own and survives a re-issue, a change of address and a replacement of the certificate | nothing mints pairing material yet, in any repository |
+| `N1-R63` | The app decides which machine from that identifier alone, and material naming one it holds replaces rather than adds | waits on `N1-R62` |
+| `N1-R64` | A re-pairing that changes the pinned fingerprint discards the session; one that does not keeps it | waits on `N1-R62` |
+
+`WhatPairingMaterialCannotSayYet` watches `WhatPairingMaterialSays`, which is a
+closed set: the material growing a field is the app growing a case there and
+nowhere else. The day one lands, that rule goes red and names the work.

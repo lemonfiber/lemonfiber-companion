@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Obstacle;
 use Tests\Support\Catalogue;
 
-// N1-R10 — three different things, each with its own remedy.
+// Three different things, each with its own remedy.
 //
 // `Obstacle` keeps them apart in the type system, which is where the analyser
 // can see it. This is the half the analyser cannot: three cases that all render
@@ -19,7 +19,7 @@ use Tests\Support\Catalogue;
 // not do, and because the pairing it checks is between a module and the
 // application's text rather than anything inside either.
 //
-// **`G4-R1` is the other requirement this keeps.** Every user-facing error must
+// **There is another requirement this keeps.** Every user-facing error must
 // state what happened, what it means, and what to do. The sentence is the first
 // two and the `_action` key is the third, and the second test is what makes the
 // middle one true — three obstacles that all said the same thing would each

@@ -14,7 +14,7 @@ use Tests\Support\Template;
 // put it in the presenter, where F2 keeps it pure and where the mutation floor
 // actually measures it.
 //
-// DES-R24 rides along here because a literal colour is the same kind of
+// The ban on a literal colour rides along here because it is the same kind of
 // mistake: a value written into the class position that no rule outside this
 // suite can see.
 

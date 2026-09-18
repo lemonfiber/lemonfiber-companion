@@ -20,7 +20,7 @@ use stdClass;
  * **It answers a different object per call, because the adapter must.** A
  * client holds one stack's pin, so a fake that answered a shared instance would
  * let a test pass against an adapter that attributed one stack's reading to
- * another — `N1-R11`'s last clause, undetected.
+ * another — one machine's reading under the other's name, undetected.
  *
  * Written by hand rather than mocked (`G1`), so a change to the port fails to
  * compile here instead of drifting.

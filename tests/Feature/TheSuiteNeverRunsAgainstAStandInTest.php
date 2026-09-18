@@ -154,7 +154,7 @@ it('N1-R57 — a device with stand-ins on is already introduced to a machine', f
     // answers are the same class and only one of them holds a pairing.
     //
     // So this asks the difference that matters, which is also the whole of what
-    // `N1-R57` wants: every screen of the app sits behind a pairing, and a
+    // *Operate* wants: every screen of the app sits behind a pairing, and a
     // device holding none reaches exactly one frame.
     expect(whatTheContainerHandsBackFor(Stacks::class))->toBeInstanceOf(PlatformStacks::class);
 
@@ -175,7 +175,7 @@ it('N1-R60 — a session kept with stand-ins on reaches no device', function ():
     // `SignIntoAStack` keeps what a sign-in came back with, and with stand-ins
     // on what came back was assembled from the contract. Without a stand-in at
     // this port a fabricated session would be written into the operator's
-    // actual keychain and outlive the run that made it — which `N1-R60` refuses
+    // actual keychain and outlive the run that made it — which is refused
     // in as many words.
     //
     // Proved by a round-trip rather than by naming the adapter, because the
@@ -202,7 +202,7 @@ it('N1-R60 — a session kept with stand-ins on reaches no device', function ():
 });
 
 it('Q-R72 — takes the place of a port without being asked which', function (): void {
-    // The half of `Q-R72` that says a new affordance costs nothing outside this
+    // The half that says a new affordance costs nothing outside this
     // module. Written over whatever the registry holds rather than over
     // `Reaching`, so the day a second stand-in is added this covers it without
     // being edited — which is the claim the requirement actually makes.

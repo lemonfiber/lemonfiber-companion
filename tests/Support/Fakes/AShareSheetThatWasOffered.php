@@ -13,8 +13,8 @@ use Modules\Kernel\Api\WhyNothingWasShared;
  * A share sheet that remembers what it was handed.
  *
  * The stand-in every screen offering a report gets, so that no test needs a
- * phone. What it remembers is what `N4-R13` is about: the *text* that would
- * have left the device. A fake that only counted calls would let an adapter
+ * phone. What it remembers is what a report handed over rather than sent is
+ * about: the *text* that would have left the device. A fake that only counted calls would let an adapter
  * hand over a session token and stay green, and that is the one thing this
  * whole path exists to prevent.
  *

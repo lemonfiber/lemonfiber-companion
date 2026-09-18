@@ -15,13 +15,13 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N1-R6 and N1-R50 — pairing without a camera, and the comparison that makes it
+// Pairing without a camera, and the comparison that makes it
 // safe enough to allow.
 //
 // Typed entry is not a courtesy. It is the road on a device with no camera and
-// on one whose operator declined the permission, which N4-R3 requires to exist —
+// on one whose operator declined the permission, which has to exist —
 // and it is the road with no software comparison in it, because nothing scanned
-// the digest. N1-R50 fills that gap with the one comparison people are good at:
+// the digest. The confirmation fills that gap with the one comparison people are good at:
 // the app shows what it read, in a form somebody can hold in their head, and the
 // operator says whether it is the one their stack is displaying.
 //
@@ -84,7 +84,7 @@ it('reports back what was typed into it, which is what the template renders', fu
 });
 
 it('shows a fingerprint to compare once the code parses', function (): void {
-    // N1-R50's step. The form is derived from the whole fingerprint (N1-R51),
+    // The confirmation's step. The form is derived from the whole fingerprint,
     // so it is the string the stack's own screen has to be showing.
     $screen = typedInto(pairingScreen(), typedCode());
 
@@ -94,7 +94,7 @@ it('shows a fingerprint to compare once the code parses', function (): void {
 });
 
 it('refuses to offer pairing for a machine the operator has not named', function (): void {
-    // N1-R11 — the two things the material carries are an address and a digest,
+    // The two things the material carries are an address and a digest,
     // and neither is a name somebody can tell two stacks apart by.
     $screen = typedInto(pairingScreen(), typedCode(), name: '  ');
 
@@ -119,7 +119,7 @@ it('reads a code naming an unencrypted address as one it cannot use', function (
 });
 
 it('tells an expired code apart from one that was mistyped', function (): void {
-    // N1-R49. Checking the characters is wasted effort on a code that was typed
+    // Expiry. Checking the characters is wasted effort on a code that was typed
     // perfectly, and the only way forward is a new one from the stack.
     $expired = typedInto(pairingScreen(), typedCode(expires: READ_AT));
     $nonsense = typedInto(pairingScreen(), 'not a code');
@@ -154,7 +154,7 @@ it('pairs the stack when the operator says the form matches', function (): void 
 it('does nothing where the control is tapped before there is a form to compare', function (): void {
     // Reachable only by offering the control outside the branch that renders
     // the form, which is a template mistake rather than an operator one — and
-    // N1-R50 says what has to happen then: nothing.
+    // What has to happen then: nothing.
     $screen = typedInto(pairingScreen(), 'not a code');
 
     $screen->confirm();

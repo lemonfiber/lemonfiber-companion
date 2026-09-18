@@ -51,7 +51,7 @@ requirement is right and this page is a defect.
 | `N1-R1` | Parity across surfaces, rather than parity by everybody remembering | the catalogues, and the rules over them |
 | `N1-R2` | An operator away from the machine can see whether their house is working | the whole module |
 | `N2-R1` | The app opens on the overall verdict | `HowThisStackIs` |
-| `N2-R2` | Worst first, ordered here rather than trusted to arrive that way | `HowTheStacksStandingReads` |
+| `N2-R2` | Worst first, ordered here rather than trusted to arrive that way | `WorstFirst`, reached by `HowThisStackIs` |
 | `N2-R3` | A finding carries its code, its meaning and its remedy, in the core's own words | `HowAFindingReads` |
 | `G4-R3` | The cause is reported rather than each symptom independently | narrow, sort, then group — grouping last |
 | `G4-R4` | Plain explanation leads; technical detail is available and does not lead | it arrives on the row beneath everything above it |

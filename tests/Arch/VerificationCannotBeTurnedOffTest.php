@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Settings;
 
-// N1-R21 — certificate verification is not disabled in any build, under any
+// Certificate verification is not disabled in any build, under any
 // flag or configuration value.
 //
 // Three spellings, three mechanisms, and this is the third. S3's PHPStan rule

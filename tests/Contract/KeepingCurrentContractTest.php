@@ -66,7 +66,8 @@ function theSessionTheStackIsAskedAboutItsUpkeepWith(): Session
  * What both implementations answer with, where they answer.
  *
  * One release the household would notice, one it would not, and one that has
- * been taken back — so that the filtering `N2-R16` asks for has something to do.
+ * been taken back — so that filtering down to the ones worth showing has
+ * something to do.
  */
 function theSameStanding(): Upkeep
 {
@@ -87,7 +88,7 @@ function theSameStanding(): Upkeep
 }
 
 /**
- * What became of the last update, which both implementations report (`N2-R18`).
+ * What became of the last update, which both implementations report.
  *
  * Two endings and not one, and the second is not *failed*: a service that took
  * the image and would not come back up sends somebody to its logs, and one that
@@ -112,8 +113,8 @@ function theSameApplying(): HowServicesTookIt
  *
  * `state` appears twice on this payload and means two things. The top-level one
  * says how the last applied update finished; the *current, pending, stale*
- * triple `N2-R15` asks for is under `changelog`. They are both words, so nothing
- * but the contract tells them apart.
+ * triple a household is shown is under `changelog`. They are both words, so
+ * nothing but the contract tells them apart.
  *
  * @return array<string, mixed>
  */
@@ -337,8 +338,8 @@ it('stands in for a stack with a payload the contract would accept', function ()
 
 it('N2-R19 — the contract still names a way back on every service', function (): void {
     // `HowAServiceTookIt` has no case for *no way back*, and this is why that
-    // is safe rather than an omission. `N2-R19` refuses to offer undoing where
-    // the stack named neither, and the stack names one every time: `reversal`
+    // is safe rather than an omission. Undoing may not be offered where the
+    // stack named no way back, and the stack names one every time: `reversal`
     // is required and says `rollback` or `restore`.
     //
     // The day it becomes optional, the requirement stops being answered by the

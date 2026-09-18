@@ -26,7 +26,7 @@ declare(strict_types=1);
  * variable, in the same method. A debug build keeps its development
  * dependencies through all three steps and a release build drops them through
  * all three — which is what lets a stand-in for a stack reach a handset while
- * being absent from anything shipped (`N1-R57`, `N1-R61`).
+ * being absent from anything shipped.
  *
  * **What the bundle removes is the other half of this, and it is not patched
  * here.** The cleanup drops `tests` at any depth, so an autoloader entry

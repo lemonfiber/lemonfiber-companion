@@ -5,12 +5,12 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Generated\Kind;
 
 /**
- * `N1-R2` — every action available from another surface is offered by the app,
+ * Every action available from another surface is offered by the app,
  * except where a requirement says otherwise and why.
  *
  * The stack's surface is not a list somebody maintains here: it is the `Kind`
  * enum the SDK generates from `contract/web-api.contract.json`. Every kind is
- * something another surface can show or do, so the question `N1-R2` asks is
+ * something another surface can show or do, so the question is
  * answerable by reading it.
  *
  * **Three lists, and no count anywhere.** The obvious shape is a burndown — a
@@ -30,12 +30,12 @@ const OFFERED = [];
  * Kinds the app deliberately does not offer, each with the requirement saying
  * why.
  *
- * `N1-R2`'s escape clause is narrow on purpose — "except where a requirement
+ * The escape clause is narrow on purpose — "except where a requirement
  * here states otherwise **and why**" — so an entry needs a requirement, not a
  * judgement. Anything that merely has not been built yet belongs below.
  */
 const ELSEWHERE = [
-    // N1-R35: on a launch with no stack configured the app says that setup
+    // On a launch with no stack configured the app says that setup
     // happens at the machine and offers pairing. Setup is the one thing the
     // companion is required *not* to carry out, so the three kinds that are
     // setup are not omissions.
@@ -48,7 +48,7 @@ const ELSEWHERE = [
  * Kinds nobody has offered yet.
  *
  * **`Config` carries a second requirement, and this is where it will be read.**
- * `N1-R5` says the app must offer reconfiguration *in full* once connected, and
+ * The app must offer reconfiguration *in full* once connected, and
  * that is not gated here because it cannot honestly be gated yet. The settings
  * are not a list this side can know: `ConfigEnvelope` carries
  * `settings: list<array{key, secret, value}>`, which the stack reports at
@@ -57,12 +57,12 @@ const ELSEWHERE = [
  * What it means when `Config` moves up: the screen renders the list the stack
  * sent, and the app holds no list of its own. An app that enumerates the
  * settings it knows about offers a subset the day the stack adds one, and
- * offers it silently — which is the whole of what `N1-R5` forbids.
+ * offers it silently — which is the whole of what is forbidden.
  *
  * A rule guessing at that from the source text was considered and rejected. The
  * only shape available is "does anything here look like a list of setting
  * keys", which is prose-matching, and this codebase has already learned what
- * that costs: the `N1-R17` checker matched the comments explaining the rule,
+ * that costs: the deleted gap checker matched the comments explaining the rule,
  * and a rule that fires on its own documentation is a rule somebody deletes —
  * taking the real coverage with it.
  *

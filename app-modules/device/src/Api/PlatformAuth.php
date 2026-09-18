@@ -18,8 +18,8 @@ use Modules\Kernel\Api\Lock;
  * seven tests each. What is decided here is only how an answer becomes a
  * {@see Lock}.
  *
- * **Why our own plugin rather than the stock biometric call.** `N4-R8` says a
- * biometric failure falls back to the device passcode. On iOS that is the
+ * **Why our own plugin rather than the stock biometric call.** A biometric
+ * failure must fall back to the device passcode. On iOS that is the
  * difference between `.deviceOwnerAuthenticationWithBiometrics` and
  * `.deviceOwnerAuthentication`; on Android it is whether `DEVICE_CREDENTIAL` is
  * among the accepted authenticators. Both are constants chosen before the dialog
@@ -41,7 +41,7 @@ final readonly class PlatformAuth implements DeviceAuth
     {
         // `Authenticated::byTheDevice()` is reached on exactly one condition and
         // from exactly one line in this application. That is the thin guarantee
-        // `N4-R8`'s second clause rests on, and it is the right thin guarantee:
+        // the fallback rests on, and it is the right thin guarantee:
         // the mistake is now in one file that exists to be read carefully,
         // rather than available anywhere somebody holds a boolean.
         return $this->device->authenticate($this->reason())

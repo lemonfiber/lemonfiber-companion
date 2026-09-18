@@ -22,8 +22,8 @@ use Modules\Kernel\Api\WhatWasWanted;
  * request list needs a machine with a house behind it. What it remembers is the
  * half a screen cannot assert about itself: *which* stack was asked. A screen
  * holding two stacks and showing one household's requests under the other's
- * name is `N1-R11` broken where an operator would act on it — they would
- * approve a download onto the wrong machine.
+ * name is two machines mistaken for each other where an operator would act on
+ * it — they would approve a download onto the wrong machine.
  *
  * Not `readonly`: what was asked is written when the asking happens.
  */
@@ -88,10 +88,9 @@ final class AHouseholdThatAsked implements Wanting
     /**
      * A household that answers the reading and meets something on a decision.
      *
-     * The narrow case `N3-R13` opens and a reading cannot reach: a stack that
-     * refuses the credential the moment somebody taps approve is the same
-     * signed-out device as one that refuses a read, and that is a different
-     * call.
+     * The narrow case a reading cannot reach: a stack that refuses the
+     * credential the moment somebody taps approve is the same signed-out device
+     * as one that refuses a read, and that is a different call.
      */
     public static function wantingButRefusing(Requested $wanted, Obstacle $why): self
     {
@@ -168,8 +167,8 @@ final class AHouseholdThatAsked implements Wanting
 
         // The session is read and the value dropped, which is
         // `AStackThatWasAsked`'s argument: a fake holding one is the one place
-        // a fixture could teach the habit `N4-R5` exists to prevent, and
-        // reading it is what proves the port was handed one at all.
+        // a fixture could teach the habit of keeping a secret past its use,
+        // and reading it is what proves the port was handed one at all.
         $this->carried = $session->forTheHeader() !== '';
     }
 }

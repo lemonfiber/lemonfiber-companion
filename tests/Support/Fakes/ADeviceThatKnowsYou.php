@@ -16,7 +16,7 @@ use Modules\Kernel\Api\Lock;
  * {@see \Modules\Device\Api\PlatformAuth}, so a fake easier to satisfy than the
  * platform fails there rather than quietly making the suite green (`G2`).
  *
- * **`N4-R8`'s second clause is why this cannot cheat.** There is no state here
+ * **Nothing here can be open without having been checked.** There is no state
  * meaning "open, but nobody checked", because {@see Lock} cannot express one:
  * `Authenticated` has a private constructor and one maker. A fake wanting to
  * fall back to unlocked would have to call that maker, which is the same line
@@ -66,8 +66,8 @@ final class ADeviceThatKnowsYou implements DeviceAuth
     /**
      * How many times the operator was interrupted.
      *
-     * `N4-R19` is about exactly that, so the count is the assertion — and
-     * something has to be keeping it.
+     * Asking once per unlock is about exactly that, so the count is the
+     * assertion — and something has to be keeping it.
      */
     public function asked(): int
     {

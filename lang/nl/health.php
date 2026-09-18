@@ -75,7 +75,7 @@ return [
     ],
     'nothing_was_carried_out' => 'Er bleek niets te doen.',
     'look_again' => 'Kijk opnieuw wat er te herstellen valt',
-    // N2-R9 — wat niet meer binnenkomt. De fase is waar het bleef steken, en
+    // Wat niet meer binnenkomt. De fase is waar het bleef steken, en
     // dat is het hele verschil tussen een indexer die niets vindt en een
     // bestand dat de bibliotheek nooit heeft opgepakt.
     'stage' => [
@@ -107,7 +107,7 @@ return [
     'nothing_stopped_action' => 'Alles waar het huishouden om vroeg is onderweg of al binnen.',
     'what_stopped' => 'Wat niet meer binnenkomt',
 
-    // N2-R10 — een begrensde, doorzoekbare weergave die de dienst noemt en
+    // Een begrensde, doorzoekbare weergave die de dienst noemt en
     // zegt dat dit een venster is en niet het geheel.
     'stream' => [
         'stdout' => 'Uitvoer',
@@ -131,7 +131,7 @@ return [
         'while_work_runs' => 'Kijkt elke :count seconden opnieuw zolang dit loopt.',
     ],
 
-    // N2-R7 — wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
+    // Wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
     // een dienst nu staat; hoeveel het uitmaakt is wat het zou kosten als dat
     // misging, en dat hoort bij hoe de machine is opgezet.
     'service' => [
@@ -166,8 +166,8 @@ return [
 
 
 
-    // N2-R7's screen. The verbs above are the buttons; these are the sentences
-    // around them — what a row says about itself, and what a stop is stated to
+    // The supervising screen. The verbs above are the buttons; these are the
+    // sentences around them — what a row says about itself, and what a stop is stated to
     // disturb before anybody agrees to it.
     'in_form' => 'Onderdeel van :form',
     'it_exited' => 'Gestopt met :code',
@@ -177,7 +177,7 @@ return [
     'no_forms_at_all' => 'Er is nog niets ingericht op deze machine',
     'by_form' => 'Of een hele form tegelijk',
 
-    // N2-R7's second granularity, on the screen about one of them. A route
+    // The second granularity, on the screen about one of them. A route
     // can name something the machine has since stopped running, which is an
     // answer rather than a blank frame.
     'nothing_of_that_name' => 'Deze machine draait niets dat :name heet',
@@ -187,7 +187,7 @@ return [
     'a_whole_form' => 'Een form is elke dienst erin. De knoppen hieronder raken ze allemaal.',
     'leaned_on_by' => ':name werkt niet zonder hem',
 
-    // N2-R8. Said before the yes and not after it.
+    // What a stop disturbs. Said before the yes and not after it.
     'about_to' => 'Op het punt :what te wijzigen',
     'about_to_form' => 'Dit is elke dienst in die form, niet alleen die ene.',
     'would_not_help' => 'Hij start al keer op keer opnieuw. Nog een herstart komt in de rij.',

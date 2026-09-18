@@ -52,7 +52,7 @@ function introductions(): Introducing
 }
 
 it('carries the address and the certificate across unchanged', function (): void {
-    // N1-R18 — the fingerprint comes from the material and never from the
+    // The fingerprint comes from the material and never from the
     // network. Nothing in this step reads anything.
     $said = material(HowItWasRead::Scanned);
 
@@ -64,7 +64,7 @@ it('carries the address and the certificate across unchanged', function (): void
 });
 
 it('gives two stacks paired from the same material two identities', function (): void {
-    // N1-R11's last clause depends on this: an identity derived from the
+    // Telling two machines apart depends on this: an identity derived from the
     // address or the digest would make one machine out of two, and a reading
     // from either would be attributed to whichever row won.
     $said = material(HowItWasRead::Scanned);
@@ -77,7 +77,7 @@ it('gives two stacks paired from the same material two identities', function ():
 });
 
 it('refuses to pair typed material on the scanned road', function (): void {
-    // N1-R50 — typed entry has no software comparison in it, so this road has
+    // Typed entry has no software comparison in it, so this road has
     // nothing to go on and says so rather than assuming.
     expect(static fn(): mixed => introductions()->stack(material(HowItWasRead::Typed), StackName::of('The loft')))
         ->toThrow(PairingWasNotConfirmed::class);
@@ -104,7 +104,7 @@ it('refuses a confirmation the operator gave about another certificate', functio
 
 it('accepts a confirmation about scanned material as well', function (): void {
     // A surface that both scanned and showed the fingerprint has done more than
-    // N1-R50 asks rather than less.
+    // a confirmed fingerprint asks, rather than less.
     $said = material(HowItWasRead::Scanned);
 
     expect(introductions()->confirmed($said, StackName::of('The loft'), confirmationOf('a'))->at()->is($said->at()))

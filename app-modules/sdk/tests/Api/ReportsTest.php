@@ -615,8 +615,8 @@ it('G4-R4 — reads the technical detail a verdict carried', function (): void {
 it('G4-R4 — a verdict with no detail is one the core added nothing to', function (): void {
     // The one field here that does not refuse when it is absent. The contract
     // marks it optional, so missing is a core with nothing to add rather than a
-    // conversation gone wrong — and `N2-R14` is about values a payload should
-    // have carried.
+    // conversation gone wrong — and what this side refuses to invent is a value
+    // the payload should have carried.
     $verdict = [
         'outcome' => 'fail',
         'code' => 'VPN-3',

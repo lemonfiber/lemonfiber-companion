@@ -7,10 +7,10 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatWasDecided;
 use Tests\Support\Tree;
 
-// N1-R4 and N2-R12 — the doors this application is allowed to open on a stack.
+// The doors this application is allowed to open on a stack.
 //
-// Two requirements with one shape. `N1-R4` says the app must not offer first-run
-// setup, and `N2-R12` says it must not offer to set or change a credential's
+// Two requirements with one shape. The app must not offer first-run
+// setup, and must not offer to set or change a credential's
 // value. Both are about writes, and both are stated in the spec as things a
 // screen must not do — which is a rule about prose, and prose is what the
 // household module's README argues cannot be checked without a rule that fires
@@ -47,29 +47,29 @@ use Tests\Support\Tree;
 
 /** Every method this application calls on an SDK client, and why that one. */
 const DOORS_THE_APP_OPENS = [
-    // `N1-R65`'s shape: a screen reads once and renders what came back. Every
+    // One read per frame: a screen reads once and renders what came back. Every
     // read this app does — the doctor run, the household, what has stopped —
     // goes through this one.
     'read' => 'reads an envelope from a named endpoint, changing nothing',
 
-    // `N2-R10`'s bounded read. Its own door rather than `read()` because the
+    // The bounded read. Its own door rather than `read()` because the
     // answer is one document a line rather than one envelope.
     'logs' => 'reads the tail of one service, bounded and named',
 
-    // `N2-R4` and `N2-R5`: the one thing this app can ask a stack to change,
+    // The one thing this app can ask a stack to change,
     // and it takes a `Repair` the stack itself offered rather than an endpoint
     // and a body. A caller cannot spell an arbitrary change through it.
     'repair' => 'carries out a repair the stack offered, against the reading it was offered on',
 
-    // `N1-R41`'s other half: work that answered with a name is asked after by
+    // The other half of an undelivered action: work that answered with a name is asked after by
     // that name. It reads and changes nothing — a job's standing is what the
     // stack already decided — and it is how a repair's outcome arrives at all.
-    // It was opened when `N2-R4` was built and this rule could not see it: the
+    // It was opened when the repairs screen was built and this rule could not see it: the
     // call is chained off `client(...)` rather than landing in a variable, and
     // the rule matched a receiver.
     'whatBecameOf' => 'asks what became of work the stack named, changing nothing',
 
-    // `N2-R7`'s three verbs, and nothing else can reach it: the path is
+    // The three verbs, and nothing else can reach it: the path is
     // composed by `Api::action()` from a `WhatToDoWithIt` case, which is a
     // closed set this app cannot add a name to at a call site.
     'act' => 'asks for one of the three verbs `N2-R7` names, by a name the rule below holds it to',
@@ -80,39 +80,39 @@ const DOORS_THE_APP_OPENS = [
     // transport to put a mock under it, so that a build somebody is looking at
     // answers every screen without a stack and without a socket.
     //
-    // Listed rather than exempted, because `N1-R4` is about what this app *can*
+    // Listed rather than exempted, because the rule is about what this app *can*
     // do and reaching a client's transport is a real capability. What bounds it
-    // is `N1-R20`: the transport can be taken but not built, and a request
+    // is the pinning rule: the transport can be taken but not built, and a request
     // written through it still carries the pin that stack was introduced under.
     'connector' => 'takes the client\'s own transport, so a stand-in can answer from the contract instead of the network',
 ];
 
 /** Every verb this application can ask a stack for, and why that one. */
 const VERBS_THE_APP_ASKS_FOR = [
-    // `N2-R7`. A start disturbs nothing, which is why it is the one verb
-    // `N2-R8` asks for no confirmation of.
+    // A start disturbs nothing, which is why it is the one verb
+    // that asks for no confirmation.
     'up' => 'starts a form, or a service inside one',
 
-    // `N2-R7`, and the verb `N2-R8` exists for: it takes something away from
+    // The verb a confirmation exists for: it takes something away from
     // everybody in the house until somebody says otherwise.
     'down' => 'stops a form, or a service inside one',
 
-    // `N2-R7`. A stop that means to come back, and still a gap the household
+    // A stop that means to come back, and still a gap the household
     // is in — so it is asked about as the stop is.
     'restart' => 'stops and starts it again',
 
-    // `N2-R11`'s two, which are not verbs about a machine at all. They settle
+    // The household's two, which are not verbs about a machine at all. They settle
     // one thing somebody in the house already asked for, and they are here
     // because this list is about what may go through `Api::action()` rather
     // than about services — a second list would be a second answer to *what
     // can this app ask a stack to do*, and the two would drift.
-    // `D7-R6` is this line: a pending request is approvable from lemonfiber
+    // This line is the requirement: a pending request is approvable from lemonfiber
     // without opening Seerr. The verb going to the stack's own endpoint is what
     // makes that true — there is no road from this app to the tool the request
     // came from, and this is the one that replaces it.
     'household-approve' => 'gives one waiting request the thing it asked for',
 
-    // `D7-R7` is why this one carries a sentence: a refusal owes the person who
+    // This one carries a sentence because a refusal owes the person who
     // asked a reason, and {@see \Modules\Kernel\Api\Decided} cannot be built
     // without one.
     'household-decline' => 'turns one waiting request down, with the reason it was turned down for',
@@ -213,7 +213,7 @@ function theApplicationsSources(): array
  * receiver reads one spelling of a call: `$door = $client; $door->act(...)`
  * walked past every assertion here, and so did the two calls `Menders` already
  * makes — `$this->clients->client(...)->whatBecameOf(...)` is chained and never
- * lands in a variable at all, so a door this app has opened since `N2-R4` was
+ * lands in a variable at all, so a door this app has opened since the repairs screen was
  * built was one this rule had never seen.
  *
  * It over-approximates: a method of the same name on something that is not a
@@ -325,7 +325,7 @@ it('N1-R4, N2-R12 — the door that writes whatever it is told is never told a n
 
     // Every call composes its path with `Api::action()`, and none of them hands
     // that a string. A literal there is this app choosing an action's name, and
-    // `setup` is a name — which is the whole of what `N1-R4` refuses.
+    // `setup` is a name — which is the whole of what is refused.
     $opened = everyCallOnTheWritingDoor();
 
     expect($opened)->not->toBe([], 'no call on the writing door was found, so this rule read nothing');

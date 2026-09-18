@@ -19,8 +19,8 @@ use Tests\Support\Fakes\APlatformStore;
 // G2's shape, and the reason it matters most here: every other test in this
 // repository that needs somewhere to put a session will hand its subject an
 // `AKeychainInMemory` and never see a keychain at all. If the fake is easier to
-// satisfy than the platform, `N4-R5` is enforced against a store that always
-// says yes.
+// satisfy than the platform, *nothing secret is written where it can be read*
+// is enforced against a store that always says yes.
 //
 // The refusal is a value rather than an exception, which C1 required and which
 // settled a second problem: shipmonk forbids throwing a checked exception inside
@@ -157,7 +157,7 @@ function everyStoreHolding(): array
 }
 
 it('N1-R7 — gives back the session it was keeping, so nothing asks twice', function (): void {
-    // The whole point of keeping one. `N1-R7` exchanges the password once, and
+    // The whole point of keeping one. The password is exchanged once, and
     // "once" is only true if the next launch finds what the first one kept.
     foreach (everyStoreHolding() as $which => $store) {
         expect(whatWasResumed($store->resume(aStackThatIsPaired())))->toBe(THE_TOKEN, $which);

@@ -30,7 +30,7 @@ use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 
 /**
- * `N3-R9` — a member is not shown what the operator is shown.
+ * A member is not shown what the operator is shown.
  *
  * > A member MUST NOT be shown lifecycle controls, logs, credentials,
  * > diagnostics, or another member's requests.
@@ -42,24 +42,24 @@ use Tests\Support\Module;
  * renders a `Report` because a `Report` was what the caller had.
  *
  * Four of the five clauses name types here. A credential is the fifth and is
- * held elsewhere: one cannot reach any screen at all (`N2-R12`), so the two
+ * held elsewhere: one cannot reach any screen at all, so the two
  * named below are the shapes a session takes rather than the value itself.
  *
  * Lifecycle controls and logs were once absent from this list because there was
- * nothing on this side to refuse. They arrived with `N2-R10` and `N2-R7`, and
+ * nothing on this side to refuse. They arrived with the logs and the verbs, and
  * they went in here rather than into a second rule — which is what this
  * paragraph asked for while they were missing. What makes the lifecycle half
  * worth the care is that its types are not only a reading: {@see Supervising}
  * and {@see AgreedTo} *act*, so a household surface that could name them could
  * stop a service the house is watching.
  *
- * `WentWrong` is on the list for `N3-R10` rather than for this requirement. A
+ * `WentWrong` is on the list for a neighbouring rule rather than for this one. A
  * member whose request failed on a stack fault is told it did not work and that
  * the operator has been told, and is **not** shown the fault — and `WentWrong`
  * is exactly the fault, the code and meaning and remedies the core gave.
  *
  * {@see Obstacle} is deliberately absent. A stack that cannot be reached is not
- * a fault being shown to a member: `N3-R12` has them told plainly that asking
+ * a fault being shown to a member: they are told plainly that asking
  * for something new is declined while it is unreachable, which needs the reason
  * rather than hides it.
  *

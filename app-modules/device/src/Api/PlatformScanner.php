@@ -21,7 +21,7 @@ use Native\Mobile\PendingScanner;
  * become one {@see WhatTheCameraSaw}, and the interesting half of that is the
  * refusal: `ScannerCancelled` is dispatched both when somebody presses back and
  * when the camera permission is denied, so the reason string is what tells a
- * screen offering the typed road (`N4-R3`) from one offering another go.
+ * screen offering the typed road from one offering another go.
  * {@see WhatTheScannerSaid} is where that word is read.
  *
  * **One format, and which one is not this class's to decide.** The plugin
@@ -30,8 +30,8 @@ use Native\Mobile\PendingScanner;
  * That was a `['qr']` here, which made a fact about pairing material look like
  * a setting on a scanner.
  *
- * **The prompt is `N4-R2`'s own sentence, asked for by the case rather than by
- * a key written here.** The platform paints it over the camera preview, and on
+ * **The prompt sentence comes from the case rather than from a key written
+ * here.** The platform paints it over the camera preview, and on
  * the first scan this call is also what raises the permission dialog — so it is
  * the last thing the operator reads before the system takes over. A key spelled
  * as a literal is one nothing checks: `PermissionsAreExplainedTest` proves every

@@ -33,7 +33,7 @@ use function str_contains;
  * **It is here because SonarCloud found it first**, which is exactly the
  * argument {@see NoManyReturnsRule} makes: `S1448` reported it on a pull
  * request, after the work was finished and in a place the author had stopped
- * looking. `Q-R64` has CI refuse any open issue, so the ceiling was already
+ * looking. CI refuses any open issue, so the ceiling was already
  * enforced — a push away, by a service that has to finish analysing first.
  *
  * **`H3` claimed this before anything counted.** Its row names four caps —

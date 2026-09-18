@@ -2172,8 +2172,7 @@ final readonly class Fixtures
             // The one every other fixture here is invisible to. A class token
             // holding an echo is dropped unread, so the three rules above go
             // quiet together: this file names an unknown utility, a literal
-            // colour and the accent set as text, and F3, DES-R24 and DES-R15
-            // all pass it.
+            // colour and the accent set as text, and all three pass it.
             Fixture::suite('F9', sprintf('%s/runtime-class.blade.php', $views), <<<'BLADE'
                 <native:column class="{{ $open ? 'bg-theme-accnt' : 'bg-red-500' }}">
                     <native:text class="{{ $open ? 'text-theme-accent' : '' }}">{{ __('health.overall.healthy') }}</native:text>

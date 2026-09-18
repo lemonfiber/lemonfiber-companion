@@ -19,9 +19,8 @@ use Tests\Support\Fakes\VerdictsInMemory;
 // G2's shape, and the promise here is narrower than it looks. What both must
 // agree on is not *where* a verdict is kept but *what kind of value comes back*:
 // a retained reading, never a live one, whatever the store underneath is. That
-// is the clause `N1-R9` and `N1-R24` rest on — the opening screen may show a
-// remembered verdict precisely because nothing that comes out of this port can
-// pass as one read just now.
+// is what lets the opening screen show a remembered verdict at all: nothing
+// that comes out of this port can pass as one read just now.
 //
 // The adapter is driven against a hand-written stand-in for the platform's own
 // store, as every adapter here is: there is no Keychain behind a PHP process on

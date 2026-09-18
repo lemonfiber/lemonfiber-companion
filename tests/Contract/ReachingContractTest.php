@@ -18,8 +18,8 @@ use Tests\Support\Fakes\AClientForWhicheverStack;
 //
 // G2's shape. Every test that needs a client will hand its subject an
 // `AClientForWhicheverStack` and never open a socket — so if the fake is easier
-// to satisfy than the adapter, N1-R11 is being enforced against something that
-// always says yes.
+// to satisfy than the adapter, *one machine is never mistaken for another* is
+// being enforced against something that always says yes.
 //
 // What is asserted is only what both must promise. The adapter builds an SDK
 // client and the fake does not, so "it speaks the API" belongs to the adapter's
@@ -78,7 +78,7 @@ it('N1-R11 — builds a separate client per stack', function (Reaching $reaching
 it('builds a separate client for the same stack asked for twice', function (Reaching $reaching): void {
     // Asked because the binding is not a singleton and the reason matters: a
     // client carries a session, and a session outliving the reach it was made
-    // for is the shape `N1-R24` refuses — a confirmation served from a value
+    // for is exactly what is refused — a confirmation served from a value
     // somebody else's request established.
     $once = $reaching->client(aStackToReach(), aSessionToCarry());
     $again = $reaching->client(aStackToReach(), aSessionToCarry());

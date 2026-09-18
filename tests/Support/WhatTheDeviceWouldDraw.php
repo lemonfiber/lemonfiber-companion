@@ -30,8 +30,8 @@ use RuntimeException;
  * The cost of not being able to ask has already been paid. A padded column
  * rendered empty and last, because slot content is collected before the
  * component's own template runs — every text rule passed and the device showed
- * an unpadded screen. `N4-R24` is the same shape of question: *nothing drawn
- * behind an engaged lock* is a claim about a rendered tree, and a rule reading
+ * an unpadded screen. There is the same shape of question again: *nothing
+ * drawn behind an engaged lock* is a claim about a rendered tree, and a rule reading
  * the template text can see a `@if` and cannot see which arm it produces.
  *
  * **The precompiler has to be switched on.** It transforms `<native:…>` only

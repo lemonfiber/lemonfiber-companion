@@ -31,7 +31,7 @@ use Tests\Support\Module;
  * Requirements that are satisfied by a path not existing.
  *
  * Several of the companion's security requirements are not about what a type
- * does — they are about what it must never be able to reach. `N1-R45` is one:
+ * does — they are about what it must never be able to reach. A surviving pairing is one:
  * a session ending must not discard the pairing, and the way to be sure is that
  * nothing on that path can name a pairing at all.
  *
@@ -373,7 +373,7 @@ it('N2-R20 — nothing a stack is standing on can be handed to the apply path', 
     // the reading as from the value: a `runningRelease()` added for a template
     // that wanted "just the version" would hand back exactly what was taken
     // away. The one route to a `Release` is `Upkeep::waiting()`, which has
-    // already applied `N2-R16`'s filter — a `Releases` is not a `Release` and
+    // already applied the withdrawal filter — a `Releases` is not a `Release` and
     // nothing here confuses the two.
     $applyPath = [];
 

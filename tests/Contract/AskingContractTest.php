@@ -30,7 +30,8 @@ use Tests\Support\WhatTheContractAccepts;
 //
 // `G2`'s shape. Every test of a screen showing health will hand its subject an
 // `AStackThatWasAsked` and never open a socket, so a fake easier to satisfy
-// than the adapter would enforce `N1-R10` against a stack that always answers.
+// than the adapter would enforce *every obstacle says what happened and what to
+// do* against a stack that always answers.
 //
 // Both arms are driven from the same table of what the far end did: the adapter
 // is given a response, the fake is given the answer that response should

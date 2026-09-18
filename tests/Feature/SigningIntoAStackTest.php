@@ -20,7 +20,7 @@ use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N1-R7 and N1-R10 — the password exchanged once, and the three things that can
+// The password exchanged once, and the three things that can
 // come back.
 //
 // Here rather than in the operator module's own tests because a screen renders,
@@ -28,7 +28,7 @@ use Tests\Support\Fakes\StacksInMemory;
 // module suite. Everything this screen decides is driven through it either way.
 //
 // What the screen must get right is not "did it call the port". It is that the
-// operator is told which of three situations they are in, because `N1-R10`'s
+// operator is told which of three situations they are in, because the obstacle's
 // remedies differ sharply: a wrong password is retyped, a door counting
 // attempts is made worse by trying, and a stack that is not answering is not a
 // password question at all. A screen that flattened them would put "try again"
@@ -259,7 +259,7 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::NoStoreOnThisDevice, true, false],
         [HowTheSignInWent::TheStoreWouldNotOpen, true, false],
         // No field and no way back: the remedy is in the phone's settings, so
-        // both controls this screen could offer would do nothing (`N4-R17`).
+        // both controls this screen could offer would do nothing.
         [HowTheSignInWent::TheNetworkIsNotPermitted, false, true],
     ];
 

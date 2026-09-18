@@ -23,7 +23,7 @@ use function str_repeat;
 // the app is wrong.
 
 it('N1-R11 — no two stand-ins share an identity', function (): void {
-    // Identity is what `N1-R11` keeps stacks apart by, and two sharing one
+    // Identity is what keeps stacks apart, and two sharing one
     // would be one machine wearing two names: the store folds them together on
     // `remember()`, so whichever was seeded last would be the only one listed.
     $seen = [];

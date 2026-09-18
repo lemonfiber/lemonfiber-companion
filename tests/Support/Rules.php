@@ -35,7 +35,7 @@ use function trim;
  * file the bundle dropped is inert until something autoloads it, which on a
  * device nothing does. That is what lets a debug build carry development
  * dependencies — which is what a stand-in for a stack needs to reach a handset
- * at all (`N1-R57`).
+ * at all.
  */
 final readonly class Rules
 {

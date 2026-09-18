@@ -10,7 +10,7 @@ use Lemonfiber\Sdk\Http\RunToken;
 use Tests\Support\Tree;
 
 /**
- * `N1-R18`/`N1-R19`/`N1-R20` — nothing connects to a stack without pinning.
+ * Nothing connects to a stack without pinning.
  *
  * `ADR-0018` is the whole trust model: the fingerprint comes from the pairing
  * material and never from the network, the app pins it against the stack, and
@@ -44,9 +44,10 @@ use Tests\Support\Tree;
  * would have carried the public key is deprecated in the transport while the
  * one matching `ADR-0018` is supported.
  *
- * So the value is unchanged and `N1-R18` now fixes its written form — SHA-256
- * over the DER encoding, lower-case hex — which is the half of that confusion
- * no type can catch. `C6-R19` covers the cry-wolf worry from the other side:
+ * So the value is unchanged and its written form is fixed — SHA-256 over the
+ * DER encoding, lower-case hex — which is the half of that confusion no type
+ * can catch. The stack's own announcement covers the cry-wolf worry from the
+ * other side:
  * the stack announces a certificate change before it happens.
  */
 

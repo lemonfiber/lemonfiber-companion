@@ -17,7 +17,7 @@ use NativePHP\LocalNotifications\ScheduledNotification;
  *
  * `title()` and `body()` are overridden to record rather than to store, because
  * what the contract asserts is which wording the adapter chose — and on the
- * guarded arm, that no stack name appears in it at all (`N4-R20`).
+ * guarded arm, that no stack name appears in it at all.
  */
 final class ASentNotification extends ScheduledNotification
 {

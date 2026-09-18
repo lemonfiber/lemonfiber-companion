@@ -24,10 +24,10 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Tests\Support\WhatTheContractAccepts;
 
-// N1-R58, N1-R59 — the seam sits below the transport, and the app runs on it.
+// The seam sits below the transport, and the app runs on it.
 //
-// Two requirements, and this file is where both are held. `N1-R59` is that the
-// whole app can be run and looked at with nothing else running. `N1-R58` is
+// Two requirements, and this file is where both are held. One is that the
+// whole app can be run and looked at with nothing else running. The other is
 // where the thing it runs on is allowed to sit: below the transport the app's
 // client uses, so that the client, the envelope reading and the wire-version
 // check are the ones a real stack would meet.
@@ -68,7 +68,7 @@ function aStackThatIsNotListening(): Stack
 
 function aSessionThatOpensNothing(): Session
 {
-    // N1-R60 — a word, not a credential. Nothing accepts it because nothing is
+    // A word, not a credential. Nothing accepts it because nothing is
     // listening, and a real-looking token in a fixture is the thing somebody
     // copies into a place where something is.
     return Session::of('not-a-credential');

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     // Where a request stands, in the household's own words rather than the
-    // wire's. `N2-R11` is about the first of these; the rest are here because a
+    // wire's. Only the first of these is required; the rest are here because a
     // screen that showed only what is waiting would leave somebody wondering
     // what became of the thing they asked for last week.
     'waiting-for-approval' => 'Wacht op je akkoord',
@@ -22,9 +22,8 @@ return [
     'megabytes' => 'MB',
     'gigabytes' => 'GB',
     'terabytes' => 'TB',
-    // N2-R11: a waiting request is approvable and refusable from here, and
-    // D7-R7 makes the sentence part of turning one down rather than
-    // something beside it.
+    // A waiting request is approvable and refusable from here, and the sentence
+    // is part of turning one down rather than something beside it.
     'approve' => 'Goedkeuren',
     'approve_that' => ':title goedkeuren',
     'turn_down' => 'Afwijzen',

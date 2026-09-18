@@ -38,7 +38,7 @@ function aPairedStack(string $called, string $seed = 'a'): Stack
     );
 }
 
-// N1-R35 — a launch with no stack configured reaches a screen, not an empty
+// A launch with no stack configured reaches a screen, not an empty
 // surface.
 //
 // The route is declared by the operator surface's own service provider, which
@@ -111,7 +111,7 @@ it('the road out of the first frame leads somewhere that is served', function ()
 });
 
 it('N1-R7 — says which stacks are already signed into, so nobody retypes a password', function (): void {
-    // The reason a session is kept at all. `N1-R7` exchanges the password once,
+    // The reason a session is kept at all. The exchange trades the password once,
     // and "once" is only true if the list can tell the operator which machines
     // will not ask again.
     $loft = aPairedStack('The loft', 'a');
@@ -121,7 +121,7 @@ it('N1-R7 — says which stacks are already signed into, so nobody retypes a pas
 
     $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed), $keychain);
 
-    // `N1-R11` at the one place it is visible to an operator: signed into one
+    // Separate sessions at the one place it is visible to an operator: signed into one
     // machine and not the other, and the list says exactly that. A reader keyed
     // loosely would report both as open on the strength of one session.
     expect($screen->isSignedInto($loft))->toBeTrue()
@@ -170,7 +170,7 @@ it('N4-R13 — assembles a report for the operator to send, and does not send it
     // Both clauses. The app hands the text to the platform's share sheet and
     // stops; where it goes is a choice a person makes in an app this one does
     // not know about, which is the whole difference between this and the crash
-    // reporter `N4-R12` refuses.
+    // reporter that is refused.
     $sharing = AShareSheetThatWasOffered::working();
     $screen = theLaunchScreen(StacksInMemory::holding(aPairedStack('The loft', 'a')), sharing: $sharing);
 
@@ -241,7 +241,7 @@ it('clears the refusal once a later attempt works', function (): void {
 
 it('N1-R11 — a stack in the list leads to that stack and no other', function (): void {
     // A screen nothing navigates to is a screen nobody reaches, and the route
-    // is where `N1-R11` is either kept or quietly broken: two stacks in the
+    // is where separation is either kept or quietly broken: two stacks in the
     // list must lead to two URIs, and each must name the identifier this device
     // minted rather than the name an operator chose, since two machines may
     // share a name and cannot share an identifier.
@@ -272,7 +272,7 @@ it('N1-R36 — a launch with stacks configured names them rather than offering t
     // told on the next launch that nothing was paired. A screen named for one
     // of its two states is a claim, and nothing checks a claim in a class name.
     //
-    // It reads no stack to do it. N1-R36 asks for a usable frame without
+    // It reads no stack to do it. A usable frame is owed without
     // waiting for a reading, and the cheapest way to keep that is to have
     // nothing to wait for — what is shown is retained configuration.
     $screen = theLaunchScreen(StacksInMemory::holding(aPairedStack('The loft')));
@@ -311,10 +311,10 @@ it('N1-R6 — both roads into pairing are registered, and each is its own screen
     // that is never registered is a road that does not. Each is asserted by the
     // screen behind it rather than by a count: two routes both resolving to the
     // scanning screen would satisfy a count and leave a device with no camera
-    // unable to pair at all, which is the case N4-R3 is about.
+    // unable to pair at all, which is the case the alternative is about.
     //
     // They are separate screens rather than one with a switch because ADR-0018
-    // puts a software comparison on the scanned road and N1-R50 puts a person on
+    // puts a software comparison on the scanned road and a person on
     // the typed one — so one of them has a confirmation step and the other must
     // not be able to reach one.
     $roads = [
@@ -466,7 +466,7 @@ it('N1-R37 — the stacks are still shown to a device with no network', function
     // Deliberate, and the opposite of the lock above. A retained verdict is
     // worth most when the device cannot ask for a new one, and the diagnostics
     // control at the foot of this screen is the one thing that still works when
-    // nothing else does — `N4-R13` puts it here for that reason. Drawing the
+    // nothing else does, which is why it is here. Drawing the
     // obstacle *instead of* the list would take both away at the moment they
     // are useful.
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
@@ -499,7 +499,7 @@ it('N1-R36 — a launch that is ready has nothing standing in the way', function
 
 it('N1-R35 — a first run has nothing standing in the way either', function (): void {
     // Nothing is wrong on a first run, and an obstacle drawn here would be the
-    // app describing its own first launch as a fault (`N1-R35`).
+    // app describing its own first launch as a fault.
     $stacks = StacksInMemory::working();
     $screen = theLaunchScreen(
         $stacks,

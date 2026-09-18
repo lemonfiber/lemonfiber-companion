@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     // Two wordings per notification, and which one is used is decided by the
-    // type rather than at the call site (N4-R20). The guarded pair is what a
+    // type rather than at the call site. The guarded pair is what a
     // locked device may show: no stack, no service, no finding detail.
     'plain' => [
         'title' => ':stack needs attention',

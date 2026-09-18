@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Manifests;
 
-// N4-R12 — the app sends no analytics, telemetry or crash reports to a third
+// The app sends no analytics, telemetry or crash reports to a third
 // party.
 //
 // **This is about transmission, not about knowing what happened.** Logging,
@@ -25,7 +25,7 @@ use Tests\Support\Manifests;
 // enters: a package in `require` ships whether or not any line here names it,
 // and Laravel's discovery boots its provider without an import anywhere.
 //
-// `N1-R15` is the other half of the reason. A crash reporter's payload is a
+// The address rule is the other half of the reason. A crash reporter's payload is a
 // stack trace with local variables in it, and the local variables in this
 // application are session tokens and stack addresses.
 

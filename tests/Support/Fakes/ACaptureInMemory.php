@@ -58,7 +58,7 @@ final class ACaptureInMemory implements Capture
         return $this->concealed || ! $this->foreground;
     }
 
-    /** The app moves out of the foreground, which `N4-R9` protects on its own. */
+    /** The app moves out of the foreground, which protects the window on its own. */
     public function backgrounded(): void
     {
         $this->foreground = false;

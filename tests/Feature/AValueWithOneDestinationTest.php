@@ -16,7 +16,7 @@ use Tests\Support\OneDestination;
  *
  * Nothing held them to it. A second accessor — `value()`, `token()`,
  * `forTheQuery()` — compiles, passes every architecture rule, and is the whole
- * of how `N1-R8` gets broken: nobody puts a session in a query string on
+ * of how it gets broken: nobody puts a session in a query string on
  * purpose; somebody adds a plain getter because a template wanted the string,
  * and six months later a different caller uses it to build a URL. The rule that
  * the name is the guard is only a rule while there is one name.

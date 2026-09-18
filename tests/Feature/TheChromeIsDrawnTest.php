@@ -66,7 +66,7 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
 
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    // `N1-R37` and `N1-R10`: what stood between this frame and the machine, and
+    // What stood between this frame and the machine, and
     // what to do about it — both, because what happened is a fact about the
     // world and what to do about it is advice.
     expect($drawn->said())->toContain(__(Obstacle::DeviceHasNoNetwork->said()))
@@ -78,7 +78,7 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         ->and($drawn->said())->toContain(__('navigation.services'))
         ->and($drawn->said())->toContain(__('navigation.updates'))
         ->and($drawn->said())->toContain(__('navigation.repairs'))
-        // `N1-R3` keeps the way forward: an obstacle never takes the action
+        // The way forward is kept: an obstacle never takes the action
         // away, so the frame that says the network is down still offers the
         // retry.
         ->and($drawn->offers())->toBe([__('health.ask_again')]);
@@ -105,8 +105,8 @@ it('N2-R1 — the verdict a frame opens on is drawn, with its age', function ():
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     // The word and the machine it is about, on the first frame, without a
-    // network round trip — which is the whole of what `N2-R1` asks for and what
-    // `N1-R24` permits: it came out of a store, so it is retained, so it
+    // network round trip — which is the whole of what the opening asks for and what
+    // a retained reading permits: it came out of a store, so it is retained, so it
     // carries when it was read.
     // The machine is a row rather than a button, so its name is something the
     // frame *says* and the way into it is what the frame *offers* — and a

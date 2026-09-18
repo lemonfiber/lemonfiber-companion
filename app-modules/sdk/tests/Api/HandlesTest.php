@@ -55,7 +55,7 @@ it('reads the same handle whichever action was acknowledged', function (): void 
 });
 
 it('refuses an acknowledgement with no job name in it', function (): void {
-    // The state `N1-R41` has no answer for: the action was delivered, so it
+    // The state nothing has an answer for: the action was delivered, so it
     // must not be sent again, and there is nothing to ask after it by.
     expect(fn(): object => Handles::in(anAcknowledgementSaying(['action' => 'repair'])))
         ->toThrow(HandleIsUnreadable::class, 'job');

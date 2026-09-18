@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// N3-R8 — the app does not play media; it hands off to a household client.
+// The app does not play media; it hands off to a household client.
 //
 // A requirement kept by *not* doing something, which is the kind that erodes.
 // Nobody decides to turn the companion into a player. What happens is that a
@@ -16,7 +16,7 @@ use Tests\Support\Tree;
 // everything the household client already solves: transcoding decisions,
 // resume points, subtitles, parental limits, what counts as watched. Two of
 // those disagreeing is a member told they may watch something the client then
-// refuses, or a resume point that moves backwards. `N3-R11` is the same
+// refuses, or a resume point that moves backwards. The member's half is the same
 // argument about limits, and this is it about playback.
 //
 // Read over the platform sources rather than over the PHP, because that is
@@ -100,7 +100,7 @@ it('N3-R8 — no platform source reaches for a media player', function (): void 
 });
 
 it('N3-R8 — each player is one this rule would recognise', function (): void {
-    // Q-R66 against the matcher rather than against the tree. Planting a player
+    // The floor against the matcher rather than against the tree. Planting a player
     // in `bridge/resources` would leave a real source file wrong for the length
     // of a run, and this repository has been bitten by a killed run leaving its
     // fixtures behind.

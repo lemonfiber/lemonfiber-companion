@@ -26,7 +26,7 @@ use function nativephp_call;
  *
  * **Off a handset every call reports the window unprotected.** That is honest
  * rather than convenient: a stub claiming otherwise would make a test about
- * `N4-R18` pass on a machine that cannot photograph anything.
+ * screen protection pass on a machine that cannot photograph anything.
  *
  * The seam for testing is `nativephp/mobile`'s own `FakeBridge`, which
  * intercepts `nativephp_call()` in-process. Using it rather than an interface of
@@ -39,7 +39,7 @@ final readonly class Screen
     /**
      * Protect the window from capture while a guarded screen is up.
      *
-     * `N4-R18`. On Android this is `FLAG_SECURE`, which refuses screenshots,
+     * On Android this is `FLAG_SECURE`, which refuses screenshots,
      * screen recording and the recents thumbnail alike. On iOS it covers the
      * window while a recording is running and in the task switcher — a
      * deliberate screenshot cannot be blocked there at all, which is a platform
@@ -53,7 +53,7 @@ final readonly class Screen
     /**
      * Stop protecting for that screen.
      *
-     * Backgrounding still protects afterwards (`N4-R9`), which is why this
+     * Backgrounding still protects afterwards, which is why this
      * answers with the window's resulting state rather than with nothing: on a
      * backgrounded app the answer to "did revealing unprotect the window" is no.
      */

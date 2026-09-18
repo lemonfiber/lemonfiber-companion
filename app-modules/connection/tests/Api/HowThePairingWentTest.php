@@ -26,7 +26,7 @@ it('says a stack is paired only when it was written down', function (): void {
 });
 
 it('tells a device with no store apart from a store that would not open', function (): void {
-    // N1-R10's habit applied to storage. One of the two is something the
+    // The obstacle habit applied to storage. One of the two is something the
     // operator can fix by trying again and the other is not, so one sentence
     // for both is the sentence that is unhelpful for whichever they are in.
     expect(HowThePairingWent::refused(WhyAStackCannotBeRemembered::DeviceHasNoSecureStorage))

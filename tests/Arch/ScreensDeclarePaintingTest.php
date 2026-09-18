@@ -12,7 +12,7 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Module;
 
-// F4 — a screen says how it paints (N1-R25, N1-R27, ADR-0019).
+// F4 — a screen says how it paints (`ADR-0019`).
 //
 // A NativeComponent that reaches a port during setup cannot draw until the
 // answer arrives, and the answer is coming from a machine that may be asleep on
@@ -24,7 +24,7 @@ use Tests\Support\Module;
 // screen's content changes while it is open is a fact about the stack, not
 // about the class, so `#[Poll]` is on the review list rather than pretended at.
 //
-// **`N1-R25`'s second clause rests on review too, and nothing here says it.**
+// **The second clause rests on review too, and nothing here says it.**
 // The requirement has two halves — a screen publishes its first frame before
 // issuing the read, *and that frame is built from what the app already holds* —
 // and the rule below reads the first. `#[Lazy]` says a frame is drawn early; it
@@ -92,9 +92,9 @@ function waitsOnAPort(ReflectionClass $class): bool
     return false;
 }
 
-// N1-R39 — a screen says which stack it is showing.
+// A screen says which stack it is showing.
 //
-// The app holds more than one stack (N1-R11) and must never attribute a reading
+// The app holds more than one stack and must never attribute a reading
 // from one to another. Every other guard on that is in the kernel: `StackId` is
 // a type, `Capabilities` carries the stack that declared it, `Stack::is()`
 // compares identity rather than address. A screen is where all of that can still

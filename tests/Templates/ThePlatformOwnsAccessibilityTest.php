@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Template;
 
-// N4-R14 — the platform's accessibility settings are honoured, not reimplemented.
+// The platform's accessibility settings are honoured, not reimplemented.
 //
 // The requirement has two halves and the second is the one that needs a rule.
 // *Honouring* the settings is mostly what happens by default: EDGE renders
@@ -42,8 +42,9 @@ const PINS_A_SIZE = [
 /**
  * Attributes that animate on this app's say-so rather than the platform's.
  *
- * An animation the operator asked not to see is one of the four settings
- * `N4-R14` names, and it is the one with no sensible default: a duration written
+ * An animation the operator asked not to see is one of the four platform
+ * settings this app honours, and it is the one with no sensible default: a
+ * duration written
  * into a template runs at that duration whatever the device has been told.
  */
 const ANIMATES_REGARDLESS = ['animate', 'animation', 'transition', 'duration'];

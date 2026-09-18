@@ -25,8 +25,8 @@ use Native\Mobile\SecureStorageStatus;
  * What each stack last came to, kept in the platform's own store.
  *
  * **The keychain rather than a file, and for {@see PlatformStacks}' reason
- * rather than for `N4-R5`'s.** A session token is what `N4-R5` names and this
- * is not one. What this is, is the sentence *this person's machine is broken*,
+ * rather than for secure storage's.** A session token is what that names, and
+ * this is not one. What this is, is the sentence *this person's machine is broken*,
  * against a stack the same store already holds an address for — and a file in
  * the app's sandbox is readable by a backup, by a device that has been rooted,
  * and by whatever a restore puts it back onto. This package offers no third
@@ -38,13 +38,14 @@ use Native\Mobile\SecureStorageStatus;
  * stack would mean enumerating a store that offers no enumeration.
  *
  * **The word and the moment, and nothing else.** Not the findings, not the
- * codes, not which service — `N2-R1` asks for the verdict on opening and the
+ * codes, not which service — the opening screen wants the verdict and the
  * findings screen fetches its own. Keeping them would be writing down a
  * description of what is wrong with somebody's machine to save a round trip
  * that happens anyway.
  *
- * **A shape number, because `N1-R32` asks for one**, and an unrecognised shape
- * is discarded rather than interpreted (`N1-R33`). Discarding here costs
+ * **A shape number, because everything retained carries one**, and an
+ * unrecognised shape
+ * is discarded rather than interpreted. Discarding here costs
  * nothing at all: the opening screen shows the stack with no verdict yet, which
  * is a state it already draws, and the first ask refills it. That is a cheaper
  * failure than the one this avoids, which is opening on a verdict assembled
@@ -55,7 +56,7 @@ final readonly class PlatformVerdicts implements Verdicts
     /** The one key the whole record lives under. */
     private const string UNDER = 'lemonfiber.verdicts';
 
-    /** The shape this build writes, and the only one it reads (`N1-R32`). */
+    /** The shape this build writes, and the only one it reads. */
     private const int SHAPE = 1;
 
     public function __construct(private Platform $store) {}
@@ -93,8 +94,8 @@ final readonly class PlatformVerdicts implements Verdicts
      * One stack's row, read back as the retained reading it is.
      *
      * Always `retained`, never `live`. Everything here came out of a store
-     * rather than off a stack, which is what `N1-R9` is about and what keeps
-     * `N1-R24`'s second clause true by construction: nothing this adapter
+     * rather than off a stack, which is what *retained, never live* means and
+     * what keeps it true by construction: nothing this adapter
      * answers can stand as the confirmation of an action, because nothing it
      * answers was read in this session.
      *
@@ -116,7 +117,8 @@ final readonly class PlatformVerdicts implements Verdicts
      * The word a row holds, where it holds one this build knows.
      *
      * A word this build does not recognise reads as nothing held rather than as
-     * a guess, which is `N1-R33` at the size of one field: the opening screen
+     * a guess, which is discarding an unrecognised shape at the size of one
+     * field: the opening screen
      * shows the stack with no verdict yet and the first ask refills it.
      *
      * @param array<mixed> $row

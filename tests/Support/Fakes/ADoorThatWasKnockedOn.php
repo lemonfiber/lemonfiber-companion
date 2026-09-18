@@ -19,12 +19,13 @@ use Modules\Kernel\Api\Stack;
  * The stand-in every screen test gets, so that no test of a sign-in needs a
  * machine to sign in to. What it remembers is the half a screen cannot assert
  * about itself: *which* stack was knocked on. A screen handed two stacks and
- * offering the password to the wrong one is `N1-R11` broken at the one place it
- * matters most, and a fake that forgot the stack would make that green.
+ * offering the password to the wrong one is two machines mistaken for each
+ * other at the one place it matters most, and a fake that forgot the stack
+ * would make that green.
  *
  * **It spends the credential, because the real door does.** `Credential`
- * empties itself when it is offered, and `N1-R7`'s second clause is that
- * nothing keeps one for re-sending. A fake that answered without offering would
+ * empties itself when it is offered, and nothing may keep one for re-sending.
+ * A fake that answered without offering would
  * leave every screen test holding a credential that could be sent again — and
  * the contract both implementations are run against asserts exactly this.
  *
@@ -71,9 +72,9 @@ final class ADoorThatWasKnockedOn implements Admitting
         $this->knocks++;
 
         // Read and dropped. The value is not carried anywhere — a fake holding
-        // a password is the one place a test fixture could teach the habit
-        // `N4-R5` exists to prevent — but it is read, because reading is what
-        // spends it.
+        // a password is the one place a test fixture could teach the habit of
+        // keeping a secret past its use — but it is read, because reading is
+        // what spends it.
         $said->forTheExchange();
 
         return ($this->answer)();

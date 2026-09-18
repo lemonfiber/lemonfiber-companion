@@ -7,7 +7,7 @@ namespace Modules\Updates\Api\Queries;
 use Modules\Kernel\Api\HowServicesTookIt;
 
 /**
- * What became of each service, with what needs attention first (`N2-R18`).
+ * What became of each service, with what needs attention first.
  *
  * The one decision this module makes about an applied update that the stack has
  * not already made for it. The stack sends what became of every service and it
@@ -19,7 +19,7 @@ use Modules\Kernel\Api\HowServicesTookIt;
  * first. What this deliberately does **not** do is order *not fetched*, *not
  * started* and *not reached* against each other: those are a network, a service
  * and a machine, and deciding which of the three matters most would be this app
- * grading a situation it cannot see. `N2-R18` has them told apart on the row,
+ * grading a situation it cannot see. They are told apart on the row,
  * which is where the operator reads what to do; it does not ask anybody to rank
  * them, and a screen that did would be putting a guess above the stack's report.
  *
