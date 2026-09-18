@@ -226,6 +226,8 @@ it('tells a device that would not show it from one that was not allowed to', fun
     foreach ([
         [WhyNothingWasTold::NotPermitted, WhyNothingIsShown::NotificationsAreNotPermitted],
         [WhyNothingWasTold::NoSuchChannel, WhyNothingIsShown::NotificationsAreNotPermitted],
+        [WhyNothingWasTold::TheTimeHasPassed, WhyNothingIsShown::TheDeviceWouldNotShowIt],
+        [WhyNothingWasTold::NoSuchRepeat, WhyNothingIsShown::TheDeviceWouldNotShowIt],
         [WhyNothingWasTold::TheDeviceRefused, WhyNothingIsShown::TheDeviceWouldNotShowIt],
     ] as [$said, $means]) {
         $notifier = overAHandset(ANotificationCentreOnAHandset::allowedButRefusing($said));

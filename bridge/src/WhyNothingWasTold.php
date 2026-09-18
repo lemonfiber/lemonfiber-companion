@@ -9,9 +9,15 @@ namespace Lemonfiber\Native;
  *
  * A closed set on both sides of the wire, so a wrong word is caught here rather
  * than falling through a `default` arm into whichever case happened to be
- * written last. The three are told apart because the sentence a screen says
- * about each is different: one is a permission, one is a switch the operator
- * turned off, and one is the device saying no.
+ * written last. They are told apart because the sentence a screen says about
+ * each is different: a permission, a switch the operator turned off, a moment
+ * that has been, a repeat no calendar has, and the device simply saying no.
+ *
+ * **Every word both native halves can answer with, rather than only the ones
+ * `Show` can.** Two of these reach a caller from `Schedule` and
+ * `ScheduleRecurring` alone, and leaving them out is what a handset found: an
+ * unrecognised word falls to {@see self::TheDeviceRefused}, so a repeat this
+ * bridge deliberately refused came back as the device having failed.
  */
 enum WhyNothingWasTold: string
 {
@@ -27,6 +33,25 @@ enum WhyNothingWasTold: string
      * cannot.
      */
     case NoSuchChannel = 'no_such_channel';
+
+    /**
+     * The moment a notification was wanted at has already been.
+     *
+     * Scheduling only. Shown immediately instead would be the tempting
+     * reading and the wrong one: an alert about something that was going to
+     * happen is not an alert about something that has.
+     */
+    case TheTimeHasPassed = 'the_time_has_passed';
+
+    /**
+     * The repeat names something no calendar has.
+     *
+     * Scheduling only. An hour of twenty-five, a month of thirteen, a day of
+     * the month past the twenty-eighth — the last because the two platforms'
+     * calendars disagree about what to do with a thirty-first, and a repeat an
+     * operator cannot predict is worse than one that was declined.
+     */
+    case NoSuchRepeat = 'no_such_repeat';
 
     /** The platform refused to post it, and said nothing useful about why. */
     case TheDeviceRefused = 'the_device_refused';

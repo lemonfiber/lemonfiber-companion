@@ -134,9 +134,9 @@ final readonly class PlatformNotifier implements Notifier
     }
 
     /**
-     * The same, for the three ways a notification can be withheld.
+     * The same, for every way the bridge can say a notification was withheld.
      *
-     * Three words become two cases here rather than at each call site. A
+     * Five words become two cases here rather than at each call site. A
      * channel the operator switched off and a permission nobody granted are one
      * sentence on a screen — this application's alerts are off, and here is
      * where to turn them on — and the platform declining outright is another,
@@ -147,6 +147,13 @@ final readonly class PlatformNotifier implements Notifier
         return match ($why) {
             WhyNothingWasTold::NotPermitted,
             WhyNothingWasTold::NoSuchChannel => WhyNothingIsShown::NotificationsAreNotPermitted,
+            // The last two reach a caller from scheduling alone and cannot
+            // arrive here, and they are answered rather than left out: an arm
+            // this `match` does not name is a fatal on a handset, and an arm
+            // that reads *the device would not* is the honest reading of a
+            // notification this application asked for and did not get.
+            WhyNothingWasTold::TheTimeHasPassed,
+            WhyNothingWasTold::NoSuchRepeat,
             WhyNothingWasTold::TheDeviceRefused => WhyNothingIsShown::TheDeviceWouldNotShowIt,
         };
     }

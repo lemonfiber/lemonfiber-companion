@@ -124,9 +124,16 @@ it('sends what a notification says and nothing else', function (): void {
 });
 
 it('reads each refusal the centre can answer with', function (): void {
+    // Every word both native halves can answer with, not only the ones `Show`
+    // can. Two of these reach a caller from scheduling alone, and leaving them
+    // out is what a handset found: an unrecognised word falls to *the device
+    // refused*, so a repeat the bridge deliberately declined came back as the
+    // device having failed.
     foreach ([
         'not_permitted' => WhyNothingWasTold::NotPermitted,
         'no_such_channel' => WhyNothingWasTold::NoSuchChannel,
+        'the_time_has_passed' => WhyNothingWasTold::TheTimeHasPassed,
+        'no_such_repeat' => WhyNothingWasTold::NoSuchRepeat,
         'the_device_refused' => WhyNothingWasTold::TheDeviceRefused,
     ] as $word => $meant) {
         FakeBridge::disable();
