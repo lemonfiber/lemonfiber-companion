@@ -88,4 +88,13 @@ enum Call: string
 
     /** Take the count off this application's icon. */
     case ClearBadge = 'Lemonfiber.Telling.ClearBadge';
+
+    /**
+     * Open the camera and read one pairing code.
+     *
+     * Answers once the scanner has closed rather than while it is open, which
+     * is what lets the code come back in the answer instead of on an event —
+     * and an event on one of these platforms is a broadcast into the page.
+     */
+    case Read = 'Lemonfiber.Scanning.Read';
 }
