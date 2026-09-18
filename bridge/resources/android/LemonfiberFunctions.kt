@@ -18,18 +18,19 @@ import com.nativephp.mobile.bridge.BridgeFunction
  * framework and is unit-tested; this file is what cannot be tested off a device
  * and is deliberately kept down to the calls that need one.
  *
- * `FLAG_SECURE` is Android's whole answer to both requirements. It blanks the
- * recents-screen thumbnail (`N4-R9`) and refuses screenshots and screen
- * recording (`N4-R18`). There is no finer-grained control: a view cannot opt out
- * of a capture on its own, so the flag goes on the window or the protection does
- * not exist.
+ * `FLAG_SECURE` is Android's whole answer to both requirements. One flag blanks
+ * the recents-screen thumbnail and refuses screenshots and screen recording
+ * together. There is no finer-grained control: a view cannot opt out of a
+ * capture on its own, so the flag goes on the window or the protection does not
+ * exist.
  *
  * **It is applied on `onPause`, not held forever.** Holding it permanently would
  * be simpler and is what most examples do, and it would also refuse every
  * deliberate screenshot for the life of the app — including the one an operator
  * takes to send to somebody who can help. The recents snapshot is taken after
- * `onPause`, so setting it there is in time for the only capture `N4-R9` is
- * about. A guarded screen sets it in the foreground too, and keeps it.
+ * `onPause`, so setting it there is in time for the only capture the
+ * task-switcher rule is about. A guarded screen sets it in the foreground too,
+ * and keeps it.
  */
 public object LemonfiberFunctions {
     private const val TAG = "Lemonfiber"
@@ -47,8 +48,8 @@ public object LemonfiberFunctions {
     /**
      * Start watching the app move in and out of the foreground.
      *
-     * Called once from the host application. Without it `N4-R9` is never
-     * enforced, because nothing would notice the app leaving — and the failure
+     * Called once from the host application. Without it the window is never
+     * protected, because nothing would notice the app leaving — and the failure
      * would be invisible: every screen would look right, and the task switcher
      * would quietly hold the last frame.
      */
@@ -107,7 +108,7 @@ public object LemonfiberFunctions {
         }
     }
 
-    /** `Lemonfiber.Conceal` — a screen holding a secret has come up (`N4-R18`). */
+    /** `Lemonfiber.Conceal` — a screen holding a secret has come up. */
     public class Conceal(private val activity: FragmentActivity) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
             rule = rule.concealing()

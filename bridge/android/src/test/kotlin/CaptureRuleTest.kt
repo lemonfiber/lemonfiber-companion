@@ -15,13 +15,13 @@ import kotlin.test.assertTrue
  */
 class CaptureRuleTest {
     @Test
-    fun `N4-R9 - a backgrounded app is protected, whatever it was showing`() {
+    fun `a backgrounded app is protected, whatever it was showing`() {
         assertTrue(CaptureRule(concealed = false, foreground = false).mustProtect)
         assertTrue(CaptureRule(concealed = true, foreground = false).mustProtect)
     }
 
     @Test
-    fun `N4-R18 - a guarded screen is protected while it is in front of you`() {
+    fun `a guarded screen is protected while it is in front of you`() {
         // The case a rule written as `concealed && !foreground` gets wrong, and
         // the reason that expression is not repeated at call sites. A screen
         // recording runs while the app is the thing you are looking at, so this
@@ -58,8 +58,9 @@ class CaptureRuleTest {
 
     @Test
     fun `leaving a guarded screen while backgrounded stays protected`() {
-        // Revealing takes away N4-R18's reason and leaves N4-R9's. The window
-        // must still be protected, because the app is still in the task switcher.
+        // Revealing takes away the guarded screen's reason to protect and leaves
+        // the task switcher's. The window must still be protected, because the
+        // app is still in the task switcher.
         val away = CaptureRule.LAUNCHED.concealing().backgrounded().revealing()
 
         assertFalse(away.concealed)

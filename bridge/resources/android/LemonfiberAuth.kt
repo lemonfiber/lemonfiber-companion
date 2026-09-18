@@ -12,22 +12,22 @@ import com.nativephp.mobile.bridge.BridgeFunction
  *
  * Namespace: `Lemonfiber.Authenticate`
  *
- * **Why this exists rather than the stock biometric call.** `N4-R8` says a
- * biometric failure falls back to the device passcode and must not fall back to
- * unlocked. That is not a thing an app decides after the fact — it is one
- * constant passed to the platform before the dialog is shown, and getting it
- * wrong produces a prompt that simply fails on a device whose owner has no
- * fingerprint enrolled. An operator with a passcode and no fingerprint would be
- * locked out of their own app, and no test written in PHP could see it.
+ * **Why this exists rather than the stock biometric call.** A biometric failure
+ * falls back to the device's passcode and must never fall back to unlocked. That
+ * is not a thing an app decides after the fact — it is one constant passed to the
+ * platform before the dialog is shown, and getting it wrong produces a prompt
+ * that simply fails on a device whose owner has no fingerprint enrolled. An
+ * operator with a passcode and no fingerprint would be locked out of their own
+ * app, and no test written in PHP could see it.
  *
  * So the constant is here, in a file this repository owns:
  * `BIOMETRIC_STRONG or DEVICE_CREDENTIAL`. `DEVICE_CREDENTIAL` is the half that
- * keeps `N4-R8` — the same dialog offers the PIN, pattern or password, and the
- * platform handles the fallback itself.
+ * provides the fallback — the same dialog offers the PIN, pattern or password,
+ * and the platform handles it itself.
  *
  * **There is no third answer.** The bridge reports `authenticated: true` or
- * `authenticated: false`, and every error path reports false. `N4-R8`'s second
- * clause — must not fall back to unlocked — is kept by there being nowhere in
+ * `authenticated: false`, and every error path reports false. The second
+ * clause — must never fall back to unlocked — is kept by there being nowhere in
  * this file that answers true without the platform having said so.
  */
 public object LemonfiberAuth {
@@ -36,10 +36,10 @@ public object LemonfiberAuth {
     /**
      * What this app will accept as the device's own authentication.
      *
-     * `DEVICE_CREDENTIAL` is `N4-R8` in one constant: it puts the PIN, pattern
-     * or password in the same dialog, so a failed or unenrolled fingerprint
-     * falls back rather than dead-ends. Without it, an operator who has a
-     * passcode and no fingerprint cannot get in at all.
+     * `DEVICE_CREDENTIAL` is that fallback in one constant: it puts the PIN,
+     * pattern or password in the same dialog, so a failed or unenrolled
+     * fingerprint falls back rather than dead-ends. Without it, an operator who
+     * has a passcode and no fingerprint cannot get in at all.
      */
     private const val ACCEPTED =
         BiometricManager.Authenticators.BIOMETRIC_STRONG or
@@ -76,8 +76,8 @@ public object LemonfiberAuth {
                                 // an unenrolled device, a lockout after too many
                                 // attempts — none of them is somebody proving
                                 // who they are, and reading any of them as a
-                                // grant is exactly the fall to unlocked N4-R8
-                                // refuses.
+                                // grant is exactly the fall to unlocked this
+                                // file exists to refuse.
                                 Log.d(TAG, "authentication error $code: $message")
                                 answer(false)
                             }

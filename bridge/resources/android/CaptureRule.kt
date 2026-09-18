@@ -8,18 +8,18 @@ package app.lemonfiber.native
  * framework in sight — is what makes it a thing that can be tested rather than
  * a thing that has to be demonstrated on a handset.
  *
- * `N4-R9` — the task-switcher representation of the app must show no
- * application content. The platform takes that snapshot as the app leaves the
+ * **The task switcher.** What the app shows there must be no application
+ * content at all. The platform takes that snapshot as the app leaves the
  * foreground, so the protection is needed *while backgrounded* and not before.
  * Holding it permanently would also refuse every deliberate screenshot, which
- * the requirement does not ask for and an operator sending a support screenshot
+ * neither rule asks for and which an operator sending a support screenshot
  * would resent.
  *
- * `N4-R18` — a screen showing a credential, a session token or pairing material
- * is excluded from the snapshot *and* from screen recording. A recording runs
- * while the app is in front of you, so this one is needed in the foreground too,
- * and that is why `concealed` is a separate fact rather than one derived from
- * `foreground`.
+ * **A screen holding a secret.** One showing a credential, a session token or
+ * pairing material is kept out of that snapshot *and* out of a screen
+ * recording. A recording runs while the app is in front of you, so this one is
+ * needed in the foreground too, and that is why `concealed` is a separate fact
+ * rather than one derived from `foreground`.
  *
  * Deliberately mirrors `CaptureRule.swift` line for line. Two platforms
  * disagreeing about when a window is protected is the bug nobody finds, because

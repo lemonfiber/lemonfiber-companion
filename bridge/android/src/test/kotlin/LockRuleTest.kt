@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
  */
 class LockRuleTest {
     @Test
-    fun `N4-R19 - a cold start is locked, whatever the grace period says`() {
+    fun `a cold start is locked, whatever the grace period says`() {
         // No grace across a launch. The app that was open before is not the app
         // that is open now, and an hour of grace configured yesterday must not
         // carry a relaunch today.
@@ -24,7 +24,7 @@ class LockRuleTest {
     }
 
     @Test
-    fun `N4-R7 - an app idle past its grace period is locked`() {
+    fun `an app idle past its grace period is locked`() {
         assertTrue(LockRule.coldStart(grace = 60).authenticated().after(seconds = 60).mustLock)
     }
 
@@ -49,7 +49,7 @@ class LockRuleTest {
     }
 
     @Test
-    fun `N4-R19 - no prompt while the operator is in the middle of something`() {
+    fun `no prompt while the operator is in the middle of something`() {
         // Locked, and silent. The lock screen is shown; the device's own prompt
         // waits. An operator interrupted mid-action answers a dialog to get rid
         // of it, which is not authentication.
@@ -60,7 +60,7 @@ class LockRuleTest {
     }
 
     @Test
-    fun `N4-R19 - the prompt comes once the action is finished`() {
+    fun `the prompt comes once the action is finished`() {
         val rule = LockRule.coldStart(grace = 60).doing().idle()
 
         assertTrue(rule.mustLock)

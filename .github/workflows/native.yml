@@ -161,14 +161,14 @@ jobs:
                 kotlin = kotlin_path.read_text()
                 swift = swift_path.read_text()
 
-                # Kotlin cannot put an em dash in a backticked function name, so
-                # the requirement ids read `N4-R9 - ...` there and `N4-R9 — ...`
-                # in Swift. Normalised rather than reported as a difference: a
-                # punctuation mark is not a disagreement about behaviour, and a
-                # check that cries wolf about one is a check nobody reads.
+                # Compared character for character, with nothing normalised
+                # away. A name is a sentence somebody wrote about what the rule
+                # decides, and two spellings of one sentence is a pair of files
+                # drifting in exactly the way this job exists to notice. Each
+                # normalisation added here is also a way for two genuinely
+                # different names to compare equal.
                 asked = {
-                    "kotlin": {re.sub(r"^(N4-R\d+) - ", r"\1 — ", name)
-                               for name in re.findall(r"fun `([^`]+)`", kotlin)},
+                    "kotlin": set(re.findall(r"fun `([^`]+)`", kotlin)),
                     "swift": set(re.findall(r'@Test\("([^"]+)"\)', swift)),
                 }
 
