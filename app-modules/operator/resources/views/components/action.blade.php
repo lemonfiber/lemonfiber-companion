@@ -8,7 +8,7 @@
      did not take. `DES-R24`'s accent is asserted once, on the theme itself, in
      `TheTheme::paint()`. --}}
 @if ($goes !== '')
-    <native:button class="w-full" label="{{ $label }}" a11y-label="{{ $named }}" :disabled="$disabled" @navigate="$goes" />
+    <native:button native:key="{{ $named }}" class="w-full" label="{{ $label }}" a11y-label="{{ $named }}" :disabled="$disabled" @navigate="$goes" />
 @else
-    <native:button class="w-full" label="{{ $label }}" a11y-label="{{ $named }}" :disabled="$disabled" @tap="{{ $tap }}" />
+    <native:button native:key="{{ $named }}" class="w-full" label="{{ $label }}" a11y-label="{{ $named }}" :disabled="$disabled" @tap="{{ $tap }}" />
 @endif

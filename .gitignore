@@ -83,3 +83,8 @@ native/android/.gradle/
 # repository makes.
 config/nativephp.php
 nativephp.lock
+
+# The same command writes a CLI shim beside `artisan` so that `./native run`
+# works. It is generated, it is not this repository's, and it arrives untracked
+# on every machine that installs.
+/native
