@@ -7,26 +7,26 @@ namespace Modules\Kernel\Api;
 /**
  * Asking a stack what it is running, and telling it to change that.
  *
- * `N2-R7` asks the app to offer start, stop and restart by form and by service.
+ * The app offers start, stop and restart by form and by service.
  * Reading and acting are one port rather than two because they are one
  * conversation: an operator reads a listing, picks a row, and says a verb — and
  * a port that only read would leave whoever built the acting half free to reach
- * a client of their own, which is what `N1-R16` exists to prevent.
+ * a client of their own, which is what going through the SDK exists to prevent.
  *
  * **It takes a stack and a session rather than a client**, for the reason
- * {@see Asking} gives: `N1-R11` keeps each stack's session separate and
- * `N1-R19` pins every connection against that stack's fingerprint, so a port
+ * {@see Asking} gives: each stack's session is separate and
+ * every connection is pinned against that stack's fingerprint, so a port
  * taking a client would let a caller pair the two up wrongly.
  *
  * **Acting takes an {@see AgreedTo}, which rendering cannot produce.** That is
- * {@see Confirmed}'s argument applied to a verb: `N2-R8` wants a disruptive
+ * {@see Confirmed}'s argument applied to a verb: a disruptive
  * action to state what it disturbs before it is confirmed, and the way that
  * requirement is broken is never deliberate — a screen draws a row, the stop
  * button is right there, and a tap handler calls the thing that stops it.
  * Nothing in the code says *this was confirmed*, because nothing had to.
  *
  * **There is no `everything()`.** A caller that wants the whole stack stopped
- * says so form by form, which is the granularity `N2-R7` names. A single verb
+ * says so form by form, which is the granularity named. A single verb
  * for the machine would be one tap between an operator and a house with nothing
  * working, and the confirmation would be asked about a list nobody could read
  * in one screen.
@@ -38,7 +38,7 @@ interface Supervising
      *
      * Answers {@see WhatIsRunning} rather than raising, which `C1` requires: a
      * stack that is asleep, one on another network and one whose session has
-     * ended are ordinary states of the world, and `N1-R10` says an operator is
+     * ended are ordinary states of the world, and an operator is
      * told which of them they met.
      */
     public function running(Stack $stack, Session $session): WhatIsRunning;

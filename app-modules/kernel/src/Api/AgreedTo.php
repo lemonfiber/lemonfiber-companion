@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * A verb the operator said yes to, against the thing it will be done to.
  *
- * {@see Confirmed}'s argument applied to a service. `N2-R8` wants a disruptive
+ * {@see Confirmed}'s argument applied to a service. A disruptive
  * action to state what it disturbs before it is confirmed, and the way that
  * requirement is broken is never a deliberate decision: a screen draws a row,
  * the stop button is right there, and somewhere a tap handler calls the thing

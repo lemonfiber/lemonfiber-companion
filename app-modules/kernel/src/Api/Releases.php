@@ -19,7 +19,7 @@ use Traversable;
  *
  * A type rather than an array, which is `D1`: an array has no name, no
  * invariants and nowhere to put the rules, so what is in it ends up living in
- * whoever last wrote a `foreach`. The rule that belongs here is `N2-R16`'s —
+ * whoever last wrote a `foreach`. The rule that belongs here is the withdrawal one —
  * a withdrawn release is not an update — and putting it on the collection is
  * what stops each screen from remembering it.
  *
@@ -51,7 +51,7 @@ final readonly class Releases implements IteratorAggregate
     /**
      * Only the ones worth offering as an update.
      *
-     * `N2-R16`'s refusal, made once. A screen that filtered for itself would be
+     * The refusal, made once. A screen that filtered for itself would be
      * a second place to forget, and forgetting means offering somebody a
      * release that was taken back.
      */

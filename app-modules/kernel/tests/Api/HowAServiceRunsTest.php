@@ -12,7 +12,7 @@ it('N2-R7 — says where a service stands, as a key', function (): void {
 });
 
 it('N2-R7 — a service the host runs is not this stack\'s to start or stop', function (): void {
-    // Not the same as a control temporarily out of reach, which `N1-R3` says is
+    // Not the same as a control temporarily out of reach, which is
     // offered and reported on. This control does not exist.
     expect(HowAServiceRuns::HostManaged->isThisStacksToRun())->toBeFalse();
 
@@ -65,7 +65,7 @@ it('N1-R27 — only a starting service becomes something else on its own', funct
     // The one state that resolves without anybody touching the phone, which is
     // what a stated cadence is for. Every other case is a standing answer, so a
     // screen polling on any of them would be polling on a listing that cannot
-    // change — the thing `N1-R66` refuses.
+    // change — the thing that is refused.
     expect(HowAServiceRuns::Starting->isSettling())->toBeTrue();
 
     foreach (HowAServiceRuns::cases() as $runs) {
@@ -137,7 +137,7 @@ it('N2-R7 — nothing this stack does not run can be told to do anything', funct
 });
 
 it('B2-R10 — the seven states an operator must be told apart are each here', function (): void {
-    // `B2-R10` names a minimum rather than a set: absent, stopped, starting,
+    // A minimum is named rather than a set: absent, stopped, starting,
     // healthy, unhealthy, crash-looping, failed. This enum carries nine of
     // them, because the contract lists nine — so the requirement is met by a
     // shape nothing in this repository chose, and would stop being met the day

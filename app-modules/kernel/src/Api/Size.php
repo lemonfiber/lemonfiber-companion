@@ -9,7 +9,7 @@ use Closure;
 /**
  * How big something is, and whether anybody measured it.
  *
- * `D7-R3` wants the size shown before a request is submitted; `D7-R4` wants an
+ * The size is shown before a request is submitted, and an
  * estimate labelled as one. Those read as two requirements and are one fact,
  * and a type carrying the number alone would let a screen answer the first and
  * fail the second without anybody noticing — the number renders either way.
@@ -54,7 +54,7 @@ final readonly class Size
         return new self($bytes, measured: true);
     }
 
-    /** It was worked out rather than measured, and must be said to be (`D7-R4`). */
+    /** It was worked out rather than measured, and must be said to be. */
     public static function guessedAt(int $bytes): self
     {
         return new self($bytes, measured: false);

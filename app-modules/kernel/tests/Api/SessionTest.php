@@ -45,7 +45,7 @@ it('refuses a session with nothing in it', function (): void {
 it('says nothing about the token when it refuses one', function (): void {
     // The one place a message here is deliberately less useful than it could
     // be: an exception carrying a token puts it in a stack trace, and a stack
-    // trace is what ends up in a diagnostic report (N1-R15).
+    // trace is what ends up in a diagnostic report.
     expect(fn(): Session => Session::of(' '))
         ->toThrow(SessionIsBlank::class, 'A stack admitted this app and sent an empty session');
 });
@@ -56,7 +56,7 @@ it('is the same session, and is not another', function (): void {
 });
 
 it('does not print itself into a debugger', function (): void {
-    // How N1-R15 actually gets broken: not by a decision, but by a `var_dump`
+    // How it actually gets broken: not by a decision, but by a `var_dump`
     // in a crash handler.
     expect(Session::of(A_TOKEN)->__debugInfo())->toBe(['token' => '(a session, hidden)']);
 });
@@ -79,7 +79,7 @@ it('is closed to every reader that asks the type, and open to the one that does 
     // in a log line.
     //
     // What seals it is a diagnostic report that refuses to walk a `Session` at
-    // all (N4-R13), and there is no report assembler yet — when there is, this
+    // all, and there is no report assembler yet — when there is, this
     // test is where somebody will find out what it still has to do.
     expect(str_contains(print_r(Session::of(A_TOKEN), return: true), A_TOKEN))->toBeFalse();
     expect(str_contains(var_export(Session::of(A_TOKEN), return: true), A_TOKEN))->toBeTrue();

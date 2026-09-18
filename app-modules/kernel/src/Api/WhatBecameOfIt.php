@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * What became of one repair the operator agreed to.
  *
- * `N2-R5` has the agreeing be its own act, and this is what comes back from
+ * Agreeing is its own act, and this is what comes back from
  * it — per repair, because a listing agreed to as a whole can come apart: one
  * fix takes, the next finds the disk busy, and a third would overwrite
  * something it will not touch without being told again.

@@ -7,8 +7,8 @@ namespace Modules\Kernel\Api;
 /**
  * The version of the layout retained state was written in.
  *
- * `N1-R32` asks that anything the app keeps between launches carries this, and
- * it is the requirement that cannot wait: `N1-R33` has the app migrate older
+ * Anything the app keeps between launches carries this, and
+ * it is the requirement that cannot wait: the app migrates older
  * state or discard it rather than interpret it as current, and neither is
  * possible for state that never recorded which shape it was. **State written
  * today without this marker is unmigratable forever**, so the marker ships

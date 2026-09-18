@@ -10,7 +10,7 @@ use InvalidArgumentException;
  * The operator was somewhere, and nothing said where.
  *
  * Refused rather than defaulted, because every plausible default is the
- * failure `N1-R44` describes. "Nowhere" restores nothing and the operator
+ * failure described. "Nowhere" restores nothing and the operator
  * signs in to find their work gone; "the first screen" is the bounce-to-login
  * the requirement exists to forbid, wearing a different name.
  *

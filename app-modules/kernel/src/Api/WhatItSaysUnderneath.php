@@ -11,7 +11,7 @@ use function trim;
 /**
  * The technical detail under a finding, where the core gave one.
  *
- * `G4-R4` asks for two things at once and they pull against each other: the
+ * Two things are asked for at once and they pull against each other: the
  * plain explanation must lead, and the underlying detail must be **available**.
  * A screen that shows only the plain sentence fails the second half quietly —
  * an operator who knows what a socket is gets the same paragraph as everybody
@@ -48,7 +48,7 @@ final readonly class WhatItSaysUnderneath
      * Say the detail, or say there is none.
      *
      * Two arms rather than a nullable getter, for the reason {@see Daemon::exit()}
-     * gives — and here the stakes are `G4-R4`'s own: the half of that rule a
+     * gives — and here the stakes are the rule's own: the half of it a
      * screen forgets is the half where nothing is there.
      *
      * @template TSaid of object

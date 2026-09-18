@@ -10,7 +10,7 @@ use function sprintf;
 /**
  * The unit a size is said in, and the only place the bands are decided.
  *
- * `D7-R3` wants a size shown before a request is approved, and *how many bytes*
+ * A size is shown before a request is approved, and *how many bytes*
  * has to become words somewhere. This is that somewhere — the sibling of
  * {@see HowLongAgo} and written the same way, for the same reason: a second
  * screen phrasing a size its own way is how two screens come to disagree about
@@ -43,7 +43,7 @@ use function sprintf;
  * of a thousand mean every figure that leaves here is an integer between nought
  * and 999, which has no separator to get wrong in any language.
  *
- * The precision lost is precision the number did not have. `D7-R4` exists
+ * The precision lost is precision the number did not have. The label exists
  * because most of these are estimates, and *is it 4 or 400* is the whole of
  * what an operator is deciding.
  */

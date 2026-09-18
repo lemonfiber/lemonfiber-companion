@@ -10,7 +10,7 @@ use Closure;
  * What became of a listing the operator agreed to.
  *
  * The sibling of {@see HowTheOfferIsGoing} and shaped the same way, because it
- * reads the same kind of thing: `N2-R7` has every action on this surface arrive
+ * reads the same kind of thing: every action on this surface arrives
  * as a job, so agreeing answers a handle and this is the reading of it.
  *
  * **Two types rather than one, deliberately.** They differ only in what the

@@ -10,10 +10,10 @@ use function trim;
  * One listing of what a stack would put right, and the name it goes by.
  *
  * The repairs and the word identifying the listing travel together because
- * `N2-R6` needs them to. A confirmation quotes the listing it is answering, and
+ * they need to. A confirmation quotes the listing it is answering, and
  * the engine refuses it where the machine has moved since — so a screen holding
  * repairs without the word could only say yes in the abstract, which the engine
- * reads as standing consent and which `N2-R5` forbids this surface from
+ * reads as standing consent, which this surface is forbidden from
  * sending.
  *
  * **The word is opaque and stays opaque.** It is the engine's name for a moment

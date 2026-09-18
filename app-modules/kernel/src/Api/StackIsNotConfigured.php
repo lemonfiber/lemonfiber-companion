@@ -12,7 +12,7 @@ use function sprintf;
  * Something asked this device about a stack it has not been introduced to.
  *
  * Raised rather than answered with, which is this module's exception rather
- * than its rule. `N1-R11`'s last clause is that a reading from one stack must
+ * than its rule. The last clause is that a reading from one stack must
  * never be attributed to another, and the way that happens is a lookup which
  * misses and falls back — to the first stack, to the only stack, to whatever a
  * previous screen left behind. There is no stack to carry on with here, so

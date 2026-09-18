@@ -36,7 +36,7 @@ it('D7-R4 — an estimate hands over the figure and says it is one', function ()
 it('tells the same figure measured and guessed apart', function (): void {
     // Same number, different answer. A fold that read the figure and not the
     // accuracy would pass both of the tests above and fail this one — which is
-    // the failure `D7-R4` is actually about.
+    // the failure the label is actually about.
     expect(howBig(Size::measured(512)))->not->toBe(howBig(Size::guessedAt(512)));
 });
 

@@ -9,7 +9,7 @@ use function trim;
 /**
  * What somebody typed into a search box, and whether that is a search at all.
  *
- * `N2-R10` asks for a log read that is searchable, and the awkward half of
+ * A log read is searchable, and the awkward half of
  * *searchable* is the empty box. A blank term selects every line, so a screen
  * treating it as a search would announce *200 of 200 lines match* the moment
  * somebody cleared the field — which reads as a result rather than as the

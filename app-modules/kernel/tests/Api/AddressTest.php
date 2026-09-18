@@ -41,7 +41,7 @@ it('refuses an address that cannot be dialled, at the pairing rather than the re
 });
 
 it('says nothing about the address when it refuses one', function (): void {
-    // N1-R15 names a stack address beside a credential, and an exception
+    // A stack address is named beside a credential, and an exception
     // message is the easiest of the three to forget.
     $said = '';
 
@@ -104,7 +104,7 @@ it('answers N1-R12 from the one fact that decides it', function (): void {
 it('takes a plain address rather than refusing it', function (): void {
     // A stack on a local network may genuinely be reached over http. Refusing
     // would tell an operator their pairing code is broken, when what is true is
-    // that their connection is not private — which is the distinction N1-R12
+    // that their connection is not private — which is the distinction the rule
     // exists to keep, and it is lost if the value cannot be constructed.
     expect(Address::of('http://192.168.1.42')->forTheClient())->toBe('http://192.168.1.42');
 });
@@ -137,7 +137,7 @@ it('is closed to every reader that asks the type, and open to the one that does 
     //
     // Worth stating twice rather than once and cross-referenced, because the
     // reason differs: a session is a credential, and an address is where
-    // somebody lives. N4-R13's report assembler has to refuse to walk both, and
+    // somebody lives. A report assembler has to refuse to walk both, and
     // a reader who found the caveat only on the credential could reasonably
     // conclude the other was already sealed.
     expect(str_contains(print_r(Address::of(AN_ADDRESS), return: true), AN_ADDRESS))->toBeFalse();
@@ -146,7 +146,7 @@ it('is closed to every reader that asks the type, and open to the one that does 
 
 it('N1-R15 — an address does not leave the process in a serialised payload', function (): void {
     // Not secrecy. Anything that serialises stack addresses accumulates a map
-    // of private networks, which is the thing N1-R15 is actually protecting.
+    // of private networks, which is the thing actually being protected.
     expect(fn(): string => serialize(Address::of(AN_ADDRESS)))
         ->toThrow(MustNotLeaveThisProcess::class, 'may not be serialised');
 });

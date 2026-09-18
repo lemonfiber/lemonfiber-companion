@@ -9,7 +9,7 @@ use Closure;
 /**
  * What one stack said about one ability — including having said nothing.
  *
- * `ARCH-R79` draws four answers and three of them are {@see Availability}. The
+ * Four answers are drawn and three of them are {@see Availability}. The
  * fourth is absence: a capability the stack does not have is not reported as
  * false, it is not reported. This is where that fourth answer lives, and it is a
  * type rather than a null for the reason `C2` gives — a null is checked at the
@@ -26,7 +26,7 @@ use Closure;
  *     );
  *
  * **Absence and "not permitted" are not neighbours.** That is the whole of
- * `N1-R30`: a stack that cannot do something and a credential that may not are
+ * A stack that cannot do something and a credential that may not are
  * different sentences to an operator, and only one of them is about the stack.
  * Keeping absence in a different type from the three availabilities is what
  * stops a screen rendering them from one list.
@@ -67,7 +67,7 @@ final readonly class WhatTheStackSays
     /**
      * Whether a screen may offer this as an action now.
      *
-     * The one question `N1-R29` asks before an action is offered, and the only
+     * The one question asked before an action is offered, and the only
      * one this type answers without an `either` — because every answer that is
      * not `Available` collapses to the same button state, and there is exactly
      * one of those. Anything that needs to *explain* the state reads it with

@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * Why a report did not reach the operator's hands.
  *
- * Two cases, told apart for `N1-R10`'s reason: one is something the operator
+ * Two cases, told apart for an obstacle's reason: one is something the operator
  * can do something about and the other is not, and one sentence for both is the
  * sentence that is unhelpful for whichever they are in.
  *

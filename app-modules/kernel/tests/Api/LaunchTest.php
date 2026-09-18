@@ -48,7 +48,7 @@ it('N1-R37 — no network, no answer and a refused credential stay three things'
 
 it('N1-R35 — a first run is not a failure to reach', function (): void {
     // Nothing is wrong. Reporting it as an obstacle would be the app describing
-    // its own first run as a fault, and the screen `N1-R35` asks for offers
+    // its own first run as a fault, and the first-run screen offers
     // pairing rather than a remedy.
     expect(whichArm(Launch::unpaired()))->toBe('unpaired');
 });

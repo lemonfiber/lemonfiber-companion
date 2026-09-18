@@ -15,8 +15,8 @@ namespace Modules\Kernel\Api;
  *
  * **`until` is here rather than inside {@see Session}.** A session is a secret
  * with one destination — a header — and nothing else. When it stops being valid
- * is not a secret, and is what a screen needs in order to tell `N1-R46`'s ended
- * session from `N1-R10`'s refused credential. Folding it in would give
+ * is not a secret, and is what a screen needs in order to tell an ended
+ * session from a refused credential. Folding it in would give
  * `Session` a second reader, which is the whole mechanism
  * `AValueWithOneDestinationTest` exists to protect.
  */

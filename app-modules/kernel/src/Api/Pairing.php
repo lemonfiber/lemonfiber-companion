@@ -17,22 +17,22 @@ use function trim;
  *
  * Two things, and the pairing of them is the whole point: where the stack is,
  * and which certificate it will present. `ADR-0018` is the design —
- * **the fingerprint comes from this material and never from the network**
- * (`N1-R18`), because a fingerprint learned from the connection it is meant to
+ * **the fingerprint comes from this material and never from the network**,
+ * because a fingerprint learned from the connection it is meant to
  * validate proves nothing at all. Somebody carries it across the gap by eye or
  * by camera, and that gap is what makes it trustworthy.
  *
- * **Both routes in (`N1-R6`).** A camera reads it, or a person types it, and
+ * **Both routes in.** A camera reads it, or a person types it, and
  * {@see HowItWasRead} records which — not to change the parsing, which is
  * identical, but because the two fail differently and a screen has to say so.
  * Typed entry is not a courtesy: it is the route on a device with no camera and
- * on one whose operator declined the permission, which `N4-R3` requires to
+ * on one whose operator declined the permission, which has to
  * exist.
  *
  * **It holds no session and no credential.** What it carries is public in the
  * sense that matters — an address on somebody's network and a hash of a
  * certificate that machine is about to present to anybody who connects. That is
- * why this type has readers and {@see Session} does not: `N1-R23` keeps pairing
+ * why this type has readers and {@see Session} does not: it keeps pairing
  * material out of caches, and an adapter has to be able to read it to act on it.
  */
 final readonly class Pairing
@@ -87,7 +87,7 @@ final readonly class Pairing
         // is too old should not be reported as material that is malformed. A
         // stale code with a typo in its address is stale first — telling
         // somebody to check what they scanned, when what they need is a new
-        // code, is the screen `N1-R49` is about.
+        // code, is the screen expiry is about.
         self::stillGood($found, $how, $clock);
 
         // `Address::of()` and `Fingerprint::of()` do their own refusing, and
@@ -98,10 +98,10 @@ final readonly class Pairing
         $at = Address::of(self::halfOf($found, WhatPairingMaterialSays::Address, $how));
 
         // Material that promises a certificate for an address presenting none.
-        // `N1-R48` calls the fingerprint "the certificate that address will
+        // The fingerprint is "the certificate that address will
         // present", and an unencrypted address presents nothing — so the digest
         // would be pinned against a connection with nothing to compare, and
-        // `N1-R19` could never be kept for this stack.
+        // the pin could never be kept for this stack.
         //
         // Here rather than at the first connection, which is where it landed:
         // pairing succeeded, the stack was written down, and `BaseUrl::pinned()`
@@ -127,7 +127,7 @@ final readonly class Pairing
     }
 
     /**
-     * The certificate the stack promised to present (`N1-R18`, `N1-R19`).
+     * The certificate the stack promised to present.
      *
      * Taken from here and pinned against the stack, then checked on every later
      * connection whether or not the platform's trust store would accept it.
@@ -144,7 +144,7 @@ final readonly class Pairing
     }
 
     /**
-     * Refuses material that has expired (`N1-R49`).
+     * Refuses material that has expired.
      *
      * The check is here, at the one moment a payload becomes a `Pairing`,
      * rather than on a reader the caller is trusted to ask. A type that can

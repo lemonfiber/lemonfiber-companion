@@ -18,7 +18,7 @@ use Traversable;
 /**
  * What became of every service an applied update touched.
  *
- * A type rather than an array, which is `D1`, and the place `N2-R18`'s counting
+ * A type rather than an array, which is `D1`, and the place the counting
  * lives. The requirement refuses a single *failed*, and the pressure to flatten
  * comes from the summary line rather than from the rows: a screen needs to open
  * with one sentence, and the cheapest one to write is *it failed*. Answering
@@ -54,7 +54,7 @@ final readonly class HowServicesTookIt implements IteratorAggregate
      * Only the services that are not where the operator wanted them.
      *
      * The rows worth leading with. Which of the three ways each failed stays on
-     * the row, because that is the whole of `N2-R18` — this narrows the list
+     * the row, because that is the whole of it — this narrows the list
      * without flattening what is in it.
      */
     public function thatDidNotArrive(): self

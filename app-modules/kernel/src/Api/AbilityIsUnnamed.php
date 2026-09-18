@@ -11,7 +11,7 @@ use InvalidArgumentException;
  *
  * Refused where the set is read rather than where a screen asks about it. An
  * unnamed capability cannot be matched against anything, so every later question
- * about it answers "not present" — which `ARCH-R79` reserves for a stack that
+ * about it answers "not present" — which is reserved for a stack that
  * genuinely does not have the capability, and this is a stack that does and
  * could not say so.
  */

@@ -7,18 +7,18 @@ namespace Modules\Kernel\Api;
 /**
  * Asking a stack what it would put right, and reading what came of it.
  *
- * `N2-R4` is the requirement: where the core offers a repair, the app offers it
+ * The requirement is this: where the core offers a repair, the app offers it
  * too, and states what it does, what else it affects and whether it can be
  * undone *before* asking for confirmation. The types for that have been built
  * and tested since the health screen landed — {@see Repair} states all three
  * clauses and {@see Repairs} and {@see Offer} hold a listing — and the port was
  * held back, because the shape of the answer was not settled.
  *
- * **Two methods, because asking is not answering.** `N2-R7` has every action on
+ * **Two methods, because asking is not answering.** Every action on
  * this surface arrive as a job: the stack acknowledges and names the work, and
  * the outcome is a separate reading at a separate moment. A port with one
  * method would have to hide a wait inside itself — which is `F4`'s socket in a
- * frame and the second reading `N1-R65` refuses, both at once.
+ * frame and the second reading that is refused, both at once.
  *
  * **Asking what would be done changes nothing, and is still an action.** That
  * is the part worth knowing before reading the adapter: the unconfirmed form of
@@ -27,7 +27,7 @@ namespace Modules\Kernel\Api;
  * put right* costs a round trip and a handle, and the screen that asks it has
  * to be built for waiting.
  *
- * **A handle is not a pending action.** `N1-R41` refuses to retain an
+ * **A handle is not a pending action.** Retaining an
  * undelivered action, replay one, or present one as pending. A job is none of
  * those — the stack received the action and named it, so asking after the name
  * is a read, and a read repeated changes nothing. {@see Job} says this at
@@ -38,7 +38,7 @@ interface Mending
     /**
      * Ask what this stack would put right, changing nothing.
      *
-     * Answers a handle rather than a listing, which is `N2-R7` showing through
+     * Answers a handle rather than a listing, which is the job shape showing through
      * the port rather than being hidden by it. A signature promising the
      * listing would be one that has to wait, and a port that waits is a screen
      * that freezes on a home network with a machine that may be asleep.
@@ -59,7 +59,7 @@ interface Mending
      * Agree to one repair inside a listing, and have the stack carry it out.
      *
      * Takes a {@see Confirmed} rather than a repair and a listing, which is the
-     * whole of `N2-R5` and `N2-R6` expressed as a signature: the only way to
+     * whole of confirming-is-not-viewing expressed as a signature: the only way to
      * make one is against a listing that holds the repair and a reading the
      * operator was actually shown, so a port taking the two separately would
      * let a caller agree to a repair on behalf of a listing it was never in.

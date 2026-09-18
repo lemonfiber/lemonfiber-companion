@@ -9,7 +9,7 @@ use Closure;
 /**
  * A value, and whether it was read now or is being remembered.
  *
- * `N1-R9` is the requirement: anything shown that was not read in the current
+ * The requirement is this: anything shown that was not read in the current
  * session carries when it was read, and is never presented indistinguishably
  * from a live reading. That rule is broken by omission rather than by
  * disagreement — nobody decides to pass off a cached number as a current one;
@@ -64,7 +64,7 @@ final readonly class Reading
     /**
      * Whether this may stand as the confirmation of an action.
      *
-     * `N1-R24` draws the line and it is worth drawing once: a retained reading
+     * The line is worth drawing once: a retained reading
      * may open a screen, and it may never be what tells an operator that the
      * thing they just asked for happened. A remembered "running" shown after a
      * restart that failed is the application lying about the one moment the

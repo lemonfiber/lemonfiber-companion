@@ -11,7 +11,7 @@ use function trim;
 /**
  * One thing whose download stopped, and the three facts that make it actionable.
  *
- * `N2-R9` asks for stuck downloads to be reachable, and *reachable* is only
+ * Stuck downloads have to be reachable, and *reachable* is only
  * worth anything if what is reached can be acted on. The contract sends
  * `{service, stage, title}` for each one, and those three are one fact in three
  * parts: **what** stopped, **where** it stopped, and **which service** has it.

@@ -17,7 +17,7 @@ use InvalidArgumentException;
  *
  * The message says nothing about what arrived, for the reason `SessionIsBlank`
  * gives: an exception carrying a credential puts it in a stack trace, and a
- * stack trace is exactly what ends up in a diagnostic report (`N1-R15`).
+ * stack trace is exactly what ends up in a diagnostic report.
  */
 final class CredentialIsBlank extends InvalidArgumentException
 {

@@ -16,7 +16,7 @@ use function trim;
  * closed list of what this build had heard of, and a capability it had not heard
  * of would arrive as a `tryFrom` returning null, which reads as "the stack does
  * not have it" and means "this app does not recognise it". Those are opposite
- * answers and `ARCH-R79` separates them by name.
+ * answers, and they are separated by name.
  *
  * **What is closed is the set of actions the app offers**, because a screen
  * exists or it does not. That set lives where the screens are and is compared

@@ -9,8 +9,8 @@ use Closure;
 /**
  * How long a verb takes something away for, as the stack reported it.
  *
- * `N2-R8` wants a disruptive action to state the bound the stack gave, or that
- * it gave none, before the operator confirms — and `N2-R14` forbids this side
+ * A disruptive action states the bound the stack gave, or that
+ * it gave none, before the operator confirms — and this side may not
  * inventing one. Two shapes, because *no bound* is not a long bound: a surface
  * handed a number plus a "really, though?" beside it will show the number.
  *
@@ -48,7 +48,7 @@ final readonly class WhatItTakesAway
      * Say the length, or say what it is waiting for instead.
      *
      * Two arms rather than a nullable getter, for the reason
-     * {@see Daemon::exit()} gives — and here the stakes are `N2-R14`'s: a
+     * {@see Daemon::exit()} gives — and here the stakes are substitution: a
      * screen handed a zero would render *nought seconds*, which is a promise
      * no run can keep and the operator would read as *this is instant*.
      *

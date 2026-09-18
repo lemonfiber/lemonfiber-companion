@@ -9,7 +9,7 @@ use function trim;
 /**
  * What a stack gives an operator once, to be traded for a session.
  *
- * `N1-R7` is two clauses and this type is built around the second. Exchanging a
+ * The exchange is two clauses and this type is built around the second. Exchanging a
  * credential for a session is ordinary; **not retaining it for re-sending** is
  * the part that takes a design, because retention is the default behaviour of
  * every value in every language. A `readonly` string held on a client object is
@@ -23,12 +23,12 @@ use function trim;
  * **Deliberately not `readonly`.** Every other value here is, and this one
  * cannot be: forgetting is a mutation, and it is the whole point. A readonly
  * credential would be one that still holds its secret after the exchange, which
- * is the thing `N1-R7` forbids — so the immutability that is right everywhere
+ * is the thing forbidden — so the immutability that is right everywhere
  * else is exactly wrong here.
  *
  * **There is no `shown()`, and no `jsonSerialize()`.** `Session` has the second
  * because a session has to reach a header; a credential reaches one endpoint,
- * once, and nothing else ever needs to read it. `N1-R23` keeps it out of every
+ * once, and nothing else ever needs to read it. It stays out of every
  * cache, and {@see MustNotLeaveThisProcess} is what refuses the writers that do
  * not ask.
  */
@@ -92,7 +92,7 @@ final class Credential
     }
 
     /**
-     * The value, once, for the one exchange it exists for (`N1-R7`).
+     * The value, once, for the one exchange it exists for.
      *
      * Named for where it goes rather than for what it is, which is the same
      * argument `Session::forTheHeader()` makes: a general-purpose accessor makes

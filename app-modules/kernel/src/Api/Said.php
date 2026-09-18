@@ -11,7 +11,7 @@ use function mb_stripos;
 /**
  * One line a service wrote, and the three things that place it.
  *
- * `N2-R10` asks for a log read that names the service, and a line carries its
+ * A log read names the service, and a line carries its
  * own — the contract sends `service` per line rather than once per window,
  * because the same read can be asked about more than one and the app must not
  * be the thing that decides which line belongs to which.

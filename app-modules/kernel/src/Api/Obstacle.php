@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * What stood between the app and a stack, told apart rather than summarised.
  *
- * `N1-R10` is the requirement and the reason: a stack that cannot be reached,
+ * The requirement and the reason: a stack that cannot be reached,
  * one that refuses the credential, and a device with no network are three
  * different things, each with its own remedy. They are also the three an
  * application is most tempted to collapse, because the code path that produces
@@ -17,7 +17,7 @@ use function sprintf;
  * the operator who is shown "cannot connect" for all three is told to check the
  * machine when their phone is in flight mode.
  *
- * `N4-R17` adds the fourth and says why it is not one of those: where the
+ * A fourth is added, and why it is not one of those: where the
  * platform asks permission before an app may reach the local network, a refusal
  * is "a distinct condition from an unreachable stack", and the app must offer
  * the way to grant it. It looks exactly like a stack that is off — the request
@@ -46,7 +46,7 @@ use function sprintf;
  * reachable, it is the right machine, and it said no. Only the last one tells
  * us the connection works.
  *
- * **The app is locked is still not here.** `N1-R37` lists it beside these, and
+ * **The app is locked is still not here.** A launch lists it beside these, and
  * it belongs to the lock `N4` defines rather than to a reach: nothing was
  * attempted, so nothing stood in the way. A refused permission is the opposite
  * — an attempt that the platform stopped — which is why one of them is a case
@@ -56,7 +56,7 @@ use function sprintf;
  * from the translator against a key (L1); a sentence written in this file would
  * be English on a Dutch phone. The catalogue carries one summary and one
  * remedy per case under `connection.`, and `ObstacleTest` is what requires them
- * to exist and to differ — the guarantee `N1-R10` actually asks for.
+ * to exist and to differ — the guarantee actually asked for.
  */
 enum Obstacle: string
 {
@@ -72,7 +72,7 @@ enum Obstacle: string
     /**
      * The platform will not let this app onto the local network.
      *
-     * Nothing was sent, and the stack is very probably fine. `N4-R17` requires
+     * Nothing was sent, and the stack is very probably fine. What is required is
      * this to be told apart from a stack that is off precisely because the two
      * are indistinguishable from inside the request: both are silence.
      */
@@ -115,7 +115,7 @@ enum Obstacle: string
      * as "wrong password" would have the operator typing carefully into a door
      * that is not listening, and lengthening the wait each time.
      *
-     * `N1-R10` is about three conditions and this is a fourth of the same kind:
+     * The rule is about three conditions and this is a fourth of the same kind:
      * a thing the operator meets, which needs its own sentence because its
      * remedy is its own.
      */
@@ -143,7 +143,7 @@ enum Obstacle: string
     /**
      * The key for what to do about it.
      *
-     * Separate from {@see said()} because `N1-R10` asks for both and they are
+     * Separate from {@see said()} because both are owed and they are
      * not the same sentence: what happened is a fact about the world, and what
      * to do about it is advice. The advice is what differs most between these —
      * a router and a cupboard are not the same errand — which is why a screen
@@ -161,7 +161,7 @@ enum Obstacle: string
     /**
      * Whether meeting this means the session this device holds is no longer one.
      *
-     * `N3-R13` says an identity removed from the household results in a
+     * An identity removed from the household results in a
      * signed-out app at the next refused call, and that the app must not go on
      * rendering what was already loaded. The five other obstacles say nothing
      * about the session — a phone off a network, a stack asleep, a certificate
@@ -238,12 +238,12 @@ enum Obstacle: string
     /**
      * Whether the app can offer to do something about it.
      *
-     * This is `N1-R10`'s "each with its own remedy" at the level a capability
+     * This is "each with its own remedy" at the level a capability
      * can decide it. Two of the three are `Guided`: turning on Wi-Fi and waking
      * a machine both happen somewhere this application cannot reach, and a
      * button that claims otherwise fails in front of somebody. A refused
      * credential is `Actionable` because pairing again is a thing the app does
-     * — which is the remedy `N1-R20` names for the same situation.
+     * — which is the remedy named for the same situation.
      */
     public function standing(): Standing
     {

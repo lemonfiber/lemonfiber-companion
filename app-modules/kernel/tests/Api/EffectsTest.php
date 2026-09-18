@@ -25,7 +25,7 @@ it('keeps the order the stack sent', function (): void {
 
 it('affects nothing else, which is an answer rather than an absence', function (): void {
     // A repair that touches nothing besides what it fixes is a real thing to
-    // say. Saying it with an empty collection keeps `N2-R4` answerable without
+    // say. Saying it with an empty collection keeps the question answerable without
     // a null anywhere (C2).
     expect(Effects::nothingElse()->count())->toBe(0);
 });

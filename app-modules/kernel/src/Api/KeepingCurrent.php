@@ -10,14 +10,14 @@ namespace Modules\Kernel\Api;
  * Reading and acting are one port rather than two, for the reason
  * {@see Supervising} gives: they are one conversation, and a port that only
  * read would leave whoever built the acting half free to reach a client of
- * their own — which is what `N1-R16` exists to prevent.
+ * their own — which is what going through the SDK exists to prevent.
  *
- * **It takes a stack and a session rather than a client**, so that `N1-R11`'s
- * separate sessions and `N1-R19`'s pinning cannot be paired up wrongly by a
+ * **It takes a stack and a session rather than a client**, so that the
+ * separate sessions and the pinning cannot be paired up wrongly by a
  * caller.
  *
  * **Taking an update takes a {@see TakingAnUpdate}, which rendering cannot
- * produce.** `N2-R17` wants the confirmation to name the services an update
+ * produce.** The confirmation names the services an update
  * would change, and the way that requirement is broken is never deliberate: a
  * screen draws the pending release, the button is right there, and a tap
  * handler calls the thing that applies it. Nothing in the code says *this was
@@ -29,7 +29,7 @@ interface KeepingCurrent
      * Read where the stack stands, or come away with a reason.
      *
      * Answers {@see WhatIsCurrent} rather than raising, which `C1` requires and
-     * `N1-R10` builds on.
+     * an obstacle builds on.
      */
     public function standing(Stack $stack, Session $session): WhatIsCurrent;
 

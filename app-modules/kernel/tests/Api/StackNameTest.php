@@ -13,7 +13,7 @@ use Modules\Kernel\Api\StackName;
 it('refuses a stack an operator cannot tell from another', function (): void {
     // A name is the only thing an operator has to tell two stacks apart by —
     // "192.168.1.42" and "192.168.1.43" are not two names, which is why the
-    // address is not allowed to stand in for one (`N1-R15`).
+    // address is not allowed to stand in for one.
     expect(fn(): StackName => StackName::of('   '))
         ->toThrow(StackIsNotNamed::class, 'no name');
 });

@@ -10,7 +10,7 @@ use function sprintf;
 /**
  * How often a screen looks again, and the one place each cadence is decided.
  *
- * `N1-R27` says a screen whose content can change while it is open refreshes on
+ * A screen whose content can change while it is open refreshes on
  * a **stated** cadence and does not rely on the operator leaving and returning
  * to see a change. Two halves, and the second is what this type exists for: a
  * screen that refreshes silently is a screen an operator cannot reason about —
@@ -23,14 +23,14 @@ use function sprintf;
  * every two seconds while telling somebody it looks every five would be stating
  * a cadence that is not the one it keeps. Both read from here.
  *
- * **This is not in tension with `N1-R65`.** That rule refuses a screen that
+ * **This is not in tension with one-read-per-frame.** That rule refuses a screen that
  * reads again to fill in its own fields — four connections to draw one frame, on a
  * home network, to a machine that may be asleep. This is the narrow opposite
  * case: work the stack is already carrying out, where the answer genuinely
  * changes without anybody touching the phone, and where *ask again* as the only
  * road means an operator tapping a button to find out whether a thing they
  * started has finished. A cadence that runs only while the work runs is the
- * whole of what `N1-R27` asks for and no more.
+ * whole of what is asked for and no more.
  */
 enum HowOften: string
 {

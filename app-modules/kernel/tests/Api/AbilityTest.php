@@ -17,7 +17,7 @@ it('carries the name the API declared', function (): void {
 
 it('refuses a capability with no name', function (): void {
     // An unnamed capability matches nothing, so every later question about it
-    // answers "the stack cannot do this" — which ARCH-R79 reserves for a stack
+    // answers "the stack cannot do this" — which is reserved for a stack
     // that genuinely does not have it, and this is a stack that does.
     expect(fn(): Ability => Ability::of('   '))
         ->toThrow(AbilityIsUnnamed::class, 'empty string');

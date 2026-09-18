@@ -14,14 +14,14 @@ use function trim;
  * What a stack admitted this app with, and the one place it may go.
  *
  * There is no `shown()`. The only way to read a session is `forTheHeader()`,
- * and the name is the rule: `N1-R8` says the session is carried in the
+ * and the name is the rule: the session is carried in the
  * credential header the API defines and **must not** be placed in a URL or a
  * query parameter. A type with a general-purpose accessor makes that a thing to
  * remember; a type whose only accessor says where the value goes makes putting
  * it anywhere else a line somebody has to write on purpose, in front of a
  * reviewer.
  *
- * **It is deliberately awkward to print.** `N1-R15` says no credential, session
+ * **It is deliberately awkward to print.** No credential, session
  * token or stack address may be logged, transmitted, or included in a
  * diagnostic report, and the way that rule is broken is never a decision — it
  * is a `var_dump` in a crash handler, or an object that fell into a JSON
@@ -41,7 +41,7 @@ use function trim;
  * hole gets lost among three imaginary ones. That is worth writing down rather
  * than implying a guarantee this type does not give. What
  * actually closes it is the thing that assembles a diagnostic report refusing
- * to walk a `Session` at all (`N4-R13`), and there is no report assembler yet.
+ * to walk a `Session` at all, and there is no report assembler yet.
  * This narrows the surface; it does not seal it.
  */
 final readonly class Session implements JsonSerializable

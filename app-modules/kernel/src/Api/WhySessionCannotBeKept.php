@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * Why a session could not be kept, as the thing an operator would do about it.
  *
- * `N4-R6` requires the app to say why, and these are the two answers a device
+ * The app says why, and these are the two answers a device
  * can actually give. The platform reports `Unavailable` — there is nowhere to
  * put it — or `Failed` — there is somewhere and it did not work. Every finer
  * distinction is a guess.
@@ -31,7 +31,7 @@ enum WhySessionCannotBeKept: string
     /**
      * There is nowhere on this device a session may go.
      *
-     * `N4-R5` names the alternatives — preferences, an app-readable file, an
+     * The alternatives are named — preferences, an app-readable file, an
      * unencrypted backup — in order to forbid them, so there is no fallback to
      * reach for. The app keeps nothing and says so.
      */

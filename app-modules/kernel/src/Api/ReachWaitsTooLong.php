@@ -12,7 +12,7 @@ use function sprintf;
  * A bound was asked for that is not a bound an operator would accept.
  *
  * Two directions and they are different mistakes, so they are different
- * messages. Too long is somebody accommodating a slow stack, which `N1-R26`
+ * messages. Too long is somebody accommodating a slow stack, which is
  * refuses by name. Too short is somebody who has read that clause and
  * overcorrected — a bound under a second loses a healthy stack on a busy
  * network, and an app that reports a working stack as unreachable is worse than

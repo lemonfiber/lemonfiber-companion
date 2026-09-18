@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * How far something got before it stopped.
  *
- * `N2-R9` says stuck downloads must be reachable, and *stuck* on its own is not
+ * Stuck downloads must be reachable, and *stuck* on its own is not
  * a thing anybody can act on. A title that never found a release and a title
  * sitting fully downloaded waiting to be imported are the same word to an
  * operator and two different afternoons: one is an indexer that has nothing,

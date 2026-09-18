@@ -11,7 +11,7 @@ use function it;
 use Modules\Kernel\Api\Severity;
 
 it('G4-R2 — reads the four the server sends, worst first', function (): void {
-    // `G4-R2` is that errors use exactly the four defined levels, and this is
+    // Errors use exactly the four defined levels, and this is
     // where *exactly* is kept: the enum could grow a fifth without anything
     // else in the repository objecting, and a fifth level is a severity no
     // other surface of this product knows how to draw. Pinned by name rather

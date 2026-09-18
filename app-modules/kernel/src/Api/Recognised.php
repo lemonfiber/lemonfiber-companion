@@ -9,7 +9,7 @@ use Closure;
 /**
  * Whether the machine that answered is the one the app was introduced to.
  *
- * `N1-R20` is unusually specific about the shape of this answer, and the
+ * The requirement is unusually specific about the shape of this answer, and the
  * specificity is the requirement: a connection presenting a different
  * certificate is **refused rather than warned about**. A warning is a dialog
  * with a way past it, and the way past it is the thing an attacker needs. So
@@ -39,7 +39,7 @@ final readonly class Recognised
     }
 
     /**
-     * It did not, so this is not that machine (`N1-R20`).
+     * It did not, so this is not that machine.
      *
      * Takes no argument: there is exactly one obstacle this can be, and letting
      * a caller choose it would let a caller choose a gentler one.

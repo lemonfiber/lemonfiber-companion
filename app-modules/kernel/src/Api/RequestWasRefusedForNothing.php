@@ -14,7 +14,7 @@ use InvalidArgumentException;
  * rather than a refusal crossing a boundary, so there is nothing for a caller to
  * open (`C1`, `C3`).
  *
- * `D7-R7` makes the reason part of declining rather than something beside it, so
+ * The reason is part of declining rather than something beside it, so
  * this is a stack that broke the rule rather than a row to render short — and
  * rendering it short is the worst available answer, because *declined* with no
  * reason is exactly the screen that sends somebody to ask their operator in

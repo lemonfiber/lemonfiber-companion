@@ -17,8 +17,8 @@ namespace Modules\Kernel\Api;
  * pinned fingerprint — and taking the whole of it is what makes *"reach this
  * address, unpinned"* a sentence with no spelling here.
  *
- * **The session is separate, and asked for separately.** `N1-R7` exchanges the
- * credential for a session once and does not re-send it; `N1-R23` and `N4-R5`
+ * **The session is separate, and asked for separately.** The exchange trades the
+ * credential for a session once and does not re-send it; what is retained
  * keep the session out of anything retained. A stack is retained. Carrying the
  * session inside one would put the thing that must be persisted and the thing
  * that must not in a single value, which is the argument {@see Stack} already

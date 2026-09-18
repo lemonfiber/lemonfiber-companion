@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use Closure;
 
 /**
- * What a screen was holding when the operator left it (`N1-R38`).
+ * What a screen was holding when the operator left it.
  *
  * The requirement has two clauses and they pull in opposite directions.
  * Returning to a screen must restore what was done there — and must **not**

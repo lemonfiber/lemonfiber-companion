@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use InvalidArgumentException;
 
 /**
- * A repair arrived without something `N2-R4` requires it to be offered with.
+ * A repair arrived without something it has to be offered with.
  *
  * Raised where the values become a `Repair`, for the reason
  * {@see RemedySaysNothing} gives: these are values that cannot be constructed

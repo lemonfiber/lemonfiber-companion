@@ -14,7 +14,7 @@ use function sprintf;
  * Refused rather than shown, for {@see FindingHasNoTitle}'s reason and a
  * sharper one: this is a row an operator is being asked to make a decision on.
  * A blank where the requester belongs makes it *somebody wants something*, and
- * `D7-R7` has a decline reach the requester by name — a decision recorded
+ * A decline reaches the requester by name — a decision recorded
  * against nobody cannot.
  */
 final class RequestHasNobodyBehindIt extends InvalidArgumentException

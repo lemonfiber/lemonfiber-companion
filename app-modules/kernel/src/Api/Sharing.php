@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * Handing something to the operator so that *they* can send it.
  *
- * `N4-R13` has two clauses and the second is the one that needs a design: a
+ * There are two clauses and the second is the one that needs a design: a
  * diagnostic report is assembled for the operator to send, **and must not be
  * transmitted by the app**. {@see Diagnostics} keeps the first half by holding
  * nothing that could transmit; this keeps the second by going the other way —
@@ -15,7 +15,7 @@ namespace Modules\Kernel\Api;
  * next is a choice a person makes in an app this one does not know about.
  *
  * **The difference between this and a crash reporter is who pressed the
- * button**, which is why `N4-R12` refuses the other one and why the two must
+ * button**, which is why sending it is refused and why the two must
  * not be one line apart. A port that could send on its own behalf would be that
  * line: this one takes no address, no endpoint and no client, so *send it
  * somewhere* has no spelling here.

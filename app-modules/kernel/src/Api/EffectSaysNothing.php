@@ -14,7 +14,7 @@ use InvalidArgumentException;
  * rather than a refusal crossing a boundary, so there is nothing for a caller
  * to open (C1, C3).
  *
- * A blank effect is worse than a missing one. `N2-R4` asks the app to state
+ * A blank effect is worse than a missing one. The app states
  * what else a repair affects, and a list with an empty row in it renders as a
  * bullet with nothing beside it — which reads as the app having lost something
  * rather than as the stack having said nothing.

@@ -23,7 +23,7 @@ it('takes a digest the length a certificate fingerprint is', function (): void {
 it('reads the two spellings of a digest as the same certificate', function (): void {
     // Hex has an upper and a lower spelling of every digest and they name the
     // same certificate. A comparison that called them different would refuse
-    // the right machine — which `N1-R20` then reports as "this is not the
+    // the right machine — which is then reported as "this is not the
     // machine you were introduced to", about a machine that is.
     expect(Fingerprint::of(A_DIGEST)->is(Fingerprint::of(mb_strtoupper(A_DIGEST))))->toBeTrue();
 });
@@ -68,7 +68,7 @@ it('offers no way to show one to a person', function (): void {
     // `forComparingByEye()` is named on this list deliberately, and it is not a
     // display accessor — it is the one input to `AtAGlance`, which folds the
     // whole digest into sixteen characters somebody will really compare. That
-    // exists because `N1-R50` has no software comparison available: typed
+    // exists because the confirmation has no software comparison available: typed
     // pairing scanned nothing, so nothing carried a digest to compare against,
     // and what is left is the operator confirming.
     //
