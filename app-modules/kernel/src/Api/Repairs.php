@@ -23,7 +23,7 @@ use Traversable;
  * out for itself.
  *
  * **Empty is the ordinary answer, not a failure.** Most runs offer nothing,
- * because most findings are things the operator has to go and do. `N2-R4` is
+ * because most findings are things the operator has to go and do. The rule is
  * about what happens *where* the core offers a repair, so a stack that offers
  * none has answered the requirement rather than fallen short of it — and a
  * screen showing "no repairs available" for every healthy stack would be
@@ -87,7 +87,7 @@ final readonly class Repairs implements IteratorAggregate
      * How a findings screen learns that a row has something on offer under it.
      * The check is the only thing a {@see Repair} publishes on its own, and
      * this is why: a screen matching repairs to findings has learned nothing
-     * about what any of them would do, which is `N2-R4`'s business and
+     * about what any of them would do, which is a repair's business and
      * {@see Repair::stated()}'s.
      */
     public function answering(Check $check): bool

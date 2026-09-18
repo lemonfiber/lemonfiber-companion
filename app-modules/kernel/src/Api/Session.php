@@ -14,14 +14,14 @@ use function trim;
  * What a stack admitted this app with, and the one place it may go.
  *
  * There is no `shown()`. The only way to read a session is `forTheHeader()`,
- * and the name is the rule: `N1-R8` says the session is carried in the
+ * and the name is the rule: the session is carried in the
  * credential header the API defines and **must not** be placed in a URL or a
  * query parameter. A type with a general-purpose accessor makes that a thing to
  * remember; a type whose only accessor says where the value goes makes putting
  * it anywhere else a line somebody has to write on purpose, in front of a
  * reviewer.
  *
- * **It is deliberately awkward to print.** `N1-R15` says no credential, session
+ * **It is deliberately awkward to print.** No credential, session
  * token or stack address may be logged, transmitted, or included in a
  * diagnostic report, and the way that rule is broken is never a decision — it
  * is a `var_dump` in a crash handler, or an object that fell into a JSON

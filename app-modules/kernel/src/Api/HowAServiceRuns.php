@@ -23,7 +23,7 @@ use function sprintf;
  *
  * **`HostManaged` is the one that is nobody's business here.** A service the
  * host runs is not one this stack starts or stops, and offering a button for it
- * would be the app promising something the machine will refuse — `N1-R3` says
+ * would be the app promising something the machine will refuse — the rule says
  * an action is offered and the failure reported, and this is the narrow case
  * where there is no action to offer in the first place, because the control
  * does not exist rather than being temporarily out of reach.
@@ -78,7 +78,7 @@ enum HowAServiceRuns: string
     /**
      * Whether this stack is the thing that starts and stops it.
      *
-     * The one decision that belongs here rather than on a screen. `N2-R7` asks
+     * The one decision that belongs here rather than on a screen. What is asked for is
      * the app to offer start, stop and restart — and a service the host runs
      * has no such control to offer, which is not the same as a control that is
      * temporarily out of reach. A screen working this out for itself would be a
@@ -92,7 +92,7 @@ enum HowAServiceRuns: string
     /**
      * Whether this will become something else without anybody touching it.
      *
-     * The one state that resolves on its own, which is what `N1-R27` wants a
+     * The one state that resolves on its own, which is what wants a
      * stated cadence for: a service that is starting becomes a running one in a
      * few seconds, and a screen showing *starting* with no way to learn
      * otherwise leaves somebody tapping to find out. Every other case here is a
@@ -108,7 +108,7 @@ enum HowAServiceRuns: string
      * Whether restarting it now would make things worse.
      *
      * `CrashLooping` is already being started over and over; asking for another
-     * restart adds a start to a queue of starts. `N2-R8` has a disruptive
+     * restart adds a start to a queue of starts. A disruptive
      * action state what it disturbs before it is confirmed, and this is the
      * case where the honest statement is *this will not help*.
      */
@@ -118,7 +118,7 @@ enum HowAServiceRuns: string
     }
 
     /**
-     * Whether this state can take that one of `N2-R7`'s three verbs.
+     * Whether this state can take that one of the three verbs.
      *
      * Asked one verb at a time because `D1` refuses an array crossing a module
      * boundary and is right to: a caller handed a list has to know what is in
@@ -131,7 +131,7 @@ enum HowAServiceRuns: string
     }
 
     /**
-     * Which of `N2-R7`'s three verbs this state can take.
+     * Which of the three verbs this state can take.
      *
      * The screen used to offer all three on every row, which put *Start it* on
      * a service that is running and *Stop it* on one that has crashed. Both

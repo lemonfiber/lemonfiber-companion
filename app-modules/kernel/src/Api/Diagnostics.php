@@ -11,7 +11,7 @@ use function sprintf;
 /**
  * What the app can tell somebody who is trying to help.
  *
- * `N4-R13` says a diagnostic report is assembled for the operator to send, and
+ * A diagnostic report is assembled for the operator to send, and
  * must not be transmitted by the app. Both halves are kept here by what this
  * class *is* rather than by what it promises.
  *
@@ -19,7 +19,7 @@ use function sprintf;
  * port, no `send()`. It answers with an {@see Assembled}, which is text and a
  * filename, and the operator hands that to the platform's share sheet. The
  * difference between this and a crash reporter is entirely who pressed the
- * button, and `N4-R12` refuses the other one — so the two must not be one line
+ * button, and sending it is refused — so the two must not be one line
  * apart.
  *
  * **It cannot carry a secret**, because its signature will not accept one. A

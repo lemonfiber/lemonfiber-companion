@@ -8,7 +8,7 @@ namespace Modules\Kernel\Api;
  * One machine this app has been introduced to.
  *
  * Everything that belongs to a stack is reached through one of these, which is
- * how `N1-R11`'s last clause becomes structural rather than careful: a reading
+ * how the last clause becomes structural rather than careful: a reading
  * cannot be attributed to the wrong stack if the thing that holds it holds a
  * `StackId` too.
  *
@@ -20,7 +20,7 @@ namespace Modules\Kernel\Api;
  * promised, checked on every connection whether or not the platform would
  * accept it (`ADR-0018`).
  *
- * **The session is deliberately not here.** `N1-R11` keeps each stack's session
+ * **The session is deliberately not here.** Each stack's session is kept
  * separate and this would be the obvious place to keep it — which is exactly
  * why it is not: a stack is what the app remembers between launches, and a
  * session is what it may not. Putting them in one value
@@ -74,7 +74,7 @@ final readonly class Stack
      * publicly trusted certificate for somebody else's host is a thing anybody
      * can obtain.
      *
-     * Lives on `Stack` rather than beside the transport because `N1-R22` pins to
+     * Lives on `Stack` rather than beside the transport because trust is pinned to
      * the stack rather than to an address: reaching the same machine by another
      * route must not re-open the question of its identity, and a check that
      * hung off the address would do exactly that.

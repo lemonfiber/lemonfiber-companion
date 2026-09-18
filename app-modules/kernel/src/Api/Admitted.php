@@ -9,7 +9,7 @@ use Closure;
 /**
  * What came of offering a credential: a session, or the reason there is none.
  *
- * `N1-R7` is the exchange — a credential traded once for a session — and this
+ * The exchange trades a credential once for a session, and this
  * is what the trade answers with. `C1`'s shape, and this is one of the places
  * it earns itself twice over: a stack that has stopped listening, one that
  * refused the password and one that could not be reached are three ordinary
@@ -21,7 +21,7 @@ use Closure;
  *         refused: fn (Obstacle $why): Screen => $this->explain($why),
  *     );
  *
- * **The refusal is an {@see Obstacle} rather than a type of its own.** `N1-R10`
+ * **The refusal is an {@see Obstacle} rather than a type of its own.** The obstacle
  * already owns the vocabulary for things an operator meets on the way to a
  * stack, and a credential being refused is already one of its cases. A second
  * enum would mean two lists of the same kind of fact, and a screen deciding

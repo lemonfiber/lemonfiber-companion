@@ -9,7 +9,7 @@ use Closure;
 /**
  * What came of trying to write down a stack: it is remembered, or it is not.
  *
- * `N1-R11` holds more than one configured stack, and a pairing this device
+ * A device holds more than one configured stack, and a pairing this device
  * cannot write down is a pairing that did not happen — the operator scanned a
  * code, watched something succeed, and will find nothing there next launch. So
  * the refusal is a value a caller has to look at rather than an exception it

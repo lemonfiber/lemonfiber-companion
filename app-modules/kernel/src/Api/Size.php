@@ -9,7 +9,7 @@ use Closure;
 /**
  * How big something is, and whether anybody measured it.
  *
- * `D7-R3` wants the size shown before a request is submitted; `D7-R4` wants an
+ * The size is shown before a request is submitted, and an
  * estimate labelled as one. Those read as two requirements and are one fact,
  * and a type carrying the number alone would let a screen answer the first and
  * fail the second without anybody noticing — the number renders either way.

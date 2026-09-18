@@ -18,7 +18,7 @@ use Closure;
  * **Nothing is said about *why* there is no session.** A device that has never
  * signed into this stack, one whose store would not open, and one whose session
  * the operator ended are one situation to whoever is looking at the screen:
- * they are being asked for the password. `N4-R6`'s distinctions matter when a
+ * they are being asked for the password. The distinctions matter when a
  * session is being *kept*, because the remedies differ; when resuming, there is
  * one remedy and it is the sign-in screen.
  *

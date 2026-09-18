@@ -14,7 +14,7 @@ namespace Modules\Kernel\Api;
  * one, so every payload is refused for carrying a field the format defines.
  * Nothing names the line that moved.
  *
- * **Closed rather than a list of forbidden names, and that is `N1-R48`.** The
+ * **Closed rather than a list of forbidden names.** The
  * requirement is that material must not carry a credential. Enforcing it by
  * refusing `credential`, `token`, `password` is wrong the first time somebody
  * picks a name nobody thought of, and it fails *open*: the app pairs happily,

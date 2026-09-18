@@ -16,7 +16,7 @@ use Traversable;
 /**
  * A look at what one service has been saying, and the edge of that look.
  *
- * `N2-R10` is three clauses and this type is where two of them stop being
+ * A log read is three clauses and this type is where two of them stop being
  * possible to drop: a read that is bounded, that names the service, and that
  * says the view is a window rather than the whole.
  *

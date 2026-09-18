@@ -18,7 +18,7 @@ use function sprintf;
  * who did everything right is how an operator learns that this screen is
  * unreliable.
  *
- * `N1-R49` is why material expires at all. Pairing material names a machine and
+ * Material expires for a reason. Pairing material names a machine and
  * the certificate it will present, and a photograph of a QR code in somebody's
  * camera roll is a durable instruction to trust a host — one that outlives the
  * evening it was useful for, and that whoever picks up the phone later can act

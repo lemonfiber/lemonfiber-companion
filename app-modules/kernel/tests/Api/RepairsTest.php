@@ -15,7 +15,7 @@ use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\Repairs;
 use Modules\Kernel\Api\Undoing;
 
-/** A repair the stack offered, stated the way `N2-R4` requires. */
+/** A repair the stack offered, stated the way one has to be. */
 function oneRepairAbout(string $check): Repair
 {
     return Repair::offered(

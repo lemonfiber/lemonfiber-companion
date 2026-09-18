@@ -9,7 +9,7 @@ use Closure;
 /**
  * What came of trying to keep a session: it was kept, or there was nowhere safe.
  *
- * `N4-R6` requires the app to refuse **and say why**, and this is both in one
+ * The app refuses **and says why**, and this is both in one
  * value. It started as an exception and `C1` was right to refuse that: a method
  * that answers with nothing can only report a refusal by throwing, which makes
  * the common case the one nothing checks. A device with no secure storage is an
@@ -34,7 +34,7 @@ final readonly class Kept
 {
     private function __construct(private ?WhySessionCannotBeKept $why) {}
 
-    /** The session is where `N4-R5` requires it. */
+    /** The session is where it is required to be. */
     public static function safely(): self
     {
         return new self(null);

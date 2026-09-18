@@ -11,7 +11,7 @@ use function trim;
 /**
  * What an operator decided about one thing the household asked for.
  *
- * {@see AgreedTo}'s argument applied to a request. `N2-R11` has a waiting
+ * {@see AgreedTo}'s argument applied to a request. A waiting
  * request be approvable and refusable from the app, and the way a decision goes
  * to the wrong subject is never a deliberate choice: a template draws a row,
  * the button is right there, and a handler passes its argument straight to the
@@ -19,7 +19,7 @@ use function trim;
  * make one name the request together with what was decided about it.
  *
  * **Two constructors, because approving and declining are different acts.** Not
- * one taking a nullable reason (`C2`): `D7-R7` makes the reason part of
+ * one taking a nullable reason (`C2`): the reason is part of
  * declining rather than something beside it, so a refusal that could be built
  * without one is a refusal this app could send half of. *Declined*, with no
  * reason, is exactly the screen that sends somebody to ask their operator in

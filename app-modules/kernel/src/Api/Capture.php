@@ -10,15 +10,15 @@ namespace Modules\Kernel\Api;
  * A port because a window is not a thing a PHP process has. Behind it on a
  * handset is lemonfiber's own native expansion — a window flag on Android, a
  * cover view on iOS; behind it everywhere else is a fake, which is what lets a
- * test about `N4-R18` be written at all.
+ * test about what a guarded screen holds be written at all.
  *
- * **The app is protected while backgrounded no matter what.** `N4-R9` is
+ * **The app is protected while backgrounded no matter what.** That is
  * enforced by the native half on its own, from a lifecycle observer installed at
  * launch, and there is deliberately no method here for it: a requirement with no
  * exceptions should not have an off switch, and an interface offering one is an
  * invitation to find a screen that seems to want it.
  *
- * **What this port is for is `N4-R18`** — the screens that must also be
+ * **What this port is for** is the screens that must also be
  * protected while somebody is looking at them, because a screen recording runs
  * in the foreground. Which screens those are is declared by {@see Concealed},
  * and this is how that declaration reaches the window.
@@ -45,7 +45,7 @@ interface Capture
      * Stop protecting for that screen.
      *
      * Answers whether the window is still protected, because it may well be:
-     * `N4-R9` protects a backgrounded app whatever it is showing, so revealing
+     * A backgrounded app is protected whatever it is showing, so revealing
      * while away changes nothing an operator could see.
      */
     public function reveal(): bool;

@@ -15,7 +15,7 @@ namespace Modules\Kernel\Api;
  *
  * **Zero and below are refused here rather than at each caller.** A stack
  * numbers what it holds from one, so a request numbered zero is a reading that
- * went wrong or a template that sent nothing — and `N2-R11`'s decision is one
+ * went wrong or a template that sent nothing — and the decision is one
  * where acting on the wrong subject is the whole harm.
  */
 final readonly class RequestId

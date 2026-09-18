@@ -14,7 +14,7 @@ use Traversable;
 /**
  * The stacks this device has been introduced to.
  *
- * `N1-R11` asks for three things and this is where two of them stop being
+ * Three things are asked for and this is where two of them stop being
  * promises: the app holds more than one configured stack, and a reading from
  * one is never attributed to another. The third — that each stack's session is
  * kept separate — is deliberately not here, for the reason
@@ -24,17 +24,17 @@ use Traversable;
  *
  * **There is no current stack, and that is the design.** The obvious shape for
  * this is a list with a selection on it, and every screen then reads "the"
- * stack from somewhere shared. `N1-R39` refuses exactly that: which stack a
+ * stack from somewhere shared. That is refused exactly: which stack a
  * screen is showing is carried by that screen. So nothing here answers *which
  * one* — a caller that wants a stack names it, and naming one this device does
  * not hold raises {@see StackIsNotConfigured} rather than falling back to the
  * first, the only, or whatever a previous screen left behind. Those three
- * fallbacks are what N1-R11's last clause is about, and each of them is one
+ * fallbacks are what the last clause is about, and each of them is one
  * line somebody writes while fixing something else.
  *
  * **Immutable, like everything else a capability holds.** `with()` answers a
  * new record. A mutable list is a thing two screens can hold at once and
- * disagree about, which is the shared state N1-R39 is written against.
+ * disagree about, which is the shared state the rule is written against.
  *
  * Identity is compared with {@see StackId::is()} rather than by array key, even
  * though a map keyed on the stored identifier would be shorter. That method
@@ -54,7 +54,7 @@ final readonly class Configured implements IteratorAggregate
      * A device that has been introduced to nothing.
      *
      * The state a first launch is in, and a legitimate value rather than a
-     * missing one — `N1-R35` is a whole screen about it, so this cannot be an
+     * missing one — there is a whole screen about it, so this cannot be an
      * absence something has to remember to check for.
      */
     public static function none(): self
@@ -87,7 +87,7 @@ final readonly class Configured implements IteratorAggregate
      * The same record, now holding this stack.
      *
      * A stack whose identifier is already held replaces it **in its place**.
-     * That is re-pairing: `N1-R22` pins trust to the stack rather than to where
+     * That is re-pairing: trust is pinned to the stack rather than to where
      * it answers, so a machine that comes back on another address, or with a
      * renewed certificate, is the same machine and must not arrive as a second
      * entry. Keeping its position matters for the same reason a second entry
@@ -142,7 +142,7 @@ final readonly class Configured implements IteratorAggregate
         throw StackIsNotConfigured::here($id);
     }
 
-    /** Whether a launch reaches `N1-R35`'s screen rather than an operator's. */
+    /** Whether a launch reaches the first-run screen rather than an operator's. */
     public function isEmpty(): bool
     {
         return $this->stacks === [];

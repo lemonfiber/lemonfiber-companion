@@ -10,14 +10,14 @@ use function trim;
 /**
  * Which stack, for as long as this app knows it.
  *
- * `N1-R11` is what this exists for: the app holds more than one configured
+ * This exists for one thing: the app holds more than one configured
  * stack, keeps each one's session separate, and must never attribute a reading
  * from one to another. That last clause is not enforceable by care — it is
  * enforceable by everything that belongs to a stack carrying one of these, so
  * that pairing a reading with the wrong stack is a type error rather than a
  * mistake.
  *
- * **Not the address.** `N1-R22` pins trust to the stack rather than to where it
+ * **Not the address.** Trust is pinned to the stack rather than to where it
  * answers, so the same machine reached over another route is the same stack and
  * must not be re-identified. An address makes a fine key right up to the first
  * DHCP lease, at which point every retained reading silently belongs to

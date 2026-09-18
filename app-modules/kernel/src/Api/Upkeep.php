@@ -11,18 +11,18 @@ use Closure;
  *
  * One reading: how current it is, what it is running, and what is waiting. Held
  * together rather than fetched piecemeal because they are read from one payload
- * and answer one question — `N2-R15`'s answer is *current, pending or stale*,
+ * and answer one question — the answer is *current, pending or stale*,
  * and the release that makes it pending is part of the same sentence.
  *
  * **The waiting list is what the stack offered, filtered by what may be
- * offered.** `N2-R16` refuses a withdrawn release, and doing it here means a
+ * offered.** A withdrawn release is refused, and doing it here means a
  * screen cannot forget: what {@see waiting()} hands out is already only what is
  * worth offering, and {@see runningAWithdrawnRelease()} is the separate
  * question a screen asks to tell somebody their stack is on one.
  *
  * **What it is standing on and what it could take are two types.** The wire
  * sends them under one shape, and {@see VersionInUse} is why this reading
- * cannot hand the first one to {@see TakingAnUpdate::agreed()} — `N2-R20`'s
+ * cannot hand the first one to {@see TakingAnUpdate::agreed()} — the
  * refusal, made structural rather than left to the screen that reads this.
  */
 final readonly class Upkeep
@@ -77,7 +77,7 @@ final readonly class Upkeep
      *
      * Two arms rather than a nullable getter, for the reason
      * {@see Daemon::exit()} gives. A stack that has not looked is not a stack
-     * running nothing, and `N2-R15` has this side report what it was told
+     * running nothing, and this side reports what it was told
      * rather than fill in a blank.
      *
      * **Named `inUse` rather than `running`**, which is what
@@ -104,7 +104,7 @@ final readonly class Upkeep
      * The releases worth offering, as the stack ordered them.
      *
      * A {@see Releases} rather than an array, which is `D1`, and filtered by
-     * the collection rather than here so that `N2-R16`'s refusal lives in one
+     * the collection rather than here so that the refusal lives in one
      * place.
      */
     public function waiting(): Releases
@@ -115,7 +115,7 @@ final readonly class Upkeep
     /**
      * The services taking an update would change.
      *
-     * What `N2-R17`'s confirmation names. Carried on the reading rather than
+     * What the confirmation names. Carried on the reading rather than
      * asked for when the operator taps, because a list fetched after the yes is
      * a list of whatever the stack had by then — and the confirmation is only
      * worth anything if what was named is what gets done.

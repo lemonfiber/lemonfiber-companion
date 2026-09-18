@@ -9,7 +9,7 @@ use Closure;
 /**
  * What became of asking a stack what it would put right.
  *
- * `N2-R4` wants an operator told what a repair does, what else it affects and
+ * An operator is told what a repair does, what else it affects and
  * whether it can be undone *before* being asked to confirm. The stack answers
  * that in a listing — and it answers it as a job, so this is the reading of a
  * handle rather than the answer to a question.
@@ -65,7 +65,7 @@ final readonly class HowTheOfferIsGoing
      *
      * Not a failure and not an answer. The remedy is to ask again, which is a
      * thing the operator does rather than something this app should do on their
-     * behalf — `N1-R66` keeps a screen from being a poller, and a job that
+     * behalf — a screen is kept from being a poller, and a job that
      * ended is exactly where an automatic retry becomes one.
      */
     public static function ended(): self

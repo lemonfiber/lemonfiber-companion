@@ -9,7 +9,7 @@ use function round;
 /**
  * A size as it reaches a screen: a figure, and the unit it is counted in.
  *
- * `D7-R3` wants a size shown before a request is approved, and *how many bytes*
+ * A size is shown before a request is approved, and *how many bytes*
  * has to become words somewhere. This is that somewhere, and the two halves are
  * one value because they are useless apart — a figure without its unit is a
  * number meaning nothing, and a screen holding them separately is a screen that
@@ -87,7 +87,7 @@ final readonly class HowBig
      * deciding from. `L5` rules out the decimal place that would settle it
      * either way — a separator written into a source file is wrong in one
      * locale by construction — and the precision lost is precision the number
-     * did not have, since `D7-R4` exists because most of these are estimates.
+     * did not have, since most of these are estimates.
      */
     private static function inside(int $bytes, SizeUnit $unit): int
     {

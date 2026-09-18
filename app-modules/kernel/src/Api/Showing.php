@@ -9,7 +9,7 @@ use Closure;
 /**
  * What a screen has to put on the frame: something, or nothing yet.
  *
- * `N1-R28` allows an indeterminate progress indicator **only** where the app
+ * An indeterminate progress indicator is allowed **only** where the app
  * holds nothing to show, and forbids it replacing a retained reading that could
  * be shown with its age. {@see Reading} already keeps a retained value from
  * passing as a live one; this keeps a spinner from covering either.
@@ -39,7 +39,7 @@ final readonly class Showing
     private function __construct(private ?Reading $reading) {}
 
     /**
-     * The app holds nothing for this screen, which is the one case `N1-R28`
+     * The app holds nothing for this screen, which is the one case that
      * lets a progress indicator answer.
      */
     public static function waiting(): self

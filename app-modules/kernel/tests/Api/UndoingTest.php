@@ -12,7 +12,7 @@ use Modules\Kernel\Api\Undoing;
 
 it('is the wire boolean given a name and a word', function (): void {
     // The contract sends `reversible: bool`. It arrives here as a case because
-    // N2-R4 asks the app to *state* whether a repair can be undone, and a
+    // The app *states* whether a repair can be undone, and a
     // boolean has nothing to state — `false` renders as an unticked box where
     // a sentence about permanence belongs.
     expect(array_map(

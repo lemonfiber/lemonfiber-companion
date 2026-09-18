@@ -8,7 +8,7 @@ namespace Modules\Kernel\Api;
  * A container running on the machine that this stack's configuration does not
  * declare.
  *
- * A type of its own rather than a {@see Daemon} with a flag, because `N2-R21`
+ * A type of its own rather than a {@see Daemon} with a flag, because the rule
  * forbids presenting one as part of the stack and a flag is a thing a screen
  * can forget to read. Nothing here can be handed to a listing that expects a
  * service, so the refusal holds by construction rather than by everybody

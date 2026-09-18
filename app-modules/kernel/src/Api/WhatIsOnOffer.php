@@ -19,12 +19,12 @@ use Closure;
  * asking after the machine, or asking what it could fix.
  *
  * **The offer is carried beside the repairs, and that is the point of the
- * type.** `N2-R6` says a confirmation made against one reading must not be
+ * type.** A confirmation made against one reading must not be
  * carried out if the reading has changed, and the offer is what names the
  * reading: the engine hands back a word identifying this listing, and a
  * confirmation that quotes it is a confirmation the engine can check. A screen
  * holding repairs and no offer could only say yes in the abstract — which the
- * engine accepts, as standing consent, and which is exactly what `N2-R5`
+ * engine accepts, as standing consent, and which is exactly what is
  * forbids this surface from sending.
  *
  * **No repairs is not an obstacle.** Most runs offer none, because most

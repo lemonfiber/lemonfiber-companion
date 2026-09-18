@@ -7,12 +7,12 @@ namespace Modules\Kernel\Api;
 use function sprintf;
 
 /**
- * The three things `N2-R7` asks the app to offer.
+ * The three things the app offers.
  *
  * An enum rather than three methods on a port, because these are one question
  * asked three ways: the screen renders a row and the operator picks a verb.
  * Three methods would be three code paths where there is one, and the
- * confirmation `N2-R8` requires would have to be written into each.
+ * confirmation that is required would have to be written into each.
  *
  * **Stopping and restarting are not the same kind of act.** A stop leaves a
  * thing off until somebody says otherwise; a restart is a stop that intends to
@@ -34,7 +34,7 @@ use function sprintf;
  * writing door says so by name — see `TheAppOpensOnlyTheseDoorsTest`.
  *
  * **Starting is the one that disturbs nothing.** Whatever is running goes on
- * running, so `N2-R8`'s statement about what will be disturbed has nothing to
+ * running, so the statement about what will be disturbed has nothing to
  * say — and a screen asking for confirmation of a start would be teaching an
  * operator to confirm without reading, which is what makes the stop
  * confirmation worthless.
@@ -81,7 +81,7 @@ enum WhatToDoWithIt: string
     /**
      * Whether doing this takes something away.
      *
-     * The line is drawn once, here. `N2-R8` wants a disruptive action to state
+     * The line is drawn once, here. A disruptive action states
      * what it disturbs before it is confirmed, and a screen deciding for itself
      * which verbs are disruptive would eventually ask for a confirmation of a
      * start — which teaches an operator to confirm without reading and makes

@@ -64,7 +64,7 @@ it('N1-R23 — does not carry the session', function (): void {
     // is one property wide.
     // `recognises` joins the list deliberately. It answers a question about this
     // stack's own identity — whether the machine that replied presented the
-    // certificate pinned at pairing (`N1-R19`) — and `N1-R22` puts that on the
+    // certificate pinned at pairing — and trust sits on the
     // stack rather than on the address, so that reaching the same machine by
     // another route does not re-open the question.
     expect(get_class_methods(Stack::class))

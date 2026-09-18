@@ -30,7 +30,7 @@ use Traversable;
  * decided, and the two disagree the first time the machine weighs something
  * differently.
  *
- * **The forms are carried beside the services**, because `N2-R7` asks for start,
+ * **The forms are carried beside the services**, because what is asked for is start,
  * stop and restart *by form* as well as by service, and a form with no service
  * running in it still exists — a stack whose whole media form is stopped has a
  * form an operator wants to start, and deriving the list from the rows would
@@ -73,7 +73,7 @@ final readonly class Daemons implements IteratorAggregate
      * the stack is prepared to wait, which is configuration rather than state,
      * so a machine with nothing running answers the same as one with eight —
      * and a shortcut that filled it in here would be this side inventing a
-     * bound, which is the whole of what `N2-R14` refuses.
+     * bound, which is the whole of what is refused.
      */
     public static function none(Disturbances $disturbs): self
     {
@@ -96,7 +96,7 @@ final readonly class Daemons implements IteratorAggregate
      * What each verb would take away, as the stack reported it.
      *
      * Carried on the listing because that is where the decision is made:
-     * `N2-R8` wants the bound said before the operator confirms, and a screen
+     * The bound is said before the operator confirms, and a screen
      * that had to fetch it when somebody tapped would either ask again mid-tap
      * or state a number from a reading it no longer holds.
      */

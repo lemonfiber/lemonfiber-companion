@@ -11,7 +11,7 @@ use InvalidArgumentException;
  *
  * Raised where a string becomes a {@see Job}. Without the name there is
  * nothing to ask after, so the app is holding an action it knows happened and
- * cannot learn the outcome of — which is the one state `N1-R41` has no answer
+ * cannot learn the outcome of — which is the one state there is no answer
  * for: it may not replay the action, because the stack received it, and it may
  * not present it as pending either.
  *

@@ -29,9 +29,9 @@ it('N1-R33 — is a marker today and a decision the day a second shape exists', 
     // cannot miss it: it fails the moment they do, and here is what it is
     // asking for.
     //
-    // `N1-R32` is what ships now, because state written without a shape marker
+    // The marker is what ships now, because state written without one
     // can never be migrated afterwards — there is nothing to tell it apart by.
-    // `N1-R33` is what the marker is *for*, and its machinery is deliberately
+    // Migration is what the marker is *for*, and its machinery is deliberately
     // absent: with one case, "is this current", "does this need migrating" and
     // "is this from a newer build" are branches nothing can reach and no test
     // can kill. Writing them now would mean shipping untestable code and
@@ -49,7 +49,7 @@ it('N1-R33 — is a marker today and a decision the day a second shape exists', 
     //   - a check that `current()` is the highest case, since "older" is
     //     decided by number and a `current()` that was not the highest would
     //     run a forward migration over fields it has never seen;
-    //   - and `N1-R34`: a discard may not take the pairing or its pinned
+    //   - and a discard may not take the pairing or its pinned
     //     fingerprint with it, so whatever discards has to say what it keeps.
     expect(Shape::cases())->toBe([Shape::One]);
 });

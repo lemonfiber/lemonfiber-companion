@@ -9,7 +9,7 @@ use function sprintf;
 /**
  * What became of one service when an update was applied.
  *
- * Four cases and not a boolean, which is the whole of `N2-R18`. *Not fetched*,
+ * Four cases and not a boolean, which is the whole of it. *Not fetched*,
  * *not started* and *not reached* are a network, a service and a machine — and
  * flattened into *failed* they send an operator to look in the wrong place,
  * which on a phone at eleven at night is the difference between a fix and a

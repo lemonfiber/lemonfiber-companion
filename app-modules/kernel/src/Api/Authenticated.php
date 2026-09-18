@@ -7,13 +7,13 @@ namespace Modules\Kernel\Api;
 /**
  * Proof that the device authenticated the person holding it.
  *
- * A type whose only purpose is to be hard to obtain. `N4-R8` says a biometric
+ * A type whose only purpose is to be hard to obtain. A biometric
  * failure must not fall back to unlocked, and the way to make that structural is
  * to give {@see Lock::openedBy()} a parameter that a failure cannot produce.
  *
  * **It carries nothing**, and that is deliberate: there is nothing about a
  * successful authentication worth remembering. Which finger, which method,
- * whether it was biometric or the passcode — `N4-R8` treats passcode as a
+ * whether it was biometric or the passcode — a passcode counts as a
  * legitimate outcome rather than a lesser one, so recording the difference
  * would invite a screen to make a distinction the requirement does not.
  *

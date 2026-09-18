@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * How long the app waits for a stack before it gives the screen back.
  *
- * `N1-R26` has two clauses and the second is the one that needs a type. Every
+ * There are two clauses and the second is the one that needs a type. Every
  * call carries a bound — that is a habit, and habits hold. The bound must not be
  * raised to accommodate a slow stack — that is a decision, it arrives at three
  * in the morning while somebody is debugging a stack that takes eleven seconds

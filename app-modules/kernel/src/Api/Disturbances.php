@@ -15,7 +15,7 @@ namespace Modules\Kernel\Api;
  *
  * **Every verb this surface offers has an answer, and there is no absent
  * case.** A reading short of one is a payload gone wrong rather than a verb
- * that costs nothing, and `N2-R14` has the reader refuse rather than this type
+ * that costs nothing, and the reader refuses rather than this type
  * carry a state meaning *unknown* that a screen would render as *free*.
  */
 final readonly class Disturbances

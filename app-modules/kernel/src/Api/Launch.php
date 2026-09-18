@@ -9,8 +9,8 @@ use Closure;
 /**
  * What the app found when it opened, as one of four things it can be.
  *
- * `N1-R37` wants a launch with no network, a launch that cannot reach the stack
- * and a launch where the app is locked told apart — and `N1-R35` and `N1-R36`
+ * A launch with no network, a launch that cannot reach the stack
+ * and a launch where the app is locked are told apart — and two more
  * add the two that are not failures at all: no stack paired yet, and a stack
  * paired and ready. Four answers, and the point of the type is that they cannot
  * be collapsed into "did it work".
@@ -23,7 +23,7 @@ use Closure;
  * check their router when what they need to do is look at their phone.
  *
  * **No stack paired is not an obstacle either**, for the same reason one level
- * along: nothing is wrong. `N1-R35` has that launch reach a screen offering
+ * along: nothing is wrong. That launch reaches a screen offering
  * pairing, and reporting it as a failure to reach would be the app describing
  * its own first run as a fault.
  *
@@ -81,7 +81,7 @@ final readonly class Launch
      *
      * Every arm is required. An optional one would be a default, and a default
      * is where two of these quietly become the same answer — which is the whole
-     * of what `N1-R37` refuses.
+     * of what is refused.
      *
      * @template TLocked of object
      * @template TUnpaired of object

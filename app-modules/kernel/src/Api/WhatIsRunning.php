@@ -39,7 +39,7 @@ final readonly class WhatIsRunning
      *
      * They arrive as two arguments rather than one widened list because they
      * are two different kinds of thing. {@see Daemons} is everything *this
-     * stack* runs; a container it never declared is not that, and `N2-R21`
+     * stack* runs; a container it never declared is not that, and the rule
      * forbids showing one as though it were. The contract draws the same line
      * for the same reason — its `Undeclared` is its own shape rather than a
      * service with the fields left blank, because a service carries a profile

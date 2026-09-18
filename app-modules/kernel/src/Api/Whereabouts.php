@@ -9,7 +9,7 @@ use function trim;
 /**
  * The screen the operator is on.
  *
- * This exists for one clause of `N1-R44` — "MUST restore that screen once one
+ * This exists for one clause — "MUST restore that screen once one
  * is established" — and it exists as a type because that clause is the one a
  * screen loses by accident. The interruption arrives, the app has a perfectly
  * good error to show, and where the operator *was* is a local variable in a

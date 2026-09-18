@@ -9,7 +9,7 @@ use function array_key_exists;
 /**
  * What one stack says it can do, and which stack said it.
  *
- * **The `StackId` is not decoration.** `N1-R31` says that where two configured
+ * **The `StackId` is not decoration.** Where two configured
  * stacks differ in what they support, the app must not present one's
  * capabilities as another's — and a bare list of abilities has no way to refuse
  * that. A screen holding a capability set from the stack it was showing a minute
@@ -17,7 +17,7 @@ use function array_key_exists;
  * for a machine nobody is looking at. Carrying the id makes the mismatch a
  * question something can be asked rather than a mistake nobody can see.
  *
- * **Absence is not a case.** `ARCH-R79` requires a capability the stack does not
+ * **Absence is not a case.** A capability the stack does not
  * have to be absent from the set rather than reported false, so
  * {@see self::of()} holds only what the stack declared and
  * {@see self::forAbility()} answers {@see WhatTheStackSays::nothing()} for
@@ -68,7 +68,7 @@ final readonly class Capabilities
      * What this stack says about one ability, including having said nothing.
      *
      * Answered as a type rather than a nullable, which is `C2` and is also what
-     * keeps `ARCH-R79`'s fourth answer from sitting beside the other three: a
+     * keeps the fourth answer from sitting beside the other three: a
      * stack that does not have a capability does not report it as false, and
      * absence read out of the same list as "not permitted" is how a screen ends
      * up saying one when it means the other.
@@ -85,7 +85,7 @@ final readonly class Capabilities
     /**
      * Whether a screen may offer this ability as an action on this stack.
      *
-     * The question `N1-R29` wants asked before an action is offered, answered in
+     * The question asked before an action is offered, answered in
      * one place so no screen works it out from a version number — which the same
      * requirement forbids by name.
      */
@@ -97,7 +97,7 @@ final readonly class Capabilities
     /**
      * Whether this set is the one this stack declared.
      *
-     * `N1-R31` made structural: a screen that holds a stack and a capability set
+     * made structural: a screen that holds a stack and a capability set
      * can ask whether they belong together, and the answer does not depend on
      * anybody remembering to check.
      */

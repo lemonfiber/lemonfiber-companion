@@ -58,13 +58,13 @@ final class PairingIsNotReadable extends InvalidArgumentException
     }
 
     /**
-     * It named an address that presents no certificate (`N1-R48`, `ADR-0018`).
+     * It named an address that presents no certificate (`ADR-0018`).
      *
      * Material carrying a fingerprint for an `http://` address contradicts
-     * itself: `N1-R48` says the fingerprint is "the certificate **that address
+     * itself: the fingerprint is "the certificate **that address
      * will present**", and an unencrypted address presents none. The digest
      * would be pinned against a connection that never offers one to compare it
-     * to, so `N1-R19`'s "validate every subsequent connection against it" could
+     * to, so "validate every subsequent connection against it" could
      * never be kept.
      *
      * **Refused here rather than at the first connection**, which is where it

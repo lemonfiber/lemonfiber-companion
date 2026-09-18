@@ -23,7 +23,7 @@ use Modules\Kernel\Api\Undoing;
 
 use function sprintf;
 
-/** The repair the operator said yes to, offered the way N2-R4 requires. */
+/** The repair the operator said yes to, offered the way one has to be. */
 function theRepair(): Repair
 {
     return Repair::offered(
@@ -37,7 +37,7 @@ function theRepair(): Repair
 /**
  * The listing that repair was offered in.
  *
- * Takes the repair rather than building its own, because `N2-R6` turns on the
+ * Takes the repair rather than building its own, because it turns on the
  * two being the same object: a listing holding an equal-looking repair is a
  * different listing about a different moment.
  */
@@ -123,7 +123,7 @@ it('N2-R6 — the refusal carries what is needed to re-offer', function (): void
 
 it('N1-R39 — a retained reading cannot confirm a repair at all', function (): void {
     // A screen that offered confirmation over a reading it knows is old has
-    // already broken N1-R39, and there is no half-confirmed repair to carry on
+    // already broken the shared-state rule, and there is no half-confirmed repair to carry on
     // with.
     $old = Reading::retained(Code::of('the-indexer-is-down'), Instant::atEpochSeconds(1_757_808_000));
 
@@ -151,7 +151,7 @@ it('N2-R6 — refuses a yes that quotes a listing the repair was never in', func
 
 it('N2-R6 — quotes the listing it was agreed to, for the engine to check', function (): void {
     // The word is carried out of here and nowhere else reads it. The engine is
-    // where `N2-R6` is finally settled, because it can see whether the machine
+    // where it is finally settled, because it can see whether the machine
     // has moved and this app cannot.
     $repair = theRepair();
 

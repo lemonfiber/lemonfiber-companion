@@ -14,7 +14,7 @@ use Closure;
  * Four requirements meet in this one type, and they belong together because
  * each of them is about what a notification may **not** carry.
  *
- * **`N4-R11` — the app raises no alerts of its own.** Every notification
+ * **The app raises no alerts of its own.** Every notification
  * originates in the core's notification decisions, so this carries an
  * identifier the core declared and no text at all. There is nowhere to put a
  * sentence the app wrote. That is the difference between a rule and a habit:
@@ -27,17 +27,17 @@ use Closure;
  * `Code`, raising an alert about the app's own trouble was a sentence anybody
  * could write, and the paragraph above said it could not be.
  *
- * **`N4-R10` — no credential, no household member's name, no requested title.**
+ * **No credential, no household member's name, no requested title.**
  * All three are values, and none of them fits through an identifier. That is
  * the whole mechanism: a notification cannot leak what it has nowhere to hold.
  *
- * **`N4-R15` — not shown for a stack no longer configured.** The `StackId` is
+ * **Not shown for a stack no longer configured.** The `StackId` is
  * what lets that be asked at all. A notification arriving for a stack the
  * operator has removed is not exotic — it is what happens whenever a removal
  * and an in-flight alert cross — and without the id the only choices are
  * showing it anyway or dropping every pending alert on every removal.
  *
- * **`N4-R20` — while locked, no finding detail, no service name, no value read
+ * **While locked, no finding detail, no service name, no value read
  * from a stack.** {@see self::either()} is where that is kept, and it is kept
  * by *not passing* the stack to the guarded arm rather than by asking the
  * renderer to remember. A flag is read by whoever remembers to read it, and the
@@ -56,7 +56,7 @@ final readonly class Notification
      *
      * The only constructor, and it takes no text. An adapter turning the core's
      * decision into one of these has that decision and a stack and nothing else
-     * to hand over, which is `N4-R11` expressed as a signature.
+     * to hand over, which is that rule expressed as a signature.
      */
     public static function fromTheCore(StackId $about, WhatTheCoreDecided $says): self
     {

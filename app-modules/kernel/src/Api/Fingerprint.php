@@ -15,7 +15,7 @@ use function preg_match;
  * `ADR-0018` is the whole design: the fingerprint comes from the same
  * out-of-band payload as the address, never from the network, and the app pins
  * it against that stack and checks every later connection against it — whether
- * or not the platform trust store would accept the certificate. `N1-R22` pins
+ * or not the platform trust store would accept the certificate. Trust is pinned
  * it to the stack rather than to an address, so reaching the same machine by
  * another route does not re-open the question of its identity.
  *
@@ -35,7 +35,7 @@ use function preg_match;
  * Case is normalised on the way in and this is the one edit the type makes.
  * Hex has two spellings of every digest and they mean the same certificate; a
  * comparison that called them different would refuse the right machine, which
- * is the failure `N1-R20` turns into "this is not the machine you were
+ * is the failure that becomes "this is not the machine you were
  * introduced to".
  */
 final readonly class Fingerprint
@@ -72,7 +72,7 @@ final readonly class Fingerprint
      *
      * It exists because typed pairing has no software comparison available:
      * nothing was scanned, so nothing carried a digest to compare against, and
-     * `N1-R50` leaves the operator confirming. The name is the guard rail — a
+     * The confirmation leaves it to the operator. The name is the guard rail — a
      * call site reading this for any other purpose reads as obviously wrong,
      * which is the same argument `Session::forTheHeader()` makes.
      */

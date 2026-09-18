@@ -9,7 +9,7 @@ use Attribute;
 /**
  * A screen whose frame must never be captured.
  *
- * `N4-R18` names three things — a credential, a session token, pairing
+ * Three things are named — a credential, a session token, pairing
  * material — and two places a frame is captured without anybody asking: the
  * task-switcher snapshot the platform takes when the app goes to the
  * background, and a screen recording. Neither is an action the operator
@@ -31,7 +31,7 @@ use Attribute;
  * alternative was a port with no adapter, which `EveryPortIsProvenTwiceTest`
  * would refuse and which would have been a promise rather than a mechanism.
  *
- * `N4-R9` is the same protection with no exceptions — the task-switcher
+ * The same protection with no exceptions — the task-switcher
  * representation shows no application content at all, on any screen — and is
  * app-wide rather than per-screen, so it belongs to that same native change and
  * is not something a screen declares.

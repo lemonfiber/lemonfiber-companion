@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * A diagnostic report, assembled and waiting for the operator to send it.
  *
- * `N4-R13` has two clauses and the second is the whole design: a report is
+ * There are two clauses and the second is the whole design: a report is
  * assembled *for the operator to send*, and must not be transmitted by the app.
  * So this is a value with no way to send itself — no client, no port, no
  * `send()`. What it has is text and a name, which is what the platform's share
@@ -15,7 +15,7 @@ namespace Modules\Kernel\Api;
  *
  * That is not a technicality. A crash reporter is also "assembled and sent", and
  * the difference between it and this is entirely who pressed the button —
- * `N4-R12` refuses the first, and a type that could send itself would put the
+ * The first is refused, and a type that could send itself would put the
  * two one line apart.
  */
 final readonly class Assembled

@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * Whether this device is on a network at all.
  *
- * `N1-R37` wants a launch with no network told apart from one that could not
+ * A launch with no network is told apart from one that could not
  * reach the stack, and `Obstacle::DeviceHasNoNetwork` has existed for it since
  * the obstacles were written without anything ever producing one — because
  * nothing could. A phone in flight mode and a machine that is switched off
@@ -37,7 +37,7 @@ interface Networking
      *
      * A boolean rather than the kind of connection, deliberately. The platform
      * says whether it is wifi, cellular or ethernet and whether it is metered,
-     * and none of that is this app's business: `N4-R12` keeps it from reporting
+     * and none of that is this app's business: it is kept from reporting
      * anything about the operator's device, and a stack lives on a local
      * network — so *which* network is a question whose only honest answer is
      * the one attempt this port exists to let the app make.

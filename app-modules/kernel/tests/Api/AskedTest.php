@@ -28,7 +28,7 @@ it('N4-R4 — never asked and declined are not the same answer', function (): vo
 it('N4-R2 — never asked does not mean may proceed', function (): void {
     // Deliberately not the negation of `mayAsk()`. A caller that conflated them
     // would treat "never asked" as "go ahead", which puts the platform prompt
-    // in the middle of an action rather than before it — and N4-R2 wants the
+    // in the middle of an action rather than before it — and the
     // app's own words first.
     expect(Asked::NotYet->mayProceed())->toBeFalse();
     expect(Asked::Granted->mayProceed())->toBeTrue();

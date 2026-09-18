@@ -15,7 +15,7 @@ use function trim;
  * of. An enum here would be a closed list of what this release knew about, and
  * a service it had not heard of would arrive as a `tryFrom` returning null —
  * which reads as *this stack has no such service* and means *this app does not
- * recognise it*. `ARCH-R79` separates those by name.
+ * recognise it*. Those are separated by name.
  *
  * **The name is the identifier, not a label.** It is what a log window is asked
  * for by, what a finding is matched against and what an operator types into a

@@ -11,7 +11,7 @@ use Closure;
  *
  * The same shape {@see WhatIsRunning} has, for the same reason: `C1` wants a
  * stack that is asleep, one on another network and one whose session has ended
- * to be states of the world rather than exceptions, and `N1-R10` has the
+ * to be states of the world rather than exceptions, and the
  * operator told which of them they met. A reading that raised would make the
  * screen's ordinary case an error path.
  */

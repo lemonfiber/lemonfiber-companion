@@ -9,10 +9,10 @@ use function sprintf;
 /**
  * Which of the two ways the operator got the pairing material in.
  *
- * `N1-R6` requires both: scanning a code, **and** typed entry where there is no
+ * Both are required: scanning a code, **and** typed entry where there is no
  * camera or the permission was declined. The second is not a fallback bolted on
  * for completeness — it is the route somebody takes on a device whose camera
- * they have refused this app, and `N4-R3` says every permission is optional with
+ * they have refused this app, and every permission is optional with
  * a working alternative. This is that alternative, named.
  *
  * Recorded rather than discarded because the two routes fail differently and a

@@ -16,7 +16,7 @@ use function sprintf;
  *
  * **A closed set**, which is what makes it an enum: the app asks for what it
  * asks for, and a permission it has no use for is a permission it must not
- * request. `N4-R1` puts the request at the point of first use, so every case
+ * request. The request goes at the point of first use, so every case
  * here has exactly one place that asks.
  */
 enum Permission: string
@@ -39,7 +39,7 @@ enum Permission: string
     /**
      * Whether the app still works with this one declined.
      *
-     * `N4-R3` requires every permission to be optional with a working
+     * Every permission is optional with a working
      * alternative, and this is where "working alternative" stops being a
      * promise in a document. All three are true, and each has a different
      * alternative: a pairing code can be typed instead of scanned, the app can
@@ -48,7 +48,7 @@ enum Permission: string
      *
      * A case answering false would be a permission this app cannot honestly
      * call optional, and it is here so that adding one is a decision somebody
-     * makes in front of `N4-R3` rather than by writing a new case.
+     * makes in front of that rather than by writing a new case.
      */
     public function hasAnAlternative(): bool
     {

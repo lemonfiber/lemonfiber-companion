@@ -9,7 +9,7 @@ use Closure;
 /**
  * The camera, asked to read a pairing code.
  *
- * `N1-R6`'s first road. A port because there is no camera on a laptop and
+ * The first road. A port because there is no camera on a laptop and
  * because the alternative — a screen reaching for the platform's scanner
  * directly — is the one shape a suite cannot drive: `A3` refuses it, and the
  * practical cost is that the whole of the scanned road would be untestable.
@@ -24,10 +24,10 @@ use Closure;
  * **The permission is not separately askable, and that is the platform's
  * doing.** `nativephp/mobile` exposes no camera-permission check: there is no
  * `checkPermission()` to read and no way to raise the prompt on its own. What
- * there is is the scan, which prompts on first use — `N4-R1` by construction —
- * and reports a refusal as a cancellation. So `N4-R4`'s "do not ask again" is
+ * there is is the scan, which prompts on first use — by construction —
+ * and reports a refusal as a cancellation. So "do not ask again" is
  * the platform's to keep here rather than this app's, and what the app owes is
- * `N4-R3`: the refusal arrives as {@see WhyNothingWasScanned::TheCameraIsNotPermitted}
+ * The refusal arrives as {@see WhyNothingWasScanned::TheCameraIsNotPermitted}
  * and the typed road is offered.
  *
  * That is a gap worth naming rather than papering over, because it is the one
@@ -35,7 +35,7 @@ use Closure;
  * written here, where somebody adding a `Permissions` port will read it, rather
  * than discovered by writing one and finding nothing to implement it with.
  *
- * **`N4-R2` is the caller's.** The app's own sentence goes up before this is
+ * **The app's own sentence is the caller's.** It goes up before this is
  * called, because this call is what raises the platform's prompt. No signature
  * can hold that, which is why `PermissionsAreExplainedTest` asks the catalogue
  * whether the sentence exists at all.

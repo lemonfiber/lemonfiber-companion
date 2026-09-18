@@ -11,7 +11,7 @@ use Closure;
  *
  * The repair travels with its outcome because neither is worth anything alone:
  * *fixed* says nothing without what was fixed, and a repair without its outcome
- * is the listing the operator was already shown. `N2-R5` is about the agreeing
+ * is the listing the operator was already shown. The rule is about the agreeing
  * being its own act, and this is what that act produces, one row at a time.
  *
  * **Read through one closure rather than three accessors**, which is

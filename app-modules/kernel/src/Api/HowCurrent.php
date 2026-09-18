@@ -10,7 +10,7 @@ use function sprintf;
  * Whether the stack is up to date, as the stack answered it.
  *
  * Three states rather than a version to compare, because comparing is what
- * `N2-R15` refuses: the app holds no opinion about which of two version
+ * That is refused: the app holds no opinion about which of two version
  * strings is later, and one that formed one would be wrong about a withdrawn
  * release, a patch series and a stack whose channel the operator changed.
  *
@@ -43,7 +43,7 @@ enum HowCurrent: string
     /**
      * Whether there is an update here to be taken.
      *
-     * The question every caller actually asks, answered once. `N2-R20` refuses
+     * The question every caller actually asks, answered once. It is refused
      * to offer applying one where the stack said current, and a screen deciding
      * that for itself would be a second place this is known.
      */

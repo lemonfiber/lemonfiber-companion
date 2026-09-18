@@ -18,7 +18,7 @@ namespace Modules\Kernel\Api;
  * this does not name is not an insecure address — it is pairing material that
  * did not survive the trip, and `file://` or `ftp://` reaching `isEncrypted()`
  * would be answered `false`, which reads as a true statement about a stack that
- * was never there. `N1-R12` asks the app to state whether the connection is
+ * was never there. The app states whether the connection is
  * private; it does not ask it to state that about something it cannot dial.
  *
  * Plain `Http` is named here on purpose, and accepting it is the subject of the
@@ -37,7 +37,7 @@ enum Scheme: string
     /**
      * Whether what travels over this scheme is encrypted.
      *
-     * The one fact `N1-R12` turns on, stated once. A screen that worked it out
+     * The one fact it turns on, stated once. A screen that worked it out
      * from the scheme would be a second implementation of a one-line rule, and
      * the two would disagree about the case nobody thought of.
      */

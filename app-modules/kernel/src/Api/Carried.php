@@ -9,7 +9,7 @@ use Closure;
 /**
  * What became of a repair the operator confirmed.
  *
- * `N2-R6` asks for two things and the second is the one a screen forgets: a
+ * Two things are asked for and the second is the one a screen forgets: a
  * repair confirmed against one reading must not be carried out if the reading
  * has changed, and the app must **refuse and re-offer**. Refusing alone leaves
  * somebody looking at a button that did nothing.

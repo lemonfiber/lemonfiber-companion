@@ -22,7 +22,7 @@ enum WhyNothingIsShown
     /**
      * The operator has not allowed notifications, or has withdrawn that.
      *
-     * `N4-R1` and `N4-R4` are the rules underneath: the prompt belongs at the
+     * Two rules underneath: the prompt belongs at the
      * point of first use rather than on launch, and a declined permission is
      * not asked for again automatically. A notification withheld for this
      * reason is one the app may *offer* to ask about, on a screen, in front of
@@ -37,7 +37,7 @@ enum WhyNothingIsShown
     /**
      * The notification is about a stack this device no longer has.
      *
-     * `N4-R15`. Not rare — it is what happens whenever a removal and an
+     * a stack no longer configured. Not rare — it is what happens whenever a removal and an
      * in-flight alert cross — and the only correct handling is to drop it
      * silently. Telling somebody about a machine they just removed is worse
      * than saying nothing.

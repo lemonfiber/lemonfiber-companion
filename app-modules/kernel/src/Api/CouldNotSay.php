@@ -19,7 +19,7 @@ use function trim;
  * **Both carry a reason, and `unverified` carries a remedy.** Those are the
  * only words the operator gets for a row with no answer on it, and a screen
  * that dropped them would show a check that did not run and nothing about why
- * or what to do to get an answer — which is the gap `N2-R3` exists to close,
+ * or what to do to get an answer — which is the gap a finding exists to close,
  * one outcome over from where it was first closed.
  *
  * **The two are held together rather than apart.** They differ in what produced

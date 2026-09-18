@@ -74,7 +74,7 @@ final readonly class WentWrong
      * on it. A screen that guessed would offer to do something it cannot do.
      *
      * `Remediable` is the case this makes reachable and nothing yet reads: it
-     * means lemonfiber can fix the thing itself, which is what `N2-R4`'s repair
+     * means lemonfiber can fix the thing itself, which is what a repair
      * flow is about offering.
      */
     public function standing(): Standing
@@ -85,7 +85,7 @@ final readonly class WentWrong
     /**
      * What the core said underneath, where it said anything.
      *
-     * `G4-R4` has the detail available and not leading, so it is asked for by
+     * The detail is available and does not lead, so it is asked for by
      * name rather than arriving beside the meaning — a screen has to reach for
      * it, which is what *must not lead* means on a surface with one column.
      */

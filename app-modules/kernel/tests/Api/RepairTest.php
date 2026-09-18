@@ -19,7 +19,7 @@ use Modules\Kernel\Api\Undoing;
 
 use function sprintf;
 
-/** A repair offered with everything N2-R4 asks for. */
+/** A repair offered with everything it has to carry. */
 function anOfferedRepair(Undoing $undoing = Undoing::Possible): Repair
 {
     return Repair::offered(

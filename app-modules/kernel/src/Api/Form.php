@@ -15,7 +15,7 @@ use function trim;
  * `tryFrom` returning null — which reads as *this stack has no such form* and
  * means *this app does not recognise it*.
  *
- * **It exists because `N2-R7` asks for start, stop and restart by form.** A
+ * **It exists because start, stop and restart are asked for by form.** A
  * form is the unit an operator reaches for when they want everything to do with
  * media to stop, and a screen that could only act service by service would make
  * that nineteen taps and a mistake.

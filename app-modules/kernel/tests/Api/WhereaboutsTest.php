@@ -17,7 +17,7 @@ it('N1-R44 — keeps the screen it was given', function (): void {
 it('N1-R44 — refuses a blank screen rather than defaulting to one', function (): void {
     // Every plausible default is the failure the requirement describes.
     // "Nowhere" restores nothing, and "the first screen" is the bounce-to-login
-    // that N1-R44 exists to forbid wearing a different name. The blank string
+    // that the rule exists to forbid, wearing a different name. The blank string
     // is the one that would really happen — a screen naming itself from a value
     // that was not set yet — and it reads as a screen until somebody is
     // returned to it.

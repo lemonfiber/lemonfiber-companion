@@ -22,7 +22,7 @@ enum WhatWasDecided: string
     /** The person who asked gets what they asked for. */
     case Approve = 'approve';
 
-    /** They do not, and `D7-R7` says they are owed a sentence instead. */
+    /** They do not, and they are owed a sentence instead. */
     case Decline = 'decline';
 
     /**

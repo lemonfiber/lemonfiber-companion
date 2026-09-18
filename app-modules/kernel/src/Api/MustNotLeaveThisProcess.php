@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use LogicException;
 
 /**
- * Something `N1-R15` keeps inside the process was asked to leave it.
+ * Something kept inside the process was asked to leave it.
  *
  * Thrown from `__serialize()`, which is the third way a value gets out and the
  * one the other two do not cover. `__debugInfo()` answers `var_dump` and
@@ -39,7 +39,7 @@ final class MustNotLeaveThisProcess extends LogicException
      * A key is not a secret — it goes on the wire in a header, and anybody
      * watching the connection has it. What it must not do is *persist*.
      *
-     * `N1-R42` says a key serves retry within a single attempt and must not
+     * A key serves retry within a single attempt and must not
      * replay an action across a reconnection. A serialised key is precisely a
      * key that outlived its attempt: whatever reads it back sends the operator's
      * earlier action again, at a moment nobody chose, against a stack whose

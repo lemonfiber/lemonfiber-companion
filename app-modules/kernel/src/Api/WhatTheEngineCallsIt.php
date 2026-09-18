@@ -10,7 +10,7 @@ namespace Modules\Kernel\Api;
  * Deliberately not a {@see ServiceId}, though both wrap the same kind of word.
  * Every verb this app can send takes a `ServiceId`, so giving one to a
  * container the stack never declared would make *start this* spellable — and
- * `N2-R21` says a container nobody declared is never offered a verb. Two types
+ * A container nobody declared is never offered a verb. Two types
  * that cannot be substituted is what turns that from a rule every screen has to
  * remember into a sentence that will not compile.
  *

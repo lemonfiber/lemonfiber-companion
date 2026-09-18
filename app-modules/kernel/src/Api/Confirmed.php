@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * A repair the operator said yes to, and the reading they said it about.
  *
- * **`N2-R5` — confirming is not viewing.** A repair must not be carried out
+ * **Confirming is not viewing.** A repair must not be carried out
  * without a confirmation distinct from the act of viewing the finding. The way
  * that requirement is broken is never a deliberate decision: a screen renders a
  * finding, the repair is right there on it, and somewhere a tap handler calls
@@ -19,7 +19,7 @@ namespace Modules\Kernel\Api;
  * together. Rendering a finding produces no `Confirmed` and cannot be made to;
  * a screen that wants to apply a repair has to write the word.
  *
- * **`N2-R6` — confirmed against one reading, not against readings in general.**
+ * **Confirmed against one reading, not against readings in general.**
  * The operator agreed to a repair for the situation in front of them. If the
  * stack has moved since, that agreement is about something that is no longer
  * true, and carrying it out applies a decision nobody made about the state it
@@ -28,7 +28,7 @@ namespace Modules\Kernel\Api;
  * the screen can re-offer rather than leaving somebody in front of a button
  * that did nothing.
  *
- * **It carries the listing the repair was offered in.** `N2-R6` is settled
+ * **It carries the listing the repair was offered in.** That is settled
  * twice and the engine's is the one that counts: it can see whether the machine
  * has moved and this app cannot. A confirmation quotes {@see Offer::named()}
  * and the engine refuses it where the moment has passed. The reading comparison
@@ -44,7 +44,7 @@ namespace Modules\Kernel\Api;
  * the confirmation was made from. A re-read that happens to produce the same
  * values is still a different reading, and treating it as the same one would
  * mean deciding on the operator's behalf that nothing important changed — which
- * is the judgement `N2-R6` takes away from the app.
+ * is the judgement taken away from the app.
  */
 final readonly class Confirmed
 {
@@ -59,7 +59,7 @@ final readonly class Confirmed
      *
      * Refuses a retained reading rather than answering about one. A screen that
      * offered confirmation over a reading it knows is old has already broken
-     * `N1-R39`, and there is no half-confirmed repair to carry on with — which
+     * shared state, and there is no half-confirmed repair to carry on with — which
      * is the same argument `Pairing::read()` makes for raising.
      */
     public static function against(Repair $repair, Offer $inside, Reading $shown): self
