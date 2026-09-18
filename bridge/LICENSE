@@ -1,0 +1,41 @@
+Copyright (c) 2026 NightWorks.io. All rights reserved.
+
+This directory — `bridge/`, and everything under it — is NOT covered by the
+licence at the root of this repository. It carries these terms instead.
+
+SOURCE AVAILABLE, NO LICENCE TO USE
+
+No right is granted to any person to use, copy, modify, merge, publish,
+distribute, sublicense, or sell this software or any part of it, or to create
+derivative works from it, for any purpose, commercial or non-commercial.
+
+It is readable here because this repository is readable here. That is the whole
+of what reading it permits. In particular, nothing in this file or in the
+repository around it should be read as permission to take this code into another
+project, whether by copying it, by adapting it, or by reimplementing it from
+these sources.
+
+The one exception is NightWorks.io's own use of it in lemonfiber.
+
+WHY IT IS LIKE THIS
+
+This code is the native half of an application built on NativePHP. The
+capabilities it provides — secure storage, local notifications, a scanner, a
+network reading, a share sheet — are sold as plugins on the NativePHP plugin
+marketplace.
+
+If you want these capabilities for your own application, buy them there:
+
+    https://nativephp.com/plugins
+
+That is how the framework this application is built on gets paid for, and taking
+this code instead would be taking from the people who made the thing it runs on.
+
+NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
