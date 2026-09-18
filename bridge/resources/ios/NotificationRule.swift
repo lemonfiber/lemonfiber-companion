@@ -42,6 +42,7 @@ public struct NotificationRule: Equatable, Sendable {
     /// the platforms is a disagreement about the same four facts.
     public let everAsked: Bool
 
+    /// The four facts a platform reports, in the order the rule reads them.
     public init(wouldAppear: Bool, permissionIsAsked: Bool, wouldExplain: Bool, everAsked: Bool) {
         self.wouldAppear = wouldAppear
         self.permissionIsAsked = permissionIsAsked
@@ -59,7 +60,12 @@ public struct NotificationRule: Equatable, Sendable {
         return NotificationRule.notDetermined
     }
 
+    /// A notification posted now would appear.
     public static let granted = "granted"
+
+    /// It would not, and nothing may ask again.
     public static let denied = "denied"
+
+    /// Nobody has been asked; the point of first use is still ahead.
     public static let notDetermined = "not_determined"
 }

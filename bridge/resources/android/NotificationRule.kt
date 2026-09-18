@@ -70,9 +70,15 @@ public data class NotificationRule(
             else -> NOT_DETERMINED
         }
 
+    /** The three words the wire spells these answers with. */
     public companion object {
+        /** A notification posted now would appear. */
         public const val GRANTED: String = "granted"
+
+        /** It would not, and nothing may ask again. */
         public const val DENIED: String = "denied"
+
+        /** Nobody has been asked; the point of first use is still ahead. */
         public const val NOT_DETERMINED: String = "not_determined"
     }
 }

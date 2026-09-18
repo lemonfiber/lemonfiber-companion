@@ -38,13 +38,13 @@ class NotificationRuleTest {
     }
 
     @Test
-    fun `an explanation android would offer is evidence of a refusal`() {
+    fun `an explanation the platform would offer is evidence of a refusal`() {
         // True only after a refusal, which is what makes it evidence of one.
         assertEquals("denied", rule(wouldExplain = true).said())
     }
 
     @Test
-    fun `asked once and still silent is a refusal, even where android stopped explaining`() {
+    fun `asked once and still silent is a refusal`() {
         // The permanent refusal. Android answers this identically to never
         // having asked, which is the whole reason the asking is written down.
         assertEquals("denied", rule(everAsked = true).said())
