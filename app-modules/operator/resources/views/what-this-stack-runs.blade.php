@@ -8,7 +8,7 @@
     <x-operator::emphasis>{{ __($this->answer()->overall) }}</x-operator::emphasis>
 
     @if ($this->answer()->isSettling)
-        {{-- N1-R27: something here becomes something else on its own, and
+        {{-- Something here becomes something else on its own, and
              this says how often the screen looks. A screen that refreshes
              silently is one an operator cannot reason about. --}}
         <x-operator::note>{{ __($this->cadence()->saidOnTheScreen()) }}</x-operator::note>
@@ -40,7 +40,7 @@
         <x-operator::emphasis>{{ __('health.nothing_is_running') }}</x-operator::emphasis>
     @endforelse
 
-    {{-- N2-R7's other granularity. The forms come from the stack's own list
+    {{-- The other granularity. The forms come from the stack's own list
          rather than from the rows, so the form an operator opened this
          screen to start — the one with nothing running in it — is here. --}}
     <x-operator::emphasis>{{ __('health.by_form') }}</x-operator::emphasis>

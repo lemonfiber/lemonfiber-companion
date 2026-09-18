@@ -16,7 +16,7 @@ use function sprintf;
 use function str_repeat;
 
 /**
- * `N1-R37` — the four a launch can be, kept apart on the way to a template.
+ * The four a launch can be, kept apart on the way to a template.
  *
  * `Launch::either()` requires all four arms, which is the requirement expressed
  * as a signature. This is where those four become fields, and the failure it
@@ -61,7 +61,7 @@ it('N1-R37 — says what stood in the way, by a key built from the obstacle', fu
         // the application container and this does not. Here the claim is only
         // that the key is built from the case rather than listed against it.
         expect($blocked->met)->toBe(sprintf('connection.%s', $why->value), $why->value)
-            // `N1-R10` asks for both, and they are not the same sentence: what
+            // An obstacle owes both, and they are not the same sentence: what
             // happened is a fact about the world, what to do about it is advice.
             ->and($blocked->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
             ->and($blocked->isLocked)->toBeFalse($why->value)

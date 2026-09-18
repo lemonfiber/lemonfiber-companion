@@ -38,23 +38,23 @@ enum AStacksScreen: string
     /** Where a password is offered, and a session that ended is renewed. */
     case SignIn = '/stacks/{stack}/sign-in';
 
-    /** What the household has asked this machine for (`N2-R11`). */
+    /** What the household has asked this machine for. */
     case Requests = '/stacks/{stack}/requests';
 
-    /** What this machine would put right, stated before any yes (`N2-R4`). */
+    /** What this machine would put right, stated before any yes. */
     case Repairs = '/stacks/{stack}/repairs';
 
-    /** What has stopped coming in, which is the first of `N2-R9`'s four. */
+    /** What has stopped coming in, which is the first of four. */
     case Stuck = '/stacks/{stack}/stuck';
 
 
-    /** What this machine is running, as a list of rows (`N2-R7`). */
+    /** What this machine is running, as a list of rows. */
     case Services = '/stacks/{stack}/services';
 
     /**
-     * One thing this machine runs, and the verbs about it (`N2-R7`).
+     * One thing this machine runs, and the verbs about it.
      *
-     * A service or a whole form, which is `N2-R7`'s two granularities arriving
+     * A service or a whole form, which is the two granularities arriving
      * at one screen. The path says `{service}` for both because the name is all
      * either is: {@see Screens\WhatToDoWithThis}
      * reads a service first and a form second, which is the narrower reading
@@ -62,19 +62,19 @@ enum AStacksScreen: string
      */
     case Doing = '/stacks/{stack}/do/{service}';
 
-    /** Where this machine stands on being up to date (`N2-R15`). */
+    /** Where this machine stands on being up to date. */
     case Updates = '/stacks/{stack}/updates';
 
-    /** What is running here that this machine's own configuration never declared (`N2-R21`). */
+    /** What is running here that this machine's own configuration never declared. */
     case Elsewhere = '/stacks/{stack}/elsewhere';
 
-    /** What one of this machine's services has been saying (`N2-R10`). */
+    /** What one of this machine's services has been saying. */
     case Logs = '/stacks/{stack}/logs/{service}';
 
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
-    /** What it holds one of that machine's services under (`N2-R10`). */
+    /** What it holds one of that machine's services under. */
     public const string ABOUT = '{service}';
 
     /**

@@ -113,14 +113,14 @@ final readonly class WhereAStackIs
         return AStacksScreen::Logs->forTheStacksService($this->stored, $service->named());
     }
 
-    /** One service of this machine, and the verbs about it (`N2-R7`). */
+    /** One service of this machine, and the verbs about it. */
     public function doingWith(ServiceId $service): string
     {
         return AStacksScreen::Doing->forTheStacksService($this->stored, $service->named());
     }
 
     /**
-     * One whole form of this machine, and the verbs about it (`N2-R7`).
+     * One whole form of this machine, and the verbs about it.
      *
      * The same screen as the one above, because what an operator is choosing
      * between is identical and only the name the stack is told differs.

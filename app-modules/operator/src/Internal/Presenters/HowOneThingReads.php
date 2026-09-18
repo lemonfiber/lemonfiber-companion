@@ -35,7 +35,7 @@ final readonly class HowOneThingReads
 
         if ($service instanceof WhatOneServiceSays) {
             // A host-managed service takes no verb at all, and the row already
-            // knows it — `N2-R7` is about what this stack runs, and a verb
+            // knows it — the verbs are about what this stack runs, and a verb
             // about something it does not would be refused by the machine.
             return new WhatOneThingIs($named, verbs: $service->isOurs ? $service->verbs : [], service: $service);
         }
