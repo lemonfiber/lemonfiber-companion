@@ -93,7 +93,7 @@ function howDeepEachSlotEchoIs(string $source): array
 }
 
 it('finds templates that draw a slot', function (): void {
-    // The floor `Q-R66` asks for, and a real one here: the rule's whole subject
+    // The floor asked for, and a real one here: the rule's whole subject
     // is the echo, so a walk that found none would pass in silence — including
     // in the state where somebody had replaced every `{{ $slot }}` with
     // something this cannot read.

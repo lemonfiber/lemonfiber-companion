@@ -113,7 +113,7 @@ it('F2 — a presenter is handed data, not a way to go and get it', function ():
 // spent its whole life in that state — `Presenters/` did not exist, so the
 // filter matched no class and F2 passed every run having read nothing.
 //
-// `Q-R66` asserts the foundations every rule shares and says in the same breath
+// The floor asserts the foundations every rule shares and says in the same breath
 // that a rule narrowing to a namespace nobody uses is each rule's own business.
 // This is F2's, and it is kept beside F2 rather than there for that reason: the
 // two must move together if the directory is ever renamed.

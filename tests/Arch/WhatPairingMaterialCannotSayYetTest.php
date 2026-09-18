@@ -20,15 +20,15 @@ use Modules\Kernel\Api\WhatPairingMaterialSays;
 // the app tells operators to use. Pairing the same machine twice leaves two
 // rows on the screen whose whole job is to say which machines are in the house.
 //
-// It is not fixable here, and `N1-R17` says so: a capability the contract does
+// It is not fixable here, and the rule says so: a capability the contract does
 // not carry is raised against the contract, and the dependent work stops until
 // it is closed.
 //
-// **The raise has landed, and the gap has moved.** `N1-R62` now requires the
+// **The raise has landed, and the gap has moved.** The spec now requires the
 // material to carry an identifier that is the stack's own and survives a
-// re-issue, a change of address and a replacement of the certificate; `N1-R63`
+// re-issue, a change of address and a replacement of the certificate; the app has to
 // requires the app to decide which machine from that identifier alone and to
-// replace what it holds rather than add a second; `N1-R64` settles the session
+// replace what it holds rather than add a second; and the session is settled
 // on either side of a changed fingerprint. What is asked for is now written
 // down. What is missing is a producer: no repository mints pairing material
 // yet, so there is no field for this app to read and no version to raise
@@ -39,7 +39,7 @@ use Modules\Kernel\Api\WhatPairingMaterialSays;
 // is closed, so the material growing a field is the app growing a case here and
 // nowhere else. The day one lands, this goes red and names the work: match on
 // it in `Configured::with()`, restore the test that proved the duplicate, and
-// answer `N1-R64` at the moment of replacement — a re-pairing that changes the
+// settle the session at the moment of replacement — a re-pairing that changes the
 // pinned fingerprint forgets the session held for that stack, and one that does
 // not keeps it.
 //

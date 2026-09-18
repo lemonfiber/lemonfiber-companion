@@ -11,17 +11,17 @@ use Tests\Support\Module;
 // present one.
 //
 // Two requirements, one guarantee, and they are cited together here on purpose.
-// N1-R41 says the operator's app must not retain an undelivered action, replay
-// one on reconnecting, or present one as pending. N3-R12 says that while the
+// The operator's app must not retain an undelivered action, replay
+// one on reconnecting, or present one as pending. And while the
 // stack is unreachable, a household member asking for something new must be
 // declined rather than queued.
 //
-// They are the same sentence about two surfaces. Whoever reads N3-R12 next
+// They are the same sentence about two surfaces. Whoever reads the member's half next
 // should find this rather than write a second queue-refusing check for the
 // household module — which would be one fact in two places, and the copy that
 // gets corrected is whichever the next person happens to open.
 //
-// What N3-R12 adds is who is looking: a member is told no by an app they did not
+// What that half adds is who is looking: a member is told no by an app they did not
 // configure and cannot diagnose, so the refusal has to be a sentence rather than
 // a silence. `Attempted` carries a `Problem` on its refusing arm for exactly
 // that, and has no third arm to fall through to.
@@ -160,7 +160,7 @@ it('N1-R42 — nothing holds the key that names one attempt', function (): void 
     // survives. A property typed `IdempotencyKey` is not an array and carries
     // no `@var`, so it walks past that check entirely — and one is enough: a
     // key kept past the statement that made it is a name a later send can be
-    // given, which is the replay `N1-R42` refuses in the same sentence that
+    // given, which is the replay refused in the same sentence that
     // asks for the key at all.
     //
     // A key serves the retry *inside* one attempt. Across a reconnection the

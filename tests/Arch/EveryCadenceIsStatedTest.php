@@ -73,7 +73,7 @@ function everyFileThatPolls(): array
  * is one `#[` and two attributes — and an expression that required `)]` to
  * follow the arguments reads that as no poll at all. The file still counts as
  * one that polls, so the rule below examines it, finds no interval to judge and
- * passes: the one half of `N1-R27` a number could break, gone, on a screen that
+ * passes: the one half a number could break, gone, on a screen that
  * is visibly refreshing.
  *
  * @return list<string>

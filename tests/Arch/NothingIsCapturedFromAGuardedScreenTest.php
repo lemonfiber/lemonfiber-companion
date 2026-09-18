@@ -23,7 +23,7 @@ use Tests\Support\Module;
 // the declaration lives here, in a form a lifecycle hook can read with one
 // reflection pass, and the rule is that the declaration is never forgotten.
 //
-// The list is written out rather than inferred, for the reason S3 and N4-R12
+// The list is written out rather than inferred, for the reason S3 and the no-telemetry rule
 // are: a rule that guesses which types are sensitive is a rule that silently
 // stops covering a type somebody adds next month. These three are named in the
 // requirement — a session token, and the material a pairing carried.
@@ -68,10 +68,10 @@ it('N4-R18 — a screen holding a secret is excluded from capture', function ():
 });
 
 /**
- * Whether a screen is handed one of the three things `N4-R18` names.
+ * Whether a screen is handed one of the three things named.
  *
  * Named rather than inferred, and read off the constructor for the same reason
- * `N1-R39` is: a screen is given what it shows, and what it does with the value
+ * The shared-state rule is: a screen is given what it shows, and what it does with the value
  * afterwards is beyond what any rule over a signature can see.
  *
  * @param ReflectionClass<NativeComponent> $class

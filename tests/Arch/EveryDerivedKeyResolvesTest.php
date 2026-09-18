@@ -199,7 +199,7 @@ function everyDerivedKey(): array
         ),
         // The first run, which is the one sequence whose steps are copy and
         // nothing else — a step with no sentence behind it is a blank frame
-        // between two that read, and `N1-R54` is the requirement it breaks.
+        // between two that read, and the sequence is what it breaks.
         WhereTheFirstRunIs::class => aPairPerCase(
             WhereTheFirstRunIs::cases(),
             static fn(WhereTheFirstRunIs $at): array => [$at->said(), $at->explained()],

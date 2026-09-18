@@ -50,24 +50,24 @@ use Tests\Support\Tree;
 function writtenBeforeItsScreen(): array
 {
     return [
-        // `N1-R48`: a stack can refuse pairing material outright, which is a
+        // A stack can refuse pairing material outright, which is a
         // different sentence from material this app could not read. No road
         // reaches it yet — both refuse before the stack is asked.
         'connection.pairing_refused' => 'a pairing that the stack itself turns down',
 
-        // `N4-R4`: the app must not ask again for a permission somebody
+        // The app must not ask again for a permission somebody
         // declined. The sentence for the screen they land on afterwards is
         // written; the screen is the one that offers the typed road instead.
         'device.permission_refused' => 'the screen shown after a permission is declined',
 
-        // `N2-R5`: a repair an operator asked for and the stack would not do.
+        // A repair an operator asked for and the stack would not do.
         // The offer half is built — `Mending` asks what a stack would put right
-        // and the screen states all three of `N2-R4`'s clauses — and the
+        // and the screen states all three clauses — and the
         // agreeing half is not, so `Confirmed` and
         // `RepairWasConfirmedAgainstAnOldReading` are still unreached.
         'health.repair_refused' => 'a repair the stack refused',
 
-        // `N2-R2`: how old a reading is. The report carries no timestamp today,
+        // How old a reading is. The report carries no timestamp today,
         // so this waits on the wire as much as on a screen.
     ];
 }

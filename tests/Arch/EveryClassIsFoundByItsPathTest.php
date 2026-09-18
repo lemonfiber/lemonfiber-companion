@@ -19,7 +19,7 @@ use Tests\Support\Tree;
 // second is not reported as wrong — it is not a candidate at all. Nothing
 // refuses it, because nothing is looking at it.
 //
-// **This is a different failure from the one `Q-R66` cures, and the difference
+// **This is a different failure from the one the floor cures, and the difference
 // decides the fix.** L1 narrowed to two directories that did not exist, F2 to a
 // namespace with no classes in it, F5 to five tag names no screen used. In all
 // three the selected set was wrong, so asserting the set is not empty catches
@@ -137,7 +137,7 @@ it('W6 — the judgement is watched refusing', function (): void {
 });
 
 it('W6 — the files the rule reads are found', function (): void {
-    // The guard `Q-R66` asks for, on this rule's own selection. It is not the
+    // The guard asked for, on this rule's own selection. It is not the
     // cure for what W6 refuses — that is the whole argument above — but this
     // rule discovers a file list like any other, and that list going empty
     // would read as every source file being well-formed.

@@ -8,7 +8,7 @@ use Tests\Support\Tree;
 //
 // An application's identity is what the operating system installs it *as*. Two
 // builds carrying two identities are two applications: they install beside one
-// another, each with its own storage, and the pairing `N1-R45` refuses to
+// another, each with its own storage, and the pairing that survives a refused credential refuses to
 // discard lives in that storage. A build arriving under a different identity
 // does not update the operator's app — it appears next to it, empty, while the
 // pairing stays in the one now orphaned, and from inside either app nothing is
@@ -16,7 +16,7 @@ use Tests\Support\Tree;
 //
 // It was `env('NATIVEPHP_APP_ID')` with no default. That is a file which is not
 // in this repository, which is the environment of whoever ran the build, which
-// is the one thing `N1-R52` names: two people building one release produced two
+// is the one thing named: two people building one release produced two
 // applications, and a build where nobody had set it produced one with no
 // identity at all.
 //

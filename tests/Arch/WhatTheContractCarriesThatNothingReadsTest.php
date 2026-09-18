@@ -45,7 +45,7 @@ use Tests\Support\WhatTheReadersRead;
 // unread field nobody weighed. A row is removed by reading the field, never by
 // deleting the row because it is inconvenient.
 //
-// **`N2-R14` cuts the other way here.** That rule forbids inventing a value the
+// **The substitution rule cuts the other way here.** It forbids inventing a value the
 // contract does not carry. This one refuses the opposite habit — building a
 // surface *because* the wire happens to carry a field. A field wants a
 // requirement before it wants a screen, and the row is where that is said.
@@ -614,7 +614,7 @@ it('N1-R17 — every row names a path nothing reads', function (): void {
     // The direction a name-based reading could not ask about at all, and the
     // one that had two rows wrong: a row saying nothing under `members` is read
     // while the app reads a member's name and every request under them, and a
-    // row saying the entry for the release in use is not read while `N2-R15` is
+    // row saying the entry for the release in use is not read while being up to date is
     // answered off it.
     //
     // A row like that is worse than a missing one. It reads as a decision

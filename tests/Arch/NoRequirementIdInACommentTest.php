@@ -29,7 +29,7 @@ use Tests\Support\Tree;
 // refuses a decrease that was not written down: progress that is not recorded
 // is progress the next branch can undo without noticing.
 //
-// This is the shape `Q-R67` uses for an issue backlog and the version manifest
+// This is the shape an issue backlog uses and the version manifest
 // uses for a coverage floor, for the same reason in each case: a number that may
 // only fall converges, and one that is merely watched does not.
 //
@@ -45,7 +45,7 @@ use Tests\Support\Tree;
  * to. It reaches zero when the last comment is rewritten, and this file and the
  * count go together when the org's gate takes over.
  */
-const IDENTIFIERS_STILL_IN_COMMENTS = 425;
+const IDENTIFIERS_STILL_IN_COMMENTS = 337;
 
 /**
  * Whether a line is a comment, by the four markers this repository writes one
@@ -53,7 +53,7 @@ const IDENTIFIERS_STILL_IN_COMMENTS = 425;
  *
  * `#` is deliberately not among them: in PHP 8 it opens an attribute as often
  * as a comment, and `#[Lazy]` is not prose. A string holding an identifier is a
- * different question and not this one — `GOV-R6` says comment, and a test's own
+ * different question and not this one — the rule says comment, and a test's own
  * title is read by a runner rather than by somebody reading the code.
  *
  * Named for this file: the root suites share one namespace (G10).

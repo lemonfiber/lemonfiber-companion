@@ -19,7 +19,7 @@ use Tests\Support\Tree;
 // store keeps the session gives a screen that flips between signed-out and
 // signed-in as they navigate. A store that forgets while a fold renders the
 // obstacle gives a screen showing *this stack refused the pairing of this app*
-// over data it loaded a moment ago — which is the sentence `N3-R13` names.
+// over data it loaded a moment ago — which is the sentence named.
 //
 // So this asks for both, of every place that has one. Read as tokens: a fold by
 // its `met(Obstacle` method, a screen by its `resume(` call. The declaration

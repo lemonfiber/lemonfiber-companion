@@ -15,8 +15,8 @@ use Tests\Support\Template;
 // all.
 //
 // Three rules go quiet together, because all three are handed that one
-// function's answer. F3 stops seeing an unknown utility, DES-R24 stops seeing a
-// literal colour, and DES-R15 stops seeing the accent set as text. A template
+// function's answer. F3 stops seeing an unknown utility, the platform mapping stops seeing a
+// literal colour, and the accent check stops seeing it set as text. A template
 // whose ternaries hold `bg-theme-accnt`, `bg-red-500` and `text-theme-accent`
 // passes every rule in `tests/Templates` — and EDGE parses each of those in
 // turn, finds it means nothing, and drops it. No error, no warning, no failed
@@ -37,7 +37,7 @@ use Tests\Support\Template;
 // expression to match. A class name hidden in either is hidden the same way and
 // costs the same thing.
 //
-// **It holds `G3-R1` as well, by being stricter than it.** No state may be
+// **It holds the colour rule as well, by being stricter than it.** No state may be
 // conveyed by colour alone; a symbol or text must also carry it. A class list
 // that cannot be decided at runtime is a colour that cannot change with a
 // state, so on this surface colour carries no state at all — which is more than
@@ -46,7 +46,7 @@ use Tests\Support\Template;
 // says it is open is its contents being on the screen; the accent bar is beside
 // that rather than instead of it.
 //
-// **`G3-R14` comes with it**, for the surface this app is. Severity in log
+// **Log severity comes with it**, for the surface this app is. Severity in log
 // output must be present as text and not only as colour. The scrollback names
 // the stream in words beside every line, and what makes a line stand out is
 // weight rather than a red mark — deliberately, because plenty of well-behaved
@@ -54,7 +54,7 @@ use Tests\Support\Template;
 // there is no severity it could be carrying alone.
 //
 // Named here because the implication runs one way only. Relax this rule — allow
-// one ternary, once — and `G3-R1` stops being held by anything, silently, with
+// one ternary, once — and both stop being held by anything, silently, with
 // no other rule going red. A requirement that survives only as a side effect is
 // one nobody will think to check when the side effect goes.
 
