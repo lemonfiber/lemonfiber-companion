@@ -42,7 +42,7 @@ final readonly class AStackThatIsNotThere implements StandsIn
     /**
      * Built per call, which is what the port it replaces promises.
      *
-     * `N1-R11` wants a client per stack and `N1-R24` wants a session no longer
+     * A client is wanted per stack, and a session no longer
      * lived than the reach it was made for. The real binding is not a singleton
      * for both of those reasons, and a stand-in that was one would be a
      * difference between what is being looked at and what ships — which is the

@@ -17,9 +17,9 @@ use function str_repeat;
 /**
  * The machines this module stands in for, and what each one does.
  *
- * Three rather than one, and the reason is `N1-R57`'s word *operate*. A single
+ * Three rather than one, and the reason is the word *operate*. A single
  * stand-in that answers everything makes every screen reachable and every
- * screen identical: the happy one. `N1-R10`'s screens — a stack that is not
+ * screen identical: the happy one. The obstacle screens — a stack that is not
  * answering, a session a machine will not accept — are the ones worth looking
  * at hardest, because they are the ones an operator meets on a bad evening, and
  * a build where they cannot be reached at all is a build where they are never
@@ -36,7 +36,7 @@ use function str_repeat;
  * **Every address is unresolvable and no fingerprint is a certificate.** RFC
  * 2606 reserves `.invalid`, so were the stand-in client ever to miss a request
  * the failure would be a name that does not exist rather than a connection to
- * somebody's actual machine. `N1-R60` asks for exactly that: nothing here can
+ * somebody's actual machine, which is asked for in as many words: nothing here can
  * reach a real stack.
  */
 enum AStandInStack: string
@@ -74,7 +74,7 @@ enum AStandInStack: string
     /** What a machine answers with when the session it was handed is not one. */
     private const int WILL_NOT_TAKE_THE_SESSION = 401;
 
-    /** Sixty-four hex characters, which is the written form `N1-R18` fixes. */
+    /** Sixty-four hex characters, which is the written form a pin takes. */
     private const int A_SHA256 = 32;
 
     /**
@@ -82,7 +82,7 @@ enum AStandInStack: string
      *
      * Assembled here rather than by the affordance that seeds them, so that
      * adding a fourth behaviour is a case in this file and nothing else — which
-     * is the half of `Q-R72` about admitting one without editing anything
+     * is the half about admitting one without editing anything
      * outside the module.
      */
     public function asAStack(): Stack
@@ -99,8 +99,8 @@ enum AStandInStack: string
      * How a stack of this identity behaves, and how an unknown one does.
      *
      * By identity rather than by address or name, because identity is what
-     * `N1-R11` keeps stacks apart by — an address can be re-typed and a name is
-     * whatever its owner felt like, and `N1-R22` says a machine that comes back
+     * stacks are kept apart by — an address can be re-typed and a name is
+     * whatever its owner felt like, and a machine that comes back
      * on another address is the same machine.
      *
      * **A machine this module has never heard of behaves as the working one,
@@ -166,7 +166,7 @@ enum AStandInStack: string
      *
      * A repeated character rather than anything resembling a real nonce, so
      * that an id in a log or a database is recognisable as this module's at a
-     * glance — and distinct per case, because `N1-R11` keeps stacks apart by
+     * glance — and distinct per case, because stacks are kept apart by
      * identity and two sharing one would be one machine wearing two names.
      */
     private function seed(): string

@@ -28,7 +28,7 @@ use Modules\Sdk\Api\PinnedClients;
  * on a device.
  *
  * **It builds no client of its own, which is why the pinning rule is untouched.**
- * `N1-R20` allows exactly one file to open a connection and
+ * Exactly one file may open a connection, and
  * `NothingReachesAStackUnpinnedTest` enforces it by refusing any other file
  * that names the SDK's transport. This one asks {@see PinnedClients} for a
  * client and hands the result on, so the count of files that can reach a stack
@@ -36,7 +36,7 @@ use Modules\Sdk\Api\PinnedClients;
  *
  * **What it answers with depends on which machine it was handed.**
  * {@see AStandInStack} holds three, and the two that refuse are the point:
- * `N1-R10`'s screens are the ones an operator meets on a bad evening, and a
+ * the obstacle screens are the ones an operator meets on a bad evening, and a
  * build where only the working machine is reachable is a build where they are
  * never looked at.
  *
@@ -53,7 +53,7 @@ final readonly class ClientsThatReachNothing implements Clients
     /**
      * The SDK's client, because {@see Clients} is what this stands in for.
      *
-     * Naming the type is what `N1-R20` used to read as *this file can open a
+     * Naming the type is what the pinning rule used to read as *this file can open a
      * connection*, and this file cannot: the client comes from
      * {@see PinnedClients}, pinned, and is handed straight on.
      * `MAY_NAME_A_CLIENT` is where that distinction is written down, and the

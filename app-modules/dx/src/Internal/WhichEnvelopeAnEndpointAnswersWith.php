@@ -16,7 +16,7 @@ use function str_starts_with;
  * Which envelope one endpoint of the wire answers with, read off the SDK.
  *
  * A stand-in has to answer a request with the *right* shape, and which shape is
- * right is a property of the path that was asked for. `N1-R59` refuses a table
+ * right is a property of the path that was asked for. A hand-written table is refused
  * of that written by hand for the reason it refuses every hand-written fixture:
  * the day lemonfiber moves an endpoint or changes what one answers with, a
  * table says nothing and every screen built on it keeps rendering.

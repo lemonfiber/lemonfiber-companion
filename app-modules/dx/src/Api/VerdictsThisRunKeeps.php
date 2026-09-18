@@ -17,7 +17,7 @@ use Modules\Vault\Api\PlatformVerdicts;
  * will ever use. Left to the real keychain that is a row an operator's device
  * carries for good, about a stack they were never introduced to.
  *
- * `N1-R60` names credentials, sessions and pairing material rather than
+ * Credentials, sessions and pairing material are named rather than
  * verdicts, so this is not the requirement's letter — it is the same sentence
  * about the same store, and the line between *material* and *residue* is not
  * one worth arguing over when closing it costs a class that says what the other

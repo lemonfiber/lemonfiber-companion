@@ -208,7 +208,7 @@ final readonly class WhatTheContractDeclares
      *
      * Read off the tree rather than from a list, for the reason the whole class
      * exists: a list is a thing that goes stale silently, and an envelope added
-     * to the SDK that nothing here knows about is exactly the gap `N1-R59` is
+     * to the SDK that nothing here knows about is exactly the gap a stand-in is
      * written against.
      *
      * Through {@see TheInstalledPackage} rather than the suite's own directory

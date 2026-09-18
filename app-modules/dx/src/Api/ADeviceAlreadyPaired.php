@@ -11,7 +11,7 @@ use Modules\Vault\Api\PlatformStacks;
 /**
  * A device that has already been introduced to a machine.
  *
- * The other half of `N1-R57`, and the half without which the first is worth
+ * The other half of *operate*, and the half without which the first is worth
  * little: {@see AStackThatIsNotThere} makes a stack answer, and every screen
  * that asks one anything sits behind a pairing. A device holding none reaches
  * exactly one frame of this application — the first run — so standing in for
@@ -19,8 +19,8 @@ use Modules\Vault\Api\PlatformStacks;
  *
  * **Two affordances rather than one, on purpose.** Folding them together would
  * make the first run the one thing that could never be looked at, and it is the
- * sequence most worth looking at: `N1-R54` builds it a step at a time and
- * `N1-R56` says a paired device never sees it again. Kept apart, a stand-in
+ * sequence most worth looking at: it is built a step at a time and
+ * a paired device never sees it again. Kept apart, a stand-in
  * stack with no pairing is the first run with something behind it, and both
  * together is the app an operator uses every day.
  *
@@ -30,7 +30,7 @@ use Modules\Vault\Api\PlatformStacks;
  * {@see TheStoreThisRunKeeps}, which holds it in this process. So pairing
  * another machine while this is on behaves exactly as it does on a real device
  * for as long as the app is open, and leaves nothing behind when it closes.
- * `N1-R60` asks for the second half in as many words.
+ * The second half is asked for in as many words.
  *
  * @implements StandsIn<Stacks>
  */
@@ -45,9 +45,9 @@ final readonly class ADeviceAlreadyPaired implements StandsIn
         // value assembled here would be this class's idea of that shape, which
         // is the fixture-written-by-its-reader problem one layer down.
         //
-        // Every machine rather than one. `N1-R11` holds more than one stack,
+        // Every machine rather than one. A device holds more than one stack,
         // and `AStandInStack` says why three: a build where only the working
-        // one can be reached is a build where `N1-R10`'s screens — the ones an
+        // one can be reached is a build where the obstacle screens — the ones an
         // operator meets on a bad evening — are never looked at.
         foreach (AStandInStack::cases() as $standIn) {
             $stacks->remember($standIn->asAStack());
