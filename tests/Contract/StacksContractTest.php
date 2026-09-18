@@ -140,6 +140,18 @@ it('N4-R23 — never disagrees with the record it is asked about', function (Sta
     expect($stacks->holdsAny())->toBe(! $stacks->configured()->isEmpty());
 })->with('every stacks implementation');
 
+it('N4-R22 — a store that will not open is not a device holding nothing', function (): void {
+    // The adapter's own, because the fake has no store to be unable to open.
+    //
+    // `Opening` asks this to decide whether there is anything worth locking, so
+    // an unreadable store answered as *nothing* is the lock letting itself off
+    // on exactly the device where something is already wrong: the pairings are
+    // still there, the app simply cannot see them this launch. Answered as
+    // *there may be*, the cost of being wrong is a prompt; the other way it is
+    // an unlocked application.
+    expect(new PlatformStacks(APlatformStore::absent())->holdsAny())->toBeTrue();
+});
+
 it('N4-R22 — reads a record written down as empty as holding nothing', function (): void {
     // The adapter's own, because it is about an encoding the fake does not
     // have: a store can hold the record and the record can be the empty list —

@@ -97,10 +97,33 @@ final readonly class PlatformStacks implements Stacks
      * asking this has asked whether there is anything behind its lock, and
      * decoding the pairings to answer would be exactly the reading the lock sits
      * in front of.
+     *
+     * **It does not agree with {@see Configured()} on a store that will not
+     * open, and that is deliberate.** The two are asked different questions
+     * there: one is *list what this device holds*, which an unreadable store
+     * cannot answer and which reports nothing; the other is *is there anything
+     * to protect*, which an unreadable store cannot rule out. The contract
+     * suite holds them to each other over a working store, which is where the
+     * agreement is a property worth having.
      */
     public function holdsAny(): bool
     {
         $held = $this->store->read(self::UNDER);
+
+        // A store that cannot be read is not a store that is empty. The two
+        // arrive here as the same absence and they are opposite answers to the
+        // question this method is actually asked: `Opening` uses it to decide
+        // whether there is anything worth locking, so reading an unreadable
+        // store as *nothing* is the lock letting itself off on exactly the
+        // device where something is already wrong — the pairings are still in
+        // the store, the app simply cannot see them this launch.
+        //
+        // Unknown is answered as *there may be*. Being wrong in that direction
+        // costs a prompt in front of somebody who has paired nothing; being
+        // wrong the other way costs them an unlocked application.
+        if ($held->status === SecureStorageStatus::Unavailable) {
+            return true;
+        }
 
         return $held->status === SecureStorageStatus::Found
             && $held->value !== null
