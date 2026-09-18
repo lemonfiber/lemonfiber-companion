@@ -31,7 +31,7 @@ use Tests\Support\WhereAScreenCanSendYou;
 //
 // So this draws every stack-scoped screen against each of the three machines
 // and asks what each drew. The three are the point: a build where only the
-// working one is reachable is a build where `N1-R10`'s screens — the ones an
+// working one is reachable is a build where the obstacle screens — the ones an
 // operator meets on a bad evening — are never looked at.
 
 /**
@@ -213,7 +213,7 @@ it('Q-R72 — a machine that answers draws every screen it is behind', function 
 });
 
 it('finds screens to draw', function (): void {
-    // The floor `Q-R66` asks for. The rules above walk what the router serves,
+    // The floor asked for. The rules above walk what the router serves,
     // and a walk over nothing passes three times over.
     withNoStackRunning();
 
@@ -234,7 +234,7 @@ it('N1-R10 — a machine that does not answer draws what stood in the way, and t
 
         $met = in_array(whateverTheCatalogueSays(Obstacle::StackDidNotAnswer->said()), $drawn->said(), strict: true);
 
-        // `N1-R3`: an obstacle never takes the action away. A screen that
+        // An obstacle never takes the action away. A screen that
         // reported the failure and offered nothing leaves an operator whose
         // stack woke up two seconds later with no way to find out.
         if (! $met || $drawn->offers() === []) {
@@ -282,7 +282,7 @@ it('N3-R13 — a machine that refuses the session draws the way back in', functi
 
     sort($wrong);
 
-    // The other half of `N3-R13`, and the half a screen cannot show: a fold
+    // The other half of a removed identity, and the half a screen cannot show: a fold
     // that signs somebody out while the store keeps the session gives a screen
     // that flips between signed-out and signed-in as they navigate. The
     // stand-in keychain held one for this machine before the first frame, which
@@ -348,7 +348,7 @@ it('N1-R7 — a password can be offered to a machine that is not running', funct
         . 'application that cannot be walked without a stack running',
     );
 
-    // `N1-R7` exchanges the password once: what comes back is kept, so the next
+    // The exchange trades the password once: what comes back is kept, so the next
     // frame does not ask again. Read through the port rather than off the
     // screen, because the screen's answer is what it just did and the store's
     // is what the app will find on the frame after this one.

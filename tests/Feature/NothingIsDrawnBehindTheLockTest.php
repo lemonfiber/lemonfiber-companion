@@ -20,15 +20,15 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\VerdictsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
-// `N4-R22`, `N4-R23`, `N4-R24` — what the lock is for, and what it hides.
+// What the lock is for, and what it hides.
 //
 // Asked against the rendered tree rather than the template text, because all
 // three are claims about a *frame*. A template carries both arms of its own
 // `@if` and reads as a screen that says everything on every branch; which of
 // them the device draws is decided at render, which is where this asks.
 //
-// The three are one behaviour seen from three sides. `N4-R22` is when the
-// prompt is asked at all, `N4-R23` is what decides it, and `N4-R24` is what the
+// The three are one behaviour seen from three sides: when the
+// prompt is asked at all, what decides it, and what the
 // frame may carry while it stands.
 
 /** The moment a launch is read at. Named for this file (`G10`). */
@@ -101,7 +101,7 @@ it('N4-R24 — the name of a machine is not behind the lock', function (): void 
     $drawn = whatTheLaunchDraws(theScreenOnADeviceThat(ADeviceThatKnowsYou::refusing(), $stack));
 
     // Named separately from the assertion above, which would catch it, because
-    // this is the one a reader wants to see stated: `N1-R11` says the name is
+    // this is the one a reader wants to see stated: the name is
     // what the operator chose, and the names of the machines in somebody's
     // house is exactly what an unlocked phone on a table would show a guest.
     expect($drawn->said())->not->toContain($stack->name()->shown());
@@ -124,7 +124,7 @@ it('N4-R23 — the store decides, so a pairing engages the lock without a flag',
     $refusing = ADeviceThatKnowsYou::refusing();
 
     // The same device and the same screen class, differing only in what the
-    // store holds. Nothing in between is set, cleared or remembered: `N4-R23`
+    // store holds. Nothing in between is set, cleared or remembered:
     // asks for the store itself rather than a flag the app maintains, and a
     // flag is exactly what would let these two frames come out the same.
     expect(whatTheLaunchDraws(theScreenOnADeviceThat($refusing))->said())
@@ -142,6 +142,6 @@ it('N4-R3, N4-R22 — a handset with no screen lock set is not held shut', funct
 
     // Refusing to open here would be this app requiring something the platform
     // does not have, on a device where the operator has already decided. The
-    // machine is drawn, which is the working alternative `N4-R3` asks for.
+    // machine is drawn, which is the working alternative that is asked for.
     expect($drawn->said())->toContain(aStackBehindTheLock()->name()->shown());
 });

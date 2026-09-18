@@ -21,7 +21,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\VerdictsInMemory;
 
-// `N2-R1`, `N1-R9`, `N2-R13` — the app opens on the verdict, and says how old it is.
+// The app opens on the verdict, and says how old it is.
 //
 // `N2` calls its ordering the whole design: *is anything wrong*, then *what*,
 // then *may I fix it from here*. Until this existed the first screen answered
@@ -29,11 +29,11 @@ use Tests\Support\Fakes\VerdictsInMemory;
 // the verdict two taps and a network round trip away behind whichever stack
 // they guessed at first.
 //
-// What makes it allowed is that it is held rather than asked. `N1-R66` says a
+// What makes it allowed is that it is held rather than asked. A
 // screen is not a poller and opening an app is not a reason to talk to four
 // machines, so the word comes out of a store — which makes every one of these a
-// retained reading, which is exactly the case `N1-R24` permits on opening and
-// `N1-R9` requires carry its age.
+// retained reading, which is exactly the case permitted on opening and
+// required to carry its age.
 
 /** The moment every case below is read at, so an age is a thing a test states. */
 const NOW = 1_770_000_000;

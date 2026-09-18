@@ -204,7 +204,7 @@ it('N2-R3 — says so where the machine knows what is wrong and has nothing to s
 it('says nothing it was not told about a check that passed', function (): void {
     // A passing check has no meaning to explain and no remedy to offer.
     // Inventing a sentence for one would be this app writing words the machine
-    // did not say, which is the opposite of what `N2-R3` asks for.
+    // did not say, which is the opposite of what a finding owes.
     $row = $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()))->findings()[0];
 
     expect($row->explainsItself())->toBeFalse()
@@ -255,7 +255,7 @@ it('N2-R1 — asks again when the operator asks it to, and not otherwise', funct
     // it took. A screen that could only be re-asked by leaving it and coming
     // back teaches them to distrust what it says — and one that asked on a
     // timer would be talking to a machine over a home network unprompted, which
-    // is what `N1-R66` refuses. A tap is a prompt.
+    // is what the cadence rule refuses. A tap is a prompt.
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
     $screen = theHealthScreen($asking);
 
@@ -821,7 +821,7 @@ it('N2-R10 — a finding about the machine has no log to go to, and asking for o
     // a finding about the machine is the empty one. The template does not draw
     // the button for those rows — but this is a public method on a screen, and a
     // client can call it with anything it likes. Safety that rests on a template
-    // remembering is the shape `N3-R3` refuses one level up.
+    // remembering is the shape refused one level up.
     //
     // So it answers this machine's own screen: a button leading back to where the
     // operator already is leads nowhere wrong, where building the value object
@@ -865,7 +865,7 @@ it('N3-R13 — a credential the stack refused signs this device out', function (
         // Nothing about a machine, because this is not about the machine.
         ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->answer()->went->remedy)->toBe('')
-        // And nothing already loaded: `N3-R13` names that half separately.
+        // And nothing already loaded: that half is named separately.
         ->and($screen->howMany())->toBe(0)
         ->and($screen->answer()->overall)->toBe('');
 });

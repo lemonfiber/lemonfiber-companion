@@ -6,10 +6,10 @@ use Modules\Kernel\Api\Reading;
 use Tests\Support\ApiSurface;
 
 /**
- * `N1-R9`, `N2-R13` — a remembered value cannot be shown without its age.
+ * A remembered value cannot be shown without its age.
  *
  * Both requirements say the same thing about different screens: anything shown
- * that was not read in this session carries when it was read, and `N2-R13` adds
+ * that was not read in this session carries when it was read, and the other adds
  * that this includes the opening verdict, which is the screen most likely to be
  * drawn from something held over.
  *

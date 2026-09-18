@@ -70,8 +70,8 @@ function anEveningWorthSpending(): Upkeep
 /**
  * What became of the last update: one service back, one that would not start.
  *
- * Two endings and not one, because `N2-R18` is the rule that they stay told
- * apart — and two ways back, because `N2-R19` is the rule that a rollback and a
+ * Two endings and not one, because the rule is that they stay told
+ * apart — and two ways back, because a rollback and a
  * restore are not one offer.
  */
 function whatLastNightCameTo(): HowServicesTookIt
@@ -223,7 +223,7 @@ it('N2-R17 — asks before it takes one, and names what it would change', functi
 it('N2-R17 — will not be talked into a release it never showed', function (): void {
     // The version arrives as a string because a template can hand over nothing
     // else, so the screen matches it against what it read rather than trusting
-    // it. A withdrawn release is the case that matters: `N2-R16` keeps it off
+    // it. A withdrawn release is the case that matters: it is kept off
     // the list, and this keeps it off the list of things that can be agreed to.
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
 

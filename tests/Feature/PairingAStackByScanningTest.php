@@ -17,7 +17,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N1-R6 and ADR-0018 — pairing with a camera, where nobody compares hex.
+// Pairing with a camera, where nobody compares hex (`ADR-0018`).
 //
 // The road the design was built around. The digest arrives in the payload, so
 // the comparison happens in software and there is no confirmation step — which
@@ -63,7 +63,7 @@ function named(PairByScanning $screen, string $name = 'The loft'): PairByScannin
 }
 
 it('leaves the camera shut for a machine the operator has not named', function (): void {
-    // N1-R11 needs a name and the material carries none — an address and a
+    // A device needs a name and the material carries none — an address and a
     // digest are not two names. Asking first also means the scan either
     // completes the pairing or does not, with no paired stack left waiting on a
     // text field.

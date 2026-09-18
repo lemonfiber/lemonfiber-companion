@@ -85,7 +85,7 @@ it('N2-R9 — shows what stopped, where it stopped, and who has it', function ()
     expect($screen->howMany())->toBe(2)
         // A stack that answered is not a session that ended. `isSignedIn` is the
         // template's first branch, so a fold reporting otherwise here would put
-        // `N1-R44`'s sign-in prompt in front of an operator whose session is
+        // The sign-in prompt in front of an operator whose session is
         // working and the rows would never be reached at all.
         ->and($screen->answer()->went->isSignedIn)->toBeTrue()
         // Neither of the obstacle's two keys, because nothing was met.
@@ -231,7 +231,7 @@ it('renders its own view', function (): void {
 it('N1-R3 — asking again after an obstacle asks the stack again', function (): void {
     // The action an obstacle must not take away. A stack that was asleep when
     // the screen opened may be awake now, and leaving and returning is what
-    // `N1-R27` refuses by name.
+    // the cadence rule refuses by name.
     $stalling = AStackThatStalled::met(Obstacle::DeviceHasNoNetwork);
     $screen = theStalledScreen($stalling);
 
@@ -253,7 +253,7 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         // Nothing about a machine, because this is not about the machine — and
-        // nothing already loaded, which `N3-R13` names separately.
+        // nothing already loaded, which is named separately.
         ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->howMany())->toBe(0)
         ->and($screen->answer()->shownSaid)->toBe('')

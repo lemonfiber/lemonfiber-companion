@@ -28,7 +28,7 @@ use Tests\Support\Fakes\StacksInMemory;
 // module suite. Everything this screen decides is driven through it either way.
 //
 // What the screen must get right is not "did it call the port". It is that the
-// operator is told which of three situations they are in, because `N1-R10`'s
+// operator is told which of three situations they are in, because the obstacle's
 // remedies differ sharply: a wrong password is retyped, a door counting
 // attempts is made worse by trying, and a stack that is not answering is not a
 // password question at all. A screen that flattened them would put "try again"

@@ -17,7 +17,7 @@ use Native\Mobile\Plugins\PluginRegistry;
 // read the allow-list. Every test passes either way.
 //
 // This application shipped in that state. `lemonfiber/bridge` carries the window
-// protection N4-R18 needs and the device authentication N4-R8 needs, and
+// protection a guarded screen needs and the device authentication a lock needs, and
 // `nativephp/mobile-local-notifications` is what `Modules\Device\Api\
 // PlatformNotifier` is written against. Neither was being discovered.
 //

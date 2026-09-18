@@ -22,7 +22,7 @@ use Tests\Support\Module;
 use Tests\Support\Tree;
 
 /**
- * `N1-R13` — the app reads every value the contract says a stack may send.
+ * The app reads every value the contract says a stack may send.
  *
  * Five enums here are the wire's values rather than this application's words:
  * `Category`, `Conclusion`, `Overall`, `Severity` and `Standing` each exist to

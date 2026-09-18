@@ -36,7 +36,7 @@ use Tests\Support\Fakes\StacksInMemory;
 // That asymmetry is why this file exists. Each half is already tested where it
 // lives — `SeeingHowAStackIsTest` for narrowing, `SeeingWhatStoppedComingInTest`
 // for the screen — and neither of them is about this requirement. A reader
-// asking *is N2-R9 met* would have to know that `Category::Vpn` happens to be a
+// asking *is the family reachable* would have to know that `Category::Vpn` happens to be a
 // case and that a route happens to be registered, which is knowledge held
 // nowhere. Remove the VPN family from `Category` and every test above stays
 // green while one quarter of a requirement silently stops being true.

@@ -9,7 +9,7 @@ use Modules\Kernel\Api\WhoThisAppIs;
 // One identity, declared here, that a build cannot choose.
 //
 // Two builds carrying two identities are two applications: they install beside
-// one another, each with its own storage, and the pairing `N1-R45` refuses to
+// one another, each with its own storage, and the pairing that survives a refused credential refuses to
 // discard lives in that storage. A build under the wrong identity does not
 // update the operator's app — it appears next to it, empty, while the pairing
 // stays in the one now orphaned, and from inside either app nothing is wrong.

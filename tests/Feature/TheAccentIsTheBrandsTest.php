@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Design\Api\ThemeToken;
 
-// `DES-R24` maps one brand colour to the accent role and leaves the rest of the
+// One brand colour maps to the accent role, leaving the rest of the
 // palette to the platform. What makes that true of a running app is the widget
 // theme, not a class: a filled button takes `primary` from it and honours no
 // per-instance colour, so a screen painting its own buttons is a screen whose
@@ -30,7 +30,7 @@ it('DES-R24 — a reader in dark mode gets the same measured pair', function ():
 it('DES-R24 — the platform keeps the tokens this surface does not assert', function (): void {
     // The counterfactual for `merge()` rather than `load()`. Overriding two
     // keys must leave the rest of the package's palette standing; replacing the
-    // block would repaint the app, which is the thing `DES-R26` refuses.
+    // block would repaint the app, which is the thing refused.
     expect(config('native-ui.theme.light.surface'))->not->toBeNull()
         ->and(config('native-ui.theme.light.secondary'))->not->toBeNull();
 });

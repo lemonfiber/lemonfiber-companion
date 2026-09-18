@@ -20,9 +20,9 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\VerdictsInMemory;
 
-// `N1-R54`, `N1-R55`, `N1-R56` — the first run is a sequence, not a wall.
+// The first run is a sequence, not a wall.
 //
-// A single frame satisfies `N1-R35` — it can say that setup happens at the
+// A single frame satisfies the first-run case — it can say that setup happens at the
 // machine — and still leave somebody who has just installed a companion app to
 // work out from a paragraph why it is asking them to go and stand somewhere
 // else. A heading, two sentences and three buttons at once says nothing about
@@ -73,7 +73,7 @@ it('N1-R54 — the steps arrive in the order the requirement names them', functi
     $screen = theScreenAFirstRunLandsOn();
     $walked = [$screen->firstRunIsAt()];
 
-    // Walked rather than asserted case by case, because what `N1-R54` asks for
+    // Walked rather than asserted case by case, because what is asked for
     // is a path: what the app is, then that setup happens at the machine, then
     // pairing. Three separate assertions would pass for three steps that each
     // knew their own name and could not be reached from one another.
@@ -128,7 +128,7 @@ it('N1-R54 — pairing is offered at the end of the sequence and not before', fu
 
     $screen->goOn();
 
-    // A `pair now` button under step one is the wall `N1-R54` exists to refuse:
+    // A `pair now` button under step one is the wall the sequence exists to refuse:
     // it makes the two sentences above it optional, which makes them unread.
     expect($screen->pairingIsOffered())->toBeTrue();
 });

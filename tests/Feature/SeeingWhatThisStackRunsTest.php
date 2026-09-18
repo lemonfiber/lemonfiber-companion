@@ -68,7 +68,7 @@ it('N2-R7 — shows every service, how it runs, and which form it is in', functi
     expect($answer->services)->toHaveCount(2)
         // A stack that answered is not a session that ended. `isSignedIn` is
         // the template's first branch, so a fold reporting otherwise would put
-        // `N1-R44`'s sign-in prompt in front of a working session and the rows
+        // The sign-in prompt in front of a working session and the rows
         // would never be reached at all.
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and($answer->went->met)->toBe('')
