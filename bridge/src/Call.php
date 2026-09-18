@@ -97,4 +97,18 @@ enum Call: string
      * and an event on one of these platforms is a broadcast into the page.
      */
     case Read = 'Lemonfiber.Scanning.Read';
+    /** Put one value in the device's secure store, or say why not. */
+    case Keep = 'Lemonfiber.Storage.Keep';
+
+    /**
+     * Read one value back, or say there is none, or say nobody could be asked.
+     *
+     * Named `Kept` here rather than `Read` because the set is a vocabulary and
+     * `Read` is already what a camera does. The wire name is what matters and
+     * it says `Storage.Read`; this is the PHP word for the same thing.
+     */
+    case Kept = 'Lemonfiber.Storage.Read';
+
+    /** Take one value out, whether or not it was ever in. */
+    case Forget = 'Lemonfiber.Storage.Forget';
 }

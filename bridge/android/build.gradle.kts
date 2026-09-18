@@ -81,6 +81,7 @@ sourceSets {
             "ThePermissionPrompt.kt",
             "ScanningFunctions.kt",
             "ScanningActivity.kt",
+            "StorageFunctions.kt",
         )
     }
     test {

@@ -28,6 +28,7 @@ let package = Package(
                 "TellingFunctions.swift",
                 "ScanningFunctions.swift",
                 "ScanningViewController.swift",
+                "StorageFunctions.swift",
             ]
         ),
         .testTarget(

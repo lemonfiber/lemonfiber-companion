@@ -1,0 +1,176 @@
+<?php
+
+declare(strict_types=1);
+
+use Lemonfiber\Native\Storage;
+use Lemonfiber\Native\WasRead;
+use Lemonfiber\Native\WhenAValueMayBeRead;
+use Lemonfiber\Native\WhyNothingWasKept;
+use Lemonfiber\Native\Wrote;
+use Native\Mobile\Testing\FakeBridge;
+
+// The storage capability's PHP face, driven through the real bridge call.
+//
+// `FakeBridge` intercepts `nativephp_call()` in-process, so every assertion here
+// goes through the function name, the JSON out and the decoding of the answer
+// rather than through something built to resemble it.
+//
+// The bridge names are written out as literals, deliberately. `Storage` reaches
+// them through `Call`, so a test spelling them `Call::Keep->value` would agree
+// with a wrong enum and prove nothing. `CallTest` holds the enum against
+// `nativephp.json` separately.
+
+beforeEach(function (): void {
+    FakeBridge::disable();
+});
+
+/**
+ * Why a write was refused, or nothing because it was not.
+ *
+ * Named for this file: the root suites share one namespace, and two functions
+ * of the same name are a fatal the moment both load (`G10`).
+ */
+function whyTheStoreRefused(Wrote $wrote): ?WhyNothingWasKept
+{
+    $answered = $wrote->either(
+        done: static fn(): ArrayObject => new ArrayObject([null]),
+        refused: static fn(WhyNothingWasKept $why): ArrayObject => new ArrayObject([$why]),
+    );
+
+    $why = $answered[0];
+
+    return $why instanceof WhyNothingWasKept ? $why : null;
+}
+
+/** When the store said the value may be read again, or nothing where it refused. */
+function whenItMayBeReadAgain(Wrote $wrote): ?WhenAValueMayBeRead
+{
+    $answered = $wrote->either(
+        done: static fn(WhenAValueMayBeRead $when): ArrayObject => new ArrayObject([$when]),
+        refused: static fn(): ArrayObject => new ArrayObject([null]),
+    );
+
+    $when = $answered[0];
+
+    return $when instanceof WhenAValueMayBeRead ? $when : null;
+}
+
+/** Which of the three a read came back as, as a word a test can compare. */
+function whatTheStoreAnswered(WasRead $read): string
+{
+    $answered = $read->either(
+        found: static fn(string $value): ArrayObject => new ArrayObject([sprintf('found:%s', $value)]),
+        nothing: static fn(): ArrayObject => new ArrayObject(['nothing']),
+        refused: static fn(WhyNothingWasKept $why): ArrayObject
+            => new ArrayObject([sprintf('refused:%s', $why->value)]),
+    );
+
+    $said = $answered[0];
+
+    return is_string($said) ? $said : '';
+}
+
+it('keeps a value, and says when it may be read again', function (): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Storage.Keep', [
+        'outcome' => 'kept',
+        'readable' => 'after_first_unlock',
+    ]);
+
+    $wrote = new Storage()->keep('lemonfiber.session.one', 'a token', WhenAValueMayBeRead::WhileUnlocked);
+
+    $bridge->assertCalled(
+        'Lemonfiber.Storage.Keep',
+        static fn(array $sent): bool => $sent['key'] === 'lemonfiber.session.one'
+            && $sent['value'] === 'a token'
+            && $sent['readable'] === 'while_unlocked',
+    );
+
+    // Asked for the narrower and told it got the wider, which is what Android
+    // actually gives. A facade echoing the request back would be reporting a
+    // promise nobody kept.
+    expect(whenItMayBeReadAgain($wrote))->toBe(WhenAValueMayBeRead::AfterFirstUnlock);
+    expect(whyTheStoreRefused($wrote))->toBeNull();
+});
+
+it('tells a device with no store from one whose store would not open', function (): void {
+    foreach ([
+        'no_store_on_this_device' => WhyNothingWasKept::NoStoreOnThisDevice,
+        'store_would_not_open' => WhyNothingWasKept::StoreWouldNotOpen,
+    ] as $word => $why) {
+        FakeBridge::disable();
+        FakeBridge::enable()->respondTo('Lemonfiber.Storage.Keep', [
+            'outcome' => 'refused',
+            'because' => $word,
+        ]);
+
+        expect(whyTheStoreRefused(new Storage()->keep('k', 'v', WhenAValueMayBeRead::WhileUnlocked)))
+            ->toBe($why, $word);
+    }
+});
+
+it('reads a key that is there', function (): void {
+    FakeBridge::enable()->respondTo('Lemonfiber.Storage.Read', [
+        'outcome' => 'found',
+        'value' => 'a token',
+    ]);
+
+    expect(whatTheStoreAnswered(new Storage()->read('k')))->toBe('found:a token');
+});
+
+it('tells a key that is not there from a store that could not be asked', function (): void {
+    // The distinction the whole type exists for. A launch reading the second as
+    // the first offers to pair a machine that is already paired.
+    FakeBridge::enable()->respondTo('Lemonfiber.Storage.Read', ['outcome' => 'nothing']);
+
+    expect(whatTheStoreAnswered(new Storage()->read('k')))->toBe('nothing');
+
+    FakeBridge::disable();
+    FakeBridge::enable()->respondTo('Lemonfiber.Storage.Read', [
+        'outcome' => 'refused',
+        'because' => 'no_store_on_this_device',
+    ]);
+
+    expect(whatTheStoreAnswered(new Storage()->read('k')))->toBe('refused:no_store_on_this_device');
+});
+
+it('reads a found answer with no value as having found nothing to read', function (): void {
+    // The answer a half-written native half would give. An empty string is not
+    // a session, and handing one on would put a caller into resuming with
+    // nothing to resume.
+    FakeBridge::enable()->respondTo('Lemonfiber.Storage.Read', ['outcome' => 'found']);
+
+    expect(whatTheStoreAnswered(new Storage()->read('k')))->toBe('found:');
+});
+
+it('forgets a key, and forgets one that was never there', function (): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Storage.Forget', ['outcome' => 'forgotten']);
+
+    expect(whyTheStoreRefused(new Storage()->forget('k')))->toBeNull();
+
+    $bridge->assertCalled('Lemonfiber.Storage.Forget', static fn(array $sent): bool => $sent['key'] === 'k');
+});
+
+it('reads no answer at all as a store that would not open', function (): void {
+    // Every machine that is not a handset, and the recoverable of the two
+    // refusals: it tells an operator to try again, where the other tells them to
+    // give up on the phone.
+    FakeBridge::enable();
+
+    $storage = new Storage();
+
+    expect(whyTheStoreRefused($storage->keep('k', 'v', WhenAValueMayBeRead::WhileUnlocked)))
+        ->toBe(WhyNothingWasKept::StoreWouldNotOpen);
+    expect(whatTheStoreAnswered($storage->read('k')))->toBe('refused:store_would_not_open');
+    expect(whyTheStoreRefused($storage->forget('k')))->toBe(WhyNothingWasKept::StoreWouldNotOpen);
+});
+
+it('reads a moment it does not recognise as the narrowest one', function (): void {
+    // Widening on confusion is how a session becomes readable on a locked phone.
+    FakeBridge::enable()->respondTo('Lemonfiber.Storage.Keep', [
+        'outcome' => 'kept',
+        'readable' => 'whenever_you_like',
+    ]);
+
+    expect(whenItMayBeReadAgain(new Storage()->keep('k', 'v', WhenAValueMayBeRead::AfterFirstUnlock)))
+        ->toBe(WhenAValueMayBeRead::WhileUnlocked);
+});
