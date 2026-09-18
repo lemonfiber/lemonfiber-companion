@@ -18,13 +18,13 @@ use function sprintf;
 /**
  * The platform's own secure store — Keychain on iOS, Keystore on Android.
  *
- * The one place `N4-R5`'s "the platform's secure storage" becomes a call. Every
+ * The one place "the platform's secure storage" becomes a call. Every
  * alternative that requirement names — preferences, an app-readable file, an
  * unencrypted backup — is absent from this class rather than guarded against,
  * which is the only way to be sure: a fallback written for the device that has
  * no store is the line that writes a token to a file.
  *
- * **A key per stack.** `N1-R11` keeps each stack's session separate, and one
+ * **A key per stack.** Each stack's session is kept separate, and one
  * key holding "the session" is how two stacks come to share one — the second
  * pairing overwrites the first, and the first stack starts answering with
  * somebody else's credential.
@@ -78,9 +78,9 @@ final readonly class PlatformKeychain implements SecureStorage
     public function forget(StackId $stack): Kept
     {
         // The return is deliberately not checked. Forgetting a session that was
-        // never kept is the ordinary case after a refusal, and `N4-R6` leaves
-        // the app holding a session it could not store — the one thing that
-        // must always work is getting rid of it.
+        // never kept is the ordinary case after a refusal, which leaves the app
+        // holding a session it could not store — the one thing that must always
+        // work is getting rid of it.
         $this->store->delete($this->keyFor($stack));
 
         return Kept::safely();

@@ -28,7 +28,8 @@ use Tests\Support\WhatTheContractAccepts;
 // `G2`'s shape, and `StallingContractTest`'s argument one endpoint along: every
 // test of the log screen will hand its subject an `AServiceThatSpoke` and never
 // open a socket, so a fake easier to satisfy than the adapter would enforce
-// `N2-R10` against a service that always answers.
+// *which service was asked about, and what it said* against a service that
+// always answers.
 //
 // What is deliberately not asserted, as there: which endpoint is called, and
 // that the connection was pinned. The fake dials nothing, so a contract asking
@@ -221,8 +222,8 @@ it('N2-R10, G3-R10 — names the service and says the view is a window rather th
     // sentence: the bound that was given, what arrived against it, and the
     // service it is all about.
     //
-    // `G3-R10` is the other requirement here: a value must not be truncated in
-    // a way that changes its meaning. A scrollback is always truncated — the
+    // There is a second rule at work here: a value must not be truncated in a
+    // way that changes its meaning. A scrollback is always truncated — the
     // whole of it is unbounded and a phone is not — so what this asks is not
     // that the cut be avoided but that it be said. `3 of 3, a window` is the
     // saying: an operator who reads it knows whether the line they are looking

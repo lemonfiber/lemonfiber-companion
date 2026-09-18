@@ -303,7 +303,7 @@ it('D7-R4 — an estimate says whether anybody measured it, and is read either w
     // Both arms, because one of them alone cannot tell the fold from its
     // opposite: a reader that answered *measured* for everything and one that
     // answered *guessed* for everything each pass a test that only ever sends
-    // one. `D7-R4` is the requirement that the two stay distinguishable.
+    // one. The two have to stay distinguishable.
     $data = ['members' => [aMember('Robin', [
         ['id' => 1, 'title' => 'Measured', 'state' => 'getting',
             'estimate' => ['bytes' => 4_000_000_000, 'measured' => true]],
@@ -463,7 +463,7 @@ it('stands in for a household with a payload the contract would accept', functio
     // above is green against a machine nobody has run them against.
     //
     // A refused request as well as a plain one, because the refusal is a shape
-    // of its own and `N3-R7` is the requirement that reads inside it.
+    // of its own, and something has to read inside it.
     $payload = aHouseholdOf([aMember('Robin', [
         aRequest(1, 'A film nobody has seen', 'waiting-for-approval'),
         [...aRequest(2, 'A season', 'declined'), 'refused' => ['reason' => 'somebody said no']],

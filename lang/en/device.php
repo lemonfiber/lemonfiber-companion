@@ -5,10 +5,10 @@ declare(strict_types=1);
 return [
     // One reason and one alternative for every permission the app asks for.
     //
-    // `N4-R2` wants the app's own words *before* the system prompt, which means
-    // a sentence that exists whether or not anybody has been asked yet.
-    // `N4-R3` wants every permission optional with a working alternative, and an
-    // alternative nobody can read is not offered — so it is a sentence too,
+    // The app's own words come *before* the system prompt, which means a
+    // sentence that exists whether or not anybody has been asked yet. Every
+    // permission is optional with a working alternative, and an alternative
+    // nobody can read is not offered — so it is a sentence too,
     // written in terms of what the operator can still do rather than of what the
     // app cannot.
     'local_network_reason' => 'lemonfiber talks to your stack over your own network, and nowhere else.',

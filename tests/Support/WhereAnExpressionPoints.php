@@ -122,9 +122,9 @@ final readonly class WhereAnExpressionPoints
 
             // `Wire::checked()` hands back the envelope it was given — it
             // asserts the wire version and returns the same object — so a
-            // reading that stopped here would lose every field read through the
-            // gate `N1-R13` asks for, and report them as fields nothing reads.
-            // Seeing through it is what keeps passing an envelope through the
+            // reading that stopped here would lose every field read through
+            // the wire gate, and report them as fields nothing reads. Seeing
+            // through it is what keeps passing an envelope through the
             // gate from making its payload invisible to this register.
             if ($named === self::THE_WIRE_GATE) {
                 return self::whatWasHandedTo($expr, $bindings);

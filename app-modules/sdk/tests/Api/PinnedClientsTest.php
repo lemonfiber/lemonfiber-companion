@@ -78,9 +78,9 @@ it('leaves an unencrypted address to the SDK to refuse', function (): void {
 });
 
 it('builds a separate client per stack, so no reading can be attributed to the wrong one', function (): void {
-    // `N1-R11`'s last clause, at the transport. A client holds one stack's pin,
-    // so two stacks must never share one — which is why the binding is not a
-    // singleton and why this answers a new client each time.
+    // Two machines never mistaken for each other, at the transport. A client
+    // holds one stack's pin, so two stacks must never share one — which is why
+    // the binding is not a singleton and why this answers a new client each time.
     $clients = new PinnedClients();
 
     $loft = $clients->client(aPairedStack(), aSession());

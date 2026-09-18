@@ -14,8 +14,8 @@ use Modules\Kernel\Api\WhyNothingWasScanned;
  * reason {@see WhatTheDeviceSaid} gives about the same shape: a misspelling of
  * `'permission_denied'` is a silent fall to the default arm, and the default
  * arm here reports a refused camera as somebody who pressed back. That screen
- * offers to try again forever and never mentions the typed road, which is
- * `N4-R3` broken by a typo.
+ * offers to try again forever and never mentions the typed road — a refused
+ * camera reported as a cancelled one, by a typo.
  *
  * **Three platform words, three of ours, and they do not map one to one on
  * purpose.** {@see WhyNothingWasScanned} is the vocabulary this app reasons in

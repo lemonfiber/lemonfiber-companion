@@ -34,7 +34,7 @@ enum WhatTheDeviceSaid: string
     /** The operator allowed it. */
     case Granted = 'granted';
 
-    /** The operator refused it, and `N4-R4` says not to ask again. */
+    /** The operator refused it, and nothing may ask again. */
     case Denied = 'denied';
 
     /** Nobody has been asked, so the point of first use is still ahead. */

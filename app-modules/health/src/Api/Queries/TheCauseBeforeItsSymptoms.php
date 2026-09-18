@@ -24,7 +24,7 @@ use Modules\Kernel\Api\Findings;
  * row, saying *because of this other thing*, with that other thing somewhere
  * else in a list ordered by severity. An operator then reads four separate
  * problems and goes looking for the one that caused them, which is the reading
- * `G4-R3` exists to prevent.
+ * this query exists to prevent.
  *
  * **It reorders and does not narrow.** The symptoms stay, because a stack with
  * the tunnel down and four services unreachable is worse than one with the

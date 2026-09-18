@@ -19,8 +19,8 @@ use Modules\Kernel\Api\WhatWasSaid;
  *
  * {@see AStackThatStalled}'s sibling one endpoint along. It remembers more than
  * the others do, because this port takes two arguments the others do not and
- * both are clauses of `N2-R10`: **which service** was asked about and **how
- * many lines** were asked for. A screen that read one service's logs under
+ * both are owed: **which service** was asked about and **how many lines** were
+ * asked for. A screen that read one service's logs under
  * another's heading, or that asked for a bound it did not then state, would be
  * wrong in a way no assertion about the lines themselves could catch.
  *
@@ -97,8 +97,8 @@ final class AServiceThatSpoke implements Saying
 
         // The session is read and the value dropped, which is
         // `AHouseholdThatAsked`'s argument: a fake holding one is the one place
-        // a fixture could teach the habit `N4-R5` exists to prevent, and
-        // reading it is what proves the port was handed one at all.
+        // a fixture could teach the habit of keeping a secret past its use,
+        // and reading it is what proves the port was handed one at all.
         $this->carried = $session->forTheHeader() !== '';
 
         return ($this->answer)();

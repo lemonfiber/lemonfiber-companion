@@ -15,7 +15,7 @@ use ShipMonk\ComposerDependencyAnalyser\Config\ErrorType;
  *
  * It also enforces the module boundaries from the far side. Each module's own
  * manifest declares what it may use, so a surface module that types
- * Lemonfiber\Sdk is a shadow dependency here (E3, N1-R16) — failing in
+ * Lemonfiber\Sdk is a shadow dependency here (E3) — failing in
  * resolution rather than in review.
  */
 
@@ -191,14 +191,14 @@ return (new Configuration())
     // the kernel, `modules/sdk` when `Api\Reports` began importing
     // `Internal\Wire`, and health when the operator's findings screen began
     // importing `Api\Queries\WorstFirst` and `Api\Queries\InCategory` from a
-    // prod path — which is `N2-R2` being enforced where it is rendered rather
-    // than only where it is implemented.
+    // prod path — which is worst-first being enforced where it is rendered
+    // rather than only where it is implemented.
     //
     // The list cannot go stale, and that is what made all three visible: this
     // analyser reports an ignore that never applied, so the day something
     // outside one of these names it, the gate fails and names the line to
     // delete rather than leaving a dead one for somebody to wonder about.
-    // N1-R16 says the SDK is named in exactly one module, and `modules/sdk` is
+    // The SDK is named in exactly one module, and `modules/sdk` is
     // that module — so the SDK is its dependency rather than the application's,
     // and the root manifest does not require it. That is what makes it a shadow
     // dependency here: used in scanned code, absent from the root.

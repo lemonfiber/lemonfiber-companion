@@ -91,8 +91,8 @@ final readonly class Edge
      *
      * The parser's own colour grammar, so palette names, hex in three shapes
      * and opacity suffixes are all recognised without a palette being copied
-     * here. A theme token answers null, which is exactly the distinction
-     * DES-R24 turns on.
+     * here. A theme token answers null, which is exactly the distinction a
+     * literal colour is refused on.
      */
     public static function isLiteralColour(string $value): bool
     {

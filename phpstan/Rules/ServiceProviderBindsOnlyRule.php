@@ -32,7 +32,7 @@ use function str_starts_with;
  * Twelve module providers run before the first frame is drawn. Anything one of
  * them *does* — a read, a request, a resolved object graph — happens while the
  * operator is looking at a splash screen, on a phone, possibly on a network
- * that is not there. N1-R36 requires a usable frame without waiting on a read,
+ * that is not there. A usable frame must arrive without waiting on a read,
  * and a provider is the easiest place in Laravel to break that without anyone
  * noticing: the code looks like configuration.
  *

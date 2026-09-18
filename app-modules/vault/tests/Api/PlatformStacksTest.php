@@ -27,8 +27,9 @@ use Tests\Support\Fakes\APlatformStore;
  *
  * The contract asserts only what the adapter and the fake must both promise,
  * which cannot include anything about a stored record — the fake stores
- * nothing. Reading one back is this adapter's whole job, and `N1-R32` and
- * `N1-R33` are rules about exactly that, so they are driven here.
+ * nothing. Reading one back is this adapter's whole job, and the rules about a
+ * shape number and an unrecognised shape are about exactly that, so they are
+ * driven here.
  */
 const UNDER = 'lemonfiber.stacks';
 
@@ -165,7 +166,7 @@ it('reads a device whose store has never held this record as paired with nothing
 });
 
 it('reads a device with no store at all as paired with nothing', function (): void {
-    // The conservative direction, and the one that lands on N1-R35's screen:
+    // The conservative direction, and the one that lands on the no-stacks screen:
     // treating unreadable state as though some unknown stack were configured
     // would be an app offering to operate a machine it cannot name.
     expect(new PlatformStacks(APlatformStore::absent())->configured()->isEmpty())->toBeTrue();

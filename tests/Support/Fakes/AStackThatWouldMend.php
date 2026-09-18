@@ -137,7 +137,7 @@ final class AStackThatWouldMend implements Mending
      *
      * The offer half answers a listing of one so a test can walk from *what
      * would you do* to *what did you do* without building two fakes — which is
-     * the journey `N2-R4` and `N2-R5` describe between them.
+     * the journey an operator actually takes.
      */
     public static function carryingOut(Offer $offer, WhatWasMended $mended): self
     {
@@ -231,8 +231,8 @@ final class AStackThatWouldMend implements Mending
     /**
      * How many agreements were sent.
      *
-     * The count that matters most on this port. `N1-R41` refuses to replay an
-     * action, and an agreement sent twice is a repair carried out twice — which
+     * The count that matters most on this port. An action may not be replayed,
+     * and an agreement sent twice is a repair carried out twice — which
      * for a fix that moves a library is not the same as doing it once.
      */
     public function agreements(): int
@@ -274,8 +274,8 @@ final class AStackThatWouldMend implements Mending
      * Read the session and keep only whether there was one.
      *
      * `AStackThatWasAsked`'s argument: a fake holding one is the one place a
-     * fixture could teach the habit `N4-R5` exists to prevent, and reading it
-     * is what proves the port was handed one at all.
+     * fixture could teach the habit of keeping a secret past its use, and
+     * reading it is what proves the port was handed one at all.
      */
     private function readSession(Session $session): void
     {

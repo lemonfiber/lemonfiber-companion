@@ -18,8 +18,9 @@ use Modules\Kernel\Api\WhatIsStuck;
  * {@see AHouseholdThatAsked}'s sibling one endpoint along, and it remembers the
  * same half a screen cannot assert about itself: *which* stack was asked. A
  * screen holding two stacks and listing one machine's stalled downloads under
- * the other's name is `N1-R11` broken where an operator would act on it — they
- * would go and restart a service on a machine where nothing was wrong.
+ * the other's name is two machines mistaken for each other where an operator
+ * would act on it — they would go and restart a service on a machine where
+ * nothing was wrong.
  *
  * Not `readonly`: what was asked is written when the asking happens.
  */
@@ -88,8 +89,8 @@ final class AStackThatStalled implements Stalling
 
         // The session is read and the value dropped, which is
         // `AHouseholdThatAsked`'s argument: a fake holding one is the one place
-        // a fixture could teach the habit `N4-R5` exists to prevent, and
-        // reading it is what proves the port was handed one at all.
+        // a fixture could teach the habit of keeping a secret past its use,
+        // and reading it is what proves the port was handed one at all.
         $this->carried = $session->forTheHeader() !== '';
 
         return ($this->answer)();

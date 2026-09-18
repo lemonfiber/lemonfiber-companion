@@ -79,7 +79,7 @@ final class StacksInMemory implements Stacks
      * one requirement about *order* — that a shut app has not read the
      * operator's machines — and asking whether the record is empty is not
      * reading them. Counting it here would make that rule refuse the
-     * arrangement `N4-R22` asks for.
+     * arrangement that asking whether this device holds a pairing needs.
      */
     public function holdsAny(): bool
     {
@@ -90,8 +90,8 @@ final class StacksInMemory implements Stacks
      * How many times the list has been read.
      *
      * For the one requirement that is about the *order* things are asked in
-     * rather than the answer: `N4-R19` wants the device's own authentication on
-     * a cold start, and a launch that read the stack list first would satisfy
+     * rather than the answer: the device's own authentication comes first on a
+     * cold start, and a launch that read the stack list first would satisfy
      * every assertion about what it answered and still have looked at retained
      * state before the operator proved who they were.
      */

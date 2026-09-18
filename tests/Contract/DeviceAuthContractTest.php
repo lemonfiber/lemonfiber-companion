@@ -17,10 +17,10 @@ use Tests\Support\Fakes\ADeviceWithAScreenLock;
 //
 // `G2`'s shape. Every test that ever asserts "the operator unlocked the app"
 // will hold an `ADeviceThatKnowsYou` and never see a prompt, so a fake easier to
-// satisfy than the platform would make `N4-R7` green against a lock nothing
-// closes.
+// satisfy than the platform would make *the app sits behind the device's own
+// authentication* green against a lock nothing closes.
 //
-// `N4-R8`'s first clause — a biometric failure falls back to the device passcode
+// The fallback clause — a biometric failure falls back to the device passcode
 // — cannot be asserted here and is not pretended at. It is one constant chosen
 // in the native half, where the platform is told what it may accept, and the
 // only honest statement about it from PHP is the one in `PlatformAuth`'s own
@@ -110,8 +110,8 @@ it('N4-R8 — a lock can only be opened by something the device made', function 
 });
 
 it('N4-R19 — asks once per unlock, and counts it', function (): void {
-    // `N4-R19` is about how often somebody is interrupted, so the count is what
-    // a caller has to be able to assert on. The rule deciding *when* to call
+    // Asking once per unlock is about how often somebody is interrupted, so the
+    // count is what a caller has to be able to assert on. The rule deciding *when* to call
     // this lives in `LockRule`, on the native side, with seven tests per
     // platform; this is the seam that makes the decision observable from PHP.
     $device = ADeviceThatKnowsYou::willing();

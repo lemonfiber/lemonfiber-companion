@@ -27,7 +27,7 @@ function row(string $check, Conclusion $conclusion): Finding
     return Finding::of(Check::of($check), Category::Vpn, 'A check that ran', $conclusion, WhatTheCheckSaid::nothingWrong());
 }
 
-/** A row the engine graded, which is what `N2-R2` orders by and so the first key. */
+/** A row the engine graded, which is what the order turns on and so the first key. */
 function costing(string $check, Severity $severity, Conclusion $conclusion = Conclusion::Failed): Finding
 {
     return Finding::of(
@@ -131,7 +131,7 @@ it('puts the costlier of two failures first, which the verdict cannot tell apart
 });
 
 it('lets severity outrank the verdict, which is what N2-R2 asks for', function (): void {
-    // `N2-R2` orders findings by severity and names nothing else. The engine
+    // Findings are ordered by severity and nothing else. The engine
     // graded one of these `critical` — data or something outside the machine is
     // at risk — and the other `advisory`, a broken thing that costs nothing.
     // That grading is the engine's judgement and this app does not second-guess

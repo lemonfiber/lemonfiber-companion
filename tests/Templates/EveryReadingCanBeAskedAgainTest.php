@@ -92,8 +92,8 @@ function theRetryTheObstacleArmOffers(): string
 }
 
 it('finds screens that can be asked again', function (): void {
-    // The floor `Q-R66` asks for: a reading that found none passes the rule
-    // below with no iterations, which is what it would do on the day
+    // The floor every rule of this shape owes: a reading that found none passes
+    // the rule below with no iterations, which is what it would do on the day
     // `byTheViewTheyRender()` went quiet.
     expect(count(whatEachScreenThatCanBeAskedAgainSays()))->toBeGreaterThan(3);
 });

@@ -32,8 +32,8 @@ use Tests\Support\WhatTheContractAccepts;
  * types so that it stays one. This file is the other half — every way the
  * reading can fail, and the refusal each produces.
  *
- * **`N2-R14` is the rule under all of it.** Every case below has a reassuring
- * direction to default in — nothing waiting, nothing running, nothing changing,
+ * **One rule is under all of it: this side refuses rather than invents.** Every
+ * case below has a reassuring direction to default in — nothing waiting, nothing running, nothing changing,
  * nothing applied — and each of those is an answer somebody would stop worrying
  * on. A reader that filled one in would be inventing the stack's half of the
  * conversation.
@@ -51,9 +51,9 @@ function anUpkeepSaying(array $data): Envelope
  * What a stack sends, with whatever this case is about changed.
  *
  * The changelog is a separate argument because most cases are about it: the
- * triple `N2-R15` asks for and the releases `N2-R16` filters both live under
- * it, and the payload carries a second `state` at the top that means something
- * else entirely.
+ * triple a household is shown and the releases that get filtered out both live
+ * under it, and the payload carries a second `state` at the top that means
+ * something else entirely.
  *
  * **Every field the contract requires is here, including the four no reader
  * touches.** A fixture short of one is a sample of a payload no stack sends,
@@ -323,9 +323,10 @@ it('refuses a version that is not a word', function (): void {
 });
 
 it('refuses a release that never said whether anybody would notice', function (): void {
-    // `N2-R14` at its sharpest. The reassuring default is *nobody will notice*,
-    // which is the answer that quietly turns a decision into a chore — so the
-    // absent case is the stack's to explain rather than this side's to fill in.
+    // Refusing rather than inventing, at its sharpest. The reassuring default is
+    // *nobody will notice*, which is the answer that quietly turns a decision
+    // into a chore — so the absent case is the stack's to explain rather than
+    // this side's to fill in.
     expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep([
         'releases' => [['version' => '4.1.0']],
     ])))
@@ -432,7 +433,8 @@ it('stands in for a stack with payloads the contract would accept', function ():
     // wrote the reader, so the two agree about a field that is not there and
     // every assertion above passes against a machine nobody has run them
     // against — which is the defect that had this reader looking for the triple
-    // `N2-R15` asks for at the top of the payload instead of under `changelog`.
+    // a household is shown at the top of the payload instead of under
+    // `changelog`.
     //
     // The two releases are separate entries because they are separate shapes.
     // The contract puts the notes somebody would read on the release in use and

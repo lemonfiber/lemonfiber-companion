@@ -11,8 +11,8 @@ use Tests\Support\Tree;
 // operator can do next. A screen that meets an obstacle and renders two
 // sentences has taken the only action away: the stack may have woken up two
 // seconds later and there is no way to find out except leaving the screen and
-// coming back — which `N1-R27` names separately as the thing a screen must not
-// rely on. Between them the two rules say an obstacle is a report, never a dead
+// coming back — which is named separately as the thing a screen must not rely
+// on. Between them the two rules say an obstacle is a report, never a dead
 // end.
 //
 // This was written after finding four screens that did it. `HowThisStackIs` had

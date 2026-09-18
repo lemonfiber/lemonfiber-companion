@@ -43,9 +43,9 @@ enum Kind: string
      *
      * **What earns it those permissions is that nothing ships it.** A module of
      * this kind is installed under `require-dev`, so its provider is not
-     * discovered in a release and its classes are not in the bundle. `N1-R61`
-     * rests on that absence: there is no setting to get wrong, because there is
-     * nothing there to switch on.
+     * discovered in a release and its classes are not in the bundle. That
+     * absence is the whole guarantee: there is no setting to get wrong, because
+     * there is nothing there to switch on.
      */
     case StandIn = 'stand-in';
 
@@ -83,7 +83,7 @@ enum Kind: string
             //
             // A stand-in names the outside vocabulary for the opposite reason
             // an adapter does — to put something in front of it rather than to
-            // reach it — and `N1-R20` is what actually keeps the socket shut:
+            // reach it — and what actually keeps the socket shut is narrower:
             // exactly one file may build a transport, whatever else names one.
             self::Adapter, self::StandIn => [],
         };
@@ -104,7 +104,7 @@ enum Kind: string
             // real one: the stand-in asks it for what it would have built and
             // replaces only the part that reaches outside. Building its own
             // instead would put a second constructor for the outside thing in
-            // this repository, which is the one thing `N1-R20` refuses.
+            // this repository, where exactly one file may build a transport.
             self::StandIn => [self::Kernel, self::Adapter],
         };
     }

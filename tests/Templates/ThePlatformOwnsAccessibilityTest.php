@@ -42,8 +42,9 @@ const PINS_A_SIZE = [
 /**
  * Attributes that animate on this app's say-so rather than the platform's.
  *
- * An animation the operator asked not to see is one of the four settings
- * `N4-R14` names, and it is the one with no sensible default: a duration written
+ * An animation the operator asked not to see is one of the four platform
+ * settings this app honours, and it is the one with no sensible default: a
+ * duration written
  * into a template runs at that duration whatever the device has been told.
  */
 const ANIMATES_REGARDLESS = ['animate', 'animation', 'transition', 'duration'];

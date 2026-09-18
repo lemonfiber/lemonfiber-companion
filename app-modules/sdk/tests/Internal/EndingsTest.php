@@ -70,7 +70,7 @@ it('reads a stack that has applied nothing as having applied nothing', function 
 });
 
 it('refuses a reading with no applied block at all', function (): void {
-    // Not a stack that has taken no update. `N2-R14`: an absent block is the
+    // Not a stack that has taken no update. An absent block is the
     // stack's half of the conversation gone wrong, and *nothing was applied* is
     // the reassuring answer somebody would stop worrying on.
     expect(fn(): object => Endings::in(['state' => 'current']))
@@ -121,7 +121,7 @@ it('refuses an ending this app has no case for', function (): void {
 });
 
 it('refuses a row that never named a way back', function (): void {
-    // `N2-R19` refuses to offer undoing where the stack named neither way, and
+    // Undoing may not be offered where the stack named neither way, and
     // the contract names one on every row — so an absent one is a payload gone
     // wrong rather than a service that cannot be undone. Defaulting to
     // `rollback` would be this side promising a way back it was not given.

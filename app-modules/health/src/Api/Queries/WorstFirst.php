@@ -13,15 +13,15 @@ use Modules\Kernel\Api\Severity;
 use function usort;
 
 /**
- * The findings, worst first — which is the order `N2-R2` asks a screen to show.
+ * The findings, worst first — which is the order a screen has to show them in.
  *
  * The one decision this module makes about a report that the server has not
  * already made for it. The server sends `overall` and it sends the findings in
  * the order the checks ran; what it does not send is the order a person should
  * read them in, because that is a decision about a screen.
  *
- * **How much it costs first, then the verdict.** `N2-R2` orders findings by
- * severity and names nothing else, and the requirement is right about which
+ * **How much it costs first, then the verdict.** Findings are ordered by
+ * severity and nothing else, and the requirement is right about which
  * side decides: severity is the engine's own grading of what a finding puts at
  * risk, and a screen ranking the verdict above that grading would be this app
  * deciding a judgement already made does not count. A warning graded `critical`

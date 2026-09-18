@@ -31,8 +31,8 @@ use Tests\Support\WhatTheContractAccepts;
 // `G2`'s shape, and `AskingContractTest`'s argument one endpoint along: every
 // test of a screen showing requests will hand its subject an
 // `AHouseholdThatAsked` and never open a socket, so a fake easier to satisfy
-// than the adapter would enforce `N2-R11` against a household that always
-// answers.
+// than the adapter would enforce *a request is approved or refused* against a
+// household that always answers.
 //
 // What is deliberately not asserted, as there: which endpoint is called, and
 // that the connection was pinned. The fake dials nothing, so a contract asking
@@ -109,7 +109,7 @@ function whatAHouseholdThatAskedSends(): array
                     'claimed' => true,
                     'to_hand_over' => [],
                     // No estimate at all, which the contract permits and
-                    // which `D7-R3` answers with *we do not know* rather
+                    // which is answered with *we do not know* rather
                     // than a guess of nothing.
                     'requests' => [[
                         'id' => 42,
@@ -213,9 +213,9 @@ it('N2-R11 — takes an approval and comes away with a name to ask about', funct
 });
 
 it('D7-R7 — takes a refusal, which carries the sentence it owes', function (): void {
-    // The other of `N2-R11`'s two, and the one that carries something extra. A
+    // The other of the two decisions, and the one that carries something extra. A
     // port taking only the approval would have a screen turning a request down
-    // by leaving it alone, which is what `D7-R7` exists to prevent.
+    // by leaving it alone, which is exactly what may not happen.
     $decided = Decided::toDecline(RequestId::numbered(41), 'No room this month');
 
     foreach (everyWayOfAskingTheHousehold(aDecidedAnswer()) as $which => $make) {
@@ -282,7 +282,7 @@ it('N2-R11 — an approval names the request and nothing else', function (): voi
 
 it('D7-R7 — a refusal names the request and carries the sentence with it', function (): void {
     // Both keys, and the number among them: a refusal sent without its reason
-    // is the wire half of the thing `D7-R7` forbids, and one sent with the
+    // is the wire half of a refusal that says nothing, and one sent with the
     // wrong number turns somebody else's request down.
     expect(whatTheWireCarriedForADecision(Decided::toDecline(RequestId::numbered(41), 'No room this month')))
         ->toBe(['request' => 41, 'reason' => 'No room this month']);

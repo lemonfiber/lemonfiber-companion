@@ -12,8 +12,8 @@ use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Sdk\Internal\Wire;
 
-// `doctor` is stood in for and not judged: `N1-R13` is answered before anything
-// looks at the payload, so the body below is empty on purpose and a payload the
+// `doctor` is stood in for and not judged: the wire version is asserted before
+// anything looks at the payload, so the body below is empty on purpose and a payload the
 // contract would accept would have these two cases turn on the half they are
 // not about. It is the version that is under test, and a stack ahead of its app
 // is exactly the case where the body cannot be relied on to be readable.

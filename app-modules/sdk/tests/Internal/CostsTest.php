@@ -86,9 +86,9 @@ it('reads the shape off the tag rather than off which field is there', function 
 });
 
 it('refuses a reading with no lengths at all', function (): void {
-    // Not a stack whose verbs are free. `N2-R14` has this side refuse rather
-    // than fill one in, because the reassuring answer is the one an operator
-    // would confirm on.
+    // Not a stack whose verbs are free. This side refuses rather than filling
+    // one in, because the reassuring answer is the one an operator would
+    // confirm on.
     expect(fn(): object => Costs::in(['condition' => 'active']))
         ->toThrow(RosterIsUnreadable::class, 'disturbs');
 });
@@ -121,7 +121,7 @@ it('refuses a wait for something this app has no case for', function (): void {
 });
 
 it('refuses a listing whose lengths are not a shape at all', function (): void {
-    // A word where the block belongs. `N2-R14` again: read as *nothing*, every
+    // A word where the block belongs. Refusing again: read as *nothing*, every
     // verb would silently become free.
     expect(fn(): object => Costs::in(['disturbs' => 'quick']))
         ->toThrow(RosterIsUnreadable::class, 'disturbs');

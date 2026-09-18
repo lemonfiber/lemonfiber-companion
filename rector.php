@@ -72,7 +72,8 @@ return RectorConfig::configure()
         // expansion happens here, where a surface added tomorrow is covered
         // without anybody remembering this file.
         PrivatizeFinalClassPropertyRector::class => (array) glob(__DIR__ . '/app-modules/*/src/Internal/Screens'),
-        // Two gates want opposite things here and `N1-R20` is the one that wins.
+        // Two gates want opposite things here, and the one that wins is the one
+        // that keeps the socket shut.
         //
         // The method answers `object` because that is what the `Reaching` port
         // promises, and rector is right that the body only ever produces an SDK

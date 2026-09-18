@@ -20,7 +20,8 @@ use Modules\Kernel\Api\Releases;
  * make the two impossible to compose, which is the argument
  * {@see \Modules\Health\Api\Queries\InCategory} makes beside its own sort.
  *
- * **Withdrawn ones are already gone.** `N2-R16`'s other half is refused by
+ * **Withdrawn ones are already gone.** The other half of the filtering is
+ * refused by
  * {@see Releases::worthOffering()} before anything gets here, so this does not
  * repeat it — a second place a withdrawn release could be let through is a
  * second place to get that wrong.

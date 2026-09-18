@@ -18,9 +18,9 @@ use Modules\Kernel\Api\WhatCameBack;
  * The stand-in every screen showing health will get, so that no test of a
  * report needs a machine to report on. What it remembers is the half a screen
  * cannot assert about itself: *which* stack was asked. A screen holding two
- * stacks and showing one machine's findings under the other's name is `N1-R11`
- * broken where an operator would act on it — and a fake that forgot the stack
- * would make that green.
+ * stacks and showing one machine's findings under the other's name is two
+ * machines mistaken for each other where an operator would act on it — and a
+ * fake that forgot the stack would make that green.
  *
  * Not `readonly`: what was asked is written when the asking happens.
  */
@@ -74,9 +74,9 @@ final class AStackThatWasAsked implements Asking
         $this->askings++;
 
         // The session is read and the value dropped. A fake holding one is the
-        // one place a fixture could teach the habit `N4-R5` exists to prevent,
-        // and the real adapter uses it only to build a connection — but reading
-        // it is what proves the port was handed one at all.
+        // one place a fixture could teach the habit of keeping a secret past its
+        // use, and the real adapter uses it only to build a connection — but
+        // reading it is what proves the port was handed one at all.
         $this->carried = $session->forTheHeader() !== '';
 
         return ($this->answer)();

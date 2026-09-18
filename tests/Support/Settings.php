@@ -67,7 +67,7 @@ final readonly class Settings
      * **Every environment file, not `.env.example` alone.** That file is the
      * one under review and therefore the one least likely to carry the setting;
      * `.env`, `.env.testing` and anything else beside them are builds this app
-     * runs in, and N1-R21 is about all of them. A checker that read only the
+     * runs in, and every one of them is covered. A checker that read only the
      * reviewed file would pass while the setting sat in the file nobody reads,
      * which is the exact arrangement the requirement exists to refuse.
      *
@@ -81,7 +81,7 @@ final readonly class Settings
         // Refused rather than answered empty, the way `Coverage` refuses a
         // report that is not there. Every rule resting on this asks whether a
         // setting *exists*, so an empty read and a clean repository give the
-        // same answer — and one of them is `N1-R21` going quiet about every
+        // same answer — and one of them is the rule going quiet about every
         // environment file at once.
         if ($sources === []) {
             throw new RuntimeException(sprintf(

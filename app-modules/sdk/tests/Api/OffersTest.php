@@ -121,7 +121,7 @@ it('N2-R4 — reads reversible as the word rather than carrying the boolean', fu
 });
 
 it('refuses a listing with no agreement to quote back', function (): void {
-    // `N2-R6` has a yes quote the listing it was given. A listing with no name
+    // A yes quotes the listing it was given. A listing with no name
     // is one a confirmation could not quote, and the failure would otherwise
     // appear at the moment of agreeing rather than at the moment of reading.
     $without = ['acted' => false, 'beyond' => [], 'mended' => [], 'offered' => []];
@@ -161,9 +161,9 @@ it('reads a stack with nothing to put right as an empty listing', function (): v
 
 it('refuses a repair missing any one of the three clauses', function (): void {
     // Each dropped on its own, because a parser that read two of the three
-    // would satisfy a test that dropped all of them. `N2-R4` is one
-    // requirement and these are its three halves — a listing short of any one
-    // is one the operator must not be shown.
+    // would satisfy a test that dropped all of them. A repair is one thing with
+    // three halves — a listing short of any one is one the operator must not be
+    // shown.
     $each = [
         'does' => ['check' => 'storage.one-filesystem', 'effects' => [], 'reversible' => true],
         'check' => ['does' => 'Move it', 'effects' => [], 'reversible' => true],

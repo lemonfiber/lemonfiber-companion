@@ -26,7 +26,7 @@ it('says something different under the field for each state it can be in', funct
 });
 
 it('tells a mistyped code apart from one that expired', function (): void {
-    // N1-R49, and the pairing worth reading twice. An expired code was typed
+    // The pairing worth reading twice. An expired code was typed
     // perfectly, so sending its operator to check the characters sends them
     // looking for a mistake that is not there.
     expect(WhereTheCodeGot::Unreadable->saidUnderTheField())

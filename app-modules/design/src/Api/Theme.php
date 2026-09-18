@@ -26,7 +26,7 @@ use Closure;
  *     TailwindParser::setThemeResolver(Theme::resolver());
  *
  * which is a bind rather than work, reads no file and reaches no network, so a
- * frame arrives without waiting on any of it (A9, N1-R36).
+ * frame arrives without waiting on any of it (A9).
  */
 final readonly class Theme
 {

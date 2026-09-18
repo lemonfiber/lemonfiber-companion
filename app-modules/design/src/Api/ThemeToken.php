@@ -18,7 +18,7 @@ namespace Modules\Design\Api;
  * the accessibility tree, the reader's text size, the system's contrast and
  * reduced-motion settings and its light and dark modes without any of them
  * being built a second time. Overriding that look to reach the web palette
- * would spend exactly what it was chosen for (DES-R24, DES-R26, ADR-0017).
+ * would spend exactly what it was chosen for (ADR-0017).
  *
  *   | Brand token   | Companion mapping                                        |
  *   |---------------|----------------------------------------------------------|

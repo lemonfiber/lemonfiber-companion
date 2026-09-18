@@ -17,7 +17,8 @@ use function sprintf;
 //
 // A token added tomorrow is checked the moment it exists: it has to answer with
 // a hex the parser will accept, and it has to have been thought about as text,
-// which is the question that DES-R15 turns on and the one that is easiest to
+// which is the question an accent set as text turns on and the one that is
+// easiest to
 // leave unanswered. Writing the cases out here would mean a new case is checked
 // only if somebody remembers to add a line, and a forgotten check reads exactly
 // like a passing one.

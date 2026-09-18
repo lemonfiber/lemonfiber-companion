@@ -85,7 +85,7 @@ final readonly class Manifests
      * lives: `nativephp/mobile` turns a plugin's `ios.info_plist` into the built
      * app's `Info.plist`, so the string in that file is the string the operator
      * sees. Empty where none is declared, which is a failure rather than an
-     * absence — `N4-R16` says there is one.
+     * absence — a purpose string is required.
      */
     public static function localNetworkPurpose(): string
     {
@@ -157,10 +157,10 @@ final readonly class Manifests
         }
 
         // Refused rather than answered empty, the way `Coverage` refuses a
-        // report that is not there. `N4-R12` passes on an empty answer, and an
-        // empty answer is what both a clean repository and an unreadable
-        // manifest give — so the one that means "nothing was looked at" says so
-        // instead. The root manifest alone requires dozens of packages.
+        // report that is not there. The rule against a package that phones home
+        // passes on an empty answer, and an empty answer is what both a clean
+        // repository and an unreadable manifest give — so the one that means
+        // "nothing was looked at" says so instead. The root manifest alone requires dozens of packages.
         if ($seen === 0) {
             throw new RuntimeException(sprintf(
                 'No package was read from any manifest under %s. A rule that refuses a '

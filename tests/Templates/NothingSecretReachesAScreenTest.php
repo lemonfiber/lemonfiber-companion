@@ -5,18 +5,19 @@ declare(strict_types=1);
 use Tests\Support\OneDestination;
 use Tests\Support\Template;
 
-// F7, G4-R8 — a template reads nothing that has one destination.
+// F7 — a template reads nothing that has one destination.
 //
-// `G4-R8` is that an error must carry no credential and no secret, and this
-// holds it by being stricter: the three values are refused on every screen,
+// The rule underneath is that an error must carry no credential and no secret,
+// and this holds it by being stricter: the three values are refused on every
+// screen,
 // which includes the ones an operator only ever sees because something failed.
 // The implication runs one way — narrow this to a subset of screens and
-// `G4-R8` stops being held, with no rule going red — so it is named here rather
-// than left to be rediscovered.
+// the requirement stops being held, with no rule going red — so it is said here
+// rather than left to be rediscovered.
 //
 //
-// N1-R15, N1-R8 and N1-R7 name the three values, and the one destination each
-// has is never a screen.
+// A session, a credential and a stack's address are the three values, and the
+// one destination each has is never a screen.
 //
 // Each of the three publishes exactly one accessor, named for where its value
 // goes: a session goes in a header, a credential goes to the exchange, an
@@ -30,7 +31,7 @@ use Tests\Support\Template;
 // through a value it legitimately holds. `{{ $stack->at()->forTheClient() }}`
 // passes every other gate in this repository and puts a stack's address on the
 // glass — which is exactly what an operator with two stacks would reach for to
-// tell them apart, and exactly what `N1-R11` says the name is for.
+// tell them apart, and exactly what a stack's name is there for.
 //
 // The list is not written here. It is the same table
 // `AValueWithOneDestinationTest` counts against, so an accessor renamed there is

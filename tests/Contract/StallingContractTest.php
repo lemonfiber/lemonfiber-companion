@@ -28,7 +28,8 @@ use Tests\Support\WhatTheContractAccepts;
 // `G2`'s shape, and `WantingContractTest`'s argument one endpoint along: every
 // test of the screen listing stalled downloads will hand its subject an
 // `AStackThatStalled` and never open a socket, so a fake easier to satisfy than
-// the adapter would enforce `N2-R9` against a stack that always answers.
+// the adapter would enforce *a stalled download is reported as stalled* against
+// a stack that always answers.
 //
 // What is deliberately not asserted, as there: which endpoint is called, and
 // that the connection was pinned. The fake dials nothing, so a contract asking

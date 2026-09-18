@@ -341,8 +341,8 @@ it('refuses a name that is only spacing, in both lists that read one', function 
 });
 
 it('refuses a dependency that is not a name', function (): void {
-    // What leans on a service is the sentence `N2-R8` puts in front of stopping
-    // it, so a name that cannot be read would understate what a stop disturbs.
+    // What leans on a service is the sentence put in front of stopping it, so a
+    // name that cannot be read would understate what a stop disturbs.
     expect(fn(): object => Rosters::in(aRosterSaying(aRosterOf(['depends_on' => [41]]))))
         ->toThrow(RosterIsUnreadable::class, 'depends_on');
 });

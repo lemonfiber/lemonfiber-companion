@@ -30,9 +30,9 @@ use Native\Mobile\SecureStorageStatus;
  * The stacks this device is paired with, kept in the platform's own store.
  *
  * **The keychain rather than a file, and that is a decision rather than reuse.**
- * `N4-R5` is about sessions and does not reach this, so an ordinary file would
- * satisfy every requirement that names one. What it would not satisfy is
- * `N1-R15`, which treats a stack's address as private: a file in the app's
+ * Secure storage is about sessions and does not reach this, so an ordinary file
+ * would satisfy every requirement that names one. What it would not satisfy is
+ * the one treating a stack's address as private: a file in the app's
  * sandbox is readable by a backup, by a device that has been rooted, and by
  * whatever a restore puts it back onto. The record here is an address, a
  * certificate digest and a name somebody chose for their house. The store that
@@ -40,18 +40,18 @@ use Native\Mobile\SecureStorageStatus;
  * package offers no other.
  *
  * **One key for the whole record**, unlike {@see PlatformKeychain}'s key per
- * stack. The reason they differ is `N1-R11`: sessions must be separable so that
+ * stack. They differ because sessions must be separable so that
  * one can be forgotten without touching another, and the configured list is a
  * single value that is read whole on every launch. A key per stack here would
  * mean enumerating a store that offers no enumeration.
  *
- * **A shape number, because `N1-R32` asks for one.** Anything this app retains
- * carries the version of the shape it was written in, and `N1-R33` says a shape
- * it does not recognise is migrated or discarded — never interpreted as though
- * it were current. There is one shape so far, so there is nothing to migrate
+ * **A shape number, because everything retained carries one.** The version of
+ * the shape a value was written in travels with it, and a shape this build does
+ * not recognise is migrated or discarded — never interpreted as though it were
+ * current. There is one shape so far, so there is nothing to migrate
  * and discarding is what happens: a record from a newer build of this app, or a
  * record that is not this record at all, reads as *no stacks configured* and
- * the operator lands on `N1-R35`'s screen.
+ * the operator lands on the screen for a device with no stacks.
  *
  * That is the conservative direction and it is worth being explicit about the
  * alternative. Reading an unrecognised record optimistically — taking the parts
@@ -95,8 +95,8 @@ final readonly class PlatformStacks implements Stacks
      *
      * The status and the emptiness of the value, and nothing parsed: a shut app
      * asking this has asked whether there is anything behind its lock, and
-     * decoding the pairings to answer would be the reading `N4-R19` puts the
-     * lock in front of.
+     * decoding the pairings to answer would be exactly the reading the lock sits
+     * in front of.
      */
     public function holdsAny(): bool
     {

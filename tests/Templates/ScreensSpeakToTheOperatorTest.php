@@ -24,7 +24,7 @@ $templates = Template::all();
  * because a list is only as complete as whoever last remembered it. `F11`
  * refuses a component this table has no word for, so a control nobody thought
  * about fails the build instead of passing quietly, which is the whole of what
- * `N4-R21` is asking for.
+ * *every control says what it is* is asking for.
  *
  * Classification is by kind and a kind cannot see everything: a component
  * classified as furniture that is nevertheless given something to do is a

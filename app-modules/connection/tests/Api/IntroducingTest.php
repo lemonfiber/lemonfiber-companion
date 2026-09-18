@@ -64,7 +64,7 @@ it('carries the address and the certificate across unchanged', function (): void
 });
 
 it('gives two stacks paired from the same material two identities', function (): void {
-    // N1-R11's last clause depends on this: an identity derived from the
+    // Telling two machines apart depends on this: an identity derived from the
     // address or the digest would make one machine out of two, and a reading
     // from either would be attributed to whichever row won.
     $said = material(HowItWasRead::Scanned);
@@ -104,7 +104,7 @@ it('refuses a confirmation the operator gave about another certificate', functio
 
 it('accepts a confirmation about scanned material as well', function (): void {
     // A surface that both scanned and showed the fingerprint has done more than
-    // N1-R50 asks rather than less.
+    // a confirmed fingerprint asks, rather than less.
     $said = material(HowItWasRead::Scanned);
 
     expect(introductions()->confirmed($said, StackName::of('The loft'), confirmationOf('a'))->at()->is($said->at()))

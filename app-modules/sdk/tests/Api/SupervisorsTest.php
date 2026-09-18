@@ -41,8 +41,8 @@ use Tests\Support\WhatTheContractAccepts;
  * `SupervisingContractTest` runs both implementations against the same
  * assertions, and a fake dials nothing — so the path an action is asked for at
  * and the argument it carries have nowhere to be checked there. They are
- * checked here, and they are worth checking: the path is what `N1-R4` and
- * `N2-R12` rest on, and the argument is the difference between stopping one
+ * checked here, and they are worth checking: reaching the right endpoint at all
+ * rests on the path, and the argument is the difference between stopping one
  * service and stopping the form it belongs to.
  */
 afterEach(function (): void {

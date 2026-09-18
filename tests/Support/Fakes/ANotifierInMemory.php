@@ -64,8 +64,8 @@ final class ANotifierInMemory implements Notifier
     public function ask(): Asked
     {
         // Records that it was asked, and refuses to ask twice. The fake has to
-        // keep `N4-R4` too — a fake that re-asks happily is a fake that lets a
-        // caller violating the rule pass every test it is used in.
+        // keep the never-ask-again rule too — a fake that re-asks happily is a
+        // fake that lets a caller violating it pass every test it is used in.
         if ($this->standing->mayAsk()) {
             $this->asked++;
             $this->standing = Asked::Granted;

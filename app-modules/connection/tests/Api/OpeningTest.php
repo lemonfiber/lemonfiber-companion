@@ -105,8 +105,8 @@ it('N1-R36 — a device with a stack opens ready, naming which', function (): vo
 it('N4-R3 — a device offering no authentication is not a locked one', function (): void {
     // A handset with no passcode set. Refusing to open would be this app
     // requiring something the platform does not have, on a device where the
-    // operator has already decided — which is the shape `N4-R3` refuses one
-    // permission at a time.
+    // operator has already decided — which is the shape refused one permission
+    // at a time.
     $opening = new Opening(ADeviceThatKnowsYou::withNoScreenLock(), StacksInMemory::holding(aPairedMachine()), ADeviceOnANetwork::connected());
 
     expect(howItOpened($opening))->toBe(sprintf('ready-%s', str_repeat('a', Nonce::SHORTEST)));
@@ -148,7 +148,8 @@ it('N1-R37 — a paired device with no network opens blocked, naming the network
 });
 
 it('N1-R37 — a launch that is held shut never asks about the network', function (): void {
-    // `N4-R19` again, one question further along: the lock is answered before
+    // The same ordering again, one question further along: the lock is answered
+    // before
     // anything touches a network, and a launch that asked the radio first would
     // satisfy every assertion about what it *said* and still be wrong.
     $network = ADeviceOnANetwork::withNothingToReachOver();

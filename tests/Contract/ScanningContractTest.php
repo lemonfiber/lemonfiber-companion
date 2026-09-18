@@ -15,8 +15,9 @@ use Tests\Support\Fakes\AScannerThatWasPointedAt;
 // `G2`'s shape, and this port needs it more than most. Every test of the
 // scanned road hands its screen an `ACameraInMemory` and never opens a camera,
 // so a fake that answered more simply than the platform would make the whole of
-// `N4-R3` green against a scanner that never refuses — which is the one branch
-// nobody can exercise by hand without a phone and a denied permission.
+// *a camera that was refused is a scanner that refuses* green against a scanner
+// that never refuses — which is the one branch nobody can exercise by hand
+// without a phone and a denied permission.
 //
 // The asymmetry worth naming: on a handset the answer arrives from the runloop
 // *after* `forAPairingCode()` has returned, and here both arms answer inside

@@ -27,8 +27,9 @@ use Tests\Support\Fakes\APlatformStore;
  *
  * The contract asserts only what this adapter and the fake must both promise,
  * which cannot include anything about a stored record — the fake stores
- * nothing. Reading one back is this adapter's whole job, and `N1-R32` and
- * `N1-R33` are rules about exactly that, so they are driven here.
+ * nothing. Reading one back is this adapter's whole job, and the rules about a
+ * shape number and an unrecognised shape are about exactly that, so they are
+ * driven here.
  *
  * Every refusal below answers *nothing held* rather than raising. A launch is
  * not a place to throw, and the cost of discarding a record this build cannot
@@ -116,7 +117,8 @@ it('holds nothing for a stack whose row is not a row', function (): void {
 });
 
 it('holds nothing where the row names a word this build does not read', function (): void {
-    // `N1-R33` at the size of one field. A verdict this app cannot read is not
+    // Discarding an unrecognised shape, at the size of one field. A verdict this
+    // app cannot read is not
     // guessed at: the alternative is opening the operator on a word chosen by
     // whichever arm happened to be first.
     $verdicts = new PlatformVerdicts(aStoreHolding([
@@ -137,7 +139,8 @@ it('holds nothing where the row says no word at all', function (): void {
 });
 
 it('holds nothing where the row says when in something that is not a count', function (): void {
-    // `N1-R9` is the reason this is a refusal rather than a default: a verdict
+    // A retained reading must carry its age, which is why this is a refusal
+    // rather than a default: a verdict
     // whose age cannot be read would be shown with an age this app made up,
     // which is the one thing the requirement exists to prevent.
     $verdicts = new PlatformVerdicts(aStoreHolding([

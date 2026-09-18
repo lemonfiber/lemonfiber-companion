@@ -53,13 +53,12 @@ final readonly class TheTheme
         // and "somebody else registered one" are the same state to the parser.
         // Without this the plugin's dark palette rides along under this
         // application's light one: every `bg-theme-*` gains a dark companion
-        // nothing here chose, and `DES-R24`'s measured pair stops being what is
-        // drawn. `ThemeToken::hex()` carries why there is no dark companion —
+        // nothing here chose, and the measured pair stops being what is drawn. `ThemeToken::hex()` carries why there is no dark companion —
         // ink on lemon measures 10.9:1 whichever way a reader has their phone
         // set, so there is nothing for a second palette to improve.
         TailwindParser::setThemeDarkResolver(null);
 
-        // The accent role, which is the whole of what `DES-R24` maps: `lemon`
+        // The accent role, which is the whole of what is mapped: `lemon`
         // is asserted and the ground, the type and the spacing stay the
         // platform's. A filled button takes `primary` from the widget theme and
         // honours no per-instance colour — deliberately, says the renderer — so

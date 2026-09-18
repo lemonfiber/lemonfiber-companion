@@ -196,8 +196,8 @@ it('N2-R14 — a payload this side cannot read is an obstacle, not an exception'
 });
 
 it('N2-R17 — sends the services that were agreed to, by name', function (): void {
-    // The other half of the confirmation. `N2-R17` has the question name the
-    // services it would change, and a request that named none of them — or the
+    // The other half of the confirmation. The question has to name the services
+    // it would change, and a request that named none of them — or the
     // wrong ones — would have the operator agree to one evening and the stack
     // carry out another.
     MockClient::destroyGlobal();

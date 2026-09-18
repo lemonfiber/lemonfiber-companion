@@ -13,8 +13,8 @@ use Tests\Support\Fakes\AHandsetsWindow;
 //
 // `G2`'s shape. Every test that ever asserts "this screen must not be
 // photographed" will hold an `ACaptureInMemory` and never see a window, so a
-// fake easier to satisfy than the platform would make `N4-R18` green against a
-// window nothing protects.
+// fake easier to satisfy than the platform would make *this screen is never
+// photographed* green against a window nothing protects.
 //
 // The rule underneath is the same one `CaptureRule.kt` and `CaptureRule.swift`
 // carry, with the same six cases each. This is the third statement of it, in the
@@ -98,7 +98,8 @@ it('N4-R9 — a backgrounded app is protected, whatever it was showing', functio
 
 it('N4-R9 — revealing while away leaves the window protected', function (): void {
     // The half a fake gets wrong by writing `reveal()` as "return false".
-    // Revealing takes away N4-R18's reason and leaves N4-R9's, and an
+    // Revealing takes away the reason to refuse a screenshot and leaves the
+    // reason to blank a window the operator has stepped away from, and an
     // implementation reporting the window unprotected here would be lying about
     // a device sitting in a task switcher.
     foreach (everyWindow() as $which => $make) {

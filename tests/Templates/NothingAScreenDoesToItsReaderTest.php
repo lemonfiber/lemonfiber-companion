@@ -15,23 +15,24 @@ use Tests\Support\Template;
 //
 // That is the arrangement this file exists to end. The day NativePHP's parser
 // learns a word for animation — a reasonable thing for it to learn — the
-// vocabulary rule starts accepting it, `G3-R6` stops being held, and no rule
-// anywhere goes red. A requirement kept by what a dependency happens not to
+// vocabulary rule starts accepting it, the ban on repeating movement stops
+// being held, and no rule anywhere goes red. A requirement kept by what a
+// dependency happens not to
 // support is one upgrade from being gone, and the upgrade will look like an
 // improvement.
 //
 // So the words are refused here by name, whatever the parser later thinks of
 // them.
 //
-// **`G3-R6` is not a style rule.** Movement that repeats is the one visual
+// **This is not a style rule.** Movement that repeats is the one visual
 // effect with a medical floor under it: three flashes a second is the threshold
 // a seizure is induced at, and a status that pulses while a service is
 // crash-looping is exactly the design somebody reaches for. The requirement is
 // absolute for that reason and this rule is too — there is no rate that makes
 // it safe and therefore no allowance to write.
 //
-// **`G3-R8` is narrowed to what cannot be right**, which is what keeps it
-// honest. A fixed width in device pixels and a viewport-width class cannot
+// **The width half is narrowed to what cannot be right**, which is what keeps
+// it honest. A fixed width in device pixels and a viewport-width class cannot
 // adapt to a screen narrower than themselves, and a sideways scroll container
 // is the thing the requirement names. A small numbered width — a 48dp square
 // for a touch target — is none of those and is left alone. This does not prove

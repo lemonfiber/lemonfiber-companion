@@ -84,7 +84,7 @@ final class CompositionRoot extends ServiceProvider
 
     public function register(): void
     {
-        // `N1-R52` and `N1-R53`, before anything is wired. `config/nativephp.php`
+        // The identity, before anything is wired. `config/nativephp.php`
         // is written by `native:install` and is not in this repository, so what
         // it says about the identity is whatever the environment of whoever ran
         // that command said — which is the one thing the requirement names. The
@@ -132,7 +132,7 @@ final class CompositionRoot extends ServiceProvider
         // Bound rather than a singleton because a client is built for one stack
         // and holds that stack's pin — a single instance would be a client for
         // whichever machine was reached first, which is exactly the attribution
-        // `N1-R11` refuses.
+        // that must not happen.
         //
         // `modules/sdk` is the only manifest that requires the SDK, and
         // `NothingReachesAStackUnpinnedTest` refuses any other file that names
@@ -154,9 +154,9 @@ final class CompositionRoot extends ServiceProvider
         // Bound rather than a singleton, and this one matters more than the
         // client's. A door is opened for one stack with one credential; an
         // instance held across two would be an object that has already been
-        // handed a password, which is the shape `N1-R7`'s second clause exists
-        // to prevent. It holds no state today — the binding is what keeps that
-        // true of whatever it grows into.
+        // handed a password, and nothing may hold a credential for re-sending.
+        // It holds no state today — the binding is what keeps that true of
+        // whatever it grows into.
         $this->app->bind(Doors::class, PinnedDoors::class);
         $this->app->bind(Admitting::class, Admissions::class);
 
@@ -171,8 +171,8 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Asking::class, Questions::class);
 
         // Handing a diagnostic report to the operator, which is the only way
-        // one leaves this device. `N4-R13` says the app assembles and does not
-        // transmit, and both halves are structural: `Diagnostics` holds nothing
+        // one leaves this device. The app assembles and does not transmit, and
+        // both halves are structural: `Diagnostics` holds nothing
         // that could send, and `Sharing` takes nowhere to send to.
         //
         // Not a singleton, for `SecureStorage`'s reason: the share sheet is a
@@ -184,10 +184,9 @@ final class CompositionRoot extends ServiceProvider
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,
         // because the two have opposite obligations: a session is what this app
-        // may hold and must not spread, and a stack is what
-        // it must retain and `N1-R34` refuses to let a discard take with it. One
-        // port for both would be the place where the first piece of code to
-        // write one out takes the other with it.
+        // may hold and must not spread, and a stack is what it must retain and
+        // no discard may take with it. One port for both would be the place where
+        // the first piece of code to write one out takes the other with it.
         $this->app->bind(
             Stacks::class,
             static fn(): Stacks => new PlatformStacks(new PlatformStore()),
@@ -196,8 +195,8 @@ final class CompositionRoot extends ServiceProvider
         // The last word each stack came to, in the same store and bound the
         // same way. A third port rather than a method on either of the two
         // above, because what it holds has obligations neither of theirs does:
-        // it is the only retained value this app *shows*, so `N1-R9` applies to
-        // it and to nothing else here — which is why it answers `Showing` and
+        // it is the only retained value this app *shows*, so carrying its age
+        // applies to it and to nothing else here — which is why it answers `Showing` and
         // they answer collections. Folding it into `Stacks` would put a value
         // that must carry its age behind a port whose other answers must not.
         $this->app->bind(
@@ -210,7 +209,7 @@ final class CompositionRoot extends ServiceProvider
         // Bound rather than a singleton for the reason the store above is: the
         // facade is a handle to something outside this process, and a phone
         // changes network while the app is open.
-        // What the household has asked its stack for, which `N2-R11`'s screen
+        // What the household has asked its stack for, which the requests screen
         // reads. Beside `Asking` and built the same way: both go through
         // `PinnedClients`, so there is one place a certificate is checked.
         $this->app->bind(Wanting::class, Requests::class);
@@ -224,7 +223,7 @@ final class CompositionRoot extends ServiceProvider
         // randomness a key for one attempt is minted from (`B2`).
         $this->app->bind(Mending::class, Menders::class);
 
-        // What has stopped coming in, which is the first of `N2-R9`'s four.
+        // What has stopped coming in, the first of four.
 
         // What one service has been saying, bounded and named.
         // Beside the two above and built the same way, because the reason they
@@ -235,7 +234,7 @@ final class CompositionRoot extends ServiceProvider
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 
-        // What a stack is running, and the three verbs `N2-R7` offers about it.
+        // What a stack is running, and the three verbs offered about it.
         // The one binding that both reads and writes, which is the shape the
         // port argues for: an operator reads a listing, picks a row and says a
         // verb, and a second port for the verb would be a second place a client
@@ -281,7 +280,8 @@ final class CompositionRoot extends ServiceProvider
         // app holding one from launch would go on answering with the state it
         // saw then.
         //
-        // `N4-R9` is not reached through this binding at all. The native half
+        // Protecting a backgrounded window is not reached through this binding
+        // at all. The native half
         // installs a lifecycle observer as the app starts and protects a
         // backgrounded app whether or not anything here is ever resolved — a
         // requirement with no exceptions should not depend on a container entry.
@@ -307,9 +307,8 @@ final class CompositionRoot extends ServiceProvider
             $this->theScanner(...),
         );
 
-        // The same handle again, and bound for the same reason. `N4-R7` locks
-        // the app on backgrounding and `N4-R19` asks again after a period the
-        // operator sets — both of which are decisions about *when*, made in
+        // The same handle again, and bound for the same reason. The app locks on
+        // backgrounding and asks again after a period the operator sets — both of which are decisions about *when*, made in
         // `LockRule` on the native side where they can be tested without a
         // handset. This is only how an answer becomes a Lock.
         $this->app->bind(

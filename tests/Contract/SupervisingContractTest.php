@@ -52,7 +52,8 @@ function whatTheSupervisedVerbsCost(): Disturbances
 // `G2`'s shape, and `StallingContractTest`'s argument one endpoint along: every
 // test of the screen that starts and stops things will hand its subject an
 // `AStackThatSupervises` and never open a socket, so a fake easier to satisfy
-// than the adapter would enforce `N2-R7` against a stack that always says yes.
+// than the adapter would enforce *start and stop, per service and per whole
+// form* against a stack that always says yes.
 //
 // The verb half is the one worth the trouble. A reading that disagreed between
 // the two would show a wrong listing; a verb that disagreed would be a service
@@ -320,7 +321,8 @@ it('N2-R7 — takes a verb about a service and comes away with a name to ask abo
 });
 
 it('N2-R7 — takes the same verb about a whole form', function (): void {
-    // The other half of the granularity `N2-R7` names. A port that took only
+    // The other half of the granularity owed — one service, and a whole form. A
+    // port that took only
     // one of them would have a screen assembling the other out of services it
     // read a moment ago, which is a listing going stale between the reading and
     // the verb.
@@ -401,8 +403,9 @@ it('an answer this app cannot read is a stack that did not answer', function ():
 });
 
 it('an acknowledgement with no name in it is a stack that did not answer', function (): void {
-    // `N1-R41`'s state, reached through the port. The action was delivered, so
-    // it must not be sent again, and there is no handle to ask after it by —
+    // The state where an action was delivered and named nothing, reached through
+    // the port. It must not be sent again, and there is no handle to ask after
+    // it by —
     // which reaches the screen as a stack that did not answer rather than as a
     // raise on a tap.
     $agreed = AgreedTo::theService(WhatToDoWithIt::Start, ServiceId::called('sonarr'));

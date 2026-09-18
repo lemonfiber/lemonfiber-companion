@@ -166,8 +166,8 @@ return [
 
 
 
-    // N2-R7's screen. The verbs above are the buttons; these are the sentences
-    // around them — what a row says about itself, and what a stop is stated to
+    // The supervising screen. The verbs above are the buttons; these are the
+    // sentences around them — what a row says about itself, and what a stop is stated to
     // disturb before anybody agrees to it.
     'in_form' => 'Part of :form',
     'it_exited' => 'It ended with :code',
@@ -177,7 +177,7 @@ return [
     'no_forms_at_all' => 'Nothing has been set up on this machine yet',
     'by_form' => 'Or a whole form at once',
 
-    // N2-R7's second granularity, on the screen about one of them. A route
+    // The second granularity, on the screen about one of them. A route
     // can name something the machine has since stopped running, which is an
     // answer rather than a blank frame.
     'nothing_of_that_name' => 'This machine is not running anything called :name',
@@ -187,7 +187,7 @@ return [
     'a_whole_form' => 'A form is every service in it. The verbs below reach all of them.',
     'leaned_on_by' => ':name will not work without it',
 
-    // N2-R8. Said before the yes and not after it.
+    // What a stop disturbs. Said before the yes and not after it.
     'about_to' => 'About to change :what',
     'about_to_form' => 'This is every service in that form, not just one of them.',
     'would_not_help' => 'It is already restarting over and over. Another restart joins the queue.',
