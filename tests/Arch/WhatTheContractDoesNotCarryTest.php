@@ -79,30 +79,37 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
     ],
     [
         'requirement' => 'N3-R4',
-        'asks' => 'what a provider has left, before somebody in the house is told to ask for something',
-        // No envelope named: nothing in the contract carries an allowance at
-        // all, so there is no type this would be added to rather than a type it
-        // is missing from.
-        'envelope' => null,
-        'field' => 'allowance',
-        'shape' => null,
-        'raised' => 'C8 makes a provider out of allowance one of the things worth carrying in a pocket, '
-            . 'and the wire says nothing about one. The app shows what a provider reported and cannot '
-            . 'say what is left of it.',
+        'asks' => 'whether it needs approval and whether they have allowance left, said before a member asks',
+        // The subject, not the allowance. It waits on what the admission row
+        // below waits on, watched separately because a row watches one
+        // requirement and a shared row would half-fire.
+        'envelope' => 'AdmissionEnvelope',
+        'field' => null,
+        'shape' => 'array{token: string, until: string}',
+        'raised' => 'Both halves are already on the wire. `household.members[].asking` carries '
+            . '`policy` — trusted, within-a-limit, everything-waits — which is whether it needs '
+            . 'approval, and `standing` — unlimited, within-quota, near-quota, quota-exhausted — '
+            . 'which is whether there is allowance left, beside `films.remaining` and '
+            . "`television.remaining` for the count itself.\n\n"
+            . 'What is missing is who to say it about. The reading is per member and the session '
+            . 'says only that it is one, so an app picking a member to draw the figure for would '
+            . 'be picking, which is the same answer `N3-R3` refuses everywhere else.',
     ],
     [
         'requirement' => 'N3-R5',
         'asks' => 'when a spent allowance resets, told to the member before they ask',
-        // The sibling of the row above and a separate row, because it waits on
-        // a second field rather than on the same one: knowing an allowance is
-        // spent is not knowing when it comes back, and *spent, and nothing about
-        // when* is the answer that leaves somebody asking again every hour.
-        'envelope' => null,
-        'field' => 'resets_at',
-        'shape' => null,
-        'raised' => 'The wire carries no allowance and so carries no reset for one. A time worked out '
-            . 'in the app would be `N2-R14` exactly — a guess at something the provider knows and '
-            . 'the app does not, wrong in the cases somebody is actually waiting on.',
+        // A row of its own rather than the one above widened: being told an
+        // allowance is spent is not being told when it comes back, and *spent,
+        // and nothing about when* leaves somebody asking again every hour.
+        'envelope' => 'AdmissionEnvelope',
+        'field' => null,
+        'shape' => 'array{token: string, until: string}',
+        'raised' => '`household.members[].asking.frees_up` is the instant the count next lets go of '
+            . 'something, carried by the service that keeps it rather than worked out here — so '
+            . 'the reset this asks for is on the wire, and reading it needs no arithmetic that '
+            . "could be wrong in the cases somebody is actually waiting on.\n\n"
+            . 'It waits with `N3-R4` on the same missing subject: a reset is a reset of one '
+            . "member's period, and the session does not say whose.",
     ],
     [
         'requirement' => 'N3-R3',

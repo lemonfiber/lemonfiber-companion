@@ -32,8 +32,19 @@ that it remembered to leave controls out — and *the app omitted it* is the one
 answer that requirement refuses. Building it would produce a screen that looks
 right and is not, which is worse than the empty directory.
 
-`N3-R4` and `N3-R5` are held on the same shelf for a narrower reason: nothing on
-the wire says what a member has left of an allowance or when it resets.
+`N3-R4` and `N3-R5` are held on the same shelf, and for the same reason rather
+than a narrower one. Everything they ask for is already on the wire:
+`household.members[].asking` carries `policy` — trusted, within-a-limit,
+everything-waits — which is whether a request needs approval; `standing` —
+unlimited, within-quota, near-quota, quota-exhausted — which is whether there is
+allowance left; `films.remaining` and `television.remaining` for the count
+itself; and `frees_up` for the instant the period next lets go of something,
+which is `N3-R5`'s reset, carried by the service that keeps it rather than
+worked out here.
+
+What is missing is who to say it about. The reading is per member, and a surface
+choosing which member to draw the figure for would be choosing — the same answer
+`N3-R3` refuses everywhere else.
 
 **Three more wait on the same subject, and are named so the day it arrives names
 all of them.** `N3-R6` has a member's own requests carry their state in
@@ -51,7 +62,10 @@ whatever is already there.
 
 All of them are in `tests/Arch/WhatTheContractDoesNotCarryTest.php`, which reads
 the generated contract and **fails the day any of them arrives** — so this
-paragraph stops being true in a run rather than in somebody's memory.
+paragraph stops being true in a run rather than in somebody's memory. Each row
+watches the admission shape, because that is what every one of them waits on; a
+row watching the field it would eventually read would stay green while the thing
+actually holding it lifted.
 
 ## `N3-R2` — the app implements no permission model
 
