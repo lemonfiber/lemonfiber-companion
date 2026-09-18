@@ -34,7 +34,7 @@ use function view;
 /**
  * Where this machine stands on being up to date.
  *
- * `N2-R15`'s screen. It opens on the answer — current, an update waiting, or
+ * The up-to-date screen. It opens on the answer — current, an update waiting, or
  * not looked at recently — because that is the decision an operator holding a
  * phone is making. They are not comparing version strings; they are deciding
  * whether tonight is the night.
@@ -47,12 +47,12 @@ use function view;
  * its opinion to the stack's.
  *
  * **A withdrawn release is left out of what is offered and said about what is
- * running.** Those are opposite errands: `N2-R16` refuses to offer one, and a
+ * running.** Those are opposite errands: offering one is refused, and a
  * stack that is *on* one is something an operator has to be told. Dropping it
  * from both would leave them reading a screen that says nothing is wrong.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
- * runs is the household's business, and `N4-R13`'s diagnostic report is
+ * runs is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
  * screen happened to hold.
  */
@@ -110,11 +110,11 @@ final class HowCurrentThisStackIs extends NativeComponent
     }
 
     /**
-     * Ask the stack again (`N1-R3`).
+     * Ask the stack again.
      *
      * The action an obstacle must not take away. Forgetting what came back
      * rather than re-reading here, so the next accessor asks — which keeps this
-     * one act and keeps `N1-R65` true: one asking per frame, and a frame that
+     * one act and keeps the reading rule true: one asking per frame, and a frame that
      * starts when somebody taps.
      */
     public function again(): void
@@ -123,7 +123,7 @@ final class HowCurrentThisStackIs extends NativeComponent
     }
 
     /**
-     * Offer to take a release, and ask first (`N2-R17`).
+     * Offer to take a release, and ask first.
      *
      * The version arrives as a string because a template can hand over nothing
      * else, and is matched against what this screen actually read — so a
@@ -177,7 +177,7 @@ final class HowCurrentThisStackIs extends NativeComponent
         return $this->asking;
     }
 
-    /** How many services the pending question would change (`N2-R17`). */
+    /** How many services the pending question would change. */
     public function wouldChange(): int
     {
         return $this->asking instanceof TakingAnUpdate ? $this->asking->changing()->count() : 0;

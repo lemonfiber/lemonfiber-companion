@@ -3,7 +3,7 @@
 @if ($this->answer()->went->cameBack())
 <native:column class="w-full gap-4 px-6 py-4">
 @if ($this->asking() !== null)
-    {{-- N2-R8: what this will take away, stated before the yes and not
+    {{-- What this will take away, stated before the yes and not
          after it. A confirmation an operator can tap past without reading
          is the same as no confirmation. --}}
     <x-operator::heading>
@@ -11,7 +11,7 @@
     </x-operator::heading>
     <native:text>{{ __($this->asking()->doing()->saidOnTheScreen()) }}</native:text>
 
-    {{-- N2-R8: how long for, as the stack reported it. Said here because
+    {{-- How long for, as the stack reported it. Said here because
          this is the moment it is any use: *a second* and *three minutes*
          are different decisions, and the decision is made before the verb
          runs. N2-R14 is why there is no fallback sentence — a length this
@@ -34,7 +34,7 @@
         @endif
 
         @if (count($this->thing()->service?->leaning ?? []) > 0)
-            {{-- What will not work without it. The part of `N2-R8` an
+            {{-- What will not work without it. The part an
                  operator cannot work out from the row they tapped. --}}
             <native:text>{{ __('health.leaning_on_it') }}</native:text>
 
@@ -94,13 +94,13 @@
     @endif
 
     @if ($this->thing()->service?->isSettling)
-        {{-- N1-R27: this one becomes something else on its own, and this
+        {{-- This one becomes something else on its own, and this
              says how often the screen looks. --}}
         <x-operator::note>{{ __($this->cadence()->saidOnTheScreen()) }}</x-operator::note>
     @endif
 
     @forelse ($this->thing()->verbs as $verb)
-        {{-- N2-R7's verbs, and only the ones this state can take. There is
+        {{-- The verbs, and only the ones this state can take. There is
              one subject on this frame, so the label is the whole name a
              reader needs — which is the difference between a verb here and
              the same verb drawn once per row on the listing. --}}

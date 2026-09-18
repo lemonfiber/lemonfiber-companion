@@ -10,7 +10,7 @@ use Modules\Kernel\Api\Release;
  * One release, flattened to what a row draws.
  *
  * **Whether the household would notice travels as a flag, not as a sentence.**
- * `N2-R16`'s distinction is what a screen sorts and leads on, and a row handed
+ * The distinction is what a screen sorts and leads on, and a row handed
  * a finished phrase could not be grouped by it.
  */
 final readonly class WhatOneReleaseSays

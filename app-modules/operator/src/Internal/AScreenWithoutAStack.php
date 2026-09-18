@@ -29,9 +29,9 @@ enum AScreenWithoutAStack: string
     /** What the app opens on: the stacks this device has, or the offer to pair one. */
     case TheList = '/';
 
-    /** Reading the code off the stack's own screen with the camera (`N1-R20`). */
+    /** Reading the code off the stack's own screen with the camera. */
     case PairByScanning = '/pair/scanned';
 
-    /** Typing it, for a camera that is refused or absent (`N4-R3`). */
+    /** Typing it, for a camera that is refused or absent. */
     case PairByTyping = '/pair/typed';
 }

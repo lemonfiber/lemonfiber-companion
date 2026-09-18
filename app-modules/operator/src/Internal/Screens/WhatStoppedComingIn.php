@@ -31,7 +31,7 @@ use function view;
 /**
  * What the house asked for and never got.
  *
- * `N2-R9` names four things that must each be reachable and this is the first:
+ * Four things must each be reachable and this is the first:
  * stuck downloads. It is the screen that answers the question an operator is
  * asked in person — *I asked for that film on Tuesday and it never arrived* —
  * which {@see WhatTheHouseholdAsked} can only half answer, because a request
@@ -39,7 +39,7 @@ use function view;
  * days look the same on that list.
  *
  * **It asks once, when the frame is built, and holds what came back**, which is
- * {@see WhatTheHouseholdAsked}'s shape and `N1-R65`'s requirement: one read per
+ * {@see WhatTheHouseholdAsked}'s shape and what is required: one read per
  * frame, and a home network with a machine that may be asleep is the
  * wrong thing to talk to four times a second. Every accessor below reads what
  * one asking produced.
@@ -52,12 +52,12 @@ use function view;
  *
  * **Nothing here is a button.** What to do about a stalled download is a
  * decision made in the service that has it, and this app does not offer to
- * reach into one — `N2-R7` is about services by form and by name, which is a
+ * reach into one — the verbs are about services by form and by name, which is a
  * different screen and a different confirmation. This one says what stopped and
  * where, which is what makes the next step findable.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
- * watches is the household's business, and `N4-R13`'s diagnostic report is
+ * watches is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
  * screen happened to hold.
  */
@@ -107,16 +107,16 @@ final class WhatStoppedComingIn extends NativeComponent
     }
 
     /**
-     * Ask the stack again (`N1-R3`).
+     * Ask the stack again.
      *
-     * The action an obstacle must not take away. `N1-R3` says a control is not
+     * The action an obstacle must not take away. A control is not
      * hidden because the stack is unreachable — the app offers it and reports
      * the failure — and an obstacle screen with nothing on it does exactly what
      * the rule forbids: the only way back is leaving and returning, which
-     * `N1-R27` names separately as the thing a screen must not rely on.
+     * is named separately as the thing a screen must not rely on.
      *
      * Forgetting what came back rather than re-reading here, so the next
-     * accessor asks. That keeps this one act and keeps `N1-R65` true: one
+     * accessor asks. That keeps this one act and keeps the reading rule true: one
      * asking per frame, and a frame that starts when somebody taps.
      */
     public function again(): void

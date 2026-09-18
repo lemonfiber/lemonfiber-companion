@@ -4,7 +4,7 @@
 <native:column class="w-full gap-4 px-6 py-4">
     <x-operator::emphasis>{{ __($this->answer()->overall) }}</x-operator::emphasis>
 
-    {{-- N2-R9: the families this run has something to say about, so that a
+    {{-- The families this run has something to say about, so that a
          stuck queue or a provider gone quiet is one tap away rather than
          eight rows of scrolling. Only the families with findings are
          offered — a control leading to a blank screen teaches an operator
@@ -56,7 +56,7 @@
                 <native:text class="text-sm font-bold">{{ __($finding->cost) }}</native:text>
             @endif
 
-            {{-- N2-R3: what the core said about it, in the core's own
+            {{-- What the core said about it, in the core's own
                  words. Rendered rather than translated — these are the
                  machine's sentences about the machine, and putting them
                  through the catalogue would mean this app inventing a
@@ -86,7 +86,7 @@
             @endif
 
             @if ($finding->underneath !== '')
-                {{-- G4-R4: the technical detail, available and not leading.
+                {{-- The technical detail, available and not leading.
                      Last on the row, under the plain explanation and under
                      what to try — which is what *must not lead* means on a
                      surface with one column. Somebody who knows what the
@@ -96,7 +96,7 @@
                 <x-operator::note>{{ $finding->underneath }}</x-operator::note>
             @endif
 
-            {{-- N2-R10: the logs, offered from the finding that is already
+            {{-- The logs, offered from the finding that is already
                  about this service. Only where there is one — a check about
                  the machine itself has no scrollback to read, and a button
                  that led to an empty window would be the row teaching an
@@ -144,14 +144,14 @@
          machine is already holding the question the household asks them. --}}
     <x-operator::quiet-action label="{{ __('household.asked_for') }}" :goes="$this->goes()->requests()" />
 
-    {{-- N2-R9: what stopped coming in. Reachable from the machine it is
+    {{-- What stopped coming in. Reachable from the machine it is
          about rather than from the list, for the reason the requests button
          is — and reachable at all is the requirement: a stack passing every
          check and a household getting nothing are not a contradiction, so
          this cannot live under the verdict above. --}}
     <x-operator::quiet-action label="{{ __('health.what_stopped') }}" :goes="$this->goes()->stuck()" />
 
-    {{-- N2-R21: what is running here that this machine never declared. The
+    {{-- What is running here that this machine never declared. The
          requirement asks for these to be reachable, and this is where from
          — beside what the stack runs rather than inside it, because a
          container nobody declared is not one of the things this stack runs

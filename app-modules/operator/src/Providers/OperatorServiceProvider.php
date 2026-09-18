@@ -83,7 +83,7 @@ final class OperatorServiceProvider extends ServiceProvider
         // it fails.
         $this->app->booted(static function (): void {
             Router::native(AScreenWithoutAStack::TheList->value, YourStacks::class);
-            // The two roads N1-R6 requires, each its own URI rather than a
+            // The two roads required, each its own URI rather than a
             // mode of the entry screen: the navigation stack is what lets an
             // operator back out of one, and a screen that pairs is one
             // #[Concealed] has to be able to name — which it cannot do for half
@@ -91,13 +91,13 @@ final class OperatorServiceProvider extends ServiceProvider
             //
             // Two screens rather than one with a switch, because they are not
             // the same flow with a different input widget. ADR-0018 puts a
-            // software comparison on the scanned road and N1-R50 puts a person
+            // software comparison on the scanned road and a person
             // on the typed one, so one of them has a confirmation step and the
             // other must not be able to reach one.
             Router::native(AScreenWithoutAStack::PairByScanning->value, PairByScanning::class);
             Router::native(AScreenWithoutAStack::PairByTyping->value, PairByTyping::class);
 
-            // The stack in the URI rather than in the screen, because `N1-R11`
+            // The stack in the URI rather than in the screen, because a device
             // keeps each stack's session separate and a screen that chose its
             // own stack is the place two of them come to share one. It is also
             // what makes the navigation stack correct: an operator backing out
@@ -114,12 +114,12 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Requests->value, WhatTheHouseholdAsked::class);
 
             // What the machine would put right, stated before anybody is asked
-            // to agree (`N2-R4`). A screen rather than a dialog behind a
+            // to agree. A screen rather than a dialog behind a
             // button: a sentence an operator has to tap to reveal is one they
             // will agree without reading.
             Router::native(AStacksScreen::Repairs->value, WhatWouldBePutRight::class);
 
-            // What has stopped coming in, which is the first of `N2-R9`'s four.
+            // What has stopped coming in, which is the first of four.
             // A screen of its own rather than a section of the health one: a
             // stack passing every check and a household getting nothing are not
             // a contradiction, and folding this into health would put the two
@@ -128,14 +128,14 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Updates->value, HowCurrentThisStackIs::class);
 
             // What this machine is running, and the three verbs about it
-            // (`N2-R7`). A screen of its own rather than a section of health:
+            // A screen of its own rather than a section of health:
             // health answers *is anything wrong*, and this answers *what is on
             // and what do I want on*, which an operator opens the app for even
             // when every check passes.
             Router::native(AStacksScreen::Services->value, WhatThisStackRuns::class);
 
             // One of the things it runs, and the verbs about that one
-            // (`N2-R7`). Split out of the listing above rather than drawn on
+            // Split out of the listing above rather than drawn on
             // it: a stack running four services put fifteen controls on one
             // frame, four of them named *Start it*, and which one a control
             // acted on was carried by where it sat. A list is read, and a verb
@@ -148,14 +148,14 @@ final class OperatorServiceProvider extends ServiceProvider
             // be the same screen with one word changed.
             Router::native(AStacksScreen::Doing->value, WhatToDoWithThis::class);
 
-            // What is running here that this machine never declared (`N2-R21`).
+            // What is running here that this machine never declared.
             // Separate from the listing above rather than a section of it,
             // because that screen offers a verb against every row and the
             // requirement forbids offering one against these — two screens is
             // the version of that refusal which survives somebody adding a row.
             Router::native(AStacksScreen::Elsewhere->value, WhatElseIsRunningHere::class);
 
-            // What one service has been saying (`N2-R10`). Two placeholders,
+            // What one service has been saying. Two placeholders,
             // which no other route here has: the service is in the path rather
             // than held by the screen, so a frame whose URI names one service
             // cannot be showing another's lines under its heading.
@@ -163,7 +163,7 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section
-            // of the list, because `N1-R65` says the app reads a machine once
+            // of the list, because the app reads a machine once
             // per frame — a list that reported on every stack would ask every
             // machine on the network to draw one frame.
             Router::native(AStacksScreen::Health->value, HowThisStackIs::class);

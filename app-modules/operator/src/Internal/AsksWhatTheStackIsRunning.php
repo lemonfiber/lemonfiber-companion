@@ -18,7 +18,7 @@ use Native\Mobile\Edge\NativeComponent;
 /**
  * The one reading two screens are both about, written once.
  *
- * `N2-R7` has two frames now — the list of what a machine runs, and the one
+ * There are two frames now — the list of what a machine runs, and the one
  * thing behind a row of it — and both are about the same listing. Two copies of
  * *resume, ask, fold* is two chances for them to come to different answers
  * about what a stack said, and an operator moving between the two frames is
@@ -53,7 +53,7 @@ trait AsksWhatTheStackIsRunning
     protected ?WhatThisStackRunsTurnedOutToBe $answered = null;
 
     /**
-     * How often a screen about this reading looks again (`N1-R27`).
+     * How often a screen about this reading looks again.
      *
      * One case for both frames, so the sentence a template builds and the
      * interval the poll keeps cannot drift apart — and so the two screens
@@ -65,9 +65,9 @@ trait AsksWhatTheStackIsRunning
     }
 
     /**
-     * Ask the stack again, because the operator said so (`N1-R3`).
+     * Ask the stack again, because the operator said so.
      *
-     * The action an obstacle must not take away: `N1-R3` says a control is not
+     * The action an obstacle must not take away: a control is not
      * hidden because the stack is unreachable, and an obstacle screen with
      * nothing on it leaves leaving and returning as the only road back.
      */

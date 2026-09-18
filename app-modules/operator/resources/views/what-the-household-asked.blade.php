@@ -2,7 +2,7 @@
 
 @if ($this->answer()->went->cameBack())
 <native:column class="w-full gap-4 px-6 py-4">
-    {{-- N2-R11: what is waiting on the operator, said before the list. An
+    {{-- What is waiting on the operator, said before the list. An
          operator who opened this screen because somebody in the house asked
          them to should not have to count rows to find out whether anything
          needs them. --}}
@@ -11,7 +11,7 @@
     </x-operator::emphasis>
 
     @if ($this->turningDown() !== null)
-        {{-- D7-R7: a refusal owes the person who asked a sentence, and this is
+        {{-- A refusal owes the person who asked a sentence, and this is
              where it is written. Its own frame rather than a field on the row,
              because what an operator is doing here is composing something
              somebody will read — and because a screen that turned a request
@@ -41,7 +41,7 @@
             <x-operator::emphasis>{{ $request->title }}</x-operator::emphasis>
             <x-operator::note>{{ __('household.asked_by', ['who' => $request->by]) }}</x-operator::note>
 
-            {{-- D7-R3 and D7-R4 are one fact and two sentences: the size,
+            {{-- One fact and two sentences: the size,
                  and whether anybody measured it. The key carries the
                  labelling so a translator owns it; the figure is a whole
                  number under a thousand, so no locale's separator can be
@@ -55,7 +55,7 @@
 
             <native:text>{{ __($request->standing) }}</native:text>
 
-            {{-- N3-R7 and D7-R7: a refused request carries the reason that
+            {{-- A refused request carries the reason that
                  was given. `declined` on its own is the answer that sends
                  somebody to ask their operator in person, which is the
                  whole thing the requirement exists to prevent. --}}
@@ -75,7 +75,7 @@
             @endif
 
             @if ($request->wantsADecision)
-                {{-- N2-R11: approvable and refusable from the app, which for a
+                {{-- Approvable and refusable from the app, which for a
                      long time this screen said and did not offer. The approval
                      is the filled one: it is what the person who asked is
                      hoping for, and it owes them nothing but the thing itself.
@@ -101,7 +101,7 @@
     @endforelse
     @endif
 
-    {{-- `N1-R27`: a screen an operator cannot ask again is a screen that relies
+    {{-- A screen an operator cannot ask again is a screen that relies
          on being left and returned to, which is the one thing the requirement
          names. It sat on the obstacle arm only — so a reading that failed could
          be retried and a reading that came back could not, which is the wrong

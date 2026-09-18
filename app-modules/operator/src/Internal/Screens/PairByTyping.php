@@ -28,12 +28,12 @@ use function view;
 /**
  * Pairing a stack by typing the code, rather than by pointing a camera at it.
  *
- * `N1-R6` requires both roads and `N4-R3` says why this one is not a courtesy:
+ * Both roads are required, and this one is not a courtesy:
  * it is the road on a device with no camera and on one whose operator declined
  * the permission, and a permission with no working alternative is a permission
  * the app has made compulsory.
  *
- * **`N1-R50` is the shape of this screen.** Typed entry has no software
+ * **The confirmation is the shape of this screen.** Typed entry has no software
  * comparison in it — nothing scanned the digest, so nothing can check the
  * characters against anything — and the requirement fills that gap with the one
  * comparison people are good at: the app shows the fingerprint it read in a
@@ -42,7 +42,7 @@ use function view;
  * refuses to pair.
  *
  * **The state it keeps is what the operator typed, and nothing derived.**
- * `N1-R38` keeps what a person did on a screen; the reading of it is computed
+ * A screen keeps what a person did; the reading of it is computed
  * per frame by {@see ReadingACode}, so the sentence shown can never be about a
  * code that has since been edited. That also makes the whole of this screen's
  * behaviour askable without a device — the interesting part is a pure function
@@ -50,7 +50,7 @@ use function view;
  *
  * **`#[Concealed]`, decided rather than demanded.** The rule that insists on it
  * reads constructor types, and this screen is handed ports rather than a
- * `Fingerprint`, so nothing would have failed without the attribute. `N4-R18`
+ * `Fingerprint`, so nothing would have failed without the attribute. The capture rule
  * names pairing material by name and this screen has it on the glass — the
  * address, the digest and the comparable form together — which is precisely the
  * frame the task switcher keeps and a screen recording captures.
@@ -85,7 +85,7 @@ final class PairByTyping extends NativeComponent
      */
     protected string $typed = '';
 
-    /** What the operator is calling this machine (`N1-R11`). */
+    /** What the operator is calling this machine. */
     protected string $called = '';
 
     /** What became of the pairing, once they have confirmed one. */
@@ -98,7 +98,7 @@ final class PairByTyping extends NativeComponent
      * store afterwards, which would be asking *which one did I just add* of a
      * list that does not say. `protected` for `NativeComponent`'s property
      * syncing, and the identifier rather than the {@see Stack} because a screen
-     * that held a stack would be holding an address (`N1-R15`).
+     * that held a stack would be holding an address.
      */
     protected string $paired = '';
 
@@ -135,7 +135,7 @@ final class PairByTyping extends NativeComponent
      * one they are looking at.
      *
      * The clock is asked at the moment of reading rather than at the moment the
-     * screen opened, which is what makes `N1-R49` true of a screen somebody
+     * screen opened, which is what makes expiry true of a screen somebody
      * leaves open: a code that was still good when they started typing expires
      * while they are still in the field, and the sentence changes under them.
      */
@@ -162,7 +162,7 @@ final class PairByTyping extends NativeComponent
         return $this->code()->got() === WhereTheCodeGot::Unreadable;
     }
 
-    /** Whether it was material and its moment has passed (`N1-R49`). */
+    /** Whether it was material and its moment has passed. */
     public function hasExpired(): bool
     {
         return $this->code()->got() === WhereTheCodeGot::Expired;
@@ -195,8 +195,8 @@ final class PairByTyping extends NativeComponent
      * Whether the control that completes the pairing may be offered at all.
      *
      * Both halves, because both are required and neither is the other's
-     * problem: `N1-R50` needs a fingerprint that has actually been shown, and
-     * `N1-R11` needs a name the operator picked, since the two things the
+     * problem: the confirmation needs a fingerprint that has actually been shown, and
+     * a device needs a name the operator picked, since the two things the
      * material carries are an address and a digest and neither is a name.
      *
      * Offering it and refusing the tap would be the worse design — a control
@@ -212,7 +212,7 @@ final class PairByTyping extends NativeComponent
      * The operator says the form on the screen is the one on their stack.
      *
      * The confirmation is built by the value that rendered the form rather than
-     * here, which is what keeps `N1-R50` structural: this screen cannot make a
+     * here, which is what keeps the confirmation structural: this screen cannot make a
      * {@see FingerprintWasConfirmed}, so it cannot make one about a code it did
      * not show.
      *

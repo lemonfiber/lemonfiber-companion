@@ -13,8 +13,8 @@ namespace Modules\Operator\Internal\ViewModels;
  * and cannot be given one.
  *
  * **Three states, and the empty listing is one of them.** A stack with nothing
- * stuck is the answer an operator wants; a session that has ended is `N1-R44`'s
- * screen; an obstacle is `N1-R10`'s. Folding the first two together would have
+ * stuck is the answer an operator wants; a session that has ended is the sign-in
+ * screen; an obstacle is its own. Folding the first two together would have
  * a signed-out phone report a house where everything is arriving normally,
  * which is the collapse {@see \Modules\Kernel\Api\WhatIsStuck} refuses one
  * layer up and this one must not rebuild.

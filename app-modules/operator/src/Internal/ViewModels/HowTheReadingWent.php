@@ -12,7 +12,7 @@ use Modules\Kernel\Api\Obstacle;
  * Three facts that always travel together — the session, what was met, what to
  * do about it — written out separately on eight view models and rebuilt from
  * the same three arguments in twenty-two places. That is twenty-two chances for
- * one of them to drift, and `N1-R1` asks for parity across surfaces rather than
+ * one of them to drift, and parity is asked across surfaces rather than
  * parity by everybody remembering.
  *
  * {@see \Modules\Operator\View\Components\WhatStoppedTheReading} named this as
@@ -60,7 +60,7 @@ final readonly class HowTheReadingWent
     /**
      * This device no longer holds a session for that stack.
      *
-     * Nothing was met, because nothing was asked. `N1-R44` puts the remedy on a
+     * Nothing was met, because nothing was asked. The remedy goes on a
      * screen rather than in a sentence, which is why there is no key here to
      * carry one.
      */
@@ -74,7 +74,7 @@ final readonly class HowTheReadingWent
      *
      * A refused credential is being signed out rather than an obstacle to
      * report, and that reading happens here rather than at each caller.
-     * `N1-R10` wants the remedy beside what happened — one is a fact about the
+     * An obstacle owes the remedy beside what happened — one is a fact about the
      * world and the other is advice — so both come off the obstacle and neither
      * is a sentence a presenter wrote.
      */

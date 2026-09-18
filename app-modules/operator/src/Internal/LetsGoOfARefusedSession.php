@@ -9,7 +9,7 @@ use Modules\Kernel\Api\Stack;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
- * The effect half of `N3-R13`, written once for the screens that need it.
+ * The effect half of letting go of a refused session, written once for the screens that need it.
  *
  * Five screens resume a session and hand it to a stack, and every one of them
  * has to let go of a session that stack has just refused. The decision is the
@@ -24,7 +24,7 @@ use Native\Mobile\Edge\NativeComponent;
  * question. `WhereAStackIs` is the other shape and it earns its keep by holding
  * an identifier; this holds nothing.
  *
- * It is also what keeps the screens under `Q-R64`'s twenty-method ceiling.
+ * It is also what keeps the screens under the twenty-method ceiling.
  * Three of them arrived at twenty-one the day this effect was added to each,
  * which is what a cross-cutting concern looks like when it is pasted.
  *
@@ -38,7 +38,7 @@ use Native\Mobile\Edge\NativeComponent;
 trait LetsGoOfARefusedSession
 {
     /**
-     * Stop holding a session the stack has just refused (`N3-R13`).
+     * Stop holding a session the stack has just refused.
      *
      * The half of the requirement that is an effect rather than a value. A fold
      * already renders a refused credential as the signed-out state, so nothing

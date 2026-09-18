@@ -90,7 +90,7 @@ final readonly class HowARequestReads
                 // a sentence that needs nothing. The figure is unread on this
                 // arm — its key names no placeholder — which is why zero here
                 // cannot become "0 bytes" beside a request for a whole season,
-                // the outcome `D7-R3` calls worse than saying nothing.
+                // the outcome that is worse than saying nothing.
                 sizeFigure: 0,
                 sizeUnit: '',
                 refusedReason: $reason,

@@ -37,7 +37,7 @@ use function view;
 /**
  * What the people in the house have asked their stack for.
  *
- * `N2-R11` asks that requests awaiting a decision be visible from a phone, and
+ * Requests awaiting a decision have to be visible from a phone, and
  * until this screen existed {@see Wanted}, {@see \Modules\Kernel\Api\Size} and
  * {@see \Modules\Kernel\Api\Waiting} were written, tested and reached by
  * nothing — the household was the one part of a stack an operator could not see
@@ -45,20 +45,20 @@ use function view;
  * house asked for something last Tuesday and wants to know what happened.
  *
  * **It asks once, when the frame is built, and holds what came back**, which is
- * {@see HowThisStackIs}'s shape and `N1-R65`'s requirement: one read per frame,
+ * {@see HowThisStackIs}'s shape and what is required: one read per frame,
  * and a home network with a machine that may be asleep is the wrong
  * thing to talk to four times a second. Every accessor below reads what one
  * asking produced.
  *
  * **It shows everything the house asked for, not only what is waiting.**
- * `N2-R11` is about the decisions, and those are marked — but a screen that
+ * The requirement is about the decisions, and those are marked — but a screen that
  * listed only them would answer *what must I decide* and leave *what became of
  * the thing I asked for* unanswered, which is the question the household
  * actually asks its operator. The two are told apart on the row rather than by
  * hiding one of them.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
- * watches is the household's business, and `N4-R13`'s diagnostic report is
+ * watches is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
  * screen happened to hold.
  */
@@ -121,16 +121,16 @@ final class WhatTheHouseholdAsked extends NativeComponent
     }
 
     /**
-     * Ask the stack again (`N1-R3`).
+     * Ask the stack again.
      *
-     * The action an obstacle must not take away. `N1-R3` says a control is not
+     * The action an obstacle must not take away. A control is not
      * hidden because the stack is unreachable — the app offers it and reports
      * the failure — and an obstacle screen with nothing on it does exactly what
      * the rule forbids: the only way back is leaving and returning, which
-     * `N1-R27` names separately as the thing a screen must not rely on.
+     * is named separately as the thing a screen must not rely on.
      *
      * Forgetting what came back rather than re-reading here, so the next
-     * accessor asks. That keeps this one act and keeps `N1-R65` true: one
+     * accessor asks. That keeps this one act and keeps the reading rule true: one
      * asking per frame, and a frame that starts when somebody taps.
      */
     public function again(): void
@@ -139,9 +139,9 @@ final class WhatTheHouseholdAsked extends NativeComponent
     }
 
     /**
-     * Approve one of them, which is half of `N2-R11` and all of `D7-R6`.
+     * Approve one of them, which is half of seeing the requests and all of deciding.
      *
-     * `D7-R6` is that a pending request be approvable from lemonfiber without
+     * A pending request has to be approvable from lemonfiber without
      * opening Seerr. This is the method that makes it true on a phone: the
      * approval goes to the stack's own endpoint, and nothing here links out to
      * the tool the request came from. An operator asked about it in the kitchen
@@ -150,7 +150,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
      * The request is found in what was actually read before anything is sent,
      * for {@see WhatToDoWithThis::wouldYouLike()}'s reason: a number a template
      * passed in is a number this screen may never have shown, and a decision
-     * about a request nobody was looking at is the whole harm `N2-R11` is
+     * about a request nobody was looking at is the whole harm this is
      * about. An approval owes the person who asked the thing they asked for and
      * nothing else, so there is no question in front of it.
      */
@@ -168,7 +168,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
     /**
      * Start turning one down, which is a question rather than an act.
      *
-     * `D7-R7` makes the reason part of declining, so this cannot send anything:
+     * The reason is part of declining, so this cannot send anything:
      * it holds the request while an operator writes the sentence the person who
      * asked is owed. {@see Decided::toDecline()} refuses a blank one, so no
      * road from here produces *declined* with nothing beside it.

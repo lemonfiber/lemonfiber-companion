@@ -8,7 +8,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * What the app found when it opened, flattened for a template to read.
  *
  * {@see \Modules\Kernel\Api\Launch::either()} answers with an object and
- * requires all four arms, which is `N1-R37` expressed as a signature: a launch
+ * requires all four arms, which is the rule expressed as a signature: a launch
  * with no network, one that cannot reach the stack and one where the app is
  * locked must be told apart, and an optional arm would be a default — the place
  * two of the four quietly become the same answer.
@@ -20,7 +20,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * **All four are carried, not just the one the screen draws today.** Only
  * `isLocked` is rendered so far, and the temptation is to fold the other three
  * into "not locked" and be done. Doing that would rebuild the collapse
- * `N1-R37` exists to prevent, one layer down and out of sight of the type that
+ * the rule exists to prevent, one layer down and out of sight of the type that
  * refuses it — and the next screen to want *why the stack could not be reached*
  * would find the answer already discarded.
  *

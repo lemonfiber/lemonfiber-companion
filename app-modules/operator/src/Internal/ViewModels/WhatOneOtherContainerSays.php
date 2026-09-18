@@ -8,7 +8,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * One container the machine is running that this stack never declared.
  *
  * It carries a name, what it is doing, and what the machine says it is — and
- * nothing else. `N2-R21` asks for each to be named and for what it is running
+ * nothing else. Each has to be named, and what it is running
  * to be stated, and forbids offering a verb against one; a row with no
  * identifier a verb could take is how the second half stays true without a
  * template having to remember it.
