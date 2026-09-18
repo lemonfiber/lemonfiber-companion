@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\WhatPairingMaterialSays;
 
-// N1-R17 — the one thing pairing material does not say, and what waits on it.
+// The one thing pairing material does not say, and what waits on it.
 //
 // Material carries an address, a fingerprint and an expiry, and nothing that
 // says *which machine*. The app holds several, so it has to decide

@@ -25,7 +25,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R9 — "Stuck downloads, provider health, disk pressure and VPN verification
+// "Stuck downloads, provider health, disk pressure and VPN verification
 // MUST each be reachable."
 //
 // Four subjects in one sentence, and they arrive by two different roads. Three

@@ -25,7 +25,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AServiceThatSpoke;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R10 — logs offered as a bounded, searchable read that names the service
+// Logs offered as a bounded, searchable read that names the service
 // and states the view is a window rather than the whole.
 //
 // Here rather than in the operator module's own tests because a screen renders,

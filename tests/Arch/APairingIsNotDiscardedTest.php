@@ -6,7 +6,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
 use Modules\Vault\Api\PlatformStacks;
 
-// N1-R34 — discarding retained state must not discard a pairing or its pinned
+// Discarding retained state must not discard a pairing or its pinned
 // fingerprint; where those cannot be carried forward, the app must say that
 // re-pairing is required and why.
 //

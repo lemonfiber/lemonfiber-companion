@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Obstacle;
 use Tests\Support\Catalogue;
 
-// N1-R10 — three different things, each with its own remedy.
+// Three different things, each with its own remedy.
 //
 // `Obstacle` keeps them apart in the type system, which is where the analyser
 // can see it. This is the half the analyser cannot: three cases that all render

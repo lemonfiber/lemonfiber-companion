@@ -52,7 +52,7 @@ function introductions(): Introducing
 }
 
 it('carries the address and the certificate across unchanged', function (): void {
-    // N1-R18 — the fingerprint comes from the material and never from the
+    // The fingerprint comes from the material and never from the
     // network. Nothing in this step reads anything.
     $said = material(HowItWasRead::Scanned);
 
@@ -77,7 +77,7 @@ it('gives two stacks paired from the same material two identities', function ():
 });
 
 it('refuses to pair typed material on the scanned road', function (): void {
-    // N1-R50 — typed entry has no software comparison in it, so this road has
+    // Typed entry has no software comparison in it, so this road has
     // nothing to go on and says so rather than assuming.
     expect(static fn(): mixed => introductions()->stack(material(HowItWasRead::Typed), StackName::of('The loft')))
         ->toThrow(PairingWasNotConfirmed::class);

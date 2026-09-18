@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Template;
 
-// N4-R14 — the platform's accessibility settings are honoured, not reimplemented.
+// The platform's accessibility settings are honoured, not reimplemented.
 //
 // The requirement has two halves and the second is the one that needs a rule.
 // *Honouring* the settings is mostly what happens by default: EDGE renders

@@ -6,7 +6,7 @@ use Tests\Support\Kind;
 use Tests\Support\Module;
 use Tests\Support\Tree;
 
-// Q-R72, N1-R61 — a stand-in cannot be in a release, and a gate says so.
+// A stand-in cannot be in a release, and a gate says so.
 //
 // Both requirements ask for the same guarantee and both say explicitly how it
 // must be kept. `N1-R61` wants it *structural rather than a setting the app

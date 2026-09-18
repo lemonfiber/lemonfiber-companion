@@ -24,7 +24,7 @@ use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R11 — the requests awaiting a decision are visible from a phone.
+// The requests awaiting a decision are visible from a phone.
 //
 // The part of a stack an operator gets asked about in person: somebody in the
 // house asked for something last Tuesday and wants to know what happened. Until

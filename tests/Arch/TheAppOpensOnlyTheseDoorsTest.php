@@ -7,7 +7,7 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatWasDecided;
 use Tests\Support\Tree;
 
-// N1-R4 and N2-R12 — the doors this application is allowed to open on a stack.
+// The doors this application is allowed to open on a stack.
 //
 // Two requirements with one shape. `N1-R4` says the app must not offer first-run
 // setup, and `N2-R12` says it must not offer to set or change a credential's

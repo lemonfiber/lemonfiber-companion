@@ -31,7 +31,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R4 — what a repair does, what else it affects and whether it can be undone,
+// What a repair does, what else it affects and whether it can be undone,
 // stated before anybody is asked to confirm.
 //
 // The types for this have been built and tested since the health screen landed

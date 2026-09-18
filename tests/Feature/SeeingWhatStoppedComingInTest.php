@@ -23,7 +23,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatStalled;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R9 — stuck downloads are reachable.
+// Stuck downloads are reachable.
 //
 // The screen that answers the question an operator is asked in person: *I asked
 // for that film on Tuesday and it never arrived*. The requests screen can only

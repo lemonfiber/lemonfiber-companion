@@ -214,7 +214,7 @@ function reachesOutside(Module $module, array $forbidden): array
 // API contract and does not implement a second client of its own (`ADR-0013`).
 // One module naming the SDK is what makes a second client impossible to write
 // without this failing.
-// N1-R16 — every call to lemonfiber goes through the SDK, and one module makes
+// Every call to lemonfiber goes through the SDK, and one module makes
 // them. `Modules\Dx` is named beside it for the reason its kind exists: a
 // stand-in reads the SDK's own declarations to answer as a stack would, so it
 // names the package without calling it. What keeps N1-R16 whole is that the one

@@ -38,7 +38,7 @@ function aPairedStack(string $called, string $seed = 'a'): Stack
     );
 }
 
-// N1-R35 — a launch with no stack configured reaches a screen, not an empty
+// A launch with no stack configured reaches a screen, not an empty
 // surface.
 //
 // The route is declared by the operator surface's own service provider, which

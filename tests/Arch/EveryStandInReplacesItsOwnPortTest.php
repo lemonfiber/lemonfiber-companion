@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Dx\Internal\TheStandIns;
 
-// Q-R72 — what a stand-in may take the place of, and what it may not.
+// What a stand-in may take the place of, and what it may not.
 //
 // The registry is a list somebody appends to, and two things can go wrong when
 // they do. Both are silent.

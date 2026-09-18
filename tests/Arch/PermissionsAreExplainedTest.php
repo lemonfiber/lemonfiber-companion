@@ -6,7 +6,7 @@ use Modules\Kernel\Api\Permission;
 use Tests\Support\Catalogue;
 use Tests\Support\Manifests;
 
-// N4-R2 and N4-R3 — the app explains itself before the platform interrupts.
+// The app explains itself before the platform interrupts.
 //
 // The platform's own prompt is one line the app does not write, shown at the
 // moment it is least welcome, and on iOS it is shown exactly once — decline it

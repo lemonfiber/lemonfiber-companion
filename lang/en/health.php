@@ -75,7 +75,7 @@ return [
     ],
     'nothing_was_carried_out' => 'There turned out to be nothing to do.',
     'look_again' => 'Look again at what could be put right',
-    // N2-R9 — what has stopped coming in. The stage is where it stopped, and it
+    // What has stopped coming in. The stage is where it stopped, and it
     // is the whole difference between an indexer with nothing and a file the
     // library never picked up.
     'stage' => [
@@ -107,7 +107,7 @@ return [
     'nothing_stopped_action' => 'Everything the house asked for is on its way or already here.',
     'what_stopped' => 'What stopped coming in',
 
-    // N2-R10 — a bounded, searchable read that names the service and says the
+    // A bounded, searchable read that names the service and says the
     // view is a window rather than the whole.
     'stream' => [
         'stdout' => 'Output',
@@ -131,7 +131,7 @@ return [
         'while_work_runs' => 'Looking again every :count seconds while this runs.',
     ],
 
-    // N2-R7 — what is running, and how much each one matters. The state is
+    // What is running, and how much each one matters. The state is
     // where a service stands now; how much it matters is what it would cost if
     // that went wrong, which is a property of the machine's design.
     'service' => [

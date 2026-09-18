@@ -92,7 +92,7 @@ function waitsOnAPort(ReflectionClass $class): bool
     return false;
 }
 
-// N1-R39 — a screen says which stack it is showing.
+// A screen says which stack it is showing.
 //
 // The app holds more than one stack and must never attribute a reading
 // from one to another. Every other guard on that is in the kernel: `StackId` is

@@ -6,7 +6,7 @@ use Bootstrap\Composition\ThisBuildIsSomebodyElse;
 use Bootstrap\Composition\WhatThisBuildInstallsAs;
 use Modules\Kernel\Api\WhoThisAppIs;
 
-// N1-R52 and N1-R53 — one identity, declared here, that a build cannot choose.
+// One identity, declared here, that a build cannot choose.
 //
 // Two builds carrying two identities are two applications: they install beside
 // one another, each with its own storage, and the pairing `N1-R45` refuses to

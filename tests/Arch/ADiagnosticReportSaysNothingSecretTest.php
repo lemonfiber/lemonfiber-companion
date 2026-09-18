@@ -10,7 +10,7 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Session;
 
-// N4-R13 — a report the operator sends, and the app does not.
+// A report the operator sends, and the app does not.
 //
 // Two clauses, and each is kept by a different absence.
 //

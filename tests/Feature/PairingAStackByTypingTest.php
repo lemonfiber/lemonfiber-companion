@@ -15,7 +15,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N1-R6 and N1-R50 — pairing without a camera, and the comparison that makes it
+// Pairing without a camera, and the comparison that makes it
 // safe enough to allow.
 //
 // Typed entry is not a courtesy. It is the road on a device with no camera and
@@ -94,7 +94,7 @@ it('shows a fingerprint to compare once the code parses', function (): void {
 });
 
 it('refuses to offer pairing for a machine the operator has not named', function (): void {
-    // N1-R11 — the two things the material carries are an address and a digest,
+    // The two things the material carries are an address and a digest,
     // and neither is a name somebody can tell two stacks apart by.
     $screen = typedInto(pairingScreen(), typedCode(), name: '  ');
 

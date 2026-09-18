@@ -109,7 +109,7 @@ it('reads a scanned code by the same road as a typed one', function (): void {
 });
 
 it('shows the operator a form derived from the fingerprint it read', function (): void {
-    // N1-R51 — short enough to check at a glance, and derived from the whole
+    // Short enough to check at a glance, and derived from the whole
     // fingerprint. The point of asserting the exact string is that it is the one
     // the stack's own screen has to be producing.
     $shown = WhatTheCodeSaysSoFar::comparing(parsed(digestOf('a')))->toCompare();

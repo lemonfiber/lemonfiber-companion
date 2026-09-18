@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// N2-R14 — the requirements this app cannot answer, and the field each waits on.
+// The requirements this app cannot answer, and the field each waits on.
 //
 // `N2-R14` says that where the contract does not carry something a requirement
 // asks the app to state, the app must not substitute a value of its own: the

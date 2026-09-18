@@ -6,7 +6,7 @@ use Modules\Kernel\Api\HowOften;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
 
-// N1-R27 — a screen whose content can change while it is open refreshes on a
+// A screen whose content can change while it is open refreshes on a
 // **stated** cadence, and does not rely on the operator leaving and returning
 // to see a change.
 //

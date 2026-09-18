@@ -7,7 +7,7 @@ use Tests\Support\Module;
 use Tests\Support\Template;
 use Tests\Support\Tree;
 
-// Q-R66 — a rule that found nothing is not a rule that passed.
+// A rule that found nothing is not a rule that passed.
 //
 // Most rules here discover what they judge: every module, every published
 // class, every comment line, every test file. Discovery has one failure mode

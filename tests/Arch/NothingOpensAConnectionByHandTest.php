@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// N1-R16 — one list of the ways to open a connection, and both gates read it.
+// One list of the ways to open a connection, and both gates read it.
 //
 // The requirement is that every call to the stack goes through the SDK, and it
 // was enforced in two places with two disjoint lists. `phpstan.neon` refused

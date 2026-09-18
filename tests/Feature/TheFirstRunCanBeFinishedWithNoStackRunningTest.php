@@ -7,7 +7,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\YourStacks;
 
-// Q-R72 — the first run, walked through rather than only walked to.
+// The first run, walked through rather than only walked to.
 //
 // `N1-R54` builds the opening sequence a step at a time and ends it at pairing.
 // `N1-R56` says a paired device never sees it again. `ADeviceAlreadyPaired`

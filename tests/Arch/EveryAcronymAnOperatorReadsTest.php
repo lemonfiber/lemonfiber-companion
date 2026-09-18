@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Catalogue;
 
-// G2-R13 — an acronym an operator reads is explained, or declared ordinary.
+// An acronym an operator reads is explained, or declared ordinary.
 //
 // A domain term used with nothing attached is a defect, and the hard part is
 // that most jargon cannot be told from ordinary writing by a machine. An

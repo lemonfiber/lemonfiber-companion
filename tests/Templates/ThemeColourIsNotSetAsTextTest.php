@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Modules\Design\Api\ThemeToken;
 use Tests\Support\Template;
 
-// DES-R15 — the accent is a fill, and never a sentence.
+// The accent is a fill, and never a sentence.
 //
 // The resolver is handed a bare token name and cannot tell which prefix asked
 // it, so `bg-theme-accent` and `text-theme-accent` both resolve to the same

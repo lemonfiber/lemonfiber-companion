@@ -6,7 +6,7 @@ use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\WhatTheContractAccepts;
 
-// N1-R59 — what a stand-in answers with is derived from the published contract.
+// What a stand-in answers with is derived from the published contract.
 //
 // The requirement exists because of a lesson this repository has already paid
 // for twice: a fixture written by the author of its reader proves that both are

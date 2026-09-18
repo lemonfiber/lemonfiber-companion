@@ -7,7 +7,7 @@ use Modules\Kernel\Api\IdempotencyKey;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 
-// N1-R41 and N3-R12 — the app does not retain an undelivered action, and cannot
+// The app does not retain an undelivered action, and cannot
 // present one.
 //
 // Two requirements, one guarantee, and they are cited together here on purpose.

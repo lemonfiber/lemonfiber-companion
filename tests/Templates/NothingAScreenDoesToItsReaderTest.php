@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Template;
 
-// G3-R6, G3-R8 — two things a screen may not do to the person reading it.
+// Two things a screen may not do to the person reading it.
 //
 // Nothing may flash or blink, and a layout must adapt to a small viewport
 // without scrolling sideways. Both are true of this app today, and neither was

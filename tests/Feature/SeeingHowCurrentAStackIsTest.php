@@ -30,7 +30,7 @@ use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheKeychainStillHolds;
 
-// N2-R15 — where a stack stands on being up to date is reachable.
+// Where a stack stands on being up to date is reachable.
 //
 // The screen that answers the question an operator asks themselves on a sofa:
 // *is there an update, and is tonight the night*. Not a version string to

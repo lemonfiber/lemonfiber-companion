@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Companion\PHPStan\Rules\NoWeakenedTlsRule;
 use Tests\Support\Tree;
 
-// N1-R21 — one vocabulary for certificate verification, read by both gates.
+// One vocabulary for certificate verification, read by both gates.
 //
 // Three gates hold this requirement and they read different things.
 // `NoWeakenedTlsRule` reads a call's options and knows each spelling's

@@ -9,7 +9,7 @@ use Modules\Kernel\Api\Session;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Module;
 
-// N4-R18 — a screen showing material worth stealing says so.
+// A screen showing material worth stealing says so.
 //
 // Two captures happen to a screen rather than being performed on it: the
 // snapshot the platform takes when the app goes to the background, which then

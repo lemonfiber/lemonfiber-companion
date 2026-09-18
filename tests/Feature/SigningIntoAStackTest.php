@@ -20,7 +20,7 @@ use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N1-R7 and N1-R10 — the password exchanged once, and the three things that can
+// The password exchanged once, and the three things that can
 // come back.
 //
 // Here rather than in the operator module's own tests because a screen renders,

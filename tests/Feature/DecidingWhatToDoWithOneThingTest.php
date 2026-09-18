@@ -25,7 +25,7 @@ use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
 
-// N2-R7 and N2-R8 — one thing this machine runs, and the verbs about it.
+// One thing this machine runs, and the verbs about it.
 //
 // The frame an operator reaches by tapping a row on the listing. It exists
 // because the listing did not have room to be both: four services with their

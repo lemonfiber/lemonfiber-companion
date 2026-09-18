@@ -75,7 +75,7 @@ return [
     ],
     'nothing_was_carried_out' => 'Er bleek niets te doen.',
     'look_again' => 'Kijk opnieuw wat er te herstellen valt',
-    // N2-R9 — wat niet meer binnenkomt. De fase is waar het bleef steken, en
+    // Wat niet meer binnenkomt. De fase is waar het bleef steken, en
     // dat is het hele verschil tussen een indexer die niets vindt en een
     // bestand dat de bibliotheek nooit heeft opgepakt.
     'stage' => [
@@ -107,7 +107,7 @@ return [
     'nothing_stopped_action' => 'Alles waar het huishouden om vroeg is onderweg of al binnen.',
     'what_stopped' => 'Wat niet meer binnenkomt',
 
-    // N2-R10 — een begrensde, doorzoekbare weergave die de dienst noemt en
+    // Een begrensde, doorzoekbare weergave die de dienst noemt en
     // zegt dat dit een venster is en niet het geheel.
     'stream' => [
         'stdout' => 'Uitvoer',
@@ -131,7 +131,7 @@ return [
         'while_work_runs' => 'Kijkt elke :count seconden opnieuw zolang dit loopt.',
     ],
 
-    // N2-R7 — wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
+    // Wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
     // een dienst nu staat; hoeveel het uitmaakt is wat het zou kosten als dat
     // misging, en dat hoort bij hoe de machine is opgezet.
     'service' => [

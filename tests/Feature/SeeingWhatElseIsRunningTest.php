@@ -24,7 +24,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 
-// N2-R21 — what is running here that this stack never declared.
+// What is running here that this stack never declared.
 //
 // Reachable, named, and saying what each is running — and never shown as part
 // of the stack or offered a verb. The last of those is not asserted here

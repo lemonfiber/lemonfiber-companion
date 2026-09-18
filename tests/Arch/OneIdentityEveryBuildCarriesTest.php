@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// N1-R52 and N1-R53 — the identity is declared here, and a build cannot pick one.
+// The identity is declared here, and a build cannot pick one.
 //
 // An application's identity is what the operating system installs it *as*. Two
 // builds carrying two identities are two applications: they install beside one

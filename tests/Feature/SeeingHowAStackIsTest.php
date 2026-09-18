@@ -38,7 +38,7 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
-// N1-R2 — an operator away from the machine can see whether their stack is
+// An operator away from the machine can see whether their stack is
 // doing what it should.
 //
 // The thing the whole application is for, and the first screen that does it.

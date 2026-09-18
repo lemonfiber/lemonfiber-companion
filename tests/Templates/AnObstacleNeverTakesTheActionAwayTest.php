@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// N1-R3 — the app does not hide or remove an action because the stack is
+// The app does not hide or remove an action because the stack is
 // currently unreachable; it offers the action and reports the failure.
 //
 // The rule reads like a rule about buttons and is really a rule about what an

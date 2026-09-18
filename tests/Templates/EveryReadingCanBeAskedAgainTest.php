@@ -6,7 +6,7 @@ use Modules\Operator\View\Components\WhatStoppedTheReading;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
 
-// N1-R27 — a screen that can be asked again offers it where the reading came back.
+// A screen that can be asked again offers it where the reading came back.
 //
 // The requirement is that a screen must not rely on being left and returned to.
 // Five screens had `again()` and no way to reach it: the retry lived on the

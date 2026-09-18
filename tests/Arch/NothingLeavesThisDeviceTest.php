@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Manifests;
 
-// N4-R12 — the app sends no analytics, telemetry or crash reports to a third
+// The app sends no analytics, telemetry or crash reports to a third
 // party.
 //
 // **This is about transmission, not about knowing what happened.** Logging,

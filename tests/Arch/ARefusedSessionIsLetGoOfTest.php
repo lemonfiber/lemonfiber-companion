@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// N3-R13 — an identity removed from the household results in a signed-out app
+// An identity removed from the household results in a signed-out app
 // at the next refused call, and the app must not continue to render what was
 // already loaded.
 //

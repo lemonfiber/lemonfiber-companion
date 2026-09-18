@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// N3-R8 — the app does not play media; it hands off to a household client.
+// The app does not play media; it hands off to a household client.
 //
 // A requirement kept by *not* doing something, which is the kind that erodes.
 // Nobody decides to turn the companion into a player. What happens is that a
