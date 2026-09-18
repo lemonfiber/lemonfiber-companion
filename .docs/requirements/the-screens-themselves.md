@@ -46,7 +46,7 @@ requirement is right and this page is a defect.
 | `N2-R6` | A yes quotes the listing it was given | the screen reads it from the fold rather than composing its own |
 | `N2-R9` | What has stopped coming in, the first of four | `WhatStoppedComingIn` |
 | `N2-R10` | What one service has been saying, as a bounded and searchable window | `WhatThisServiceSaid` |
-| `N2-R21` | What is running here that this machine's configuration never declared | `WhatIsRunningElsewhere` |
+| `N2-R21` | What is running here that this machine's configuration never declared | `WhatElseIsRunning` |
 | `N1-R41` | An action is not presented as pending, and a job name is not persisted | nothing shows one |
 
 ## Keeping up to date
