@@ -117,7 +117,7 @@ jobs:
   # own log before passing. That is a reported pass rather than a silent one,
   # which is the whole reason they are shaped that way.
   dco:
-    uses: lemonfiber/spec/.github/workflows/dco.yml@61069efc1f0fd09b073b69334c0c07897701a4dd # main
+    uses: lemonfiber/spec/.github/workflows/dco.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
   # Beside `dco` because the two read the same record from opposite directions:
   # that one insists a human attested to the work, this one insists no tool is
@@ -125,7 +125,7 @@ jobs:
   # same way and says "no PR range; skipping" on a push to main rather than
   # needing an `if` here to say it for it.
   attribution:
-    uses: lemonfiber/spec/.github/workflows/attribution.yml@61069efc1f0fd09b073b69334c0c07897701a4dd # main
+    uses: lemonfiber/spec/.github/workflows/attribution.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
   # `pull-requests: write` is what lets the gate close a pull request whose
   # citation is missing or names an identifier that does not exist, rather than
@@ -160,7 +160,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/spec-check.yml@61069efc1f0fd09b073b69334c0c07897701a4dd # main
+    uses: lemonfiber/spec/.github/workflows/spec-check.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
   commitlint:
     # A merge group runs this, and not because there is anything to lint there:
@@ -175,20 +175,20 @@ jobs:
     # `push` stays out: `main` does not require this context, so no name is
     # waiting to be reported there and the runner would be spent for nothing.
     if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
-    uses: lemonfiber/spec/.github/workflows/commitlint.yml@61069efc1f0fd09b073b69334c0c07897701a4dd # main
+    uses: lemonfiber/spec/.github/workflows/commitlint.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
   hygiene:
-    uses: lemonfiber/spec/.github/workflows/hygiene.yml@61069efc1f0fd09b073b69334c0c07897701a4dd # main
+    uses: lemonfiber/spec/.github/workflows/hygiene.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
   security:
-    uses: lemonfiber/spec/.github/workflows/security.yml@61069efc1f0fd09b073b69334c0c07897701a4dd # main
+    uses: lemonfiber/spec/.github/workflows/security.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
   labeler:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/labeler.yml@61069efc1f0fd09b073b69334c0c07897701a4dd # main
+    uses: lemonfiber/spec/.github/workflows/labeler.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
   # The rules, before anything slower gets a chance to hide a boundary break.
   #
