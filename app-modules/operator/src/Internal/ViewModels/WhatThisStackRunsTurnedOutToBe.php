@@ -16,7 +16,7 @@ use Modules\Kernel\Api\Disturbances;
  *
  * **Three states, and a stack running nothing is one of them.** Everything off
  * is the answer an operator opens this screen to change; a session that has
- * ended is `N1-R44`'s screen; an obstacle is `N1-R10`'s. Folding the first two
+ * ended is the sign-in screen; an obstacle is its own. Folding the first two
  * together would have a signed-out phone report a house where nothing is
  * running, which is the collapse {@see \Modules\Kernel\Api\WhatIsRunning}
  * refuses one layer up and this one must not rebuild.

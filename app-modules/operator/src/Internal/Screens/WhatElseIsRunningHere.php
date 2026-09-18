@@ -29,7 +29,7 @@ use function view;
 /**
  * What is running on this machine that its own configuration never declared.
  *
- * `N2-R21` asks for three things and this screen is the first of them: the
+ * Three things are asked for and this screen is the first of them: the
  * containers must be *reachable*. A screen of its own rather than a section of
  * {@see WhatThisStackRuns}, because that screen is the stack — it lists what
  * the stack runs and offers start, stop and restart against each row, and a
@@ -41,7 +41,7 @@ use function view;
  * requirement forbids a verb against one of these, and the value the reader
  * hands over has no identifier of the kind a verb accepts, so there is nothing
  * to wire even if a later hand wanted to. What it offers instead is the way
- * back and the way to ask again, which `N1-R3` and `N1-R27` require of every
+ * back and the way to ask again, which is required of every
  * screen whatever it is about.
  *
  * **Empty is an answer, and it is the usual one.** A machine running only what
@@ -93,7 +93,7 @@ final class WhatElseIsRunningHere extends NativeComponent
     }
 
     /**
-     * Ask the machine again (`N1-R3`).
+     * Ask the machine again.
      *
      * Forgetting what came back rather than re-reading here, so the next
      * accessor asks and the frame that starts is the one somebody tapped for.

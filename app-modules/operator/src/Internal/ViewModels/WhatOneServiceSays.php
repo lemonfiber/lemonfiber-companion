@@ -10,7 +10,7 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 /**
  * One service a stack runs, flattened for a template to read.
  *
- * {@see WhatOneStalledItemSays}'s sibling for `N2-R7`, and it exists for the
+ * {@see WhatOneStalledItemSays}'s sibling for the verbs, and it exists for the
  * same reason: {@see \Modules\Kernel\Api\Daemon} hands one of its facts over
  * through a closure and Blade has no way to call one, so
  * {@see \Modules\Operator\Internal\Presenters\HowAServiceReads} folds one once

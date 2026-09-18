@@ -22,7 +22,7 @@ final readonly class HowAStallReads
      * This device no longer holds a session for that stack.
      *
      * No obstacle, because nothing was met: the app did not get as far as
-     * asking. `N1-R44`'s screen is where this goes, and the empty keys are what
+     * asking. The obstacle screen is where this goes, and the empty keys are what
      * the template branches on.
      */
     public function signedOut(): WhatStoppedTurnedOutToBe
@@ -61,7 +61,7 @@ final readonly class HowAStallReads
      * here that disagrees with the one another screen shows.
      *
      * **A credential the stack refused is a signed-out app, not an obstacle.**
-     * `N3-R13` says an identity removed from the household results in a
+     * An identity removed from the household results in a
      * signed-out app at the next refused call and that nothing already loaded
      * goes on being rendered. {@see Obstacle::meansWeAreSignedOut()} draws that
      * line once, so this fold and every one beside it cannot come to disagree

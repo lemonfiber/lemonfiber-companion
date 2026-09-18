@@ -15,7 +15,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * {@see \Modules\Operator\Internal\Presenters\HowAStacksAgeReads} folds each
  * stack into this once and the template reads fields.
  *
- * **The age comes out beside the word or not at all.** `N1-R9` and `N2-R13` are
+ * **The age comes out beside the word or not at all.** Both rules are
  * broken by omission rather than by disagreement: nobody decides to pass a
  * remembered verdict off as a current one, the timestamp is simply not at hand
  * where the screen is written. Here it cannot be missing, because the arm that
@@ -24,7 +24,7 @@ namespace Modules\Operator\Internal\ViewModels;
  *
  * **Nothing here was read in this session.** Everything the opening screen
  * shows came out of a store, so every row carries an age and none of them may
- * stand as the confirmation of anything (`N1-R24`). The screen that asks a
+ * stand as the confirmation of anything. The screen that asks a
  * stack is the next one, and it asks.
  *
  * `Internal` because it is a detail of how this surface reads one value, and

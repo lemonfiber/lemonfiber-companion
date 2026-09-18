@@ -32,7 +32,7 @@ final readonly class HowAVerbReads
                 // No number, rather than a nought. The line this names carries
                 // no `:seconds`, so a number here would be one nothing reads —
                 // and a nought that reached a line that did read it would say
-                // *nought seconds*, which is `N2-R14`'s worst answer.
+                // *nought seconds*, which is the worst answer of all.
                 seconds: null,
             ),
         );

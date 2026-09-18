@@ -3,7 +3,7 @@
 @if ($this->answer()->went->cameBack())
 <native:column class="w-full gap-4 px-6 py-4">
 @if ($this->asking() !== null)
-    {{-- N2-R17: asked before it runs, and the question names the services
+    {{-- Asked before it runs, and the question names the services
          it would change. A screen of its own rather than a line beside the
          row, because a confirmation an operator can tap past without
          reading is the same as no confirmation.
@@ -40,7 +40,7 @@
     <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
     <x-operator::action label="{{ __('health.never_mind') }}" tap="neverMind()" />
 @else
-    {{-- N2-R15: the answer, first. Current, waiting, or not looked at
+    {{-- The answer, first. Current, waiting, or not looked at
          recently — the stack's own word, not one worked out here from two
          version strings. --}}
     <x-operator::emphasis>{{ __($this->answer()->howSaid) }}</x-operator::emphasis>
@@ -54,7 +54,7 @@
     </x-operator::note>
 
     @if ($this->answer()->runningWasWithdrawn)
-        {{-- N2-R16: a stack running a release that has since been taken
+        {{-- A stack running a release that has since been taken
              back is something the operator has to be told. Left out of what
              is offered below, and said here — dropping it from both would
              leave them reading a screen that says nothing is wrong. --}}
@@ -62,7 +62,7 @@
     @endif
 
     @if ($this->answer()->anyWorthNoticing)
-        {{-- N2-R16: said before the list, because it is what makes tonight
+        {{-- Said before the list, because it is what makes tonight
              a decision rather than a chore. An operator who reads *the
              household will see the difference* before the versions is
              deciding on the evening rather than on a number. --}}
@@ -74,7 +74,7 @@
             <x-operator::emphasis>{{ $release->version }}</x-operator::emphasis>
 
             @if ($this->answer()->canTakeOne)
-                {{-- N2-R20: offered only where the stack reported an update
+                {{-- Offered only where the stack reported an update
                      waiting. A screen that counted rows would offer one to a
                      stack that listed releases while calling itself current,
                      which is the case this requirement exists for. --}}
@@ -85,7 +85,7 @@
                 />
             @endif
 
-            {{-- N2-R16: whether somebody in the house would see the
+            {{-- Whether somebody in the house would see the
                  difference. This is what makes the update a decision rather
                  than a chore, so it is on the row and not in a footnote. --}}
             <x-operator::note>
@@ -97,13 +97,13 @@
             </x-operator::note>
         </x-operator::entry>
     @empty
-        {{-- N2-R20: nothing is offered where the stack reported none
+        {{-- Nothing is offered where the stack reported none
              waiting, and the empty state says so rather than leaving a
              blank where a list belongs. --}}
         <native:text>{{ __('updates.nothing_waiting') }}</native:text>
     @endforelse
 
-    {{-- N2-R18: what became of the last update, per service. Below what is
+    {{-- What became of the last update, per service. Below what is
          waiting because it is the older question, and on the same screen
          because an operator deciding whether tonight is the night needs to
          know that last night went half way. --}}
@@ -127,13 +127,13 @@
         <x-operator::entry>
             <x-operator::emphasis>{{ $took->service }}</x-operator::emphasis>
 
-            {{-- N2-R18: which of the four, on the row. Flattened into
+            {{-- Which of the four, on the row. Flattened into
                  *failed*, the three ways of not arriving send an operator
                  to look in the wrong place. --}}
             <x-operator::note>{{ __($took->endingSaid) }}</x-operator::note>
 
             @unless ($took->arrived)
-                {{-- N2-R19: which way back, named. A rollback and a restore
+                {{-- Which way back, named. A rollback and a restore
                      are not one offer, and the app says the one the stack
                      named rather than the word they have in common. --}}
                 <x-operator::note>{{ __($took->undoSaid) }}</x-operator::note>
@@ -149,7 +149,7 @@
         <native:text>{{ __('updates.nothing_applied') }}</native:text>
     @endforelse
 
-    {{-- `N1-R27`: a screen an operator cannot ask again is a screen that relies
+    {{-- A screen an operator cannot ask again is a screen that relies
          on being left and returned to, which is the one thing the requirement
          names. It sat on the obstacle arm only — so a reading that failed could
          be retried and a reading that came back could not, which is the wrong

@@ -29,13 +29,13 @@ use function view;
 /**
  * What this machine is running, and the three things to do about it.
  *
- * `N2-R7` asks the app to offer start, stop and restart by form and by service,
+ * The app offers start, stop and restart by form and by service,
  * and this is where that is offered. A screen of its own rather than a section
  * of {@see HowThisStackIs}: health answers *is anything wrong*, and this
  * answers *what is on, and what do I want on* — which an operator opens the app
  * for on an evening when every check passes and the film still will not play.
  *
- * **The yes is built from the listing, never from the tap.** `N2-R8` wants a
+ * **The yes is built from the listing, never from the tap.** A
  * disruptive action to state what it disturbs before it is confirmed, and the
  * way that requirement is broken is never deliberate: a template draws a row,
  * the stop button is right there, and a handler passes its argument straight to
@@ -48,12 +48,12 @@ use function view;
  * screen that asked about a start would be teaching an operator to confirm
  * without reading, which is what makes the stop confirmation worth anything.
  *
- * **It says how long a stop lasts, which it could not until recently.** `N2-R8`
+ * **It says how long a stop lasts, which it could not until recently.** The rule
  * asks for the bound the stack reported or for the fact that it reported none,
  * and for a long time no payload carried either — the gap was held by
  * `WhatTheContractDoesNotCarryTest`, which went red the day lemonfiber began
  * reporting it and named this requirement to go and answer. The sentence is in
- * the confirmation now, and the number is the stack's: `N2-R14` forbids this
+ * the confirmation now, and the number is the stack's: this app may not
  * side inventing one, and a length worked out here would be a guess at
  * something the stack knows, wrong in exactly the cases somebody most needs it.
  *
@@ -62,15 +62,15 @@ use function view;
  * arrived on the reading instead, because a bound is only any use *before* the
  * verb runs — which is why a register watches for a fact and not for a place.
  *
- * **It polls only while something is settling** (`N1-R27`). A service that is
+ * **It polls only while something is settling.** A service that is
  * starting becomes a running one on its own, and *ask again* as the only road
  * to finding out is the reliance on leaving and returning that rule refuses.
  * Every other state here is standing, so the cadence costs a machine on a home
  * network nothing the rest of the time — which is what keeps this from being
- * the polling `N1-R66` refuses.
+ * the polling that is refused.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
- * runs is the household's business, and `N4-R13`'s diagnostic report is
+ * runs is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
  * screen happened to hold.
  */
@@ -87,7 +87,7 @@ final class WhatThisStackRuns extends NativeComponent
     ) {}
 
     /**
-     * What came back, asked once per frame (`N1-R65`).
+     * What came back, asked once per frame.
      *
      * One accessor handing out the whole fold rather than one per field, which
      * is what keeps this screen under `H3`'s twenty methods. The asking itself
@@ -116,10 +116,10 @@ final class WhatThisStackRuns extends NativeComponent
     }
 
     /**
-     * Look again while the machine is settling into what it was told (`N1-R27`).
+     * Look again while the machine is settling into what it was told.
      *
      * It does nothing unless something is actually settling, which is what
-     * keeps this from being the polling `N1-R66` refuses: a stack whose
+     * keeps this from being the polling that is refused: a stack whose
      * services are all in standing states answers the same thing however often
      * it is read.
      */

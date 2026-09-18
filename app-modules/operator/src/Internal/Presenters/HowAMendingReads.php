@@ -61,7 +61,7 @@ final readonly class HowAMendingReads
     /** The machine could not be reached, and this is what the operator met. */
     public function met(Obstacle $why): WhatThisStackPutRight
     {
-        // `N3-R13`: a refused credential is a signed-out app rather than a
+        // A refused credential is a signed-out app rather than a
         // sentence about a machine, and the screen must not go on rendering
         // what it loaded before. Which of the two an obstacle is is
         // {@see HowTheReadingWent}'s to answer — the outcome is not the thing

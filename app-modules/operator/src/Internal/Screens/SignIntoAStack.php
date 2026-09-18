@@ -30,14 +30,14 @@ use function view;
 /**
  * Offering a stack the operator's password, once, in exchange for a session.
  *
- * `N1-R7` in front of somebody: the password is exchanged **once** and never
+ * The exchange in front of somebody: the password is offered **once** and never
  * retained for re-sending, which is why this screen holds what was typed and
  * hands it to {@see Credential::of()} at the moment of the tap rather than
  * keeping a credential across frames. A `Credential` empties itself when it is
  * offered, so the one this screen makes cannot outlive the attempt it was made
  * for.
  *
- * **Which stack is a route parameter, not a choice made here.** `N1-R11` keeps
+ * **Which stack is a route parameter, not a choice made here.** A device keeps
  * each stack's session separate, and a screen that picked its own stack would
  * be the place two stacks come to share one. The operator chose on
  * {@see YourStacks}; this screen is told.
@@ -48,14 +48,14 @@ use function view;
  * asked again a minute later was misled by an app that knew at the time. This
  * is {@see HowThePairingWent}'s lesson one boundary further in.
  *
- * **What it does not do is retry.** `N1-R10` distinguishes a refused password
+ * **What it does not do is retry.** An obstacle distinguishes a refused password
  * from a door that has stopped listening, and {@see HowTheSignInWent} carries
  * that distinction to the template so the *try again* control appears for the
  * one case where trying again is the remedy. Where the door is counting
  * attempts, another one extends the wait — a screen that offered the button
  * anyway would be actively unhelpful.
  *
- * **`#[Concealed]` because a password is on the glass.** `N4-R18` names
+ * **`#[Concealed]` because a password is on the glass.** The capture rule names
  * credentials by name, and this is the one screen in the application where an
  * operator types one — precisely the frame the task switcher keeps and a screen
  * recording captures.
@@ -185,7 +185,7 @@ final class SignIntoAStack extends NativeComponent
     /**
      * Offer what was typed, and say what happened.
      *
-     * The whole of `N1-R7` in one method: the string becomes a credential here
+     * The whole of the exchange in one method: the string becomes a credential here
      * and nowhere else, the credential is spent by being offered, and what
      * comes back is either a session this device keeps or a reason it did not.
      *
@@ -240,7 +240,7 @@ final class SignIntoAStack extends NativeComponent
      * carries it and the closure above declares one parameter rather than two,
      * which is a PHP closure's prerogative and says the thing plainly: nothing
      * on this screen acts on when the session ends. A session that has expired
-     * is `N1-R44`'s screen, which does not exist yet, and a value written down
+     * is the obstacle screen, which does not exist yet, and a value written down
      * for a screen nobody has built is a value nothing holds to being right.
      * It is there through {@see Admitted} for whoever builds that screen.
      */

@@ -9,7 +9,7 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 /**
  * The one thing a screen about a single service or form is about.
  *
- * `N2-R7` has two granularities and an operator choosing between them is doing
+ * There are two granularities and an operator choosing between them is doing
  * the same thing either way, so one value covers both and says which it is.
  * Folded rather than handed out a field at a time, because an accessor per
  * field is what takes a screen past `H3`'s twenty — and because the four

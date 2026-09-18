@@ -27,7 +27,7 @@ final readonly class HowAListingReads
      * This device no longer holds a session for that stack.
      *
      * No obstacle, because nothing was met: the app did not get as far as
-     * asking. `N1-R44`'s screen is where this goes, and the empty keys are what
+     * asking. The obstacle screen is where this goes, and the empty keys are what
      * the template branches on.
      */
     public function signedOut(): WhatThisStackRunsTurnedOutToBe
@@ -82,7 +82,7 @@ final readonly class HowAListingReads
      * here that disagrees with the one another screen shows.
      *
      * **A credential the stack refused is a signed-out app, not an obstacle.**
-     * `N3-R13` says an identity removed from the household results in a
+     * An identity removed from the household results in a
      * signed-out app at the next refused call, and that nothing already loaded
      * goes on being rendered — which matters more here than on a listing
      * nobody acts from: what is already loaded on this screen is six buttons

@@ -3,21 +3,21 @@
 <native:column class="w-full gap-4 px-6 py-4">
 
     @unless ($this->isSignedIn())
-        {{-- N1-R44: the session has ended, so nothing was asked. --}}
+        {{-- The session has ended, so nothing was asked. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
         <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
     @elseif ($this->offer()->went->met !== '')
-        {{-- N1-R10: both sentences come off the obstacle, so this screen cannot
+        {{-- Both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
         <x-operator::emphasis>{{ __($this->offer()->went->met) }}</x-operator::emphasis>
         <native:text>{{ __($this->offer()->went->remedy) }}</native:text>
 
-        {{-- N1-R3: the action stays on the screen and the failure is reported
+        {{-- The action stays on the screen and the failure is reported
              beside it. An obstacle branch with nothing on it leaves an operator
              whose stack woke up two seconds later with no way to find out. --}}
         <x-operator::action label="{{ __('health.ask_again') }}" tap="lookAgain()" />
     @elseif ($this->offer()->isWorking)
-        {{-- N2-R7: the unconfirmed form is still a job, so this is a real state
+        {{-- The unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
              operator — N1-R66 keeps a screen from being a poller. --}}
         <x-operator::emphasis>{{ __('health.working_it_out') }}</x-operator::emphasis>
@@ -37,13 +37,13 @@
         <native:text>{{ __('health.nothing_came_back_action') }}</native:text>
         <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
     @elseif ($this->wasAgreedTo())
-        {{-- N2-R5: what the machine actually did, which is a different question
+        {{-- What the machine actually did, which is a different question
              from what it said it would do — and rendered from a different value
              for that reason, so an offer can never appear as an outcome. --}}
         @if ($this->done()->isWorking)
             <x-operator::emphasis>{{ __('health.carrying_it_out') }}</x-operator::emphasis>
             <native:text>{{ __('health.carrying_it_out_action') }}</native:text>
-            {{-- N1-R27: the cadence is stated, because a screen that refreshes
+            {{-- The cadence is stated, because a screen that refreshes
                  silently is one an operator cannot reason about — they cannot
                  tell a second-old answer from a minute-old one, and whether
                  something has changed is the only reason they are looking. --}}
@@ -55,7 +55,7 @@
             <x-operator::emphasis>{{ __($this->done()->went->met) }}</x-operator::emphasis>
             <native:text>{{ __($this->done()->went->remedy) }}</native:text>
 
-            {{-- N1-R3 again, and the sharper half of it: this obstacle stands
+            {{-- The sharper half of it: this obstacle stands
                  between the operator and the answer to *did it work*. Taking
                  the action away leaves them with a machine they told to change
                  something and no way to ask what happened. --}}
@@ -108,7 +108,7 @@
     @else
         @forelse ($this->offer()->repairs as $repair)
             <x-operator::entry>
-                {{-- N2-R4: all three clauses, in the order the requirement puts
+                {{-- All three clauses, in the order the requirement puts
                      them, and before anything asks for a yes. What it does, what
                      else it touches, and whether it can be taken back. --}}
                 <x-operator::emphasis>{{ $repair->does }}</x-operator::emphasis>
@@ -121,7 +121,7 @@
 
                 <native:text>{{ __($repair->undoing) }}</native:text>
 
-                {{-- N2-R5: the yes is its own act, asked for after all three of
+                {{-- The yes is its own act, asked for after all three of
                      `N2-R4`'s statements have been made and not before. Named
                      by the check rather than by position, because the listing
                      is re-read every frame and a position is a fact about the

@@ -19,7 +19,7 @@ use Modules\Kernel\Api\Findings;
  * **Three outcomes, not two.** The session has ended, the stack was asked and
  * answered, or it was asked and the operator met something. Signed-out is its
  * own state rather than an obstacle because the remedy is a different screen:
- * `N1-R44` sends them to sign in, where every obstacle sends them to look at
+ * A refused session sends them to sign in, where every obstacle sends them to look at
  * the machine. The empty keys are what the template branches on.
  *
  * `Internal` because it is a detail of how this surface reads two outcomes, and

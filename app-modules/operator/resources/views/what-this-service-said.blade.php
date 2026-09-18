@@ -2,7 +2,7 @@
 
 @if ($this->answer()->went->cameBack())
 <native:column class="w-full gap-4 px-6 py-4">
-    {{-- N2-R10: the view is a window rather than the whole, said before the
+    {{-- The view is a window rather than the whole, said before the
          lines rather than under them. Both cases have a line — a screen
          silent when the bound cut nothing teaches an operator to read
          silence, and silence is also what a screen that lost the claim
@@ -17,7 +17,7 @@
         </x-operator::note>
     @endif
 
-    {{-- N2-R10: searchable. Over the window, and the line below says so —
+    {{-- Searchable. Over the window, and the line below says so —
          a search that finds nothing reads as *the service never said it*,
          and what it means is *not in the lines that came back*. --}}
     <native:outlined-text-input
@@ -65,7 +65,7 @@
         @endif
     @endforelse
 
-    {{-- `N1-R27`: a screen an operator cannot ask again is a screen that relies
+    {{-- A screen an operator cannot ask again is a screen that relies
          on being left and returned to, which is the one thing the requirement
          names. It sat on the obstacle arm only — so a reading that failed could
          be retried and a reading that came back could not, which is the wrong

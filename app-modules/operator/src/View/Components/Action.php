@@ -22,7 +22,7 @@ use function view;
  * `$goes` is a route. Exactly one is set: a control that does two things on one
  * press is two controls sharing a label.
  *
- * `$disabled` is offered rather than assumed: `N1-R3` refuses a screen that
+ * `$disabled` is offered rather than assumed: a screen is refused that
  * takes an action away because it cannot reach a stack, so what this is for is
  * a control whose preconditions are on the device — a camera that has not been
  * allowed, a field with nothing typed in it yet.

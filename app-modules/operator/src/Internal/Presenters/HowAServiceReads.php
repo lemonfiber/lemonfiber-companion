@@ -15,7 +15,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 /**
  * What one service a stack runs comes to, as the fields a row reads.
  *
- * **What leans on it travels with the row.** `N2-R8` has a disruptive action
+ * **What leans on it travels with the row.** A disruptive action has to
  * state what it disturbs, and what a stop disturbs is not knowable from the
  * service alone — it is the other services that will not work without it. A
  * screen that had to go back and ask would be a screen that could forget to.

@@ -40,7 +40,7 @@ use function trim;
 use function view;
 
 /**
- * One thing this machine runs, and what may be done with it (`N2-R7`).
+ * One thing this machine runs, and what may be done with it.
  *
  * The verbs are here rather than on {@see WhatThisStackRuns} because a list is
  * read and a verb is chosen, and the two acts do not want the same frame. Drawn
@@ -50,12 +50,12 @@ use function view;
  * check.
  *
  * **A service and a form arrive here together, and that is not a shortcut.**
- * `N2-R7` asks for both granularities and what an operator is choosing between
+ * Both granularities are asked for, and what an operator is choosing between
  * is identical either way; what the stack is told differs only in which name it
  * carries. A second screen would be this one with a word changed, and two
  * screens offering one decision is how they come to offer it differently.
  *
- * **The yes is built from the listing, never from the route.** `N2-R8` wants a
+ * **The yes is built from the listing, never from the route.** A
  * disruptive action to state what it disturbs before it is confirmed, and the
  * way that requirement is broken is never deliberate: a handler passes its
  * argument straight to the port. So {@see wouldYouLike()} takes the verb alone,
@@ -73,12 +73,12 @@ use function view;
  * screen that asked about a start would be teaching an operator to confirm
  * without reading, which is what makes the stop confirmation worth anything.
  *
- * **It polls only while something is settling** (`N1-R27`). A service that is
+ * **It polls only while something is settling.** A service that is
  * starting becomes a running one on its own, and *ask again* as the only road
  * to finding out is the reliance on leaving and returning that rule refuses.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
- * runs is the household's business, and `N4-R13`'s diagnostic report is
+ * runs is the household's business, and a diagnostic report is
  * assembled from what the operator chooses to send rather than from what a
  * screen happened to hold.
  */
@@ -98,7 +98,7 @@ final class WhatToDoWithThis extends NativeComponent
     ) {}
 
     /**
-     * What came back, asked once per frame (`N1-R65`).
+     * What came back, asked once per frame.
      *
      * One accessor handing out the whole fold rather than one per field, which
      * is what keeps this screen under `H3`'s twenty methods. The asking itself
@@ -139,10 +139,10 @@ final class WhatToDoWithThis extends NativeComponent
     }
 
     /**
-     * Ask about a verb, or carry it out where it takes nothing away (`N2-R8`).
+     * Ask about a verb, or carry it out where it takes nothing away.
      *
      * Where the verb takes something away it is held rather than carried out,
-     * and {@see agree()} is the only thing that sends it. That is `N2-R8` in
+     * and {@see agree()} is the only thing that sends it. That is the rule in
      * the shape of a method: this one cannot act on a disruptive verb however
      * it is called.
      */
@@ -170,7 +170,7 @@ final class WhatToDoWithThis extends NativeComponent
     }
 
     /**
-     * Carry out what the operator has just agreed to (`N2-R8`).
+     * Carry out what the operator has just agreed to.
      *
      * It sends what was held and nothing a template passed in, so the thing
      * that was confirmed and the thing that happens are the same value.
@@ -195,12 +195,12 @@ final class WhatToDoWithThis extends NativeComponent
     }
 
     /**
-     * How long the pending question would take its subject away for (`N2-R8`).
+     * How long the pending question would take its subject away for.
      *
      * Read off the same listing the question was built from, so the number an
      * operator confirms on is the one the stack reported on the reading they
      * are looking at — not one fetched when they tapped, and not one this app
-     * worked out. `N2-R14` forbids the second, and the first would be a
+     * worked out. The second is forbidden, and the first would be a
      * different stack's answer by the time it arrived.
      */
     public function whatItTakesAway(): ?WhatAVerbTakesAwaySays
@@ -220,7 +220,7 @@ final class WhatToDoWithThis extends NativeComponent
      *
      * The value itself rather than a flag beside it, so the template renders
      * the sentence from what will actually be sent — a screen that stated one
-     * service and held another is exactly the failure `N2-R8` is about.
+     * service and held another is exactly the failure this is about.
      */
     public function asking(): ?AgreedTo
     {
@@ -228,10 +228,10 @@ final class WhatToDoWithThis extends NativeComponent
     }
 
     /**
-     * Look again while the machine is settling into what it was told (`N1-R27`).
+     * Look again while the machine is settling into what it was told.
      *
      * It does nothing unless something is actually settling, which is what
-     * keeps this from being the polling `N1-R66` refuses: a stack whose
+     * keeps this from being the polling that is refused: a stack whose
      * services are all in standing states answers the same thing however often
      * it is read.
      */

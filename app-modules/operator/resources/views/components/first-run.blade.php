@@ -1,4 +1,4 @@
-{{-- N1-R55: which step this is and how many there are, above the step itself,
+{{-- Which step this is and how many there are, above the step itself,
      because a counter read after the thing it counts is a surprise rather than
      an orientation. `trans_choice` is not used here — both numbers are plural
      in the only sense that matters and neither is ever one word. --}}
@@ -17,7 +17,7 @@
 @unless ($at->isThePairing())
     <x-operator::action label="{{ __('onboarding.go_on') }}" tap="{{ $on }}" />
 
-    {{-- N1-R55: leavable, landing on pairing. Quieter than going on, because
+    {{-- Leavable, landing on pairing. Quieter than going on, because
          skipping is the thing somebody does when they already know — and a
          second filled button beside the first makes neither of them the way
          forward. That sentence was here under two identical buttons;

@@ -34,7 +34,7 @@ use Modules\Operator\Internal\WhatTheCoreAddedUnderneath;
  * **The meaning and the remedies are on the wire and would otherwise go
  * nowhere.** `Finding::said()` has carried them since the translation was
  * written; without this an operator sees *"The disk is nearly full — Needs
- * attention"* and not what that means for them or what to do. `N2-R3` is the
+ * attention"* and not what that means for them or what to do. That is the
  * requirement, and the words are the core's own rather than this app's, which
  * is why they are rendered rather than translated.
  *
@@ -110,7 +110,7 @@ final readonly class HowAFindingReads
                 // has room for the list — an operator whose first remedy did
                 // not work would otherwise have nowhere to find the second.
                 remedies: $remedies,
-                // `G4-R4`: available, and not leading. It arrives on the row
+                // Available, and not leading. It arrives on the row
                 // beneath everything the requirement puts above it, which is
                 // what *must not lead* means on a surface with one column.
                 underneath: $underneath->either(

@@ -41,11 +41,11 @@ use function view;
 /**
  * What one stack is doing, which is what the whole app is for.
  *
- * Pairing and signing in are both means to this end. `N1-R2` says an operator
+ * Pairing and signing in are both means to this end. An operator
  * away from the machine can see whether their stack is doing what it should,
  * and until this screen existed the app could get in and had nothing to show.
  *
- * **It asks once, when the frame is built, and holds what came back.** `N1-R65`
+ * **It asks once, when the frame is built, and holds what came back.** One read
  * says the reading is one act per frame: a home network and a machine that may be
  * asleep are the wrong things to talk to four times a second, and `F4` says
  * a frame is not where a socket is opened. The answer is a value on this
@@ -56,18 +56,18 @@ use function view;
  * is and why there is no timer beside it. Somebody who has just gone and
  * restarted a service wants to know whether it took, and a screen that could
  * only be re-asked by leaving it and coming back teaches them to distrust what
- * it says. `N1-R66` is about the app not talking to a machine unprompted; a tap
+ * it says. The cadence rule is about the app not talking to a machine unprompted; a tap
  * is a prompt.
  *
  * **It reads the session back rather than being handed one.** A screen given a
  * session is a screen that has to be navigated to with one, which is a session
- * in a route — and `N1-R8` keeps them out of URLs for the reason a proxy log
+ * in a route — and they stay out of URLs for the reason a proxy log
  * gives. The keychain already holds one per stack; this asks it, and an
  * operator whose session has ended meets the sign-in screen rather than an
  * error.
  *
  * **`#[Concealed]`, because a report names what is wrong with somebody's
- * machine.** `N4-R18` is written about credentials and pairing material, and a
+ * machine.** The capture rule is written about credentials and pairing material, and a
  * diagnostic report is the other thing on this app's screens worth keeping out
  * of the task switcher: it says which services are down, which disk is full,
  * and whether the tunnel is leaking.
@@ -91,7 +91,7 @@ final class HowThisStackIs extends NativeComponent
     /**
      * Which family of checks the operator is reading, or nothing for all of them.
      *
-     * `N2-R9` asks that stuck downloads, provider health, disk pressure and
+     * Stuck downloads, provider health, disk pressure and
      * VPN verification each be *reachable*. They are all in the list already,
      * which is reachable in the sense that scrolling is reachable — and an
      * operator who opened the app because the household said nothing was
@@ -145,7 +145,7 @@ final class HowThisStackIs extends NativeComponent
      * Rows rather than {@see Finding}s, because a finding answers what the
      * check said through an `either()` and Blade has no way to call one. The
      * fold happens once per row here rather than being written into the
-     * template — which could not write it — and `N2-R3`'s words reach the
+     * template — which could not write it — and the core's words reach the
      * screen as a result.
      *
      * @return list<WhatOneFindingSays>
@@ -156,13 +156,13 @@ final class HowThisStackIs extends NativeComponent
         // always holds a list, so `iterator_to_array`'s `preserve_keys` cannot
         // be wrong here — and an argument that cannot change the answer is a
         // line no test can defend.
-        // `N2-R2` — worst first, and ordered *here* rather than trusted to
+        // Worst first, and ordered *here* rather than trusted to
         // arrive that way. A list rendered straight from the envelope comes in
         // the order the checks ran, which looks ordered and is not: the failure
         // is invisible on any report whose worst finding happens to have run
         // first. `operator/src/README.md` recorded this gate against the day a
         // findings screen existed, and this is the day.
-        // Narrow, sort, then group. `G4-R3` wants the cause reported rather
+        // Narrow, sort, then group. The cause is reported rather
         // than each symptom independently, and grouping last is what lets the
         // symptoms under a cause keep the severity order the sort gave them.
         $run = new TheCauseBeforeItsSymptoms()->over(
@@ -253,7 +253,7 @@ final class HowThisStackIs extends NativeComponent
     }
 
     /**
-     * Where one service's scrollback is (`N2-R10`).
+     * Where one service's scrollback is.
      *
      * Takes the name a row is holding rather than a {@see ServiceId}, because a
      * template cannot build one and giving it the chance would put the refusal
@@ -264,7 +264,7 @@ final class HowThisStackIs extends NativeComponent
      * empty string — {@see WhatOneFindingSays::$service} is documented that way.
      * The template happens not to draw the button for those rows, but this is a
      * public method on a screen and a client can call it with anything: safety
-     * that rests on a template remembering is the shape `N3-R3` refuses one
+     * that rests on a template remembering is the shape refused one
      * level up. Building the value object first put a raise on a tap.
      *
      * It comes away with this machine's own screen rather than refusing, which
@@ -290,7 +290,7 @@ final class HowThisStackIs extends NativeComponent
      * only place that knows a stack's routes, and it is built from the stack
      * this screen is already about, so none of them can lead to another
      * machine's. Three separate `somethingAreAt()` methods took this class to
-     * the twenty-method ceiling `Q-R64` refuses; the next destination the hub
+     * the twenty-method ceiling that is refused; the next destination the hub
      * links to now costs no method here at all.
      */
     public function goes(): WhereAStackIs

@@ -40,13 +40,13 @@ use function view;
 /**
  * What this stack would put right, stated before anybody is asked to agree.
  *
- * `N2-R4` is the requirement and the order in it is the requirement: what a
+ * The order is the requirement as much as the content: what a
  * repair does, what else it affects and whether it can be undone are said
  * *before* confirmation is asked for. So this screen exists on its own rather
  * than as a dialog behind a button — a sentence an operator has to tap to
  * reveal is one they will agree without reading.
  *
- * **Asking costs a round trip and answers a handle.** `N2-R7` has every action
+ * **Asking costs a round trip and answers a handle.** Every action
  * on this surface arrive as a job, including the unconfirmed form that changes
  * nothing. The frame therefore asks and then reads, once each, and what comes
  * back may well be *still working on it* — which is a state of this screen
@@ -55,12 +55,12 @@ use function view;
  * **Asking again is a button, and which question it asks depends.** Where a job
  * is still running, it reads the same handle — the work is the stack's and
  * repeating the read changes nothing. Where the job ended, it starts a new one,
- * because there is nothing left to read. `N1-R66` keeps this from happening on
+ * because there is nothing left to read. The cadence rule keeps this from happening on
  * a timer: an operator on a home network with a machine that may be asleep
- * decides when to ask, and `N4-R4`'s argument about not re-asking for something
+ * decides when to ask, and the argument about not re-asking for something
  * declined is the same argument one requirement over.
  *
- * **No yes here yet.** `N2-R5` has the agreeing be a separate act against a
+ * **No yes here yet.** Agreeing is a separate act against a
  * named listing, and `Confirmed` is built and unreached. The listing's name is
  * carried on the fold for it, so that screen will not have to ask the stack
  * again for what this one is already showing.
@@ -92,7 +92,7 @@ final class WhatWouldBePutRight extends NativeComponent
      *
      * Held so that asking again can read the same job rather than starting a
      * second one — two handles for one question is two lots of work on
-     * somebody's machine. Not shown and never persisted: `N1-R41` refuses an
+     * somebody's machine. Not shown and never persisted: an
      * action presented as pending, and a job name on the glass is exactly that.
      */
     protected ?string $handle = null;
@@ -101,7 +101,7 @@ final class WhatWouldBePutRight extends NativeComponent
      * The listing, while there is one to agree to.
      *
      * Held as the value rather than as the fold, because {@see Confirmed} can
-     * only be made against the {@see Offer} itself — `N2-R6` has the yes quote
+     * only be made against the {@see Offer} itself — a yes quotes
      * the listing it was given, and a flattened copy is not that listing.
      */
     protected ?Offer $offered = null;
@@ -136,14 +136,14 @@ final class WhatWouldBePutRight extends NativeComponent
         );
     }
 
-    /** Whether this device still holds a session for it (`N1-R44`). */
+    /** Whether this device still holds a session for it. */
     public function isSignedIn(): bool
     {
         if (! $this->answer()->went->isSignedIn) {
             return false;
         }
 
-        // `N3-R13`: the outcome read can meet a refused credential after the
+        // The outcome read can meet a refused credential after the
         // offer read succeeded, and one frame of a screen showing what it
         // loaded a moment ago under a session the stack has stopped
         // recognising is exactly what the requirement forbids. Both folds are
@@ -160,7 +160,7 @@ final class WhatWouldBePutRight extends NativeComponent
      * clearly different questions, where six flat accessors and five more would
      * have read as one screen with eleven moods.
      *
-     * It is also `Q-R64`'s twenty-method ceiling answered before it is met,
+     * It is also the twenty-method ceiling answered before it is met,
      * which is the lesson from `HowThisStackIs` arriving at twenty-one.
      */
     public function offer(): WhatTheStackWouldPutRight
@@ -177,7 +177,7 @@ final class WhatWouldBePutRight extends NativeComponent
     /**
      * What became of what was agreed to, once anything was.
      *
-     * One accessor rather than one per field, which is `Q-R64`'s twenty-method
+     * One accessor rather than one per field, which is the twenty-method
      * ceiling answered before it is met — and reads better anyway: a template
      * asking `$this->done()->outcomes` is asking one question.
      */
@@ -251,16 +251,16 @@ final class WhatWouldBePutRight extends NativeComponent
     }
 
     /**
-     * Look again while the stack is carrying the repair out (`N1-R27`).
+     * Look again while the stack is carrying the repair out.
      *
      * The one piece of content in this app that changes without anybody
-     * touching the phone. `N1-R27` refuses a screen that relies on the operator
+     * touching the phone. A screen may not rely on the operator
      * leaving and returning to see a change, and *ask again* as the only road
      * is exactly that with a button on it: somebody who told a machine to fix
      * something has to keep tapping to find out whether it did.
      *
      * **It does nothing unless the work is running**, which is what keeps this
-     * from being the polling `N1-R66` refuses. A finished run answers the same
+     * from being the polling that is refused. A finished run answers the same
      * thing however often it is read and a screen showing an offer has nothing
      * to wait for, so the cadence costs a machine on a home network nothing in
      * either state.
@@ -294,7 +294,7 @@ final class WhatWouldBePutRight extends NativeComponent
     }
 
     /**
-     * How often this screen looks again (`N1-R27`).
+     * How often this screen looks again.
      *
      * The stated half of the requirement. A screen that refreshes silently is
      * one an operator cannot reason about: they do not know whether what they
@@ -305,7 +305,7 @@ final class WhatWouldBePutRight extends NativeComponent
      * sentence, which is {@see goes()}'s shape and for its reason: a key and a
      * count were two methods naming `WhileWorkRuns` separately, so the screen
      * said which cadence it keeps in three places and this class arrived at the
-     * twenty-first method `Q-R64` refuses. The template reads what it needs off
+     * twenty-first method that is refused. The template reads what it needs off
      * the case, and the next thing the sentence counts on costs no method here.
      */
     public function cadence(): HowOften
@@ -450,7 +450,7 @@ final class WhatWouldBePutRight extends NativeComponent
     /**
      * Read the handle, starting the work first where there is none.
      *
-     * The two questions in the order `N2-R7` puts them, and the early return is
+     * The two questions in the order they are asked in, and the early return is
      * what makes *ask again* a second read rather than a second piece of work
      * on somebody's machine: a handle already in hand is read, and only the
      * absence of one starts anything.
@@ -489,7 +489,7 @@ final class WhatWouldBePutRight extends NativeComponent
                 => new HowAnOfferOfRepairsReads()->stillWorkingItOut(),
             offering: function (Offer $offer): WhatTheStackWouldPutRight {
                 // Kept as the value, not only as the fold: `Confirmed` can be
-                // made against nothing else, which is `N2-R6` refusing a yes
+                // made against nothing else, which is a yes refused when it
                 // that quotes a listing it was not given.
                 $this->offered = $offer;
 

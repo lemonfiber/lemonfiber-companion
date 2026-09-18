@@ -10,7 +10,7 @@ use function it;
 use Modules\Operator\Internal\Presenters\HowAListingReads;
 
 /**
- * `N1-R44` — a device with no session is not a stack running nothing.
+ * A device with no session is not a stack running nothing.
  *
  * The two read alike on a screen and are not alike at all: one is *we could not
  * ask*, and the other is *we asked and the machine is running nothing*. A fold

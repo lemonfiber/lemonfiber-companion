@@ -12,15 +12,15 @@ namespace Modules\Operator\Internal\ViewModels;
  * the reading has three answers of its own. A screen that folded any pair of
  * them together would be a screen with a wrong sentence for a real situation.
  *
- * - **signed out** — no session, so nothing was asked (`N1-R44`).
+ * - **signed out** — no session, so nothing was asked.
  * - **still working it out** — the stack took the question on and has not
  *   finished. The remedy is to ask again, and it is the operator's to take.
- * - **offering** — the listing, which is what `N2-R4` is about.
+ * - **offering** — the listing, which is what the screen is about.
  * - **the job ended** — the stack has no outcome for that handle any more. Not
  *   a fault and not an answer: start again.
  * - **met an obstacle** — the machine could not be reached at all.
  *
- * **Nothing carries the handle.** A template has no use for it and `N1-R41` is
+ * **Nothing carries the handle.** A template has no use for it, and a pending action is
  * emphatic that an action must not be presented as pending — a job name on the
  * glass is exactly that, dressed as a diagnostic. The screen holds it; this
  * does not.

@@ -14,7 +14,7 @@ use function view;
  *
  * One of the few shapes a screen is built from. Named rather than spelled out
  * at each site because a utility string repeated forty times is forty places
- * for the platform mapping `DES-R24` asks for to be decided again — and the
+ * for the platform mapping to be decided again — and the
  * decision is the same one every time.
  */
 final class Emphasis extends Component

@@ -19,7 +19,7 @@
         <x-operator::entry>
             <x-operator::emphasis>{{ $item->title }}</x-operator::emphasis>
 
-            {{-- N2-R9: where it stopped and who has it. Both, because
+            {{-- Where it stopped and who has it. Both, because
                  either alone strands the operator — a stage with no service
                  is a problem with nowhere to go, and a service with no
                  stage sends somebody to the download client for a title the
@@ -45,7 +45,7 @@
         <native:text>{{ __('health.nothing_stopped_action') }}</native:text>
     @endforelse
 
-    {{-- `N1-R27`: a screen an operator cannot ask again is a screen that relies
+    {{-- A screen an operator cannot ask again is a screen that relies
          on being left and returned to, which is the one thing the requirement
          names. It sat on the obstacle arm only — so a reading that failed could
          be retried and a reading that came back could not, which is the wrong

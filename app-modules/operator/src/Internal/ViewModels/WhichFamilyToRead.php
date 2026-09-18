@@ -7,7 +7,7 @@ namespace Modules\Operator\Internal\ViewModels;
 /**
  * One family of checks, as a control a template can draw.
  *
- * `N2-R9` asks that four things — stuck downloads, provider health, disk
+ * Four things — stuck downloads, provider health, disk
  * pressure and VPN verification — each be reachable. Each is a
  * {@see \Modules\Kernel\Api\Category} the engine already sorts its findings
  * into, so what the requirement needs is a way to reach one without reading

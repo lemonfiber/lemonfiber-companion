@@ -2,18 +2,18 @@
 
 <native:column class="w-full gap-4 px-6 py-4">
     @if ($this->howItOpened()->isLocked)
-        {{-- N4-R19: the device's own authentication on a cold start, asked
+        {{-- The device's own authentication on a cold start, asked
              before anything reads retained state or touches a network. Nothing
              below is drawn — not the machine names, not a verdict, not the
              diagnostics control — because all of it is what the lock is for. --}}
         <x-operator::heading>{{ __('device.unlock_reason') }}</x-operator::heading>
 
-        {{-- N4-R4: a button rather than an automatic retry. An operator who
+        {{-- A button rather than an automatic retry. An operator who
              dismissed the prompt meant it, and a screen that asked again
              immediately is what teaches people to turn a feature off. --}}
         <x-operator::action label="{{ __('device.unlock') }}" tap="tryToUnlock()" />
     @else
-    {{-- N1-R37: what stood between this launch and the machine, shown rather
+    {{-- What stood between this launch and the machine, shown rather
          than discarded. Producing the answer is half of the requirement; a
          screen that decided "no network" and then drew the machine names and a
          stale verdict as though nothing were wrong leaves somebody tapping a
@@ -55,7 +55,7 @@
             :press-opacity="0.6"
         >
             <x-operator::emphasis>{{ $stack->name()->shown() }}</x-operator::emphasis>
-            {{-- N2-R1: the verdict, which is what the app opens on. `N2` calls
+            {{-- The verdict, which is what the app opens on. `N2` calls
                  the ordering its whole design — is anything wrong, then what,
                  then may I fix it from here — and a first screen that leads
                  with the names their owner gave their machines answers a
@@ -91,7 +91,7 @@
             <native:divider />
         @endunless
     @empty
-        {{-- N1-R54: a sequence rather than a wall — one frame carrying a
+        {{-- A sequence rather than a wall — one frame carrying a
              heading, two sentences and three buttons at once says nothing about
              which of them to read first. One step per frame, each stating its
              own position, and pairing at the end of it.
@@ -108,7 +108,7 @@
         <native:text>{{ __($this->sharingRemedy()) }}</native:text>
     @endif
 
-    {{-- N1-R6's two roads, and N1-R54's last step. Guarded rather than moved
+    {{-- The two roads, and the sequence's last step. Guarded rather than moved
          into the sequence: an operator with a stack already paired is on this
          screen to add another, and the same two controls answer both — one
          spelling, one set of tests. --}}
@@ -123,7 +123,7 @@
         <x-operator::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
     @endif
 
-    {{-- N4-R13: assembled for the operator to send, and not sent by the app.
+    {{-- Assembled for the operator to send, and not sent by the app.
          On this screen because it is the one reachable from anywhere and the
          one that works when nothing else does — a stack that cannot be reached
          is exactly when somebody needs to ask for help.
