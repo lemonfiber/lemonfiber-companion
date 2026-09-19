@@ -23,6 +23,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\VersionInUse;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -95,7 +96,7 @@ function theUpkeepScreen(
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
     $screen = new HowCurrentThisStackIs($keeping, $keychain, StacksInMemory::holding($stack));
@@ -287,7 +288,7 @@ it('N1-R44 — a yes on a phone whose session ended sends nothing', function ():
     $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
     $keychain = AKeychainInMemory::working();
     $stack = theStackWhoseUpkeepIsRead();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = new HowCurrentThisStackIs($keeping, $keychain, StacksInMemory::holding($stack));
     $screen->setParams(['stack' => $stack->id()->stored()]);

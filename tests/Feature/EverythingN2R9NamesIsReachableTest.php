@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
@@ -75,7 +76,7 @@ function theScreenTheFourAreReachedFrom(): HowThisStackIs
 {
     $stack = theStackTheFourAreReachedOn();
     $keychain = AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = new HowThisStackIs(
         AStackThatWasAsked::saying(aRunTouchingEachOfTheFour()),

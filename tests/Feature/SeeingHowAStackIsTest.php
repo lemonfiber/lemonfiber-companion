@@ -29,6 +29,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
@@ -111,7 +112,7 @@ function theHealthScreen(
 ): HowThisStackIs {
     $stack = theStackBeingLookedAt();
     $keychain ??= AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack));
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
@@ -277,7 +278,7 @@ it('N1-R44 — asking again notices a session that has ended underneath them', f
     // they are no longer signed into.
     $stack = theStackBeingLookedAt();
     $keychain = AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
 
     $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack));

@@ -23,6 +23,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Poll;
@@ -86,7 +87,7 @@ function theRepairsScreen(
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
     $screen = new WhatWouldBePutRight($mending, $keychain, StacksInMemory::holding($stack));

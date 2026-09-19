@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\Whose;
 
 /**
  * The one place a credential is offered to a stack.
@@ -74,6 +75,10 @@ final readonly class Admissions implements Admitting
         return Admitted::opening(
             Session::of($opened->token),
             Instant::atEpochSeconds($opened->untilEpochSeconds),
+            // Absent is the operator, which is the stack's own shape rather than a
+            // reading of it: an admission with no member on it is one the stack
+            // minted against its own password.
+            $opened->member === null ? Whose::theOperator() : Whose::member($opened->member),
         );
     }
 

@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Tests\Support\Fakes\ADeviceOnANetwork;
@@ -55,7 +56,7 @@ function theMachineOnTheFrame(): Stack
 it('the bars reach a stack-scoped frame, and the reading is replaced rather than buried', function (): void {
     $stack = theMachineOnTheFrame();
     $keychain = AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = new HowThisStackIs(
         AStackThatWasAsked::met(Obstacle::DeviceHasNoNetwork),

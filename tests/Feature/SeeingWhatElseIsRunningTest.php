@@ -18,6 +18,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatTheEngineCallsIt;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -84,7 +85,7 @@ function theStrangersScreen(
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
     $screen = new WhatElseIsRunningHere($supervising, $keychain, StacksInMemory::holding($stack));

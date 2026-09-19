@@ -17,6 +17,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -62,7 +63,7 @@ function theThingScreen(
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
     $screen = new WhatToDoWithThis($supervising, $keychain, StacksInMemory::holding($stack));

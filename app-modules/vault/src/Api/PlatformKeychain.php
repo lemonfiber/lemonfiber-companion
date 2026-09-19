@@ -7,11 +7,16 @@ namespace Modules\Vault\Api;
 use Lemonfiber\Native\Keeps;
 use Lemonfiber\Native\WhenAValueMayBeRead;
 use Lemonfiber\Native\WhyNothingWasKept;
+
+use function mb_strpos;
+use function mb_substr;
+
 use Modules\Kernel\Api\Kept;
 use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 
 use function sprintf;
@@ -55,10 +60,10 @@ final readonly class PlatformKeychain implements SecureStorage
         return $this->store->canBeAsked();
     }
 
-    public function keep(StackId $stack, Session $session): Kept
+    public function keep(StackId $stack, Session $session, Whose $whose): Kept
     {
         return $this->store
-            ->keep($this->keyFor($stack), $session->forTheHeader(), WhenAValueMayBeRead::WhileUnlocked)
+            ->keep($this->keyFor($stack), $this->written($session, $whose), WhenAValueMayBeRead::WhileUnlocked)
             ->either(
                 done: static fn(): Kept => Kept::safely(),
                 refused: static fn(WhyNothingWasKept $why): Kept => Kept::refused(self::meaning($why)),
@@ -72,9 +77,9 @@ final readonly class PlatformKeychain implements SecureStorage
             // the value rather than one holding a session, and `Session::of()`
             // refuses a blank — so it is read as no session rather than allowed
             // to raise on a launch screen.
-            found: static fn(string $token): Resumed => $token === ''
+            found: static fn(string $written): Resumed => $written === ''
                 ? Resumed::notHeld()
-                : Resumed::with(Session::of($token)),
+                : self::read($written),
             nothing: static fn(): Resumed => Resumed::notHeld(),
             // A store that will not open is a store with no session in it, as
             // far as this question goes: the operator is asked for the password,
@@ -94,6 +99,58 @@ final readonly class PlatformKeychain implements SecureStorage
         $this->store->forget($this->keyFor($stack));
 
         return Kept::safely();
+    }
+
+    /**
+     * The one string a stack's session is kept as: the subject, a newline, the token.
+     *
+     * Built field by field rather than by encoding the {@see Session}: that type
+     * refuses to be serialised and redacts itself for `json_encode`, both on purpose,
+     * so the token reaches this line through the accessor that names where it goes and
+     * through nothing else.
+     *
+     * One value rather than two keys, which is what {@see SecureStorage::keep()}
+     * carries the reasoning for. A newline rather than a document, because the whole
+     * of what is kept is two strings of which one must survive byte for byte — and the
+     * subject cannot carry a newline, while a token that did would not be a token an
+     * HTTP header could hold.
+     *
+     * The subject goes first and the split below takes the *first* newline, so
+     * everything after it is the token whatever the token contains.
+     */
+    private function written(Session $session, Whose $whose): string
+    {
+        return sprintf("%s\n%s", $whose->forTheStore(), $session->forTheHeader());
+    }
+
+    /**
+     * The session a stored value holds, and whose it is.
+     *
+     * Static where the one above is not, because the reader beside it is a closure the
+     * store hands its answer to and that closure carries nothing of this object.
+     *
+     * **A value with no newline in it is a bare token and the operator's**, and that is
+     * a fact rather than a lenient reading: before a member could sign in at all, every
+     * session this app kept was written as the token alone and belonged to the operator.
+     */
+    private static function read(string $written): Resumed
+    {
+        $at = mb_strpos($written, "\n");
+
+        if ($at === false) {
+            return Resumed::with(Session::of($written), Whose::theOperator());
+        }
+
+        $token = mb_substr($written, $at + 1);
+
+        // A store holding a subject and no token has lost the half that matters, and
+        // `Session::of()` refuses a blank — so it is read as no session rather than
+        // allowed to raise on a launch screen, which is what an empty value already is.
+        if ($token === '') {
+            return Resumed::notHeld();
+        }
+
+        return Resumed::with(Session::of($token), Whose::member(mb_substr($written, 0, $at)));
     }
 
     /** What one of the bridge's refusals means in the terms this application reasons in. */

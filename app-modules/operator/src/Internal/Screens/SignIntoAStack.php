@@ -13,12 +13,14 @@ use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Credential;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -201,7 +203,8 @@ final class SignIntoAStack extends NativeComponent
         $this->typed = '';
 
         $this->went = $this->admitting->admit($this->stack(), $said)->either(
-            opened: fn(Session $session): HowTheSignInWent => $this->kept($session),
+            opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent
+                => $this->kept($session, $whose),
             refused: static fn(Obstacle $why): HowTheSignInWent => HowTheSignInWent::met($why),
         );
     }
@@ -236,17 +239,20 @@ final class SignIntoAStack extends NativeComponent
      * refuses a checked exception raised inside one, and because a closure
      * reaching a second port is a closure nobody reads twice.
      *
-     * **The expiry the stack sent is deliberately not taken.** `Admitted`
-     * carries it and the closure above declares one parameter rather than two,
-     * which is a PHP closure's prerogative and says the thing plainly: nothing
-     * on this screen acts on when the session ends. A session that has expired
-     * is the obstacle screen, which does not exist yet, and a value written down
-     * for a screen nobody has built is a value nothing holds to being right.
-     * It is there through {@see Admitted} for whoever builds that screen.
+     * **The expiry the stack sent is deliberately not taken.** `Admitted` carries it
+     * and nothing on this screen acts on when a session ends: a session that has
+     * expired is the obstacle screen, which does not exist yet, and a value written
+     * down for a screen nobody has built is a value nothing holds to being right. It
+     * is there through {@see Admitted} for whoever builds that screen.
+     *
+     * **Whose it is is taken**, and is kept with the session rather than worked out
+     * again later. The stack said who signed in; asking a second time would be a
+     * second answer able to disagree with the first, and the first is the one the
+     * store goes on holding.
      */
-    private function kept(Session $session): HowTheSignInWent
+    private function kept(Session $session, Whose $whose): HowTheSignInWent
     {
-        return $this->storage->keep($this->stack()->id(), $session)->either(
+        return $this->storage->keep($this->stack()->id(), $session, $whose)->either(
             kept: static fn(): HowTheSignInWent => HowTheSignInWent::SignedIn,
             refused: static fn(WhySessionCannotBeKept $why): HowTheSignInWent => HowTheSignInWent::unkept($why),
         );
