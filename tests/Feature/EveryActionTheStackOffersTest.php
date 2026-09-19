@@ -74,7 +74,7 @@ const NOT_YET = [
     'Admission', 'Adoption', 'Alerts', 'Archives', 'Backup',
     'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms',
-    'FrontDoor', 'Glossary', 'History', 'Hosting', 'Household',
+    'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household',
     'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
     'Music', 'Outbound', 'Preview', 'Provenance', 'Pull', 'Quality',
     'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed',
