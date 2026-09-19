@@ -40,3 +40,33 @@ lift is the kind of wrong that makes an app feel stupid.
 Nothing here is secret, and nothing here is *about* the device either, which is
 the stricter rule this capability keeps. The shim logs the outcome word. It does
 not log an SSID, an interface name, a carrier, or an address.
+
+## Watched
+
+**Android — SM-A515F (`R58N12ZSQ3H`), debug build.** Both answers, on the same
+device, twenty seconds apart:
+
+```
+nativephp_call() called with method: Lemonfiber.Link.Status
+Lemonfiber: link: reachable
+```
+
+```
+Lemonfiber: link: unreachable
+```
+
+The first with the phone on wifi; the second with airplane mode on and nothing
+else changed. Every line the shim wrote is the outcome word — no SSID, no
+interface name, no carrier, no address.
+
+**It has to be asked before it can be watched.** `Opening` asks this *inside*
+the loop over configured stacks, deliberately: an unpaired device has nowhere to
+send anything, so a first run never puts the question at all. A handset with no
+stacks paired therefore never reaches this call, and a build watched that way
+proves nothing about it. The watch above is over a build with `DX_STANDS_IN=1`,
+which pairs three stands-in stacks at launch and makes the question real.
+
+**iOS is unproven.** No iPhone has been attached to this work. `LinkRule` passes
+its tests under `swift test`; `LinkFunctions.swift` has never run on a device,
+and the `NWPathMonitor` snapshot it takes — start, wait, cancel — is the part
+that most wants watching.
