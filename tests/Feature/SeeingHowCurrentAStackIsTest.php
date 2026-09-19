@@ -261,6 +261,18 @@ it('N2-R22 — the confirmation names what taking it will not put back', functio
         ->and($screen->wouldChange())->toBe(2);
 });
 
+it('N2-R22 — counts nothing permanent where nothing has been asked yet', function (): void {
+    // Before a release is chosen there is no confirmation, so there is nothing
+    // it would not put back. Asserted rather than left to the accessor's
+    // fall-through: a template asking this on every frame asks it first on the
+    // frame where the answer is nobody's yet.
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
+
+    expect($screen->asking())->toBeNull()
+        ->and($screen->cannotBePutBack())->toBe(0)
+        ->and($screen->wouldChange())->toBe(0);
+});
+
 it('N2-R22 — says so before the yes, and not after it', function (): void {
     // Rendered from the pending question rather than from the reading, which
     // is what puts it in front of somebody who has not agreed yet. Asked of
