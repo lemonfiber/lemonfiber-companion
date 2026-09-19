@@ -155,15 +155,28 @@ BECOMES,
  */
 const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites is not in %s.\n\nEither the package fixed it, in which case delete that entry — and if it was the last one, this script and the two `composer.json` hooks that call it — or it moved, in which case a build is fatalling on a device again and nothing said so. Do not ignore this.\n";
 
+/**
+ * What to do when the file a patch rewrites is not there at all.
+ *
+ * A separate sentence from the one above, because the two send a reader to
+ * different places: that one says to open the file and look for a line, and
+ * this one is about a file there is nothing to open. Told apart here rather
+ * than at the reader, who would otherwise go looking for a line in a path that
+ * does not exist.
+ *
+ * One literal for the reason the one above is one literal.
+ */
+const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %s is not there.\n\nThe package no longer ships the file this patch rewrites. Either it was renamed, in which case point that entry at the new path, or it is gone, in which case delete the entry — and if it was the last one, this script and the two `composer.json` hooks that call it. Skipping it quietly leaves a build fatalling on a device with nothing having said so. Do not ignore this.\n";
+
 $rewritten = 0;
 
 foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => $becomes]) {
     $path = sprintf('%s%s', __DIR__, $where);
 
     if (! file_exists($path)) {
-        fwrite(STDERR, sprintf("patch_nativephp: %s is not there; nothing to patch.\n", $path));
+        fwrite(STDERR, sprintf(WHEN_THE_FILE_IS_NOT_THERE, $path));
 
-        continue;
+        exit(1);
     }
 
     $source = file_get_contents($path);
