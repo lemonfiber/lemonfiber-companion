@@ -23,6 +23,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -95,6 +96,22 @@ final class SignIntoAStack extends NativeComponent
 
     /** What became of the attempt, once one has been made. */
     protected HowTheSignInWent $went = HowTheSignInWent::NotYet;
+
+    /**
+     * Which application the person who just signed in is given.
+     *
+     * Learned at the tap and held, rather than worked out again when the way
+     * onwards is drawn. The stack said whose session it opened and this is that
+     * answer, kept the way {@see $went} is kept and for the same reason: a frame
+     * drawn after the tap must say what the tap decided, not ask a second time
+     * and risk a second answer.
+     *
+     * **The operator until a stack says otherwise.** A screen that has not been
+     * tapped has nobody to hand anywhere, and this is the surface it has always
+     * led to — so the default is what this screen did before it could tell one
+     * person from another, rather than a third state meaning *not yet known*.
+     */
+    protected WhichSurfaceTheyAreGiven $given = WhichSurfaceTheyAreGiven::TheReport;
 
     public function __construct(
         private readonly Admitting $admitting,
@@ -210,12 +227,32 @@ final class SignIntoAStack extends NativeComponent
     }
 
     /**
-     * Where an operator who has just signed in goes next.
+     * Where somebody who has just signed in goes next.
      *
-     * The report for the stack they signed into — which is what they came for.
-     * Until this existed the screen said *"you can reach it from the main
-     * screen"* and left them to go and do it, which is an app telling somebody
-     * to navigate on its behalf.
+     * What they came for. Until this existed the screen said *"you can reach it
+     * from the main screen"* and left them to go and do it, which is an app
+     * telling somebody to navigate on its behalf.
+     *
+     * **Which surface that is follows whose session it turned out to be.** The
+     * application a person is given is decided by the identity that signed in: a
+     * member is handed what this machine says they are owed, an operator the
+     * machine's report, and there is no setting between them. The stack said who
+     * signed in, and that same answer picks the door they come through. Nothing is
+     * taken from the operator by it — they are given the household's reading as
+     * well, by the road {@see WhereAStackIs::yours()} already offers from here.
+     *
+     * **Read off what the tap decided rather than out of the store.** The subject
+     * is written down beside the session and could be read back, but a screen that
+     * resumed a session would be a screen that has to let go of one the stack
+     * refused — an obligation that belongs to the screens which carry a session to
+     * a machine and use it. This one makes a session and hands it to nobody, so
+     * the honest reading is the one it was already given.
+     *
+     * **Both roads are spelled here**, in a `match` the reader can see. The rule
+     * that walks this app's navigation follows an accessor's own body to find where
+     * a screen leads; building either path behind {@see WhichSurfaceTheyAreGiven}
+     * would hide it from that walk, which would then report a screen an app can
+     * reach as a screen nobody can.
      *
      * Built from the stack this screen is already about, so it cannot lead to
      * another machine's report, and spelled once here rather than in the
@@ -223,7 +260,12 @@ final class SignIntoAStack extends NativeComponent
      */
     public function onwardsTo(): string
     {
-        return WhereAStackIs::of($this->stack()->id())->health();
+        $where = WhereAStackIs::of($this->stack()->id());
+
+        return match ($this->given) {
+            WhichSurfaceTheyAreGiven::TheReport => $where->health(),
+            WhichSurfaceTheyAreGiven::WhatTheyAreOwed => $where->yours(),
+        };
     }
 
     /** The frame, by name. */
@@ -249,9 +291,20 @@ final class SignIntoAStack extends NativeComponent
      * again later. The stack said who signed in; asking a second time would be a
      * second answer able to disagree with the first, and the first is the one the
      * store goes on holding.
+     *
+     * It is written down here twice over, and the two are not the same fact. The
+     * store keeps the subject because the next launch has to know it; this screen
+     * keeps which surface that comes to because the frame after the tap has to draw
+     * a way onwards. Recorded before the store is asked, because what the stack said
+     * about who is here is true whether or not this device found room for it.
      */
     private function kept(Session $session, Whose $whose): HowTheSignInWent
     {
+        $this->given = $whose->either(
+            operator: static fn(): WhichSurfaceTheyAreGiven => WhichSurfaceTheyAreGiven::TheReport,
+            member: static fn(): WhichSurfaceTheyAreGiven => WhichSurfaceTheyAreGiven::WhatTheyAreOwed,
+        );
+
         return $this->storage->keep($this->stack()->id(), $session, $whose)->either(
             kept: static fn(): HowTheSignInWent => HowTheSignInWent::SignedIn,
             refused: static fn(WhySessionCannotBeKept $why): HowTheSignInWent => HowTheSignInWent::unkept($why),

@@ -55,18 +55,27 @@ module prints them.
 ## What is still not built
 
 **`N3-R1` — the application a person is given is decided by the identity that
-signed in.** The admission carries `member` now, so the contract no longer holds
-this open. What does is this application: `Admissions` reads the token and drops
-the name, `Session` carries neither, and the secure store keeps a token per
-stack and nothing about whose it is. So a resumed app cannot tell a member from
-an operator, and both are given the same screens. What keeps that honest rather
-than dangerous is the paragraph above: the app hides nothing, so an operator's
-screen in front of a member is a screen the core refuses.
+signed in.** Half of it stands. The admission carries `member`, `Whose` holds
+that subject beside the session, the secure store keeps it with the token, and
+signing in now leads where the subject says: a member is handed what they are
+owed and an operator the machine's report, decided in
+`Modules\Operator\Internal\Screens\SignIntoAStack::onwardsTo()` and nowhere
+else. No setting switches between them and no build contains only one.
+
+What is left is the launch. A device that already holds a session opens on the
+operator's list of stacks, and `YourStacks` reads the store for *whether* a
+stack is signed into while dropping *whose* it is — so a member who signed in
+yesterday and opens the app today is given the operator's surface again. The
+subject is in the store waiting to be read; nothing reads it there yet. Until
+it does, what keeps that honest rather than dangerous is the paragraph above:
+the app hides nothing, so an operator's screen in front of a member is a screen
+the core refuses.
 
 **`N3-R6` — a member's own requests carry their state in household terms.** The
 app reads every member's requests for the operator and cannot tell whose is
-whose, so *their own* is the half with nothing behind it. It waits on the same
-thing `N3-R1` does.
+whose, so *their own* is the half with nothing behind it. What it waited on has
+arrived — the session now says whose it is — and what is missing is a reading
+narrowed to that subject rather than the identity to narrow it by.
 
 Neither is registered in `tests/Arch/WhatTheContractDoesNotCarryTest.php` any
 more, and that is a loss worth naming: that register goes red the day the
