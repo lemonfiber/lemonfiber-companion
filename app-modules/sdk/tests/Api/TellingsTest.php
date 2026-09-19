@@ -123,6 +123,16 @@ it('reads an answer that is not one member\'s as nothing owed to anybody', funct
     expect(whatOneMemberIsTold(['available' => true, 'findings' => [], 'members' => []]))->toBe([]);
 });
 
+it('N3-R3 — refuses a household the stack says it could not read, rather than an empty one', function (): void {
+    // The one this reading would get most wrong. A member whose household could
+    // not be read and a member with nothing to be told both arrive with no
+    // sentences, and the contract carries `available` to tell them apart — a
+    // false there is *why* the list is empty. Read as an empty house, it says
+    // *there is nothing to tell you* to somebody nobody could find out about.
+    expect(fn(): array => whatOneMemberIsTold(['available' => false, 'findings' => [], 'members' => []]))
+        ->toThrow(HouseholdIsUnreadable::class, 'could not read the household');
+});
+
 it('refuses a payload that is not a household at all', function (): void {
     expect(fn(): array => whatOneMemberIsTold([]))->toThrow(HouseholdIsUnreadable::class);
 

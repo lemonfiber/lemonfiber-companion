@@ -106,17 +106,20 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     [
         'path' => 'HouseholdEnvelope.members[].access',
         'because' => 'What one member is allowed — administrator, disabled, which libraries, which ratings. '
-            . 'The household surface is blocked rather than unstarted, and this is the field that makes it a '
-            . 'block: the wire carries the entitlement and not the *subject*, so an app holding this list '
-            . 'could only match it to a person by deciding for itself who is looking, and `N3-R3` refuses a '
-            . 'control hidden on that basis. `app-modules/household/src/README.md` holds the rest.',
+            . 'Nothing reads it because nothing may act on it: what a member can do is the core\'s answer, '
+            . 'and a surface holding the entitlement is a surface that could hide a control on its own '
+            . 'reading of it, which `N3-R3` refuses. The app asks and the core refuses, which is why this '
+            . 'stays unread even though the member\'s own reading is now narrowed to them. '
+            . '`app-modules/household/src/README.md` holds the rest.',
     ],
     [
         'path' => 'HouseholdEnvelope.members[].asking',
-        'because' => 'What one member has left of an allowance and when it comes back. `N3-R4` and `N3-R5` '
-            . 'have this told to the member before they ask, which is the surface `N3-R1` to `N3-R3` are '
-            . 'waiting on. The same block, and the operator\'s reading of this payload (`N2-R11`) is about '
-            . 'requests awaiting a decision rather than about somebody\'s quota.',
+        'because' => 'What one member has left of an allowance and when it comes back, in parts: a policy, '
+            . 'a standing, two counts, an instant. `N3-R4` and `N3-R5` have this told to the member before '
+            . 'they ask and it is — off `to_hand_over`, which carries the same facts as sentences the core '
+            . 'wrote. Reading the parts as well would be a surface assembling its own wording for *within a '
+            . 'limit*, which is a permission model with a template around it. The operator\'s reading of '
+            . 'this payload (`N2-R11`) is about requests awaiting a decision rather than somebody\'s quota.',
     ],
     [
         'path' => 'HouseholdEnvelope.members[].claimed',
@@ -307,23 +310,23 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     ],
     [
         'path' => 'HouseholdEnvelope.allows',
-        'because' => 'The household surface is blocked rather than unstarted. `N3-R1` to `N3-R3` wait on the '
-            . 'wire saying who is asking, which it does not, so nothing under `household` is read at all — '
-            . 'see `app-modules/household/src/README.md` and the gap register beside this one.',
-    ],
-    [
-        'path' => 'HouseholdEnvelope.available',
-        'because' => 'The same block. Reading what a household offers before the app can tell one member '
-            . 'from another would be building the surface `N3-R3` refuses to let anything rest on.',
+        'because' => 'What the house\'s own policy allows in a period, said about the house. A member is '
+            . 'told what applies to *them* in `to_hand_over`, written to them by the core and rendered '
+            . 'unchanged, so a house-level sentence beside it would be a second statement of the same rule '
+            . 'and able to disagree with the first the day one member is treated differently. The '
+            . 'operator\'s reading of this payload is about requests awaiting a decision rather than about '
+            . 'the house\'s defaults. `app-modules/household/src/README.md` holds the rest.',
     ],
     [
         'path' => 'HouseholdEnvelope.filtering',
-        'because' => 'The same block.',
+        'because' => 'What the limits on this household are and are not. The same answer as `allows`: it '
+            . 'is said about the house, and what a member reads is the core\'s sentences written to them.',
     ],
     [
         'path' => 'HouseholdEnvelope.policy',
-        'because' => 'The same block. A request policy is a household decision, and the household surface '
-            . 'cannot yet say whose decision it is.',
+        'because' => 'What happens to what the household asks for where nobody chose otherwise for one '
+            . 'person. The house\'s default, and a member is owed what applies to them rather than what '
+            . 'applies by default — which `to_hand_over` already says to them in the core\'s own words.',
     ],
     [
         'path' => 'RepairEnvelope.acted',

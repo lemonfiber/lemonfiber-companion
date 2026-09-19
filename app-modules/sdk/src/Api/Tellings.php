@@ -57,6 +57,17 @@ final readonly class Tellings
             throw HouseholdIsUnreadable::missing(WireField::Members);
         }
 
+
+        // **A household the stack could not read is not an empty household.**
+        // The contract carries `available` for exactly this and says so: a false
+        // there is *why* the list is empty, and reading the empty list instead
+        // tells somebody there is nothing waiting when the truth is that nobody
+        // could find out. Refused rather than reported, so it reaches whoever is
+        // looking as the obstacle it is.
+        if (self::couldNotBeRead($data)) {
+            throw HouseholdIsUnreadable::unread();
+        }
+
         $said = [];
         $position = 0;
 
@@ -78,6 +89,24 @@ final readonly class Tellings
         // read, and discarding the rows before looking at them would let that
         // through as an ordinary answer about somebody else.
         return count($said) === 1 ? $said[0] : Sentences::none();
+    }
+
+
+    /**
+     * Whether the stack said it could not read the household.
+     *
+     * Absent is not false. A payload without the field is one this app cannot
+     * check, and the contract requires it of every household answer — so a
+     * missing one is a stack of a version this app does not know rather than a
+     * household that read cleanly, and {@see self::rows()} refuses it a moment
+     * later for the same reason.
+     *
+     * @param array<mixed> $data
+     */
+    private static function couldNotBeRead(array $data): bool
+    {
+        return array_key_exists(WireField::Available->value, $data)
+            && $data[WireField::Available->value] === false;
     }
 
     /**

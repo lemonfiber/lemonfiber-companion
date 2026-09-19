@@ -443,6 +443,29 @@ it('N1-R10 — says the same about a list of requests it could not read', functi
     }
 });
 
+it('N3-R3 — a household the stack could not read reaches the member as a refusal', function (): void {
+    // Both halves of the member's screen, because both would otherwise draw an
+    // empty list from the same payload: one saying there is nothing to tell
+    // them, the other that they have asked for nothing. The stack said neither.
+    // It said it could not read the household, and the contract carries
+    // `available` so that this app can tell the two apart.
+    $unread = [
+        'api_version' => 1,
+        'kind' => 'household',
+        'data' => ['available' => false, 'findings' => ['The request service did not answer.'], 'members' => []],
+    ];
+
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode($unread))]);
+
+    expect(whatAMemberAskedFor(new TheirOwn(new PinnedClients())))->toBe('refused:no_answer');
+
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode($unread))]);
+
+    expect(whatAMemberWasOwed(new TheirOwn(new PinnedClients())))->toBe('refused:no_answer');
+});
+
 it('N1-R65 — asks the stack it was given for their requests, once', function (): void {
     $owing = AMemberWhoIsOwed::asking(Requested::none());
     $stack = theHouseAMemberBelongsTo();

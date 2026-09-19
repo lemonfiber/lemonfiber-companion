@@ -63,6 +63,17 @@ final readonly class Households
             throw HouseholdIsUnreadable::missing(WireField::Data);
         }
 
+
+        // **A household the stack could not read is not an empty household.**
+        // The contract carries `available` for exactly this and says so: a false
+        // there is *why* the list is empty, and reading the empty list instead
+        // tells somebody there is nothing waiting when the truth is that nobody
+        // could find out. Refused rather than reported, so it reaches whoever is
+        // looking as the obstacle it is.
+        if (self::couldNotBeRead($data)) {
+            throw HouseholdIsUnreadable::unread();
+        }
+
         return self::wanted(self::rows($data, WireField::Members));
     }
 
@@ -101,10 +112,36 @@ final readonly class Households
             throw HouseholdIsUnreadable::missing(WireField::Data);
         }
 
+        // **A household the stack could not read is not an empty household**, and
+        // this reading is where that would hurt most: a member would be told they
+        // have asked for nothing. The guard is the same one the operator's entry
+        // point above keeps, because the payload is the same payload.
+        if (self::couldNotBeRead($data)) {
+            throw HouseholdIsUnreadable::unread();
+        }
+
         $members = self::rows($data, WireField::Members);
         $wanted = self::wanted($members);
 
         return count($members) === 1 ? $wanted : Requested::none();
+    }
+
+
+    /**
+     * Whether the stack said it could not read the household.
+     *
+     * Absent is not false. A payload without the field is one this app cannot
+     * check, and the contract requires it of every household answer — so a
+     * missing one is a stack of a version this app does not know rather than a
+     * household that read cleanly, and {@see self::rows()} refuses it a moment
+     * later for the same reason.
+     *
+     * @param array<mixed> $data
+     */
+    private static function couldNotBeRead(array $data): bool
+    {
+        return array_key_exists(WireField::Available->value, $data)
+            && $data[WireField::Available->value] === false;
     }
 
     /**
