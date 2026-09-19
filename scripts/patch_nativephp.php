@@ -115,6 +115,35 @@ SHIPS,
         '.claude',
 BECOMES,
     ],
+    [
+        // `bridge/` is a path repository, so composer symlinks it into
+        // `vendor/lemonfiber/bridge` — and the bundler copies with
+        // `rsync -a --copy-links`, which follows the link and takes everything
+        // under it. That includes `.build`, where SwiftPM leaves its module
+        // caches and object files: 231 MB measured on 2026-09-19, growing every
+        // time `swift test` runs, and carried onto a handset.
+        //
+        // Size is the smaller half. A module cache holds absolute paths from
+        // the machine that built it and objects compiled from this checkout,
+        // and none of it is anything a device has a use for — so what ships is
+        // a copy of somebody's working tree inside the app.
+        //
+        // It already stops builds rather than merely bloating them: a debug
+        // build died with `rsync: .../.build/debug/ModuleCache/...: No space
+        // left on device` and succeeded unchanged once the directory was gone.
+        //
+        // Sits beside `.git` and `.claude` for their reason: a directory a tool
+        // keeps its own state in, which no build has a use for, and which can
+        // appear at any depth rather than only at the project root.
+        'in' => '/../vendor/nativephp/mobile/src/Support/BundleExclusions.php',
+        'ships' => <<<'SHIPS'
+        '.claude',
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        '.claude',
+        '.build',
+BECOMES,
+    ],
 ];
 
 /**
