@@ -121,6 +121,15 @@ it('refuses a payload that is not an object at all', function (): void {
         ->toThrow(HouseholdIsUnreadable::class, 'data');
 });
 
+it("refuses a payload that is not an object at all when reading one member's own", function (): void {
+    // The member's entry point reads the same socket as the operator's and owes
+    // the same refusal. A second entry point that salvaged where the first
+    // refused would be the one place a member is shown something an operator
+    // would have been told was unreadable.
+    expect(fn(): Requested => Households::theirOwnIn(new Envelope(1, 'household', 'sorry')))
+        ->toThrow(HouseholdIsUnreadable::class, 'data');
+});
+
 it('refuses a house with no members key rather than inventing an empty one', function (): void {
     // Absent is not empty. A house whose members were lost in transit and a
     // house where nobody has asked for anything are different facts, and only

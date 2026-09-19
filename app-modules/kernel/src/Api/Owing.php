@@ -38,4 +38,18 @@ interface Owing
      * by throwing.
      */
     public function toHandOver(Stack $stack, Session $session): WhatTheyAreOwed;
+
+    /**
+     * What this stack says the signed-in member has asked it for.
+     *
+     * Beside {@see toHandOver()} rather than folded into it, because they are two
+     * answers and a screen can be given one without the other: a stack that said
+     * what somebody is owed and nothing about what they asked for has answered
+     * half, and a single type carrying both would have no way to say so.
+     *
+     * Narrowed by the core the same way, and answering {@see WhatTheyAsked}
+     * rather than raising for {@see toHandOver()}'s reason — a stack that is
+     * asleep and a stack that declines are ordinary states of the world.
+     */
+    public function whatTheyAsked(Stack $stack, Session $session): WhatTheyAsked;
 }

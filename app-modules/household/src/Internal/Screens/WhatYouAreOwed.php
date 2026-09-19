@@ -9,11 +9,14 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Household\Internal\LetsGoOfARefusedSession;
+use Modules\Household\Internal\Presenters\HowWhatAMemberAskedForReads;
 use Modules\Household\Internal\Presenters\HowWhatAMemberIsOwedReads;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeOwed;
+use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToHaveAsked;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
+use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
@@ -77,6 +80,18 @@ final class WhatYouAreOwed extends NativeComponent
      */
     protected ?WhatAMemberTurnedOutToBeOwed $answered = null;
 
+    /**
+     * What they have asked for, once the frame has asked.
+     *
+     * Held beside {@see $answered} rather than folded into it, because they are
+     * two answers to two questions: a stack that said what somebody is owed and
+     * could not say what they asked for has answered half, and one field for both
+     * would have to throw one away to report the other.
+     *
+     * `protected` for {@see $answered}'s reason.
+     */
+    protected ?WhatAMemberTurnedOutToHaveAsked $listed = null;
+
     public function __construct(
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
@@ -113,12 +128,19 @@ final class WhatYouAreOwed extends NativeComponent
     public function again(): void
     {
         $this->answered = null;
+        $this->listed = null;
     }
 
     /** What came back, asked once per frame. */
     public function answer(): WhatAMemberTurnedOutToBeOwed
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /** What they have asked this machine for, asked once per frame. */
+    public function requests(): WhatAMemberTurnedOutToHaveAsked
+    {
+        return $this->listed ??= $this->list();
     }
 
     /** The way back to the machine this reading is about. */
@@ -155,6 +177,25 @@ final class WhatYouAreOwed extends NativeComponent
         );
     }
 
+    /**
+     * Resume the session, ask what they asked for, and flatten what came back.
+     *
+     * Its own resume rather than one shared with {@see ask()}. A session is not
+     * held on this screen between the two — holding one is the thing this surface
+     * spends its shape avoiding — and the store is on this device, so asking it
+     * twice in a frame costs a read rather than a round trip.
+     */
+    private function list(): WhatAMemberTurnedOutToHaveAsked
+    {
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatAMemberTurnedOutToHaveAsked => $this->listed($stack, $session),
+            notHeld: static fn(): WhatAMemberTurnedOutToHaveAsked
+                => new HowWhatAMemberAskedForReads()->signedOut(),
+        );
+    }
+
     /** What the stack said, or what the member met instead. */
     private function asked(Stack $stack, Session $session): WhatAMemberTurnedOutToBeOwed
     {
@@ -169,6 +210,24 @@ final class WhatYouAreOwed extends NativeComponent
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowWhatAMemberIsOwedReads()->met($why);
+            },
+        );
+    }
+
+    /** What they asked for, or what the member met instead. */
+    private function listed(Stack $stack, Session $session): WhatAMemberTurnedOutToHaveAsked
+    {
+        return $this->owing->whatTheyAsked($stack, $session)->either(
+            told: static fn(Requested $wanted): WhatAMemberTurnedOutToHaveAsked
+                => new HowWhatAMemberAskedForReads()->these($wanted),
+            refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToHaveAsked {
+                // Told here as well as on the reading beside it, and not because
+                // either is unsure: a fold cannot forget anything, and whichever
+                // of the two met the refusal is the one holding the obstacle when
+                // the store has to hear about it. Letting go twice is letting go.
+                $this->letGoOfTheSession($why, $stack);
+
+                return new HowWhatAMemberAskedForReads()->met($why);
             },
         );
     }

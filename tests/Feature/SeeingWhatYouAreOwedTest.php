@@ -7,14 +7,19 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TurnedDown;
+use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -57,6 +62,27 @@ function whatThisMemberIsTold(): Sentences
     return Sentences::of(
         Sentence::of('Anything you ask for goes to whoever looks after this house first.'),
         Sentence::of('You have two left this month. It makes room again on the 1st.'),
+    );
+}
+
+/**
+ * What this member has asked for: one waiting on somebody, one refused.
+ *
+ * Both arms in one answer, because a row that was turned down is read down a
+ * different arm from one that was not — and a fixture with only the first would
+ * leave the reason a member is owed untested.
+ */
+function whatThisMemberAskedFor(): Requested
+{
+    return Requested::of(
+        Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), Waiting::ForApproval),
+        Wanted::turnedDown(
+            2,
+            'Robin',
+            'Solaris',
+            Size::unknown(),
+            TurnedDown::because('Not for your age limit'),
+        ),
     );
 }
 
@@ -228,4 +254,122 @@ it('N3-R4 — the screen is registered under the route that reaches it', functio
     $resolved = NativeRouter::resolve(AStacksScreen::Owed->forTheStack(theStackAMemberReadsFrom()->id()));
 
     expect($resolved['class'] ?? null)->toBe(WhatYouAreOwed::class);
+});
+
+it('N3-R6 — shows what they asked for, each with where it stands', function (): void {
+    // The requirement's two halves in one assertion: the thing they asked for,
+    // and where it stands. A screen showing titles and no states would leave
+    // somebody looking at a list of films they already knew they had asked for.
+    $screen = theOwedScreen(AMemberWhoIsOwed::asking(whatThisMemberAskedFor()));
+    $rows = $screen->requests()->rows;
+
+    expect($screen->requests()->cameBack())->toBeTrue()
+        ->and($rows)->toHaveCount(2)
+        ->and($rows[0]->title)->toBe('The Third Man')
+        ->and($rows[0]->standing)->toBe('household.asked.waiting-for-approval')
+        ->and($rows[0]->wasRefused())->toBeFalse()
+        ->and($rows[1]->title)->toBe('Solaris')
+        ->and($rows[1]->standing)->toBe('household.asked.declined')
+        ->and($rows[1]->reason)->toBe('Not for your age limit')
+        ->and($rows[1]->wasRefused())->toBeTrue();
+});
+
+it('N3-R6 — says where a request stands in their words, not the operator\'s', function (): void {
+    // The one state whose wording differs in meaning rather than in phrasing.
+    // *Waiting for your decision* is true to an operator and false to the person
+    // who asked — it is not their decision — and a screen telling them it is
+    // would be asking them for something they cannot give.
+    $screen = theOwedScreen(AMemberWhoIsOwed::asking(whatThisMemberAskedFor()));
+
+    expect($screen->requests()->rows[0]->standing)
+        ->not->toBe(Waiting::ForApproval->saidOnTheScreen())
+        ->and(__($screen->requests()->rows[0]->standing))->toBe('Waiting for approval')
+        ->and(__(Waiting::ForApproval->saidOnTheScreen()))->toBe('Waiting for your decision');
+});
+
+it('N3-R9 — carries no requester on a member\'s own row', function (): void {
+    // Every row here is theirs, so a name would be their own repeated down a
+    // list — and a field for a requester is a field that could one day hold
+    // somebody else\'s. The fixture names the asker; the row does not carry it.
+    $rows = theOwedScreen(AMemberWhoIsOwed::asking(whatThisMemberAskedFor()))->requests()->rows;
+
+    foreach ($rows as $row) {
+        expect(get_object_vars($row))->toBe([
+            'title' => $row->title,
+            'standing' => $row->standing,
+            'reason' => $row->reason,
+        ]);
+    }
+});
+
+it('N3-R6 — draws a refusal as a refusal rather than as having asked for nothing', function (): void {
+    // The same distinction the sentences turn on. Both arrive with no rows, and
+    // an empty list drawn for the refusal tells somebody they have asked for
+    // nothing when the truth is that nobody could find out.
+    $refused = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::NotForThisAccount));
+    $nothing = theOwedScreen(AMemberWhoIsOwed::asking(Requested::none()));
+
+    expect($refused->requests()->cameBack())->toBeFalse()
+        ->and($refused->requests()->isSignedIn)->toBeTrue()
+        ->and($refused->requests()->met)->toBe('connection.not_for_this_account')
+        ->and($refused->requests()->remedy)->toBe('connection.not_for_this_account_action')
+        ->and($nothing->requests()->cameBack())->toBeTrue()
+        ->and($nothing->requests()->rows)->toBe([]);
+});
+
+it('asks for no requests where this device holds no session for the machine', function (): void {
+    // Nothing was met, because nothing was asked. The remedy is the sign-in
+    // screen rather than a sentence about a machine.
+    $owing = AMemberWhoIsOwed::asking(whatThisMemberAskedFor());
+    $screen = theOwedScreen($owing, signedIn: false);
+
+    expect($screen->requests()->isSignedIn)->toBeFalse()
+        ->and($screen->requests()->cameBack())->toBeFalse()
+        ->and($screen->requests()->rows)->toBe([])
+        ->and($owing->listings())->toBe(0);
+});
+
+it('N1-R65 — asks for their requests once per frame, and again when told to', function (): void {
+    // Counted apart from the sentences, because they are two questions: one
+    // counter for both would let a screen ask one of them twice and the other
+    // not at all while the total looked right.
+    $owing = AMemberWhoIsOwed::owedAndAsking(whatThisMemberIsTold(), whatThisMemberAskedFor());
+    $screen = theOwedScreen($owing);
+
+    $screen->requests();
+    $screen->requests();
+
+    expect($owing->listings())->toBe(1)
+        ->and($owing->askings())->toBe(0);
+
+    $screen->answer();
+
+    expect($owing->askings())->toBe(1);
+
+    // `again()` forgets both, so a frame after it asks both afresh. Forgetting
+    // one would leave a screen showing a new reading beside a stale one.
+    $screen->again();
+    $screen->requests();
+    $screen->answer();
+
+    expect($owing->listings())->toBe(2)
+        ->and($owing->askings())->toBe(2);
+});
+
+it('N3-R13 — a refused credential met on the requests read lets the session go too', function (): void {
+    // A fold cannot forget anything, and whichever of the two readings met the
+    // refusal is the one holding the obstacle when the store has to hear about
+    // it. A screen that let go only on the sentences would leave a device
+    // signed out on one half and signed in on the other.
+    $keychain = AKeychainInMemory::working();
+    $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::CredentialWasRefused), $keychain);
+
+    $stack = theStackAMemberReadsFrom()->id();
+
+    expect(WhatTheKeychainStillHolds::forThe($keychain, $stack)->held)->toBeTrue();
+
+    $screen->requests();
+
+    expect(WhatTheKeychainStillHolds::forThe($keychain, $stack)->held)->toBeFalse()
+        ->and($screen->requests()->isSignedIn)->toBeFalse();
 });

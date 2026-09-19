@@ -14,6 +14,21 @@ return [
     'partly-here' => 'Partly here',
     'here' => 'Here',
     'gone' => 'No longer here',
+    // The same states, said to the person who asked rather than to the
+    // operator deciding. Only the first differs in meaning rather than in
+    // wording: a member is not the one whose decision is waited on, and a
+    // screen telling them so would ask them for something they cannot give.
+    'asked' => [
+        'waiting-for-approval' => 'Waiting for approval',
+        'declined' => 'Declined',
+        'failed' => 'Could not be fetched',
+        'getting' => 'On its way',
+        'partly-here' => 'Partly here',
+        'here' => 'Here',
+        'gone' => 'No longer here',
+    ],
+    'your_requests' => 'What you have asked for',
+    'nothing_asked_for' => 'You have not asked for anything yet.',
     'waiting_count' => '{0} Nothing is waiting for you|{1} One request is waiting for you|[2,*] :count requests are waiting for you',
     'asked_by' => 'Asked for by :who',
     'size_measured' => ':size :unit',

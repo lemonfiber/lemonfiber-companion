@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
+use function count;
 use function is_array;
 use function is_bool;
 use function is_int;
@@ -63,6 +64,47 @@ final readonly class Households
         }
 
         return self::wanted(self::rows($data, WireField::Members));
+    }
+
+    /**
+     * The one member's own requests, where the answer is one member's.
+     *
+     * The same parsing and a different subject, which is why it is here rather
+     * than in a second reader: what a request row says does not depend on who is
+     * being told, and two copies of that reading would be two chances to disagree
+     * about what a refusal or a missing title means.
+     *
+     * **Exactly one row, or nothing.** A session belonging to a member is answered
+     * with that member's row because the core narrowed it, so one row is the
+     * reading. Anything else is an answer about a house — the operator's read of
+     * the same endpoint — and handing it to a member surface would show somebody
+     * another member's requests. {@see Tellings::in()} guards its own reading the
+     * same way and for the same sentence.
+     *
+     * **Not a filter, and that is the point of the guard rather than a detail of
+     * it.** Picking the right row out of a house would be this app deciding who is
+     * looking, which is the answer the core exists to give; refusing a house
+     * outright is the only reading that cannot quietly become that.
+     *
+     * Read before it is counted, deliberately, the way `Tellings` reads before it
+     * counts: a house whose fourth member carries a row this app cannot show is a
+     * stack this app cannot read, and counting first would let it through as an
+     * ordinary answer about somebody else.
+     *
+     * @param Envelope<mixed> $envelope the `household` envelope, as the client returned it
+     */
+    public static function theirOwnIn(Envelope $envelope): Requested
+    {
+        $data = self::payload(Wire::checked($envelope));
+
+        if (! is_array($data)) {
+            throw HouseholdIsUnreadable::missing(WireField::Data);
+        }
+
+        $members = self::rows($data, WireField::Members);
+        $wanted = self::wanted($members);
+
+        return count($members) === 1 ? $wanted : Requested::none();
     }
 
     /**

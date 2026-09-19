@@ -14,6 +14,21 @@ return [
     'partly-here' => 'Gedeeltelijk binnen',
     'here' => 'Binnen',
     'gone' => 'Niet meer aanwezig',
+    // The same states, said to the person who asked rather than to the
+    // operator deciding. Only the first differs in meaning rather than in
+    // wording: a member is not the one whose decision is waited on, and a
+    // screen telling them so would ask them for something they cannot give.
+    'asked' => [
+        'waiting-for-approval' => 'Wacht op akkoord',
+        'declined' => 'Afgewezen',
+        'failed' => 'Ophalen is mislukt',
+        'getting' => 'Onderweg',
+        'partly-here' => 'Gedeeltelijk binnen',
+        'here' => 'Binnen',
+        'gone' => 'Niet meer aanwezig',
+    ],
+    'your_requests' => 'Wat je hebt aangevraagd',
+    'nothing_asked_for' => 'Je hebt nog niets aangevraagd.',
     'waiting_count' => '{0} Niets wacht op je akkoord|{1} Eén verzoek wacht op je akkoord|[2,*] :count verzoeken wachten op je akkoord',
     'asked_by' => 'Gevraagd door :who',
     'size_measured' => ':size :unit',
