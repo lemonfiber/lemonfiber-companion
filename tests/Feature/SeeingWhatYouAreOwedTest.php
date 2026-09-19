@@ -264,6 +264,11 @@ it('N3-R6 — shows what they asked for, each with where it stands', function ()
     $rows = $screen->requests()->rows;
 
     expect($screen->requests()->cameBack())->toBeTrue()
+        // Neither of the obstacle's two keys, because nothing was met. The
+        // template branches on these, so a word in either would put an error
+        // above a list that arrived perfectly well.
+        ->and($screen->requests()->met)->toBe('')
+        ->and($screen->requests()->remedy)->toBe('')
         ->and($rows)->toHaveCount(2)
         ->and($rows[0]->title)->toBe('The Third Man')
         ->and($rows[0]->standing)->toBe('household.asked.waiting-for-approval')
@@ -326,6 +331,12 @@ it('asks for no requests where this device holds no session for the machine', fu
     expect($screen->requests()->isSignedIn)->toBeFalse()
         ->and($screen->requests()->cameBack())->toBeFalse()
         ->and($screen->requests()->rows)->toBe([])
+        // Neither key, for the same reason the sentences give: the device is
+        // signed out and the remedy for that is a screen rather than a
+        // sentence, so a word in either would put an error above a password
+        // field.
+        ->and($screen->requests()->met)->toBe('')
+        ->and($screen->requests()->remedy)->toBe('')
         ->and($owing->listings())->toBe(0);
 });
 
