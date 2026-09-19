@@ -6,7 +6,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\NativeServiceProvider as OurOwnExpansion;
-use Native\Mobile\Providers\ShareServiceProvider as HandingOver;
 use Native\Mobile\UI\NativeUIServiceProvider as Controls;
 
 /**
@@ -33,7 +32,9 @@ use Native\Mobile\UI\NativeUIServiceProvider as Controls;
  *   application retains: the session for each stack, the stacks themselves and
  *   what each one last came to — `Lemonfiber.Link.Status`, which replaced
  *   `nativephp/mobile-network` and is the one question a launch asks before it
- *   asks anything of a stack — and `Lemonfiber.Conceal`,
+ *   asks anything of a stack — `Lemonfiber.Handover.Offer`, which replaced
+ *   `nativephp/mobile-share` and puts a diagnostic report in front of somebody
+ *   who can help without this application learning where it went — and `Lemonfiber.Conceal`,
  *   `Lemonfiber.Reveal` and `Lemonfiber.IsProtected`, the protection for a
  *   screen showing a session token or pairing material — and
  *   `Lemonfiber.Authenticate` / `Lemonfiber.CanAuthenticate`, the device's own
@@ -42,8 +43,6 @@ use Native\Mobile\UI\NativeUIServiceProvider as Controls;
  *   collected by `AndroidPluginCompiler` and `IOSPluginCompiler`, which read
  *   this list. A build made without it has the adapters and not the functions
  *   they call.
- * - **`nativephp/mobile-share`**, which is the sheet a diagnostic report is
- *   handed to. Both were core until NativePHP 4 and are plugins now.
  * - **`nativephp/mobile-ui`**, which is where a text input comes from.
  *   `nativephp/mobile` registers `pressable` and no field: `text_input`,
  *   `toggle` and the rest are left to this plugin by name, in a comment in
@@ -89,7 +88,6 @@ final class NativeServiceProvider extends ServiceProvider
     {
         return [
             OurOwnExpansion::class,
-            HandingOver::class,
             Controls::class,
         ];
     }

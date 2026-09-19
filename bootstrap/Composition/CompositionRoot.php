@@ -12,6 +12,7 @@ use Bootstrap\Composition\NativePHP\TheTheme;
 use function config;
 
 use Illuminate\Support\ServiceProvider;
+use Lemonfiber\Native\Handover as TheSheet;
 use Lemonfiber\Native\Link as TheLink;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
@@ -60,6 +61,7 @@ use Modules\Sdk\Api\Upkeepers;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
+
 /**
  * The composition root.
  *
@@ -75,7 +77,6 @@ use Modules\Vault\Api\PlatformVerdicts;
  * is what makes a capability module testable without a device, a network or a
  * stack to talk to.
  */
-use Native\Mobile\Share;
 
 final class CompositionRoot extends ServiceProvider
 {
@@ -179,7 +180,7 @@ final class CompositionRoot extends ServiceProvider
         // handle to something outside this process, and one held for the life
         // of a long-running app (`I1`) is a handle to a platform state that has
         // since moved on.
-        $this->app->bind(Sharing::class, static fn(): Sharing => PlatformShare::onTheDevice(new Share()));
+        $this->app->bind(Sharing::class, static fn(): Sharing => new PlatformShare(new TheSheet()));
 
         // The paired machines, in the same store and bound for the same reason.
         // A separate port from the one above rather than a second method on it,

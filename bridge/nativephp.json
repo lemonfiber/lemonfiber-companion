@@ -114,6 +114,12 @@
             "android": "app.lemonfiber.native.LinkFunctions.Status",
             "ios": "LinkFunctions.Status",
             "description": "Say whether anything is reachable from this device right now"
+        },
+        {
+            "name": "Lemonfiber.Handover.Offer",
+            "android": "app.lemonfiber.native.HandoverFunctions.Offer",
+            "ios": "HandoverFunctions.Offer",
+            "description": "Offer a report to whoever the operator picks, and say whether the sheet was reached"
         }
     ],
     "android": {

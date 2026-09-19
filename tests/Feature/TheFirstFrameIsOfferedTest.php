@@ -222,7 +222,7 @@ it('clears the refusal once a later attempt works', function (): void {
     // could not be sent while the sheet was open in front of them.
     $screen = theLaunchScreen(
         StacksInMemory::holding(aPairedStack('The loft', 'a')),
-        sharing: AShareSheetThatWasOffered::refusing(WhyNothingWasShared::NowhereToWriteIt),
+        sharing: AShareSheetThatWasOffered::refusing(WhyNothingWasShared::NothingToHandOver),
     );
 
     $screen->share();

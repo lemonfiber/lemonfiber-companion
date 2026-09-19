@@ -20,13 +20,14 @@ use function sprintf;
 enum WhyNothingWasShared: string
 {
     /**
-     * There was nowhere to write the report before handing it over.
+     * There was no report to hand over.
      *
-     * A full disk, in practice — which on a phone holding this product's media
-     * is the likeliest failure there is. The remedy is the operator's and it is
-     * a real one, which is why this is not merged with the case below.
+     * The report was not assembled, so nothing was put in front of anybody. The
+     * remedy is to ask for it again rather than to try the sheet again, which
+     * is why this is not merged with the case below: that one says the report
+     * exists and the platform would not show it.
      */
-    case NowhereToWriteIt = 'nowhere_to_write_it';
+    case NothingToHandOver = 'nothing_to_hand_over';
 
     /**
      * The platform would not show a share sheet.

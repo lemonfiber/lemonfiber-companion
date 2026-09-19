@@ -30,6 +30,7 @@ let package = Package(
                 "ScanningViewController.swift",
                 "StorageFunctions.swift",
                 "LinkFunctions.swift",
+                "HandoverFunctions.swift",
             ]
         ),
         .testTarget(
