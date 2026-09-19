@@ -121,6 +121,39 @@ it('refuses a payload that is not an object at all', function (): void {
         ->toThrow(HouseholdIsUnreadable::class, 'data');
 });
 
+it("refuses a payload that is not an object at all when reading one member's own", function (): void {
+    // The member's entry point reads the same socket as the operator's and owes
+    // the same refusal. A second entry point that salvaged where the first
+    // refused would be the one place a member is shown something an operator
+    // would have been told was unreadable.
+    expect(fn(): Requested => Households::theirOwnIn(new Envelope(1, 'household', 'sorry')))
+        ->toThrow(HouseholdIsUnreadable::class, 'data');
+});
+
+it('N3-R3 — refuses a household the stack says it could not read, rather than an empty one', function (): void {
+    // The field exists for this and the contract says so: a false `available`
+    // is *why* the list is empty. Reading the empty list instead would tell an
+    // operator there is nothing to decide, and a member that they have asked
+    // for nothing, when the truth is that nobody could find out.
+    //
+    // Both entry points, because both would otherwise draw the same empty list
+    // from the same payload.
+    $unread = householdSaying(['available' => false, 'findings' => [], 'members' => []]);
+
+    expect(fn(): Requested => Households::in($unread))
+        ->toThrow(HouseholdIsUnreadable::class, 'could not read the household')
+        ->and(fn(): Requested => Households::theirOwnIn($unread))
+        ->toThrow(HouseholdIsUnreadable::class, 'could not read the household');
+});
+
+it('reads a household the stack could read as the answer it is', function (): void {
+    // The other side of the guard, so it cannot pass by refusing everything: a
+    // house that read cleanly and holds nobody is an empty house, and an empty
+    // house is an answer.
+    expect(Households::in(householdSaying(['available' => true, 'findings' => [], 'members' => []])))
+        ->toHaveCount(0);
+});
+
 it('refuses a house with no members key rather than inventing an empty one', function (): void {
     // Absent is not empty. A house whose members were lost in transit and a
     // house where nobody has asked for anything are different facts, and only

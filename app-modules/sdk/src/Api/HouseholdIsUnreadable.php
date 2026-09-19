@@ -37,6 +37,13 @@ final class HouseholdIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    public static function unread(): self
+    {
+        return new self(
+            'The stack says it could not read the household, so its list is empty for a reason that is not an empty house. Reading it as one would tell somebody there is nothing waiting when the truth is that nobody could find out.',
+        );
+    }
+
     public static function member(int $position): self
     {
         return new self(sprintf(

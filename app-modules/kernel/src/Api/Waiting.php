@@ -64,4 +64,24 @@ enum Waiting: string
     {
         return sprintf('household.%s', $this->value);
     }
+
+    /**
+     * What this is called to the person who asked for it, as a key.
+     *
+     * Beside {@see saidOnTheScreen()} rather than replacing it, because the two
+     * readers are owed different sentences about the same state. *Waiting for your
+     * decision* is true to an operator and false to a member — it is not their
+     * decision, and a screen telling them it is would be asking them to do
+     * something they cannot. The rest read alike today and are keyed separately
+     * anyway: two readers sharing one word is a coincidence rather than a rule,
+     * and the day one of them needs its own wording is a day nobody should have
+     * to find the other's screens to check what breaks.
+     *
+     * The line is drawn once, here, for the reason {@see saidOnTheScreen()} gives
+     * about screens that decide for themselves.
+     */
+    public function saidToTheMember(): string
+    {
+        return sprintf('household.asked.%s', $this->value);
+    }
 }

@@ -81,18 +81,40 @@ handed, made available to a caller that wants an answer rather than nothing.
 **There is no setting and no second build.** The one input is what the stack
 said about whose session it opened.
 
-## What is still not built
+## What answers the rule about their own requests
 
-**`N3-R6` — a member's own requests carry their state in household terms.** The
-app reads every member's requests for the operator and cannot tell whose is
-whose, so *their own* is the half with nothing behind it. What it waited on has
-arrived — the session now says whose it is — and what is missing is a reading
-narrowed to that subject rather than the identity to narrow it by.
+| | |
+|---|---|
+| `N3-R6` | A member's own requests carry their state in household terms, and expose no pipeline internals |
 
-It is not registered in `tests/Arch/WhatTheContractDoesNotCarryTest.php` any
-more, and that is a loss worth naming: that register goes red the day the
-contract closes a gap, and the contract has closed this one. What is left is
-work this repository has not done, which no register of the wire can watch.
+`WhatYouAreOwed` shows them beneath the sentences: the sentences say what
+happens when they ask, and this says what became of the times they did. Each row
+carries what was asked for, where it stands, and the reason it was refused where
+there was one.
+
+**Their own, because the core narrowed it, and refused rather than filtered
+where it did not.** A member's session is answered with that member's row —
+`lemonfiber-api` rewrites the command to their account id and discards whatever
+the request named — so nothing here picks a row out of a house.
+`Households::theirOwnIn()` takes exactly one row or answers with nothing, which
+is the part worth keeping: filtering would behave identically every day the core
+behaves, and on the day it did not it would hand one member another member's
+requests. Refusing is the only reading that cannot quietly become this app
+deciding who is looking.
+
+**A state and never a stage.** No queue position, no percentage, no service
+doing the fetching, no library handle for the thing. `WhatOneOfTheirRequestsSays`
+holds three fields and there is a test that it holds only those — a field for a
+requester is a field that could one day carry somebody else's name.
+
+**Said in their words.** `Waiting::saidToTheMember()` beside
+`saidOnTheScreen()`, because one of the seven states changes meaning rather than
+phrasing: *waiting for your decision* is true to an operator and false to the
+person who asked.
+
+The reading is the operator's own parsing with the subject changed rather than a
+second copy of it, so a member and an operator cannot be told different things
+about the same refusal.
 
 ## `N3-R9` — what a member is never shown
 

@@ -47,6 +47,9 @@ enum WireField: string
     /** The name a stack gives one listing of repairs, quoted back on a yes. */
     case Agreement = 'agreement';
 
+    /** Whether the household could be read at all, which is why its list is empty. */
+    case Available = 'available';
+
     /** The stable identifier for a kind of problem, quotable and searchable. */
     case Code = 'code';
 
