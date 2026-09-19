@@ -180,6 +180,19 @@ jobs:
   hygiene:
     uses: lemonfiber/spec/.github/workflows/hygiene.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
+  # Every pin this repository holds on a shared workflow, against what the
+  # spec's default branch holds now. It fails naming the commits a pin has not
+  # taken; a run that could not ask which they are says so rather than reporting
+  # clean.
+  #
+  # `hygiene` above asks a different question and passing it is not this passing:
+  # that one reads the workflows as files, and this one measures each pin against
+  # the history of the file it names. Without it a pin rots with nothing to say
+  # so, which is how the `sonar-gate` pin came to be a commit behind and stayed
+  # there until another repository's gate found it.
+  workflow-pins:
+    uses: lemonfiber/spec/.github/workflows/workflow-pins.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
+
   security:
     uses: lemonfiber/spec/.github/workflows/security.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
 
