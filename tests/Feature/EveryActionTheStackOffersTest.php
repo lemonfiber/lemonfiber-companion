@@ -33,8 +33,8 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Doctor', 'Error', 'Household', 'Job', 'Log',
-    'Repair', 'Status', 'Stuck', 'Update',
+    'Doctor', 'Error', 'Held', 'Household', 'Job',
+    'Log', 'Repair', 'Status', 'Stuck', 'Update',
 ];
 
 /**
@@ -85,7 +85,7 @@ const NOT_YET = [
     'Admission', 'Adoption', 'Alerts', 'Archives', 'Backup',
     'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients',
     'Config', 'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
-    'Glossary', 'Held', 'History', 'Hosting', 'Import',
+    'Glossary', 'History', 'Hosting', 'Import',
     'Invitation', 'Lifecycle', 'Migration', 'Music', 'Outbound',
     'Preview', 'Provenance', 'Pull', 'Quality', 'Removal',
     'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',

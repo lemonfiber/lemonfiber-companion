@@ -70,6 +70,14 @@
         <native:text class="text-sm">{{ __('household.ask_again') }}</native:text>
     </native:pressable>
 
+    {{-- Across to what is already theirs. Offered on this arm alone: a member
+         reading what they can ask for is the one about to wonder what they
+         already have, and a screen that would not say what they are owed has
+         no business claiming to know what is on their shelf. --}}
+    <native:pressable native:key="your-shelf" class="w-full min-h-12 justify-center py-2" @navigate="$this->shelf()" a11y-label="{{ __('household.shelf') }}" :press-opacity="0.6">
+        <native:text class="text-sm">{{ __('household.shelf') }}</native:text>
+    </native:pressable>
+
     {{-- The way back to the machine this reading is about. A screen under a
          machine ends with one: going deeper is not a way out. --}}
     <native:pressable native:key="back-to-the-machine" class="w-full min-h-12 justify-center py-2" @navigate="$this->health()" a11y-label="{{ __('household.back_to_the_machine') }}" :press-opacity="0.6">

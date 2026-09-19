@@ -149,6 +149,19 @@ final class WhatYouAreOwed extends NativeComponent
         return AStacksScreen::Health->forTheStack($this->stack()->id());
     }
 
+    /**
+     * The member's other screen: what is already on their shelf.
+     *
+     * Beside this one rather than under it. What a member may ask for and
+     * what they already have are two readings of two endpoints, and a person
+     * who has just been told something arrived is a person about to look for
+     * it — so the way across is here.
+     */
+    public function shelf(): string
+    {
+        return AStacksScreen::Shelf->forTheStack($this->stack()->id());
+    }
+
     /** Where a session that has ended is renewed. */
     public function signIn(): string
     {

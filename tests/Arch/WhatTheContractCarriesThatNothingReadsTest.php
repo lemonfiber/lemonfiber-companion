@@ -304,6 +304,21 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'this app has written.',
     ],
     [
+        'path' => 'HeldEnvelope.id',
+        'because' => 'Which machine the shelf was read from, echoed back. This app asked a stack it '
+            . 'already holds, over a connection pinned against that stack\'s fingerprint, so reading '
+            . 'the answer\'s idea of which machine it is would be a second opinion about something '
+            . 'already settled — and the only way the two could ever differ is a connection that went '
+            . 'somewhere else, which the pin refuses before a body is read.',
+    ],
+    [
+        'path' => 'HeldEnvelope.member',
+        'because' => 'Whose shelf it is, echoed back. The app named the member in the request, so this '
+            . 'is the same value returning; trusting the answer\'s copy over the one it sent would let a '
+            . 'stack decide who is looking, which is the decision the signed-in identity makes. A screen '
+            . 'showing a member their own name is not what a shelf is for.',
+    ],
+    [
         'path' => 'HouseholdEnvelope.allows',
         'because' => 'What the house\'s own policy allows in a period, said about the house. A member is '
             . 'told what applies to *them* in `to_hand_over`, written to them by the core and rendered '
