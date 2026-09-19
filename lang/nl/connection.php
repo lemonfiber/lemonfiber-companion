@@ -9,6 +9,8 @@ return [
     'local_network_refused_action' => 'Geef lemonfiber toegang tot het lokale netwerk in Instellingen.',
     'no_answer' => 'Deze stack gaf geen antwoord.',
     'no_answer_action' => 'Controleer of de machine aanstaat en op hetzelfde netwerk zit.',
+    'not_for_this_account' => 'Dit is niets wat dit account mag opvragen.',
+    'not_for_this_account_action' => 'Vraag het aan wie deze stack beheert als je dit nodig hebt.',
     'credential_refused' => 'Deze stack heeft de koppeling van deze app geweigerd.',
     'credential_refused_action' => 'Koppel opnieuw vanaf de stack zelf.',
     'paired' => 'Gekoppeld aan :stack',

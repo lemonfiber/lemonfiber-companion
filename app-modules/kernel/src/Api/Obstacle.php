@@ -106,6 +106,32 @@ enum Obstacle: string
     case CredentialWasRefused = 'credential_refused';
 
     /**
+     * The stack answered, and this account may not ask for that.
+     *
+     * The connection works, the session is good, and the answer is *no*. It is
+     * the one obstacle here that is not a fault: nothing is broken, nothing is
+     * off, and the core refusing a control a member is not entitled to is the
+     * system working rather than failing.
+     *
+     * **Told apart from a refused credential because it must not sign anybody
+     * out.** Both are a stack answering *no* to a request that carried a
+     * session, and collapsing them would end a member's session the first time
+     * they reached something that was never theirs.
+     *
+     * **Told apart from a stack that did not answer because it is an answer.**
+     * Rendering it as silence would have a member told the machine is down
+     * while it is sitting there declining them, and the remedy offered would be
+     * to wait for something that will never change on its own.
+     *
+     * What a screen shows for this is the core's own sentence where the refusal
+     * carried one. This case is what a screen falls back to, and what it reads
+     * to know that an empty list is a refusal rather than an absence — which is
+     * the whole of what the app owes here. The core decides entitlement; the
+     * app's only job is not to pass the refusal off as nothing being there.
+     */
+    case NotForThisAccount = 'not_for_this_account';
+
+    /**
      * The stack has stopped answering password attempts for a while.
      *
      * Told apart from {@see self::CredentialWasRefused} because the remedy is
@@ -210,6 +236,7 @@ enum Obstacle: string
             self::StackDidNotAnswer => 'COMPANION-NO-ANSWER',
             self::StackIsNotTheOnePaired => 'COMPANION-CERTIFICATE-CHANGED',
             self::CredentialWasRefused => 'COMPANION-CREDENTIAL-REFUSED',
+            self::NotForThisAccount => 'COMPANION-NOT-FOR-THIS-ACCOUNT',
             self::TooManyAttempts => 'COMPANION-TOO-MANY-ATTEMPTS',
         });
     }
@@ -227,7 +254,13 @@ enum Obstacle: string
     public function severity(): Severity
     {
         return match ($this) {
-            self::DeviceHasNoNetwork, self::TooManyAttempts => Severity::Warning,
+            // Nothing is broken here either, and this is the sharper case:
+            // the refusal is correct. A member who may not ask for a thing
+            // is not looking at a fault, and an app that demanded attention
+            // for it would be raising an alarm about the rules working.
+            self::DeviceHasNoNetwork,
+            self::TooManyAttempts,
+            self::NotForThisAccount => Severity::Warning,
             self::LocalNetworkIsNotPermitted,
             self::StackDidNotAnswer,
             self::CredentialWasRefused => Severity::Error,
@@ -253,7 +286,11 @@ enum Obstacle: string
             // Waiting is the whole remedy, and it is not a thing the app can
             // offer to do: a button here would either do nothing or make the
             // wait longer, which is the one outcome worse than no button.
-            self::TooManyAttempts => Standing::Guided,
+            self::TooManyAttempts,
+            // Entitlement is the household operator's to give, somewhere
+            // this application cannot reach. A button would either do
+            // nothing or promise a member something the app cannot deliver.
+            self::NotForThisAccount => Standing::Guided,
             self::LocalNetworkIsNotPermitted,
             self::CredentialWasRefused,
             self::StackIsNotTheOnePaired => Standing::Actionable,

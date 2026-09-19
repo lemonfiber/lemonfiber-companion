@@ -9,6 +9,8 @@ return [
     'local_network_refused_action' => 'Allow local network access for lemonfiber in Settings.',
     'no_answer' => 'This stack did not answer.',
     'no_answer_action' => 'Check that the machine is on and on the same network.',
+    'not_for_this_account' => 'This is not something this account may ask for.',
+    'not_for_this_account_action' => 'Ask whoever looks after this stack if you need it.',
     'credential_refused' => 'This stack refused the pairing this app holds.',
     'credential_refused_action' => 'Pair with the stack again from the stack itself.',
     'paired' => 'Paired with :stack',

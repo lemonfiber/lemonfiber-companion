@@ -15,7 +15,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 
-it('is the six an operator must be able to tell apart', function (): void {
+it('is the seven an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
     // being proposed and keeps belonging elsewhere, while the permission case asked for
     // the permission case by name — and it should be made against a failing
@@ -26,6 +26,7 @@ it('is the six an operator must be able to tell apart', function (): void {
         Obstacle::StackDidNotAnswer,
         Obstacle::StackIsNotTheOnePaired,
         Obstacle::CredentialWasRefused,
+        Obstacle::NotForThisAccount,
         Obstacle::TooManyAttempts,
     ]);
 });
@@ -52,6 +53,7 @@ it('G4-R6 — names each one differently in the identifier an operator searches 
         'COMPANION-NO-ANSWER',
         'COMPANION-CERTIFICATE-CHANGED',
         'COMPANION-CREDENTIAL-REFUSED',
+        'COMPANION-NOT-FOR-THIS-ACCOUNT',
         'COMPANION-TOO-MANY-ATTEMPTS',
     ]);
 });
@@ -68,6 +70,13 @@ it('calls a condition that clears itself a warning, and a fault an error', funct
     expect(Obstacle::LocalNetworkIsNotPermitted->severity())->toBe(Severity::Error);
     expect(Obstacle::StackDidNotAnswer->severity())->toBe(Severity::Error);
     expect(Obstacle::CredentialWasRefused->severity())->toBe(Severity::Error);
+
+    // The sharpest of the three that are not faults: the refusal is correct.
+    // A member who may not ask for a thing is not looking at something broken,
+    // and demanding attention for it would raise an alarm about the rules
+    // working as written.
+    expect(Obstacle::NotForThisAccount->severity())->toBe(Severity::Warning);
+    expect(Obstacle::NotForThisAccount->severity()->demandsAttention())->toBeFalse();
 
     // The only one that may mean somebody else is answering, which is a
     // consequence outside the machine rather than something being broken.
@@ -86,6 +95,11 @@ it('offers a button only where the app can press it', function (): void {
     expect(Obstacle::StackDidNotAnswer->standing())->toBe(Standing::Guided);
     expect(Obstacle::LocalNetworkIsNotPermitted->standing())->toBe(Standing::Actionable);
     expect(Obstacle::CredentialWasRefused->standing())->toBe(Standing::Actionable);
+
+    // Entitlement is the household operator's to give, somewhere this
+    // application cannot reach. A button would either do nothing or promise a
+    // member something the app cannot deliver.
+    expect(Obstacle::NotForThisAccount->standing())->toBe(Standing::Guided);
     expect(Obstacle::StackIsNotTheOnePaired->standing())->toBe(Standing::Actionable);
 
     expect(Obstacle::CredentialWasRefused->standing()->offersAButton())->toBeTrue();
