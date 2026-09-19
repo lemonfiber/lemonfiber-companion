@@ -167,6 +167,38 @@ it('N1-R2 — tapping a signed-in stack goes to the report, not back to the pass
         ->and(NativeRouter::resolve($screen->tappingGoesTo($shed)))->not->toBeNull();
 });
 
+it('N3-R1 — tapping a stack a member is signed into goes to their reading', function (): void {
+    // The launch half. Signing in already led where the subject said, but a
+    // session outlives the app being closed, and a list that remembered only
+    // *that* one was held handed a member the operator's machine report on
+    // every launch after the first — the one reading a member is never meant
+    // to be given. The subject was in the store the whole time.
+    //
+    // The same two stacks as the operator's case above, so what differs
+    // between the two tests is the subject and nothing else.
+    $loft = aPairedStack('The loft', 'a');
+    $shed = aPairedStack('The shed', 'b');
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep(
+        $loft->id(),
+        Session::of('a-session-not-a-secret'),
+        Whose::member('the-member-the-server-files-them-under'),
+    );
+
+    $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed), $keychain);
+
+    expect($screen->tappingGoesTo($loft))->toBe(sprintf('/stacks/%s/yours', $loft->id()->stored()))
+        ->and(NativeRouter::resolve($screen->tappingGoesTo($loft)))->not->toBeNull(
+            'A member tapping their machine lands on a URI the navigation stack does '
+            . 'not know, so they would tap into nothing.',
+        );
+
+    // A stack nobody is signed into is still the password, whoever the other
+    // one belongs to. A subject read for the wrong machine would be a member
+    // handed a reading of a house this device has no session for.
+    expect($screen->tappingGoesTo($shed))->toBe($screen->signInAt($shed));
+});
+
 it('N4-R13 — assembles a report for the operator to send, and does not send it', function (): void {
     // Both clauses. The app hands the text to the platform's share sheet and
     // stops; where it goes is a choice a person makes in an app this one does

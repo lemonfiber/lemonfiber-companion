@@ -72,4 +72,36 @@ final readonly class Resumed
     {
         return $this->session instanceof Session ? $held($this->session, $this->whose) : $notHeld();
     }
+
+    /**
+     * Whose session this device holds, without handing the session over.
+     *
+     * The same question {@see either()} answers, asked by a caller that wants the
+     * subject and not the secret. Deciding which application somebody is given is
+     * exactly that caller: it turns on who signed in and never speaks to a stack,
+     * and {@see either()} would make it accept a session to reach the name beside
+     * one. A screen holding a session it has no use for is the thing this kernel
+     * spends most of its shape preventing, and the shortest way to keep a session
+     * out of one is to have the answer it wants not contain one.
+     *
+     * **Three states through two arms.** Nobody is signed in, the operator is, or a
+     * member is — and the second and third are one arm here because {@see Whose} is
+     * the type that tells them apart, so a third arm would be this fold answering a
+     * question that one already answers. What cannot be collapsed is the first: a
+     * device with no session is not a device the operator is signed into, and
+     * {@see notHeld()} naming the operator is why reading the subject off a bare
+     * accessor would say it was.
+     *
+     * @template TNobody of object
+     * @template TTheirs of object
+     *
+     * @param Closure(): TNobody       $nobody
+     * @param Closure(Whose): TTheirs  $theirs
+     *
+     * @return TNobody|TTheirs
+     */
+    public function whoseItIs(Closure $nobody, Closure $theirs): object
+    {
+        return $this->session instanceof Session ? $theirs($this->whose) : $nobody();
+    }
 }

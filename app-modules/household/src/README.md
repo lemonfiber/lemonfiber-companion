@@ -52,23 +52,44 @@ about the household's rules. That is a permission model with a template around
 it, which is what `N3-R2` refuses. So the port answers with `Sentences` and this
 module prints them.
 
-## What is still not built
+## What answers the rule about which application
 
-**`N3-R1` — the application a person is given is decided by the identity that
-signed in.** The admission carries `member` now, so the contract no longer holds
-this open. What does is this application: `Admissions` reads the token and drops
-the name, `Session` carries neither, and the secure store keeps a token per
-stack and nothing about whose it is. So a resumed app cannot tell a member from
-an operator, and both are given the same screens. What keeps that honest rather
-than dangerous is the paragraph above: the app hides nothing, so an operator's
-screen in front of a member is a screen the core refuses.
+| | |
+|---|---|
+| `N3-R1` | The application a person is given is decided by the identity that signed in, and is not a setting or a separate build |
+
+The admission carries `member`, `Whose` holds that subject beside the session,
+the secure store keeps the two together, and two screens turn it into a surface.
+Signing in leads where the subject says — `SignIntoAStack::onwardsTo()` — and so
+does tapping a stack on the list a launch later, through
+`YourStacks::tappingGoesTo()`. Both spell it as a `match` over an enum a fold
+built, so neither screen holds a second copy of the rule and neither can drift
+from the other without a test saying so.
+
+**Two screens rather than one, because a session outlives the app.** Signing in
+is the moment the subject arrives and the launch is every moment after it, and
+an app that decided only at the first would hand a member the operator's machine
+report every time they reopened it. The store was already holding the answer;
+what was missing was anything reading it there.
+
+**Neither screen is handed a session to find out.** `Resumed::whoseItIs()`
+answers the subject without the secret, which is what lets a screen that speaks
+to no stack decide which application somebody is given while never holding a
+credential — the discipline `isSignedInto()` keeps by dropping what it is
+handed, made available to a caller that wants an answer rather than nothing.
+
+**There is no setting and no second build.** The one input is what the stack
+said about whose session it opened.
+
+## What is still not built
 
 **`N3-R6` — a member's own requests carry their state in household terms.** The
 app reads every member's requests for the operator and cannot tell whose is
-whose, so *their own* is the half with nothing behind it. It waits on the same
-thing `N3-R1` does.
+whose, so *their own* is the half with nothing behind it. What it waited on has
+arrived — the session now says whose it is — and what is missing is a reading
+narrowed to that subject rather than the identity to narrow it by.
 
-Neither is registered in `tests/Arch/WhatTheContractDoesNotCarryTest.php` any
+It is not registered in `tests/Arch/WhatTheContractDoesNotCarryTest.php` any
 more, and that is a loss worth naming: that register goes red the day the
 contract closes a gap, and the contract has closed this one. What is left is
 work this repository has not done, which no register of the wire can watch.

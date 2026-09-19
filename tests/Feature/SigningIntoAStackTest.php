@@ -14,6 +14,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
@@ -80,6 +81,22 @@ function aDoorThatOpens(): ADoorThatWasKnockedOn
     return ADoorThatWasKnockedOn::opening(
         Session::of('a-session-not-a-secret'),
         Instant::atEpochSeconds(ENDS_AT),
+    );
+}
+
+/**
+ * A door that opens onto a session belonging to one member of the house.
+ *
+ * Beside {@see aDoorThatOpens()} rather than replacing it. Almost every case in
+ * this file is about the operator, and naming the subject in each of them would
+ * make it noise everywhere except the two places it is the whole point.
+ */
+function aDoorThatOpensForAMember(): ADoorThatWasKnockedOn
+{
+    return ADoorThatWasKnockedOn::openingFor(
+        Session::of('a-session-not-a-secret'),
+        Instant::atEpochSeconds(ENDS_AT),
+        Whose::member('the-member-the-server-files-them-under'),
     );
 }
 
@@ -352,6 +369,48 @@ it('N1-R2 — takes them to the report once they are in, rather than describing 
             'Signing in leads to a URI the navigation stack does not know, so the '
             . 'operator would tap into nothing.',
         );
+});
+
+it('N3-R1 — hands a member their own reading rather than the operator\'s report', function (): void {
+    // The identity decides the application. Both people offer a password at
+    // the same field and come away signed in the same way; the only thing that
+    // differs is what the stack said about whose session it opened. A screen
+    // sending them both to the report would be one where a member's
+    // application is not reachable at all — and it would put the machine's
+    // diagnostics in front of somebody who must never be shown them, one
+    // screen before the core was asked anything.
+    //
+    // Driven through a real sign-in rather than by handing the screen a
+    // subject, because the tap is where the subject arrives and holding it is
+    // the half that could be dropped.
+    $screen = typedPassword(signInScreen(aDoorThatOpensForAMember()), 'a-members-password');
+
+    $screen->offer();
+
+    expect($screen->isSignedIn())->toBeTrue()
+        ->and($screen->onwardsTo())->toBe(sprintf('/stacks/%s/yours', aStackToSignInto()->id()->stored()))
+        ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull(
+            'A member signing in leads to a URI the navigation stack does not know, so '
+            . 'they would tap into nothing.',
+        );
+});
+
+it('N4-R6 — answers a session it could not keep with the way it always led', function (): void {
+    // The subject is taken from what the stack said, not from what the store
+    // managed to write, so a store that would not open does not leave the way
+    // onwards undecided. The screen does not offer it for this sign-in anyway
+    // — `isSignedIn()` is false and the template asks first — and what matters
+    // is that the method answers coherently rather than on a half-written
+    // reading of who is here.
+    $screen = typedPassword(
+        signInScreen(aDoorThatOpens(), AKeychainInMemory::withNowhereSafe()),
+        'the-operators-password',
+    );
+
+    $screen->offer();
+
+    expect($screen->isSignedIn())->toBeFalse()
+        ->and($screen->onwardsTo())->toBe(sprintf('/stacks/%s', aStackToSignInto()->id()->stored()));
 });
 
 it('offers the way onwards only to somebody who actually got in', function (): void {
