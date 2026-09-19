@@ -77,13 +77,28 @@ protected is now `N3-R14` and `N3-R16`: not *no player*, but a player holding no
 second copy of a library, an age limit or an entitlement, and none of the asking
 logic.
 
-The test is left standing rather than deleted, and the choice is worth stating
-because it is a trap either way. It passes today, since there is no player, so
-nothing is refused yet. Deleting it now would drop the guard during exactly the
-window when somebody might add a player carelessly — which is the erosion its own
-argument describes. Leaving it silent would let it refuse the next feature on the
-authority of a row that no longer exists. So it stays, and whoever builds the
-player re-aims it at what survived rather than arguing with it.
+The test is left standing rather than deleted, and it now cites the rows that
+replaced the withdrawn one. The choice is a trap either way. Deleting it would
+drop the guard during exactly the window when somebody might add a player
+carelessly — the erosion its own argument describes. Leaving it citing a row
+that no longer exists would let it refuse the next feature on an authority it
+had lost.
+
+**It is stricter than `N3-R14` and `N3-R16` ask, and that is deliberate for as
+long as it lasts.** Those two forbid a player that holds a second copy of a
+library, an age limit or an entitlement, or that implements any of the asking;
+this refuses a player at all. The reason the stronger form is the right one
+today is that a narrower one would be unenforceable: nothing on the wire says
+where to play a holding — `HeldEnvelope.holdings[]` carries an identifier and
+no location — so a player added now could only work by composing an address out
+of a stack's address and an id, which is the second copy `N3-R14` refuses and
+is also the thing that breaks the day a library is reached from somewhere other
+than the same network.
+
+So the over-enforcement and the gap have one lifetime. The gap is recorded in
+`tests/Arch/WhatTheContractDoesNotCarryTest.php`, which goes red the day a
+location is carried. That is the day this is re-aimed at what actually
+survived, and the day this paragraph is deleted rather than edited.
 
 ## What cannot be switched off
 
