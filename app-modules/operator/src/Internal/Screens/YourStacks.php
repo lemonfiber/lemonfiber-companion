@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Verdicts;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\AScreenWithoutAStack;
@@ -30,6 +31,7 @@ use Modules\Operator\Internal\ViewModels\HowAStackLastWas;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Operator\Internal\WhereTappingLeads;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
@@ -333,19 +335,47 @@ final class YourStacks extends NativeComponent
     /**
      * Where tapping a stack actually goes.
      *
-     * Straight to the report where this device still holds a session, and to
-     * the sign-in screen where it does not. That is the whole of what the list
-     * is *for*: an operator who is signed in wants to see their machine, not to
-     * be asked for a password they already gave.
+     * To the sign-in screen where this device holds no session, and where it does,
+     * to whichever reading belongs to whoever is signed in. That is the whole of
+     * what the list is *for*: somebody already signed in wants to see their machine,
+     * not to be asked for a password they already gave.
      *
-     * Decided here rather than in the template, so the two URIs have one
-     * spelling each and the branch is somewhere a test can drive it.
+     * **Whose it is decides which reading**, and this is the launch half of that.
+     * Signing in already led where the subject said, but a session outlives the app
+     * being closed — so a list that remembered only *that* one was held handed the
+     * operator's machine report to a member on every launch after the first, which
+     * is the one reading a member is never meant to be given. The subject was in the
+     * store the whole time and nothing read it there.
+     *
+     * **The subject without the session**, through
+     * {@see \Modules\Kernel\Api\Resumed::whoseItIs()}. This screen speaks to no
+     * stack and has no use for a credential, and the shortest way to keep one out of
+     * it is to ask a question whose answer does not contain one — which is the same
+     * discipline {@see isSignedInto()} keeps by dropping what it is handed.
+     *
+     * Decided here rather than in the template, so the three URIs have one spelling
+     * each and the branch is somewhere a test can drive it. Spelled in a `match`
+     * rather than behind {@see WhereTappingLeads}, because the rule that walks this
+     * app's navigation reads an accessor's own body for the routes it calls, and a
+     * road built elsewhere is one it reports as leading nowhere.
      */
     public function tappingGoesTo(Stack $stack): string
     {
-        return $this->isSignedInto($stack)
-            ? WhereAStackIs::of($stack->id())->health()
-            : $this->signInAt($stack);
+        $where = WhereAStackIs::of($stack->id());
+
+        $leads = $this->storage->resume($stack->id())->whoseItIs(
+            nobody: static fn(): WhereTappingLeads => WhereTappingLeads::TheSignIn,
+            theirs: static fn(Whose $whose): WhereTappingLeads => $whose->either(
+                operator: static fn(): WhereTappingLeads => WhereTappingLeads::TheReport,
+                member: static fn(): WhereTappingLeads => WhereTappingLeads::WhatTheyAreOwed,
+            ),
+        );
+
+        return match ($leads) {
+            WhereTappingLeads::TheSignIn => $this->signInAt($stack),
+            WhereTappingLeads::TheReport => $where->health(),
+            WhereTappingLeads::WhatTheyAreOwed => $where->yours(),
+        };
     }
 
     /**
