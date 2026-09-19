@@ -81,6 +81,22 @@ final readonly class WhereAStackIs
         return AStacksScreen::Requests->forTheStack($this->stack);
     }
 
+    /**
+     * What this machine says the person holding the session is owed.
+     *
+     * The one destination here that is not this module's own screen. It is
+     * offered from the operator's surface because the operator's surface owns
+     * every road into the application — a device opens on the list of stacks —
+     * and a member's reading with nothing pointing at it is a screen nobody can
+     * reach. Which of the two readings the person in front of it gets is the
+     * core's answer rather than this module's: what comes back about one member
+     * is one member's, and what comes back about a house is nobody's.
+     */
+    public function yours(): string
+    {
+        return AStacksScreen::Owed->forTheStack($this->stack);
+    }
+
     /** What this machine would put right, stated before any yes. */
     public function repairs(): string
     {

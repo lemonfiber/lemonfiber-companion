@@ -130,17 +130,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'somebody opened a client.',
     ],
     [
-        'path' => 'HouseholdEnvelope.members[].to_hand_over',
-        'because' => 'What this member would be told, in the words they would read it in — what happens '
-            . 'to what they ask for, what their period has left and when it makes room, what is still '
-            . 'waiting, and what was refused and why. Written *to* them rather than about them, so it is '
-            . "the answer to `N3-R4` and `N3-R5` rather than material for one.\n\n"
-            . 'Held by the same block every member row is: this is a reading per member, and until the '
-            . 'session said whose it was there was nobody to render it to. The admission carries '
-            . '`member` now, so what remains is the household surface being built rather than anything '
-            . 'the wire has not got.',
-    ],
-    [
         'path' => 'HouseholdEnvelope.members[].requests[].media',
         'because' => 'The library\'s own handle for the thing asked for. `N2-R11` asks for enough to decide '
             . 'on, and the words a person recognises are the title beside it; `N3-R8` keeps this app out of '

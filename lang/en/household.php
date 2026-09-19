@@ -39,4 +39,13 @@ return [
     'asked_for' => 'What the household asked for',
     'refused_because' => 'Turned down: :reason',
     'refused_at' => 'Turned down at :when',
+    // What the machine says the person holding the session is owed. The
+    // sentences themselves are the core's and are never in this catalogue —
+    // these are the frame around them, and the two answers a reading can have
+    // that are not sentences: nothing to tell you, and a way to ask again.
+    'yours' => 'What you can ask for',
+    'nothing_owed' => 'There is nothing to tell you here.',
+    'nothing_owed_action' => 'This machine has nothing to say about what you can ask for.',
+    'ask_again' => 'Ask again',
+    'back_to_the_machine' => 'Back to the machine',
 ];

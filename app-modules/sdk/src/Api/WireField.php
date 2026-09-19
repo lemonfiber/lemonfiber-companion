@@ -107,6 +107,16 @@ enum WireField: string
     /** The people in a household, each with what they have asked for. */
     case Members = 'members';
 
+    /**
+     * The sentences a member is owed, written to them by the core.
+     *
+     * A list of strings and never parts to assemble: what a surface renders
+     * here is what the core wrote, because a surface composing its own wording
+     * from a policy and a standing would be a second voice able to disagree
+     * with it.
+     */
+    case ToHandOver = 'to_hand_over';
+
     /** What a household member is called. */
     case Name = 'name';
 

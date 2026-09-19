@@ -85,6 +85,17 @@ enum AStacksScreen: string
     /** What one of this machine's services has been saying. */
     case Logs = '/stacks/{stack}/logs/{service}';
 
+    /**
+     * What this machine says the member holding the session is owed.
+     *
+     * The one case here a member's surface draws rather than an operator's,
+     * and it is a case here rather than an enum of its own for the reason the
+     * type carries: it is a screen under one machine, reached by naming that
+     * machine, and a second enum spelling `/stacks/{stack}/` would be the
+     * drift this exists to prevent with the placeholder in a different file.
+     */
+    case Owed = '/stacks/{stack}/yours';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 

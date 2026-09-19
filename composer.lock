@@ -3507,7 +3507,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/household",
-                "reference": "de78f8e470214c199319774101d4bfc27b7fce08"
+                "reference": "4f38b078ab09516b86ea6f20691094ce83b3ed60"
             },
             "require": {
                 "modules/connection": "dev-main",
@@ -3519,6 +3519,11 @@
             },
             "type": "library",
             "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Household\\Providers\\HouseholdServiceProvider"
+                    ]
+                },
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,

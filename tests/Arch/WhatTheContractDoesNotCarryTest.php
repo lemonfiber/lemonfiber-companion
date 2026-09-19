@@ -45,6 +45,13 @@ use Tests\Support\Tree;
  * payload and would be added to it. `shape` is a whole payload that says
  * nothing about the subject at all, recorded as it stands — there is no field
  * name to watch for, because what is missing is not a field.
+ *
+ * Read through {@see everyGapThisAppIsHolding()} rather than directly, which is
+ * what keeps the rules below able to see anything. With one row left the
+ * analyser reads every optional field as the value that row happens to carry,
+ * and the rule's own guards become constant comparisons it refuses — the
+ * register turning itself off at the moment it has almost nothing left to
+ * watch, which is a gate that works until it nearly succeeds.
  */
 const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
     [
@@ -77,86 +84,29 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'connection does not exist. Until it does, pairing depends on somebody assembling by '
             . 'hand what `N1-R47` says a surface must be able to produce on demand.',
     ],
-    [
-        'requirement' => 'N3-R4',
-        'asks' => 'whether it needs approval and whether they have allowance left, said before a member asks',
-        // The subject, not the allowance. It waits on what the admission row
-        // below waits on, watched separately because a row watches one
-        // requirement and a shared row would half-fire.
-        'envelope' => 'AdmissionEnvelope',
-        'field' => null,
-        'shape' => 'array{token: string, until: string}',
-        'raised' => 'Both halves are already on the wire. `household.members[].asking` carries '
-            . '`policy` — trusted, within-a-limit, everything-waits — which is whether it needs '
-            . 'approval, and `standing` — unlimited, within-quota, near-quota, quota-exhausted — '
-            . 'which is whether there is allowance left, beside `films.remaining` and '
-            . "`television.remaining` for the count itself.\n\n"
-            . 'What is missing is who to say it about. The reading is per member and the session '
-            . 'says only that it is one, so an app picking a member to draw the figure for would '
-            . 'be picking, which is the same answer `N3-R3` refuses everywhere else.',
-    ],
-    [
-        'requirement' => 'N3-R5',
-        'asks' => 'when a spent allowance resets, told to the member before they ask',
-        // A row of its own rather than the one above widened: being told an
-        // allowance is spent is not being told when it comes back, and *spent,
-        // and nothing about when* leaves somebody asking again every hour.
-        'envelope' => 'AdmissionEnvelope',
-        'field' => null,
-        'shape' => 'array{token: string, until: string}',
-        'raised' => '`household.members[].asking.frees_up` is the instant the count next lets go of '
-            . 'something, carried by the service that keeps it rather than worked out here — so '
-            . 'the reset this asks for is on the wire, and reading it needs no arithmetic that '
-            . "could be wrong in the cases somebody is actually waiting on.\n\n"
-            . 'It waits with `N3-R4` on the same missing subject: a reset is a reset of one '
-            . "member's period, and the session does not say whose.",
-    ],
-    [
-        'requirement' => 'N3-R3',
-        'asks' => 'the core to refuse a control a member is not entitled to, rather than the app omitting it',
-        // A shape rather than a field, because what is missing is not a field.
-        // The surface mints one token for the run and exchanges one password
-        // for one session, and the admission says what the session is and not
-        // who holds it — so every caller carrying it is the operator, and there
-        // is no entitlement for the core to refuse against.
-        'envelope' => 'AdmissionEnvelope',
-        'field' => null,
-        'shape' => 'array{token: string, until: string}',
-        'raised' => 'The whole household surface waits on this rather than one requirement of it: '
-            . '`N3-R1` has the app a person is given decided by the identity that signed in and '
-            . "`N3-R2` has what a member may do be the core's answer. The wire carries what a "
-            . 'member **may do** — `household.members[].access` has `administrator`, `disabled`, '
-            . '`libraries`, `restriction` — and does not carry **who is asking**. That distinction '
-            . 'is the row: an app holding the access list could read `administrator` and hide the '
-            . "controls, and hiding them is exactly what `N3-R3` refuses to let anything rest on.\n\n"
-            . 'Three more wait on it and are named here so the day this closes names all six. '
-            . '`N3-R6` has a member\'s own requests carry their state in household terms, and '
-            . '*their own* is the part with nothing behind it — the app reads every member\'s '
-            . 'requests for the operator already (`N2-R11`), and cannot tell whose is whose. '
-            . '`N3-R9` is the one of the six that **is** answered, ahead of the module existing, '
-            . 'by refusing a member-facing type that holds an operator\'s — and it is named here '
-            . 'so nobody reads its absence from this list as an oversight. `N3-R10` is answered in '
-            . 'half: a member is not shown the fault, which is a rule about types and is kept, and '
-            . 'is not yet told that it did not work and that the operator has been told, which '
-            . 'needs somebody to tell.',
-    ],
-    [
-        'requirement' => 'N3-R3',
-        'asks' => 'the same thing, watched wherever an answer lands rather than only where one is missing',
-        // The row above is pinned to `AdmissionEnvelope`, which catches the
-        // answer arriving as a field on the envelope that exists and misses it
-        // arriving as an envelope of its own. A second row rather than a
-        // widened first one, the way one member rule sits beside another: a row watches
-        // one thing, and a row that watched two could half-fire.
-        'envelope' => null,
-        'field' => 'member',
-        'shape' => null,
-        'raised' => 'A surface that learned who was asking would say so by name, and the name is the '
-            . 'thing to watch for rather than the envelope it lands on. Until one does, no payload '
-            . 'on this wire carries a subject at all — the admission body is one password and the '
-            . 'run token belongs to whoever started the process.',
-    ],
 ];
+
+/**
+ * The register, as a row may be rather than as the rows presently are.
+ *
+ * The declared shape is the point. The rules below ask whether a row names an
+ * envelope, a field or a payload shape, and every one of those questions is a
+ * comparison against null that the analyser answers for itself the moment the
+ * rows left all happen to agree.
+ *
+ * @return list<array{
+ *     requirement: string,
+ *     asks: string,
+ *     envelope: string|null,
+ *     field: string|null,
+ *     shape: string|null,
+ *     raised: string,
+ * }>
+ */
+function everyGapThisAppIsHolding(): array
+{
+    return WHAT_THE_CONTRACT_DOES_NOT_CARRY;
+}
 
 /**
  * Every generated envelope, as the file it is written in.
@@ -198,7 +148,7 @@ it('N2-R14 — every gap names an envelope the contract still has', function ():
     $envelopes = everyGeneratedEnvelope();
     $gone = [];
 
-    foreach (WHAT_THE_CONTRACT_DOES_NOT_CARRY as $gap) {
+    foreach (everyGapThisAppIsHolding() as $gap) {
         $named = $gap['envelope'];
 
         if ($named === null) {
@@ -224,7 +174,7 @@ it('N2-R14 — every gap is still a gap', function (): void {
     $envelopes = everyGeneratedEnvelope();
     $closed = [];
 
-    foreach (WHAT_THE_CONTRACT_DOES_NOT_CARRY as $gap) {
+    foreach (everyGapThisAppIsHolding() as $gap) {
         $named = $gap['envelope'];
         $shape = $gap['shape'];
 
@@ -285,7 +235,7 @@ it('N2-R14 — every gap says what it asks for and where it was raised', functio
     // having nothing to check — the failure this whole file exists to refuse.
     $thin = [];
 
-    foreach (WHAT_THE_CONTRACT_DOES_NOT_CARRY as $gap) {
+    foreach (everyGapThisAppIsHolding() as $gap) {
         foreach (['asks', 'raised'] as $part) {
             if (trim($gap[$part]) === '') {
                 $thin[] = sprintf('%s has no %s', $gap['requirement'], $part);
@@ -293,7 +243,7 @@ it('N2-R14 — every gap says what it asks for and where it was raised', functio
         }
     }
 
-    foreach (WHAT_THE_CONTRACT_DOES_NOT_CARRY as $gap) {
+    foreach (everyGapThisAppIsHolding() as $gap) {
         if (($gap['field'] === null) === ($gap['shape'] === null)) {
             $thin[] = sprintf('%s watches neither a field nor a shape, or both', $gap['requirement']);
         }
