@@ -29,6 +29,7 @@ use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
 
 // Where a stack stands on being up to date is reachable.
@@ -53,6 +54,22 @@ function theStackWhoseUpkeepIsRead(): Stack
     );
 }
 
+/** The same evening, where one of the two services will not come back as it was. */
+function anEveningWithSomethingPermanentInIt(): Upkeep
+{
+    return Upkeep::runningOn(
+        HowCurrent::Pending,
+        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false)),
+        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false)),
+        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+        // One of the two, deliberately. A fixture where every service is
+        // permanent would pass a screen that drew the warning over the whole
+        // evening, which is the thing that must not happen.
+        Services::these(ServiceId::called('sonarr')),
+        whatLastNightCameTo(),
+    );
+}
+
 /** An update waiting, with one release nobody will notice and one they will. */
 function anEveningWorthSpending(): Upkeep
 {
@@ -64,6 +81,7 @@ function anEveningWorthSpending(): Upkeep
             Release::called('4.0.16', noticeable: false, withdrawn: false),
         ),
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+        Services::none(),
         whatLastNightCameTo(),
     );
 }
@@ -138,6 +156,7 @@ it('N2-R16 — leaves a withdrawn release out of what is offered', function (): 
             Release::called('4.0.17', noticeable: true, withdrawn: true),
         ),
         Services::these(ServiceId::called('jellyfin')),
+        Services::none(),
         HowServicesTookIt::none(),
     )));
 
@@ -153,6 +172,7 @@ it('N2-R16 — says so where the stack is running one that was taken back', func
         HowCurrent::Pending,
         VersionInUse::of(Release::called('4.0.17', noticeable: true, withdrawn: true)),
         Releases::none(),
+        Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
     )));
@@ -219,6 +239,55 @@ it('N2-R17 — asks before it takes one, and names what it would change', functi
         // that named the release and not the evening would be asking somebody
         // to agree to the half they can already see.
         ->and($screen->wouldChange())->toBe(2);
+});
+
+it('N2-R22 — the confirmation names what taking it will not put back', function (): void {
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
+
+    $screen->wouldYouLike('4.1.0');
+    $asking = $screen->asking();
+
+    $named = [];
+
+    foreach ($asking?->cannotBePutBack() ?? Services::none() as $service) {
+        $named[] = $service->named();
+    }
+
+    // One of the two, and the evening is still two. A warning drawn over
+    // everything would be as easily disbelieved as the one drawn over nothing.
+    expect($asking?->cannotBeWhollyUndone())->toBeTrue()
+        ->and($named)->toBe(['sonarr'])
+        ->and($screen->cannotBePutBack())->toBe(1)
+        ->and($screen->wouldChange())->toBe(2);
+});
+
+it('N2-R22 — says so before the yes, and not after it', function (): void {
+    // Rendered from the pending question rather than from the reading, which
+    // is what puts it in front of somebody who has not agreed yet. Asked of
+    // the drawn screen, so a template that read the field and drew nothing
+    // fails here rather than passing on the accessor alone.
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
+
+    $screen->wouldYouLike('4.1.0');
+
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain('sonarr')
+        ->and($drawn)->toContain(__('updates.cannot_be_put_back_after'));
+});
+
+it('N2-R22 — an evening that can be undone says nothing about permanence', function (): void {
+    // The ordinary case, and the one a warning must not leak into: a screen
+    // drawing the sentence whenever there is a confirmation would teach an
+    // operator to read past it by the third update.
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+
+    $screen->wouldYouLike('4.1.0');
+
+    expect($screen->asking()?->cannotBeWhollyUndone())->toBeFalse()
+        ->and($screen->cannotBePutBack())->toBe(0)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())
+        ->not->toContain(__('updates.cannot_be_put_back_after'));
 });
 
 it('N2-R17 — will not be talked into a release it never showed', function (): void {
@@ -345,6 +414,7 @@ it('N2-R18 — says when the stack cannot tell what a service is doing', functio
         HowCurrent::Current,
         Releases::none(),
         Services::none(),
+        Services::none(),
         HowServicesTookIt::these(
             HowAServiceTookIt::of(ServiceId::called('radarr'), HowItEnded::NotReached, HowToUndoIt::Rollback),
         ),
@@ -386,6 +456,7 @@ it('N2-R20 — offers taking one only where the stack said there is one', functi
     $current = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         HowCurrent::Current,
         Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false)),
+        Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
     )));
@@ -512,6 +583,7 @@ it('N2-R15 — a stack that named no release in use says so rather than showing 
         HowCurrent::Stale,
         Releases::none(),
         Services::none(),
+        Services::none(),
         HowServicesTookIt::none(),
     )))->answer();
 
@@ -532,6 +604,7 @@ it('N2-R18 — reads what needs attention before what is fine', function (): voi
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         HowCurrent::Current,
         Releases::none(),
+        Services::none(),
         Services::none(),
         HowServicesTookIt::these(
             HowAServiceTookIt::of(ServiceId::called('jellyfin'), HowItEnded::Updated, HowToUndoIt::Rollback),
@@ -554,6 +627,7 @@ it('N2-R16 — says when one of the releases waiting is one the household would 
     $chores = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         HowCurrent::Pending,
         Releases::these(Release::called('4.0.16', noticeable: false, withdrawn: false)),
+        Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
     )));

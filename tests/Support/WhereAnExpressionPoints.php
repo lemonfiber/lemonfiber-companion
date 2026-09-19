@@ -204,7 +204,7 @@ final readonly class WhereAnExpressionPoints
      */
     private static function asked(FuncCall $call, array $bindings, array $readers, array $answers): array
     {
-        $args = $call->getArgs();
+        $args = WhereTheReadingStops::theArgumentsOf($call, 'reading a presence check');
 
         if (! TheWireNameAtASubscript::isAPresenceCheck($call) || ! array_key_exists(1, $args)) {
             return [];

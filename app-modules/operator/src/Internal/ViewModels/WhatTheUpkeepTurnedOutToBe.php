@@ -28,6 +28,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param bool                     $runningWasWithdrawn whether the version in use has been taken back
      * @param list<WhatOneReleaseSays>        $waiting    the releases worth offering, in the stack's order
      * @param Services                        $changing   the services taking one would change
+     * @param Services                        $cannotBePutBack the ones nothing puts back afterwards
      * @param list<WhatOneServiceTookItSays>  $applied    what became of each service the last update touched
      * @param int                             $didNotArrive how many of those are not where the operator wanted them
      * @param bool                            $anythingUnanswered whether the stack cannot say what some are doing
@@ -41,6 +42,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public bool $runningWasWithdrawn,
         public array $waiting,
         public Services $changing,
+        public Services $cannotBePutBack,
         public array $applied,
         public int $didNotArrive,
         public bool $anythingUnanswered,

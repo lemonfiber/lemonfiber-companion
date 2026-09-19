@@ -37,6 +37,30 @@
         @endforelse
     @endif
 
+    @if ($this->asking()->cannotBeWhollyUndone())
+        {{-- Between the list and the buttons, which is where it has to be:
+             an operator who has read what moves tonight and not yet agreed.
+             Said against the services it is true of rather than over the
+             whole evening — an update can move four services and be undoable
+             for three of them, and a warning that covered all four would be
+             refused as easily as it would be believed. --}}
+        <x-operator::emphasis>
+            {{ trans_choice('updates.cannot_be_put_back', $this->cannotBePutBack()) }}
+        </x-operator::emphasis>
+
+        @forelse ($this->asking()->cannotBePutBack() as $service)
+            <x-operator::note>{{ $service->named() }}</x-operator::note>
+        @empty
+            {{-- Unreachable while the branch above guards it, and written
+                 anyway for the reason the list above writes its own: removing
+                 the guard must not turn a named warning into an unnamed one,
+                 which is the shape that warns about nothing in particular. --}}
+            <x-operator::note>{{ __('updates.cannot_be_put_back_after') }}</x-operator::note>
+        @endforelse
+
+        <native:text>{{ __('updates.cannot_be_put_back_after') }}</native:text>
+    @endif
+
     <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
     <x-operator::action label="{{ __('health.never_mind') }}" tap="neverMind()" />
 @else

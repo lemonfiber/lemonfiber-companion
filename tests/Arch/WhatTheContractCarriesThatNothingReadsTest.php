@@ -270,13 +270,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'household will notice; a semantic-version magnitude is a different claim and a weaker one.',
     ],
     [
-        'path' => 'UpdateEnvelope.changes[].irreversible',
-        'because' => 'Whether a change cannot be put back. This one has a requirement in flight rather than '
-            . 'no requirement — `N2-R22` is proposed in spec#375, on the argument that `N2-R4` already '
-            . 'demands exactly this of a repair and an update is the larger operation. The row goes when '
-            . 'that lands and the app reads it.',
-    ],
-    [
         'path' => 'UpdateEnvelope.stack_edits',
         'because' => 'The diffs an update would make to the stack\'s own configuration, and the paths they '
             . 'touch. `N2-R12` refuses to let this app set or change a value; showing a diff of one is the '
