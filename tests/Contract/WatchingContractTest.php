@@ -215,6 +215,17 @@ it('N1-R10 — says the same about a reading it could not get', function (): voi
             ]))),
             Obstacle::StackDidNotAnswer,
         ],
+        // A blank line among real ones. One type decides what an empty
+        // sentence means and this one decides what an unreadable answer means
+        // to whoever is looking at it — a stack that sent a blank sentence
+        // sent something this app cannot show, which is the same to a member
+        // as an answer that never arrived.
+        [
+            MockResponse::make((string) json_encode(
+                whatAStackSendsAboutAShelf([], available: false, findings: ['   ']),
+            )),
+            Obstacle::StackDidNotAnswer,
+        ],
     ];
 
     foreach ($refusals as [$answered, $why]) {

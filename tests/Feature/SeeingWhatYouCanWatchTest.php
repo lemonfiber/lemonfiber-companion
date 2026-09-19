@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\Whose;
@@ -25,6 +26,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheKeychainStillHolds;
 
 // What a member already has, as against what they can ask for.
 //
@@ -63,9 +65,11 @@ function theShelfScreen(
     AShelfThatWasRead $watching,
     bool $signedIn = true,
     ?Whose $whose = null,
+    ?AKeychainInMemory $keychain = null,
+    ?string $named = null,
 ): WhatYouCanWatch {
     $stack = theStackAShelfIsReadFrom();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep(
@@ -76,7 +80,7 @@ function theShelfScreen(
     }
 
     $screen = new WhatYouCanWatch($watching, $keychain, StacksInMemory::holding($stack));
-    $screen->setParams(['stack' => $stack->id()->stored()]);
+    $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
 }
@@ -161,10 +165,70 @@ it('N1-R10 — reports what stood in the way and keeps the way back', function (
 });
 
 it('N3-R13 — a refused credential is a signed-out device, not a report', function (): void {
-    $refused = theShelfScreen(AShelfThatWasRead::met(Obstacle::CredentialWasRefused));
+    // Asserted of the keychain and not only of the screen. A screen that drew
+    // the signed-out frame and left the session in the store is a device that
+    // signs itself back in on the next frame, which is the failure the fold
+    // lets go of the session inside to prevent.
+    $keychain = AKeychainInMemory::working();
+    $refused = theShelfScreen(
+        AShelfThatWasRead::met(Obstacle::CredentialWasRefused),
+        keychain: $keychain,
+    );
 
     expect($refused->answer()->isSignedIn)->toBeFalse()
-        ->and($refused->answer()->cameBack())->toBeFalse();
+        ->and($refused->answer()->cameBack())->toBeFalse()
+        ->and($refused->answer()->met)->toBe('')
+        ->and($refused->answer()->remedy)->toBe('')
+        ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAShelfIsReadFrom()->id())->held)
+        ->toBeFalse();
+});
+
+it('N3-R13 — an obstacle that is not a refused credential leaves the session alone', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::StackDidNotAnswer), keychain: $keychain);
+
+    expect($met->answer()->isSignedIn)->toBeTrue()
+        ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAShelfIsReadFrom()->id())->held)
+        ->toBeTrue();
+});
+
+it('reads a route parameter that is not a word as naming no machine', function (): void {
+    // The parameter arrives as whatever the router had, which is not
+    // necessarily a string. Read as one regardless, a screen would look the
+    // stack up under whatever casting produced rather than under nothing.
+    $screen = new WhatYouCanWatch(
+        AShelfThatWasRead::holding(aShelfOfThree()),
+        AKeychainInMemory::working(),
+        StacksInMemory::holding(theStackAShelfIsReadFrom()),
+    );
+    $screen->setParams(['stack' => 7]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
+});
+
+it('carries no sentence and no remedy where the core answered', function (): void {
+    // The three arms that are not an obstacle each say nothing stood in the
+    // way, and each says it the same way. A constructor that let one of them
+    // through with a key in it would put an obstacle's wording on a screen
+    // that met none.
+    $told = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()))->answer();
+    $empty = theShelfScreen(AShelfThatWasRead::holdingNothing())->answer();
+    $unread = theShelfScreen(AShelfThatWasRead::outOfReach(
+        Sentences::of(Sentence::of('The media server did not answer.')),
+    ))->answer();
+    $out = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), signedIn: false)->answer();
+
+    foreach ([$told, $empty, $unread, $out] as $answer) {
+        expect($answer->met)->toBe('')->and($answer->remedy)->toBe('');
+    }
+
+    expect($told->isSignedIn)->toBeTrue()
+        ->and($told->isOutOfReach)->toBeFalse()
+        ->and($empty->isOutOfReach)->toBeFalse()
+        ->and($unread->isSignedIn)->toBeTrue()
+        ->and($out->isOutOfReach)->toBeFalse()
+        ->and($out->holdings)->toBe([])
+        ->and($out->reasons)->toBe([]);
 });
 
 it('draws the way back in where this device holds no session', function (): void {

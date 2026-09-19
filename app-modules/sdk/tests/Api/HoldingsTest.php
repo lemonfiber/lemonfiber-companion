@@ -223,6 +223,22 @@ it('refuses one row it cannot read, naming where it sat', function (): void {
     }
 });
 
+it('names which holding it could not read, counting from where it sat', function (): void {
+    // The position is the only thing a refusal carries that shortens the
+    // search, so it is asserted rather than assumed. A walk that lost count
+    // reports the first row for every row, which reads as one broken holding
+    // rather than as the third.
+    expect(fn(): object => theShelfIn(whatAStackSaysAboutAShelf(['holdings' => [
+        oneHolding(),
+        oneHolding(['id' => 'b2', 'title' => 'A series']),
+        'a string where a holding belongs',
+    ]])))->toThrow(ShelfIsUnreadable::class, 'position 2')
+        ->and(fn(): object => theShelfIn(whatAStackSaysAboutAShelf(['holdings' => [
+            oneHolding(),
+            oneHolding(['id' => 'b2', 'title' => 7]),
+        ]])))->toThrow(ShelfIsUnreadable::class, 'position 1');
+});
+
 it('refuses a medium this build does not know, by name', function (): void {
     // Not read as `other`. A holding the core had no better word for and a
     // stack speaking a vocabulary this release has never heard of are
