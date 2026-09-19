@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -141,8 +142,12 @@ it('N3-R13 — a refused credential signs the device out and the session is let 
     $keychain = AKeychainInMemory::working();
     $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::CredentialWasRefused), $keychain);
 
+    // Neither key, because nothing was met: the device is signed out and the
+    // remedy for that is a screen rather than a sentence. A word in either
+    // would put an error above a password field.
     expect($screen->answer()->isSignedIn)->toBeFalse()
         ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('')
         ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAMemberReadsFrom()->id())->held)->toBeFalse();
 });
 
@@ -163,6 +168,8 @@ it('asks for nothing where this device holds no session for the machine', functi
 
     expect($screen->answer()->isSignedIn)->toBeFalse()
         ->and($screen->answer()->sentences)->toBe([])
+        ->and($screen->answer()->met)->toBe('')
+        ->and($screen->answer()->remedy)->toBe('')
         ->and($owing->askedAbout())->toBeNull();
 });
 
@@ -188,6 +195,20 @@ it('N1-R27 — refuses a route naming a machine this device has forgotten', func
     $screen = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()), named: 'never-paired');
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsNotConfigured::class);
+});
+
+it('reads a route parameter that is not text as naming no machine', function (): void {
+    // The narrowing on the way out of the router, whose parameter array is
+    // untyped. Anything that is not a string names no stack, which is the same
+    // situation as a route with nothing in that segment — asserted rather than
+    // assumed, because the narrowing is a branch and a branch nothing drives is
+    // a branch that can quietly become the other one. Every screen that reads a
+    // stack out of the route makes this assertion, because every one of them
+    // has the same branch.
+    $screen = theOwedScreen(AMemberWhoIsOwed::owed(whatThisMemberIsTold()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
 it('the way back to the machine and on to signing in are both routes', function (): void {

@@ -147,6 +147,25 @@ it('refuses a household whose members are not rows', function (): void {
         ->toThrow(HouseholdIsUnreadable::class);
 });
 
+it('names which member it could not read, counting from the first', function (): void {
+    // The position is the one fact that makes a refusal findable, and it is
+    // only worth carrying if it is right: a reader that counted from one, or
+    // counted backwards, would send somebody to the wrong row of a house of
+    // six. Asserted on a house where the answer differs from every other
+    // number the count could have produced.
+    $third = [
+        'available' => true,
+        'findings' => [],
+        'members' => [
+            ['name' => 'Sam', 'claimed' => true, 'requests' => [], 'access' => whatAMemberOwedSomethingMayReach(), 'to_hand_over' => []],
+            ['name' => 'Robin', 'claimed' => true, 'requests' => [], 'access' => whatAMemberOwedSomethingMayReach(), 'to_hand_over' => []],
+            'not a member at all',
+        ],
+    ];
+
+    expect(fn(): array => whatOneMemberIsTold($third))->toThrow(HouseholdIsUnreadable::class, 'Member 2 ');
+});
+
 it('refuses a member row this app cannot read what they are owed from', function (): void {
     // The contract requires `to_hand_over` of every member, so its absence is a
     // stack this app cannot read rather than a member with nothing waiting —
