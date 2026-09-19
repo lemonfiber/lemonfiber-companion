@@ -108,6 +108,12 @@
             "android": "app.lemonfiber.native.StorageFunctions.Forget",
             "ios": "StorageFunctions.Forget",
             "description": "Take one value out of the store, whether or not it was ever in"
+        },
+        {
+            "name": "Lemonfiber.Link.Status",
+            "android": "app.lemonfiber.native.LinkFunctions.Status",
+            "ios": "LinkFunctions.Status",
+            "description": "Say whether anything is reachable from this device right now"
         }
     ],
     "android": {

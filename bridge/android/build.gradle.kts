@@ -82,6 +82,7 @@ sourceSets {
             "ScanningFunctions.kt",
             "ScanningActivity.kt",
             "StorageFunctions.kt",
+            "LinkFunctions.kt",
         )
     }
     test {

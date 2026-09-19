@@ -12,6 +12,7 @@ use Bootstrap\Composition\NativePHP\TheTheme;
 use function config;
 
 use Illuminate\Support\ServiceProvider;
+use Lemonfiber\Native\Link as TheLink;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
@@ -59,7 +60,6 @@ use Modules\Sdk\Api\Upkeepers;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
-use Native\Mobile\Network as PlatformNetworkFacade;
 /**
  * The composition root.
  *
@@ -253,7 +253,7 @@ final class CompositionRoot extends ServiceProvider
 
         $this->app->bind(
             Networking::class,
-            static fn(): Networking => new PlatformNetwork(new PlatformNetworkFacade()),
+            static fn(): Networking => new PlatformNetwork(new TheLink()),
         );
 
         // Bound, not a singleton, for the same reason the store above is not:

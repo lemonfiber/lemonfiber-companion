@@ -111,4 +111,14 @@ enum Call: string
 
     /** Take one value out, whether or not it was ever in. */
     case Forget = 'Lemonfiber.Storage.Forget';
+
+    /**
+     * Say whether anything is reachable from this device right now.
+     *
+     * The whole of the capability. What the link is, whether it is metered and
+     * whether Low Data Mode is on are all reported by both platforms and none
+     * of them is asked for: nothing about the operator's device is reported,
+     * and a value held but not sent is one commit away from being sent.
+     */
+    case LinkStatus = 'Lemonfiber.Link.Status';
 }
