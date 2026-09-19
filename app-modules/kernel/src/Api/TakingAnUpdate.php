@@ -34,6 +34,7 @@ final readonly class TakingAnUpdate
     private function __construct(
         private Release $release,
         private Services $changing,
+        private Services $cannotBePutBack,
     ) {}
 
     /**
@@ -43,9 +44,12 @@ final readonly class TakingAnUpdate
      * `D1`: what is in a list of names has to live somewhere other than in
      * whoever last wrote a `foreach`.
      */
-    public static function agreed(Release $release, Services $changing): self
-    {
-        return new self($release, $changing);
+    public static function agreed(
+        Release $release,
+        Services $changing,
+        Services $cannotBePutBack,
+    ): self {
+        return new self($release, $changing, $cannotBePutBack);
     }
 
     /**
@@ -82,6 +86,31 @@ final readonly class TakingAnUpdate
     public function changing(): Services
     {
         return $this->changing;
+    }
+
+    /**
+     * The services it would change in a way nothing puts back.
+     *
+     * Carried for the reason {@see changing()} is, and it is the stronger case
+     * of the two: the rest of an evening can be undone afterwards and these
+     * cannot, so a list re-read after the yes would be a warning about
+     * whatever the stack had by then rather than about what was agreed to.
+     */
+    public function cannotBePutBack(): Services
+    {
+        return $this->cannotBePutBack;
+    }
+
+    /**
+     * Whether anything it would change cannot be put back.
+     *
+     * Asked rather than left to a screen counting the collection, so *is there
+     * a warning to draw* has one answer and a template cannot arrive at a
+     * different one by testing emptiness the other way round.
+     */
+    public function cannotBeWhollyUndone(): bool
+    {
+        return ! $this->cannotBePutBack->isEmpty();
     }
 
     /**

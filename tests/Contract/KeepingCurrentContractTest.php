@@ -83,6 +83,7 @@ function theSameStanding(): Upkeep
         // confirmation naming it would have somebody agree to a service that
         // was never going to move.
         Services::these(ServiceId::called('jellyfin')),
+        Services::none(),
         theSameApplying(),
     );
 }
@@ -311,6 +312,7 @@ it('N2-R17 — takes an update agreed against the services it named', function (
     $agreed = TakingAnUpdate::agreed(
         Release::called('4.1.0', noticeable: true, withdrawn: false),
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+        Services::none(),
     );
 
     foreach (everyWayOfKeepingCurrent($taken) as $which => $build) {

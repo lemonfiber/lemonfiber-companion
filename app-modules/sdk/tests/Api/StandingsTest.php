@@ -216,8 +216,8 @@ it('N2-R17 — leaves out a change the stack has already refused', function (): 
     // Not a service an update would change, so naming it in a confirmation
     // would have somebody agree to a service that was never going to move.
     $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
-        ['service' => 'jellyfin', 'refused' => false],
-        ['service' => 'sonarr', 'refused' => true],
+        ['service' => 'jellyfin', 'refused' => false, 'irreversible' => false],
+        ['service' => 'sonarr', 'refused' => true, 'irreversible' => false],
     ]]));
 
     $named = [];
@@ -227,6 +227,70 @@ it('N2-R17 — leaves out a change the stack has already refused', function (): 
     }
 
     expect($named)->toBe(['jellyfin']);
+});
+
+it('N2-R22 — names the services a change cannot be put back for', function (): void {
+    // Per change and not per release. An update can move three services and be
+    // undoable for two of them, and a warning covering all three is one an
+    // operator learns to scroll past.
+    $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
+        ['service' => 'jellyfin', 'refused' => false, 'irreversible' => false],
+        ['service' => 'sonarr', 'refused' => false, 'irreversible' => true],
+        ['service' => 'radarr', 'refused' => false, 'irreversible' => true],
+    ]]));
+
+    $named = [];
+
+    foreach ($upkeep->cannotBePutBack() as $service) {
+        $named[] = $service->named();
+    }
+
+    // The whole list still moves; only two of it is the part nothing reverses.
+    expect($named)->toBe(['sonarr', 'radarr'])
+        ->and($upkeep->changing()->count())->toBe(3);
+});
+
+it('N2-R22 — leaves out a change the stack has refused, however it is marked', function (): void {
+    // Whether undoing would work is a question about something that is not
+    // going to happen, and naming the service would put it in a warning about
+    // an evening it takes no part in.
+    $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
+        ['service' => 'jellyfin', 'refused' => true, 'irreversible' => true],
+        ['service' => 'sonarr', 'refused' => false, 'irreversible' => true],
+    ]]));
+
+    $named = [];
+
+    foreach ($upkeep->cannotBePutBack() as $service) {
+        $named[] = $service->named();
+    }
+
+    expect($named)->toBe(['sonarr']);
+});
+
+it('N2-R22 — says so where nothing an update does is permanent', function (): void {
+    // The ordinary evening, and it has to read as one rather than as an
+    // absence: a screen asking gets an answer either way.
+    $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
+        ['service' => 'jellyfin', 'refused' => false, 'irreversible' => false],
+    ]]));
+
+    expect($upkeep->cannotBePutBack()->isEmpty())->toBeTrue();
+});
+
+it('N2-R22 — refuses a change that never said whether it can be put back', function (): void {
+    // Refused rather than defaulted. Reading an absent field as *this can be
+    // undone* would drop the sentence the operator needs most, and drop it on
+    // the one payload shape that failed to say.
+    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
+        ['service' => 'jellyfin', 'refused' => false],
+    ]])))->toThrow(UpkeepIsUnreadable::class);
+});
+
+it('N2-R22 — refuses a change that answered with something other than yes or no', function (): void {
+    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
+        ['service' => 'jellyfin', 'refused' => false, 'irreversible' => 'maybe'],
+    ]])))->toThrow(UpkeepIsUnreadable::class);
 });
 
 it('refuses a payload that is not a shape at all', function (): void {
@@ -367,7 +431,7 @@ it('refuses changes that are not a list', function (): void {
 
 it('names a change by where it sat', function (): void {
     expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: [
-        'changes' => [['service' => 'jellyfin', 'refused' => false], 'a string'],
+        'changes' => [['service' => 'jellyfin', 'refused' => false, 'irreversible' => false], 'a string'],
     ])))->toThrow(UpkeepIsUnreadable::class, 'Change 2');
 });
 
@@ -403,9 +467,9 @@ it('N2-R17 — goes on reading after a change the stack refused', function (): v
     // and the confirmation would name fewer services than the update changes —
     // which is the same false promise from the other direction.
     $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
-        ['service' => 'sonarr', 'refused' => true],
-        ['service' => 'jellyfin', 'refused' => false],
-        ['service' => 'radarr', 'refused' => false],
+        ['service' => 'sonarr', 'refused' => true, 'irreversible' => false],
+        ['service' => 'jellyfin', 'refused' => false, 'irreversible' => false],
+        ['service' => 'radarr', 'refused' => false, 'irreversible' => false],
     ]]));
 
     $named = [];
@@ -421,8 +485,8 @@ it('counts a refused change when it names where a later one sat', function (): v
     // The position is what a refusal has instead of a name, so it has to count
     // the rows it skipped. Reported as row three here, which is where it is.
     expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['changes' => [
-        ['service' => 'sonarr', 'refused' => true],
-        ['service' => 'jellyfin', 'refused' => false],
+        ['service' => 'sonarr', 'refused' => true, 'irreversible' => false],
+        ['service' => 'jellyfin', 'refused' => false, 'irreversible' => false],
         ['refused' => false],
     ]])))->toThrow(UpkeepIsUnreadable::class, 'Change 3');
 });

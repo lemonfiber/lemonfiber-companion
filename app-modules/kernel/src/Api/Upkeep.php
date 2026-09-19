@@ -31,6 +31,7 @@ final readonly class Upkeep
         private HowCurrent $how,
         private Releases $releases,
         private Services $changing,
+        private Services $cannotBePutBack,
         private HowServicesTookIt $went,
         private ?VersionInUse $inUse = null,
     ) {}
@@ -51,9 +52,10 @@ final readonly class Upkeep
         HowCurrent $how,
         Releases $releases,
         Services $changing,
+        Services $cannotBePutBack,
         HowServicesTookIt $went,
     ): self {
-        return new self($how, $releases, $changing, $went);
+        return new self($how, $releases, $changing, $cannotBePutBack, $went);
     }
 
     /** The same reading, where the stack named the release in use. */
@@ -62,9 +64,10 @@ final readonly class Upkeep
         VersionInUse $inUse,
         Releases $releases,
         Services $changing,
+        Services $cannotBePutBack,
         HowServicesTookIt $went,
     ): self {
-        return new self($how, $releases, $changing, $went, $inUse);
+        return new self($how, $releases, $changing, $cannotBePutBack, $went, $inUse);
     }
 
     public function how(): HowCurrent
@@ -123,6 +126,24 @@ final readonly class Upkeep
     public function changing(): Services
     {
         return $this->changing;
+    }
+
+    /**
+     * The services taking it would change in a way nothing puts back.
+     *
+     * A subset of {@see changing()} and carried beside it for the same reason
+     * that one is: what the confirmation says has to be what the operator was
+     * shown. Undoing the update afterwards restores the rest and not these, so
+     * this is the sentence that has to arrive before the yes rather than after
+     * it.
+     *
+     * Empty where every change can be undone, which is the ordinary case and
+     * reads as one — a screen asking this gets an answer either way rather
+     * than having to know whether to ask.
+     */
+    public function cannotBePutBack(): Services
+    {
+        return $this->cannotBePutBack;
     }
 
     /**

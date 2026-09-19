@@ -21,6 +21,11 @@ return [
     'about_to_take' => 'Op het punt :version te nemen',
     'would_change' => '{1} Eén dienst stopt en start opnieuw|[2,*] :count diensten stoppen en starten opnieuw',
     'changes_nothing' => 'Deze release verandert geen enkele dienst op deze machine.',
+
+    // Voor het ja gezegd, en bij de diensten waar het over gaat. Het ongedaan
+    // maken van de update zet de rest terug en deze niet.
+    'cannot_be_put_back' => '{1} Eén hiervan kan niet worden teruggedraaid|[2,*] :count hiervan kunnen niet worden teruggedraaid',
+    'cannot_be_put_back_after' => 'De update later ongedaan maken draait dit niet terug.',
     'something_worth_noticing' => 'Een hiervan is een verandering die het huishouden ziet',
     'take_this_one' => 'Neem deze',
     'take_that_one' => 'Neem :version',

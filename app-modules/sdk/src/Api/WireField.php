@@ -257,6 +257,15 @@ enum WireField: string
     /** What taking an update would change, service by service. */
     case Changes = 'changes';
 
+    /**
+     * Whether one of those changes cannot be put back.
+     *
+     * A property of the change rather than of the release: an update can move
+     * four services and be undoable for three of them, so this is read per
+     * change and the services it is true of are named on their own.
+     */
+    case Irreversible = 'irreversible';
+
     /** Where the releases a stack could be on are listed. */
     case Changelog = 'changelog';
 
