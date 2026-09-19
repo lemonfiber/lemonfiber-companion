@@ -11,6 +11,7 @@ use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
+use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stage;
@@ -59,6 +60,12 @@ function theGeneratedDoctorEnvelope(): string
 function theGeneratedStuckEnvelope(): string
 {
     return theGeneratedEnvelope('StuckEnvelope');
+}
+
+/** The generated envelope that carries what a member may watch, as text. */
+function theGeneratedHeldEnvelope(): string
+{
+    return theGeneratedEnvelope('HeldEnvelope');
 }
 
 /** The generated envelope that carries a service's scrollback, as text. */
@@ -306,6 +313,17 @@ it('N1-R13 — every stage the contract describes has a case', function (): void
     expect(valuesOf(Stage::cases()))->toBe($stages);
 });
 
+it('N1-R13 — every medium the contract describes has a case', function (): void {
+    // Read from the held envelope, the way the stage and the stream are read
+    // from theirs: a union is declared only where it is used, so asking any
+    // other envelope about `medium` answers `[]` — the same answer a renamed
+    // field gives, which is why something must be found before comparing.
+    $media = unionIn(theGeneratedHeldEnvelope(), 'medium');
+
+    expect($media)->not->toBe([], 'no medium union was found in the generated envelope');
+    expect(valuesOf(Medium::cases()))->toBe($media);
+});
+
 it('N1-R13 — every stream the contract describes has a case', function (): void {
     // A third generated envelope, read the way the stuck one above is. A union
     // is only declared where it is used, so asking any other envelope about
@@ -389,6 +407,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     Awaiting::class => 'until',
     Standing::class => 'state',
     Stream::class => 'stream',
+    Medium::class => 'medium',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in
