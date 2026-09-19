@@ -120,8 +120,8 @@ SwiftUI and Jetpack Compose. There is no CSS build, no JIT, and nothing that
 errors on an unknown class — a typo'd `bg-theme-backgrnd` compiles happily and
 renders nothing.
 
-So `composer guards` validates every class and every `<native:*>` tag against the
-vocabulary the installed EDGE package actually defines. If you invent a utility,
+So `composer test:guards` validates every class and every `<native:*>` tag against
+the vocabulary the installed EDGE package actually defines. If you invent a utility,
 the build fails. That check is the only thing standing between a typo and a blank
 screen, so do not weaken it.
 
@@ -131,7 +131,15 @@ mislead the next reader.
 
 ## The gates
 
-`composer ci` runs everything CI runs. Run it before you push.
+`composer ci` runs every gate CI runs over this repository's own source, in CI's
+order. Run it before you push.
+
+It is not the whole of CI and cannot be. The four commit rules —
+`commitlint`, `dco`, `attribution` and the `spec-check` citation — are answered by
+`.githooks/commit-msg` before the push, which `composer install` turns on through
+`post-install-cmd`. Everything else a pull request starts is forge-side: CodeQL,
+the secret and dependency scanners, Sonar and its gate, the label sync, the pin
+checks and the reference comment. None of them runs from a clone.
 
 | Gate | Command | Bar |
 |------|---------|-----|
@@ -140,8 +148,22 @@ mislead the next reader.
 | Dead idioms | `composer refactor` | Rector dry-run. `composer refactor:fix` writes. |
 | Module manifests | `composer validate:modules` | Each module's own manifest, `--strict`. They generate the architecture rules, so a typo in one would otherwise disable a module's rules silently. |
 | Dependencies | `composer deps` | Unused and shadow dependencies. Plus `validate --strict`, `normalize`, `audit`. |
-| Tests | `composer test:coverage` | 100% line coverage. The Blade checks live here too, in `tests/Templates` — no analyser reads a template. |
-| Mutation | `composer test:mutation` | 100% on logic. Views are excluded, by decision, with the reason beside the exclusion. |
+| Tests | `composer test:report` | 100% line coverage. The Blade checks live here too, in `tests/Templates` — no analyser reads a template. |
+| Mutation | `composer test:mutation` | The floor each module declared for itself, in its own manifest. |
+
+`composer test:report` rather than `composer test:coverage`, which is the same run
+without the reports. `test:coverage` writes no clover, and `test:floors` and Sonar
+both read clover — so a contributor who runs `test:coverage`, sees 100%, and pushes
+is refused by a floor test reading a file that is not there. `composer ci` runs
+`test:report`, and so does CI.
+
+Mutation floors are per module and declared in the module's own manifest, under
+`extra.lemonfiber.floors.mutation`. A module declaring `0` is taking a position
+rather than being skipped, and `scripts/mutation.php` says which positions those
+are and why — a component holds state and an adapter forwards a call, so mutating
+either measures the fake. Four of the thirteen declare it. Templates are not in
+the picture at all: the run mutates each module's `src/`, and a Blade file is not
+in it.
 
 ### ARCHITECTURE.md is checked, not just written
 
