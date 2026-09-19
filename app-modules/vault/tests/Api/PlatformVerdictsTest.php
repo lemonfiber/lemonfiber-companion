@@ -226,3 +226,30 @@ it('answers the moment it wrote down, so a caller can say when it was kept', fun
             notKept: static fn(): Code => Code::of('not-kept'),
         )->shown())->toBe('1770000000');
 });
+
+/**
+ * Whether a verdict was written down, as a word a test can compare.
+ *
+ * Named for this file: the vault's module suites share one namespace (`G10`).
+ */
+function howItWentDown(Noted $noted): string
+{
+    return $noted->either(
+        down: static fn(): Code => Code::of('down'),
+        notKept: static fn(): Code => Code::of('not-kept'),
+    )->shown();
+}
+
+it('keeps no verdict whose record cannot be written down', function (): void {
+    // The stack's identifier becomes the key of the row, and `StackId` asks
+    // only that it not be blank — so a byte sequence that is not text reaches
+    // `json_encode`, which answers false. Nothing is kept, and that costs the
+    // opening screen one word until the next ask refills it.
+    $went = new PlatformVerdicts(APlatformStore::working())->remember(
+        StackId::rememberedAs("a stack with a broken byte \xB1\x31 in it"),
+        Overall::Healthy,
+        Instant::atEpochSeconds(1_700_000_000),
+    );
+
+    expect(howItWentDown($went))->toBe('not-kept');
+});

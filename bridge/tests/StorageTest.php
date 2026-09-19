@@ -174,3 +174,60 @@ it('reads a moment it does not recognise as the narrowest one', function (): voi
     expect(whenItMayBeReadAgain(new Storage()->keep('k', 'v', WhenAValueMayBeRead::AfterFirstUnlock)))
         ->toBe(WhenAValueMayBeRead::WhileUnlocked);
 });
+
+it('asks whether there is a store by reading a key nothing is kept under', function (): void {
+    // A store that is there answers *nothing under that key*. Asked rather than
+    // inferred from a write that failed, because the caller has no value in
+    // hand yet — the question is put before a session exists.
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Storage.Read', ['outcome' => 'nothing']);
+
+    expect(new Storage()->canBeAsked())->toBeTrue();
+
+    $bridge->assertCalled(
+        'Lemonfiber.Storage.Read',
+        static fn(array $sent): bool => $sent['key'] === 'lemonfiber.probe',
+    );
+});
+
+it('reads a probe that found something as a store that is there', function (): void {
+    // Nothing is ever kept under that key, so this is the answer of a store
+    // holding something somebody else wrote. It is still a store.
+    FakeBridge::enable()->respondTo('Lemonfiber.Storage.Read', ['outcome' => 'found', 'value' => 'whatever']);
+
+    expect(new Storage()->canBeAsked())->toBeTrue();
+});
+
+it('says there is a store where one is there and will not open', function (): void {
+    // What is wrong there is a condition trying again can clear, and telling an
+    // operator their phone cannot keep a session is the advice that makes them
+    // give up on a phone that works.
+    FakeBridge::disable();
+    FakeBridge::enable()->respondTo('Lemonfiber.Storage.Read', [
+        'outcome' => 'refused',
+        'because' => 'store_would_not_open',
+    ]);
+
+    expect(new Storage()->canBeAsked())->toBeTrue();
+});
+
+it('says there is no store where the device has none', function (): void {
+    // The one answer that sends an operator somewhere else, and the reason the
+    // two refusals are kept apart on the wire at all.
+    FakeBridge::disable();
+    FakeBridge::enable()->respondTo('Lemonfiber.Storage.Read', [
+        'outcome' => 'refused',
+        'because' => 'no_store_on_this_device',
+    ]);
+
+    expect(new Storage()->canBeAsked())->toBeFalse();
+});
+
+it('says there is no store where nothing answers at all', function (): void {
+    // Every machine that is not a handset. A laptop running the suite has
+    // nowhere to keep a session, and answering otherwise would make a test
+    // about resuming one pass on a machine that cannot.
+    FakeBridge::disable();
+    FakeBridge::enable();
+
+    expect(new Storage()->canBeAsked())->toBeFalse();
+});

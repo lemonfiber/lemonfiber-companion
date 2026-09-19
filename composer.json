@@ -164,7 +164,7 @@
         "validate:modules": "@php scripts/manifests.php validate --strict --no-check-publish"
     },
     "scripts-descriptions": {
-        "ci": "Every gate CI runs, in the order it runs them.",
+        "ci": "Every PHP gate CI runs, in the order it runs them, and only those. It does not run the native halves \u2014 the Kotlin and Swift harnesses and the check that both ask the same questions \u2014 nor CodeQL, SonarCloud, the security and supply-chain scans, the repository hygiene checks, or the commit, spec-reference and SDK-pin gates. Those need a toolchain, a network or a pull request that a local run has not got.",
         "normalize:modules": "Check every module manifest against the normalizer; the root normalize does not look at them.",
         "normalize:modules:fix": "Normalize every module manifest in place.",
         "test": "Every suite but Guards and Floors, in parallel. Guards plants a violation of every rule into the working tree, so a process reading that tree beside it sees files appear and vanish. Floors reads the clover report test:report writes, and refuses to run without one.",
