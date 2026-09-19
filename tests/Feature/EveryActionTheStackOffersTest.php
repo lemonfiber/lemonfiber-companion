@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Generated\Kind;
+use Tests\Support\WhatTheReadersRead;
 
 /**
  * Every action available from another surface is offered by the app,
@@ -23,8 +24,18 @@ use Lemonfiber\Sdk\Generated\Kind;
  * So this does not measure progress. It refuses a surface nobody has looked at.
  */
 
-/** Kinds the app offers today. */
-const OFFERED = [];
+/**
+ * Kinds the app offers today.
+ *
+ * Held to what the readers actually open rather than kept by hand. This said
+ * *none* for as long as it existed while nine readers landed under it, and
+ * nothing noticed: the three lists were held to covering every kind between
+ * them, and no list was ever held to being true.
+ */
+const OFFERED = [
+    'Doctor', 'Error', 'Household', 'Job', 'Log',
+    'Repair', 'Status', 'Stuck', 'Update',
+];
 
 /**
  * Kinds the app deliberately does not offer, each with the requirement saying
@@ -72,15 +83,15 @@ const ELSEWHERE = [
  */
 const NOT_YET = [
     'Admission', 'Adoption', 'Alerts', 'Archives', 'Backup',
-    'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Config',
-    'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms',
-    'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household',
-    'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
-    'Music', 'Outbound', 'Preview', 'Provenance', 'Pull', 'Quality',
-    'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed',
-    'SelfUpdate', 'Space', 'Start', 'Status', 'Step', 'StopSeeding',
-    'Stored', 'Stuck', 'Trace', 'Undo', 'Uninstall', 'Update',
-    'Upgrade', 'Version', 'Watch', 'Word',
+    'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients',
+    'Config', 'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
+    'Glossary', 'Held', 'History', 'Hosting', 'Import',
+    'Invitation', 'Lifecycle', 'Migration', 'Music', 'Outbound',
+    'Preview', 'Provenance', 'Pull', 'Quality', 'Removal',
+    'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',
+    'Space', 'Start', 'Step', 'StopSeeding', 'Stored',
+    'Trace', 'Undo', 'Uninstall', 'Upgrade', 'Version',
+    'Watch', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {
@@ -104,6 +115,72 @@ it('N1-R2 — every kind the stack offers has been looked at', function (): void
         . 'that excuses it, or in NOT_YET — which claims nothing except that somebody '
         . 'looked (N1-R2).',
         implode("\n  ", $unclassified),
+    ));
+});
+
+/**
+ * The kinds something in this app actually opens.
+ *
+ * Asked of the readers rather than of the screens, and that is the honest
+ * reach of it: a kind nothing reads cannot be on a screen, and one that is
+ * read is one this app has taken a position on. Following it further — to the
+ * screen that draws it — is the next thing this could be taught, and until it
+ * is, `OFFERED` claims *read* rather than *drawn*.
+ *
+ * `WhatTheReadersRead` is what answers, so a reader reaching the wire by a
+ * route this file has never heard of is still counted. That matters already:
+ * a log window arrives held in its envelopes rather than through
+ * `LogEnvelope::in`, and a rule scanning for the latter would call the one
+ * screen built on it unoffered.
+ *
+ * @return list<string>
+ */
+function everyKindThisAppOpens(): array
+{
+    $kinds = [];
+
+    foreach (WhatTheReadersRead::envelopes() as $envelope) {
+        $kinds[] = str_replace('Envelope', '', $envelope);
+    }
+
+    sort($kinds);
+
+    return $kinds;
+}
+
+it('N1-R2 — every kind said to be offered is one something here reads', function (): void {
+    // The claim in the other direction, and the one no rule made. Three lists
+    // were held to covering every kind between them and none was held to being
+    // true, so `OFFERED` could say anything — including nothing, which is what
+    // it said while nine readers landed under it.
+    $claimed = array_values(array_diff(OFFERED, everyKindThisAppOpens()));
+
+    expect($claimed)->toBe([], sprintf(
+        "These are claimed as offered and nothing here reads them:\n  %s\n\n"
+        . 'A kind in `OFFERED` that no reader opens is a surface this file says exists '
+        . "and the app does not have.\n"
+        . 'Move it to `NOT_YET`, or to `ELSEWHERE` with the requirement that excuses '
+        . 'it (N1-R2).',
+        implode("\n  ", $claimed),
+    ));
+});
+
+it('N1-R2 — nothing read here is still waiting to be offered', function (): void {
+    // The drift that actually happened, now caught the moment it starts. A
+    // reader lands, nobody moves the kind up, and `NOT_YET` goes on saying
+    // somebody has yet to build the thing they just built — which reads as a
+    // to-do list and is a lie about the app.
+    $built = array_values(array_intersect(
+        [...NOT_YET, ...array_keys(ELSEWHERE)],
+        everyKindThisAppOpens(),
+    ));
+
+    expect($built)->toBe([], sprintf(
+        "Something here reads these and they are not in `OFFERED`:\n  %s\n\n"
+        . '`NOT_YET` claims nobody has offered it and `ELSEWHERE` claims a requirement '
+        . "says not to, and a reader opening it contradicts both.\n"
+        . 'Move it up (N1-R2).',
+        implode("\n  ", $built),
     ));
 });
 
