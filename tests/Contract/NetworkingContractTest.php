@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Native\Link;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Kernel\Api\Networking;
+use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Fakes\ADeviceOnANetwork;
-use Tests\Support\Fakes\APlatformNetwork;
 
 // The Networking contract, run against the adapter and against the fake.
 //
@@ -15,24 +16,39 @@ use Tests\Support\Fakes\APlatformNetwork;
 // and, critically, that neither of them ever raises. A launch is not a place to
 // throw: the operator opened an app.
 //
-// The adapter is driven against a hand-written stand-in for the platform's own
-// facade, as every adapter here is. There is no network stack behind a PHP
-// process on a laptop, and without one the adapter is a file nothing executes.
+// The adapter arm runs over a bridge scripted into `FakeBridge`, which
+// intercepts `nativephp_call()` in-process — so it goes through the function
+// name from the manifest, the JSON out and the decoding of the answer rather
+// than through something built to resemble it.
 //
 // What is deliberately *not* asserted is what an absent bridge means. The
-// adapter reads it as connected and the fake has no such case, so that
-// judgement belongs to the adapter's own tests — a contract asserting it would
-// either fail on the fake or be weakened to pass.
+// adapter reads it as reachable and the fake has no such case, so that
+// judgement belongs to `LinkTest` and to `LinkRule`'s own suites — a contract
+// asserting it would either fail on the fake or be weakened to pass.
+
+/**
+ * The adapter, over a bridge scripted to answer one way.
+ *
+ * Named for this file: the root suites share one namespace, and two functions
+ * of the same name are a fatal the moment both load (`G10`).
+ */
+function overALinkThatSays(string $outcome): PlatformNetwork
+{
+    FakeBridge::disable();
+    FakeBridge::enable()->respondTo('Lemonfiber.Link.Status', ['outcome' => $outcome]);
+
+    return new PlatformNetwork(new Link());
+}
 
 /** @return array<string, array{Networking}> */
 dataset('every networking implementation that is connected', [
-    'the platform' => [fn(): Networking => new PlatformNetwork(APlatformNetwork::connected())],
+    'the platform' => [fn(): Networking => overALinkThatSays('reachable')],
     'the fake' => [fn(): Networking => ADeviceOnANetwork::connected()],
 ]);
 
 /** @return array<string, array{Networking}> */
 dataset('every networking implementation with nothing to reach over', [
-    'the platform' => [fn(): Networking => new PlatformNetwork(APlatformNetwork::withNothingToReachOver())],
+    'the platform' => [fn(): Networking => overALinkThatSays('unreachable')],
     'the fake' => [fn(): Networking => ADeviceOnANetwork::withNothingToReachOver()],
 ]);
 

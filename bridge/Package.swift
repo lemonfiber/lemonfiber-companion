@@ -29,6 +29,7 @@ let package = Package(
                 "ScanningFunctions.swift",
                 "ScanningViewController.swift",
                 "StorageFunctions.swift",
+                "LinkFunctions.swift",
             ]
         ),
         .testTarget(
@@ -65,6 +66,11 @@ let package = Package(
             name: "RecurrenceTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/RecurrenceTests"
+        ),
+        .testTarget(
+            name: "LinkRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/LinkRuleTests"
         ),
         .testTarget(
             name: "WhatTheOperatorSaidTests",

@@ -4,54 +4,37 @@ declare(strict_types=1);
 
 namespace Modules\Device\Api;
 
-use function is_bool;
-
+use Lemonfiber\Native\Link;
 use Modules\Kernel\Api\Networking;
-use Native\Mobile\Network as Platform;
-
-use function property_exists;
 
 /**
  * What the platform says about this device's network.
  *
  * `B3` puts a platform call behind an adapter and this is the whole of this
- * one: one question, asked of `Network.Status`, with everything else it answers
- * deliberately discarded.
+ * one: one question, asked once, with nothing else asked for.
  *
- * **The kind of connection is dropped on purpose.** The platform reports
- * whether the link is wifi, cellular or ethernet, whether it is metered, and
- * whether Low Data Mode is on. None of it is read. Nothing about the operator's
- * device is ever reported, and a value held but not sent
+ * **The kind of connection is never fetched, rather than fetched and dropped.**
+ * Both platforms report whether the link is wifi, cellular or ethernet, whether
+ * it is metered, and whether Low Data Mode is on. None of it crosses the
+ * bridge: the envelope has one field and it holds one of two words. Nothing
+ * about the operator's device is ever reported, and a value held but not sent
  * is one commit away from being sent — so the narrowest thing that answers the
- * question is what crosses the boundary.
+ * question is the only thing that exists to send.
  *
- * **Absent is connected, and that is the safe direction here.** The facade
- * answers `null` where the bridge is not there, which on a handset means the
- * call failed and everywhere else means this is not a handset. Reading that as
- * *no network* would put a launch on every desktop and every test run into a
- * state whose remedy is *turn your wifi on*, which is wrong and unactionable.
- * Reading it as connected means the app tries, and a stack it cannot reach is
- * reported the way it always was — one attempt wasted, and the honest answer.
+ * **Where the reading of silence lives.** A device whose platform cannot be
+ * asked answers *reachable*, which is the opposite of the cautious direction
+ * and the right one here. That decision is made twice and in neither of them is
+ * it this class's: `LinkRule` makes it on the handset, where the platform
+ * refused to answer, and {@see Link} makes it in PHP, where there is no bridge
+ * at all. Both are tested where they are. This adapter has no branch of its own
+ * because there is nothing left for it to decide.
  */
 final readonly class PlatformNetwork implements Networking
 {
-    public function __construct(private Platform $network) {}
+    public function __construct(private Link $link) {}
 
     public function isConnected(): bool
     {
-        $said = $this->network->status();
-
-        if ($said === null) {
-            return true;
-        }
-
-        // Written out rather than coalesced, which `C9` refuses: a `??` on a
-        // property folds absent, present-and-null and present-and-the-wrong-
-        // type into one answer, and the one it picks reads as *carry on*.
-        if (! property_exists($said, 'connected') || ! is_bool($said->connected)) {
-            return true;
-        }
-
-        return $said->connected;
+        return $this->link->isReachable();
     }
 }
