@@ -10,12 +10,15 @@ use function json_decode;
 use function json_encode;
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Remembered;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Vault\Api\PlatformStacks;
 
 use function str_repeat;
@@ -47,7 +50,7 @@ function aStack(string $called = 'The loft', string $seed = 'a', string $at = 'h
 function holding(string $written): APlatformStore
 {
     $store = APlatformStore::working();
-    $store->set(UNDER, $written);
+    $store->alreadyHolding(UNDER, $written);
 
     return $store;
 }
@@ -83,14 +86,14 @@ it('N1-R15 — writes the address down deliberately, rather than by serialising 
     $store = APlatformStore::working();
     new PlatformStacks($store)->remember(aStack(at: 'https://192.168.1.77'));
 
-    expect($store->get(UNDER))->toContain('192.168.1.77');
+    expect($store->whatIsUnder(UNDER))->toContain('192.168.1.77');
 });
 
 it('N1-R32 — carries the version of the shape it was written in', function (): void {
     $store = APlatformStore::working();
     new PlatformStacks($store)->remember(aStack());
 
-    $written = json_decode($store->get(UNDER) ?? '', associative: true);
+    $written = json_decode($store->whatIsUnder(UNDER) ?? '', associative: true);
 
     expect($written)->toBeArray()->toHaveKey('shape');
 });
@@ -170,4 +173,48 @@ it('reads a device with no store at all as paired with nothing', function (): vo
     // treating unreadable state as though some unknown stack were configured
     // would be an app offering to operate a machine it cannot name.
     expect(new PlatformStacks(APlatformStore::absent())->configured()->isEmpty())->toBeTrue();
+});
+
+/**
+ * Why a stack was not written down, as a word a test can compare.
+ *
+ * Named for this file: the vault's module suites share one namespace, and two
+ * functions of the same name are a fatal the moment both load (`G10`).
+ */
+function whyItWasRefused(Remembered $remembered): string
+{
+    return $remembered->either(
+        remembered: static fn(): Code => Code::of('safely'),
+        refused: static fn(WhyAStackCannotBeRemembered $why): Code => Code::of($why->value),
+    )->shown();
+}
+
+it('holds nothing where the store has no record under that key', function (): void {
+    // The first launch of an app on a phone that has never been paired. The
+    // lock has nothing to stand in front of, and says so.
+    expect(new PlatformStacks(APlatformStore::working())->holdsAny())->toBeFalse();
+});
+
+it('refuses a stack whose name cannot be written down', function (): void {
+    // A name is whatever somebody typed or pasted, and `StackName` asks only
+    // that it not be blank — so a byte sequence that is not text reaches here
+    // and `json_encode` answers false. The remedy offered is *try again*, which
+    // is the right one: there is nothing wrong with the device.
+    $refused = new PlatformStacks(APlatformStore::working())->remember(
+        Stack::of(
+            StackId::rememberedAs('the-loft'),
+            StackName::of("a name with a broken byte \xB1\x31 in it"),
+            Address::of('https://192.168.1.42'),
+            Fingerprint::of(str_repeat('a', 64)),
+        ),
+    );
+
+    expect(whyItWasRefused($refused))->toBe('store_would_not_open');
+});
+
+it('holds nothing where every pairing has been forgotten', function (): void {
+    // The store keeps the key and writes an empty list into it, so a device
+    // that has been unpaired answers *found* with something in it. A lock
+    // reading the status alone would engage in front of nothing.
+    expect(new PlatformStacks(holding('[]'))->holdsAny())->toBeFalse();
 });

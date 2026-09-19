@@ -11,6 +11,8 @@ use function is_string;
 use function json_decode;
 use function json_encode;
 
+use Lemonfiber\Native\Keeps;
+use Lemonfiber\Native\WhenAValueMayBeRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\Overall;
@@ -18,8 +20,7 @@ use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Showing;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Verdicts;
-use Native\Mobile\SecureStorage as Platform;
-use Native\Mobile\SecureStorageStatus;
+use Modules\Vault\Internal\TheRowsHeld;
 
 /**
  * What each stack last came to, kept in the platform's own store.
@@ -59,11 +60,11 @@ final readonly class PlatformVerdicts implements Verdicts
     /** The shape this build writes, and the only one it reads. */
     private const int SHAPE = 1;
 
-    public function __construct(private Platform $store) {}
+    public function __construct(private Keeps $store) {}
 
     public function lastKnownOf(StackId $stack): Showing
     {
-        $record = $this->held();
+        $record = $this->whatEachStackCameTo()->rows;
         $under = $stack->stored();
 
         // Written out rather than coalesced, which `C9` refuses by name: a `??`
@@ -78,16 +79,25 @@ final readonly class PlatformVerdicts implements Verdicts
 
     public function remember(StackId $stack, Overall $overall, Instant $at): Noted
     {
-        $record = $this->held();
+        $record = $this->whatEachStackCameTo()->rows;
         $record[$stack->stored()] = ['overall' => $overall->value, 'at' => $at->epochSeconds()];
 
         $written = json_encode(['shape' => self::SHAPE, 'verdicts' => $record]);
 
-        if ($written === false || ! $this->store->set(self::UNDER, $written)) {
+        if ($written === false) {
             return Noted::notKept();
         }
 
-        return Noted::downAt($at);
+        // Which of the two refusals it was is deliberately not carried. A
+        // verdict that could not be written down costs the opening screen one
+        // word until the next ask refills it, so there is nothing for an
+        // operator to do differently about a store with no keystore than about
+        // a store that would not open — and a reason nobody acts on is a reason
+        // that ends up on a screen for no purpose.
+        return $this->store->keep(self::UNDER, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+            done: static fn(): Noted => Noted::downAt($at),
+            refused: static fn(): Noted => Noted::notKept(),
+        );
     }
 
     /**
@@ -153,18 +163,21 @@ final readonly class PlatformVerdicts implements Verdicts
      * refuses by name: a `??` chain folds absent, present-and-null and
      * present-and-the-wrong-type into one answer, and the one it picks reads as
      * *carry on*.
-     *
-     * @return array<mixed>
      */
-    private function held(): array
+    private function whatEachStackCameTo(): TheRowsHeld
     {
-        $found = $this->store->read(self::UNDER);
-
-        if ($found->status !== SecureStorageStatus::Found) {
-            return [];
-        }
-
-        return $this->rowsIn(json_decode($found->value ?? '', associative: true));
+        return $this->store->read(self::UNDER)->either(
+            found: fn(string $written): TheRowsHeld => TheRowsHeld::of(
+                $this->rowsIn(json_decode($written, associative: true)),
+            ),
+            nothing: static fn(): TheRowsHeld => TheRowsHeld::none(),
+            // A store that could not be asked reads as no verdict yet, which is
+            // a state the opening screen already draws and the first ask
+            // refills. Nothing here is worth putting a failure in front of
+            // somebody for: this record is the quiet half, and the screens that
+            // must not collapse the two refusals are the ones about pairing.
+            refused: static fn(): TheRowsHeld => TheRowsHeld::none(),
+        );
     }
 
     /**

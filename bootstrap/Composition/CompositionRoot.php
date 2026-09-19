@@ -14,6 +14,7 @@ use function config;
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
+use Lemonfiber\Native\Storage as PlatformStore;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
@@ -74,7 +75,6 @@ use Native\Mobile\Network as PlatformNetworkFacade;
  * is what makes a capability module testable without a device, a network or a
  * stack to talk to.
  */
-use Native\Mobile\SecureStorage as PlatformStore;
 use Native\Mobile\Share;
 
 final class CompositionRoot extends ServiceProvider

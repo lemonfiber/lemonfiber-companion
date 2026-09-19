@@ -28,6 +28,7 @@ let package = Package(
                 "TellingFunctions.swift",
                 "ScanningFunctions.swift",
                 "ScanningViewController.swift",
+                "StorageFunctions.swift",
             ]
         ),
         .testTarget(
@@ -54,6 +55,11 @@ let package = Package(
             name: "EnvelopeTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/EnvelopeTests"
+        ),
+        .testTarget(
+            name: "StorageRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/StorageRuleTests"
         ),
         .testTarget(
             name: "RecurrenceTests",

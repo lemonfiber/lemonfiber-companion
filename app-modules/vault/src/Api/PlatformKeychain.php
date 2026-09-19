@@ -4,95 +4,105 @@ declare(strict_types=1);
 
 namespace Modules\Vault\Api;
 
+use Lemonfiber\Native\Keeps;
+use Lemonfiber\Native\WhenAValueMayBeRead;
+use Lemonfiber\Native\WhyNothingWasKept;
 use Modules\Kernel\Api\Kept;
 use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
-use Native\Mobile\SecureStorage as Platform;
-use Native\Mobile\SecureStorageStatus;
 
 use function sprintf;
 
 /**
- * The platform's own secure store — Keychain on iOS, Keystore on Android.
+ * The device's own secure store, holding one session per stack.
  *
  * The one place "the platform's secure storage" becomes a call. Every
- * alternative that requirement names — preferences, an app-readable file, an
- * unencrypted backup — is absent from this class rather than guarded against,
- * which is the only way to be sure: a fallback written for the device that has
- * no store is the line that writes a token to a file.
+ * alternative — preferences, an app-readable file, an unencrypted backup — is
+ * absent from this class rather than guarded against, which is the only way to
+ * be sure: a fallback written for the device that has no store is the line that
+ * writes a token to a file.
  *
- * **A key per stack.** Each stack's session is kept separate, and one
- * key holding "the session" is how two stacks come to share one — the second
+ * **A key per stack.** Each stack's session is kept separate, and one key
+ * holding "the session" is how two stacks come to share one — the second
  * pairing overwrites the first, and the first stack starts answering with
  * somebody else's credential.
+ *
+ * **Sessions are kept at the narrowest accessibility there is.** A session
+ * token is readable only while the device is unlocked, because nothing in this
+ * application reads one in the background and the wider setting exists for
+ * things that do. The bridge answers back which it actually gave, and the two
+ * differ on Android — that answer is not read here because nothing this class
+ * decides turns on it, and inventing a use for it would be worse than letting
+ * the caller who needs it ask.
  */
 final readonly class PlatformKeychain implements SecureStorage
 {
     /** What a stored key is prefixed with, so nothing else in the store collides. */
     private const string UNDER = 'lemonfiber.session';
 
-    public function __construct(private Platform $store) {}
+    public function __construct(private Keeps $store) {}
 
     public function isAvailable(): bool
     {
-        // Asked by writing nothing and reading a name that is never set: the
-        // platform answers `Unavailable` for a device with no store and
-        // `NotFound` for a store that is present and empty, which is exactly
-        // the distinction being asked about.
-        return $this->store->read($this->keyFor(StackId::rememberedAs('probe')))->status
-            !== SecureStorageStatus::Unavailable;
+        // Asked of the store itself rather than worked out here. Whether a
+        // device has somewhere a session may go is a fact about the store, and
+        // the answer already exists where the store's words are read — an
+        // adapter reconstructing it would be a second reading of the same three
+        // outcomes, and the second reading is the one that drifts.
+        return $this->store->canBeAsked();
     }
 
     public function keep(StackId $stack, Session $session): Kept
     {
-        return $this->store->set($this->keyFor($stack), $session->forTheHeader())
-            ? Kept::safely()
-            : Kept::refused($this->whyItRefused());
+        return $this->store
+            ->keep($this->keyFor($stack), $session->forTheHeader(), WhenAValueMayBeRead::WhileUnlocked)
+            ->either(
+                done: static fn(): Kept => Kept::safely(),
+                refused: static fn(WhyNothingWasKept $why): Kept => Kept::refused(self::meaning($why)),
+            );
     }
 
     public function resume(StackId $stack): Resumed
     {
-        $found = $this->store->read($this->keyFor($stack));
-
-        // `Found` and nothing else. The platform answers `NotFound` for a store
-        // that is present and empty and `Unavailable` for a device with none,
-        // and both are the same answer to this question — asking only about
-        // `Found` means a status added to the vendor's enum tomorrow is read as
-        // "no session" rather than as whichever case happened to be last.
-        if ($found->status !== SecureStorageStatus::Found || $found->value === null) {
-            return Resumed::notHeld();
-        }
-
-        // `Session::of()` refuses a blank, and a store that answered `Found`
-        // with an empty string is a store that lost the value rather than one
-        // holding a session — so it is read as no session rather than allowed
-        // to raise on a launch screen.
-        return $found->value === ''
-            ? Resumed::notHeld()
-            : Resumed::with(Session::of($found->value));
+        return $this->store->read($this->keyFor($stack))->either(
+            // A store that answered with an empty string is a store that lost
+            // the value rather than one holding a session, and `Session::of()`
+            // refuses a blank — so it is read as no session rather than allowed
+            // to raise on a launch screen.
+            found: static fn(string $token): Resumed => $token === ''
+                ? Resumed::notHeld()
+                : Resumed::with(Session::of($token)),
+            nothing: static fn(): Resumed => Resumed::notHeld(),
+            // A store that will not open is a store with no session in it, as
+            // far as this question goes: the operator is asked for the password,
+            // which is both the honest outcome and the only useful one. The two
+            // refusals are told apart where a session is being *kept*, because
+            // the remedies differ there; here there is one remedy.
+            refused: static fn(): Resumed => Resumed::notHeld(),
+        );
     }
 
     public function forget(StackId $stack): Kept
     {
-        // The return is deliberately not checked. Forgetting a session that was
+        // The answer is deliberately not read. Forgetting a session that was
         // never kept is the ordinary case after a refusal, which leaves the app
-        // holding a session it could not store — the one thing that must always
-        // work is getting rid of it.
-        $this->store->delete($this->keyFor($stack));
+        // holding a session it could not store — and the one thing that must
+        // always work is getting rid of it.
+        $this->store->forget($this->keyFor($stack));
 
         return Kept::safely();
     }
 
-    /** Which of the two refusals this was, read from the store rather than guessed. */
-    private function whyItRefused(): WhySessionCannotBeKept
+    /** What one of the bridge's refusals means in the terms this application reasons in. */
+    private static function meaning(WhyNothingWasKept $why): WhySessionCannotBeKept
     {
-        return $this->store->read($this->keyFor(StackId::rememberedAs('probe')))->status
-            === SecureStorageStatus::Unavailable
-                ? WhySessionCannotBeKept::DeviceHasNoSecureStorage
-                : WhySessionCannotBeKept::StoreWouldNotOpen;
+        return match ($why) {
+            WhyNothingWasKept::NoStoreOnThisDevice => WhySessionCannotBeKept::DeviceHasNoSecureStorage,
+            WhyNothingWasKept::StoreWouldNotOpen => WhySessionCannotBeKept::StoreWouldNotOpen,
+        };
     }
 
     /** One key per stack, so two paired stacks never share a session. */

@@ -158,7 +158,7 @@ it('N4-R22 — reads a record written down as empty as holding nothing', functio
     // a device that paired a machine and then forgot it. A status check alone
     // reads that as *holds something*, which is a lock in front of nothing.
     $store = APlatformStore::working();
-    $store->set('stacks', '[]');
+    $store->alreadyHolding('stacks', '[]');
 
     expect(new PlatformStacks($store)->holdsAny())->toBeFalse();
 });

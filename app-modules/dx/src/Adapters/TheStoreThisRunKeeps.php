@@ -6,17 +6,17 @@ namespace Modules\Dx\Adapters;
 
 use function array_key_exists;
 
-use Native\Mobile\SecureStorage as Platform;
-use Native\Mobile\SecureStorageAccessibility;
-use Native\Mobile\SecureStorageResult;
-use Native\Mobile\SecureStorageStatus;
+use Lemonfiber\Native\Keeps;
+use Lemonfiber\Native\WasRead;
+use Lemonfiber\Native\WhenAValueMayBeRead;
+use Lemonfiber\Native\Wrote;
 use Override;
 
 /**
  * A keychain that lives for one run and touches no device.
  *
  * The same move {@see \Modules\Dx\Api\ClientsThatReachNothing} makes one layer
- * down: the adapter above this is the real one — `PlatformStacks` writes the
+ * down: the adapters above this are the real ones — `PlatformStacks` writes the
  * same JSON, applies the same re-pairing rule, and refuses for the same reasons
  * — and the only thing replaced is the part that leaves the process. A
  * stand-in written at the `Stacks` port instead would skip the serialising,
@@ -35,65 +35,62 @@ use Override;
  * offering the affordance at all. `ModuleBoundariesTest` names it for that
  * reason rather than exempting the module.
  *
- * Extends the platform class rather than implementing a port, because the
- * adapter above takes the concrete type — `Native\Mobile\SecureStorage` is what
- * `PlatformStacks` declares — and inventing a port for it here would be a
- * change to the shipped module made on a stand-in's behalf.
+ * **It never refuses.** Every read is found or nothing, and every write is
+ * done: this store is always reachable, so reporting otherwise would put a
+ * screen in front of somebody for a condition that cannot arise here. The
+ * screens for a device with no store and for a store that would not open are
+ * worth looking at, and a stand-in raising them at random is not how to look at
+ * them — that is a second affordance, and one that should say which failure it
+ * is standing in for.
  */
-final class TheStoreThisRunKeeps extends Platform
+final class TheStoreThisRunKeeps implements Keeps
 {
     /** @var array<string, string> */
     private array $held = [];
 
     /**
-     * The accessibility argument is accepted and ignored.
+     * There is somewhere to keep a value, because this is it.
      *
-     * It says when the platform may decrypt a value — after first unlock, while
-     * the device is unlocked — and there is no platform here to tell. Ignoring
-     * it is honest; pretending to honour it would be a second thing to keep
-     * true about a store with no lock.
+     * The answer a handset with a working keystore gives, which is the one that
+     * lets a run reach the screens past pairing. A stand-in answering *no store
+     * on this device* would put every one of them behind a refusal.
      */
     #[Override]
-    public function set(string $key, ?string $value, ?SecureStorageAccessibility $accessibility = null): bool
+    public function canBeAsked(): bool
     {
-        if ($value === null) {
-            return $this->delete($key);
-        }
-
-        $this->held[$key] = $value;
-
         return true;
-    }
-
-    #[Override]
-    public function get(string $key): ?string
-    {
-        return $this->read($key)->value;
     }
 
     /**
-     * What is held under one key, in the vocabulary the platform answers in.
+     * The accessibility argument is accepted and answered back unchanged.
      *
-     * `NotFound` and never `Unavailable` or `Failed`: this store is always
-     * reachable, so reporting otherwise would put a screen in front of somebody
-     * for a condition that cannot arise here. The screens for those conditions
-     * are worth looking at, and a stand-in that raised them at random is not
-     * how to look at them — that is a second affordance, and one that should say
-     * which failure it is standing in for.
+     * It says when the platform may decrypt a value — after first unlock, while
+     * the device is unlocked — and there is no platform here to tell. Answering
+     * with what was asked for is honest in a way a fixed reply would not be:
+     * nothing here locks, so there is no narrower promise to report having
+     * fallen back to.
      */
     #[Override]
-    public function read(string $key): SecureStorageResult
+    public function keep(string $key, string $value, WhenAValueMayBeRead $when): Wrote
     {
-        return array_key_exists($key, $this->held)
-            ? new SecureStorageResult(SecureStorageStatus::Found, $this->held[$key])
-            : new SecureStorageResult(SecureStorageStatus::NotFound);
+        $this->held[$key] = $value;
+
+        return Wrote::done($when);
     }
 
     #[Override]
-    public function delete(string $key): bool
+    public function read(string $key): WasRead
+    {
+        return array_key_exists($key, $this->held)
+            ? WasRead::found($this->held[$key])
+            : WasRead::nothing();
+    }
+
+    #[Override]
+    public function forget(string $key): Wrote
     {
         unset($this->held[$key]);
 
-        return true;
+        return Wrote::done(WhenAValueMayBeRead::WhileUnlocked);
     }
 }
