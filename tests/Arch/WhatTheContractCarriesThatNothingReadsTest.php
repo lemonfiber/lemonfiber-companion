@@ -135,8 +135,10 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     [
         'path' => 'HouseholdEnvelope.members[].requests[].media',
         'because' => 'The library\'s own handle for the thing asked for. `N2-R11` asks for enough to decide '
-            . 'on, and the words a person recognises are the title beside it; `N3-R8` keeps this app out of '
-            . 'playing anything, so there is nothing here an identifier would be used to reach.',
+            . 'on, and the words a person recognises are the title beside it. Nothing here reaches the thing '
+            . 'itself: this app plays nothing today, so there is no door an identifier would open. `N3-R8` '
+            . 'once said it never would and has been withdrawn — when the player arrives this row is one to '
+            . 'read again, because a thing to play is exactly what a handle is for.',
     ],
     [
         'path' => 'HouseholdEnvelope.members[].requests[].waiting_days',

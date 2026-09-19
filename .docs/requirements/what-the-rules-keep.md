@@ -55,15 +55,35 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
+| `N3-R1` | The application a person is given is decided by the identity that signed in | `tests/Feature/SigningIntoAStackTest.php` at the tap and `tests/Feature/TheFirstFrameIsOfferedTest.php` at every launch after it. Two screens, because a session outlives the app being closed: deciding only at sign-in gave a member the operator's report on every reopen. `Resumed::whoseItIs()` answers the subject without the session, so neither screen holds a credential to decide it |
 | `N3-R2` | The app implements no permission model; what a member may do is the core's answer | `tests/Contract/OwingContractTest.php` and `tests/Feature/SeeingWhatYouAreOwedTest.php` — the port answers with the core's own sentences, so there is nothing for a surface to compose a wording from |
 | `N3-R3` | A control a member is not entitled to is refused by the core if it is ever reached, and does not rely on the app having omitted it | `app-modules/sdk/tests/Internal/WhatARefusalMeantTest.php` tells the refusal apart, `app-modules/kernel/tests/Api/ObstacleTest.php` holds what it says and that it signs nobody out, and `tests/Feature/SeeingWhatYouAreOwedTest.php` is what draws it as a refusal rather than as an empty reading |
 | `N3-R4` | Before a member asks for something, the app states whether it needs approval and whether they have allowance left | `tests/Contract/OwingContractTest.php`, run against the adapter and the fake. The sentences are the core's and are carried unchanged — the wire has the parts as well, and composing from them would be a second voice about the household's rules |
 | `N3-R5` | A member whose allowance is spent is told before asking, with when it resets | The same port and the same suite. The reset is `asking.frees_up` written into a sentence by the service that keeps the period, so reading it needs no arithmetic |
-| `N3-R8` | The app plays no media; it hands off to a household client | `tests/Arch/NothingPlaysMediaHereTest.php` |
+| `N3-R6` | A member's own requests carry their state in household terms | `tests/Contract/OwingContractTest.php` and `tests/Feature/SeeingWhatYouAreOwedTest.php`. The reading is narrowed by the core rather than filtered here: `Households::theirOwnIn()` takes exactly one member row or answers with nothing, so an answer about a house is refused rather than picked over |
+| `N3-R7` | A refused request carries the reason that was given | The same two suites. The reason is the stack's own words carried onto the row and shown beneath its state, and a row that was not refused carries an empty one rather than none — so a template reading it has no branch to get wrong |
 | `N3-R9` | A member is not shown lifecycle controls, logs, credentials, diagnostics, or another member's requests | `tests/Feature/WhatAMemberIsNeverShownTest.php` |
 | `N3-R10` | Where a member's request failed on a stack fault, they are told it did not work and that the operator has been told — and are not shown the fault | `tests/Feature/WhatAMemberIsNeverShownTest.php` |
 | `N3-R11` | Parental limits are rendered from the core's answer, with no second copy held here | Answered by absence: this app renders no limits. `tests/Arch/NothingPlaysMediaHereTest.php` names it in the refusal it prints, so whoever adds the first one is told where the answer lives — but nothing here would go red if a second copy appeared beside it |
 | `N3-R12` | While the stack is unreachable, asking for something new is declined rather than queued | `tests/Arch/AnActionIsNeverHeldTest.php`, and `tests/Feature/WhatAMemberIsNeverShownTest.php` |
+
+**`N3-R8` was withdrawn, and this repository still keeps it.** The row said the
+app plays no media and hands off to a household client;
+`tests/Arch/NothingPlaysMediaHereTest.php` reads the platform sources for a
+player and refuses one. The spec has since reversed it — the app plays, because
+sending somebody to a second application they must also install is a household
+product stopping short of the thing the household wanted — and what the row
+protected is now `N3-R14` and `N3-R16`: not *no player*, but a player holding no
+second copy of a library, an age limit or an entitlement, and none of the asking
+logic.
+
+The test is left standing rather than deleted, and the choice is worth stating
+because it is a trap either way. It passes today, since there is no player, so
+nothing is refused yet. Deleting it now would drop the guard during exactly the
+window when somebody might add a player carelessly — which is the erosion its own
+argument describes. Leaving it silent would let it refuse the next feature on the
+authority of a row that no longer exists. So it stays, and whoever builds the
+player re-aims it at what survived rather than arguing with it.
 
 ## What cannot be switched off
 
@@ -88,9 +108,10 @@ here is not a thing this repository does.
 
 | Requirement | What it asks | What holds it open |
 |---|---|---|
+| `N3-R14` | What a member may watch is the core's answer, and the player holds no second copy of a library, an age limit or an entitlement | Not built: there is no player here yet. The shelf it would play from is blocked on the client, which carries the `held` envelope's shape and no endpoint to ask for it |
+| `N3-R15` | Where the media server cannot be reached, playback is declined with the reason rather than queued or shown as buffering | Not built, with the player |
+| `N3-R16` | The player implements no request, approval or allowance logic of its own | Not built, with the player. What it will be held to is what `N3-R2` already holds the rest of this surface to |
 | `N1-R5` | Reconfiguration is offered in full once connected | The settings are not a list this side can know — `ConfigEnvelope` carries what the stack has, so a screen offering the settings it knows about offers a subset the day the stack adds one, silently. `tests/Feature/EveryActionTheStackOffersTest.php` says so rather than gating on a guess |
-| `N3-R1` | The application a person is given is decided by the identity that signed in | A session carries whose it is and two screens turn that into a surface: `SignIntoAStack::onwardsTo()` at the tap and `YourStacks::tappingGoesTo()` at every launch after it, each handing a member what they are owed and an operator the machine's report. Two, because a session outlives the app being closed and deciding only at sign-in gave a member the operator's report on every reopen. `Resumed::whoseItIs()` answers the subject without the session, so neither screen holds a credential to decide it. No setting switches between them and no build contains only one; `app-modules/household/src/README.md` holds the rest |
-| `N3-R6` | A member's own requests carry their state in household terms | `WhatYouAreOwed` shows them beneath the sentences the core wrote, each with what was asked for, where it stands in the member's own words, and the reason it was refused where there was one — and nothing of the machinery behind it. The reading is narrowed by the core rather than filtered here: `Households::theirOwnIn()` takes exactly one member row or answers with nothing, so an answer about a house is refused rather than picked over, which is what keeps one member's requests from reaching another |
 
 ## What another repository answers
 
