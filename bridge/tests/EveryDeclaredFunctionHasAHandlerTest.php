@@ -99,13 +99,50 @@ function whatTheManifestNamesOn(string $platform): array
 }
 
 /**
+ * Whether a symbol names a top-level function rather than a member of a type.
+ *
+ * By the case of the segment *before* the last one, which is the convention
+ * both languages use and neither enforces: a type is `Holder` and a package
+ * segment is `lowercase`. The last segment is no help — `LemonfiberInit.install`
+ * and `app.lemonfiber.native.installLemonfiber` both end in a lowercase name,
+ * and only one of them is a member of something.
+ *
+ * A symbol with no segment before the last is a bare function name, which is
+ * the same answer for the same reason: there is no holder in it.
+ *
+ * An Android `init_function` is the case that needs this. It is
+ * `package.function`, one segment shorter than the `package.Class.Method` a
+ * handler is, because the generated registration calls it with the context it
+ * was handed and a member of an object is not reachable from there.
+ */
+function readsAsATopLevelFunction(string $symbol): bool
+{
+    $parts = explode('.', $symbol);
+
+    array_pop($parts);
+
+    $holder = array_pop($parts);
+
+    if (! is_string($holder) || $holder === '') {
+        return true;
+    }
+
+    return mb_strtolower(mb_substr($holder, 0, 1)) === mb_substr($holder, 0, 1);
+}
+
+/**
  * The file that would hold a symbol, and the declaration that would be in it.
  *
- * A symbol path is `[package.]Holder.Member` on both platforms: the builder
- * writes `Holder.Member(...)` into the registration file, so the holder is what
- * the import resolves and the member is what is constructed or called. The file
- * is named after the holder because that is how this plugin ships its sources —
- * flat, one file per holder, which is the layout the builder copies.
+ * A handler's symbol path is `[package.]Holder.Member` on both platforms: the
+ * builder writes `Holder.Member(...)` into the registration file, so the holder
+ * is what the import resolves and the member is what is constructed or called.
+ * The file is named after the holder because that is how this plugin ships its
+ * sources — flat, one file per holder, which is the layout the builder copies.
+ *
+ * A top-level function has no holder, so it has no file this can name: Kotlin
+ * does not tie a top-level declaration to a filename, and `LemonfiberInit.kt`
+ * holds `installLemonfiber`. The holder comes back empty and
+ * {@see whatNothingAnswers()} searches the tree instead of guessing a path.
  *
  * @return array{0: string, 1: string, 2: string} the holder, the member, the package
  */
@@ -113,9 +150,55 @@ function whereASymbolWouldBe(string $symbol): array
 {
     $parts = explode('.', $symbol);
     $member = array_pop($parts);
+
+    if (readsAsATopLevelFunction($symbol)) {
+        return ['', $member, implode('.', $parts)];
+    }
+
     $holder = array_pop($parts) ?? '';
 
     return [$holder, $member, implode('.', $parts)];
+}
+
+/**
+ * Every source on one platform, by path.
+ *
+ * What a symbol with no holder has to be looked for in. Reading the tree is
+ * more work than opening one predicted file and it is the only honest answer
+ * for a declaration whose file the symbol does not name.
+ *
+ * @return array<string, string> path => contents
+ */
+function everySourceUnder(string $under, string $extension): array
+{
+    $found = [];
+    $paths = glob(sprintf('%s/*.%s', $under, $extension));
+
+    foreach ($paths === false ? [] : $paths as $path) {
+        $source = file_get_contents($path);
+
+        if (is_string($source)) {
+            $found[$path] = $source;
+        }
+    }
+
+    return $found;
+}
+
+/**
+ * The source that declares a top-level function, or nothing.
+ *
+ * @param array<string, string> $sources
+ */
+function whatDeclaresTopLevel(array $sources, string $member): ?string
+{
+    foreach ($sources as $source) {
+        if (whatASourceDeclares($source, $member)) {
+            return $source;
+        }
+    }
+
+    return null;
 }
 
 /**
@@ -158,40 +241,97 @@ function whatNothingAnswers(array $named, string $under, string $extension): arr
     $missing = [];
 
     foreach ($named as $symbol => $declaredBy) {
-        [$holder, $member, $package] = whereASymbolWouldBe($symbol);
-
-        $path = sprintf('%s/%s.%s', $under, $holder, $extension);
-        $source = is_file($path) ? file_get_contents($path) : false;
-
-        if (! is_string($source)) {
-            $missing[] = sprintf('%s (%s) — no %s.%s', $symbol, $declaredBy, $holder, $extension);
-
-            continue;
-        }
-
-        if (! whatASourceDeclares($source, $holder)) {
-            $missing[] = sprintf('%s (%s) — %s.%s declares no %s', $symbol, $declaredBy, $holder, $extension, $holder);
-
-            continue;
-        }
-
-        if (! whatASourceDeclares($source, $member)) {
-            $missing[] = sprintf('%s (%s) — %s.%s declares no %s', $symbol, $declaredBy, $holder, $extension, $member);
-
-            continue;
-        }
-
-        // Kotlin carries a package and the registration file imports it, so a
-        // file moved to a package the manifest does not name is a symbol that
-        // does not resolve even though the declaration is right there.
-        if ($package !== '' && preg_match(sprintf('/^package\s+%s\s*$/m', preg_quote($package, '/')), $source) !== 1) {
-            $missing[] = sprintf('%s (%s) — %s.%s is not in package %s', $symbol, $declaredBy, $holder, $extension, $package);
-        }
+        $missing = [...$missing, ...whatOneSymbolIsMissing($symbol, $declaredBy, $under, $extension)];
     }
 
     sort($missing);
 
     return $missing;
+}
+
+/**
+ * What one symbol the manifest names is missing, or nothing because it is there.
+ *
+ * One symbol per call so that the two shapes — a member of a type, and a
+ * top-level function with no file the symbol names — are written apart from
+ * each other rather than as branches of one loop a reader has to hold.
+ *
+ * @return list<string>
+ */
+function whatOneSymbolIsMissing(string $symbol, string $declaredBy, string $under, string $extension): array
+{
+    [$holder, $member, $package] = whereASymbolWouldBe($symbol);
+
+    if ($holder === '') {
+        $found = whatDeclaresTopLevel(everySourceUnder($under, $extension), $member);
+
+        return is_string($found)
+            ? whereAPackageIsWrong($found, $symbol, $declaredBy, $package)
+            : [sprintf('%s (%s) — no .%s declares %s', $symbol, $declaredBy, $extension, $member)];
+    }
+
+    $path = sprintf('%s/%s.%s', $under, $holder, $extension);
+    $source = is_file($path) ? file_get_contents($path) : false;
+
+    if (! is_string($source)) {
+        return [sprintf('%s (%s) — no %s.%s', $symbol, $declaredBy, $holder, $extension)];
+    }
+
+    $absent = whatAHolderDoesNotDeclare($source, $symbol, $declaredBy, $holder, $member, $extension);
+
+    return $absent === [] ? whereAPackageIsWrong($source, $symbol, $declaredBy, $package) : $absent;
+}
+
+/**
+ * Which of the holder and the member a source does not declare.
+ *
+ * Both are asked because they fail differently: a file that declares no holder
+ * is a file the builder's import will not resolve, and one that declares the
+ * holder and not the member is an import that resolves to something with no
+ * such call on it. A reader given only "missing" has to open the file to find
+ * out which.
+ *
+ * @return list<string>
+ */
+function whatAHolderDoesNotDeclare(
+    string $source,
+    string $symbol,
+    string $declaredBy,
+    string $holder,
+    string $member,
+    string $extension,
+): array {
+    $absent = [];
+
+    foreach ([$holder, $member] as $name) {
+        if (! whatASourceDeclares($source, $name)) {
+            $absent[] = sprintf('%s (%s) — %s.%s declares no %s', $symbol, $declaredBy, $holder, $extension, $name);
+        }
+    }
+
+    return $absent;
+}
+
+/**
+ * Whether a source sits in the package the manifest said it did.
+ *
+ * Kotlin carries a package and the registration file imports it, so a file
+ * moved to a package the manifest does not name is a symbol that does not
+ * resolve even though the declaration is right there. Its own function because
+ * both branches above need it and the one for a top-level function has no
+ * filename to put in the message.
+ *
+ * @return list<string>
+ */
+function whereAPackageIsWrong(string $source, string $symbol, string $declaredBy, string $package): array
+{
+    if ($package === '') {
+        return [];
+    }
+
+    return preg_match(sprintf('/^package\s+%s\s*$/m', preg_quote($package, '/')), $source) === 1
+        ? []
+        : [sprintf('%s (%s) — what declares it is not in package %s', $symbol, $declaredBy, $package)];
 }
 
 /**
@@ -415,4 +555,91 @@ it('finds the handlers a source holds', function (): void {
 
     expect($ios)->toContain('LemonfiberFunctions.IsProtected')
         ->and($ios)->toContain('LemonfiberAuth.Authenticate');
+});
+
+/** The platforms this bridge ships a half for. */
+const HALVES_THIS_BRIDGE_SHIPS = ['android', 'ios'];
+
+/**
+ * The symbol one platform's half is switched on by, or nothing.
+ *
+ * Takes the manifest rather than reading it, so the judgement can be driven
+ * with a manifest that is missing the key, one whose platform section is not an
+ * object at all, and one that has the symbol — none of which can be arranged by
+ * editing the real file without leaving it wrong for the length of a run.
+ *
+ * @param array<mixed> $manifest
+ */
+function whatSwitchesOn(array $manifest, string $platform): string
+{
+    $half = $manifest[$platform] ?? [];
+    $symbol = is_array($half) ? ($half['init_function'] ?? '') : '';
+
+    return is_string($symbol) ? $symbol : '';
+}
+
+it('names the symbol that switches each half on', function (): void {
+    // A native half is installed by one symbol the builder calls at startup. The
+    // failure when it is missing is silent, which is the whole reason this is a
+    // rule: the builder emits an import and a call for whatever the manifest
+    // names and emits nothing at all for what it does not. There is no error to
+    // read — the plugin compiles, every bridge function registers and answers,
+    // every screen renders, and the one call that had to happen first never
+    // does.
+    //
+    // Asked of the two platforms together rather than once each, because the
+    // shape of this failure is asymmetry: they want different shapes — Android a
+    // top-level function taking a `Context`, iOS a class with a static method —
+    // and a shape that does not fit is easier to leave out than to convert. A
+    // rule written per platform would also be satisfied by a manifest that
+    // switches neither half on.
+    $manifest = theBridgeManifest();
+
+    $missing = array_values(array_filter(
+        HALVES_THIS_BRIDGE_SHIPS,
+        static fn(string $platform): bool => whatSwitchesOn($manifest, $platform) === '',
+    ));
+
+    expect($missing)->toBe([], sprintf(
+        "These platforms name no `init_function`: %s.\n\n"
+        . 'The builder emits an import and a call for whatever the manifest names and nothing '
+        . 'for what it does not, so a half nobody switches on fails without saying so: the '
+        . 'lifecycle callbacks are never registered, every screen still renders, and the task '
+        . "switcher quietly holds the last frame.\n"
+        . 'Android wants a top-level function taking a `Context`, iOS a class with a static '
+        . 'method. Declare the missing one under `<platform>.init_function`.',
+        implode(', ', $missing),
+    ));
+});
+
+it('tells a declared half from an undeclared one', function (): void {
+    expect(whatSwitchesOn(['android' => ['init_function' => 'app.example.install']], 'android'))
+        ->toBe('app.example.install');
+
+    // Every way a platform can fail to name one, because each is a different
+    // shape of nothing and a reader handling two of the three would pass this
+    // rule on a manifest it could not understand.
+    expect(whatSwitchesOn(['android' => ['min_version' => 26]], 'android'))->toBe('');
+    expect(whatSwitchesOn(['android' => 'not an object'], 'android'))->toBe('');
+    expect(whatSwitchesOn(['android' => ['init_function' => []]], 'android'))->toBe('');
+    expect(whatSwitchesOn([], 'ios'))->toBe('');
+});
+
+it('tells a top-level function from a member of a type', function (): void {
+    // The distinction the resolver above rests on, driven directly. The last
+    // segment cannot answer it — `LemonfiberInit.install` and
+    // `app.lemonfiber.native.installLemonfiber` both end in a lowercase name and
+    // only one is a member of something — so it is the segment before it that
+    // decides, and getting that backwards sends the reader looking for a file
+    // called `native.kt`.
+    expect(readsAsATopLevelFunction('app.lemonfiber.native.installLemonfiber'))->toBeTrue();
+    expect(readsAsATopLevelFunction('installLemonfiber'))->toBeTrue();
+
+    expect(readsAsATopLevelFunction('LemonfiberInit.install'))->toBeFalse();
+    expect(readsAsATopLevelFunction('app.lemonfiber.native.LemonfiberFunctions.Conceal'))->toBeFalse();
+
+    // And the holder it answers with, which is what names the file to open.
+    expect(whereASymbolWouldBe('app.lemonfiber.native.installLemonfiber'))
+        ->toBe(['', 'installLemonfiber', 'app.lemonfiber.native']);
+    expect(whereASymbolWouldBe('LemonfiberInit.install'))->toBe(['LemonfiberInit', 'install', '']);
 });

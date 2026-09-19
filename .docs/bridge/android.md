@@ -53,3 +53,18 @@ inside itself.
 **The camera can be refused twice.** Once by declining the dialog, and again by
 the operator having turned it off in settings since. Both arrive as the same
 denial, and the difference matters to what the screen should say next.
+
+**A plugin's init function is a top-level function taking a `Context`.** The
+generated `PluginBridgeFunctionRegistration.kt` imports the symbol by its full
+path and calls it with the context it was handed, so a member of an object is
+not reachable from there however `@JvmStatic` it is — `import a.b.C.install`
+does not compile. iOS takes a class with a static method instead, so the same
+job needs a different shape on each side and `nativephp.json` is where that
+difference is written down.
+
+What makes it worth a page rather than a comment is the failure when the
+manifest names nothing at all. The builder emits an import and a call for what
+it is told about and emits nothing for what it is not, so a half nobody switches
+on produces no error: the plugin compiles, every bridge function registers and
+answers, every screen renders, and the one call that had to happen before any of
+them never did. `tests/Arch/BothHalvesAreSwitchedOnTest.php` is what notices.

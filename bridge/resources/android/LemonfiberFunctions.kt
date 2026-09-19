@@ -48,10 +48,10 @@ public object LemonfiberFunctions {
     /**
      * Start watching the app move in and out of the foreground.
      *
-     * Called once from the host application. Without it the window is never
-     * protected, because nothing would notice the app leaving — and the failure
-     * would be invisible: every screen would look right, and the task switcher
-     * would quietly hold the last frame.
+     * Called once from `installLemonfiber`, which is the symbol the builder
+     * calls. Without it the window is never protected, because nothing would
+     * notice the app leaving — and the failure would be invisible: every screen
+     * would look right, and the task switcher would quietly hold the last frame.
      */
     @JvmStatic
     public fun install(application: Application) {

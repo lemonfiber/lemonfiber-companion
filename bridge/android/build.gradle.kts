@@ -83,6 +83,7 @@ sourceSets {
             "ScanningActivity.kt",
             "StorageFunctions.kt",
             "LinkFunctions.kt",
+            "LemonfiberInit.kt",
         )
     }
     test {
