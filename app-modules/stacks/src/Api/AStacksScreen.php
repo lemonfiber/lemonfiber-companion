@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal;
+namespace Modules\Stacks\Api;
+
+use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\StackId;
 
 use function str_contains;
 use function str_replace;
@@ -27,8 +31,18 @@ use function str_replace;
  * class and nothing else — so there is no `route()` to ask, which is why this
  * exists rather than a lookup.
  *
- * `Internal` because where a screen lives is a detail of this module's own
- * surface; `E2`'s promise is that it can be renamed without reading another.
+ * **In a capability module because two surfaces need it and neither may name
+ * the other.** A stack's screens are rendered from both `Modules\Operator` and
+ * `Modules\Household`: the operator reads the machine and the member reads what
+ * they are owed by it, and each has to be able to send somebody to the other.
+ * A surface may depend on a kernel, a design and a capability module and never
+ * on a second surface, so a path spelled in both would be the one drift this
+ * type cannot watch — the failure it was written to end, arriving by the only
+ * road left open to it.
+ *
+ * `Api` rather than `Internal`, and that is the whole of the move: the two
+ * surfaces reach it through this module's published surface, which is the only
+ * way `E2` lets either of them reach anything here at all.
  */
 enum AStacksScreen: string
 {
@@ -91,13 +105,13 @@ enum AStacksScreen: string
      * those, and a caller that used the wrong one finds out here rather than in
      * somebody's hand.
      */
-    public function forTheStack(string $stored): string
+    public function forTheStack(StackId $stack): string
     {
         if ($this->alsoNeedsAService()) {
             throw AScreenNeedsMoreThanAStack::toBeReached($this);
         }
 
-        return str_replace(self::NAMED, $stored, $this->value);
+        return str_replace(self::NAMED, $stack->stored(), $this->value);
     }
 
     /**
@@ -108,13 +122,33 @@ enum AStacksScreen: string
      * caller holding a service name the path does not carry and a screen that
      * opens on whatever it likes.
      */
-    public function forTheStacksService(string $stored, string $service): string
+    public function forTheStacksService(StackId $stack, ServiceId $service): string
     {
         if (! $this->alsoNeedsAService()) {
             throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
         }
 
-        return str_replace([self::NAMED, self::ABOUT], [$stored, $service], $this->value);
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $service->named()], $this->value);
+    }
+
+    /**
+     * This screen's path, for one whole form on one machine.
+     *
+     * The same segment {@see self::forTheStacksService()} fills and a different
+     * thing filling it, which is why it is a second method rather than a wider
+     * first one. The screen at the other end reads a service first and a form
+     * second, so the path carries a name and not a kind — and a single builder
+     * taking `string` would be the one thing `D2` is about here: a form name
+     * and a service name are both text, and passing one where the other belongs
+     * would compile and ship.
+     */
+    public function forTheStacksForm(StackId $stack, Form $form): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $form->named()], $this->value);
     }
 
     /**

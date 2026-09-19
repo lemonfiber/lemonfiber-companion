@@ -17,8 +17,8 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatToDoWithIt;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -442,8 +442,8 @@ it('refuses a named thing that is not text', function (): void {
 
 it('N2-R7 — the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(AStacksScreen::Doing->forTheStacksService(
-        theMachineTheseVerbsReach()->id()->stored(),
-        'sonarr',
+        theMachineTheseVerbsReach()->id(),
+        ServiceId::called('sonarr'),
     ));
 
     expect($resolved['class'] ?? null)->toBe(WhatToDoWithThis::class);

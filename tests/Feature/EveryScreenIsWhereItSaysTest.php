@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
-use Modules\Operator\Internal\AScreenNeedsMoreThanAStack;
+use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AScreenWithoutAStack;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
@@ -52,20 +54,55 @@ it('every route the provider registers is one of these enums spelled once', func
     // pairing roads were spelled by hand in the provider and again in
     // `your-stacks.blade.php` for as long as this test asked about stacks only,
     // which is a rule claiming more than it enforced.
-    $source = file_get_contents(Tree::at('app-modules/operator/src/Providers/OperatorServiceProvider.php'));
+    //
+    // Every provider, not the operator's alone. There are two surfaces now, and
+    // a rule reading one of them is the same defect a second time: the module
+    // it does not read is the one where a hand-spelled route would sit.
+    $providers = everyProviderThatRegistersAScreen();
+    $spelled = [];
 
-    expect($source)->toBeString();
+    expect($providers)->not->toBe([], 'no provider registers a screen, so this rule read nothing');
 
-    preg_match_all("/Router::native\(\s*'([^']*)'/", (string) $source, $spelled);
+    foreach ($providers as $path => $source) {
+        preg_match_all("/Router::native\(\s*'([^']*)'/", $source, $found);
 
-    expect($spelled[1])->toBe([], sprintf(
-        "These routes are spelled in the provider rather than taken from `AStacksScreen` or "
+        foreach ($found[1] as $route) {
+            $spelled[] = sprintf('%s — %s', basename($path), $route);
+        }
+    }
+
+    expect($spelled)->toBe([], sprintf(
+        "These routes are spelled in a provider rather than taken from `AStacksScreen` or "
         . "`AScreenWithoutAStack`:\n  %s\n\n"
         . 'A route registered by hand is a route no builder knows about, and a '
         . "builder that does not know about it cannot send anybody there.\n",
-        implode("\n  ", $spelled[1]),
+        implode("\n  ", $spelled),
     ));
 });
+
+/**
+ * Every service provider that registers a screen, by the file it is in.
+ *
+ * Found by what they do rather than by naming the modules, so a third surface
+ * is read by this the day it exists. A rule that named its subjects would be
+ * green about the module nobody remembered to add.
+ *
+ * @return array<string, string>
+ */
+function everyProviderThatRegistersAScreen(): array
+{
+    $found = [];
+
+    foreach (Tree::filesUnder(Tree::at('app-modules'), '.php') as $path) {
+        $source = (string) file_get_contents($path);
+
+        if (str_contains($source, 'Router::native(')) {
+            $found[$path] = $source;
+        }
+    }
+
+    return $found;
+}
 
 it('no screen spells a path the provider would have to be told about separately', function (): void {
     // The third spelling, and the one that actually bit: a template writing the
@@ -73,7 +110,9 @@ it('no screen spells a path the provider would have to be told about separately'
     // provider, so the button simply stops working.
     $spelled = [];
 
-    foreach (Tree::filesUnder(Tree::at('app-modules/operator/resources/views'), '.blade.php') as $view) {
+    // Every surface's views, for the reason the rule above reads every
+    // provider: a second surface is a second place the same mistake fits.
+    foreach (Tree::filesUnder(Tree::at('app-modules'), '.blade.php') as $view) {
         $body = (string) file_get_contents($view);
 
         if (preg_match_all("/@navigate=['\"]\s*(\/[^'\"{]*)/", $body, $found) === 0) {
@@ -268,7 +307,7 @@ it('a screen that needs a service refuses to be asked for with only a stack', fu
     // to nothing — a button that does nothing, on a handset, with no error
     // anywhere. That is the exact failure this enum was written to end,
     // arriving by a new road, so it is a refusal rather than a comment.
-    expect(fn(): string => AStacksScreen::Logs->forTheStack(Screens::aStackInTheUri()))
+    expect(fn(): string => AStacksScreen::Logs->forTheStack(StackId::rememberedAs(Screens::aStackInTheUri())))
         ->toThrow(AScreenNeedsMoreThanAStack::class, 'naming a machine is not enough');
 });
 
@@ -276,8 +315,22 @@ it('a screen that needs only a stack refuses to be handed a service', function (
     // The other mistake, and it is not harmless either: a caller holding a
     // service name the path does not carry has a screen that opens on whatever
     // it likes.
-    expect(fn(): string => AStacksScreen::Health->forTheStacksService(Screens::aStackInTheUri(), 'gluetun'))
+    expect(fn(): string => AStacksScreen::Health->forTheStacksService(
+        StackId::rememberedAs(Screens::aStackInTheUri()),
+        ServiceId::called('gluetun'),
+    ))
         ->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
+it('a screen that needs only a stack refuses to be handed a form either', function (): void {
+    // The same mistake by the other road. A form and a service fill the same
+    // segment and are different things, which is why there are two builders —
+    // and a case with nowhere to put either has to refuse both, or the one it
+    // does not refuse is the one somebody reaches for.
+    expect(fn(): string => AStacksScreen::Health->forTheStacksForm(
+        StackId::rememberedAs(Screens::aStackInTheUri()),
+        Form::called('arr'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
 });
 
 it('which builder a screen needs is read off its own pattern', function (): void {

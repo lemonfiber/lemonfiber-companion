@@ -16,8 +16,8 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatStalled;
@@ -210,7 +210,7 @@ it('refuses a route parameter that is not text', function (): void {
 
 it('N2-R9 — the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(
-        AStacksScreen::Stuck->forTheStack(theStackWhoseStallIsRead()->id()->stored()),
+        AStacksScreen::Stuck->forTheStack(theStackWhoseStallIsRead()->id()),
     );
 
     expect($resolved['class'] ?? null)->toBe(WhatStoppedComingIn::class);

@@ -17,8 +17,8 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -249,7 +249,7 @@ it('N1-R11 — a route naming a stack this device has forgotten is refused', fun
 
 it('the way back to this machine and to signing in are both this screen', function (): void {
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
-    $named = theStackWhoseHouseholdIsRead()->id()->stored();
+    $named = theStackWhoseHouseholdIsRead()->id();
 
     expect($screen->goes()->health())->toBe(AStacksScreen::Health->forTheStack($named))
         ->and($screen->goes()->signIn())->toBe(AStacksScreen::SignIn->forTheStack($named));

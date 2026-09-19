@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
@@ -28,10 +29,10 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatWasAsked;
@@ -762,7 +763,7 @@ it('N2-R11 — what the household asked for is one tap from the machine it is ab
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->goes()->requests())
-        ->toBe(AStacksScreen::Requests->forTheStack(theStackBeingLookedAt()->id()->stored()))
+        ->toBe(AStacksScreen::Requests->forTheStack(theStackBeingLookedAt()->id()))
         ->and(NativeRouter::resolve($screen->goes()->requests()))->not->toBeNull();
 });
 
@@ -775,7 +776,7 @@ it('N2-R4 — what this machine would put right is one tap from the machine', fu
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->goes()->repairs())
-        ->toBe(AStacksScreen::Repairs->forTheStack(theStackBeingLookedAt()->id()->stored()))
+        ->toBe(AStacksScreen::Repairs->forTheStack(theStackBeingLookedAt()->id()))
         ->and(NativeRouter::resolve($screen->goes()->repairs()))->not->toBeNull();
 });
 
@@ -787,7 +788,7 @@ it('N2-R9 — what stopped coming in is one tap from the machine', function (): 
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
     expect($screen->goes()->stuck())
-        ->toBe(AStacksScreen::Stuck->forTheStack(theStackBeingLookedAt()->id()->stored()))
+        ->toBe(AStacksScreen::Stuck->forTheStack(theStackBeingLookedAt()->id()))
         ->and(NativeRouter::resolve($screen->goes()->stuck()))->not->toBeNull();
 });
 
@@ -810,8 +811,8 @@ it('N2-R10 — a finding about a service offers what that service said', functio
     expect($rows[0]->service)->toBe('gluetun')
         ->and($screen->logsOf($rows[0]->service))
         ->toBe(AStacksScreen::Logs->forTheStacksService(
-            theStackBeingLookedAt()->id()->stored(),
-            'gluetun',
+            theStackBeingLookedAt()->id(),
+            ServiceId::called('gluetun'),
         ))
         ->and(NativeRouter::resolve($screen->logsOf($rows[0]->service)))->not->toBeNull();
 });

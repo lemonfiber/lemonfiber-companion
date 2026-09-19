@@ -7,7 +7,6 @@ namespace Modules\Operator\Providers;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\AScreenWithoutAStack;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
@@ -21,6 +20,7 @@ use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Modules\Stacks\Api\AStacksScreen;
 
 /**
  * The operator surface, declaring its own screens.

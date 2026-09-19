@@ -259,6 +259,12 @@ final class PairByTyping extends NativeComponent
      * signing in: they have introduced the machine and hold no session for it.
      * Until this existed the screen said *"you can reach it from the main
      * screen"* and left them to go and do it.
+     *
+     * **It refuses to answer before anything is paired**, which is
+     * {@see \Modules\Kernel\Api\StackId::rememberedAs()}'s refusal rather than a check here: a
+     * blank identifier would build `/stacks//sign-in`, which looks like a route
+     * and resolves to nothing. The template asks `isPaired()` first, so the
+     * refusal is a guarantee about the type rather than a branch on the screen.
      */
     public function onwardsTo(): string
     {

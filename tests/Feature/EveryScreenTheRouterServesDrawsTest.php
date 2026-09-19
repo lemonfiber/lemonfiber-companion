@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\AScreenWithoutAStack;
-use Modules\Operator\Internal\AStacksScreen;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;

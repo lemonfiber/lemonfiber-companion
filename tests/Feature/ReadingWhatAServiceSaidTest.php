@@ -18,8 +18,8 @@ use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stream;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AServiceThatSpoke;
@@ -303,8 +303,8 @@ it('refuses a route naming no service', function (): void {
 
 it('N2-R10 — the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(AStacksScreen::Logs->forTheStacksService(
-        theStackWhoseServiceIsRead()->id()->stored(),
-        'gluetun',
+        theStackWhoseServiceIsRead()->id(),
+        ServiceId::called('gluetun'),
     ));
 
     expect($resolved['class'] ?? null)->toBe(WhatThisServiceSaid::class);
@@ -315,7 +315,10 @@ it('the builder and the router agree about which service a path names', function
     // A builder that put them in the wrong segments would still resolve — each
     // pattern matches any single segment — and would open another machine's
     // service.
-    $resolved = NativeRouter::resolve(AStacksScreen::Logs->forTheStacksService('a-stack', 'gluetun'));
+    $resolved = NativeRouter::resolve(AStacksScreen::Logs->forTheStacksService(
+        StackId::rememberedAs('a-stack'),
+        ServiceId::called('gluetun'),
+    ));
     $params = is_array($resolved) && is_array($resolved['params'] ?? null) ? $resolved['params'] : [];
 
     expect($params['stack'] ?? null)->toBe('a-stack')

@@ -8,9 +8,9 @@ use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
@@ -84,7 +84,7 @@ function theScreenASignedOutOperatorIsSentTo(string $stack): string
     $goes = WhereAStackIs::rememberedAs($stack)->signIn();
 
     foreach (AStacksScreen::cases() as $case) {
-        if ($case->forTheStack($stack) === $goes) {
+        if ($case->forTheStack(StackId::rememberedAs($stack)) === $goes) {
             return $case->name;
         }
     }

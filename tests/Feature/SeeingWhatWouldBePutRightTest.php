@@ -23,8 +23,8 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatWasMended;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -249,7 +249,7 @@ it('N1-R11 — a route naming a stack this device has forgotten is refused', fun
 
 it('N2-R4 — the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(
-        AStacksScreen::Repairs->forTheStack(theStackBeingOfferedRepairs()->id()->stored()),
+        AStacksScreen::Repairs->forTheStack(theStackBeingOfferedRepairs()->id()),
     );
 
     expect($resolved)->not->toBeNull(

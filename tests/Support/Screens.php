@@ -10,8 +10,10 @@ use function explode;
 use function file_get_contents;
 
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AScreenWithoutAStack;
-use Modules\Operator\Internal\AStacksScreen;
+use Modules\Stacks\Api\AStacksScreen;
 
 use function preg_match;
 use function preg_match_all;
@@ -174,8 +176,11 @@ final readonly class Screens
             // for the other refuses rather than handing back a path with
             // `{service}` still in it.
             $paths[sprintf('AStacksScreen::%s', $screen->name)] = $screen->alsoNeedsAService()
-                ? $screen->forTheStacksService(self::aStackInTheUri(), 'gluetun')
-                : $screen->forTheStack(self::aStackInTheUri());
+                ? $screen->forTheStacksService(
+                    StackId::rememberedAs(self::aStackInTheUri()),
+                    ServiceId::called('gluetun'),
+                )
+                : $screen->forTheStack(StackId::rememberedAs(self::aStackInTheUri()));
         }
 
         return $paths;

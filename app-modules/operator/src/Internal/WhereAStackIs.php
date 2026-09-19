@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
+use Modules\Stacks\Api\AStacksScreen;
 
 /**
  * Where one stack's screens live, which is the only place that knows.
@@ -29,22 +30,25 @@ use Modules\Kernel\Api\StackId;
  * the way to the twenty-method ceiling that is refused. Handing out one of
  * these instead means the next destination costs no method at all.
  *
- * **It holds the stored identifier rather than a {@see StackId}.** Two screens
- * reach here holding only what a pairing wrote down, before anything has looked
- * it up — and a type that refused them would have those two building the URI by
- * hand, which is the situation this exists to end.
+ * **It takes what a pairing wrote down and gives it a name here.** Two screens
+ * reach this holding only the identifier and nothing else, before anything has
+ * looked the stack back up — and a type that refused them would have those two
+ * building the URI by hand, which is the situation this exists to end. So the
+ * string is admitted at {@see self::rememberedAs()} and becomes a
+ * {@see StackId} there, which is the one place `D2` allows a primitive across
+ * a boundary: a named constructor, where it is checked and given a name.
  *
  * `Internal` because where a screen lives is a detail of this module's own
  * surface; `E2`'s promise is that it can be renamed without reading another.
  */
 final readonly class WhereAStackIs
 {
-    private function __construct(private string $stored) {}
+    private function __construct(private StackId $stack) {}
 
     /** A stack this device holds. */
     public static function of(StackId $stack): self
     {
-        return new self($stack->stored());
+        return new self($stack);
     }
 
     /**
@@ -56,67 +60,67 @@ final readonly class WhereAStackIs
      */
     public static function rememberedAs(string $stored): self
     {
-        return new self($stored);
+        return new self(StackId::rememberedAs($stored));
     }
 
     /** How this machine is doing, which is what the app is for. */
     public function health(): string
     {
-        return AStacksScreen::Health->forTheStack($this->stored);
+        return AStacksScreen::Health->forTheStack($this->stack);
     }
 
     /** Where a password is offered, and where a session that ended is renewed. */
     public function signIn(): string
     {
-        return AStacksScreen::SignIn->forTheStack($this->stored);
+        return AStacksScreen::SignIn->forTheStack($this->stack);
     }
 
     /** What the household has asked this machine for. */
     public function requests(): string
     {
-        return AStacksScreen::Requests->forTheStack($this->stored);
+        return AStacksScreen::Requests->forTheStack($this->stack);
     }
 
     /** What this machine would put right, stated before any yes. */
     public function repairs(): string
     {
-        return AStacksScreen::Repairs->forTheStack($this->stored);
+        return AStacksScreen::Repairs->forTheStack($this->stack);
     }
 
     /** What has stopped coming in to this machine. */
     public function stuck(): string
     {
-        return AStacksScreen::Stuck->forTheStack($this->stored);
+        return AStacksScreen::Stuck->forTheStack($this->stack);
     }
 
     /** What this machine is running, and the verbs about it. */
     public function services(): string
     {
-        return AStacksScreen::Services->forTheStack($this->stored);
+        return AStacksScreen::Services->forTheStack($this->stack);
     }
 
     /** Where this machine stands on being up to date. */
     public function updates(): string
     {
-        return AStacksScreen::Updates->forTheStack($this->stored);
+        return AStacksScreen::Updates->forTheStack($this->stack);
     }
 
     /** What is running here that this machine never declared. */
     public function elsewhere(): string
     {
-        return AStacksScreen::Elsewhere->forTheStack($this->stored);
+        return AStacksScreen::Elsewhere->forTheStack($this->stack);
     }
 
     /** What one of this machine's services has been saying. */
     public function logsOf(ServiceId $service): string
     {
-        return AStacksScreen::Logs->forTheStacksService($this->stored, $service->named());
+        return AStacksScreen::Logs->forTheStacksService($this->stack, $service);
     }
 
     /** One service of this machine, and the verbs about it. */
     public function doingWith(ServiceId $service): string
     {
-        return AStacksScreen::Doing->forTheStacksService($this->stored, $service->named());
+        return AStacksScreen::Doing->forTheStacksService($this->stack, $service);
     }
 
     /**
@@ -125,15 +129,16 @@ final readonly class WhereAStackIs
      * The same screen as the one above, because what an operator is choosing
      * between is identical and only the name the stack is told differs.
      *
-     * Text rather than a {@see Form}, which is the one place on this class it
-     * is. A form reaches a screen as the name the stack sent — the listing
-     * carries `list<string>` and the verb has always been asked for by that
-     * name — and {@see Form::called()} refuses a blank, so building the value
-     * to make a route would put a raise on a tap. The screen refuses a name it
-     * never read, which is where that refusal belongs.
+     * Text on the way in and a {@see Form} on the way out, which is the one
+     * place on this class the conversion happens. A form reaches a screen as
+     * the name the stack sent — the listing carries `list<string>` and the verb
+     * has always been asked for by that name — and what puts those strings
+     * there is {@see Form::named()}, so a blank cannot arrive by that road.
+     * {@see Form::called()} refuses one anyway, which is the check the boundary
+     * is entitled to rather than a raise waiting on a tap.
      */
     public function doingWithTheForm(string $named): string
     {
-        return AStacksScreen::Doing->forTheStacksService($this->stored, $named);
+        return AStacksScreen::Doing->forTheStacksForm($this->stack, Form::called($named));
     }
 }
