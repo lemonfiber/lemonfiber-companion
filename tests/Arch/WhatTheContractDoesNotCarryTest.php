@@ -84,6 +84,43 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'connection does not exist. Until it does, pairing depends on somebody assembling by '
             . 'hand what `N1-R47` says a surface must be able to produce on demand.',
     ],
+    [
+        'requirement' => 'N3-R15',
+        'asks' => 'to decline playback with the reason where the media server cannot be reached',
+        // Unnamed on purpose, and this is the row the register's own warning
+        // was written about. A location could land on `held` beside the
+        // holding it is about, or on a read of its own asked for one holding
+        // at a time — the second is the likelier shape for something that
+        // expires, and naming the first would be a guess about *where* an
+        // answer arrives becoming a condition for noticing that it has.
+        'envelope' => null,
+        // `stream` and `source` are both spent on this wire already — one on a
+        // log's two streams and one elsewhere — so a row watching either would
+        // fire today and go on firing. `stream_from` is free, and it is the
+        // plainest name for the thing that is missing: where this holding can
+        // be streamed from, said by whoever knows.
+        //
+        // A field that closes this gap under another name is a row to update
+        // rather than a silence to live with. That is the cost of naming one
+        // at all, and it is smaller than the cost of naming none: a row with
+        // no field is a row nothing can ever fire on.
+        'field' => 'stream_from',
+        'shape' => null,
+        'raised' => 'The shelf is read and nothing can be played from it. `HeldEnvelope.holdings[]` '
+            . 'carries `id`, `medium`, `title` and `year`, and nothing that turns an identifier into '
+            . 'something a player can open. The app must not compose one: an address built here out '
+            . 'of a stack\'s address and a holding\'s id is a second copy of how the library works, '
+            . 'which is the one thing `N3-R14` says a player may not hold, and it is server-specific '
+            . 'besides — the path a Jellyfin library serves is not the path a Plex one does, so the '
+            . 'app would be deciding which media server the household runs. It is also the assumption '
+            . 'that breaks first: the route to a library is a local wire today and will not always be '
+            . 'one, and an app that built the address is an app that built the wrong one the day it '
+            . 'is reached from somewhere else. So the location belongs to whoever already knows both '
+            . 'the library and the route, which is the core. Until it is carried, `N3-R15` cannot be '
+            . 'answered at all — playback cannot be declined for a reason by an app that has no way '
+            . 'to attempt it — and `N3-R16` is answered only by there being no player to implement '
+            . 'anything in.',
+    ],
 ];
 
 /**
