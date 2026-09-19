@@ -64,3 +64,28 @@ anything the caller passed — and nothing else.
 An exception raised by the platform is caught and converted to a reason rather
 than propagated, because a platform exception message can carry the key it
 failed on, and an uncaught one reaches a crash reporter.
+
+## Watched
+
+**Android — SM-A515F (`R58N12ZSQ3H`), debug build, fresh install.**
+
+| | What was seen |
+|---|---|
+| The plugin compiles in | `Compiling plugin … lemonfiber/bridge (0.1.0)`, and no `nativephp/mobile-secure-storage` in the list at all |
+| `Read`, on launch | called five times and answered `nothing under that key` each time |
+| The store itself | opened — neither *no store on this device* nor *the store would not open* was reached, so the master key built and the encrypted file opened on a real Keystore |
+| The screen | the first-run screen, which is what a device holding no pairings should get |
+| The log | `storage: nothing under that key`, and nothing else. No key, no value, no stack identifier |
+
+**What is not watched on a device: `Keep` and `Forget`.** Both need a stack to
+pair with and sign in to, and there was none reachable. They are covered by the
+Kotlin and Swift rule suites, by `bridge/tests/StorageTest.php` against the real
+`nativephp_call()`, and by the contract suite against adapter and stand-in — but
+nobody has seen them write to a real Keystore. That is the first thing to watch
+on the next device that has a stack in front of it.
+
+**iOS is unproven.** No iPhone has been attached to this work. `StorageRule`
+passes its tests under `swift test`; `StorageFunctions.swift` has never run on a
+device. The part that most wants watching is the accessibility answer: iOS
+returns what it actually granted and Android returns its one behaviour, and only
+the Android side of that has been seen.
