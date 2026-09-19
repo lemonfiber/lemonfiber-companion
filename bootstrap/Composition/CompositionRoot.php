@@ -27,6 +27,7 @@ use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
@@ -49,6 +50,7 @@ use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
 use Modules\Sdk\Api\Admissions;
+use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Menders;
@@ -236,6 +238,13 @@ final class CompositionRoot extends ServiceProvider
         // The agreement half of it does change a stack, so it is handed the
         // randomness a key for one attempt is minted from (`B2`).
         $this->app->bind(Mending::class, Menders::class);
+
+        // What a stack is set to, read every time it is shown rather than
+        // held. Offering reconfiguration in full is a property of the listing
+        // that came back — an app that remembered one would be right until the
+        // stack gained a setting and then quietly short, with nothing on the
+        // screen saying when it was taken.
+        $this->app->bind(Arranging::class, Arrangements::class);
 
         // What has stopped coming in, the first of four.
 

@@ -65,6 +65,9 @@ enum AStacksScreen: string
     /** What this machine is running, as a list of rows. */
     case Services = '/stacks/{stack}/services';
 
+    /** Everything this machine is set to, as the machine itself lists it. */
+    case Settings = '/stacks/{stack}/settings';
+
     /**
      * One thing this machine runs, and the verbs about it.
      *

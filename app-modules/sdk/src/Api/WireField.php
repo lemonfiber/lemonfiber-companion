@@ -305,6 +305,24 @@ enum WireField: string
     /** The way back the stack named for one service. */
     case Reversal = 'reversal';
 
+    /** Everything the stack is set to, as the `config` envelope lists it. */
+    case Settings = 'settings';
+
+    /** One setting's name. */
+    case Key = 'key';
+
+    /** What a setting holds, or the stack's note that it is set and withheld. */
+    case Value = 'value';
+
+    /**
+     * Whether a setting's value was withheld rather than shown.
+     *
+     * Read as the two arms of {@see \Modules\Kernel\Api\WhatASettingHolds}
+     * rather than carried on as a flag, so that no screen holds a value beside
+     * a boolean saying whether it may be printed.
+     */
+    case Secret = 'secret';
+
     /**
      * This field's name as a path, where it is read off another field's value.
      *
