@@ -70,8 +70,8 @@ the capability's page under this directory, which is what these pages are for.
 
 ## Where the states come from
 
-The application reasons in types — `WhatTheScannerSaid`, `WhySessionCannotBeKept`,
-`WhatTheDeviceSaid`, `HowThePairingWent`. A capability answers with enough detail
+The application reasons in types — `WhyNothingWasScanned`, `WhySessionCannotBeKept`,
+`WhyNothingIsShown`, `HowThePairingWent`. A capability answers with enough detail
 that those can be constructed honestly, rather than with a boolean the adapter
 has to guess behind. Each capability page lists the states it keeps apart, and
 each of those is a distinction a screen says a different sentence about.
