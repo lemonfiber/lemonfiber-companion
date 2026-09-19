@@ -30,6 +30,7 @@ let package = Package(
                 "ScanningViewController.swift",
                 "StorageFunctions.swift",
                 "LinkFunctions.swift",
+                "HandoverFunctions.swift",
             ]
         ),
         .testTarget(
@@ -66,6 +67,11 @@ let package = Package(
             name: "RecurrenceTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/RecurrenceTests"
+        ),
+        .testTarget(
+            name: "HandoverRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/HandoverRuleTests"
         ),
         .testTarget(
             name: "LinkRuleTests",

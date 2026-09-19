@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Native\Handover;
 use Modules\Device\Api\PlatformShare;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\Handed;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 
 // The Sharing contract, run against the adapter and against the fake.
@@ -18,13 +20,28 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 // satisfy than the platform would enforce that against something that always
 // says yes.
 //
-// The adapter is driven through a closure standing in for `Share::file()`,
-// which is what `G1` asks for: there is no share sheet behind a PHP process on
-// a laptop, and without the stand-in the adapter is a file nothing executes —
-// so the three things it decides (that a report is written where the platform
-// can read it, that a directory it cannot write is a refusal rather than a
-// crash, and that the sheet is asked for exactly once) would go unchecked until
-// somebody held a phone.
+// The adapter arm runs over a bridge scripted into `FakeBridge`, which
+// intercepts `nativephp_call()` in-process — so it goes through the function
+// name from the manifest, the JSON out and the decoding of the answer rather
+// than through something built to resemble it. There is no share sheet behind a
+// PHP process on a laptop, and without that seam the adapter is a file nothing
+// executes.
+
+/**
+ * The adapter, over a bridge scripted to answer one way.
+ *
+ * Named for this file: the root suites share one namespace, and two functions
+ * of the same name are a fatal the moment both load (`G10`).
+ *
+ * @param array<string, string> $answer
+ */
+function overASheetThatSays(array $answer): PlatformShare
+{
+    FakeBridge::disable();
+    FakeBridge::enable()->respondTo('Lemonfiber.Handover.Offer', $answer);
+
+    return new PlatformShare(new Handover());
+}
 
 /** A report to hand over, with nothing in it that could not be. */
 function aReportToShare(): Assembled
@@ -53,60 +70,54 @@ final readonly class WhatTheSheetDid
 }
 
 it('N4-R13 — hands the report over and says it did', function (): void {
-    $written = [];
-    $adapter = new PlatformShare(
-        static function (string $title, string $text, string $path) use (&$written): void {
-            $written[] = [$title, $text, $path];
-        },
-        sys_get_temp_dir(),
-    );
+    $adapter = overASheetThatSays(['outcome' => 'offered']);
 
     foreach (['the fake' => AShareSheetThatWasOffered::working(), 'the adapter' => $adapter] as $which => $sharing) {
         expect(howTheSharingWent($sharing->hand(aReportToShare())))->toBe('over', $which);
     }
 
-    // Only the adapter can be asked this: the sheet is asked for once, with the
-    // report's own name and a path a chosen app can read.
-    expect($written)->toHaveCount(1)
-        ->and($written[0][0])->toBe('lemonfiber-diagnostics.txt')
-        ->and($written[0][2])->toEndWith('lemonfiber-diagnostics.txt');
-
-    expect(file_get_contents($written[0][2]))->toBe(aReportToShare()->text());
-
-    unlink($written[0][2]);
+    // Only the adapter can be asked this: the sheet is offered the report's own
+    // name and the report's own text, and nothing else — no path, because
+    // nothing was written anywhere.
+    FakeBridge::enable()->assertCalled(
+        'Lemonfiber.Handover.Offer',
+        static fn(array $sent): bool => $sent === [
+            'title' => 'lemonfiber-diagnostics.txt',
+            'text' => aReportToShare()->text(),
+        ],
+    );
 });
 
-it('N4-R13 — a device with nowhere to write it refuses rather than crashing', function (): void {
-    // The commonest failure on a phone holding this product's media, and the
-    // one an operator can actually do something about — which is why it is told
-    // apart from a platform that would not offer a sheet at all.
-    $reached = 0;
-    $adapter = new PlatformShare(
-        static function () use (&$reached): void {
-            $reached++;
-        },
-        '/a/directory/that/is/not/there',
-    );
+it('N4-R13 — a report that was never assembled refuses rather than crashing', function (): void {
+    // Told apart from a platform that would not offer a sheet, because the
+    // remedies differ: this one is answered by asking for the report again, and
+    // the other by trying the sheet again.
+    $adapter = overASheetThatSays(['outcome' => 'refused', 'because' => 'nothing_to_hand_over']);
 
     foreach ([
-        'the fake' => AShareSheetThatWasOffered::refusing(WhyNothingWasShared::NowhereToWriteIt),
+        'the fake' => AShareSheetThatWasOffered::refusing(WhyNothingWasShared::NothingToHandOver),
         'the adapter' => $adapter,
     ] as $which => $sharing) {
         expect(howTheSharingWent($sharing->hand(aReportToShare())))
-            ->toBe(WhyNothingWasShared::NowhereToWriteIt->value, $which);
+            ->toBe(WhyNothingWasShared::NothingToHandOver->value, $which);
     }
-
-    // Counted rather than raised from inside the closure, which the analyser
-    // forbids — and the count is the better assertion anyway: the sheet must
-    // not be reached at all where nothing was written, and a raise would only
-    // have said it was reached once.
-    expect($reached)->toBe(0);
 });
 
-it('N1-R10 — tells a full disk from a platform that would not offer', function (): void {
-    // Two refusals, two sentences, and only one of them is something the
-    // operator can fix. One sentence for both is the sentence that is unhelpful
-    // for whichever they are in.
+it('N4-R13 — a platform that would not show a sheet says so', function (): void {
+    $adapter = overASheetThatSays(['outcome' => 'refused', 'because' => 'the_platform_would_not']);
+
+    foreach ([
+        'the fake' => AShareSheetThatWasOffered::refusing(WhyNothingWasShared::TheDeviceWouldNotOffer),
+        'the adapter' => $adapter,
+    ] as $which => $sharing) {
+        expect(howTheSharingWent($sharing->hand(aReportToShare())))
+            ->toBe(WhyNothingWasShared::TheDeviceWouldNotOffer->value, $which);
+    }
+});
+
+it('N1-R10 — tells a report that is not there from a platform that would not offer', function (): void {
+    // Two refusals, two sentences, two different remedies. One sentence for
+    // both is the sentence that is unhelpful for whichever they are in.
     $said = [];
 
     foreach (WhyNothingWasShared::cases() as $why) {

@@ -113,6 +113,17 @@ enum Call: string
     case Forget = 'Lemonfiber.Storage.Forget';
 
     /**
+     * Offer a report to whoever the operator picks, and answer whether the
+     * sheet was reached.
+     *
+     * Deliberately not *whether it was sent*: where it went is a choice a
+     * person makes in an app this one does not know about, and an app that
+     * watched where it went would not be honouring a report assembled for the
+     * operator to send rather than sent.
+     */
+    case Offer = 'Lemonfiber.Handover.Offer';
+
+    /**
      * Say whether anything is reachable from this device right now.
      *
      * The whole of the capability. What the link is, whether it is metered and

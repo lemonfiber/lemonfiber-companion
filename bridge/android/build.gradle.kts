@@ -84,6 +84,7 @@ sourceSets {
             "StorageFunctions.kt",
             "LinkFunctions.kt",
             "LemonfiberInit.kt",
+            "HandoverFunctions.kt",
         )
     }
     test {
