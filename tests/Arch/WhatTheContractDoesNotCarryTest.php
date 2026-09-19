@@ -84,6 +84,54 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'connection does not exist. Until it does, pairing depends on somebody assembling by '
             . 'hand what `N1-R47` says a surface must be able to produce on demand.',
     ],
+    [
+        'requirement' => 'N3-R6',
+        'asks' => 'to show a member the requests that are their own',
+        // Named, because there is one place this can land and it is not in
+        // doubt: the household reading is where a member's requests already
+        // arrive, nested under the member they belong to. What is missing is
+        // not a reading somewhere else, it is a fact on the rows of this one.
+        'envelope' => 'HouseholdEnvelope',
+        // Watched as a shape rather than by name, and not for want of a
+        // candidate — for having one that cannot be watched. The field would
+        // most naturally be called `id`, and `HouseholdEnvelope` already spends
+        // that word on a request's number, so a row watching it fires today and
+        // goes on firing. Guessing another name — `account`, `member`, `user` —
+        // buys a row that stays quiet, and a register that stays quiet through
+        // the closing of its own gap is the one failure this file cannot
+        // survive. So the whole payload is recorded: anything the household
+        // reading comes to say that it does not say now sends somebody to read
+        // this row, which is the trade this register is written to make.
+        'shape' => 'array{allows?: string|null, available: bool, filtering?: string|null, findings: list<str'
+            . 'ing>, members: list<array{access: array{administrator: bool, age_limit?: int|null, disab'
+            . 'led: bool, every_library: bool, libraries: list<string>, rated?: array{allows: list<stri'
+            . 'ng>, fell_back: bool, holds_back: list<string>}|null, restriction: \'unrestricted\'|\'ra'
+            . 'ting-limited\'|\'library-limited\'|\'both\'|\'inconsistent\', unrated: \'held-back\'|\'l'
+            . 'et-through\'}, asking?: array{films: array{limit?: int|null, period?: string|null, remai'
+            . 'ning?: int|null, used: int}, frees_up?: string|null, policy: \'trusted\'|\'within-a-limi'
+            . 't\'|\'everything-waits\', standing: \'unlimited\'|\'within-quota\'|\'near-quota\'|\'quot'
+            . 'a-exhausted\', television: array{limit?: int|null, period?: string|null, remaining?: int'
+            . '|null, used: int}}|null, claimed: bool, last_seen?: string|null, name: string, requests:'
+            . ' list<array{estimate?: array{bytes: int, measured: bool}|null, id: int, media?: string|n'
+            . 'ull, refused?: array{at?: string|null, expired?: bool, reason: string, told?: array{at?:'
+            . ' string|null, to: list<string>}|null}|null, state?: \'waiting-for-approval\'|\'declined\''
+            . '|\'failed\'|\'getting\'|\'partly-here\'|\'here\'|\'gone\'|null, title?: string|null, wai'
+            . 'ting_days?: int|null}>, to_hand_over: list<string>}>, policy?: \'trusted\'|\'within-a-li'
+            . 'mit\'|\'everything-waits\'|null}',
+        'field' => null,
+        'raised' => 'A member\'s requests are on the wire already — `HouseholdEnvelope.members[].requests` '
+            . 'carries each one\'s state, and they are nested under the member rather than pooled, so '
+            . 'the narrowing this requirement asks for has been done by the time the app reads it. '
+            . 'What is missing is the join. A member row is identified by `name` and nothing else, '
+            . 'and what this app knows about the person in front of it is the identifier the media '
+            . 'server files them under, which is what `Whose` holds and what `D6` calls their '
+            . 'identity for both watching and requesting. There is no field on the wire those two '
+            . 'meet at. Matching on the displayed name is the workaround this repository refuses: '
+            . 'two members may share one, an account may be renamed between two readings, and the '
+            . 'app would be inventing a correspondence the contract never stated — handing one '
+            . 'member another member\'s requests, which is exactly what `N3-R9` forbids. The gap is '
+            . 'one field: the account identifier on a household member row, beside the name.',
+    ],
 ];
 
 /**
