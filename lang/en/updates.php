@@ -21,6 +21,13 @@ return [
     'about_to_take' => 'About to take :version',
     'would_change' => '{1} One service will stop and start again|[2,*] :count services will stop and start again',
     'changes_nothing' => 'This release changes no service on this machine.',
+
+    // Said before the yes rather than after it, and against the services it is
+    // true of. Undoing the update puts the rest back and not these, so an
+    // operator reading this is deciding something different from the rest of
+    // the evening.
+    'cannot_be_put_back' => '{1} One of these cannot be put back|[2,*] :count of these cannot be put back',
+    'cannot_be_put_back_after' => 'Undoing the update afterwards will not reverse this.',
     'something_worth_noticing' => 'One of these is a change the household will see',
     'take_this_one' => 'Take this one',
     'take_that_one' => 'Take :version',

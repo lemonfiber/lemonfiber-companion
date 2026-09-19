@@ -76,7 +76,7 @@ final readonly class TheWireNameAtASubscript
             return null;
         }
 
-        $args = $reach->getArgs();
+        $args = WhereTheReadingStops::theArgumentsOf($reach, 'reading a presence check');
 
         return $args === []
             ? null

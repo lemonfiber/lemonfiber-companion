@@ -227,7 +227,7 @@ final readonly class WhatAReaderNames
         }
 
         $given['within'] = self::theClassIn($key);
-        $args = $call->getArgs();
+        $args = WhereTheReadingStops::theArgumentsOf($call, 'following a reader to what it reads');
 
         foreach ($readers[$key]['method']->params as $at => $param) {
             $named = self::nameOf($param->var);

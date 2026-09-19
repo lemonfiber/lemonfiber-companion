@@ -99,6 +99,7 @@ function whatTakingItMade(MockResponse $answer): Underway
         TakingAnUpdate::agreed(
             Release::called('4.1.0', noticeable: true, withdrawn: false),
             Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+            Services::none(),
         ),
     );
 }
@@ -209,6 +210,7 @@ it('N2-R17 — sends the services that were agreed to, by name', function (): vo
         TakingAnUpdate::agreed(
             Release::called('4.1.0', noticeable: true, withdrawn: false),
             Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+            Services::none(),
         ),
     );
 

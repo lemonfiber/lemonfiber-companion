@@ -356,7 +356,7 @@ it('N2-R20 — nothing a stack is standing on can be handed to the apply path', 
     // The requirement's first clause: an update the stack did not report as
     // pending is never applied. A reading carries two versions — the one the
     // machine is on and the ones the changelog lists — and while they were one
-    // type the first could be handed to `TakingAnUpdate::agreed()`, which is
+    // type the first could be handed to `TakingAnUpdate::agreed(, Services::none())`, which is
     // the whole of applying one. Nothing refused it. What stood between an
     // operator and *take the version you are already on* was
     // `HowCurrentThisStackIs::agreementFor()` scanning the list it had drawn,

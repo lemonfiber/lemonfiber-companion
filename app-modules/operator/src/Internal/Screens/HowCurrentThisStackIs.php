@@ -183,6 +183,12 @@ final class HowCurrentThisStackIs extends NativeComponent
         return $this->asking instanceof TakingAnUpdate ? $this->asking->changing()->count() : 0;
     }
 
+    /** How many of those the stack said nothing will put back. */
+    public function cannotBePutBack(): int
+    {
+        return $this->asking instanceof TakingAnUpdate ? $this->asking->cannotBePutBack()->count() : 0;
+    }
+
     /** Where this machine's screens are. */
     public function goes(): WhereAStackIs
     {
@@ -223,7 +229,11 @@ final class HowCurrentThisStackIs extends NativeComponent
             return null;
         }
 
-        return TakingAnUpdate::agreed($row->release(), $this->answer()->changing);
+        return TakingAnUpdate::agreed(
+            $row->release(),
+            $this->answer()->changing,
+            $this->answer()->cannotBePutBack,
+        );
     }
 
     /** The release this screen showed under that version, where it showed one. */

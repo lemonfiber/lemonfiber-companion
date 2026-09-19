@@ -35,6 +35,7 @@ it('N2-R20 — offers nothing where the stack reported it is current', function 
         HowCurrent::Current,
         Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false)),
         Services::none(),
+        Services::none(),
         HowServicesTookIt::none(),
     );
 
@@ -42,12 +43,14 @@ it('N2-R20 — offers nothing where the stack reported it is current', function 
         HowCurrent::Pending,
         Releases::these(Release::called('4.0.17', noticeable: true, withdrawn: true)),
         Services::none(),
+        Services::none(),
         HowServicesTookIt::none(),
     );
 
     $waiting = Upkeep::reported(
         HowCurrent::Pending,
         Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false)),
+        Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
     );
@@ -72,8 +75,8 @@ it('says when an update would leave the stack alone', function (): void {
     // nothing.
     $release = Release::called('4.1.0', noticeable: true, withdrawn: false);
 
-    expect(TakingAnUpdate::agreed($release, Services::none())->changesNothing())->toBeTrue()
-        ->and(TakingAnUpdate::agreed($release, Services::these(ServiceId::called('jellyfin')))
+    expect(TakingAnUpdate::agreed($release, Services::none(), Services::none())->changesNothing())->toBeTrue()
+        ->and(TakingAnUpdate::agreed($release, Services::these(ServiceId::called('jellyfin')), Services::none())
             ->changesNothing())->toBeFalse();
 });
 
