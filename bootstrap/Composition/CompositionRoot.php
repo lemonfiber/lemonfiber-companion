@@ -12,6 +12,7 @@ use Bootstrap\Composition\NativePHP\TheTheme;
 use function config;
 
 use Illuminate\Support\ServiceProvider;
+use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNetwork;
@@ -73,7 +74,6 @@ use Native\Mobile\Network as PlatformNetworkFacade;
  * is what makes a capability module testable without a device, a network or a
  * stack to talk to.
  */
-use Native\Mobile\Scanner;
 use Native\Mobile\SecureStorage as PlatformStore;
 use Native\Mobile\Share;
 
@@ -292,12 +292,12 @@ final class CompositionRoot extends ServiceProvider
 
         // The camera, reading a pairing code.
         //
-        // Handed *how to open a scanner* rather than the scanner itself, and
-        // the reason is `Scanner::scan()`'s shape: it is static, so an adapter
-        // holding an instance would be calling a static method through one —
-        // which the analyser refuses for this repository's own code, and which
-        // reads as an instance method to everyone afterwards. Taking the act is
-        // also what gives a suite a seam; there is none in a static call.
+        // Handed this application's own camera rather than the plugin's. The
+        // difference that matters is not ownership: it is that our call blocks
+        // while the scanner is on screen and answers with what was read, so the
+        // code never goes near an event — which on Android is injected into the
+        // WebView as a DOM event, a Livewire dispatch and an HTTP POST. Pairing
+        // material is the one payload where that is a disclosure.
         $this->app->bind(
             Scanning::class,
             // Built in a named method rather than here, because `make()` raises
@@ -356,20 +356,20 @@ final class CompositionRoot extends ServiceProvider
     }
 
     /**
-     * The camera, with the catalogue the platform's prompt is captioned from.
+     * The camera, with the catalogue the prompt over it is captioned from.
      *
-     * A method rather than the closure it replaces, for two reasons that both
-     * point here. `Container::make()` raises a checked exception and the
-     * analyser refuses one raised inside a closure — the same rule that put the
-     * screen router's container behind a method. And a container may not be a
-     * *parameter* either, so this reaches the provider's own `$this->app`
-     * rather than being handed one: a class that receives a container can
-     * resolve anything, which is what the rule is about, and a provider already
-     * has one by being a provider.
+     * A method rather than a closure, for two reasons that both point here.
+     * `Container::make()` raises a checked exception and the analyser refuses
+     * one raised inside a closure — the same rule that put the screen router's
+     * container behind a method. And a container may not be a *parameter*
+     * either, so this reaches the provider's own `$this->app` rather than being
+     * handed one: a class that receives a container can resolve anything, which
+     * is what the rule is about, and a provider already has one by being a
+     * provider.
      */
     private function theScanner(): Scanning
     {
-        return new PlatformScanner(Scanner::scan(...), $this->app->make(Words::class));
+        return new PlatformScanner($this->app->make(TheCamera::class), $this->app->make(Words::class));
     }
 
     /**

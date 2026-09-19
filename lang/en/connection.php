@@ -40,6 +40,8 @@ return [
     'open_the_camera' => 'Open the camera',
     'the_operator_closed_it' => 'The camera closed before it read a code.',
     'the_operator_closed_it_action' => 'Open it again when you are ready, or type the code instead.',
+    'the_camera_was_declined' => 'The camera was not allowed.',
+    'the_camera_was_declined_action' => 'Open it again to allow the camera, or type the pairing code instead.',
     'the_camera_is_not_permitted' => 'This app is not allowed to use the camera.',
     'the_camera_is_not_permitted_action' => 'Allow the camera for lemonfiber in Settings, or type the pairing code instead.',
     'there_is_no_camera' => 'This phone has no camera the app can use.',

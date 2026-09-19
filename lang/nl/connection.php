@@ -40,6 +40,8 @@ return [
     'open_the_camera' => 'Open de camera',
     'the_operator_closed_it' => 'De camera ging dicht voordat er een code was gelezen.',
     'the_operator_closed_it_action' => 'Open hem opnieuw wanneer je zover bent, of typ de code in.',
+    'the_camera_was_declined' => 'De camera is niet toegestaan.',
+    'the_camera_was_declined_action' => 'Open hem opnieuw om de camera toe te staan, of typ de koppelingscode in.',
     'the_camera_is_not_permitted' => 'Deze app mag de camera niet gebruiken.',
     'the_camera_is_not_permitted_action' => 'Geef lemonfiber toegang tot de camera in Instellingen, of typ de koppelingscode in.',
     'there_is_no_camera' => 'Deze telefoon heeft geen camera die de app kan gebruiken.',

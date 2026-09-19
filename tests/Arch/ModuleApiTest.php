@@ -17,7 +17,7 @@ use Tests\Support\ApiSurface;
 /**
  * The boundary methods whose answer cannot arrive as a return value.
  *
- * Named one at a time, like {@see NULL_ARRIVES_FROM_OUTSIDE} below and for the
+ * Named one at a time, like {@see whereAForeignNullArrives()} below and for the
  * same reason: each entry is a claim that somebody else's machinery is what
  * decides the shape, and the list is the prompt to write down whose.
  *
@@ -76,18 +76,28 @@ it('C1 — no Api method changes something and says nothing', function (): void 
  * is the reason — not this codebase's design. The list is the prompt: adding to
  * it means writing down whose `?string` it is.
  *
- * `WhatTheScannerSaid::orSimplyDismissed()` is where one arrives:
- * `ScannerCancelled::$reason` is a third-party `?string`, and the null is the
- * ordinary case rather than an edge — the plugin leaves the reason unset when
- * somebody simply dismissed the scanner. This method is where that ends, and
- * where an unrecognised word ends too.
+ * **It is empty, and that is the interesting state rather than a missing
+ * entry.** No method in any module's `Api` takes a nullable from outside this
+ * repository, because the surfaces that used to hand one over are gone: every
+ * native capability this application depends on is its own, and a bridge answer
+ * is a closed set of words rather than a `?string` whose absence means something
+ * nobody wrote down.
  *
- * That is C2 being obeyed rather than broken. The rule wants exactly one place
- * where a foreign null becomes one of our types, and this is one.
+ * An entry here is `C2` being obeyed rather than broken. The rule wants exactly
+ * one place where a foreign null becomes one of our types, and a name on this
+ * list is that place being declared.
+ *
+ * A function rather than a constant, so that the empty case types as a list of
+ * method names rather than as the empty array literal — which the analyser
+ * reads as *this comparison can never be true*, turning the list going empty
+ * into a failure of the rule that reads it.
+ *
+ * @return list<string>
  */
-const NULL_ARRIVES_FROM_OUTSIDE = [
-    'Modules\Device\Api\WhatTheScannerSaid::orSimplyDismissed()',
-];
+function whereAForeignNullArrives(): array
+{
+    return [];
+}
 
 it('C2 — no Api method answers with null, and none takes it either', function (): void {
     // Both halves, and the parameter half was missing.
@@ -111,7 +121,7 @@ it('C2 — no Api method answers with null, and none takes it either', function 
             }
 
             foreach ($method->getParameters() as $parameter) {
-                if (in_array(ApiSurface::describe($method), NULL_ARRIVES_FROM_OUTSIDE, strict: true)) {
+                if (in_array(ApiSurface::describe($method), whereAForeignNullArrives(), strict: true)) {
                     continue;
                 }
 

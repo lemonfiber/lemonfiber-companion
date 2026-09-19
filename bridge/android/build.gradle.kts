@@ -74,7 +74,14 @@ sourceSets {
         // Everything that touches a window, an activity or a lifecycle. These
         // need the Android framework on the classpath and a device to mean
         // anything, so they are proven by the app's own build rather than here.
-        kotlin.exclude("LemonfiberFunctions.kt", "LemonfiberAuth.kt", "TellingFunctions.kt")
+        kotlin.exclude(
+            "LemonfiberFunctions.kt",
+            "LemonfiberAuth.kt",
+            "TellingFunctions.kt",
+            "ThePermissionPrompt.kt",
+            "ScanningFunctions.kt",
+            "ScanningActivity.kt",
+        )
     }
     test {
         kotlin.setSrcDirs(listOf("src/test/kotlin"))

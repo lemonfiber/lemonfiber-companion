@@ -26,6 +26,8 @@ let package = Package(
                 "LemonfiberInit.swift",
                 "LemonfiberAuth.swift",
                 "TellingFunctions.swift",
+                "ScanningFunctions.swift",
+                "ScanningViewController.swift",
             ]
         ),
         .testTarget(
@@ -42,6 +44,11 @@ let package = Package(
             name: "NotificationRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/NotificationRuleTests"
+        ),
+        .testTarget(
+            name: "CameraRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/CameraRuleTests"
         ),
         .testTarget(
             name: "EnvelopeTests",

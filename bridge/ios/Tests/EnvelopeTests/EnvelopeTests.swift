@@ -59,16 +59,24 @@ func thePayloadCannotDisplaceTheOutcome() {
     #expect(answered["outcome"] as? String == "read")
 }
 
-@Test("a refusal carries nothing at all")
-func aRefusalCarriesNothing() {
-    // Structural rather than asserted: there is no factory taking a reason and
-    // a payload together, so a refusal that handed over the value it refused to
-    // hand over is not something anybody can write. This is the reading of that,
-    // so the day somebody adds the third factory it fails here rather than on a
-    // handset.
+@Test("a refusal carries nothing a caller handed in")
+func aRefusalCarriesNothingHandedIn() {
+    // Structural rather than asserted: no factory takes a reason and an
+    // arbitrary payload together, so a refusal that handed over the value it
+    // refused to hand over is not something anybody can write. This is the
+    // reading of that, so the day somebody adds a factory that would allow it,
+    // it fails here rather than on a handset.
     let refused = Envelope.refusing("refused", because: "store_would_not_open").asAnswer()
 
-    #expect(refused.count == 2)
-    #expect(refused["outcome"] != nil)
-    #expect(refused["because"] != nil)
+    #expect(Set(refused.keys) == ["outcome", "because"])
+
+    // The one exception, and it is an exception by being named here rather than
+    // by being a payload. `may_ask_again` is a fact about the refusal — closed,
+    // decided by the rule, and the only thing a screen can choose between "try
+    // again" and "open Settings" on. Asserted as the whole key set so that a
+    // second field smuggled in beside it fails.
+    let declined = Envelope.refusing("nothing", because: "not_permitted", mayAskAgain: true).asAnswer()
+
+    #expect(Set(declined.keys) == ["outcome", "because", "may_ask_again"])
+    #expect(declined["may_ask_again"] as? Bool == true)
 }

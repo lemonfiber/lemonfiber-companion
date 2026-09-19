@@ -20,5 +20,6 @@ final class NativeServiceProvider extends ServiceProvider
     {
         $this->app->bind(Screen::class, static fn(): Screen => new Screen());
         $this->app->bind(Telling::class, static fn(): Telling => new Telling());
+        $this->app->bind(Scanning::class, static fn(): Scanning => new Scanning());
     }
 }
