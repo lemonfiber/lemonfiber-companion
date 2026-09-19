@@ -68,6 +68,11 @@ let package = Package(
             path: "ios/Tests/RecurrenceTests"
         ),
         .testTarget(
+            name: "HandoverRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/HandoverRuleTests"
+        ),
+        .testTarget(
             name: "LinkRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/LinkRuleTests"
