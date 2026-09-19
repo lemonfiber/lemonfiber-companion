@@ -96,6 +96,17 @@ enum AStacksScreen: string
      */
     case Owed = '/stacks/{stack}/yours';
 
+    /**
+     * What this machine says the member holding the session may watch.
+     *
+     * The second of the member's own screens, and here for the reason
+     * {@see self::Owed} is. It is deliberately not under `yours`: what a
+     * member may ask for and what they already have are two readings of two
+     * endpoints, and one path covering both would be a screen having to
+     * decide which the person meant.
+     */
+    case Shelf = '/stacks/{stack}/watch';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 

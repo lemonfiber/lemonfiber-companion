@@ -47,6 +47,7 @@ use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
+use Modules\Kernel\Api\Watching;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Doors;
@@ -56,6 +57,7 @@ use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
+use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
 use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\TheirOwn;
@@ -224,6 +226,7 @@ final class CompositionRoot extends ServiceProvider
         // the operator's read flattens the house and loses the member, and a
         // member's read is nothing but the member.
         $this->app->bind(Owing::class, TheirOwn::class);
+        $this->app->bind(Watching::class, Shelves::class);
 
         // What a stack would put right, asked without changing anything.
         // `Repair::offer()` is the unconfirmed form and the SDK makes the two

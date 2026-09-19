@@ -95,6 +95,15 @@ enum WireField: string
     /** What a stack calls one request, for naming it when acting on it. */
     case Id = 'id';
 
+    /** What one member may watch, as the media server answered it. */
+    case Holdings = 'holdings';
+
+    /** What kind of thing one holding is. */
+    case Medium = 'medium';
+
+    /** When a holding came out. Absent where the core could not date it. */
+    case Year = 'year';
+
     /**
      * Which request a decision is about, when one is sent.
      *

@@ -63,4 +63,20 @@ return [
     'nothing_owed_action' => 'This machine has nothing to say about what you can ask for.',
     'ask_again' => 'Ask again',
     'back_to_the_machine' => 'Back to the machine',
+
+    // What the machine says this member may watch. The shelf itself is the
+    // core's answer; these are the frame around it and the two answers that
+    // are not a list — nothing on it, and a library that could not be reached.
+    // The second is never drawn as the first: one says you have nothing, and
+    // the other says your collection is out of reach.
+    'shelf' => 'What you can watch',
+    'shelf_is_empty' => 'There is nothing on your shelf.',
+    'shelf_is_empty_action' => 'Anything the household adds for you shows up here.',
+    'shelf_is_out_of_reach' => 'Your library could not be reached.',
+    'shelf_is_out_of_reach_action' => 'The machine answered, but could not read what is on your shelf.',
+    'medium' => [
+        'film' => 'Film',
+        'series' => 'Series',
+        'other' => 'Other',
+    ],
 ];

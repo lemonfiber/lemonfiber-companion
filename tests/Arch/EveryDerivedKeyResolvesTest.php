@@ -18,6 +18,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
+use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Permission;
@@ -107,6 +108,10 @@ function everyDerivedKey(): array
         HowCurrent::class => aPairPerCase(
             HowCurrent::cases(),
             static fn(HowCurrent $how): array => [$how->saidOnTheScreen()],
+        ),
+        Medium::class => aPairPerCase(
+            Medium::cases(),
+            static fn(Medium $medium): array => [$medium->saidOnTheScreen()],
         ),
         HowItEnded::class => aPairPerCase(
             HowItEnded::cases(),
