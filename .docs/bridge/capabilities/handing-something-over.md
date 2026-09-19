@@ -53,3 +53,14 @@ this capability.
 
 The shim logs the outcome word. It does not log the path, and it does not log a
 byte of the contents.
+
+## Watched
+
+**Nothing, because there is nothing to watch yet.** The capability is not built:
+`HandoverRule` exists in Kotlin and Swift and passes its tests on both, and
+there is no shim, no PHP facade and no wire call. `PlatformShare` still reaches
+`nativephp/mobile-share`.
+
+The section is here rather than absent on purpose. A page with no **Watched**
+section reads as a capability somebody watched and forgot to write up, and this
+one has not been near a device.
