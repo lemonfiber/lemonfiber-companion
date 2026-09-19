@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Stacks\Api\AStacksScreen;
+
 /**
  * Every screen that is not about one stack, and the one place its path is written.
  *
@@ -12,12 +14,18 @@ namespace Modules\Operator\Internal;
  * that do not — the list a device opens on, and the two roads into pairing,
  * which is what happens before there is an identifier to put in a path.
  *
- * Split from `AStacksScreen` rather than folded into it because the two are not
- * the same kind of thing to a caller. A case here *is* a path; a case there is a
+ * Split from that one rather than folded into it because the two are not the
+ * same kind of thing to a caller. A case here *is* a path; a case there is a
  * pattern that still needs a machine before anybody can go to it, which is why
  * only that one carries {@see AStacksScreen::forTheStack()}. Asking this enum
  * for a path and being handed something with `{stack}` still in it would be the
  * defect both enums exist to refuse.
+ *
+ * **It stays here while that one has moved**, and the difference is who needs
+ * it. These three are the shell's own: the list a device opens on and the two
+ * roads into pairing, none of which a member has a reading of. A stack's
+ * screens are named by both surfaces, so they live in the module both may
+ * depend on.
  *
  * The gap this closes is worse here than it was there. A device with nothing
  * paired has exactly these three frames, so a rename that missed the template

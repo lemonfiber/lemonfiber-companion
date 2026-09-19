@@ -3102,12 +3102,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "a80cb71e6ae8d7d5ae4aa6d0199e84c56474471d"
+                "reference": "21388e1a84547b462428f8cf091843ab11b4be1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/a80cb71e6ae8d7d5ae4aa6d0199e84c56474471d",
-                "reference": "a80cb71e6ae8d7d5ae4aa6d0199e84c56474471d",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/21388e1a84547b462428f8cf091843ab11b4be1e",
+                "reference": "21388e1a84547b462428f8cf091843ab11b4be1e",
                 "shasum": ""
             },
             "require": {
@@ -3238,7 +3238,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-09-18T23:06:55+00:00"
+            "time": "2026-09-19T09:14:42+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -3507,7 +3507,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/household",
-                "reference": "de78f8e470214c199319774101d4bfc27b7fce08"
+                "reference": "4f38b078ab09516b86ea6f20691094ce83b3ed60"
             },
             "require": {
                 "modules/connection": "dev-main",
@@ -3519,6 +3519,11 @@
             },
             "type": "library",
             "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\Household\\Providers\\HouseholdServiceProvider"
+                    ]
+                },
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,

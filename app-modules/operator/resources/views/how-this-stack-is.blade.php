@@ -144,6 +144,14 @@
          machine is already holding the question the household asks them. --}}
     <x-operator::quiet-action label="{{ __('household.asked_for') }}" :goes="$this->goes()->requests()" />
 
+    {{-- What this machine says the person holding the session can ask for.
+         Offered from here because this surface owns every road into the
+         application — a device opens on the list of stacks — and a member's
+         own reading with nothing pointing at it is a screen nobody can reach.
+         Which of the two readings the person gets is the core's answer and not
+         this screen's: what comes back about one member is one member's. --}}
+    <x-operator::quiet-action label="{{ __('household.yours') }}" :goes="$this->goes()->yours()" />
+
     {{-- What stopped coming in. Reachable from the machine it is
          about rather than from the list, for the reason the requests button
          is — and reachable at all is the requirement: a stack passing every

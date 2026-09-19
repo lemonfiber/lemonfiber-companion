@@ -19,8 +19,8 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
-use Modules\Operator\Internal\AStacksScreen;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -249,7 +249,7 @@ it('refuses a route parameter that is not text', function (): void {
 
 it('N2-R7 — the screen is registered under the route that reaches it', function (): void {
     $resolved = NativeRouter::resolve(
-        AStacksScreen::Services->forTheStack(theStackWhoseServicesAreRead()->id()->stored()),
+        AStacksScreen::Services->forTheStack(theStackWhoseServicesAreRead()->id()),
     );
 
     expect($resolved['class'] ?? null)->toBe(WhatThisStackRuns::class);

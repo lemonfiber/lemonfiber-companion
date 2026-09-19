@@ -130,11 +130,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'somebody opened a client.',
     ],
     [
-        'path' => 'HouseholdEnvelope.members[].to_hand_over',
-        'because' => 'What would pass to somebody else if this member went. A household decision, and the '
-            . 'same block: the surface cannot yet say whose decision it is.',
-    ],
-    [
         'path' => 'HouseholdEnvelope.members[].requests[].media',
         'because' => 'The library\'s own handle for the thing asked for. `N2-R11` asks for enough to decide '
             . 'on, and the words a person recognises are the title beside it; `N3-R8` keeps this app out of '

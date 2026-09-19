@@ -36,6 +36,7 @@ use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
+use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
@@ -57,6 +58,7 @@ use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Stalls;
 use Modules\Sdk\Api\Supervisors;
+use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
@@ -214,6 +216,14 @@ final class CompositionRoot extends ServiceProvider
         // reads. Beside `Asking` and built the same way: both go through
         // `PinnedClients`, so there is one place a certificate is checked.
         $this->app->bind(Wanting::class, Requests::class);
+
+        // What a member is owed, which is the same endpoint read as a reading
+        // about one person rather than as a list of everything a house asked
+        // for. Two bindings over one payload rather than one port answering
+        // both, because the two questions differ in who the answer is about:
+        // the operator's read flattens the house and loses the member, and a
+        // member's read is nothing but the member.
+        $this->app->bind(Owing::class, TheirOwn::class);
 
         // What a stack would put right, asked without changing anything.
         // `Repair::offer()` is the unconfirmed form and the SDK makes the two

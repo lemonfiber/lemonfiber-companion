@@ -7,6 +7,7 @@ use Modules\Connection\Api\Introducing;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\PairByTyping;
@@ -245,22 +246,27 @@ it('N1-R2 — a paired stack leads to signing into it, rather than to a sentence
         );
 });
 
-it('leads nowhere until something has actually been paired', function (): void {
+it('refuses to say where it leads until something has actually been paired', function (): void {
     // The identifier is written at the moment the stack is made rather than
     // read back from the store, because "which one did I just add" is a
     // question a list of stacks does not answer — and until it is written there
     // is no stack to lead to. The template asks `isPaired()` before it asks
-    // this, so the empty case is never rendered; it is asserted because a
-    // screen that answered `/stacks//sign-in` would look like a route and
-    // resolve to nothing.
+    // this, so the empty case is never rendered.
+    //
+    // It is asserted because the alternative is the failure this repository
+    // keeps paying for: a screen answering `/stacks//sign-in` hands out
+    // something that looks like a route, resolves to nothing, and does nothing
+    // on a handset with no error anywhere. A blank identifier is refused where
+    // a string becomes a `StackId`, which is one refusal rather than a check
+    // every screen has to remember.
     $screen = typedInto(pairingScreen(), typedCode());
 
-    expect($screen->onwardsTo())->toBe('/stacks//sign-in')
-        ->and(NativeRouter::resolve($screen->onwardsTo()))->toBeNull();
+    expect(fn(): string => $screen->onwardsTo())->toThrow(StackIsUnidentified::class);
 
     $screen->confirm();
 
-    expect($screen->onwardsTo())->not->toBe('/stacks//sign-in');
+    expect($screen->onwardsTo())->not->toBe('/stacks//sign-in')
+        ->and(NativeRouter::resolve($screen->onwardsTo()))->not->toBeNull();
 });
 
 it('offers a way out of pairing at any point', function (): void {

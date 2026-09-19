@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\Internal;
+namespace Modules\Stacks\Api;
 
 use LogicException;
 
@@ -14,7 +14,8 @@ use function sprintf;
  * A `LogicException` rather than an `InvalidArgumentException`, and the
  * distinction is the point: nothing a stack or an operator does can produce
  * this. It is a caller asking {@see AStacksScreen} for a path in a way the case
- * it named cannot answer, which is a mistake in this module and nowhere else.
+ * it named cannot answer, which is a mistake in whichever surface wrote the
+ * call rather than anything the world did.
  *
  * It exists because the alternative is silent. `str_replace` handed a pattern
  * with a placeholder it was not given leaves the placeholder in the string, and

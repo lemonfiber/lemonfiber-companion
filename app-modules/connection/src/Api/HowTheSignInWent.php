@@ -236,7 +236,15 @@ enum HowTheSignInWent: string
             Obstacle::LocalNetworkIsNotPermitted => self::TheNetworkIsNotPermitted,
             Obstacle::StackDidNotAnswer,
             Obstacle::DeviceHasNoNetwork,
-            Obstacle::StackIsNotTheOnePaired => self::StackDidNotAnswer,
+            Obstacle::StackIsNotTheOnePaired,
+            // Not a state of its own, because this door cannot answer with it.
+            // Entitlement is decided on what an account asks for after it is
+            // admitted, and `Admissions` reads every other refusal from the
+            // door as a stack that did not answer. The day the door does refuse
+            // an account by name is the day a sign-in state is owed for it —
+            // this enum has none that would be true of it, and inventing one
+            // now would be a screen nobody can reach.
+            Obstacle::NotForThisAccount => self::StackDidNotAnswer,
         };
     }
 

@@ -18,6 +18,11 @@
         }
     },
     "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Household\\Providers\\HouseholdServiceProvider"
+            ]
+        },
         "lemonfiber": {
             "floors": {
                 "coverage": 100,

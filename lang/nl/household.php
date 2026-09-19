@@ -39,4 +39,9 @@ return [
     'asked_for' => 'Wat het huishouden vroeg',
     'refused_because' => 'Afgewezen: :reason',
     'refused_at' => 'Afgewezen op :when',
+    'yours' => 'Wat je kunt aanvragen',
+    'nothing_owed' => 'Er is hier niets om je te vertellen.',
+    'nothing_owed_action' => 'Deze machine zegt niets over wat je kunt aanvragen.',
+    'ask_again' => 'Opnieuw vragen',
+    'back_to_the_machine' => 'Terug naar de machine',
 ];

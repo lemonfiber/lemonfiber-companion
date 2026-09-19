@@ -41,9 +41,24 @@ use Tests\Support\Module;
  * whatever is already there, and what would already be there is a screen that
  * renders a `Report` because a `Report` was what the caller had.
  *
- * Four of the five clauses name types here. A credential is the fifth and is
- * held elsewhere: one cannot reach any screen at all, so the two
- * named below are the shapes a session takes rather than the value itself.
+ * Four of the five clauses name types here. The fifth is credentials, and it is
+ * the one that needs care, because a member surface that could name none of
+ * them could not ask a stack anything at all.
+ *
+ * {@see Credential} is refused outright. It is the password, it exists for one
+ * exchange, and no member screen performs that exchange — signing in belongs to
+ * the surface that pairs a machine.
+ *
+ * {@see Session} is not on the list, and the second rule below is why it does
+ * not need to be. Every screen that reads a stack is handed one, so refusing
+ * the type would refuse the surface rather than the credential. What the
+ * argument at the top is really about is *readings* — a presenter handed a
+ * `Report` can pick a fourth line out of it later — and a session has nothing
+ * to pick out: `forTheHeader()` is its only accessor and it is named for its
+ * one destination, `__debugInfo` and `jsonSerialize` redact it, and
+ * `AValueWithOneDestinationTest` is what keeps that true. So the line is drawn
+ * where the risk actually is: a member surface may be **handed** a session to
+ * ask with, and may never **keep** one or **hand one on**.
  *
  * Lifecycle controls and logs were once absent from this list because there was
  * nothing on this side to refuse. They arrived with the logs and the verbs, and
@@ -80,7 +95,6 @@ const NEVER_SHOWN_TO_A_MEMBER = [
     Conclusion::class => 'diagnostics',
     WentWrong::class => 'the fault behind a failed request',
     Credential::class => 'credentials',
-    Session::class => 'credentials',
     Supervising::class => 'lifecycle controls',
     WhatToDoWithIt::class => 'lifecycle controls',
     AgreedTo::class => 'lifecycle controls',
@@ -123,6 +137,69 @@ it('N3-R9 — every type this refuses is one this application has', function ():
         implode("\n  ", $gone),
     ));
 });
+
+it('N3-R9 — no member surface keeps a session or hands one on', function (): void {
+    // The credentials clause, drawn where it belongs. A screen is handed a
+    // session to ask a stack with, which is every screen in the application and
+    // not a thing a member does differently. What a member surface must never
+    // do is hold one — a field outlives the call it was resumed for — or answer
+    // with one, which is how a credential leaves the one method that needed it
+    // and becomes something a template can reach.
+    $held = [];
+
+    foreach (everyClassOnTheMemberSurface() as $name) {
+        $class = ApiSurface::reflect($name);
+
+        foreach ($class->getProperties() as $property) {
+            if (in_array(Session::class, ApiSurface::namesIn($property->getType()), strict: true)) {
+                $held[] = sprintf('%s::$%s keeps a session', $class->getName(), $property->getName());
+            }
+        }
+
+        foreach ($class->getMethods() as $method) {
+            if (in_array(Session::class, ApiSurface::namesIn($method->getReturnType()), strict: true)) {
+                $held[] = sprintf('%s hands one on', ApiSurface::describe($method));
+            }
+        }
+    }
+
+    expect(everyClassOnTheMemberSurface())
+        ->not->toBe([], 'the household module holds no classes, so this rule proved nothing');
+
+    expect($held)->toBe([], sprintf(
+        "A member surface keeps a credential or passes one along:\n  %s\n\n"
+        . 'A session is handed to a screen so it can ask, and that is the whole of what a '
+        . "surface may do with one.\n"
+        . 'Take it as an argument and use it in the call that needed it (N3-R9).',
+        implode("\n  ", $held),
+    ));
+});
+
+/**
+ * Every class the household module holds.
+ *
+ * Its own reading rather than the one inside the rule below, because both rules
+ * want it and a second copy of the filter is a second thing that can match
+ * nothing — which is the state either of them would pass in.
+ *
+ * @return list<class-string>
+ */
+function everyClassOnTheMemberSurface(): array
+{
+    $found = [];
+
+    foreach (Module::all() as $module) {
+        if ($module->namespace !== 'Modules\\Household') {
+            continue;
+        }
+
+        foreach ($module->classNames() as $name) {
+            $found[] = $name;
+        }
+    }
+
+    return $found;
+}
 
 it('N3-R9 — nothing on a member surface can be handed what the operator is shown', function (): void {
     $household = array_values(array_filter(

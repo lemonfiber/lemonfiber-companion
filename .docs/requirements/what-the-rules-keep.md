@@ -55,6 +55,10 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
+| `N3-R2` | The app implements no permission model; what a member may do is the core's answer | `tests/Contract/OwingContractTest.php` and `tests/Feature/SeeingWhatYouAreOwedTest.php` — the port answers with the core's own sentences, so there is nothing for a surface to compose a wording from |
+| `N3-R3` | A control a member is not entitled to is refused by the core if it is ever reached, and does not rely on the app having omitted it | `app-modules/sdk/tests/Internal/WhatARefusalMeantTest.php` tells the refusal apart, `app-modules/kernel/tests/Api/ObstacleTest.php` holds what it says and that it signs nobody out, and `tests/Feature/SeeingWhatYouAreOwedTest.php` is what draws it as a refusal rather than as an empty reading |
+| `N3-R4` | Before a member asks for something, the app states whether it needs approval and whether they have allowance left | `tests/Contract/OwingContractTest.php`, run against the adapter and the fake. The sentences are the core's and are carried unchanged — the wire has the parts as well, and composing from them would be a second voice about the household's rules |
+| `N3-R5` | A member whose allowance is spent is told before asking, with when it resets | The same port and the same suite. The reset is `asking.frees_up` written into a sentence by the service that keeps the period, so reading it needs no arithmetic |
 | `N3-R8` | The app plays no media; it hands off to a household client | `tests/Arch/NothingPlaysMediaHereTest.php` |
 | `N3-R9` | A member is not shown lifecycle controls, logs, credentials, diagnostics, or another member's requests | `tests/Feature/WhatAMemberIsNeverShownTest.php` |
 | `N3-R10` | Where a member's request failed on a stack fault, they are told it did not work and that the operator has been told — and are not shown the fault | `tests/Feature/WhatAMemberIsNeverShownTest.php` |
@@ -85,8 +89,8 @@ here is not a thing this repository does.
 | Requirement | What it asks | What holds it open |
 |---|---|---|
 | `N1-R5` | Reconfiguration is offered in full once connected | The settings are not a list this side can know — `ConfigEnvelope` carries what the stack has, so a screen offering the settings it knows about offers a subset the day the stack adds one, silently. `tests/Feature/EveryActionTheStackOffersTest.php` says so rather than gating on a guess |
-| `N3-R4` | Before a member asks for something, the app states whether it needs approval and whether they have allowance left | Nothing in the contract carries an allowance. Registered in `tests/Arch/WhatTheContractDoesNotCarryTest.php`, which goes red the day an envelope for it arrives |
-| `N3-R5` | A member whose allowance is spent is told before asking, with when it resets | The same gap, registered as a row of its own — a row watches one thing, and a row watching two could half-fire |
+| `N3-R1` | The application a person is given is decided by the identity that signed in | Not the contract any more: the admission carries `member`. This application drops it — `Admissions` reads the token, `Session` carries no subject, and the secure store keeps a token per stack and nothing about whose it is. No register of the wire can watch that, because the wire has already answered. `app-modules/household/src/README.md` holds the rest |
+| `N3-R6` | A member's own requests carry their state in household terms | The same thing one layer along: the app reads every member's requests for the operator and cannot tell whose is whose, so *their own* is the half with nothing behind it |
 
 ## What another repository answers
 
