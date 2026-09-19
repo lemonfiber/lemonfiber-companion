@@ -2522,7 +2522,11 @@ final readonly class Fixtures
                 }
                 PHP, 'N1-R41 — nothing holds a collection of actions', 'HoldsUndelivered'),
 
-            Fixture::suite('N3-R8', 'bridge/resources/android/PlaysMedia.kt', <<<'KOTLIN'
+            // Filed under the row that replaced the withdrawn one. The fixture
+            // is unchanged: what the rule reads for is still every player,
+            // which is stronger than the surviving rows ask and is held while
+            // nothing on the wire says where to play a holding.
+            Fixture::suite('N3-R14', 'bridge/resources/android/PlaysMedia.kt', <<<'KOTLIN'
                 package app.lemonfiber.native
 
                 class PlaysMedia(private val context: Context) {
@@ -2530,7 +2534,7 @@ final readonly class Fixtures
                         val player = ExoPlayer.Builder(context).build()
                     }
                 }
-                KOTLIN, 'N3-R8 — no platform source reaches for a media player'),
+                KOTLIN, 'N3-R14 — no platform source reaches for a media player'),
 
             // A test's own title, in the Kotlin harness, which is the half of
             // that rule the ratchet over the PHP deliberately does not hold: a
