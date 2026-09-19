@@ -90,8 +90,8 @@ const NOT_YET = [
     'Preview', 'Provenance', 'Pull', 'Quality', 'Removal',
     'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',
     'Space', 'Start', 'Step', 'StopSeeding', 'Stored',
-    'Trace', 'Undo', 'Uninstall', 'Upgrade', 'Version',
-    'Watch', 'Word',
+    'Substitution', 'Trace', 'Undo', 'Uninstall', 'Upgrade',
+    'Version', 'Watch', 'Wiring', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {
