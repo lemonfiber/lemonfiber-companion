@@ -164,6 +164,29 @@ it('N1-R10 — reports what stood in the way and keeps the way back', function (
         ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toBe([]);
 });
 
+it('N3-R15 — draws an obstacle as itself, never as a library out of reach', function (): void {
+    // The third pair this screen has to keep apart, and the one nothing read.
+    // `cameBack()` is already false with a sentence in hand, so whether an
+    // obstacle is also out of reach is decided by the template and by nothing
+    // else — and an obstacle carrying that flag draws the out-of-reach frame
+    // in place of the sentence the core actually sent, with no reason under
+    // it at all, because an obstacle carries none.
+    //
+    // Asked of the frame and not only of the flag: what goes wrong here is
+    // what somebody reads, not which boolean is set.
+    $met = theShelfScreen(AShelfThatWasRead::met(Obstacle::StackDidNotAnswer));
+
+    expect($met->answer()->isOutOfReach)->toBeFalse()
+        ->and($met->answer()->reasons)->toBe([]);
+
+    $drawn = WhatTheDeviceWouldDraw::by($met)->said();
+
+    expect($drawn)->toContain(__(Obstacle::StackDidNotAnswer->said()));
+    expect($drawn)->toContain(__(Obstacle::StackDidNotAnswer->remedy()));
+    expect($drawn)->not->toContain(__('household.shelf_is_out_of_reach'));
+    expect($drawn)->not->toContain(__('household.shelf_is_out_of_reach_action'));
+});
+
 it('N3-R13 — a refused credential is a signed-out device, not a report', function (): void {
     // Asserted of the keychain and not only of the screen. A screen that drew
     // the signed-out frame and left the session in the store is a device that
