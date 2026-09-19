@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
@@ -117,7 +118,7 @@ it('N1-R7 — says which stacks are already signed into, so nobody retypes a pas
     $loft = aPairedStack('The loft', 'a');
     $shed = aPairedStack('The shed', 'b');
     $keychain = AKeychainInMemory::working();
-    $keychain->keep($loft->id(), Session::of('a-session-not-a-secret'));
+    $keychain->keep($loft->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed), $keychain);
 
@@ -152,7 +153,7 @@ it('N1-R2 — tapping a signed-in stack goes to the report, not back to the pass
     $loft = aPairedStack('The loft', 'a');
     $shed = aPairedStack('The shed', 'b');
     $keychain = AKeychainInMemory::working();
-    $keychain->keep($loft->id(), Session::of('a-session-not-a-secret'));
+    $keychain->keep($loft->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = theLaunchScreen(StacksInMemory::holding($loft, $shed), $keychain);
 

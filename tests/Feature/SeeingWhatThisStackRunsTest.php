@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -52,7 +53,7 @@ function theServicesScreen(
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
     $screen = new WhatThisStackRuns($supervising, $keychain, StacksInMemory::holding($stack));

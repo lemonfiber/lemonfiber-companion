@@ -45,8 +45,14 @@ interface SecureStorage
      * which is right for a second reason: a device with no secure storage is an
      * ordinary state of the world, and a method returning nothing can only
      * report one by throwing — making the common case the one nothing checks.
+     *
+     * **Who it belongs to is kept with it rather than beside it.** A store holding the
+     * session under one key and the subject under another can half-fail, and each half
+     * is its own wrong answer: a token with no subject signs a member in as the
+     * operator, and a subject with no token is a member this app cannot ask anything
+     * for. One value means there is no state where the two disagree.
      */
-    public function keep(StackId $stack, Session $session): Kept;
+    public function keep(StackId $stack, Session $session, Whose $whose): Kept;
 
     /**
      * Forget the session for one stack.

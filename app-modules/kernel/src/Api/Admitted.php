@@ -17,7 +17,8 @@ use Closure;
  * only by throwing.
  *
  *     $admitted->either(
- *         opened: fn (Session $session, Instant $until): Screen => $this->carryOn($session),
+ *         opened: fn (Session $session, Instant $until, Whose $whose): Screen
+ *             => $this->carryOn($session, $whose),
  *         refused: fn (Obstacle $why): Screen => $this->explain($why),
  *     );
  *
@@ -43,9 +44,9 @@ final readonly class Admitted
     private function __construct(private Opening|Obstacle $outcome) {}
 
     /** The credential was traded, and this is what came back. */
-    public static function opening(Session $session, Instant $until): self
+    public static function opening(Session $session, Instant $until, Whose $whose): self
     {
-        return new self(new Opening($session, $until));
+        return new self(new Opening($session, $until, $whose));
     }
 
     /** It was not, and this is what the operator met instead. */
@@ -65,7 +66,7 @@ final readonly class Admitted
      * @template TOpened of object
      * @template TRefused of object
      *
-     * @param Closure(Session, Instant): TOpened $opened
+     * @param Closure(Session, Instant, Whose): TOpened $opened
      * @param Closure(Obstacle): TRefused        $refused
      *
      * @return TOpened|TRefused
@@ -74,6 +75,6 @@ final readonly class Admitted
     {
         return $this->outcome instanceof Obstacle
             ? $refused($this->outcome)
-            : $opened($this->outcome->session, $this->outcome->until);
+            : $opened($this->outcome->session, $this->outcome->until, $this->outcome->whose);
     }
 }

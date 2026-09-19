@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\Whose;
 
 /**
  * A door that answers what a test told it to, and remembers being knocked on.
@@ -42,10 +43,22 @@ final class ADoorThatWasKnockedOn implements Admitting
     /** @param Closure(): Admitted $answer */
     private function __construct(private readonly Closure $answer) {}
 
-    /** A door that opens, with a session lasting until the moment given. */
+    /** A door that opens for the operator, with a session lasting until the moment given. */
     public static function opening(Session $session, Instant $until): self
     {
-        return new self(static fn(): Admitted => Admitted::opening($session, $until));
+        return self::openingFor($session, $until, Whose::theOperator());
+    }
+
+    /**
+     * The same door, opening for whoever is named.
+     *
+     * Beside the one above rather than replacing it. Almost every case here is about
+     * the operator, and a fake that made each of them name the subject would be one
+     * where the subject is noise everywhere except the places it is the point.
+     */
+    public static function openingFor(Session $session, Instant $until, Whose $whose): self
+    {
+        return new self(static fn(): Admitted => Admitted::opening($session, $until, $whose));
     }
 
     /** A door that does not open, for the reason given. */

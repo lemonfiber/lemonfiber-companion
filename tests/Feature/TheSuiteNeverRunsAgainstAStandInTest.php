@@ -10,6 +10,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Vault\Api\PlatformStacks;
 
@@ -187,7 +188,7 @@ it('N1-R60 — a session kept with stand-ins on reaches no device', function ():
     app()->register(new DxServiceProvider(app()), force: true);
 
     $stack = theFirstStackThisDeviceHolds();
-    $kept = whateverIsBoundToSessions()->keep($stack->id(), Session::of('not-a-credential'));
+    $kept = whateverIsBoundToSessions()->keep($stack->id(), Session::of('not-a-credential'), Whose::theOperator());
 
     expect($kept->either(static fn(): object => new stdClass(), static fn(object $why): object => $why))
         ->toBeInstanceOf(stdClass::class);

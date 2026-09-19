@@ -13,6 +13,11 @@ namespace Modules\Kernel\Api;
  * the two named constructors cannot produce — unreachable code, which reads as
  * caution and is a line no test can defend.
  *
+ * **`whose` is here for the same reason `until` is.** Who a session belongs to is
+ * not a secret, and it is what decides which application a person is given — so it
+ * has a reader, and the whole point of keeping `Session` to one destination is that
+ * it has none.
+ *
  * **`until` is here rather than inside {@see Session}.** A session is a secret
  * with one destination — a header — and nothing else. When it stops being valid
  * is not a secret, and is what a screen needs in order to tell an ended
@@ -22,5 +27,9 @@ namespace Modules\Kernel\Api;
  */
 final readonly class Opening
 {
-    public function __construct(public Session $session, public Instant $until) {}
+    public function __construct(
+        public Session $session,
+        public Instant $until,
+        public Whose $whose,
+    ) {}
 }

@@ -16,6 +16,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -70,7 +71,7 @@ function theStalledScreen(
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
     $screen = new WhatStoppedComingIn($stalling, $keychain, StacksInMemory::holding($stack));

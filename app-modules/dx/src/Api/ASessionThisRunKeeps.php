@@ -7,6 +7,7 @@ namespace Modules\Dx\Api;
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Whose;
 use Modules\Vault\Api\PlatformKeychain;
 
 /**
@@ -71,7 +72,13 @@ final readonly class ASessionThisRunKeeps implements StandsIn
         $keychain = new PlatformKeychain($this->store);
 
         foreach (AStandInStack::cases() as $standIn) {
-            $keychain->keep($standIn->asAStack()->id(), Session::of(self::NOT_A_CREDENTIAL));
+            // The operator, because a stand-in run is somebody looking at the whole
+            // of this application rather than a member looking at their half of it.
+            $keychain->keep(
+                $standIn->asAStack()->id(),
+                Session::of(self::NOT_A_CREDENTIAL),
+                Whose::theOperator(),
+            );
         }
     }
 

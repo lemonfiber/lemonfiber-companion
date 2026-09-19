@@ -17,6 +17,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -70,7 +71,7 @@ function theRequestsScreen(
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
     $screen = new WhatTheHouseholdAsked($wanting, $keychain, StacksInMemory::holding($stack));

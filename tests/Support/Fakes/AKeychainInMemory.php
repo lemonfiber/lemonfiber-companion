@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 
 /**
@@ -27,6 +28,17 @@ final class AKeychainInMemory implements SecureStorage
 {
     /** @var array<string, Session> */
     private array $kept = [];
+
+    /**
+     * Whose each kept session is, under the same key.
+     *
+     * Two arrays here where the adapter keeps one value, and that is the fake being a
+     * fake. What the contract holds both to is that a session comes back with the
+     * subject it went in with, which is a property neither shape can fake its way past.
+     *
+     * @var array<string, Whose>
+     */
+    private array $whose = [];
 
     private function __construct(private readonly ?WhySessionCannotBeKept $refusing) {}
 
@@ -53,13 +65,14 @@ final class AKeychainInMemory implements SecureStorage
         return ! $this->refusing instanceof WhySessionCannotBeKept;
     }
 
-    public function keep(StackId $stack, Session $session): Kept
+    public function keep(StackId $stack, Session $session, Whose $whose): Kept
     {
         if ($this->refusing instanceof WhySessionCannotBeKept) {
             return Kept::refused($this->refusing);
         }
 
         $this->kept[$stack->stored()] = $session;
+        $this->whose[$stack->stored()] = $whose;
 
         return Kept::safely();
     }
@@ -84,7 +97,9 @@ final class AKeychainInMemory implements SecureStorage
 
         $held = $this->kept[$stack->stored()] ?? null;
 
-        return $held instanceof Session ? Resumed::with($held) : Resumed::notHeld();
+        return $held instanceof Session
+            ? Resumed::with($held, $this->whose[$stack->stored()] ?? Whose::theOperator())
+            : Resumed::notHeld();
     }
 
     /** Whether this store is holding a session for that stack — for a test to ask. */

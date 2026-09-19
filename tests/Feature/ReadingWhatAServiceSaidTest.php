@@ -18,6 +18,7 @@ use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stream;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -79,7 +80,7 @@ function theLogScreen(
     $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'));
+        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
     $screen = new WhatThisServiceSaid($saying, $keychain, StacksInMemory::holding($stack));

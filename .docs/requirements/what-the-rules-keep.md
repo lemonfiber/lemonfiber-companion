@@ -89,8 +89,8 @@ here is not a thing this repository does.
 | Requirement | What it asks | What holds it open |
 |---|---|---|
 | `N1-R5` | Reconfiguration is offered in full once connected | The settings are not a list this side can know — `ConfigEnvelope` carries what the stack has, so a screen offering the settings it knows about offers a subset the day the stack adds one, silently. `tests/Feature/EveryActionTheStackOffersTest.php` says so rather than gating on a guess |
-| `N3-R1` | The application a person is given is decided by the identity that signed in | Not the contract any more: the admission carries `member`. This application drops it — `Admissions` reads the token, `Session` carries no subject, and the secure store keeps a token per stack and nothing about whose it is. No register of the wire can watch that, because the wire has already answered. `app-modules/household/src/README.md` holds the rest |
-| `N3-R6` | A member's own requests carry their state in household terms | The same thing one layer along: the app reads every member's requests for the operator and cannot tell whose is whose, so *their own* is the half with nothing behind it |
+| `N3-R1` | The application a person is given is decided by the identity that signed in | Half of it stands: a session now carries whose it is, from the admission through the store to the launch, and `Whose` is what a screen reads it off. What is open is the deciding — nothing yet turns that subject into which surface somebody is shown, so a member signing in still meets the operator's application. No register of the wire can watch this, because the wire has already answered; `app-modules/household/src/README.md` holds the rest |
+| `N3-R6` | A member's own requests carry their state in household terms | The same thing one layer along: the app reads every member's requests for the operator, and now that a session names its subject, what is missing is the read that asks for *theirs* rather than the household's |
 
 ## What another repository answers
 

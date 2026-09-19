@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Vault\Api\PlatformKeychain;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -69,7 +70,7 @@ it('N4-R5 — a working store keeps a session and gives it back up on request', 
 
     expect($keychain->isAvailable())->toBeTrue();
 
-    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))->toBe('kept');
+    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator())))->toBe('kept');
     expect($keychain->isHolding(aStackThatIsPaired()))->toBeTrue();
 
     expect(howItWent($keychain->forget(aStackThatIsPaired())))->toBe('kept');
@@ -85,7 +86,7 @@ it('N4-R6 — a device with nowhere safe refuses, and says which refusal it is',
 
     expect($keychain->isAvailable())->toBeFalse();
 
-    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))
+    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator())))
         ->toBe('no_secure_storage');
 });
 
@@ -95,7 +96,7 @@ it('N4-R6 — a store that will not open is not a device that has none', functio
     // device cannot do a thing it can.
     $keychain = AKeychainInMemory::thatWillNotOpen();
 
-    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))
+    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator())))
         ->toBe('store_would_not_open');
 });
 
@@ -118,8 +119,8 @@ it('N1-R11 — two stacks do not share one session', function (): void {
     $keychain = AKeychainInMemory::working();
     $other = StackId::of(Nonce::of('b2c3d4e5f6071829'));
 
-    $keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN));
-    $keychain->keep($other, Session::of('another-session-not-a-secret'));
+    $keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator());
+    $keychain->keep($other, Session::of('another-session-not-a-secret'), Whose::theOperator());
     $keychain->forget($other);
 
     expect($keychain->isHolding(aStackThatIsPaired()))->toBeTrue();
@@ -150,10 +151,27 @@ function everyStoreHolding(): array
     $adapter = new PlatformKeychain(APlatformStore::working());
 
     foreach ([$fake, $adapter] as $store) {
-        $store->keep(aStackThatIsPaired(), Session::of(THE_TOKEN));
+        $store->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator());
     }
 
     return ['the fake' => $fake, 'the adapter' => $adapter];
+}
+
+/**
+ * Whose a resumed session is, as a word.
+ *
+ * Beside {@see whatWasResumed()} rather than folded into it: a test that read one
+ * string carrying both would pass on a store that returned them crossed.
+ */
+function whoseItIs(Resumed $resumed): string
+{
+    return $resumed->either(
+        held: static fn(Session $session, Whose $whose): Code => $whose->either(
+            operator: static fn(): Code => Code::of('the operator'),
+            member: static fn(string $id): Code => Code::of($id),
+        ),
+        notHeld: static fn(): Code => Code::of('nothing'),
+    )->shown();
 }
 
 it('N1-R7 — gives back the session it was keeping, so nothing asks twice', function (): void {
@@ -179,10 +197,44 @@ it('N1-R11 — resumes each stack its own session, never the other one', functio
     $other = StackId::of(Nonce::of('b2c3d4e5f6071829'));
 
     foreach (everyStoreHolding() as $which => $store) {
-        $store->keep($other, Session::of('another-session-not-a-secret'));
+        $store->keep($other, Session::of('another-session-not-a-secret'), Whose::theOperator());
 
         expect(whatWasResumed($store->resume(aStackThatIsPaired())))->toBe(THE_TOKEN, $which)
             ->and(whatWasResumed($store->resume($other)))->toBe('another-session-not-a-secret', $which);
+    }
+});
+
+it('N3-R1 — gives back whose the session is, not only what it is', function (): void {
+    // The half a resumed session is useless without. A store that hands the token
+    // back and forgets who it was minted for sends every launch to the operator's
+    // application, whoever signed in — which is the requirement read backwards.
+    $member = Whose::member('a7f3');
+
+    foreach (everyStoreHolding() as $which => $store) {
+        $store->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), $member);
+
+        expect(whoseItIs($store->resume(aStackThatIsPaired())))->toBe('a7f3', $which);
+    }
+});
+
+it('N3-R1 — keeps each stack its own subject, never the other one', function (): void {
+    // The same failure the rule about resuming each stack its own session names, one
+    // field along and worse: a subject read across stacks shows one household member
+    // another household's application.
+    $other = StackId::of(Nonce::of('b2c3d4e5f6071829'));
+
+    foreach (everyStoreHolding() as $which => $store) {
+        $store->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::member('a7f3'));
+        $store->keep($other, Session::of('another-session-not-a-secret'), Whose::theOperator());
+
+        expect(whoseItIs($store->resume(aStackThatIsPaired())))->toBe('a7f3', $which)
+            ->and(whoseItIs($store->resume($other)))->toBe('the operator', $which);
+    }
+});
+
+it('N3-R1 — a session kept for the operator comes back as the operator', function (): void {
+    foreach (everyStoreHolding() as $which => $store) {
+        expect(whoseItIs($store->resume(aStackThatIsPaired())))->toBe('the operator', $which);
     }
 });
 
@@ -236,7 +288,7 @@ it('N4-R5 — the adapter keeps a session where the platform keeps things', func
     $keychain = new PlatformKeychain($store);
 
     expect($keychain->isAvailable())->toBeTrue();
-    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))->toBe('kept');
+    expect(howItWent($keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator())))->toBe('kept');
     expect($store->keysHeld())->toBe([sprintf('lemonfiber.session.%s', A_PAIRED_STACK)]);
 });
 
@@ -248,8 +300,8 @@ it('N1-R11 — the adapter gives each stack its own key', function (): void {
     $store = APlatformStore::working();
     $keychain = new PlatformKeychain($store);
 
-    $keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN));
-    $keychain->keep(StackId::of(Nonce::of('b2c3d4e5f6071829')), Session::of('another-session-not-a-secret'));
+    $keychain->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator());
+    $keychain->keep(StackId::of(Nonce::of('b2c3d4e5f6071829')), Session::of('another-session-not-a-secret'), Whose::theOperator());
 
     expect($store->keysHeld())->toHaveCount(2);
 });
@@ -258,10 +310,10 @@ it('N4-R6 — the adapter tells a device with no store from one that refused', f
     // The distinction the whole refusal type exists for, and the one place it
     // is read off the platform rather than decided by us.
     expect(howItWent(new PlatformKeychain(APlatformStore::absent())
-        ->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))->toBe('no_secure_storage');
+        ->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator())))->toBe('no_secure_storage');
 
     expect(howItWent(new PlatformKeychain(APlatformStore::refusing())
-        ->keep(aStackThatIsPaired(), Session::of(THE_TOKEN))))->toBe('store_would_not_open');
+        ->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator())))->toBe('store_would_not_open');
 
     expect(new PlatformKeychain(APlatformStore::absent())->isAvailable())->toBeFalse();
 });
@@ -273,4 +325,30 @@ it('N4-R6 — the adapter forgets even where the store said no', function (): vo
     // exactly this reason.
     expect(howItWent(new PlatformKeychain(APlatformStore::absent())->forget(aStackThatIsPaired())))
         ->toBe('kept');
+});
+
+it('N3-R1 — reads a session kept before members as the operator\'s', function (): void {
+    // What a device that signed in under an earlier build is holding: the token and
+    // nothing else, written when there was no member who could sign in. Read as the
+    // operator's because that is what it is, not because a missing subject is treated
+    // leniently — and read at all, which is the half that matters: the alternative
+    // asks somebody for a password they have already given.
+    $store = APlatformStore::working()
+        ->alreadyHolding(sprintf('lemonfiber.session.%s', A_PAIRED_STACK), THE_TOKEN);
+
+    $resumed = new PlatformKeychain($store)->resume(aStackThatIsPaired());
+
+    expect(whatWasResumed($resumed))->toBe(THE_TOKEN)
+        ->and(whoseItIs($resumed))->toBe('the operator');
+});
+
+it('N4-R5 — a stored value with a subject and no token is no session', function (): void {
+    // The half-written value, which is the one shape this encoding can be left in. A
+    // subject with no token is a member this app cannot ask anything for, and saying
+    // so sends them to the password field rather than to a request that cannot be made.
+    $store = APlatformStore::working()
+        ->alreadyHolding(sprintf('lemonfiber.session.%s', A_PAIRED_STACK), "a7f3\n");
+
+    expect(whatWasResumed(new PlatformKeychain($store)->resume(aStackThatIsPaired())))
+        ->toBe('nothing');
 });

@@ -22,6 +22,15 @@ use Closure;
  * session is being *kept*, because the remedies differ; when resuming, there is
  * one remedy and it is the sign-in screen.
  *
+ * **Whose it is travels with it**, because the first thing a resumed session decides
+ * is which application the person holding it is given. A screen that does not turn on
+ * that declares the one parameter it always declared and is unchanged; the one that
+ * does declares the second.
+ *
+ * `notHeld()` names the operator, which costs nothing and is read by nobody: there is
+ * no session, so no arm receives it. The field is not nullable because a null would be
+ * a third state for a question with two answers.
+ *
  * That is also why a refusal to read is not an error here. A keychain that will
  * not open is a keychain with no session in it as far as this question goes —
  * treating it as a fault would put a screen in front of the operator that says
@@ -29,18 +38,18 @@ use Closure;
  */
 final readonly class Resumed
 {
-    private function __construct(private ?Session $session) {}
+    private function __construct(private ?Session $session, private Whose $whose) {}
 
-    /** There is a session for this stack, and this is it. */
-    public static function with(Session $session): self
+    /** There is a session for this stack, this is it, and this is whose it is. */
+    public static function with(Session $session, Whose $whose): self
     {
-        return new self($session);
+        return new self($session, $whose);
     }
 
-    /** There is not, for whatever reason, and the operator signs in again. */
+    /** There is not, for whatever reason, and whoever it is signs in again. */
     public static function notHeld(): self
     {
-        return new self(null);
+        return new self(null, Whose::theOperator());
     }
 
     /**
@@ -54,13 +63,13 @@ final readonly class Resumed
      * @template THeld of object
      * @template TNotHeld of object
      *
-     * @param Closure(Session): THeld $held
+     * @param Closure(Session, Whose): THeld $held
      * @param Closure(): TNotHeld     $notHeld
      *
      * @return THeld|TNotHeld
      */
     public function either(Closure $held, Closure $notHeld): object
     {
-        return $this->session instanceof Session ? $held($this->session) : $notHeld();
+        return $this->session instanceof Session ? $held($this->session, $this->whose) : $notHeld();
     }
 }
