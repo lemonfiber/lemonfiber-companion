@@ -17,6 +17,26 @@ enum Proof: string
     /** A file the analyser reads, expecting the rule's marker in the output. */
     case Analyser = 'analyser';
 
+    /**
+     * A file the analyser reads, planted where the rule is scoped to look.
+     *
+     * For a rule that narrows by path. The fixture tree sits outside every
+     * source directory on purpose — that is what makes a rule scoped to
+     * "everywhere but the adapters" apply to a fixture — and the same fact
+     * makes it the one place a rule scoped *to* a directory can never fire. A
+     * fixture planted there reports nothing, which reads exactly like a rule
+     * that does not work, so the register would be claiming ground no run had
+     * tested.
+     *
+     * So this one goes into the real tree, at the path the rule is looking at,
+     * and comes back out by the same manifest that puts an edited file back.
+     * Every such path sits in a directory called `Fixtures`, which `.gitignore`
+     * and `pint.json` already exclude and which `phpstan.neon` deliberately
+     * does not — the analyser has to be able to read it, or there is nothing
+     * gained by planting it there.
+     */
+    case AnalyserInPlace = 'analyser-in-place';
+
     /** A file the suite reads, expecting the named test to fail. */
     case Suite = 'suite';
 
@@ -77,7 +97,45 @@ enum Proof: string
     {
         return match ($this) {
             self::Suite, self::Edit => true,
-            self::Analyser, self::IsolatedSuite, self::Direct, self::NotDrivable => false,
+            self::Analyser, self::AnalyserInPlace, self::IsolatedSuite, self::Direct, self::NotDrivable => false,
+        };
+    }
+
+    /**
+     * Whether this fixture is a file of its own, which the sweep may delete by
+     * name.
+     *
+     * The distinction the sweep rests on, and the reason it is a question about
+     * the kind rather than a list at the call site. A fixture that is a whole
+     * file sits at a path nothing else uses, so deleting it is safe even on the
+     * run where the manifest is itself what went missing. An edited file is one
+     * this repository owns, and deleting that is the one outcome worse than
+     * leaving it edited.
+     */
+    public function isAFileOfItsOwn(): bool
+    {
+        return match ($this) {
+            self::Analyser, self::AnalyserInPlace, self::Suite, self::IsolatedSuite => true,
+            self::Edit, self::Direct, self::NotDrivable => false,
+        };
+    }
+
+    /**
+     * Whether the analyser is what reads this, and a message it reported is the
+     * proof.
+     *
+     * Both places a fixture can be planted answer yes. What differs between
+     * them is where the file goes, which the harness answers in one place; what
+     * reads it is this question, and it has the same answer for both. A reader
+     * that asked for `Analyser` by name instead would have gone quiet on the
+     * in-place kind the day it arrived — and gone quiet is the failure every
+     * rule here exists to refuse.
+     */
+    public function readByAnalyser(): bool
+    {
+        return match ($this) {
+            self::Analyser, self::AnalyserInPlace => true,
+            self::Suite, self::IsolatedSuite, self::Edit, self::Direct, self::NotDrivable => false,
         };
     }
 }

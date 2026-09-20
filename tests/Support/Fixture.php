@@ -40,6 +40,24 @@ final readonly class Fixture
     }
 
     /**
+     * A file the analyser reads, planted where the rule is scoped to look.
+     *
+     * `$path` is a real path in this repository rather than one under the
+     * fixture tree, because a rule that narrows by path cannot fire outside the
+     * directory it narrows to — and a fixture that cannot make its rule fire
+     * proves the opposite of what it was written for.
+     *
+     * It must sit in a directory called `Fixtures`, which is what keeps a
+     * deliberate violation out of a commit and away from the formatter for the
+     * seconds it is on disk. The analyser is pointed at it directly, so it is
+     * read whatever the configuration's own `paths` say.
+     */
+    public static function analyserInPlace(string $rule, string $path, string $code, string $marker): self
+    {
+        return new self($rule, Proof::AnalyserInPlace, $path, $code, $marker, basename($path, '.php'));
+    }
+
+    /**
      * A file the test suite reads.
      *
      * `$marker` is the description of the test that must fail — matched as a

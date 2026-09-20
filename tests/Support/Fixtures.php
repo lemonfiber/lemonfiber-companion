@@ -2064,6 +2064,29 @@ final readonly class Fixtures
             // A source file, not a test: C10 exempts tests deliberately, so a
             // fixture planted under `tests/` would prove the rule green while
             // refusing nothing.
+            // W8's phpstan half, and the reason `Proof::AnalyserInPlace` exists. The
+            // rule narrows to the SDK's own sources, so a fixture under the
+            // fixture tree — which sits outside every source directory by
+            // design — could never make it fire. Planted where the rule looks
+            // instead, and swept back out by the same manifest that restores an
+            // edited file.
+            Fixture::analyserInPlace('W8', 'app-modules/sdk/src/Internal/Fixtures/ASubstitutedValue.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Sdk\Internal\Fixtures;
+
+                final readonly class ASubstitutedValue
+                {
+                    /** @param array{incomplete?: bool} $said */
+                    public function everythingArrived(array $said): bool
+                    {
+                        return $said['incomplete'] ?? false;
+                    }
+                }
+                PHP, 'W8'),
+
             Fixture::suite('C10', 'app-modules/health/src/Api/Queries/Fixtures/KeepsKeys.php', <<<'PHP'
                 <?php
 

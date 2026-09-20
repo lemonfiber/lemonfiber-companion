@@ -38,16 +38,26 @@ use function str_contains;
  * reader in this module already does, and this is the rule that keeps the next
  * one doing it.
  *
- * Narrow on purpose. The readers are the only place a wire payload is turned
- * into a value, so that is where this looks; a coalesce anywhere else is
- * ordinary and is `C9`'s business rather than this rule's.
+ * Narrow on purpose, and narrow to the module rather than to one directory in
+ * it. The SDK is the only place a wire payload is turned into a value, so that
+ * is where this looks; a coalesce anywhere else is ordinary and is `C9`'s
+ * business rather than this rule's.
+ *
+ * **`Api/` was the whole of it and that was an accident of which readers came
+ * first.** `Wire`, `Changes`, `Costs` and `Endings` read a payload too and sit
+ * in `Internal/`, so the rule stopped at a directory boundary the defect does
+ * not respect. All four already refuse rather than substitute, which is why
+ * widening this changes nothing on today's tree — and is exactly why the
+ * fixture for it is planted in `Internal/`: a rule that newly covers four files
+ * and has never been shown firing in any of them is a register entry claiming
+ * ground nothing tested.
  *
  * @implements Rule<Coalesce>
  */
 final class NoSubstitutedWireValueRule implements Rule
 {
     /** Where a wire payload becomes a value this application shows. */
-    private const string THE_READERS = '/app-modules/sdk/src/Api/';
+    private const string THE_READERS = '/app-modules/sdk/src/';
 
     public function getNodeType(): string
     {
@@ -67,11 +77,11 @@ final class NoSubstitutedWireValueRule implements Rule
 
         return [
             RuleErrorBuilder::message(
-                'N2-R14 — this hands back a value the payload did not carry. A reader one '
+                'W8 — this hands back a value the payload did not carry. A reader one '
                 . 'field short must refuse, not substitute: the default is always the '
                 . 'reassuring one, and a screen stating a fact this app invented is the '
                 . 'failure the requirement names. `?? throw` is the same coalesce doing the '
-                . 'opposite thing, and is what every reader here already does (N2-R14).',
+                . 'opposite thing, and is what every reader here already does (W8, N2-R14).',
             )
                 ->identifier('lemonfiber.substitutedWireValue')
                 ->line($node->getStartLine())

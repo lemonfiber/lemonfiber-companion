@@ -550,6 +550,7 @@ phpstan/Rules/            the rules that are easier to write than to find
 | W5 | A file with no namespace imports no global name — the warning it raises fails the run silently | arch |
 | W6 | A source file declares one class, and it is the one its path names | arch: over the declarations of every file a class-name rule reads |
 | W7 | Every reader puts its envelope through the wire gate before reading the payload | arch: over the SDK module's own sources |
+| W8 | A reader hands back nothing the payload did not carry, and the gap it found is raised against the contract and kept until it is answered | phpstan for the coalesce that substitutes a default, plus arch over the register of gaps that must still be gaps — two clauses of one requirement, and a row naming one kind would leave the other unwatched |
 
 **Why `W6` is not covered by the rule above it.** `Q-R66` asserts that a rule
 found subjects to judge, and that cures the three cases this repository has
