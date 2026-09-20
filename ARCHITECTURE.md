@@ -782,7 +782,7 @@ there is nowhere in either that a number would be doing anything but gesturing.
 | | Rule | Enforced by |
 |---|---|---|
 | G1 | No mocking types you do not own — hand-written fakes for our ports | arch: no Mockery on foreign namespaces |
-| G2 | Every port has one contract test, run against the real adapter **and** its fake | test: every interface in a tree the coverage floor measures, its implementations and the contract file, compared, with a register of those still waiting |
+| G2 | Every port has one contract test, run against the real adapter **and** its fake | test: every interface in a tree the coverage floor measures, its implementing classes and the names its contract file's code reaches for, compared, with a register of those still waiting |
 | G3 | No test reaches the network | `Http::preventStrayRequests()` + an empty global `MockClient` + test |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
@@ -809,6 +809,15 @@ covered — the `Keeps` fake had already drifted from its adapter in two answers
 by the time anything asked. Ports genuinely waiting for a contract are named in
 a register with the reason, and the count may fall and may not rise, which is
 the arrangement G8 keeps for the same situation.
+
+**An implementation is a class, and being covered means the contract's own code
+names it.** An interface extending a port runs nothing against a contract, so
+it is judged as the port it is rather than counted as one of the two
+implementations the port it extends must have. And a class named in a comment
+is not a class a contract runs: the file is parsed rather than searched, by the
+whole name, because a search for a short name is answered both by a note
+explaining why something is *not* covered and by any longer class name it
+happens to sit inside.
 
 **There is a half G2 cannot reach, and `G12` is it.** Running both
 implementations against the same assertions proves they agree with each other.
