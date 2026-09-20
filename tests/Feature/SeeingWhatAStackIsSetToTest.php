@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Setting;
 use Modules\Kernel\Api\Settings;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Kernel\Api\Whose;
@@ -158,6 +159,45 @@ it('shows the sign-in prompt rather than a listing when the session has gone', f
         // Never asked. A screen that reached the stack with no session would
         // spend a round trip to be told what it already knew.
         ->and($arranging->askings())->toBe(0);
+});
+
+it('reads a route parameter that is not text as naming no machine', function (): void {
+    // The narrowing on the way out of the router, whose parameter array is
+    // untyped. Anything that is not a string names no stack, which is the same
+    // situation as a route with nothing in that segment. Every screen that
+    // reads a stack out of the route makes this assertion, because every one
+    // of them has the same branch — and a branch nothing drives is a branch
+    // that can quietly become the other one.
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
+});
+
+it('N3-R13 — lets the session go when the stack refuses the credential', function (): void {
+    // The listing is a read, and a read refused on the credential is the same
+    // signed-out device as one refused anywhere else: the identity was
+    // removed, the password changed, or the stack was rebuilt. A session left
+    // in the store is resumed on the next frame and refused again, and the
+    // operator ends up at a sign-in prompt on a device that still believes it
+    // is signed in.
+    $keychain = AKeychainInMemory::working();
+    $screen = theSettingsScreen(AStackThatIsSet::met(Obstacle::CredentialWasRefused), $keychain);
+
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($keychain->isHolding(theStackWhoseSettingsAreRead()->id()))->toBeFalse();
+});
+
+it('N3-R13 — keeps the session when the machine could not be reached', function (): void {
+    // The other half, and the reason the release is a decision rather than a
+    // reflex. A phone in flight mode has not lost its pairing, and forgetting
+    // the session here would make somebody sign in again to read settings they
+    // were entitled to read all along.
+    $keychain = AKeychainInMemory::working();
+    $screen = theSettingsScreen(AStackThatIsSet::met(Obstacle::DeviceHasNoNetwork), $keychain);
+
+    expect($screen->answer()->went->isSignedIn)->toBeTrue()
+        ->and($keychain->isHolding(theStackWhoseSettingsAreRead()->id()))->toBeTrue();
 });
 
 it('names where it goes and what it draws', function (): void {
