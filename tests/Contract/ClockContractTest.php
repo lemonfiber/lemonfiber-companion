@@ -19,6 +19,11 @@ use Tests\Support\Fakes\FrozenClock;
 // the adapter's own tests rather than to the contract — a contract that
 // asserted it would either fail on the fake or be quietly weakened to pass,
 // and a weakened contract is how a fake drifts.
+//
+// It does not ask whether `now()` answers an `Instant`. That is the signature:
+// the analyser refuses a clock answering anything else at rest and the runtime
+// refuses it on the way out, so an expectation here is not what stands between
+// a clock and that mistake. What one can be wrong about is the moment.
 
 const A_MOMENT = 1_757_000_000;
 
@@ -37,10 +42,6 @@ function clocks(): array
 }
 
 foreach (clocks() as $name => $build) {
-    it(sprintf('%s answers with a moment', $name), function () use ($build): void {
-        expect($build()->now())->toBeInstanceOf(Instant::class);
-    });
-
     it(sprintf('%s does not go backwards', $name), function () use ($build): void {
         // The one promise every clock makes and the only one a test can check
         // without knowing which clock it has. Both read at second resolution,

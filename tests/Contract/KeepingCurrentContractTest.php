@@ -9,6 +9,7 @@ use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowToUndoIt;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -21,7 +22,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
-use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\VersionInUse;
 use Modules\Sdk\Api\PinnedClients;
@@ -259,6 +259,34 @@ function whereItStands(KeepingCurrent $keeping): string
     )->said;
 }
 
+/**
+ * What became of a take, folded to a word, so two answers can be compared.
+ *
+ * The same shape as {@see whereItStands()} and for the same reason: `Underway`
+ * hands nothing out without being asked what happens in each case, and a word
+ * is what two implementations can be held to the same way. It takes the
+ * agreement because a take has one, where a reading has only the stack.
+ */
+function howItWasTaken(KeepingCurrent $keeping, TakingAnUpdate $agreed): string
+{
+    return $keeping->take(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith(), $agreed)->either(
+        started: static fn(Job $job): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay(
+            sprintf('following %s', $job->shown()),
+        ),
+        met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->name),
+    )->said;
+}
+
+/** The yes an operator gave, naming the two services the stack said would change. */
+function theUpdateTheOperatorAgreedTo(): TakingAnUpdate
+{
+    return TakingAnUpdate::agreed(
+        Release::called('4.1.0', noticeable: true, withdrawn: false),
+        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+        Services::none(),
+    );
+}
+
 it('N2-R15 — comes away with the state the stack reported and the release it is on', function (): void {
     foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
         expect(whereItStands($build()))->toStartWith('pending/4.0.15', $which);
@@ -304,21 +332,40 @@ it('N1-R10 — tells a credential that was refused from a stack that is not answ
     }
 });
 
-it('N2-R17 — takes an update agreed against the services it named', function (): void {
-    $taken = MockResponse::make(
-        (string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => 'a-job']]),
-    );
-
-    $agreed = TakingAnUpdate::agreed(
-        Release::called('4.1.0', noticeable: true, withdrawn: false),
-        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
-        Services::none(),
-    );
+it('comes away from a take with the job the stack named', function (): void {
+    // What the verb half promises, which its return type does not: the stack
+    // took the work on and said what to ask after it by. Both sides answer the
+    // same handle on purpose — the fake names one and the adapter's stack is
+    // made to answer it — because a contract comparing two implementations can
+    // only assert a value they can both be made to say.
+    $taken = MockResponse::make((string) json_encode([
+        'api_version' => 1,
+        'kind' => 'job',
+        'data' => ['job' => AStackThatKeepsCurrent::THE_JOB],
+    ]));
 
     foreach (everyWayOfKeepingCurrent($taken) as $which => $build) {
-        $underway = $build()->take(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith(), $agreed);
+        expect(howItWasTaken($build(), theUpdateTheOperatorAgreedTo()))
+            ->toBe(sprintf('following %s', AStackThatKeepsCurrent::THE_JOB), $which);
+    }
+});
 
-        expect($underway)->toBeInstanceOf(Underway::class, $which);
+it('comes away from a take that did not happen with the obstacle rather than a job', function (): void {
+    // The other arm, held to the same table the reading half is held to above.
+    // `Underway` carries a refusal the way `WhatIsCurrent` does, and a fake
+    // answering a job where the stack refused would let a screen offer to
+    // follow work that was never started — which is the one thing an operator
+    // cannot tell by looking.
+    $table = [
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        foreach (everyWayOfKeepingCurrent($answered, $why) as $which => $build) {
+            expect(howItWasTaken($build(), theUpdateTheOperatorAgreedTo()))->toBe($why->name, $which);
+        }
     }
 });
 

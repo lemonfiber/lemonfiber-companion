@@ -29,6 +29,13 @@ use Tests\Support\Fakes\AClientForWhicheverStack;
 // Nothing here connects. Both sides build a client and stop, which is the
 // whole of what this port promises — an address is dialled when a request is
 // made, not when a client is made.
+//
+// Nothing here asks whether a client was built, either. The port answers
+// `object` because `kernel` may not name the SDK's type, so *it answered an
+// object* is the signature said a second time — and the fake hands back a
+// `stdClass` with nothing of the stack on it, so there is no field a contract
+// could read in its place. What both can be held to is how many clients they
+// build and for whom, and a client that was never built fails that.
 
 const A_CERTIFICATE = '3b8c1f09a7d24e6b5c0f81a2d93e47b6c8150af2937d6e4b1c05a8f39d27e64b';
 
@@ -59,10 +66,6 @@ dataset('every way of reaching a stack', [
     // adapter does — and if it ever does not, the divergence is the bug.
     'the stand-in' => [fn(): Reaching => new ClientsThatReachNothing(new PinnedClients())],
 ]);
-
-it('builds something for a stack it was introduced to', function (Reaching $reaching): void {
-    expect($reaching->client(aStackToReach(), aSessionToCarry()))->toBeObject();
-})->with('every way of reaching a stack');
 
 it('N1-R11 — builds a separate client per stack', function (Reaching $reaching): void {
     // The last clause, at the transport. A client holds one stack's pin, so two

@@ -57,7 +57,3 @@ it('answers with nothing where nothing would be noticed', function (): void {
 
     expect(new WorthNoticing()->over($chores)->isEmpty())->toBeTrue();
 });
-
-it('answers with the collection rather than an array', function (): void {
-    expect(new WorthNoticing()->over(whatIsWaiting()))->toBeInstanceOf(Releases::class);
-});

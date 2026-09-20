@@ -120,14 +120,24 @@ it('resolves the parameters the navigation stack holds, not the router\'s', func
     // handed come from NativePHP's. A path registered with a parameter is what
     // shows that this asks the right one — the previous case drives a path with
     // none, which both registries agree about.
+    //
+    // The value is what makes the distinction observable. The route closure is
+    // called rather than dispatched, so Laravel has bound no route to this
+    // request and its own parameter bag is empty; the navigation stack matches
+    // the served path against its pattern and comes away with the segment. A
+    // screen handed `[]` here is one that asked the wrong registry, and it
+    // would be built for no stack in particular.
     $entered = new ARunloopThatOnlyRemembers();
 
     new ScreenRoutes(aBuildThatKnows(), $entered)->declare();
     Route::native('/a-stack/{stack}', YourStacks::class);
 
+    servingARequestFor('/a-stack/the-loft');
+
     ranTheRouteAt('/a-stack/{stack}');
 
-    expect($entered->whatItRan()['params'])->toBeArray();
+    expect($entered->whatItRan()['params'])->toBe(['stack' => 'the-loft'])
+        ->and($entered->whatItRan()['path'])->toBe('/a-stack/the-loft');
 });
 
 it('answers a request for a screen with the harness where there is no device', function (): void {

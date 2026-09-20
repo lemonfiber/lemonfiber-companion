@@ -164,7 +164,14 @@ it('reports how many rules rest on a human reading the diff', function (): void 
     // Not a failure — a number worth seeing. Every rule here is one the suite
     // cannot catch, so it is the standing cost of the architecture, and it
     // should be argued down rather than allowed to drift up quietly.
-    expect($review)->toBeArray();
+    //
+    // What is asserted is that there was a table to read. A reporter needs an
+    // expectation or Pest marks it risky, and the cheap one to reach for —
+    // *this list is a list* — is an expectation no reading can fail. With one
+    // of those here, a table that stops parsing prints nothing resting on
+    // review, and nothing resting on review reads exactly like a cost that has
+    // been argued away.
+    expect(Rules::documented())->not->toBe([], 'no rules were read out of the architecture, so this counted nothing');
 
     fwrite(STDOUT, sprintf(
         "\n  rules resting on review: %d%s\n",
