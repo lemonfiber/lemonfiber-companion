@@ -53,6 +53,65 @@ it('G7 — every module declares a coverage and a mutation floor', function (): 
     ));
 });
 
+/**
+ * What is wrong with one floor and the argument beside it, or nothing.
+ *
+ * Both directions, because a register only means something when its rows come
+ * out again: an argument left behind by a floor that has risen describes a
+ * position nobody holds any more, and it reads as current.
+ *
+ * Named for this file: the root suites share one namespace (`G10`).
+ *
+ * @return list<string>
+ */
+function whatIsWrongWithAFloor(string $module, string $which, ?int $floor, ?string $why): array
+{
+    if ($floor === 0 && ($why === null || trim($why) === '')) {
+        return [sprintf('%s declares a %s floor of 0 and nothing about what holds it instead', $module, $which)];
+    }
+
+    if ($floor !== null && $floor > 0 && $why !== null) {
+        return [sprintf('%s declares a %s floor of %d and still argues for one of 0', $module, $which, $floor)];
+    }
+
+    return [];
+}
+
+it('G7 — a floor of zero says what holds the module instead', function (): void {
+    // The number without the argument is the shape this rule is really about.
+    // A floor of zero is a position — a component holds state, an adapter
+    // forwards a call, a stand-in is a fake by construction — and that position
+    // lived in the runner's source and in `Kind`, where it is said once about
+    // everybody. The manifests carried the bare number, so nothing asked a
+    // module declaring one what, in that module, holds the decisions instead.
+    //
+    // Nothing here judges whether the argument is a good one. What it refuses
+    // is a zero nobody wrote an argument for, which is the state in which there
+    // is nothing to judge.
+    $unargued = [];
+
+    foreach (Module::all() as $module) {
+        $unargued = [
+            ...$unargued,
+            ...whatIsWrongWithAFloor($module->name, 'coverage', $module->coverageFloor, $module->whyCoverageIsZero),
+            ...whatIsWrongWithAFloor($module->name, 'mutation', $module->mutationFloor, $module->whyMutationIsZero),
+        ];
+    }
+
+    sort($unargued);
+
+    expect($unargued)->toBe([], sprintf(
+        "These floors say a number and nothing else:\n  %s\n\n"
+        . "Put the argument beside the number, in the module's own manifest:\n\n"
+        . "    \"floors\": { \"mutation\": 0, \"mutation-is-zero-because\": \"…\" }\n\n"
+        . 'Say what holds that module\'s decisions instead — the contract its adapters are '
+        . 'run through, the rule that reads its registry, the test that reads its table arm '
+        . 'by arm. An argument that travels with the number is one the next reader can '
+        . 'disagree with; a bare zero is one nobody can (G7).',
+        implode("\n  ", $unargued),
+    ));
+});
+
 it('G7 — the floors may be raised and may not quietly net out', function (): void {
     // A ratchet on the declared numbers rather than on the measured ones.
     //

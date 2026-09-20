@@ -126,7 +126,17 @@ enum Kind: string
         return 100;
     }
 
-    /** The mutation floor a module of this kind usually carries. */
+    /**
+     * The mutation floor a module of this kind usually carries.
+     *
+     * A convention rather than a measurement, and the difference matters where
+     * it answers zero: the number says what a module of that shape is usually
+     * held to, not that a run found nothing worth killing there. A module may
+     * depart from it — `modules/sdk` is an adapter declaring a hundred, and
+     * across every commit that is the one mutation floor to have moved — and a
+     * module holding to it says in its own manifest what holds its decisions
+     * instead, which is what `G7` asks of a zero.
+     */
     public function conventionalMutationFloor(): int
     {
         return match ($this) {
