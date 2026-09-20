@@ -18,7 +18,8 @@
         "lemonfiber": {
             "floors": {
                 "coverage": 100,
-                "mutation": 0
+                "mutation": 0,
+                "mutation-is-zero-because": "Three adapters over the device's store, each held by its port's contract — SecureStorage, Stacks and Verdicts — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest` and `PlatformVerdictsTest` over the keys a stack gets and the JSON a row is written as."
             },
             "kind": "adapter"
         }

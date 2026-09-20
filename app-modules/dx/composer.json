@@ -27,7 +27,8 @@
         "lemonfiber": {
             "floors": {
                 "coverage": 100,
-                "mutation": 0
+                "mutation": 0,
+                "mutation-is-zero-because": "A stand-in is a fake by construction, so a mutant here is measured against the thing being stood in for. What it builds is held instead: `EveryPayloadTheStandInBuildsFitsTheContractTest` runs every payload it generates against the SDK's own declared shapes, and `EveryStandInReplacesItsOwnPortTest` runs the registry — no two claiming one port, each claiming an interface, each answering with an instance of it."
             },
             "kind": "stand-in"
         }
