@@ -10,11 +10,14 @@ use function array_keys;
 use function array_map;
 use function array_values;
 use function basename;
+use function class_exists;
+use function enum_exists;
 use function glob;
 
 use const GLOB_ONLYDIR;
 
 use function in_array;
+use function interface_exists;
 use function is_array;
 use function is_string;
 use function mb_strlen;
@@ -212,6 +215,44 @@ final readonly class OurCode
 
         foreach (self::expandedSourceTrees() as $tree) {
             $found = [...$found, ...Tree::filesUnder(Tree::at($tree), '.php')];
+        }
+
+        sort($found);
+
+        return $found;
+    }
+
+    /**
+     * Every class, interface and enum those trees declare, by name.
+     *
+     * The same question {@see Module::classNames()} answers for one module,
+     * asked of everything the coverage floor measures — so `bridge/src` and
+     * `bootstrap/Composition` are in it, and a path package added tomorrow is
+     * in it the moment `phpunit.xml` measures it. A rule assembling the module
+     * list for itself judges the modules and is silent about the two trees
+     * beside them, which is the drift `R4` is about.
+     *
+     * Read from the file rather than from the autoloader's classmap, for the
+     * reason `Module::classNames()` gives: the map only exists where the
+     * autoloader was dumped optimized, which holds in CI and not always on a
+     * laptop.
+     *
+     * A file whose declared name the autoloader cannot resolve is left out
+     * rather than raising. That is a misplacement, `W2` reports it by name, and
+     * a rule about ports is not the place to find out.
+     *
+     * @return list<class-string>
+     */
+    public static function sourceClasses(): array
+    {
+        $found = [];
+
+        foreach (self::sourceFiles() as $file) {
+            $name = Imports::declaredName($file);
+
+            if ($name !== '' && (class_exists($name) || interface_exists($name) || enum_exists($name))) {
+                $found[] = $name;
+            }
         }
 
         sort($found);
