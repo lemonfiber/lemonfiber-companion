@@ -782,7 +782,7 @@ there is nowhere in either that a number would be doing anything but gesturing.
 | | Rule | Enforced by |
 |---|---|---|
 | G1 | No mocking types you do not own — hand-written fakes for our ports | arch: no Mockery on foreign namespaces |
-| G2 | Every port has one contract test, run against the real adapter **and** its fake | test: the ports, their implementations and the contract file, compared |
+| G2 | Every port has one contract test, run against the real adapter **and** its fake | test: every interface in a tree the coverage floor measures, its implementations and the contract file, compared, with a register of those still waiting |
 | G3 | No test reaches the network | `Http::preventStrayRequests()` + an empty global `MockClient` + test |
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
@@ -798,6 +798,17 @@ there is nowhere in either that a number would be doing anything but gesturing.
 adapter makes the suite green while the application is broken, and nothing else
 here catches that. One contract test per port, run twice, is what makes every
 fake trustworthy — and therefore what makes G1 safe to adopt.
+
+**A port is any interface in a tree the coverage floor measures**, which is the
+sentence above read at its word. The check used to build its list from the
+module manifests filtered to the kernel, and two of this repository's trees are
+not modules: `bridge/src` is a path package and `bootstrap/Composition` is the
+composition root. `Keeps` and `Runloop` live there, each with three
+implementations and one of them a fake the suite stands on, and neither was
+covered — the `Keeps` fake had already drifted from its adapter in two answers
+by the time anything asked. Ports genuinely waiting for a contract are named in
+a register with the reason, and the count may fall and may not rise, which is
+the arrangement G8 keeps for the same situation.
 
 **There is a half G2 cannot reach, and `G12` is it.** Running both
 implementations against the same assertions proves they agree with each other.

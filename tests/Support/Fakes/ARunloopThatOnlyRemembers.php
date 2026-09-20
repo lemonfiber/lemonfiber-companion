@@ -15,6 +15,15 @@ use function expect;
  *
  * Written out rather than mocked — `G1` — so a change to the seam fails to
  * compile here instead of drifting.
+ *
+ * **It builds the screen and drops it, which is what the other two do.**
+ * Running a screen needs a device and is the part this stands in for; building
+ * one does not, and both shipped implementations do it first for a reason that
+ * belongs to the port rather than to either of them — a route naming a screen
+ * this application cannot construct answers 200 to anything that skips the
+ * build, and fails on a handset. Three tests drive a route to a screen through
+ * this, so a stand-in that skipped the build is three routes proved reachable
+ * over a screen nobody checked could be made.
  */
 final class ARunloopThatOnlyRemembers implements Runloop
 {
@@ -27,6 +36,11 @@ final class ARunloopThatOnlyRemembers implements Runloop
      */
     public function enter(Closure $build, string $screen, array $params, string $path): mixed
     {
+        // Built and dropped, as `TheHarnessInstead` builds and drops it. What
+        // is remembered is what a test asks about; what is built is what the
+        // contract holds every implementation of this seam to.
+        $build($screen);
+
         $this->entered[] = ['screen' => $screen, 'params' => $params, 'path' => $path];
 
         return '';
