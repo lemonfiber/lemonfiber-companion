@@ -220,6 +220,28 @@ it('finds screens to draw', function (): void {
     expect(whatEachScreenDrewOf(AStandInStack::Answering))->not->toBe([]);
 });
 
+/**
+ * Screens that refuse before they can ask, and why each does.
+ *
+ * Not an exemption from the rule below. That one is about what a screen says
+ * when it *met* a machine that would not answer, and a screen that never got
+ * as far as asking has met nothing — it still draws an obstacle and still
+ * leaves a way off, which every screen here is held to without exception.
+ *
+ * The list is here rather than absent because the alternative was worse in both
+ * directions: widening the rule to accept any obstacle would let a screen that
+ * genuinely met a dead machine report the wrong thing about it, and leaving the
+ * screen out of the walk would stop it being drawn at all.
+ *
+ * **A stand-in run is the operator**, which `ASessionThisRunKeeps` says in as
+ * many words: somebody looking at the whole of this application rather than a
+ * member looking at their half. A shelf is read from the media server *as* an
+ * account, and the operator is not one, so the reading is refused before a
+ * request is made. Under a member's session this screen meets the machine like
+ * any other.
+ */
+const NEVER_REACHES_THE_MACHINE = ['Shelf'];
+
 it('N1-R10 — a machine that does not answer draws what stood in the way, and the way back', function (): void {
     withNoStackRunning();
 
@@ -228,7 +250,7 @@ it('N1-R10 — a machine that does not answer draws what stood in the way, and t
     $wayBackIn = theScreenASignedOutOperatorIsSentTo(AStandInStack::NotAnswering->asAStack()->id()->stored());
 
     foreach (whatEachScreenDrewOf(AStandInStack::NotAnswering) as $name => $drawn) {
-        if ($name === $wayBackIn) {
+        if ($name === $wayBackIn || in_array($name, NEVER_REACHES_THE_MACHINE, strict: true)) {
             continue;
         }
 

@@ -59,4 +59,18 @@ return [
     'nothing_owed_action' => 'Deze machine zegt niets over wat je kunt aanvragen.',
     'ask_again' => 'Opnieuw vragen',
     'back_to_the_machine' => 'Terug naar de machine',
+
+    // Wat de machine zegt dat dit lid kan kijken. Een lege plank en een
+    // bibliotheek die niet bereikt kon worden zijn twee verschillende
+    // antwoorden, en de tweede wordt nooit als de eerste getoond.
+    'shelf' => 'Wat je kunt kijken',
+    'shelf_is_empty' => 'Er staat niets op je plank.',
+    'shelf_is_empty_action' => 'Wat het huishouden voor je toevoegt, verschijnt hier.',
+    'shelf_is_out_of_reach' => 'Je bibliotheek kon niet worden bereikt.',
+    'shelf_is_out_of_reach_action' => 'De machine antwoordde, maar kon niet lezen wat er op je plank staat.',
+    'medium' => [
+        'film' => 'Film',
+        'series' => 'Serie',
+        'other' => 'Overig',
+    ],
 ];

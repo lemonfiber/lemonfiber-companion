@@ -7,6 +7,7 @@ namespace Modules\Household\Providers;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
+use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Stacks\Api\AStacksScreen;
 
 /**
@@ -46,6 +47,7 @@ final class HouseholdServiceProvider extends ServiceProvider
         // than at the end of everybody's.
         $this->app->booted(static function (): void {
             Router::native(AStacksScreen::Owed->value, WhatYouAreOwed::class);
+            Router::native(AStacksScreen::Shelf->value, WhatYouCanWatch::class);
         });
     }
 }
