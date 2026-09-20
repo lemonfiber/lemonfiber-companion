@@ -6,8 +6,6 @@ namespace Bootstrap\Composition\NativePHP;
 
 use Closure;
 
-use function redirect;
-
 /**
  * NativePHP's navigation runloop, which only a device can enter.
  *
@@ -17,9 +15,13 @@ use function redirect;
  * reconnect spinning per request — so a suite that reached it would hang rather
  * than fail.
  *
- * Two statements, no branch, and nothing here decides anything: which screen,
- * which parameters, and what a test is answered with instead are all decided in
- * {@see ScreenRoutes}, against the {@see Runloop} seam, where they are driven.
+ * One statement and no branch, because nothing here decides anything: which
+ * screen, which parameters and what a test is answered with instead are all
+ * decided in {@see ScreenRoutes} against the {@see Runloop} seam, and what the
+ * loop's own answer turns into is {@see WhereAScreenLeavesYou} — each of them
+ * somewhere a test drives it. A branch in this file is a branch nothing ever
+ * takes both ways, so what keeps it honest is having none rather than having
+ * small ones.
  *
  * Named in `phpunit.xml`'s coverage exclusions with that reason, and
  * `TheDeviceOnlyListIsShortTest` is what stops the list growing quietly.
@@ -32,10 +34,6 @@ final readonly class TheRunloop implements Runloop
      */
     public function enter(Closure $build, string $screen, array $params, string $path): mixed
     {
-        // The runloop answers with a URI when the operator navigated away, and
-        // with nothing when the screen was simply left.
-        $exit = new ScreenRouter($build)->start($screen, $params, $path);
-
-        return $exit === null ? '' : redirect($exit);
+        return WhereAScreenLeavesYou::after(new ScreenRouter($build)->start($screen, $params, $path));
     }
 }

@@ -15,10 +15,12 @@ use Closure;
  * real bridge — so a test that reached it would hang rather than fail, which is
  * the worst way for a test to go wrong.
  *
- * With the seam, the file that cannot be covered is two statements long and
- * everything that decides anything sits in {@see ScreenRoutes} on this side of
- * it, where a test drives it. Without one, the deciding and the blocking are
- * the same method and neither can be checked.
+ * With the seam, the file that cannot be covered is one statement long and
+ * everything that decides anything sits on this side of it, where a test
+ * drives it — which screen and which parameters in {@see ScreenRoutes}, and
+ * what the loop's answer turns into in {@see WhereAScreenLeavesYou}. Without
+ * one, the deciding and the blocking are the same method and neither can be
+ * checked.
  */
 interface Runloop
 {
