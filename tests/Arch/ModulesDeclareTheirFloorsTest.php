@@ -64,7 +64,15 @@ it('G7 — the floors may be raised and may not quietly net out', function (): v
     //
     // A lowered floor is one line in a reviewed diff. This catches the case
     // where nobody reads it.
-    $total = 2100;
+    //
+    // Flush with what is declared, because a ratchet with slack in it is a
+    // budget. At 2,100 against 2,200 declared, one module could drop its
+    // mutation floor from 100 to 0 and this would still pass — which is the
+    // one move the number exists to catch, permitted by the number itself.
+    //
+    // A commit that raises a floor raises this in the same breath. Leaving it
+    // behind is how the slack comes back, one improvement at a time.
+    $total = 2200;
 
     $declared = array_sum(array_map(
         static fn(Module $module): int => ($module->coverageFloor ?? 0) + ($module->mutationFloor ?? 0),

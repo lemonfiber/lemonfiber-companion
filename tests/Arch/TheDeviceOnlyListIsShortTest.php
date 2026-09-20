@@ -35,7 +35,16 @@ declare(strict_types=1);
 // total against zero entries. One line, four assertions, all green, and a
 // module's whole source tree unmeasured.
 
-const THE_MOST_THAT_CAN_BE_EXCLUDED = 3;
+/**
+ * How many files may be excluded from coverage.
+ *
+ * Flush with the list, because a ceiling above it is a budget wearing a
+ * ratchet's name: at three against one entry, two more files could be excluded
+ * — the whole of what this rule is about — without anything going red. The
+ * number falls with the list and rises only where somebody argues for it here,
+ * which is where a reviewer meets it.
+ */
+const THE_MOST_THAT_CAN_BE_EXCLUDED = 1;
 
 /** Where this repository is, from a file two directories inside it. */
 function theRepositoryRoot(): string
