@@ -124,11 +124,13 @@
     "scripts": {
         "post-install-cmd": [
             "git config core.hooksPath .githooks",
-            "@php scripts/patch_nativephp.php"
+            "@php scripts/patch_nativephp.php",
+            "@php scripts/patch_pest_mutate.php"
         ],
         "post-update-cmd": [
             "git config core.hooksPath .githooks",
-            "@php scripts/patch_nativephp.php"
+            "@php scripts/patch_nativephp.php",
+            "@php scripts/patch_pest_mutate.php"
         ],
         "analyse": "phpstan analyse",
         "ci": [
