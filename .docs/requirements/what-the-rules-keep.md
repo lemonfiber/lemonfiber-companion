@@ -113,7 +113,7 @@ survived, and the day this paragraph is deleted rather than edited.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `Q-R66` | A gate is shown to refuse the defect it exists to catch, in the environment it runs in, before it is relied on | Every rule that walks a set asserts it found one, across `tests/Arch`, `tests/Templates` and `tests/Modules`. A rule whose subject list went empty passes with no iterations, and a green run over nothing looks exactly like a green run over everything |
+| `Q-R66` | A gate is shown to refuse the defect it exists to catch, in the environment it runs in, before it is relied on | Every rule that walks a set asserts it found one, across `tests/Arch`, `tests/Templates`, `tests/Feature` and `tests/Modules`. A rule whose subject list went empty passes with no iterations, and a green run over nothing looks exactly like a green run over everything. Where a rule has no floor the absence is written beside it with the reason: a permission list that has emptied and a root view directory holding nothing are both the state their rule is written to reach |
 
 ## What is not built, and what holds it open
 

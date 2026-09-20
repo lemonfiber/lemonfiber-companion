@@ -13,11 +13,19 @@ use Tests\Support\Tree;
 // by replacing one path segment. A file in the wrong place is not untidy — it
 // is a file that the rules governing its neighbours do not reach, and nothing
 // says so, because a rule that finds no files reports a green tick.
+//
+// Which is true of these four as well, so each says whether it read a file at
+// all before it says none of them is a stray. The exception is deliberate and
+// named where it sits: the root `resources/views` walk in W3 is supposed to
+// find nothing, and a floor demanding otherwise would ask for the violation.
 
 it('W1 — the composition root is the only class under bootstrap/', function (): void {
     $strays = [];
+    $under = Tree::filesUnder(Tree::at('bootstrap'), '.php');
 
-    foreach (Tree::filesUnder(Tree::at('bootstrap'), '.php') as $file) {
+    expect($under)->not->toBe([], 'bootstrap/ holds no PHP at all, so this rule read nothing');
+
+    foreach ($under as $file) {
         $relative = str_replace(sprintf('%s/', Tree::root()), '', $file);
 
         // `bootstrap/` holds framework wiring that is not classes at all —
@@ -47,9 +55,11 @@ it('W1 — the composition root is the only class under bootstrap/', function ()
 
 it('W2 — a module declares only its own namespace', function (): void {
     $strays = [];
+    $read = [];
 
     foreach (Module::all() as $module) {
         foreach ($module->classes() as $file) {
+            $read[] = $file;
             $declared = namespaceOf($file);
 
             if ($declared !== '' && ! str_starts_with($declared, $module->namespace)) {
@@ -57,6 +67,8 @@ it('W2 — a module declares only its own namespace', function (): void {
             }
         }
     }
+
+    expect($read)->not->toBe([], 'no module holds a class, so this rule read nothing');
 
     expect($strays)->toBe([], sprintf(
         "These live in one module and answer to another:\n  %s\n\n"
@@ -75,17 +87,25 @@ it('W3 — the root holds suites, not scattered tests', function (): void {
     $strays = [];
 
     $entries = scandir(Tree::at('tests'));
+    $read = [];
 
     foreach ($entries === false ? [] : $entries as $entry) {
         if ($entry === '.' || $entry === '..' || ! is_dir(Tree::at(sprintf('tests/%s', $entry)))) {
             continue;
         }
 
+        $read[] = $entry;
+
         if (! in_array($entry, $suites, strict: true)) {
             $strays[] = sprintf('tests/%s', $entry);
         }
     }
 
+    expect($read)->not->toBe([], 'tests/ holds no directories, so this rule read nothing');
+
+    // The second walk has no floor and must not grow one. Root
+    // `resources/views` holding nothing is the state this rule is for, so a
+    // floor here would be a rule asking for the violation it refuses.
     foreach (Tree::filesUnder(Tree::at('resources/views'), '.blade.php') as $view) {
         $strays[] = str_replace(sprintf('%s/', Tree::root()), '', $view);
     }
@@ -103,9 +123,11 @@ it('W3 — the root holds suites, not scattered tests', function (): void {
 
 it('W4 — a module test answers to its module', function (): void {
     $strays = [];
+    $read = [];
 
     foreach (Module::all() as $module) {
         foreach ($module->testFiles() as $file) {
+            $read[] = $file;
             $declared = namespaceOf($file);
 
             // A Pest file declares no namespace, which is the normal case and
@@ -115,6 +137,8 @@ it('W4 — a module test answers to its module', function (): void {
             }
         }
     }
+
+    expect($read)->not->toBe([], 'no module holds a test file, so this rule read nothing');
 
     expect($strays)->toBe([], sprintf(
         "These tests answer to a module they do not live in:\n  %s\n\n"

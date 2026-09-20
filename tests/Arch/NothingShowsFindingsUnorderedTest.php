@@ -28,8 +28,15 @@ use Tests\Support\Tree;
 // its absence. Narrow on purpose: `Internal/Screens` is where a `Findings`
 // becomes rows, and a capability composing two queries is doing the thing this
 // rule exists to make screens do.
+//
+// Narrow on purpose is also narrow enough to reach nothing. Both filters name a
+// directory and an accessor this repository chose, and either renamed leaves
+// the rule reading no files and reporting a green tick — which is the sentence
+// above happening to the rule rather than to a screen. So it says whether it
+// found a screen at all before it says none of them is at fault.
 
 it('F8 — nothing shows findings it did not take from WorstFirst', function (): void {
+    $showing = [];
     $offenders = [];
 
     foreach (Tree::filesUnder(Tree::at('app-modules'), '.php') as $path) {
@@ -47,12 +54,16 @@ it('F8 — nothing shows findings it did not take from WorstFirst', function ():
             continue;
         }
 
+        $showing[] = $path;
+
         if (str_contains($said, 'WorstFirst')) {
             continue;
         }
 
         $offenders[] = str_replace(sprintf('%s/', Tree::root()), '', $path);
     }
+
+    expect($showing)->not->toBe([], 'no screen under Internal/Screens puts findings on a screen, so this rule read nothing');
 
     sort($offenders);
 

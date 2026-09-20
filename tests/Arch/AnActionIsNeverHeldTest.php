@@ -112,10 +112,17 @@ function saysItHoldsManyOf(string $line, string $held): bool
 
 it('N1-R41 — nothing holds a collection of actions waiting to be sent', function (): void {
     $queues = [];
+    $read = [];
 
     foreach (Module::all() as $module) {
         foreach ($module->classNames() as $name) {
-            foreach (everywhereAClassSaysWhatItHolds(new ReflectionClass($name)) as $line) {
+            $lines = everywhereAClassSaysWhatItHolds(new ReflectionClass($name));
+
+            if ($lines !== []) {
+                $read[] = $name;
+            }
+
+            foreach ($lines as $line) {
                 foreach (NEVER_QUEUED as $held) {
                     if (saysItHoldsManyOf($line, $held)) {
                         $queues[] = sprintf('%s holds many %s — %s', $name, $held, trim($line, " *\t"));
@@ -124,6 +131,8 @@ it('N1-R41 — nothing holds a collection of actions waiting to be sent', functi
             }
         }
     }
+
+    expect($read)->not->toBe([], 'no class writes down what it holds, so this rule read nothing');
 
     sort($queues);
 
@@ -178,10 +187,12 @@ it('N1-R42 — nothing holds the key that names one attempt', function (): void 
     // `missingType.iterableValue`, so the file does not compile past the gate
     // it would have to pass first. Checked by planting one, not assumed.
     $held = [];
+    $read = [];
 
     foreach (Module::all() as $module) {
         foreach ($module->classNames() as $name) {
             foreach (new ReflectionClass($name)->getProperties() as $property) {
+                $read[] = sprintf('%s::$%s', $name, $property->getName());
                 $names = ApiSurface::namesIn($property->getType());
 
                 if (! in_array(IdempotencyKey::class, $names, strict: true)) {
@@ -192,6 +203,8 @@ it('N1-R42 — nothing holds the key that names one attempt', function (): void 
             }
         }
     }
+
+    expect($read)->not->toBe([], 'no class declares a property, so this rule read nothing');
 
     sort($held);
 

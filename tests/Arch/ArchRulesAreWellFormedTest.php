@@ -31,6 +31,12 @@ use Tests\Support\Tree;
 // All three pass. The cost of getting one wrong is a rule that is documented,
 // runs on every commit, and permits exactly what it names — so the shapes are
 // refused here rather than left to be noticed.
+//
+// So each of the three says whether it read an expectation at all first. The
+// reading below walks a directory and parses every file in it, and a parse that
+// fails is stepped over rather than reported — so a syntax the parser does not
+// yet know, or a directory renamed, leaves all three judging an empty list and
+// saying nothing about any rule in the suite.
 
 /**
  * Every statement in the architecture tests, as the chain of method names it
@@ -155,9 +161,12 @@ function stringsIn(?Node $node): array
 }
 
 it('R3 — no expectation is narrowed by holding more than one symbol', function (): void {
+    $expectations = archExpectations();
     $offenders = [];
 
-    foreach (archExpectations() as $expectation) {
+    expect($expectations)->not->toBe([], 'no architecture expectation was read, so this rule read nothing');
+
+    foreach ($expectations as $expectation) {
         $narrowing = array_intersect($expectation['methods'], ['toBeUsedIn', 'toOnlyBeUsedIn']);
 
         if ($expectation['plural'] && $narrowing !== []) {
@@ -176,9 +185,12 @@ it('R3 — no expectation is narrowed by holding more than one symbol', function
 });
 
 it('R3 — no expectation mixes a function name with a namespace', function (): void {
+    $expectations = archExpectations();
     $offenders = [];
 
-    foreach (archExpectations() as $expectation) {
+    expect($expectations)->not->toBe([], 'no architecture expectation was read, so this rule read nothing');
+
+    foreach ($expectations as $expectation) {
         $functions = array_filter($expectation['expected'], static fn(string $s): bool => ! namespaceLike($s));
         $namespaces = array_filter($expectation['expected'], namespaceLike(...));
 
@@ -200,9 +212,12 @@ it('R3 — every namespace an expectation names resolves to something', function
     /** @var array<string, array<int, string>> $registered */
     $registered = require Tree::at('vendor/composer/autoload_psr4.php');
     $prefixes = array_keys($registered);
+    $expectations = archExpectations();
     $offenders = [];
 
-    foreach (archExpectations() as $expectation) {
+    expect($expectations)->not->toBe([], 'no architecture expectation was read, so this rule read nothing');
+
+    foreach ($expectations as $expectation) {
         foreach ($expectation['expected'] as $named) {
             if (! namespaceLike($named) || ! isAncestorOfAPrefix($named, $prefixes)) {
                 continue;

@@ -290,11 +290,14 @@ it('K1 — a comment says what is true, not what happened', function (): void {
     ];
 
     $offenders = [];
+    $read = [];
 
     foreach (commentLines() as $path => $lines) {
         if (in_array($path, EXEMPT, strict: true)) {
             continue;
         }
+
+        $read[] = $path;
 
         foreach ($lines as $line) {
             foreach ($markers as $marker) {
@@ -304,6 +307,8 @@ it('K1 — a comment says what is true, not what happened', function (): void {
             }
         }
     }
+
+    expect($read)->not->toBe([], 'nothing this repository wrote holds a comment, so this rule read nothing');
 
     expect($offenders)->toBe([], sprintf(
         "These comments tell a story rather than state a situation:\n  %s\n\n"
@@ -357,12 +362,14 @@ function templatesIn(array $lines): array
 
 it('K2 — a docblock says what a type cannot', function (): void {
     $offenders = [];
+    $read = [];
 
     foreach (commentLines() as $path => $lines) {
         if (in_array($path, EXEMPT, strict: true)) {
             continue;
         }
 
+        $read[] = $path;
         $templates = templatesIn($lines);
 
         foreach ($lines as $line) {
@@ -383,6 +390,8 @@ it('K2 — a docblock says what a type cannot', function (): void {
             }
         }
     }
+
+    expect($read)->not->toBe([], 'nothing this repository wrote holds a comment, so this rule read nothing');
 
     expect($offenders)->toBe([], sprintf(
         "These docblock tags restate the signature:\n  %s\n\n"
@@ -414,6 +423,7 @@ it('K3 — a docblock does not say the same thing twice', function (): void {
     // nothing legitimate anywhere near. Short paragraphs are skipped: two
     // one-line summaries can honestly resemble each other.
     $offenders = [];
+    $read = [];
 
     foreach (docblockParagraphs() as $path => $blocks) {
         if (in_array($path, EXEMPT, strict: true)) {
@@ -421,11 +431,15 @@ it('K3 — a docblock does not say the same thing twice', function (): void {
         }
 
         foreach ($blocks as $at => $paragraphs) {
+            $read[] = sprintf('%s:%d', $path, $at);
+
             foreach (repeatedIn($paragraphs) as $repeat) {
                 $offenders[] = sprintf('%s:%d %s', $path, $at, $repeat);
             }
         }
     }
+
+    expect($read)->not->toBe([], 'nothing this repository wrote holds a docblock, so this rule read nothing');
 
     expect($offenders)->toBe([], sprintf(
         "These docblocks say the same thing twice:\n  %s\n\n"
@@ -454,11 +468,14 @@ it('K4 — a docblock has something to describe', function (): void {
     // A blank line between them is enough to say the first describes the file
     // rather than the next symbol, which is the one legitimate arrangement.
     $offenders = [];
+    $read = [];
 
     foreach (commentedFiles() as $path => $contents) {
         if (in_array($path, EXEMPT, strict: true)) {
             continue;
         }
+
+        $read[] = $path;
 
         foreach (explode("\n", $contents) as $number => $line) {
             $next = explode("\n", $contents)[$number + 1] ?? '';
@@ -468,6 +485,8 @@ it('K4 — a docblock has something to describe', function (): void {
             }
         }
     }
+
+    expect($read)->not->toBe([], 'this repository holds no file to read, so this rule read nothing');
 
     expect($offenders)->toBe([], sprintf(
         "These docblocks describe the docblock below them:\n  %s\n\n"

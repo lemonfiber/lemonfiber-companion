@@ -29,9 +29,11 @@ use Tests\Support\Tree;
 
 it('A6/I1 — declares no static property anywhere in a module', function (): void {
     $offenders = [];
+    $read = [];
 
     foreach (Module::all() as $module) {
         foreach ($module->classNames() as $name) {
+            $read[] = $name;
             $reflection = new ReflectionClass($name);
 
             foreach ($reflection->getProperties(ReflectionProperty::IS_STATIC) as $property) {
@@ -43,6 +45,8 @@ it('A6/I1 — declares no static property anywhere in a module', function (): vo
             }
         }
     }
+
+    expect($read)->not->toBe([], 'no module declares a class, so this rule read nothing');
 
     expect($offenders)->toBe([], sprintf(
         "These hold state that survives a dispatch:\n  %s",
@@ -59,6 +63,8 @@ it('A6/I1 — nor a static variable inside a method', function (): void {
         ...Tree::filesUnder(Tree::at('bridge/src'), '.php'),
     ];
 
+    $read = [];
+
     foreach ($sources as $path) {
         // Tests hold their own state and are torn down with the run. What this
         // is about is state in the process the operator is looking at.
@@ -66,10 +72,14 @@ it('A6/I1 — nor a static variable inside a method', function (): void {
             continue;
         }
 
+        $read[] = $path;
+
         foreach (staticVariablesIn((string) file_get_contents($path)) as $line) {
             $offenders[] = sprintf('%s:%d', str_replace(sprintf('%s/', Tree::root()), '', $path), $line);
         }
     }
+
+    expect($read)->not->toBe([], 'none of the three trees holds source, so this rule read nothing');
 
     sort($offenders);
 

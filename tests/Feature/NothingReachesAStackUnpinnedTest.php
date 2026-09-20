@@ -191,6 +191,12 @@ it('N1-R20 — nothing opens a connection to a stack without pinning its certifi
         [...array_keys(MAY_REACH_A_STACK), ...array_keys(MAY_NAME_A_CLIENT)],
     ));
 
+    // A floor here and in neither of the two rules below. Those read a
+    // permission list, and a list that has emptied is the state they are
+    // written for rather than a reading that found nothing — so a floor on
+    // either would be a rule asking for the thing it refuses.
+    expect($looking)->not->toBe([], 'neither tree holds a file this rule has not been told to skip, so it read nothing');
+
     foreach ($looking as $shown) {
         if (str_contains($shown, '/tests/')) {
             continue;

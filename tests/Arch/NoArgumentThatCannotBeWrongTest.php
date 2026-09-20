@@ -68,6 +68,8 @@ it('C10 — nothing passes an argument that cannot change the answer', function 
         ...Tree::filesUnder(Tree::at('bridge'), '.php'),
     ];
 
+    $read = [];
+
     foreach ($sources as $path) {
         // Tests may write it: a test asserting over a collection is stating the
         // shape it expects, and there the argument is the assertion.
@@ -75,10 +77,14 @@ it('C10 — nothing passes an argument that cannot change the answer', function 
             continue;
         }
 
+        $read[] = $path;
+
         if (handsOverAKeyArgument((string) file_get_contents($path))) {
             $offenders[] = str_replace(sprintf('%s/', Tree::root()), '', $path);
         }
     }
+
+    expect($read)->not->toBe([], 'none of the three trees holds source, so this rule read nothing');
 
     sort($offenders);
 
