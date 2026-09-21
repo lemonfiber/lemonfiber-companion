@@ -3102,12 +3102,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "1f4ecf7314b3afa0bb45bd90e720f2a4f8e877b1"
+                "reference": "062b6c628985849832ef812f70cd814daa83c3cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/1f4ecf7314b3afa0bb45bd90e720f2a4f8e877b1",
-                "reference": "1f4ecf7314b3afa0bb45bd90e720f2a4f8e877b1",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/062b6c628985849832ef812f70cd814daa83c3cb",
+                "reference": "062b6c628985849832ef812f70cd814daa83c3cb",
                 "shasum": ""
             },
             "require": {
@@ -3238,7 +3238,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-09-19T20:50:16+00:00"
+            "time": "2026-09-21T21:25:40+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
@@ -3393,7 +3393,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/design",
-                "reference": "f072966f461c2adbca84e81a1a2d444dc98f8ccb"
+                "reference": "57c1a697f4d105443b0edb71ee5b98b86e7342f1"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3405,7 +3405,8 @@
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,
-                        "mutation": 0
+                        "mutation": 0,
+                        "mutation-is-zero-because": "Two enums and a table each. `ThemeToken::hex()` and `safeAsText()` are read arm by arm — `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` through the booted application. A mutant in a table arm is a colour spelled differently, and those four refuse one by name."
                     },
                     "kind": "design"
                 }
@@ -3431,7 +3432,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/device",
-                "reference": "c11014ff8b88ff458c43eaaf10a473c1b60dc63e"
+                "reference": "6ba0c3d4f48c97c14530ad7566b7f186efde414e"
             },
             "require": {
                 "ext-sodium": "*",
@@ -3444,7 +3445,8 @@
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,
-                        "mutation": 0
+                        "mutation": 0,
+                        "mutation-is-zero-because": "Eight adapters over the bridge and one word table. Each adapter is held by its port's contract — Scanning, DeviceAuth, Networking, Sharing, Capture, Notifier, Clock and Entropy — which runs the shipped adapter and its fake over one set of assertions. What a mutant would land in beyond that is the call itself, and a bridge call is measured against a scripted answer rather than against a device."
                     },
                     "kind": "adapter"
                 }
@@ -3751,7 +3753,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/vault",
-                "reference": "e1619a0aa2e2610910afadcab28cc10148261289"
+                "reference": "af4e511162a9f110205212f11d06fa23f3540cbd"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3763,7 +3765,8 @@
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,
-                        "mutation": 0
+                        "mutation": 0,
+                        "mutation-is-zero-because": "Three adapters over the device's store, each held by its port's contract — SecureStorage, Stacks and Verdicts — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest` and `PlatformVerdictsTest` over the keys a stack gets and the JSON a row is written as."
                     },
                     "kind": "adapter"
                 }
@@ -10064,7 +10067,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/dx",
-                "reference": "dd6f2f21b132caea76287ad42887e7c1aedf1ca6"
+                "reference": "3ff6d5a3f09eb7ab61dd060109f161fbb58977e4"
             },
             "require": {
                 "lemonfiber/sdk-php": "dev-main",
@@ -10085,7 +10088,8 @@
                 "lemonfiber": {
                     "floors": {
                         "coverage": 100,
-                        "mutation": 0
+                        "mutation": 0,
+                        "mutation-is-zero-because": "A stand-in is a fake by construction, so a mutant here is measured against the thing being stood in for. What it builds is held instead: `EveryPayloadTheStandInBuildsFitsTheContractTest` runs every payload it generates against the SDK's own declared shapes, and `EveryStandInReplacesItsOwnPortTest` runs the registry — no two claiming one port, each claiming an interface, each answering with an instance of it."
                     },
                     "kind": "stand-in"
                 }
