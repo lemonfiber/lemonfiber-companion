@@ -6,6 +6,8 @@ use Bootstrap\Composition\NativePHP\ScreenIsNotAScreen;
 use Bootstrap\Composition\NativePHP\ScreenRouter;
 use Bootstrap\Composition\NativePHP\ScreenRoutes;
 use Bootstrap\Composition\NativePHP\TheHarnessInstead;
+use Bootstrap\Composition\NativePHP\WhereAScreenLeavesYou;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Route as RoutingRoute;
@@ -159,6 +161,31 @@ it('answers a request for a screen with the harness where there is no device', f
     expect($said)->toContain(YourStacks::class)
         ->and($said)->toContain('Native::test()')
         ->and($answered instanceof Response ? $answered->getStatusCode() : 0)->toBe(200);
+});
+
+it('answers nothing where the screen was simply left', function (): void {
+    // One of the two arms `TheRunloop` would otherwise hold, and the reason
+    // they are not held there: that file blocks against the real bridge, so a
+    // branch inside it is a branch nothing ever takes both ways. Null is the
+    // navigation stack emptying on its own, and a redirect here would send
+    // somebody somewhere they never asked to go.
+    expect(WhereAScreenLeavesYou::after(null))->toBe('');
+});
+
+it('sends the operator to a route that is not a native screen', function (): void {
+    // The other arm. NativePHP answers a URI where a navigation intent
+    // resolved to no native screen, which is a link out to a web route, and
+    // answering that path as a string would draw it as a page rather than go
+    // to it.
+    $answered = WhereAScreenLeavesYou::after('/somewhere-that-is-not-a-screen');
+
+    // Not the declared type: this answers one of two things, and which one is
+    // the whole of what is being asked.
+    expect($answered)->toBeInstanceOf(RedirectResponse::class);
+
+    $said = $answered instanceof RedirectResponse ? $answered->getTargetUrl() : '';
+
+    expect($said)->toEndWith('/somewhere-that-is-not-a-screen');
 });
 
 it('builds a screen through the container, with what it asked for', function (): void {

@@ -125,10 +125,15 @@
                  against the real bridge — with a live session that is a minute
                  and a half of reconnect spinning per request — so a suite that
                  reached it would hang rather than fail, which is the worst way
-                 for a test to go wrong. Two statements and no branch of its
-                 own: it is the adapter behind the `Runloop` seam, and
-                 everything that decides anything sits in ScreenRoutes on the
-                 other side of that seam, where it is driven. -->
+                 for a test to go wrong. One statement and no branch of its
+                 own, which is what makes the exclusion cost nothing: what
+                 goes unmeasured here is also what has nothing in it to get
+                 wrong, and a branch written in this file would be one nothing
+                 ever takes both ways. It is the adapter behind the `Runloop`
+                 seam; which screen and which parameters are decided in
+                 ScreenRoutes, and what the loop answers turns into a response
+                 in WhereAScreenLeavesYou, both on the other side of that seam
+                 where they are driven. -->
             <file>bootstrap/Composition/NativePHP/TheRunloop.php</file>
         </exclude>
     </source>
