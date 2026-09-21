@@ -20,5 +20,6 @@ final readonly class WhatOneSettingSays
         public string $key,
         public string $said,
         public bool $withheld,
+        public bool $mayBeChanged,
     ) {}
 }

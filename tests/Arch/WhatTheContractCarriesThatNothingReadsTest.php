@@ -69,12 +69,20 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'makes it, rather than the field being read because it was there.',
     ],
     [
-        'path' => 'ConfigEnvelope.review',
-        'because' => 'A change that has been proposed and what it would come to — its cost, what it would '
-            . 'disturb, whether it was rehearsed, where it stands. The settings screen reads the listing and '
-            . 'changes nothing, so there is never a proposal in flight for it to report on. This is the '
-            . 'payload the screen that changes a setting reads, and reading it now would mean a screen that '
-            . 'only looks could not be given the listing without also being handed a half-built change.',
+        'path' => 'ConfigEnvelope.review.findings',
+        'because' => 'What a change comes to on this machine beyond the value it changes — the services it '
+            . 'would stop, the library paths it would invalidate, the clients mid-transfer. Read by nothing '
+            . 'yet, and it is the next thing this screen needs: a consequential change is agreed to on the '
+            . 'strength of what it would disturb, and today the screen says the cost and not the extent. '
+            . 'Named as one path rather than six because the whole branch is unread and a row per leaf would '
+            . 'be six rows going green on the same day.',
+    ],
+    [
+        'path' => 'ConfigEnvelope.review.proof',
+        'because' => 'What proving a replacement credential against its live service came to. Present for '
+            . 'exactly those settings and absent everywhere else — and this app does not offer to change a '
+            . 'credential at all, so there is no path through this surface that could produce one. It '
+            . 'becomes readable the day that changes, and not before.',
     ],
     [
         'path' => 'ConfigEnvelope.changed',

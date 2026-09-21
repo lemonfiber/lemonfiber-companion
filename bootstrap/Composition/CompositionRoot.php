@@ -26,6 +26,7 @@ use Modules\Device\Api\PlatformShare;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
+use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
@@ -49,6 +50,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
+use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
@@ -245,6 +247,11 @@ final class CompositionRoot extends ServiceProvider
         // stack gained a setting and then quietly short, with nothing on the
         // screen saying when it was taken.
         $this->app->bind(Arranging::class, Arrangements::class);
+
+        // Changing one. Apart from the reading above rather than folded into
+        // it, so a caller that only wants to look is not also handed the
+        // capability to write.
+        $this->app->bind(Adjusting::class, Adjustments::class);
 
         // What has stopped coming in, the first of four.
 

@@ -323,6 +323,41 @@ enum WireField: string
      */
     case Secret = 'secret';
 
+    /** A proposed change, read against what is in force, and where it stands. */
+    case Review = 'review';
+
+    /** The difference a review is about, as it would be applied. */
+    case Change = 'change';
+
+    /** Where a proposed change stands. */
+    case Stance = 'stance';
+
+    /** Whether applying a change is cheap or consequential. */
+    case Cost = 'cost';
+
+    /**
+     * What a setting holds before a proposed change.
+     *
+     * Absent where the setting holds nothing yet, which is why this is read
+     * through an absence type rather than defaulted to an empty string: a
+     * screen showing a blank line for *nobody has set this* is telling an
+     * operator the setting is empty.
+     */
+    case From = 'from';
+
+    /** What a setting would hold. */
+    case To = 'to';
+
+    /**
+     * Why nothing was written, where the reason is not that nobody said yes.
+     *
+     * A different word on the wire from `refused`, which this enum already
+     * carries for a request a household member was turned down for. Two cases
+     * because they are two fields on two envelopes, and one case serving both
+     * would be this app deciding they are the same thing.
+     */
+    case Refusal = 'refusal';
+
     /**
      * This field's name as a path, where it is read off another field's value.
      *
