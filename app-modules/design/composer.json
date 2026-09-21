@@ -18,7 +18,8 @@
         "lemonfiber": {
             "floors": {
                 "coverage": 100,
-                "mutation": 0
+                "mutation": 0,
+                "mutation-is-zero-because": "Two enums and a table each. `ThemeToken::hex()` and `safeAsText()` are read arm by arm — `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` through the booted application. A mutant in a table arm is a colour spelled differently, and those four refuse one by name."
             },
             "kind": "design"
         }

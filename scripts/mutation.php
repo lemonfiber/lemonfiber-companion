@@ -80,10 +80,20 @@ foreach ($manifests as $manifest) {
         exit(1);
     }
 
-    // A floor of zero is a declared position rather than a gap: a component
-    // holds state and an adapter forwards a call, so mutating either measures
-    // the fake rather than the application.
+    // A floor of zero is a declared position rather than a gap, and the
+    // position is the module's own: its manifest says what holds its decisions
+    // instead, beside the number. Said out loud rather than skipped in silence,
+    // because a module that was never mutated and a module with nothing left to
+    // kill print the same way — which is nothing at all.
     if ($floor === 0) {
+        if (! $listing) {
+            fwrite(STDOUT, sprintf(
+                "  %s: mutation floor is 0 — %s\n",
+                $module,
+                declaredArgument(is_string($raw) ? $raw : '') ?? 'and the manifest says nothing about why',
+            ));
+        }
+
         continue;
     }
 
@@ -232,6 +242,32 @@ function declaredFloor(string $manifest): ?int
     $floor = $floors['mutation'];
 
     return is_int($floor) ? $floor : null;
+}
+
+/**
+ * The argument a manifest gives for a mutation floor of zero, or null.
+ *
+ * Read rather than restated. One sentence here would be one argument about
+ * every module that declares a zero, so a module whose reasoning differs has
+ * nowhere to say so and a module with no reasoning at all is indistinguishable
+ * from one that has thought about it. `G7` is what refuses the second.
+ */
+function declaredArgument(string $manifest): ?string
+{
+    /** @var mixed $decoded */
+    $decoded = json_decode($manifest, associative: true);
+
+    /** @var mixed $floors */
+    $floors = is_array($decoded) ? under($decoded, 'extra', 'lemonfiber', 'floors') : null;
+
+    if (! is_array($floors) || ! array_key_exists('mutation-is-zero-because', $floors)) {
+        return null;
+    }
+
+    /** @var mixed $said */
+    $said = $floors['mutation-is-zero-because'];
+
+    return is_string($said) ? $said : null;
 }
 
 /**

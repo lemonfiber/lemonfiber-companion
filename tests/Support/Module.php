@@ -47,6 +47,8 @@ final readonly class Module
         public string $path,
         public ?int $coverageFloor,
         public ?int $mutationFloor,
+        public ?string $whyCoverageIsZero,
+        public ?string $whyMutationIsZero,
     ) {}
 
     /** @return list<self> */
@@ -231,6 +233,29 @@ final readonly class Module
         return is_int($value) ? $value : null;
     }
 
+    /**
+     * The argument a floor of zero carries, or null where it carries none.
+     *
+     * Beside the number rather than anywhere else, because the two are read
+     * together or the second is not read at all. A floor of zero is a position
+     * a module takes, and a position stated once for every module of a kind is
+     * one no single module can be asked about — so this is where a module says
+     * what holds its own decisions instead.
+     *
+     * Read without raising, for the reason {@see floor()} is: an argument that
+     * is missing is a finding for G7 to report by name.
+     */
+    private static function argument(mixed $floors, string $which): ?string
+    {
+        if (! is_array($floors)) {
+            return null;
+        }
+
+        $said = $floors[sprintf('%s-is-zero-because', $which)] ?? null;
+
+        return is_string($said) ? $said : null;
+    }
+
     private static function read(string $manifest): self
     {
         $raw = file_get_contents($manifest);
@@ -279,6 +304,8 @@ final readonly class Module
             path: dirname($manifest),
             coverageFloor: self::floor($floors, 'coverage'),
             mutationFloor: self::floor($floors, 'mutation'),
+            whyCoverageIsZero: self::argument($floors, 'coverage'),
+            whyMutationIsZero: self::argument($floors, 'mutation'),
         );
     }
 }
