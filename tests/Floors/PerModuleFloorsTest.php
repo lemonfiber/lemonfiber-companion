@@ -103,7 +103,12 @@ it('G9 — the slack between the floors and the real numbers is visible', functi
     // raises its real coverage without anyone deciding to, and the build would
     // turn red for an improvement. So the slack is printed and argued down in
     // review, and only the declared numbers are ratcheted.
-    expect($slack)->toBeArray();
+    //
+    // What is asserted is that there was something to compare, which is the
+    // one thing a reporter can be wrong about. None above their floor reads
+    // exactly like every floor being flush, and a walk that found no modules
+    // at all says it in the same words.
+    expect(Module::all())->not->toBe([], 'no modules were found, so nothing was measured against a floor');
 
     fwrite(STDOUT, sprintf(
         "  modules above their floor: %d%s\n",

@@ -7,7 +7,6 @@ namespace Modules\Sdk\Tests\Api;
 use function expect;
 use function it;
 
-use Lemonfiber\Sdk\Client;
 use Lemonfiber\Sdk\Exception\ConfigurationProblem;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
@@ -39,10 +38,28 @@ function aSession(): Session
 }
 
 it('N1-R19 — builds a client for a stack on the network, held to its certificate', function (): void {
-    // The whole point of the adapter. A client for `192.168.1.42` is what the
-    // SDK refused outright before ADR-0025, and what it now permits only where
-    // a pin was supplied.
-    expect(new PinnedClients()->client(aPairedStack(), aSession()))->toBeInstanceOf(Client::class);
+    // The whole point of the adapter, and both halves of it are asked for
+    // rather than the return type. A client for `192.168.1.42` is what the SDK
+    // refused outright before ADR-0025 and now permits only where a pin was
+    // supplied — so the address it carries is the stack's, and the digest the
+    // handshake compares the peer against is the one the stack presents rather
+    // than a default, an empty one, or a digest from somewhere else.
+    //
+    // Read off the transport the client will actually use, which is as close
+    // to the socket as a test can get without opening one. The comparison
+    // happens while the connection is being set up, so nothing observable
+    // after a request would tell a pinned client from an unpinned one.
+    //
+    // The fingerprint and not the rest of that configuration. What sits beside
+    // it is the switch handing the peer's identity to the pin instead of the
+    // trust store, and `S3` refuses that pair written anywhere in this
+    // repository — a test spelling it out to assert it is still a line a
+    // reader skims past and a line the next person copies.
+    $connector = new PinnedClients()->client(aPairedStack(), aSession())->connector();
+
+    expect($connector->resolveBaseUrl())->toBe('https://192.168.1.42:8443')
+        ->and($connector->config()->get('stream_context'))
+        ->toBe(['ssl' => ['peer_fingerprint' => ['sha256' => A_STACKS_DIGEST]]]);
 });
 
 it('N1-R18 — takes the pin off the stack rather than from anywhere else', function (): void {

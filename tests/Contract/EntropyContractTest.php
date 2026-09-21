@@ -20,6 +20,10 @@ use Tests\Support\Fakes\SequencedEntropy;
 // predictable and that is the whole reason the fake exists; asserting
 // randomness would fail it, and weakening the assertion until it passed would
 // be asserting nothing of the adapter either.
+//
+// Nor whether `nonce()` answers a `Nonce`, which is the signature rather than
+// a promise. What a source can be wrong about is the value it hands over, and
+// both ways one goes wrong — a repeat and a short one — are asked below.
 
 const HANDED_OUT = 50;
 
@@ -39,10 +43,6 @@ function sources(): array
 }
 
 foreach (sources() as $name => $build) {
-    it(sprintf('%s answers with a nonce', $name), function () use ($build): void {
-        expect($build()->nonce())->toBeInstanceOf(Nonce::class);
-    });
-
     it(sprintf('%s never answers the same nonce twice', $name), function () use ($build): void {
         $source = $build();
         $seen = [];

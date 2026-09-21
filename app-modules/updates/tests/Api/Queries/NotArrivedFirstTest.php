@@ -74,11 +74,3 @@ it('keeps the order equals arrived in', function (): void {
 it('leaves a reading with nothing in it alone', function (): void {
     expect(new NotArrivedFirst()->over(HowServicesTookIt::none())->isEmpty())->toBeTrue();
 });
-
-it('answers with the collection rather than an array', function (): void {
-    // `D1`. A query that handed back a list would be the hole rather than the
-    // exception, and the next caller would be reaching into it.
-    expect(new NotArrivedFirst()->over(HowServicesTookIt::these(
-        howItWentFor('jellyfin', HowItEnded::Updated),
-    )))->toBeInstanceOf(HowServicesTookIt::class);
-});
