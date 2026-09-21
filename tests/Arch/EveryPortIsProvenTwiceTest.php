@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Tests\Support\Imports;
 use Tests\Support\OurCode;
 use Tests\Support\Tree;
 
@@ -37,6 +38,15 @@ use Tests\Support\Tree;
 // for the reason `R4` exists — a second copy of *what is ours* loses a tree
 // quietly, and every rule resting on it keeps reporting a green tick about the
 // trees it still reads.
+//
+// **Named in a contract means named in its code.** The file is parsed rather
+// than searched, and the whole name is compared rather than the last part of
+// it, because a search for a word answers yes to two things that are not
+// cover. One is a comment: these files carry long ones, and the reason an
+// implementation is *not* covered is exactly the sort of thing written down on
+// the way past. The other is another class — `Clients` is a port whose name
+// sits inside `PinnedClients`, so *is `Clients` in this file* is a question a
+// search answers with a different class entirely.
 
 /**
  * Ports with no contract of their own yet, and why not.
@@ -123,6 +133,14 @@ function everythingThatCouldImplementOne(): array
 /**
  * Which of those implement one port.
  *
+ * Interfaces are not among them, and the distinction is the rule rather than
+ * a detail: an interface that extends a port is another port, with nothing to
+ * run against a contract, and it is judged here in its own right. Counted as
+ * an implementation it does two wrong things at once — it is asked to appear
+ * in a contract that could not use it, and it makes up half of the two
+ * implementations a port is required to have, so a port with one class and
+ * one sub-interface reads as held.
+ *
  * @param list<class-string> $candidates
  *
  * @return list<class-string>
@@ -131,7 +149,9 @@ function implementationsOf(string $port, array $candidates): array
 {
     $found = array_filter(
         $candidates,
-        static fn(string $name): bool => $name !== $port && is_a($name, $port, allow_string: true),
+        static fn(string $name): bool => $name !== $port
+            && ! interface_exists($name)
+            && is_a($name, $port, allow_string: true),
     );
 
     sort($found);
@@ -256,10 +276,10 @@ it('G2 — no implementation is left out of its port\'s contract', function (): 
             continue;  // reported by name above, or named in the register
         }
 
-        $contract = (string) file_get_contents($path);
+        $named = Imports::of($path);
 
         foreach (implementationsOf($port, $candidates) as $implementation) {
-            if (! str_contains($contract, shortNameOf($implementation))) {
+            if (! in_array($implementation, $named, strict: true)) {
                 $unproven[] = sprintf('%s is not named in %s', $implementation, contractPathFor($port));
             }
         }
@@ -269,9 +289,10 @@ it('G2 — no implementation is left out of its port\'s contract', function (): 
         "These implement a port and are not in its contract:\n  %s\n\n"
         . 'A contract that covers two of three implementations is true about the two '
         . 'and silent about the third, and silence reads as a pass. Add it to the '
-        . "list the contract runs over.\nThis is the shape a second adapter arrives "
-        . 'in: written, tested on its own, and never compared against the fake the '
-        . 'rest of the suite trusts (G2).',
+        . "list the contract runs over.\nNamed in a comment is not named: this reads "
+        . 'the file as code, so the class has to be one the contract imports or writes '
+        . "out.\nThis is the shape a second adapter arrives in: written, tested on its "
+        . 'own, and never compared against the fake the rest of the suite trusts (G2).',
         implode("\n  ", $unproven),
     ));
 });
