@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// The requirements this app cannot answer, and the field each waits on.
+// W8 — the requirements this app cannot answer, and the field each waits on.
 //
 // Where the contract does not carry something a requirement
 // asks the app to state, the app must not substitute a value of its own: the
@@ -12,6 +12,14 @@ use Tests\Support\Tree;
 // `NoSubstitutedWireValueRule` enforces the first half in the readers. This is
 // the second half, and it is a different kind of check — not *did somebody
 // invent a value* but *is this still missing*.
+//
+// **Both halves carry `W8`, and that is not duplication.** The register joins a
+// row to its mechanism by the identifier, per kind: the row claims `phpstan`
+// and `arch`, and a row claiming two kinds with only one artifact spelling the
+// identifier passes on whichever one spells it while the other clause rides
+// free. Carrying it here is what makes the `arch` half of that row answerable —
+// and `TheRulesAreRealTest` goes red naming the kind if either artifact stops
+// carrying it.
 //
 // A list of gaps kept in prose would be a list nobody reads twice. What makes
 // this one worth having is that every entry is checked against the generated

@@ -141,7 +141,7 @@ it('names an enforced rule nothing is planted under', function (): void {
 it('the analyser reports every rule it is supposed to', function (): void {
     $fixtures = array_values(array_filter(
         Fixtures::all(),
-        static fn(Fixture $f): bool => $f->proof === Proof::Analyser,
+        static fn(Fixture $f): bool => $f->proof->readByAnalyser(),
     ));
 
     $reported = analyserFindings();
@@ -160,7 +160,7 @@ it('the analyser reports every rule it is supposed to', function (): void {
     $silent = [];
 
     foreach ($fixtures as $fixture) {
-        $path = sprintf('%s/%s', Fixtures::ANALYSER_TREE, $fixture->path);
+        $path = whereTheFixtureWasPlanted($fixture);
         $found = false;
 
         foreach ($reported[$path] ?? [] as $message) {
@@ -330,7 +330,10 @@ function analyserFindings(): ?array
     $raw = shell_exec(sprintf(
         '%s/vendor/bin/phpstan analyse %s --error-format=json --no-progress 2>/dev/null',
         Tree::root(),
-        escapeshellarg(Tree::at(Fixtures::ANALYSER_TREE)),
+        implode(' ', array_map(
+            static fn(string $where): string => escapeshellarg(Tree::at($where)),
+            whereTheAnalyserIsPointed(),
+        )),
     ));
 
     /** @var mixed $decoded */
@@ -349,6 +352,50 @@ function analyserFindings(): ?array
     }
 
     return $found;
+}
+
+/**
+ * Where a fixture that is a file of its own was planted, relative to the root.
+ *
+ * One answer rather than one per caller. The writer, the reader of the report
+ * and the sweep all need it, and three copies of the same path join is three
+ * places for a fixture to be written somewhere the analyser is never pointed —
+ * which reports as a rule that did not fire, and is the one failure this whole
+ * harness exists to make impossible.
+ *
+ * Only the fixture tree gets a prefix. Every other kind already names a real
+ * path, because that is what makes it reachable by a rule that narrows to one.
+ */
+function whereTheFixtureWasPlanted(Fixture $fixture): string
+{
+    return $fixture->proof === Proof::Analyser
+        ? sprintf('%s/%s', Fixtures::ANALYSER_TREE, $fixture->path)
+        : $fixture->path;
+}
+
+/**
+ * Every path the analyser is run over.
+ *
+ * The fixture tree, and then each in-place fixture by name. Taken from the
+ * fixtures themselves rather than from a list of directories kept beside them,
+ * so the set of places the analyser looks cannot drift from the set of places
+ * something was planted. A list kept by hand goes stale the day a fixture moves
+ * — and it goes stale as a rule reporting nothing, which is the one failure
+ * this harness cannot tell from success.
+ *
+ * @return list<string>
+ */
+function whereTheAnalyserIsPointed(): array
+{
+    $pointed = [Fixtures::ANALYSER_TREE];
+
+    foreach (Fixtures::all() as $fixture) {
+        if ($fixture->proof === Proof::AnalyserInPlace) {
+            $pointed[] = $fixture->path;
+        }
+    }
+
+    return $pointed;
 }
 
 /**
@@ -442,8 +489,8 @@ function writeFixtures(): void
     }
 
     foreach (Fixtures::all() as $fixture) {
-        if ($fixture->proof === Proof::Analyser) {
-            writeFixture(Tree::at(sprintf('%s/%s', Fixtures::ANALYSER_TREE, $fixture->path)), $fixture->code);
+        if ($fixture->proof->readByAnalyser()) {
+            writeFixture(Tree::at(whereTheFixtureWasPlanted($fixture)), $fixture->code);
         }
 
         if ($fixture->proof === Proof::Suite) {
@@ -601,8 +648,8 @@ function removeFixtures(): void
     }
 
     foreach (Fixtures::all() as $fixture) {
-        if ($fixture->proof === Proof::Suite || $fixture->proof === Proof::IsolatedSuite) {
-            removeFixture(Tree::at($fixture->path));
+        if ($fixture->proof->isAFileOfItsOwn()) {
+            removeFixture(Tree::at(whereTheFixtureWasPlanted($fixture)));
         }
 
         // Never by name: the path is a file this repository owns, and deleting
