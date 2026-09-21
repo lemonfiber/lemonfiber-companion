@@ -359,21 +359,28 @@ jobs:
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       # Writes the clover report the floors gate reads. One run produces both
-      # the global number and the twelve per-module ones.
+      # the global number and the fifteen per-tree ones.
       - run: composer test:report
       - run: composer test:floors
 
-  # Which modules are worth mutating, asked of the same script that mutates
+  # Which trees are worth mutating, asked of the same script that mutates
   # them. A list written here would be a second source of truth that goes stale
-  # the day a module gains its first class — silently, because the run still
+  # the day a tree gains its first class — silently, because the run still
   # passes, over less.
+  #
+  # The dependencies are installed for one `--list`, which reads as waste and
+  # is not. The script derives the trees from `phpunit.xml` through
+  # `Tests\Support\MeasuredTree`, which is the same derivation the `Floors`
+  # suite and `G7` read — and the only way a script reaches it is the
+  # autoloader. The alternative is a second copy of "what is measured" written
+  # out here in a file nothing compares against the first.
   mutation-scope:
     name: what to mutate
     needs: tests
     if: ${{ !cancelled() && needs.tests.result == 'success' }}
     runs-on: ubuntu-latest
     outputs:
-      modules: ${{ steps.list.outputs.modules }}
+      trees: ${{ steps.list.outputs.trees }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -381,30 +388,31 @@ jobs:
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ env.PHP_VERSION }}
+      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       - id: list
-        run: echo "modules=$(php scripts/mutation.php --list)" >> "$GITHUB_OUTPUT"
+        run: echo "trees=$(php scripts/mutation.php --list)" >> "$GITHUB_OUTPUT"
 
   # The most expensive gate in the repository, so it is the most guarded: only
   # on a pull request, only once the tests have passed, and only over the app's
   # own logic. Mutating code whose tests are already failing measures nothing.
   #
-  # A runner per module, because this is the one gate whose work genuinely
-  # separates: a floor of 100 admits no offsetting between modules, so each is
-  # already judged alone and running them in one process only made the wall
-  # clock the sum of them. It was several minutes and the longest thing in the
-  # repository; now it is the slowest single module.
+  # A runner per measured tree, because this is the one gate whose work
+  # genuinely separates: a floor of 100 admits no offsetting between trees, so
+  # each is already judged alone and running them in one process only made the
+  # wall clock the sum of them. It was several minutes and the longest thing in
+  # the repository; now it is the slowest single tree.
   #
   # `fail-fast: false` because the point of a shard is to learn about all of
-  # them: cancelling eleven runners over one escaped mutant means a second push
+  # them: cancelling nine runners over one escaped mutant means a second push
   # to find the next one.
   mutation:
     name: mutation
     needs: [tests, mutation-scope]
-    if: ${{ !cancelled() && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.modules != '[]' }}
+    if: ${{ !cancelled() && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.trees != '[]' }}
     strategy:
       fail-fast: false
       matrix:
-        module: ${{ fromJson(needs.mutation-scope.outputs.modules) }}
+        tree: ${{ fromJson(needs.mutation-scope.outputs.trees) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -415,12 +423,13 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - run: composer test:mutation -- --module=${{ matrix.module }}
+      - run: composer test:mutation -- --tree=${{ matrix.tree }}
 
   # The check branch protection actually names.
   #
-  # A matrix job reports one check per entry — `mutation (kernel)`,
-  # `mutation (operator)` — and none of them is called `mutation testing`. That
+  # A matrix job reports one check per entry — `mutation (bridge/src)`,
+  # `mutation (app-modules/kernel/src)` — and none of them is called
+  # `mutation testing`. That
   # required check would simply never report, and a required check that never
   # reports blocks a pull request forever with nothing anywhere naming the
   # cause. It is the same hole `sonar.yml`'s gate exists to close, and it is
@@ -442,7 +451,7 @@ jobs:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - name: every module that was mutated passed
+      - name: every tree that was mutated passed
         env:
           TESTS: ${{ needs.tests.result }}
           SCOPE: ${{ needs.mutation-scope.result }}
@@ -452,7 +461,7 @@ jobs:
           CHANGED: ${{ needs.scope.outputs.code }}
         run: |
           # `skipped` is a pass here and only here: the shards are skipped when
-          # no module holds code yet, which `mutation-scope` reports as an empty
+          # no measured tree holds code yet, which `mutation-scope` reports as an empty
           # list. Every other reason a shard does not run — a failure upstream,
           # a cancelled run — is already covered by the two results above it.
           echo "tests=$TESTS scope=$SCOPE shards=$SHARDS event=$EVENT scoped=$SCOPED changed=$CHANGED"
@@ -496,11 +505,11 @@ jobs:
           fi
 
           if [ "$TESTS" != success ] || [ "$SCOPE" != success ]; then
-            echo "::error::Mutation did not run: the tests or the module list did not pass."
+            echo "::error::Mutation did not run: the tests or the tree list did not pass."
             exit 1
           fi
 
           if [ "$SHARDS" != success ] && [ "$SHARDS" != skipped ]; then
-            echo "::error::A module's mutation run did not pass. Open the mutation (<module>) job that is red."
+            echo "::error::A tree's mutation run did not pass. Open the mutation (<tree>) job that is red."
             exit 1
           fi

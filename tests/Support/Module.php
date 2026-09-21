@@ -16,7 +16,6 @@ use function glob;
 use function in_array;
 use function interface_exists;
 use function is_array;
-use function is_int;
 use function is_string;
 use function json_decode;
 
@@ -45,10 +44,6 @@ final readonly class Module
         public string $namespace,
         public Kind $kind,
         public string $path,
-        public ?int $coverageFloor,
-        public ?int $mutationFloor,
-        public ?string $whyCoverageIsZero,
-        public ?string $whyMutationIsZero,
     ) {}
 
     /** @return list<self> */
@@ -86,17 +81,6 @@ final readonly class Module
             self::all(),
             static fn(self $module): bool => $module->classes() !== [],
         ));
-    }
-
-    /**
-     * Where this module's source sits, as the repository sees it.
-     *
-     * Relative because the coverage report is compared against it, and an
-     * absolute path in a report written by CI names a directory no laptop has.
-     */
-    public function relativeSourcePath(): string
-    {
-        return sprintf('app-modules/%s/src', $this->name);
     }
 
     /**
@@ -213,49 +197,6 @@ final readonly class Module
         return $forbidden;
     }
 
-    /**
-     * One declared floor, or null where the module declares none.
-     *
-     * Null rather than a default, and read without raising: an undeclared floor
-     * is a finding for G7 to report by name, not an exception thrown while the
-     * module list is being built. Raising here would take down every rule that
-     * reads a manifest, and the message would be about JSON rather than about
-     * the module nobody wrote a number for.
-     */
-    private static function floor(mixed $floors, string $which): ?int
-    {
-        if (! is_array($floors)) {
-            return null;
-        }
-
-        $value = $floors[$which] ?? null;
-
-        return is_int($value) ? $value : null;
-    }
-
-    /**
-     * The argument a floor of zero carries, or null where it carries none.
-     *
-     * Beside the number rather than anywhere else, because the two are read
-     * together or the second is not read at all. A floor of zero is a position
-     * a module takes, and a position stated once for every module of a kind is
-     * one no single module can be asked about — so this is where a module says
-     * what holds its own decisions instead.
-     *
-     * Read without raising, for the reason {@see floor()} is: an argument that
-     * is missing is a finding for G7 to report by name.
-     */
-    private static function argument(mixed $floors, string $which): ?string
-    {
-        if (! is_array($floors)) {
-            return null;
-        }
-
-        $said = $floors[sprintf('%s-is-zero-because', $which)] ?? null;
-
-        return is_string($said) ? $said : null;
-    }
-
     private static function read(string $manifest): self
     {
         $raw = file_get_contents($manifest);
@@ -293,19 +234,11 @@ final readonly class Module
 
         $short = explode('/', $name)[1];
 
-        // `$lemonfiber` is known to be an array by here: the kind was read out
-        // of it and a non-string kind has already raised.
-        $floors = $lemonfiber['floors'] ?? null;
-
         return new self(
             name: $short,
             namespace: sprintf('Modules\\%s', str_replace(' ', '', ucwords(str_replace('-', ' ', $short)))),
             kind: Kind::from($kind),
             path: dirname($manifest),
-            coverageFloor: self::floor($floors, 'coverage'),
-            mutationFloor: self::floor($floors, 'mutation'),
-            whyCoverageIsZero: self::argument($floors, 'coverage'),
-            whyMutationIsZero: self::argument($floors, 'mutation'),
         );
     }
 }
