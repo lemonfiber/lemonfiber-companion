@@ -45,6 +45,7 @@ requirement is right and this page is a defect.
 | `N2-R18` | Four endings rather than a boolean | `HowItEnded` |
 | `N2-R19` | Undoing is not offered where the stack named neither way | `HowAServiceTookIt` |
 | `N2-R20` | Applying one is not offered where the stack reported none | `HowCurrent` |
+| `N2-R22` | A change that cannot be undone is said before it is agreed to, naming the services it is true of | `TakingAnUpdate::cannotBePutBack()`, read from the wire by `Changes::permanentIn()` and drawn between the list and the buttons — an operator who has read what moves tonight and not yet agreed. Named per service rather than over the whole run: an update can move four services and be undoable for three, and a warning covering all four is refused as easily as it is believed |
 
 ## What has stopped coming in
 
