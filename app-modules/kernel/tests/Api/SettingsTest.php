@@ -13,6 +13,7 @@ use function iterator_to_array;
 use Modules\Kernel\Api\Setting;
 use Modules\Kernel\Api\Settings;
 use Modules\Kernel\Api\WhatASettingHolds;
+use Modules\Kernel\Api\WhereASettingCameFrom;
 
 it('keeps what the stack is set to in the order the stack listed it', function (): void {
     // The order is the stack's and no sort runs here. An operator reads the
@@ -20,9 +21,9 @@ it('keeps what the stack is set to in the order the stack listed it', function (
     // and a listing re-ordered on the way would be a second opinion about
     // which settings matter, with nothing on the screen saying why.
     $set = Settings::of(
-        Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media')),
-        Setting::called('API_KEY', WhatASettingHolds::withheld('set, not shown')),
-        Setting::called('BIND', WhatASettingHolds::shown('lan')),
+        Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media'), WhereASettingCameFrom::bundled()),
+        Setting::called('API_KEY', WhatASettingHolds::withheld('set, not shown'), WhereASettingCameFrom::bundled()),
+        Setting::called('BIND', WhatASettingHolds::shown('lan'), WhereASettingCameFrom::bundled()),
     );
 
     $named = [];
@@ -49,8 +50,8 @@ it('builds a list even from named arguments', function (): void {
     // and so is spreading a keyed array, so the reindexing is load-bearing
     // rather than tidy.
     $set = Settings::of(
-        first: Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media')),
-        then: Setting::called('BIND', WhatASettingHolds::shown('lan')),
+        first: Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media'), WhereASettingCameFrom::bundled()),
+        then: Setting::called('BIND', WhatASettingHolds::shown('lan'), WhereASettingCameFrom::bundled()),
     );
 
     expect(array_keys(iterator_to_array($set, preserve_keys: true)))->toBe([0, 1])

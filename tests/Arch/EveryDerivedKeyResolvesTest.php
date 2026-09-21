@@ -30,6 +30,7 @@ use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
@@ -208,6 +209,10 @@ function everyDerivedKey(): array
         WhereTheFirstRunIs::class => aPairPerCase(
             WhereTheFirstRunIs::cases(),
             static fn(WhereTheFirstRunIs $at): array => [$at->said(), $at->explained()],
+        ),
+        WhoSetIt::class => aPairPerCase(
+            WhoSetIt::cases(),
+            static fn(WhoSetIt $who): array => [$who->said()],
         ),
     ];
 }

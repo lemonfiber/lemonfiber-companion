@@ -14,6 +14,15 @@ return [
     'nothing_is_set' => 'Nothing is set here yet',
     'nothing_is_set_action' => 'Settings appear here once this stack has some.',
 
+    // Shown beside every value. Four, because the fourth is not a shade of the
+    // first: a stack that could not work out where a value came from has said
+    // something different from a stack reporting its own default, and the rule
+    // about unknown origins turns on the two never reading alike.
+    'came_from_bundled' => 'The stack\'s own setting',
+    'came_from_operator' => 'Set here',
+    'came_from_plugin' => 'Set by the :named plugin',
+    'came_from_unknown' => 'Nobody could say where this came from — :why',
+
     'what_this_is_set_to' => 'What this machine is set to',
 
     'ask_again' => 'Ask again',
