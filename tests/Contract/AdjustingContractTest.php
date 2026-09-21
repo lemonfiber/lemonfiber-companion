@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Http\ActionRequest;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Cost;
@@ -406,4 +407,70 @@ it('a setting to write naming nothing is refused, and a blank value is not', fun
         // typed, and this app does not understand the value well enough to
         // correct it.
         ->and(WhatToSet::to('LIBRARY_PATH', ' /data ')->value)->toBe(' /data ');
+});
+
+// What the two methods actually put on the wire.
+//
+// The difference between *show me what this would do* and *do it* is one
+// boolean in one request body, and nothing here was asserting it. Every case
+// above drives both arms and reads what came back — which is answered by the
+// stand-in response either way, so all three of these passed with the flag
+// inverted, dropped, or sent as the wrong value:
+//
+//   wouldBe sending agreed: true      the review writes to somebody's machine
+//   agreedTo sending agreed: false    agreeing does nothing and says it did
+//   the key absent altogether         the stack decides, and it is not told
+//
+// The first of those is the one that matters. A screen whose whole promise is
+// that looking costs nothing would have been writing, and every test in this
+// file would still have been green.
+//
+// Asserted of the adapter alone, because it is the only one that sends
+// anything. The fake's half of this is `rehearsals()` and `writes()`, which the
+// cases above already read.
+
+it('asks for a review without agreeing to it', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(whatAStackSendsAboutAChange())]);
+
+    new Adjustments(new PinnedClients())->wouldBe(
+        theMachineBeingChanged(),
+        theSessionBehindAChange(),
+        WhatToSet::to('LIBRARY_PATH', '/data/films'),
+    );
+
+    $sent = MockClient::getGlobal()?->getLastRequest();
+
+    // The class as well as the body. A review sent as some other request would
+    // read the same here if only the payload were checked, and the action is
+    // half of what was asked.
+    expect($sent)->toBeInstanceOf(ActionRequest::class)
+        ->and($sent instanceof ActionRequest ? $sent->body()->all() : null)->toBe([
+            'key' => 'LIBRARY_PATH',
+            'value' => '/data/films',
+            'agreed' => false,
+        ]);
+});
+
+it('agrees to exactly what it was shown', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(whatAStackSendsAboutAChange())]);
+
+    new Adjustments(new PinnedClients())->agreedTo(
+        theMachineBeingChanged(),
+        theSessionBehindAChange(),
+        WhatToSet::to('LIBRARY_PATH', '/data/films'),
+    );
+
+    // The key and the value as well as the flag. Agreeing to a change the
+    // review was not about is the same defect as agreeing without being asked,
+    // and a test reading only the flag would not see it.
+    $sent = MockClient::getGlobal()?->getLastRequest();
+
+    expect($sent)->toBeInstanceOf(ActionRequest::class)
+        ->and($sent instanceof ActionRequest ? $sent->body()->all() : null)->toBe([
+            'key' => 'LIBRARY_PATH',
+            'value' => '/data/films',
+            'agreed' => true,
+        ]);
 });
