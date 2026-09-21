@@ -101,7 +101,7 @@ jobs:
       # analysis of main is the baseline every pull request is measured against,
       # and a comparison that quietly went the other way would switch it off with
       # nothing anywhere to notice.
-      - uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
+      - uses: SonarSource/sonarqube-scan-action@ba9859eae8dd6bd29e412f25ddbbef3d032000f4 # v8.2.2
         id: scan
         if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
         env:

@@ -40,10 +40,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v3
+      - uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v3
         with:
           languages: actions
-      - uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v3
+      - uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v3
         with:
           # Named by hand, because GitHub builds a category from the *matrix* and
           # there is none here: a single-language job with no `category:` is
@@ -74,6 +74,6 @@ jobs:
     permissions:
       contents: read
       security-events: read
-    uses: lemonfiber/spec/.github/workflows/codeql-alerts.yml@9d1b96f05269fcf3d8b7a0b4e05d9b83082164ff # v1.0.2
+    uses: lemonfiber/spec/.github/workflows/codeql-alerts.yml@bb95f42d7630f689a1c5ec05cc39fb82476ace94 # v1.0.4
     with:
       analysis: ${{ needs.analyze.result }}
