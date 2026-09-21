@@ -1,8 +1,8 @@
 {
     "name": "lemonfiber/bridge",
     "description": "The native capabilities lemonfiber uses",
-    "type": "nativephp-plugin",
     "license": "proprietary",
+    "type": "nativephp-plugin",
     "version": "0.1.0",
     "require": {
         "php": "^8.5",
