@@ -70,9 +70,12 @@ function everyClassWrittenDown(): array
 }
 
 it('G3-R6 — nothing on a screen flashes, blinks or pulses', function (): void {
+    $written = everyClassWrittenDown();
     $moving = [];
 
-    foreach (everyClassWrittenDown() as $path => $words) {
+    expect($written)->not->toBe([], 'no template writes a class down, so this rule read nothing');
+
+    foreach ($written as $path => $words) {
         foreach ($words as $word) {
             if (preg_match('/^(?:animate-|transition|duration-|ease-|motion-)|(?:blink|pulse|flash)/i', $word) === 1) {
                 $moving[] = sprintf('%s writes `%s`', $path, $word);
@@ -93,9 +96,12 @@ it('G3-R6 — nothing on a screen flashes, blinks or pulses', function (): void 
 });
 
 it('G3-R8 — no screen is written wider than the phone showing it', function (): void {
+    $written = everyClassWrittenDown();
     $wide = [];
 
-    foreach (everyClassWrittenDown() as $path => $words) {
+    expect($written)->not->toBe([], 'no template writes a class down, so this rule read nothing');
+
+    foreach ($written as $path => $words) {
         foreach ($words as $word) {
             // An arbitrary value, a viewport width, or a sideways scroll: the
             // three ways of writing a layout that cannot adapt. A numbered

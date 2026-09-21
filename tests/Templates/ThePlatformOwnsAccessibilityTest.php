@@ -49,6 +49,23 @@ const PINS_A_SIZE = [
  */
 const ANIMATES_REGARDLESS = ['animate', 'animation', 'transition', 'duration'];
 
+// Both rules below are written per template, so an empty list of them writes
+// no test at all rather than a test that passes — which is the quietest way
+// for this file to stop holding anything. The second reads elements rather
+// than lines, and a reader that stopped finding them would be just as silent,
+// so both are counted once here before the loop.
+it('there is a template to read, with elements in it', function () use ($templates): void {
+    expect($templates)->not->toBe([], 'no template was found, so neither rule below was written at all');
+
+    $elements = [];
+
+    foreach ($templates as $template) {
+        $elements = [...$elements, ...$template->elements()];
+    }
+
+    expect($elements)->not->toBe([], 'no template holds an element, so the rule about animation read nothing');
+});
+
 foreach ($templates as $template) {
     it(sprintf('N4-R14 — nothing in %s pins a size the platform should choose', $template->path), function () use ($template): void {
         $pinned = [];

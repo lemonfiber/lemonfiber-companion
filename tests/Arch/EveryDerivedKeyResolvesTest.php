@@ -233,18 +233,27 @@ function aPairPerCase(array $cases, Closure $keys): array
 
 it('L7 — every key an enum builds for itself is a line the catalogue holds', function (): void {
     $missing = [];
+    $asked = [];
 
     foreach (Catalogue::locales() as $locale) {
         $lines = Catalogue::all($locale);
 
         foreach (everyDerivedKey() as $enum => $keys) {
             foreach ($keys as $key) {
+                $asked[] = sprintf('%s — %s', $key, $locale);
+
                 if (($lines[$key] ?? '') === '') {
                     $missing[] = sprintf('%s — %s (%s)', $key, $locale, $enum);
                 }
             }
         }
     }
+
+    // Every entry in the table goes through one helper, so the helper handing
+    // back no keys leaves the whole rule asking the catalogue nothing — and a
+    // catalogue asked nothing is a catalogue with nothing missing from it.
+    // The locale list is not the risk here: it raises where it is empty.
+    expect($asked)->not->toBe([], 'no key was asked of any locale, so this rule read nothing');
 
     sort($missing);
 
@@ -361,6 +370,13 @@ it('L7 — every enum that builds a catalogue key is asked above', function (): 
     $building = sprintf("/sprintf\\(\n?\\s*'(%s)\\.[a-z0-9_.-]*%%s/", implode('|', array_map(preg_quote(...), $stems)));
     $asked = array_keys(everyDerivedKey());
     $missing = [];
+    $found = [];
+
+    // The pattern is built out of the catalogue's own file names, so a locale
+    // directory that moved leaves it with an empty alternation that matches no
+    // enum at all — and an enum this scan cannot see is reported as absent,
+    // which here means nobody checks its lines exist.
+    expect($stems)->not->toBe([], 'the catalogue holds no file, so the pattern below matches nothing');
 
     foreach (Tree::filesUnder(Tree::at('app-modules'), '.php') as $file) {
         $source = file_get_contents($file);
@@ -373,12 +389,15 @@ it('L7 — every enum that builds a catalogue key is asked above', function (): 
             continue;
         }
 
+        $found[] = $file;
         $name = theEnumDeclaredIn($source);
 
         if ($name !== null && ! in_array($name, $asked, strict: true)) {
             $missing[] = $name;
         }
     }
+
+    expect($found)->not->toBe([], 'no enum builds a catalogue key, so this rule read nothing');
 
     sort($missing);
 

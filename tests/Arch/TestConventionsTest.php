@@ -21,6 +21,13 @@ const NAMES_WHAT_IT_REFUSES = [
 // of them — a committed `->only()` — stops the rest of the suite from running
 // at all, so a check that depended on the suite running would be the first
 // casualty of the thing it is looking for.
+//
+// Reading the source is also how a rule here comes to read none of it. The
+// walk below resolves the suites out of `phpunit.xml` and drops any file it
+// cannot open, so a suite renamed or a tree moved leaves every rule in this
+// file judging an empty list — which is the same green tick a suite with no
+// violation in it gives. So each says whether it read a file at all before it
+// says none of them is at fault.
 
 /**
  * Every test file, paired with its contents.
@@ -136,16 +143,21 @@ function isReachedFromTheTestCase(array $tokens, int $at): bool
 
 it('G5 — a test asserts one way', function (): void {
     $offenders = [];
+    $read = [];
 
     foreach (testSources() as $path => $contents) {
         if (in_array($path, NAMES_WHAT_IT_REFUSES, strict: true)) {
             continue;  // this file names the idiom it refuses, in order to refuse it
         }
 
+        $read[] = $path;
+
         if (callsAPhpunitAssertion($contents)) {
             $offenders[] = $path;
         }
     }
+
+    expect($read)->not->toBe([], 'no test file was read, so this rule read nothing');
 
     expect($offenders)->toBe([], sprintf(
         "These mix PHPUnit's assertions into a Pest suite:\n  %s\n\n"
@@ -181,11 +193,14 @@ it('G1 — nothing mocks a type we do not own', function (): void {
     // nothing in both halves while looking exactly like a rule that holds.
     $idioms = ['Mockery::', 'Mockery\\', 'createMock(', 'getMockBuilder(', 'createStub(', 'shouldReceive('];
     $offenders = [];
+    $read = [];
 
     foreach (testSources() as $path => $contents) {
         if (in_array($path, NAMES_WHAT_IT_REFUSES, strict: true)) {
             continue;
         }
+
+        $read[] = $path;
 
         foreach ($idioms as $idiom) {
             if (str_contains($contents, $idiom)) {
@@ -193,6 +208,8 @@ it('G1 — nothing mocks a type we do not own', function (): void {
             }
         }
     }
+
+    expect($read)->not->toBe([], 'no test file was read, so this rule read nothing');
 
     expect($offenders)->toBe([], sprintf(
         "These stand in for a type we do not own:\n  %s\n\n"
@@ -212,11 +229,14 @@ it('G1 — nothing mocks a type we do not own', function (): void {
 // tests/Arch itself, which narrows the Arch run and takes this with it.
 it('G6 — no committed ->only(, and no skip without a reason', function (): void {
     $offenders = [];
+    $read = [];
 
     foreach (testSources() as $path => $contents) {
         if (in_array($path, NAMES_WHAT_IT_REFUSES, strict: true)) {
             continue;
         }
+
+        $read[] = $path;
 
         if (str_contains($contents, '->only(')) {
             $offenders[] = sprintf('%s narrows the run to one test', $path);
@@ -226,6 +246,8 @@ it('G6 — no committed ->only(, and no skip without a reason', function (): voi
             $offenders[] = sprintf('%s:%d skips without saying why', $path, $line);
         }
     }
+
+    expect($read)->not->toBe([], 'no test file was read, so this rule read nothing');
 
     expect($offenders)->toBe([], sprintf(
         "These change what the suite runs:\n  %s\n\n"
@@ -295,11 +317,14 @@ function isReachedWithAnArrow(array $tokens, int $at): bool
 
 it('H7 — a test is named for the behaviour it pins', function (): void {
     $offenders = [];
+    $read = [];
 
     foreach (testSources() as $path => $contents) {
         if (in_array($path, NAMES_WHAT_IT_REFUSES, strict: true)) {
             continue;
         }
+
+        $read[] = $path;
 
         foreach (['MiscTest', 'GeneralTest', 'VariousTest', 'UtilsTest', 'HelpersTest'] as $grabBag) {
             if (str_ends_with($path, sprintf('/%s.php', $grabBag))) {
@@ -317,6 +342,8 @@ it('H7 — a test is named for the behaviour it pins', function (): void {
         }
     }
 
+    expect($read)->not->toBe([], 'no test file was read, so this rule read nothing');
+
     expect($offenders)->toBe([], sprintf(
         "These describe a test rather than a behaviour:\n  %s\n\n"
         . 'A description is read in a failure report by somebody who did not write it, '
@@ -329,9 +356,12 @@ it('H7 — a test is named for the behaviour it pins', function (): void {
 });
 
 it('G10 — no two test files share a helper or constant name', function (): void {
+    $declared = helpersByName();
     $clashes = [];
 
-    foreach (helpersByName() as $name => $files) {
+    expect($declared)->not->toBe([], 'no test file declares a helper or a constant, so this rule read nothing');
+
+    foreach ($declared as $name => $files) {
         if (count($files) > 1) {
             sort($files);
             $clashes[] = sprintf('%s is declared in %s', $name, implode(' and ', $files));

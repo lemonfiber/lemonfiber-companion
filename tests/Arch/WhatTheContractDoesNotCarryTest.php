@@ -193,6 +193,14 @@ it('N2-R14 — every gap names an envelope the contract still has', function ():
     $envelopes = everyGeneratedEnvelope();
     $gone = [];
 
+    // The generated directory is the vendor's to move, and a move is what the
+    // rule below cannot tell from an answer: a row watching a field searches an
+    // empty list, finds no field there, and reports the gap as still open —
+    // which is what it would report about a contract it had actually read. The
+    // register itself has no floor and must not grow one: every gap closing is
+    // the state this file is written to reach.
+    expect($envelopes)->not->toBe([], 'the contract declares no envelope, so this rule read nothing');
+
     foreach (everyGapThisAppIsHolding() as $gap) {
         $named = $gap['envelope'];
 
@@ -218,6 +226,8 @@ it('N2-R14 — every gap is still a gap', function (): void {
     // says so by failing rather than by being read.
     $envelopes = everyGeneratedEnvelope();
     $closed = [];
+
+    expect($envelopes)->not->toBe([], 'the contract declares no envelope, so this rule read nothing');
 
     foreach (everyGapThisAppIsHolding() as $gap) {
         $named = $gap['envelope'];
