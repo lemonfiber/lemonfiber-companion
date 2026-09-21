@@ -59,6 +59,16 @@ use Tests\Support\WhatTheReadersRead;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
+        'path' => 'ConfigEnvelope.settings[].origin',
+        'because' => 'Where a setting\'s value came from — bundled, the operator, a plugin that names '
+            . 'itself, or unknown with a reason. It arrived with the core learning to say so, and nothing '
+            . 'here asked for it: no requirement in `.docs/requirements/` mentions provenance on the '
+            . 'settings screen, and a field wants a requirement before it wants a screen. It is a plausible '
+            . 'thing to draw — an operator looking at a value a plugin set has a different question about it '
+            . 'than one they set themselves — so this row is the place that argument gets made when somebody '
+            . 'makes it, rather than the field being read because it was there.',
+    ],
+    [
         'path' => 'ConfigEnvelope.review',
         'because' => 'A change that has been proposed and what it would come to — its cost, what it would '
             . 'disturb, whether it was rehearsed, where it stands. The settings screen reads the listing and '

@@ -91,8 +91,23 @@ function whatAStackSendsAboutItsSettings(): array
             'changed' => false,
             'rehearsed' => false,
             'settings' => [
-                ['key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false],
-                ['key' => 'API_KEY', 'value' => 'set, not shown', 'secret' => true],
+                // `origin` is required and is a union of four arms. Two
+                // different ones here rather than the same twice: a stand-in
+                // that only ever shows one arm is a payload the contract
+                // accepts and a stack would not send, which is the difference
+                // this case exists to catch.
+                [
+                    'key' => 'LIBRARY_PATH',
+                    'value' => '/data/media',
+                    'secret' => false,
+                    'origin' => ['origin' => 'operator'],
+                ],
+                [
+                    'key' => 'API_KEY',
+                    'value' => 'set, not shown',
+                    'secret' => true,
+                    'origin' => ['named' => 'plex', 'origin' => 'plugin'],
+                ],
             ],
         ],
     ];
