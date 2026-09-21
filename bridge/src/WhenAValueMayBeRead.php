@@ -41,9 +41,23 @@ enum WhenAValueMayBeRead: string
      * the application can run, so a caller asking for the narrower one is told
      * it got the wider. An answer that reported back whatever was requested
      * would be a promise nobody kept.
+     *
+     * **Two branches rather than `tryFrom($said ?? '')`.** Routing *nothing
+     * said* through the empty string makes it the same path as a word this
+     * type does not know, and the two are not the same thing — one is a
+     * machine with no device behind it, the other is a bridge that grew a case
+     * since this was written. Nothing could tell them apart either: the empty
+     * string is not a case here, so every unrecognised word already lands where
+     * it lands and swapping one for another changes nothing anybody can
+     * observe. That is a line no test can hold, which is what the mutation
+     * floor said about it. `WhatTheBridgeSaidTest` drives both.
      */
     public static function orTheNarrowest(?string $said): self
     {
-        return self::tryFrom($said ?? '') ?? self::WhileUnlocked;
+        if ($said === null) {
+            return self::WhileUnlocked;
+        }
+
+        return self::tryFrom($said) ?? self::WhileUnlocked;
     }
 }

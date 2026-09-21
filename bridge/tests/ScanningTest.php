@@ -183,3 +183,21 @@ it('ignores a may-ask-again that is not a flag', function (): void {
 
     expect(whetherAskingAgainWouldHelp(new Scanning()->forAPairingCode('')))->toBeFalse();
 });
+
+it('does not send a payload it could not encode, and says so as nothing said', function (): void {
+    // `"\xB1"` is a continuation byte with nothing in front of it, which is
+    // not valid UTF-8 and which `json_encode` refuses by answering false.
+    //
+    // A `(string)` cast turns that false into `''`, and the call then reaches
+    // the device carrying no parameters — a camera opened over no prompt at all, which is the one
+    // thing the operator reads before the permission dialog.
+    //
+    // Nothing is sent instead, and the answer is the same one every other way
+    // of not reaching the bridge gives. The second assertion is the one that
+    // matters: the bridge was not called at all.
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Read', ['outcome' => 'read', 'payload' => 'x']);
+
+    expect(whyTheCameraReadNothing(new Scanning()->forAPairingCode("\xB1")))
+        ->toBe(WhyNothingWasRead::TheOperatorClosedIt)
+        ->and($bridge->calls)->toBe([]);
+});

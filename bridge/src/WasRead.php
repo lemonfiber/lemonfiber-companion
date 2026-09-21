@@ -63,10 +63,23 @@ final readonly class WasRead
      */
     public function either(Closure $found, Closure $nothing, Closure $refused): object
     {
-        if ($this->why instanceof WhyNothingWasKept) {
-            return $refused($this->why);
+        // `held` first, and the order is load bearing rather than a matter of
+        // taste. Three fields admit eight states and three factories build
+        // three of them, so five are unreachable — and which of the five a
+        // reader can *see* depends entirely on which field this asks about
+        // first.
+        //
+        // Asking `why` first leaves `held` unobservable on the refused arm:
+        // it is false there, nothing reads it, and setting it true changes no
+        // answer this type can give. That is a field no test can hold.
+        //
+        // This way round, a refusal that also claimed to hold a value answers
+        // `$found('')` — visibly the wrong arm, caught by the test that
+        // already asserts a refusal is answered as one.
+        if ($this->held) {
+            return $found($this->value);
         }
 
-        return $this->held ? $found($this->value) : $nothing();
+        return $this->why instanceof WhyNothingWasKept ? $refused($this->why) : $nothing();
     }
 }

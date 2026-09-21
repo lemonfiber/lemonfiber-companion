@@ -8,7 +8,6 @@ use function array_key_exists;
 use function is_array;
 use function is_string;
 use function json_decode;
-use function json_encode;
 use function nativephp_call;
 
 /**
@@ -62,11 +61,22 @@ final readonly class Link
     /**
      * What the bridge said, decoded, or nothing where it said nothing.
      *
+     * **This is the one call here that carries nothing**, and it says so by
+     * passing nothing rather than by encoding an empty array. `[]` and `{}`
+     * and `''` all arrive at both native halves as no parameters — `Status`
+     * reads none on either platform — so the three were interchangeable, and a
+     * payload nothing can tell apart from another is a payload no test can
+     * hold. `nativephp_call` declares `'{}'` for exactly this case, which is
+     * also the shape a `Map<String, Any>` on the Kotlin side is written for.
+     *
+     * Every other call in this package encodes something somebody passed in,
+     * where an unencodable payload is a real answer and is refused as one.
+     *
      * @return array<mixed>|null
      */
     private function answering(): ?array
     {
-        $said = nativephp_call(Call::LinkStatus->value, (string) json_encode([]));
+        $said = nativephp_call(Call::LinkStatus->value);
 
         if (! is_string($said)) {
             return null;
