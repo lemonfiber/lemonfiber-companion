@@ -16,6 +16,8 @@ use Modules\Kernel\Api\StackName;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Exceptions\NoMockResponseFoundException;
 use Saloon\Exceptions\Request\FatalRequestException;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 // `G3` — no test reaches the network, proved rather than arranged.
 //
@@ -93,4 +95,34 @@ it('G3 — the facade is stopped as well, for the calls that do not go through t
     }
 
     expect($said)->toContain('Attempted request to [https://127.0.0.1:1/anything] without a matching fake');
+});
+
+// The reset that was not one.
+//
+// `MockClient::global()` is `??=` — handed a client when one is already
+// installed, it keeps the old one and drops the array on the floor. So the
+// `beforeEach` that looks like it empties the global mock did nothing whenever
+// a suite had installed its own, and five contract suites do exactly that.
+//
+// These two cases are ordered and the order is the whole point: the first
+// leaves a response nothing consumes, and the second asserts the mock it starts
+// with is empty. Without the `destroyGlobal()` beside the `global()` the second
+// finds the first one's leftovers and is answered instead of refused — which is
+// how a test asserting it cannot reach the network passes by being handed a
+// reply.
+//
+// Written here rather than left to the flake it was. Under `--parallel` the
+// leak surfaced about one run in three, moved whenever a test file was added
+// anywhere, and read as whichever branch happened to be open having caused it.
+
+it('leaves a response behind, for the case below', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(['left' => 'behind'], 200)]);
+
+    expect(MockClient::getGlobal()?->isEmpty())->toBeFalse();
+});
+
+it('G3 — starts with an empty global mock however the last test left it', function (): void {
+    expect(MockClient::getGlobal())->not->toBeNull()
+        ->and(MockClient::getGlobal()?->isEmpty())->toBeTrue();
 });

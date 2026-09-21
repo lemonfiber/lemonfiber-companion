@@ -50,6 +50,20 @@ pest()->extend(TestCase::class)->in('Feature', 'Templates', 'Contract', sprintf(
  * all.
  */
 pest()->beforeEach(function (): void {
+    // Destroyed and then made, because `MockClient::global()` is `??=`: handed
+    // a client it already has one of, it keeps the old one and ignores the
+    // array. So this line read as a reset for as long as it has existed and
+    // was not one — a contract suite that installs its own global and leaves a
+    // response unconsumed handed that response to whatever ran next in the
+    // same process. A test asserting it is refused a socket then passed by
+    // being answered, which is the opposite of what it says.
+    //
+    // Serially the leftovers happened to be spent before anything noticed.
+    // Under `--parallel` the files are chunked differently every run, so it
+    // surfaced as a test that failed about one run in three and passed when
+    // re-run alone — and adding a test file anywhere moved the chunking, which
+    // made it look like whichever branch was open had caused it.
+    MockClient::destroyGlobal();
     MockClient::global([]);
 })->in(...OurCode::testDirectories());
 
