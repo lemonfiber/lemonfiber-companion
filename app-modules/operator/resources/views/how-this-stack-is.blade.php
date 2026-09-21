@@ -165,6 +165,13 @@
          container nobody declared is not one of the things this stack runs
          and the screen it leads to offers no verb against one. --}}
     <x-operator::quiet-action label="{{ __('health.what_else_is_running') }}" :goes="$this->goes()->elsewhere()" />
+
+    {{-- Everything this machine is set to. Beside what is running rather than
+         under one of the services, because a setting belongs to the machine
+         and an operator looking for one does not know which service owns it —
+         and should not have to. Quiet, with the other roads: it is somewhere
+         to go and not the thing this screen is about. --}}
+    <x-operator::quiet-action label="{{ __('config.what_this_is_set_to') }}" :goes="$this->goes()->settings()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading

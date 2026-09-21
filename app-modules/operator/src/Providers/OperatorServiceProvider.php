@@ -16,6 +16,7 @@ use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
+use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
@@ -133,6 +134,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // and what do I want on*, which an operator opens the app for even
             // when every check passes.
             Router::native(AStacksScreen::Services->value, WhatThisStackRuns::class);
+
+            // Everything the stack is set to. Beside the services listing
+            // rather than under one of them, because a setting is the
+            // machine's and not a service's — and an operator looking for one
+            // does not know, and should not have to guess, which service owns
+            // it.
+            Router::native(AStacksScreen::Settings->value, WhatThisStackIsSetTo::class);
 
             // One of the things it runs, and the verbs about that one
             // Split out of the listing above rather than drawn on

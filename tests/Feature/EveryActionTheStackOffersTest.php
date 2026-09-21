@@ -33,8 +33,9 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Doctor', 'Error', 'Held', 'Household', 'Job',
-    'Log', 'Repair', 'Status', 'Stuck', 'Update',
+    'Config', 'Doctor', 'Error', 'Held', 'Household',
+    'Job', 'Log', 'Repair', 'Status', 'Stuck',
+    'Update',
 ];
 
 /**
@@ -58,33 +59,13 @@ const ELSEWHERE = [
 /**
  * Kinds nobody has offered yet.
  *
- * **`Config` carries a second requirement, and this is where it will be read.**
- * The app must offer reconfiguration *in full* once connected, and
- * that is not gated here because it cannot honestly be gated yet. The settings
- * are not a list this side can know: `ConfigEnvelope` carries
- * `settings: list<array{key, secret, value}>`, which the stack reports at
- * runtime. There is nothing static to compare against.
- *
- * What it means when `Config` moves up: the screen renders the list the stack
- * sent, and the app holds no list of its own. An app that enumerates the
- * settings it knows about offers a subset the day the stack adds one, and
- * offers it silently — which is the whole of what is forbidden.
- *
- * A rule guessing at that from the source text was considered and rejected. The
- * only shape available is "does anything here look like a list of setting
- * keys", which is prose-matching, and this codebase has already learned what
- * that costs: the deleted gap checker matched the comments explaining the rule,
- * and a rule that fires on its own documentation is a rule somebody deletes —
- * taking the real coverage with it.
- *
- * Not a debt marker and not a promise: it is the honest statement that the app
- * is early and these have been seen. Moving one up to `OFFERED` is the work;
+ * Early, and these have been seen. Moving one up to `OFFERED` is the work;
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
     'Admission', 'Adoption', 'Alerts', 'Archives', 'Backup',
     'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients',
-    'Config', 'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
+    'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
     'Glossary', 'History', 'Hosting', 'Import',
     'Invitation', 'Lifecycle', 'Migration', 'Music', 'Outbound',
     'Preview', 'Provenance', 'Pull', 'Quality', 'Removal',

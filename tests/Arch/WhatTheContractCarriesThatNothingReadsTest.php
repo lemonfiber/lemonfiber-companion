@@ -59,6 +59,31 @@ use Tests\Support\WhatTheReadersRead;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
+        'path' => 'ConfigEnvelope.review',
+        'because' => 'A change that has been proposed and what it would come to — its cost, what it would '
+            . 'disturb, whether it was rehearsed, where it stands. The settings screen reads the listing and '
+            . 'changes nothing, so there is never a proposal in flight for it to report on. This is the '
+            . 'payload the screen that changes a setting reads, and reading it now would mean a screen that '
+            . 'only looks could not be given the listing without also being handed a half-built change.',
+    ],
+    [
+        'path' => 'ConfigEnvelope.changed',
+        'because' => 'Whether the proposal in `review` was written. Nothing here proposes one, so this is '
+            . 'always false on every answer this app asks for, and a screen reading it would be reporting on '
+            . 'an act it did not perform.',
+    ],
+    [
+        'path' => 'ConfigEnvelope.rehearsed',
+        'because' => 'Whether the proposal in `review` was a rehearsal rather than a write. The same '
+            . 'reason as `changed`: this app never asks for one.',
+    ],
+    [
+        'path' => 'ConfigEnvelope.consequence',
+        'because' => 'What applying the proposal in `review` would mean, in the core\'s words. It belongs '
+            . 'to the confirmation that screen will show before a consequential change, and there is no '
+            . 'confirmation here because there is no change.',
+    ],
+    [
         'path' => 'DoctorEnvelope.findings[].said',
         'because' => 'A summary line beside the meaning. `N2-R3` has a finding carry its code, its meaning '
             . 'and its remedy, and a second sentence saying roughly the meaning again is the core being '

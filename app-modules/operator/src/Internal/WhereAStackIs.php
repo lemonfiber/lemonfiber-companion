@@ -115,6 +115,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Services->forTheStack($this->stack);
     }
 
+    /** Everything this machine is set to. */
+    public function settings(): string
+    {
+        return AStacksScreen::Settings->forTheStack($this->stack);
+    }
+
     /** Where this machine stands on being up to date. */
     public function updates(): string
     {
