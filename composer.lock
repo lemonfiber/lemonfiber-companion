@@ -3895,16 +3895,16 @@
         },
         {
             "name": "nativephp/mobile",
-            "version": "4.4.0",
+            "version": "4.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/NativePHP/mobile-air.git",
-                "reference": "3dc70c965ede224e217f429ebb5afa7e7b8dafa4"
+                "reference": "649b55821aa4e351f7ab6de07acc25b721ad0936"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NativePHP/mobile-air/zipball/3dc70c965ede224e217f429ebb5afa7e7b8dafa4",
-                "reference": "3dc70c965ede224e217f429ebb5afa7e7b8dafa4",
+                "url": "https://api.github.com/repos/NativePHP/mobile-air/zipball/649b55821aa4e351f7ab6de07acc25b721ad0936",
+                "reference": "649b55821aa4e351f7ab6de07acc25b721ad0936",
                 "shasum": ""
             },
             "require": {
@@ -3984,9 +3984,9 @@
             ],
             "support": {
                 "issues": "https://github.com/NativePHP/mobile-air/issues",
-                "source": "https://github.com/NativePHP/mobile-air/tree/4.4.0"
+                "source": "https://github.com/NativePHP/mobile-air/tree/4.4.1"
             },
-            "time": "2026-09-11T12:34:30+00:00"
+            "time": "2026-09-12T17:19:17+00:00"
         },
         {
             "name": "nativephp/mobile-ui",
