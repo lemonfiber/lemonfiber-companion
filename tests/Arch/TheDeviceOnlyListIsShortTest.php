@@ -202,3 +202,59 @@ it('stays short, because the list is the exception and not a budget', function (
         ),
     );
 });
+
+/**
+ * What `sonar-project.properties` says it does not measure coverage for.
+ *
+ * Read as text rather than parsed, because a properties file has no parser
+ * here and the one line this needs is unambiguous. Absent is an empty list
+ * rather than a failure — the assertion below is what says absent is wrong,
+ * and it can then say so in its own words instead of through a missing file.
+ *
+ * @return list<string>
+ */
+function whatSonarDoesNotMeasure(): array
+{
+    $path = sprintf('%s/sonar-project.properties', theRepositoryRoot());
+    $said = file_get_contents($path);
+
+    expect($said)->not->toBeFalse('sonar-project.properties could not be read, so nothing below was read');
+
+    if (! is_string($said) || preg_match('/^sonar\.coverage\.exclusions=(.*)$/m', $said, $matched) !== 1) {
+        return [];
+    }
+
+    return array_values(array_filter(array_map(trim(...), explode(',', $matched[1])), static fn(string $named): bool => $named !== ''));
+}
+
+it('excludes the same files from the report and from the gate that reads it', function (): void {
+    // Two files decide this and they are read by different tools. `phpunit.xml`
+    // says what the coverage report leaves out; SonarCloud reads that report
+    // and, unless told, treats a file missing from it as new code with no
+    // coverage. So a file this repository has already decided a suite cannot
+    // reach fails the quality gate the moment anybody edits it — a refusal for
+    // the one reason already argued and accepted, in a place that cannot see
+    // the argument.
+    //
+    // That is not hypothetical: it is what happened the first time the excluded
+    // file was touched, and the pull request was refused at 66.7% coverage on
+    // new code with every local gate green.
+    //
+    // Held to each other rather than kept in step by hand. Two lists that must
+    // agree and nothing comparing them is one list and a copy, and the copy is
+    // the one nobody updates.
+    $inTheReport = array_map(
+        static fn(array $entry): string => $entry['path'],
+        exclusionsIn(theExclusions()),
+    );
+
+    expect(whatSonarDoesNotMeasure())->toBe($inTheReport, implode(PHP_EOL, [
+        'phpunit.xml and sonar-project.properties disagree about which files are',
+        'left out of coverage.',
+        '',
+        'A file in phpunit.xml and not in sonar.coverage.exclusions is one the',
+        'quality gate will refuse a pull request over. One in sonar and not in',
+        'phpunit is a file being measured and forgiven at once, which is the',
+        'exclusion nobody argued for.',
+    ]));
+});
