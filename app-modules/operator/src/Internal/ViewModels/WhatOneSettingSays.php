@@ -17,7 +17,11 @@ use Modules\Kernel\Api\WhoSetIt;
  * control beside them.
  *
  * **`came` is a key and `attributed` is what fills it, which is where the
- * words belong.** The presenter chose the arm; the template says them. Two of the four arms
+ * words belong.** The presenter chose the arm; the template says them. Two of
+ * the four arms have nothing to fill it with and carry `null` rather than an
+ * empty string — the template has no placeholder to put a blank in on those
+ * rows, so a blank there is a value nothing could read and nothing could tell
+ * from any other. Two of the four arms
  * have something to interpolate — the plugin's name, and the stack's reason an
  * origin is unknown — and one string covers both because no row is ever both.
  * A presenter reaching for `__()` would be a class translating without having
@@ -30,6 +34,6 @@ final readonly class WhatOneSettingSays
         public string $said,
         public bool $withheld,
         public WhoSetIt $came,
-        public string $attributed = '',
+        public ?string $attributed = null,
     ) {}
 }

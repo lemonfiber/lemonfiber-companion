@@ -37,7 +37,11 @@
                  origin is read as a default, and *nobody could establish this*
                  is the one attribution that must never be mistaken for the
                  stack's own. --}}
-            <x-operator::note>{{ __($setting->came->said(), ['named' => $setting->attributed, 'why' => $setting->attributed]) }}</x-operator::note>
+            @if ($setting->attributed !== null)
+                <x-operator::note>{{ __($setting->came->said(), ['named' => $setting->attributed, 'why' => $setting->attributed]) }}</x-operator::note>
+            @else
+                <x-operator::note>{{ __($setting->came->said()) }}</x-operator::note>
+            @endif
         </x-operator::entry>
     @empty
         {{-- A stack with nothing set is an answer, and not the same screen as
