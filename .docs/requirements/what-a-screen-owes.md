@@ -94,6 +94,16 @@ wants a requirement before it wants a surface. What each row needs is a decision
 — a companion surface, or a requirement stating why not, the way `N1-R4` does
 for setup.
 
+**An unread envelope is not an unbuilt feature, and four rows prove it.** `B2`,
+`D7`, `F7` and `G2` are each documented on these pages already: lifecycle
+control is `N2-R7`, kept by `Daemon` and `HowAServiceRuns`, and the screen is
+`WhatToDoWithThis`. What is unread is the `lifecycle` envelope, because the app
+reaches that action another way. So those four are *partly* built, and the
+question they ask is narrower than the rest: not whether this app does the
+thing, but whether it reads everything the wire now says about it.
+
+That leaves **thirty-two** with nothing documented at all.
+
 | Feature | What it is |
 |---|---|
 | `A5` | Migration from an existing stack |
@@ -101,7 +111,7 @@ for setup.
 | `A7` | Credential management & rotation |
 | `B1` | Forms & partial stacks |
 | `B10` | Hosting long-running commands |
-| `B2` | Lifecycle control |
+| `B2` | Lifecycle control — **partly built**, see above |
 | `B5` | Notifications & alerting |
 | `B8` | Autostart & boot persistence |
 | `C4` | Support bundle |
@@ -112,7 +122,7 @@ for setup.
 | `D3` | First-content walkthrough |
 | `D5` | Disk space management |
 | `D6` | Household identity & invitations |
-| `D7` | Request approval & quotas |
+| `D7` | Request approval & quotas — **partly built**, see above |
 | `D9` | "Where is my show?" pipeline trace |
 | `E2` | Self-update |
 | `E3` | Backup & restore |
@@ -120,9 +130,9 @@ for setup.
 | `F4` | The capability vocabulary |
 | `F6` | Plugin lifecycle |
 | `F5` | The plugin catalogue and what vouches for a plugin |
-| `F7` | Plugin provenance |
+| `F7` | Plugin provenance — **partly built**, see above |
 | `F9` | Capabilities of the bundled services |
-| `G2` | Plain-language layer & in-product help |
+| `G2` | Plain-language layer & in-product help — **partly built**, see above |
 | `G5` | The front door |
 | `G8` | Privacy stance |
 | `H1` | Cross-seeding |
