@@ -10,6 +10,7 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItSettled;
+use Modules\Kernel\Api\HowItWasReached;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -339,6 +340,16 @@ it('N1-R13 — every settlement the contract describes has a case', function ():
     expect(valuesOf(HowItSettled::cases()))->toBe($settlements);
 });
 
+it('N1-R13 — every way one service reaches another has a case', function (): void {
+    // Whose decision it was: a capability the core resolved, or a name somebody
+    // gave. A plugin may not create the second, so an arm the contract grew
+    // that nothing here reads would render an instruction as a deduction.
+    $reaches = theReachesIn(theGeneratedWiringEnvelope());
+
+    expect($reaches)->not->toBe([], 'no reach tag was found in the generated envelope');
+    expect(valuesOf(HowItWasReached::cases()))->toBe($reaches);
+});
+
 it('N1-R13 — every stage the contract describes has a case', function (): void {
     // Read from the stuck envelope rather than the doctor one, which is the
     // first time these rules have looked at a second file. The union is only
@@ -471,6 +482,27 @@ function theSettlementsIn(string $source): array
     return $words;
 }
 
+/**
+ * The words a reach can be, read the same way a settlement's are.
+ *
+ * `asked` and `by-name` are tags on objects of their own rather than a union
+ * joined by `|`, because the two carry different fields — one a capability and
+ * its claimants, the other a service and a reason. So they are gathered by tag,
+ * exactly as `theSettlementsIn` gathers the five settlements.
+ *
+ * @return list<string>
+ */
+function theReachesIn(string $source): array
+{
+    preg_match_all("/\\bhow: '([a-z_-]+)'/", $source, $found);
+
+    $words = array_values(array_unique($found[1]));
+
+    sort($words);
+
+    return $words;
+}
+
 /** The enums checked above, against the contract field each mirrors. */
 const CHECKED_AGAINST_THE_WIRE = [
     Category::class => 'category',
@@ -478,6 +510,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     Overall::class => 'overall',
     Severity::class => 'severity',
     WhoSettledIt::class => 'whose',
+    HowItWasReached::class => 'how',
     HowAServiceRuns::class => 'state',
     HowMuchItMatters::class => 'criticality',
     HowTheStackIsRunning::class => 'condition',
