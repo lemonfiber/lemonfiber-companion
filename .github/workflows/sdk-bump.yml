@@ -170,6 +170,23 @@ jobs:
           echo "moved=yes" >> "$GITHUB_OUTPUT"
 
           base="$(gh api "repos/${REPO}/commits/main" --jq .sha)"
+
+          # Asked *before* the reset, because after it the answer cannot be
+          # trusted. Resetting the branch closes whatever pull request is open
+          # on it, and GitHub does that asynchronously: a read a moment later is
+          # still answered with the pull request that is on its way to closed.
+          # The step below believed that answer twice on 2026-09-22 — it logged
+          # `#298 updated` and `#300 updated`, opened nothing either time, and
+          # left each commit on a branch whose pull request was shut. `sdk-drift`
+          # is required here, so both times that was every pull request in the
+          # repository red, with nothing saying why.
+          #
+          # Carried forward as a number rather than re-derived, so the reopen
+          # below does not depend on what GitHub has got round to.
+          carried="$(gh pr list --repo "${REPO}" --head "${BRANCH}" \
+            --state open --json number --jq '.[0].number // ""')"
+          echo "carried=${carried}" >> "$GITHUB_OUTPUT"
+
           if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" >/dev/null 2>&1; then
             # The branch is the bot's alone. Reset it, so yesterday's bump is not
             # carried under today's and described as one change.
@@ -259,6 +276,7 @@ jobs:
           GH_TOKEN: ${{ steps.token.outputs.token }}
           PIN: ${{ steps.behind.outputs.pin }}
           HEAD_SHA: ${{ steps.behind.outputs.head }}
+          CARRIED: ${{ steps.commit.outputs.carried }}
           CLEAN: ${{ steps.commit.outputs.clean }}
           INSTALLED: ${{ steps.commit.outputs.installed }}
           REPO: ${{ github.repository }}
@@ -291,9 +309,21 @@ jobs:
             verdict="**The analyser or the suite did not pass.** The client has changed a shape this surface uses, so taking it is a change here rather than a bump. Read the failing run before merging; do not force it green."
           fi
 
-          existing="$(gh pr list --repo "${REPO}" --head "${BRANCH}" --state open --json number --jq '.[0].number // ""')"
-          if [ -n "$existing" ]; then
-            echo "::notice::#${existing} updated to ${HEAD_SHA}"
+          # Reopened rather than looked up. The reset shut it, and whether
+          # GitHub has finished saying so is not a question worth asking: the
+          # number was taken before the branch moved, and `pr reopen` on one
+          # that is somehow still open is a no-op worth tolerating.
+          #
+          # The title is rewritten too. It names a revision, this run took a
+          # different one, and a pull request whose title says it takes
+          # `f866c1c` while its diff takes `7d5c138` is one somebody has to open
+          # to find out what it does.
+          if [ -n "$CARRIED" ]; then
+            existing="$CARRIED"
+            gh pr reopen "${existing}" --repo "${REPO}" >/dev/null 2>&1 || true
+            gh pr edit "${existing}" --repo "${REPO}" \
+              --title "chore(sdk): take sdk-php ${HEAD_SHA:0:7}" >/dev/null 2>&1 || true
+            echo "::notice::#${existing} reopened and updated to ${HEAD_SHA}"
           else
             created="$(gh pr create --repo "${REPO}" --head "${BRANCH}" --base main \
               --title "chore(sdk): take sdk-php ${HEAD_SHA:0:7}" \
