@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceTookIt;
@@ -24,7 +25,9 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\VersionInUse;
+use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\Standings;
 use Modules\Sdk\Api\Upkeepers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -68,16 +71,26 @@ function theSessionTheStackIsAskedAboutItsUpkeepWith(): Session
  * One release the household would notice, one it would not, and one that has
  * been taken back — so that filtering down to the ones worth showing has
  * something to do.
+ *
+ * One of them says what it delivers and one does not, for the same reason: the
+ * wire marks that field optional, both are real answers, and a reading that
+ * folded them into one string would draw a release the stack said nothing
+ * about as a row with a blank where a sentence belongs.
  */
 function theSameStanding(): Upkeep
 {
     return Upkeep::runningOn(
         HowCurrent::Pending,
-        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false)),
+        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Releases::these(
-            Release::called('4.1.0', noticeable: true, withdrawn: false),
-            Release::called('4.0.16', noticeable: false, withdrawn: false),
-            Release::called('4.0.17', noticeable: true, withdrawn: true),
+            Release::called(
+                '4.1.0',
+                noticeable: true,
+                withdrawn: false,
+                delivers: WhatAReleaseDelivers::said('Adds series search.'),
+            ),
+            Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+            Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()),
         ),
         // One service, not two. The stack has already refused the other, and a
         // confirmation naming it would have somebody agree to a service that
@@ -162,7 +175,7 @@ function whatAStackWithUpdatesSends(): array
                     'groups' => [],
                 ],
                 'releases' => [
-                    ['version' => '4.1.0', 'user_facing' => true],
+                    ['version' => '4.1.0', 'user_facing' => true, 'delivers' => 'Adds series search.'],
                     ['version' => '4.0.16', 'user_facing' => false],
                     ['version' => '4.0.17', 'user_facing' => true, 'withdrawn' => '2026-09-01'],
                 ],
@@ -281,7 +294,7 @@ function howItWasTaken(KeepingCurrent $keeping, TakingAnUpdate $agreed): string
 function theUpdateTheOperatorAgreedTo(): TakingAnUpdate
 {
     return TakingAnUpdate::agreed(
-        Release::called('4.1.0', noticeable: true, withdrawn: false),
+        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
         Services::none(),
     );
@@ -477,3 +490,102 @@ function thePayloadShapeOfTheUpdateEnvelope(): string
 
     return $shape[1] ?? '';
 }
+
+/** One arm's name, so a fold can be asserted on rather than counted. */
+final readonly class WhichArmARowReached
+{
+    public function __construct(public string $said) {}
+}
+
+/**
+ * A stack with one release waiting, carrying whatever a case puts in `delivers`.
+ *
+ * Written out rather than reached into the payload above, because a case that
+ * edited a shared fixture three levels down would be a helper about arrays and
+ * not about this field. What keeps it honest is that it is held to the contract
+ * below, the same way the larger payload is — a shape no stack sends would fail
+ * there rather than quietly proving the reader against nothing.
+ *
+ * @param  array<string, mixed>  $release  the one waiting release, whole
+ * @return array<string, mixed>
+ */
+function aStackWhoseWaitingReleaseIs(array $release): array
+{
+    return [
+        'state' => 'updates-available',
+        'confirmed' => false,
+        'in_flight' => [],
+        'stack_edits' => [],
+        'applied' => [],
+        'changes' => [],
+        'changelog' => [
+            'state' => 'pending',
+            'requirements' => [],
+            'running' => [
+                'version' => '4.0.15',
+                'user_facing' => false,
+                'tag' => 'v4.0.15',
+                'groups' => [],
+            ],
+            'releases' => [$release],
+        ],
+    ];
+}
+
+/**
+ * What that release says it delivers, read through the reader the screen uses.
+ *
+ * @param array<string, mixed> $release the one waiting release, whole
+ */
+function whatThatWaitingReleaseDelivers(array $release): string
+{
+    foreach (Standings::in(new Envelope(1, 'update', aStackWhoseWaitingReleaseIs($release)))->waiting() as $found) {
+        return $found->delivers()->either(
+            said: static fn(string $prose): WhichArmARowReached => new WhichArmARowReached(
+                sprintf('said:%s', $prose),
+            ),
+            saidNothing: static fn(): WhichArmARowReached => new WhichArmARowReached('silent'),
+        )->said;
+    }
+
+    return 'nothing was read';
+}
+
+it('stands in for a release with a payload the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('UpdateEnvelope', [
+        'api_version' => 1,
+        'kind' => 'update',
+        'data' => aStackWhoseWaitingReleaseIs([
+            'version' => '4.1.0', 'user_facing' => true, 'delivers' => 'Adds series search.',
+        ]),
+    ]))->toBe([], "The payload these cases stand in for a stack with is not one a stack would send.\n");
+});
+
+it('E5-R6 — reads what a waiting release delivers, so the row the control sits on can say it', function (): void {
+    expect(whatThatWaitingReleaseDelivers([
+        'version' => '4.1.0', 'user_facing' => true, 'delivers' => 'Adds series search.',
+    ]))->toBe('said:Adds series search.');
+});
+
+it('E5-R10 — a release the stack said nothing about is silent rather than blank', function (): void {
+    // Absent, and present but empty. Both are the stack having nothing to say
+    // and neither is a payload gone wrong — the contract marks the field
+    // optional, and a reading that refused here would refuse the ordinary case.
+    expect(whatThatWaitingReleaseDelivers(['version' => '4.1.0', 'user_facing' => true]))
+        ->toBe('silent')
+        ->and(whatThatWaitingReleaseDelivers([
+            'version' => '4.1.0', 'user_facing' => true, 'delivers' => '',
+        ]))->toBe('silent');
+});
+
+it('reads a delivers that is not text as nothing said rather than refusing the listing', function (): void {
+    // The one place this reader defaults rather than refuses, and the reason is
+    // the opposite of `user_facing`'s. That field is on every release and a
+    // default would invent the reassuring answer; this one is prose, and a
+    // number where a sentence belongs is a stack that has given none. Refusing
+    // would lose the whole listing — every other release included — over a line
+    // that is not what the operator is deciding on.
+    expect(whatThatWaitingReleaseDelivers([
+        'version' => '4.1.0', 'user_facing' => true, 'delivers' => 7,
+    ]))->toBe('silent');
+});

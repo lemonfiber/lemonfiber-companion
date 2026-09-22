@@ -11,8 +11,8 @@ use function trim;
  *
  * Carries what the decision needs and nothing else. A version string is
  * an identifier rather than an argument — nobody decides an evening on `4.0.15`
- * — so what travels beside it is whether anyone in the house will notice, and
- * whether the release stands at all.
+ * — so what travels beside it is whether anyone in the house will notice, what
+ * the stack says it delivers, and whether the release stands at all.
  *
  * **Withdrawn is not a kind of available.** Presenting one as
  * an update, and the reason it is carried here rather than filtered away
@@ -26,6 +26,7 @@ final readonly class Release
         private string $version,
         private bool $noticeable,
         private bool $withdrawn,
+        private WhatAReleaseDelivers $delivers,
     ) {}
 
     /**
@@ -37,15 +38,19 @@ final readonly class Release
      * — a declared throw is a checked one here, and every caller would carry a
      * catch for a fixture it wrote itself.
      */
-    public static function called(string $version, bool $noticeable, bool $withdrawn): self
-    {
+    public static function called(
+        string $version,
+        bool $noticeable,
+        bool $withdrawn,
+        WhatAReleaseDelivers $delivers,
+    ): self {
         $named = trim($version);
 
         if ($named === '') {
             throw VersionIsBlank::inARelease();
         }
 
-        return new self($named, $noticeable, $withdrawn);
+        return new self($named, $noticeable, $withdrawn, $delivers);
     }
 
     public function version(): string
@@ -63,6 +68,18 @@ final readonly class Release
     public function theHouseholdWouldNotice(): bool
     {
         return $this->noticeable;
+    }
+
+    /**
+     * What taking this one would change, as the stack put it.
+     *
+     * Beside {@see theHouseholdWouldNotice()} rather than instead of it: that
+     * says whether this matters to the house, and this says what it is. An
+     * operator agreeing to an evening is owed both.
+     */
+    public function delivers(): WhatAReleaseDelivers
+    {
+        return $this->delivers;
     }
 
     /** Whether this release has been taken back since it was published. */

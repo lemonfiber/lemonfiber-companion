@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\VersionInUse;
+use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Sdk\Internal\Changes;
 use Modules\Sdk\Internal\Endings;
 use Modules\Sdk\Internal\Wire;
@@ -195,7 +196,12 @@ final readonly class Standings
             throw UpkeepIsUnreadable::release($position);
         }
 
-        return Release::called($version, self::noticeable($said, $position), self::withdrawn($said));
+        return Release::called(
+            $version,
+            self::noticeable($said, $position),
+            self::withdrawn($said),
+            self::delivers($said),
+        );
     }
 
     /**
@@ -222,6 +228,35 @@ final readonly class Standings
         }
 
         return $noticed;
+    }
+
+    /**
+     * What the stack says this release delivers.
+     *
+     * Absent is an answer and is read as one, which is the difference from
+     * {@see noticeable()} above. That field is on every release and a default
+     * there would invent the reassuring answer; this one the contract marks
+     * optional, because a release the generator had nothing to say about is a
+     * real thing and a stack saying so is not a payload gone wrong.
+     *
+     * A value that is not text is read the same way rather than refused. The
+     * screen's promise about this line is that it carries the stack's words
+     * when there are some, and a number where prose belongs is a stack that
+     * has not given any.
+     *
+     * @param array<array-key, mixed> $said
+     */
+    private static function delivers(array $said): WhatAReleaseDelivers
+    {
+        if (! array_key_exists(WireField::Delivers->value, $said)) {
+            return WhatAReleaseDelivers::saidNothing();
+        }
+
+        $prose = $said[WireField::Delivers->value];
+
+        return is_string($prose)
+            ? WhatAReleaseDelivers::said($prose)
+            : WhatAReleaseDelivers::saidNothing();
     }
 
     /**

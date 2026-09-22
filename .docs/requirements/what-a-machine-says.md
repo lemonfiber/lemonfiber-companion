@@ -45,6 +45,8 @@ requirement is right and this page is a defect.
 | `N2-R18` | Four endings rather than a boolean | `HowItEnded` |
 | `N2-R19` | Undoing is not offered where the stack named neither way | `HowAServiceTookIt` |
 | `N2-R20` | Applying one is not offered where the stack reported none | `HowCurrent` |
+| `E5-R6` | The changelog is shown in the stack-update flow, not only on a release page | `WhatAReleaseDelivers`, carried on `Release` and drawn on the row the *take this one* control sits on. The grouped notes for the running version are not drawn, and `WhatTheContractCarriesThatNothingReadsTest` records that as owed rather than unasked |
+| `E5-R10` | A release with no user-facing change is stated as such rather than shown as an empty one | `WhatAReleaseDelivers::saidNothing()`, a separate arm — a row the stack said nothing about says so rather than drawing a blank where a sentence belongs |
 
 ## What has stopped coming in
 

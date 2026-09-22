@@ -12,6 +12,13 @@ use Modules\Kernel\Api\Release;
  * **Whether the household would notice travels as a flag, not as a sentence.**
  * The distinction is what a screen sorts and leads on, and a row handed
  * a finished phrase could not be grouped by it.
+ *
+ * **What it delivers travels as the stack's own words, and a flag saying
+ * whether there are any.** The opposite of the line above, and for the
+ * opposite reason: this is prose the stack wrote and nothing here composes it.
+ * The flag is what keeps a release the stack said nothing about from drawing
+ * as a row with a blank where a sentence belongs — the template says so in as
+ * many words instead.
  */
 final readonly class WhatOneReleaseSays
 {
@@ -19,6 +26,8 @@ final readonly class WhatOneReleaseSays
         public string $version,
         public bool $theHouseholdWouldNotice,
         private Release $release,
+        public string $deliversSaid = '',
+        public bool $saysWhatItDelivers = false,
     ) {}
 
     /**

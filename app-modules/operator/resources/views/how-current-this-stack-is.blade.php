@@ -109,6 +109,19 @@
                 />
             @endif
 
+            {{-- What taking it would change, in the stack's own words, where
+                 the operator is deciding. A version string is an identifier
+                 and not an argument, and this is the row the *take this one*
+                 control sits on — so the sentence belongs here rather than
+                 behind it. Said as the stack said it: this app composes
+                 nothing, and a release the stack had nothing to say about says
+                 so rather than drawing a blank. --}}
+            @if ($release->saysWhatItDelivers)
+                <native:text>{{ $release->deliversSaid }}</native:text>
+            @else
+                <x-operator::note>{{ __('updates.delivers_unsaid') }}</x-operator::note>
+            @endif
+
             {{-- Whether somebody in the house would see the
                  difference. This is what makes the update a decision rather
                  than a chore, so it is on the row and not in a footnote. --}}
