@@ -6,6 +6,7 @@ namespace Modules\Kernel\Api;
 
 use Closure;
 
+use function is_string;
 use function trim;
 
 /**
@@ -20,6 +21,14 @@ use function trim;
  * one. A default is the thing an operator is least likely to question, so a
  * wrong attribution to the stack is the one that survives longest
  * unchallenged.
+ *
+ * **An arm that names nothing holds nothing.** The two that do — a plugin, or
+ * the reason an origin could not be worked out — hold a string; the other two
+ * hold `null`, and not an empty string. An empty string here would be state
+ * nothing can reach: the fold never hands it out on those arms, so no reader
+ * could read it and no test could tell one value of it from another, which is
+ * state nothing can hold right. `null` says there is nothing rather than
+ * claiming there is a string and it is empty.
  *
  * **Four arms rather than a word and two optional strings.** On the wire it is
  * a tagged object: `{origin: 'bundled'}`, `{origin: 'operator'}`,
@@ -37,14 +46,14 @@ use function trim;
  */
 final readonly class WhereASettingCameFrom
 {
-    private function __construct(private WhoSetIt $arm, private string $said) {}
+    private function __construct(private WhoSetIt $arm, private ?string $said) {}
 
     /**
      * The stack's own default, which nobody has changed.
      */
     public static function bundled(): self
     {
-        return new self(arm: WhoSetIt::Bundled, said: '');
+        return new self(arm: WhoSetIt::Bundled, said: null);
     }
 
     /**
@@ -52,7 +61,7 @@ final readonly class WhereASettingCameFrom
      */
     public static function operator(): self
     {
-        return new self(arm: WhoSetIt::Operator, said: '');
+        return new self(arm: WhoSetIt::Operator, said: null);
     }
 
     /**
@@ -120,14 +129,16 @@ final readonly class WhereASettingCameFrom
         Closure $plugin,
         Closure $unknown,
     ): object {
-        // `match` on the closed set rather than a chain of ifs on strings: a
-        // case added to {@see WhoSetIt} without a branch here is an unhandled
-        // match error at the first reading, which is the loudest this can be.
-        return match ($this->arm) {
-            WhoSetIt::Bundled => $bundled(),
-            WhoSetIt::Operator => $operator(),
-            WhoSetIt::Plugin => $plugin($this->said),
-            WhoSetIt::Unknown => $unknown($this->said),
-        };
+        // Read off what is held before which arm holds it, because that is
+        // the question with two answers: an arm that names nothing holds
+        // nothing, and the two that name something hold it. Both halves are
+        // reached by the cases below, so neither is a branch nothing walks.
+        $said = $this->said;
+
+        if (! is_string($said)) {
+            return $this->arm === WhoSetIt::Operator ? $operator() : $bundled();
+        }
+
+        return $this->arm === WhoSetIt::Plugin ? $plugin($said) : $unknown($said);
     }
 }
