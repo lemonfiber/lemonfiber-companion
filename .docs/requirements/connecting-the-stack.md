@@ -32,6 +32,30 @@ wiring rather than inside a settlement, and neither exists here yet:
 | `N5-R10`, `N5-R11` | A plugin install, which is a different envelope again |
 | `N5-R13` | An unreadable wiring, which needs a wiring to be unreadable |
 
-None of these is blocked by the contract. `WiringEnvelope` carries `unfilled`
-and the by-name arm, and `SubstitutionEnvelope` carries `leaves_unfilled`, so
-each is work not yet done rather than a gap to be raised.
+## Most of them are blocked, and nothing here can unblock them
+
+**Nothing serves the `wiring` envelope.** The type exists — `WiringEnvelope` is
+generated, and the vocabulary above is read from its shape — but no endpoint
+returns it. Verified in three places rather than inferred from one:
+
+- `Lemonfiber\Sdk\Contract\Api` declares 34 endpoint constants, and no
+  docblock in it names `WiringEnvelope`, `SubstitutionEnvelope` or
+  `PluginsEnvelope`.
+- The core's HTTP crate serves 33 routes and its read table dispatches 29
+  kinds. `WIRING` is in neither, and `Kind::Wiring` appears nowhere in it.
+- The core *can* answer it. `Command::Wiring` produces `Outcome::Wiring` and
+  the contract publishes the schema, so it is reachable from the command line
+  and not over the wire.
+
+So `N5-R2`, `N5-R4`, `N5-R7`, `N5-R10`, `N5-R11` and `N5-R13` cannot be answered
+here until a read exists. `N5-R8` and `N5-R9` are about the catalogue, which
+**is** served at `/api/catalogue`, and remain work not yet done.
+
+This is the case `N1-R17` describes, and the rule is that the work stops rather
+than going around it. An app composing a wiring view out of `/api/services` and
+`/api/config` would be answering from a neighbour, and would be wrong the first
+time two services claimed one capability — which is the entire subject.
+
+The types above are still worth having: they are what a reader will read *into*
+the day the read exists, and building them is what established that the envelope
+carries everything except a way to ask for it.
