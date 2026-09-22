@@ -116,7 +116,7 @@
                  behind it. Said as the stack said it: this app composes
                  nothing, and a release the stack had nothing to say about says
                  so rather than drawing a blank. --}}
-            @if ($release->saysWhatItDelivers)
+            @if ($release->deliversSaid !== null)
                 <native:text>{{ $release->deliversSaid }}</native:text>
             @else
                 <x-operator::note>{{ __('updates.delivers_unsaid') }}</x-operator::note>
