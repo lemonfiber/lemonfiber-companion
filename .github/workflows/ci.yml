@@ -190,6 +190,31 @@ jobs:
   # the history of the file it names. Without it a pin rots with nothing to say
   # so, which is how the `sonar-gate` pin came to be a commit behind and stayed
   # there until another repository's gate found it.
+  #
+  # **Reporting here, not gating, and that is a deferral rather than an
+  # oversight.** `Q-R68` asks for this to be a required check on the default
+  # branch and it is not one here. `Q-R71` is the form that admission takes, so
+  # it is taken in full:
+  #
+  # - *The reason.* The remedy for a red run is a pin bump, and nothing opens
+  #   one in lockstep across the org. Made required before that exists, the gate
+  #   blocks its own cure: the bump is itself a pull request, and it arrives at a
+  #   default branch where every pull request is already red for wanting it.
+  # - *The work it waits on.* `OPS-R48` — the automated pull request that bumps
+  #   every consumer when these workflows move. Dependabot covers part of it
+  #   here, daily and with `lemonfiber/spec*` claimed ahead of the wildcard, but
+  #   it proposes whatever tag existed when it ran, so a proposal can land
+  #   already behind a tag published after it was computed. That is the gap, and
+  #   it is not one a schedule closes.
+  # - *When it is reviewed.* 2026-12-22, or the day `OPS-R48` lands, whichever
+  #   comes first.
+  #
+  # On 2026-09-22 the argument stopped being hypothetical: a tag moved one line
+  # of `scorecard.yml` and nine of the ten repositories that pin it went red at
+  # once. The nine that require this check could merge nothing until each was
+  # bumped by hand. This repository could still merge, which is the whole of what
+  # the deferral buys and the whole of why it is written down rather than left to
+  # look like a repository nobody finished configuring.
   workflow-pins:
     uses: lemonfiber/spec/.github/workflows/workflow-pins.yml@bb95f42d7630f689a1c5ec05cc39fb82476ace94 # v1.0.4
 
