@@ -2313,29 +2313,65 @@ final readonly class Fixtures
     }
 
     /**
-     * The per-module floors.
+     * The per-tree floors.
+     *
+     * Both `G7` fixtures are edits to files this repository owns rather than
+     * files dropped in beside them, and that is forced by what the rule reads:
+     * the trees come from `phpunit.xml` and the floors from the manifest
+     * nearest each one, so the smallest violation of either is a change to one
+     * of those two files. A planted manifest under a directory nothing
+     * measures would be read by nothing at all.
      *
      * The clover fixture goes to the path the real report uses. `coverage/` is
-     * generated output and wholly ignored by git already, so it needs no
-     * `Fixtures` directory to stay invisible — and a report written by hand is
-     * only portable because the reader strips the repository root, which an
-     * absolute path from CI would otherwise carry.
+     * generated output and wholly ignored by version control already, so it
+     * needs no `Fixtures` directory to stay invisible — and a report written by
+     * hand is only portable because the reader strips the repository root,
+     * which an absolute path from CI would otherwise carry.
      *
      * @return list<Fixture>
      */
     private static function floors(): array
     {
         return [
-            Fixture::suite('G7', 'app-modules/Fixtures/composer.json', <<<'JSON'
-                {
-                    "name": "modules/fixtures",
-                    "description": "A module that states no bar of its own.",
-                    "type": "library",
-                    "license": "LicenseRef-Hippocratic-3.0",
-                    "require": { "php": "^8.5" },
-                    "extra": { "lemonfiber": { "kind": "capability" } }
-                }
-                JSON, 'G7 — every module declares', 'fixtures'),
+            // A measured tree whose nearest manifest states no bar. The floors
+            // block is left in place and emptied rather than removed, because
+            // the failure worth catching is the one that looks like it was
+            // filled in — a manifest with no block at all is the state a new
+            // package arrives in and the state somebody is looking for.
+            Fixture::edit(
+                'G7',
+                'bridge/composer.json',
+                <<<'JSON'
+                        "lemonfiber": {
+                            "floors": {
+                                "coverage": 100,
+                                "mutation": 100
+                            }
+                        },
+                JSON,
+                <<<'JSON'
+                        "lemonfiber": {
+                            "floors": {}
+                        },
+                JSON,
+                'G7 — every measured tree is held',
+                'bridge/src',
+            ),
+
+            // A second tree falling back to the root's manifest, which is how
+            // one pair of numbers comes to hold two trees. Measuring
+            // `database` is the realistic way in: it is a directory this
+            // repository has, it holds PHP, and nothing between it and the
+            // root declares a floor — so it lands on `bootstrap/Composition`'s
+            // without either tree saying it is sharing.
+            Fixture::edit(
+                'G7',
+                'phpunit.xml',
+                '            <directory>bootstrap/Composition</directory>',
+                "            <directory>bootstrap/Composition</directory>\n            <directory>database</directory>",
+                'G7 — no manifest is nearest',
+                'database',
+            ),
 
             Fixture::suite('G9', 'coverage/clover.xml', <<<'XML'
                 <?xml version="1.0" encoding="UTF-8"?>
@@ -2348,7 +2384,7 @@ final readonly class Fixtures
                     </package>
                   </project>
                 </coverage>
-                XML, 'G9 — every module meets', 'health is at 25.0%'),
+                XML, 'G9 — every measured tree meets', 'app-modules/health/src is at 25.0%'),
         ];
     }
 

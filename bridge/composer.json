@@ -19,6 +19,12 @@
                 "Lemonfiber\\Native\\NativeServiceProvider"
             ]
         },
+        "lemonfiber": {
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            }
+        },
         "nativephp": {
             "manifest": "nativephp.json"
         }

@@ -787,9 +787,9 @@ there is nowhere in either that a number would be doing anything but gesturing.
 | G4 | No dev dependency reachable from production code | `composer-dependency-analyser` |
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
 | G6 | No committed `->only(`, and no `->skip()` whose last argument is not the reason | arch |
-| G7 | Every module declares its own coverage and mutation floors | arch |
+| G7 | Every tree the coverage report measures is held to a coverage and a mutation floor, declared in the manifest nearest it, and no manifest is nearest to two | arch |
 | G8 | Every port in `Modules\Kernel` is bound, once, in the composition root, and something takes it — a port nothing is handed is a binding that resolves and changes nothing | test: the booted composition root; arch: every bound port read against what is handed one, with a register of those still waiting |
-| G9 | No module is below the coverage floor it declared | test: the `Floors` suite, over the clover report |
+| G9 | No measured tree is below the coverage floor its nearest manifest declared | test: the `Floors` suite, over the clover report |
 | G10 | No two test files declare the same helper or file-level constant name | arch: over the text of the test files |
 | G11 | A diagnostic fails the run, and no setting exempts one | arch: the settings, read out of `phpunit.xml` |
 | G12 | A suite standing a payload in for a stack reads it against the contract | arch: over the suites that write a wire body |
@@ -925,23 +925,47 @@ honestly described: the table reports green and a reader stops checking, which
 is strictly worse than an unchecked area, because an unchecked area gets
 reviewed by a person.
 
-**Why the floors are per module.** One percentage across twelve modules is an
+**Why the floors are per tree.** One percentage across fifteen trees is an
 average, and an average is true about what it covered and silent about what it
 covered over: a capability at 100% carries an adapter at 40% and the gate
 reports a pass. The clover report already holds the per-file numbers, so
 splitting it by directory costs nothing at the point of measurement and turns
-one number into twelve.
+one number into fifteen.
 
-**There is deliberately no default floor.** A module that declares none fails
-G7 by name. A default would put the number back where nobody chose it, and a
-module added tomorrow would inherit a bar somebody picked for a different
-module — which is the silent exemption the change exists to remove. The kind's
-convention is named in the failure message instead, so declaring it is a
-ten-second job rather than a guess.
+**A tree's floors are declared in the nearest manifest above it.** That is one
+principle applied three times rather than three cases:
+`app-modules/kernel/src` is held by `app-modules/kernel/composer.json`,
+`bridge/src` by `bridge/composer.json`, and `bootstrap/Composition` by the root
+manifest. Derived rather than listed, which is what makes *every tree
+`phpunit.xml` measures is held to a bar* checkable instead of a list somebody
+maintains: `Tests\Support\MeasuredTree` reads the trees out of `phpunit.xml`
+and the floors out of whichever manifest is nearest each, and G7, G9 and
+`scripts/mutation.php` all read it.
+
+The rule it replaces was *in the module's own manifest*, and two trees could
+not obey it. `bridge/src` is a path package: its namespace is
+`Lemonfiber\Native\` rather than `Modules\<Name>` and its manifest declares no
+kind, so nothing could read it as a module. `bootstrap/Composition` has no
+manifest at all. Between them that was 2,900 lines — 7% of the measured source
+— inside the global coverage floor and outside every per-directory bar, with
+nowhere to declare one.
+
+**No manifest may be nearest to two measured trees.** One manifest declares one
+pair of numbers, so two trees reaching the same one share a bar between them —
+the averaging above, except quieter, because nothing in either tree says it is
+being judged alongside the other. The root's is where it would happen: it is
+what every tree falls back to.
+
+**There is deliberately no default floor.** A tree whose manifest declares none
+fails G7 by name. A default would put the number back where nobody chose it,
+and a tree added tomorrow would inherit a bar somebody picked for a different
+tree — which is the silent exemption the change exists to remove. Where the
+manifest declares a kind, that kind's convention is named in the failure
+message instead, so declaring it is a ten-second job rather than a guess.
 
 **The ratchet is on the declared floors, not the measured ones.** The obvious
 rule — a floor tracks actual coverage and may only rise — is a gate that blocks
-its own cure: a module gaining a well-tested class raises its real coverage
+its own cure: a tree gaining a well-tested class raises its real coverage
 without anyone deciding to, and the build turns red for an improvement. Declared
 floors move only when somebody edits a manifest, so the total can never be
 tripped by code getting better. The slack between a floor and the real number is
@@ -950,10 +974,10 @@ printed every run and argued down in review.
 **Mutation floors are declared in the same place and cannot be read the same
 way.** There is no machine-readable mutation report — Pest offers `--min`, which
 fails a run, and nothing that emits a score. So the floors are enforced by
-invocation: modules sharing a floor share one run, because a floor of 100 admits
-no offsetting between them, and a module whose floor differs gets its own. The
-path list is generated from the manifests rather than written out, which is what
-stops it going stale the day a module is added.
+invocation: trees sharing a floor share one run, because a floor of 100 admits
+no offsetting between them, and a tree whose floor differs gets its own. The
+path list comes from the same derivation the coverage floors do rather than
+being written out, which is what stops it going stale the day a tree is added.
 
 **Why G6 is worth a rule of its own.** A committed `->only()` makes Pest run
 that one test and report green. Every other rule on this page stops holding, the

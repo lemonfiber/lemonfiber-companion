@@ -38,10 +38,24 @@ enum WhatTheOperatorSaid: string
      * read as {@see self::NotDetermined}, which is the safe answer in both
      * directions: nothing is shown, and no refusal is recorded that nobody
      * made.
+     *
+     * **Two branches rather than `tryFrom($said ?? '')`.** Routing *nothing
+     * said* through the empty string makes it the same path as a word this
+     * type does not know, and the two are not the same thing — one is a
+     * machine with no device behind it, the other is a bridge that grew a case
+     * since this was written. Nothing could tell them apart either: the empty
+     * string is not a case here, so every unrecognised word already lands where
+     * it lands and swapping one for another changes nothing anybody can
+     * observe. That is a line no test can hold, which is what the mutation
+     * floor said about it. `WhatTheBridgeSaidTest` drives both.
      */
     public static function orNothingSaid(?string $said): self
     {
-        return self::tryFrom($said ?? '') ?? self::NotDetermined;
+        if ($said === null) {
+            return self::NotDetermined;
+        }
+
+        return self::tryFrom($said) ?? self::NotDetermined;
     }
 
     /**

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Tests\Support\ApiSurface;
+use Tests\Support\MeasuredTree;
 use Tests\Support\Module;
 use Tests\Support\Template;
 use Tests\Support\Tree;
@@ -33,11 +34,33 @@ use Tests\Support\Tree;
 
 it('Q-R66 — the modules a rule judges are found', function (): void {
     // `Module::all()` is under `ModuleApiTest`, `ModuleBoundariesTest`,
-    // `WhereThingsGoTest`, `TestsMirrorSourceTest`, `PerModuleFloorsTest` and
-    // the composition-root rules. Empty, every one of them passes.
+    // `WhereThingsGoTest`, `TestsMirrorSourceTest` and the composition-root
+    // rules. Empty, every one of them passes.
     expect(Module::all())->not->toBe([]);
     expect(Module::populated())->not->toBe([]);
     expect(Module::namespaces())->not->toBe([]);
+});
+
+it('Q-R66 — the trees held to a floor are found, and the two that are not modules are among them', function (): void {
+    // `MeasuredTree::all()` is what `G7` holds to a bar, what the `Floors`
+    // suite measures against the clover report and what `scripts/mutation.php`
+    // mutates. Empty, all three pass having judged nothing.
+    expect(MeasuredTree::all())->not->toBe([]);
+
+    // Named, and deliberately. Every other list in this repository is derived
+    // so that it cannot lose a tree quietly — and this one is derived from
+    // `phpunit.xml`, which means a tree deleted *there* is lost from all three
+    // gates at once and from the coverage report in the same edit. Nothing
+    // about that is loud: `--min=100` still passes, over less.
+    //
+    // These two are the ones worth naming because they are the two that were
+    // already missing. The floors read `Module::all()`, `bridge/src` is a path
+    // package and `bootstrap/Composition` is the composition root, so 2,900
+    // lines sat inside the coverage floor and outside every per-directory bar.
+    $measured = array_map(static fn(MeasuredTree $tree): string => $tree->path, MeasuredTree::all());
+
+    expect($measured)->toContain('bridge/src')
+        ->toContain('bootstrap/Composition');
 });
 
 it('Q-R66 — a populated module answers with the classes it declares', function (): void {

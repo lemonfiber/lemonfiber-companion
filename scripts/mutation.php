@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * Mutation testing, at the floor each module declared for itself.
+ * Mutation testing, at the floor declared for each tree the suite measures.
  *
  * Coverage floors are read out of the clover report by the `Floors` suite.
  * Mutation floors cannot be: there is no machine-readable mutation report —
@@ -11,40 +11,53 @@ declare(strict_types=1);
  * the floor is enforced by invocation rather than by reading, and this is what
  * does the invoking.
  *
- * Modules that share a floor share a run. A floor of 100 admits no offsetting
+ * Trees that share a floor share a run. A floor of 100 admits no offsetting
  * between them — one surviving mutant anywhere in the path list drops the score
  * below 100 and fails — so grouping costs nothing in rigour and saves a full
- * suite pass per module, which is what each extra invocation actually costs.
- * A module whose floor differs gets its own run, because that is exactly where
- * a shared one would let the stricter module carry the looser.
+ * suite pass per tree, which is what each extra invocation actually costs.
+ * A tree whose floor differs gets its own run, because that is exactly where
+ * a shared one would let the stricter tree carry the looser.
  *
- * The paths come from the manifests rather than from a list in composer.json. A
- * list there is a second answer to where the modules are, and it goes stale the
- * day a module is added — silently, because the run still passes, over less.
+ * **The trees and their floors come from `Tests\Support\MeasuredTree`, which is
+ * where the `Floors` suite and `G7` get them too.** They are the trees
+ * `phpunit.xml` measures, and each is held to what the manifest nearest it
+ * declares. A glob written here instead is a second answer to *what is
+ * measured*, and the second answer was wrong: `app-modules/*` reached thirteen
+ * modules and neither `bridge/src` nor `bootstrap/Composition`, which are 2,900
+ * lines of shipped PHP the coverage floor holds and this file walked straight
+ * past — silently, because the run still passed, over less.
  *
- * **Two arguments, both for CI.** `--list` prints the modules worth mutating as
- * a JSON array, which is what a workflow matrix reads; `--module=<name>`
- * narrows a run to one of them. Together they let the slowest gate in the
- * repository run a module per runner instead of all of them in a row — it is
- * the one gate where the work is genuinely separable, because a floor of 100
- * admits no offsetting between modules and each is already judged alone.
+ * **Two arguments, both for CI.** `--list` prints the trees worth mutating as
+ * a JSON array, which is what a workflow matrix reads; `--tree=<path>` narrows
+ * a run to one of them. Together they let the slowest gate in the repository
+ * run a tree per runner instead of all of them in a row — it is the one gate
+ * where the work is genuinely separable, because a floor of 100 admits no
+ * offsetting between trees and each is already judged alone.
  *
  * Neither changes what is mutated locally: `composer test:mutation` with no
  * arguments is the whole of it, in one process, which is what somebody running
  * it by hand wants.
  */
 
+use Tests\Support\MeasuredTree;
+
 $root = dirname(__DIR__);
-$manifests = glob(sprintf('%s/app-modules/*/composer.json', $root));
+
+// The same derivation the suite uses, reached the only way a script can reach
+// it. `--list` therefore needs an install on the runner that asks for it,
+// which is the price of the two of them never disagreeing.
+require sprintf('%s/vendor/autoload.php', $root);
 
 /** @var list<string> $given */
 $given = array_slice($argv ?? [], 1);
 
-$asked = argument($given, '--module=');
+$asked = argument($given, '--tree=');
 $listing = in_array('--list', $given, strict: true);
 
-if ($manifests === false || $manifests === []) {
-    fwrite(STDERR, "No module manifests found, so there is nothing to mutate.\n");
+$trees = MeasuredTree::all();
+
+if ($trees === []) {
+    fwrite(STDERR, "phpunit.xml measures no tree, so there is nothing to mutate.\n");
 
     exit(1);
 }
@@ -55,10 +68,8 @@ $byFloor = [];
 /** @var list<string> $worthMutating */
 $worthMutating = [];
 
-foreach ($manifests as $manifest) {
-    $raw = file_get_contents($manifest);
-    $module = basename(dirname($manifest));
-    $floor = declaredFloor(is_string($raw) ? $raw : '');
+foreach ($trees as $tree) {
+    $floor = $tree->mutationFloor;
 
     if ($floor === null) {
         // A nowdoc rather than lines joined with `.`, which is `H5`: every join
@@ -66,86 +77,86 @@ foreach ($manifests as $manifest) {
         // this shape cannot honestly be one line. It also takes the escaping
         // away — the braces below are what a manifest actually looks like.
         fwrite(STDERR, sprintf(<<<'SAID'
-            %s declares no mutation floor.
+            %s is measured and %s declares no mutation floor.
 
-            Add it beside the kind in the module's own manifest:
+            Add it to the manifest nearest that tree, beside the kind where there is one:
                 "extra": { "lemonfiber": { "floors": { "mutation": 100 } } }
 
-            There is no default on purpose — a module that inherits one is exempt from
+            There is no default on purpose — a tree that inherits one is exempt from
             the decision rather than held to it. G7 reports the same omission in the
             test suite, so this should already have failed there.
 
-            SAID, $module));
+            SAID, $tree->path, $tree->manifest));
 
         exit(1);
     }
 
     // A floor of zero is a declared position rather than a gap, and the
-    // position is the module's own: its manifest says what holds its decisions
+    // position is that manifest's own: it says what holds those decisions
     // instead, beside the number. Said out loud rather than skipped in silence,
-    // because a module that was never mutated and a module with nothing left to
+    // because a tree that was never mutated and a tree with nothing left to
     // kill print the same way — which is nothing at all.
     if ($floor === 0) {
         if (! $listing) {
             fwrite(STDOUT, sprintf(
                 "  %s: mutation floor is 0 — %s\n",
-                $module,
-                declaredArgument(is_string($raw) ? $raw : '') ?? 'and the manifest says nothing about why',
+                $tree->path,
+                $tree->whyMutationIsZero ?? 'and the manifest says nothing about why',
             ));
         }
 
         continue;
     }
 
-    // Narrowed to one module where a runner was given one. The floor is still
-    // read for every module rather than only this one, because the refusal
-    // above is the check that a module declared a floor at all — and a shard
-    // that skipped it would let an undeclared floor through on eleven runners
-    // out of twelve.
-    if ($asked !== null && $asked !== $module) {
+    // Narrowed to one tree where a runner was given one. The floor is still
+    // read for every tree rather than only this one, because the refusal
+    // above is the check that a tree was declared a floor at all — and a shard
+    // that skipped it would let an undeclared floor through on fourteen runners
+    // out of fifteen.
+    if ($asked !== null && $asked !== $tree->path) {
         continue;
     }
 
-    $source = sprintf('%s/app-modules/%s/src', $root, $module);
-
     // Nothing to mutate yet. Said out loud rather than skipped in silence,
     // because "no mutants" and "every mutant killed" print the same way.
-    if (sourceFiles($source) === []) {
+    if ($tree->sourceFiles() === []) {
         if (! $listing) {
-            fwrite(STDOUT, sprintf("  %s: no code yet, nothing to mutate\n", $module));
+            fwrite(STDOUT, sprintf("  %s: no code yet, nothing to mutate\n", $tree->path));
         }
 
         continue;
     }
 
     if ($listing) {
-        $worthMutating[] = $module;
+        $worthMutating[] = $tree->path;
 
         continue;
     }
 
-    $byFloor[$floor][] = $source;
+    $byFloor[$floor][] = $tree->path;
 }
 
 // What a workflow matrix reads. An empty array is a legitimate answer — no
-// module holds code yet — and a matrix over it runs nothing, which is why the
+// tree holds code yet — and a matrix over it runs nothing, which is why the
 // job that aggregates the shards has to treat "nothing ran" as a pass rather
 // than as an absence.
 if ($listing) {
-    // Not sorted here, and that is not an omission. `glob()` sorts what it
-    // returns, so this list arrives in the order the manifests were walked and
-    // stays in it — which is all a matrix needs, so that its runners do not
-    // reshuffle between commits. Sorting it again would have meant reaching for
-    // a byte comparison `L6` forbids, and claiming an exemption for a line that
-    // changes nothing is worse than the line.
-    fwrite(STDOUT, sprintf("%s\n", json_encode($worthMutating)));
+    // Not sorted here, and that is not an omission. The trees arrive in the
+    // order `phpunit.xml` writes them, with each glob expanded by `glob()`,
+    // which sorts — so this list is stable across commits, which is all a
+    // matrix needs so that its runners do not reshuffle. Sorting it again would
+    // have meant reaching for a byte comparison `L6` forbids, and claiming an
+    // exemption for a line that changes nothing is worse than the line.
+    // Slashes unescaped, because a tree is a path now rather than a bare name
+    // and `bootstrap\/Composition` is what a runner would be labelled with.
+    fwrite(STDOUT, sprintf("%s\n", json_encode($worthMutating, JSON_UNESCAPED_SLASHES)));
 
     exit(0);
 }
 
 if ($asked !== null && $byFloor === []) {
     fwrite(STDERR, sprintf(<<<'SAID'
-        There is no module called %s with code to mutate.
+        There is no measured tree at %s with code to mutate.
 
         A shard naming one that is gone is a shard that passes having done nothing,
         which is the whole failure this gate exists to prevent. The matrix is built
@@ -157,7 +168,7 @@ if ($asked !== null && $byFloor === []) {
 }
 
 if ($byFloor === []) {
-    fwrite(STDOUT, "No module has code to mutate yet.\n");
+    fwrite(STDOUT, "No measured tree has code to mutate yet.\n");
 
     exit(0);
 }
@@ -165,11 +176,7 @@ if ($byFloor === []) {
 $failed = 0;
 
 foreach ($byFloor as $floor => $paths) {
-    fwrite(STDOUT, sprintf(
-        "\nMutation at %d%%: %s\n",
-        $floor,
-        implode(', ', array_map(static fn(string $p): string => basename(dirname($p)), $paths)),
-    ));
+    fwrite(STDOUT, sprintf("\nMutation at %d%%: %s\n", $floor, implode(', ', $paths)));
 
     // The same two suites `composer test` leaves out, for the same reasons and
     // with an extra one here. `Floors` reads the clover report rather than
@@ -178,14 +185,23 @@ foreach ($byFloor as $floor => $paths) {
     // and runs the analyser and the suite over them as subprocesses, which
     // under mutation would be re-run once per mutant.
     //
-    // Nothing was catching this: with no module holding code, the loop above
+    // Nothing was catching this: with no tree holding code, the loop above
     // never reached a run at all, so the invocation was unexercised until the
     // first one did.
+    //
+    // `--covered-only` is what keeps the device-only file out of this. It is
+    // excluded from `<source>` in `phpunit.xml`, so no coverage is recorded for
+    // it and the runner skips a file it has no covered lines for — which
+    // matters more here than it reads: `TheRunloop::start()` blocks against the
+    // real bridge, so a mutant of it would hang rather than fail.
     $command = sprintf(
         '%s/vendor/bin/pest --mutate --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s',
         escapeshellarg($root),
         $floor,
-        escapeshellarg(implode(',', $paths)),
+        escapeshellarg(implode(',', array_map(
+            static fn(string $path): string => sprintf('%s/%s', $root, $path),
+            $paths,
+        ))),
     );
 
     passthru($command, $status);
@@ -203,7 +219,7 @@ exit($failed === 0 ? 0 : 1);
  * composer passes through after `--`.
  *
  * `mb_substr` and `mb_strlen` because `L3` forbids the byte versions
- * everywhere, and the rule is right to be blanket: the exception a module name
+ * everywhere, and the rule is right to be blanket: the exception a tree path
  * would earn is the exception somebody copies to a stack name.
  *
  * @param list<string> $given
@@ -217,123 +233,4 @@ function argument(array $given, string $prefix): ?string
     }
 
     return null;
-}
-
-/**
- * The mutation floor a manifest declares, or null where it declares none.
- *
- * Each step is checked rather than reached through, because a manifest is a
- * file on disk: an `??` chain through four keys would turn a malformed one into
- * a silent zero, which reads exactly like a module that meant to declare none.
- */
-function declaredFloor(string $manifest): ?int
-{
-    /** @var mixed $decoded */
-    $decoded = json_decode($manifest, associative: true);
-
-    /** @var mixed $floors */
-    $floors = is_array($decoded) ? under($decoded, 'extra', 'lemonfiber', 'floors') : null;
-
-    if (! is_array($floors) || ! array_key_exists('mutation', $floors)) {
-        return null;
-    }
-
-    /** @var mixed $floor */
-    $floor = $floors['mutation'];
-
-    return is_int($floor) ? $floor : null;
-}
-
-/**
- * The argument a manifest gives for a mutation floor of zero, or null.
- *
- * Read rather than restated. One sentence here would be one argument about
- * every module that declares a zero, so a module whose reasoning differs has
- * nowhere to say so and a module with no reasoning at all is indistinguishable
- * from one that has thought about it. `G7` is what refuses the second.
- */
-function declaredArgument(string $manifest): ?string
-{
-    /** @var mixed $decoded */
-    $decoded = json_decode($manifest, associative: true);
-
-    /** @var mixed $floors */
-    $floors = is_array($decoded) ? under($decoded, 'extra', 'lemonfiber', 'floors') : null;
-
-    if (! is_array($floors) || ! array_key_exists('mutation-is-zero-because', $floors)) {
-        return null;
-    }
-
-    /** @var mixed $said */
-    $said = $floors['mutation-is-zero-because'];
-
-    return is_string($said) ? $said : null;
-}
-
-/**
- * Whatever is nested under a run of keys, or null where the path runs out.
- *
- * Split from {@see declaredFloor()} because the two answer different questions —
- * where in the manifest to look, and whether what is there is a floor — and
- * together they left one function with four ways out (`H8`).
- *
- * Each step is checked rather than reached through, which is the whole point: an
- * `??` chain through four keys turns a malformed manifest into a silent zero,
- * and that reads exactly like a module that meant to declare none.
- *
- * @param array<array-key, mixed> $decoded
- */
-function under(array $decoded, string ...$keys): mixed
-{
-    $found = $decoded;
-
-    foreach ($keys as $key) {
-        if (! array_key_exists($key, $found)) {
-            return null;
-        }
-
-        /** @var mixed $next */
-        $next = $found[$key];
-
-        if (! is_array($next)) {
-            // The last key may legitimately name something that is not an
-            // array — a floor is an int — so the run ends here and the caller
-            // decides whether what it found is the shape it wanted. Returning
-            // null instead would lose the difference between "no such key" and
-            // "a key whose value is not a table", which is the distinction this
-            // function exists to keep.
-            return $key === $keys[count($keys) - 1] ? $next : null;
-        }
-
-        $found = $next;
-    }
-
-    return $found;
-}
-
-/**
- * Every PHP file under a directory, at any depth.
- *
- * @return list<string>
- */
-function sourceFiles(string $directory): array
-{
-    if (! is_dir($directory)) {
-        return [];
-    }
-
-    $found = [];
-
-    $tree = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
-    );
-
-    /** @var SplFileInfo $file */
-    foreach ($tree as $file) {
-        if ($file->getExtension() === 'php') {
-            $found[] = $file->getPathname();
-        }
-    }
-
-    return $found;
 }

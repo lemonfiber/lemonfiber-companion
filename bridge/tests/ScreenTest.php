@@ -50,6 +50,25 @@ it('asks the bridge function the manifest declares', function (): void {
         ->assertCalled('Lemonfiber.IsProtected');
 });
 
+it('sends the reason it is asking the device who somebody is', function (): void {
+    // The reason is not decoration. It is painted into the platform's own
+    // dialog, and it is the last thing an operator reads before deciding
+    // whether to put their thumb on the sensor — so a call that reaches the
+    // device without it asks for a fingerprint over a blank prompt.
+    //
+    // Nothing held it: the parameter could be dropped from the call and every
+    // test here stayed green, because the answer this method reads does not
+    // depend on what it sent.
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Authenticate', ['acknowledged' => true]);
+
+    expect(new Screen()->authenticate('to unlock your stacks'))->toBeTrue();
+
+    $bridge->assertCalled(
+        'Lemonfiber.Authenticate',
+        fn(array $sent): bool => $sent === ['reason' => 'to unlock your stacks'],
+    );
+});
+
 it('reads a protected window out of the answer', function (): void {
     FakeBridge::enable()->respondTo('Lemonfiber.Conceal', ['protected' => true]);
 
@@ -108,4 +127,21 @@ it('has a bridge to call at all, once the application has booted', function (): 
     // careful, and why there is not one. If this ever fails, put it back: the
     // alternative is a fatal on somebody's phone.
     expect(function_exists('nativephp_call'))->toBeTrue();
+});
+
+it('does not send a payload it could not encode, and says so as nothing said', function (): void {
+    // `"\xB1"` is a continuation byte with nothing in front of it, which is
+    // not valid UTF-8 and which `json_encode` refuses by answering false.
+    //
+    // A `(string)` cast turns that false into `''`, and the call then reaches
+    // the device carrying no parameters — a prompt asking the operator to prove who they are, over a reason
+    // the dialog never received.
+    //
+    // Nothing is sent instead, and the answer is the same one every other way
+    // of not reaching the bridge gives. The second assertion is the one that
+    // matters: the bridge was not called at all.
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Authenticate', ['acknowledged' => true]);
+
+    expect(new Screen()->authenticate("\xB1"))->toBeFalse()
+        ->and($bridge->calls)->toBe([]);
 });

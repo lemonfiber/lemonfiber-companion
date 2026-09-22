@@ -109,6 +109,33 @@ final readonly class OurCode
     }
 
     /**
+     * The same, with every glob resolved against what is actually on disk.
+     *
+     * One directory per tree rather than one pattern, which is what a question
+     * asked *of* a tree needs: `MeasuredTree` reads the floors out of the
+     * manifest nearest each one, and `app-modules/*\/src` has no nearest
+     * manifest — thirteen of them do. `scripts/mutation.php` mutates these and
+     * the `Floors` suite measures them, so all three are answering the same
+     * question out of the same file.
+     *
+     * A pattern matching nothing contributes nothing, which is `R4`'s finding
+     * rather than this one's: a source tree measured by nothing is loud there
+     * and would be silent here.
+     *
+     * @return list<string>
+     */
+    public static function measuredTrees(): array
+    {
+        $found = [];
+
+        foreach (self::sourceTrees() as $tree) {
+            $found = [...$found, ...array_map(self::relativeTo(...), self::directoriesMatching($tree))];
+        }
+
+        return $found;
+    }
+
+    /**
      * Every directory a testsuite runs, as `phpunit.xml` writes them.
      *
      * @return list<string>
@@ -213,7 +240,7 @@ final readonly class OurCode
     {
         $found = [];
 
-        foreach (self::expandedSourceTrees() as $tree) {
+        foreach (self::measuredTrees() as $tree) {
             $found = [...$found, ...Tree::filesUnder(Tree::at($tree), '.php')];
         }
 
@@ -311,7 +338,7 @@ final readonly class OurCode
         $relative = self::relativeTo($directory);
 
         return array_any(
-            self::expandedSourceTrees(),
+            self::measuredTrees(),
             static fn(string $tree): bool => $relative === $tree || str_starts_with($relative, sprintf('%s/', $tree)),
         );
     }
@@ -327,22 +354,6 @@ final readonly class OurCode
             $directories,
             static fn(string $directory): bool => self::isASourceTree($directory) && self::holdsPhp($directory),
         );
-    }
-
-    /**
-     * The source trees with their globs resolved against what is on disk.
-     *
-     * @return list<string>
-     */
-    private static function expandedSourceTrees(): array
-    {
-        $found = [];
-
-        foreach (self::sourceTrees() as $tree) {
-            $found = [...$found, ...array_map(self::relativeTo(...), self::directoriesMatching($tree))];
-        }
-
-        return $found;
     }
 
     /**
