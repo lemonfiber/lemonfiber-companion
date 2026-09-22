@@ -324,6 +324,34 @@ enum WireField: string
     case Secret = 'secret';
 
     /**
+     * Who put a setting's value there, as the tagged word inside `origin`.
+     *
+     * The field and the tag inside it are both spelled `origin`, which is the
+     * contract's doing and not worth a second case: the outer one is a table
+     * and the inner one is the word that says which arm of it this is.
+     */
+    case Origin = 'origin';
+
+    /**
+     * Which plugin an origin is attributing a value to.
+     *
+     * Only on the `plugin` arm. Read into
+     * {@see \Modules\Kernel\Api\WhereASettingCameFrom} rather than carried
+     * on beside the word, so that no screen holds a name it has not checked
+     * belongs to the arm that has one.
+     */
+    case Named = 'named';
+
+    /**
+     * Why an origin could not be established.
+     *
+     * Only on the `unknown` arm, and required there. A stack is required to
+     * say unknown rather than guess, and *unknown* with no reason after it is
+     * read as a default by everyone who sees it.
+     */
+    case Why = 'why';
+
+    /**
      * This field's name as a path, where it is read off another field's value.
      *
      * A refusal saying an envelope's `state` is unreadable is ambiguous in the

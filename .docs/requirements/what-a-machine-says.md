@@ -53,6 +53,14 @@ requirement is right and this page is a defect.
 | `N2-R9` | Stuck downloads are reachable, and *stuck* on its own is not something anybody can act on | `Stage` |
 | `N2-R10` | A log read is bounded, and a bound is only a bound if something holds it | `HowManyLines` |
 
+## What a machine is set to, and who set it
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `F7-R3` | Wherever a setting is shown, its origin — bundled, operator, or a named plugin — is shown beside it | `WhereASettingCameFrom`, carried on `Setting` beside the key rather than anywhere a screen could draw the row without it; `HowASettingReads` folds all four arms, so every row has one |
+| `F7-R11` | An origin that cannot be determined is reported as unknown and never as bundled | `WhereASettingCameFrom::unknown()`, a separate arm carrying the stack's reason and refusing a blank one. `Dials::from()` refuses an unreadable origin rather than defaulting it, and `ASettingsOriginIsUnnamed` keeps *unknown* from becoming the arm this app's own read failures land in |
+| `F7-R12` | Plugins do not get parallel surfaces of their own; they appear on the existing ones | A plugin-set value is a row on the settings screen with a different origin, not a screen of its own |
+
 ## What the household asked for
 
 | Requirement | What it asks | What keeps it |

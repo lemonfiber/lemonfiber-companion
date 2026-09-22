@@ -14,6 +14,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatASettingHolds;
+use Modules\Kernel\Api\WhereASettingCameFrom;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -52,9 +53,9 @@ function theStackWhoseSettingsAreRead(): Stack
 function whatTheLoftIsSetTo(): Settings
 {
     return Settings::of(
-        Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media')),
-        Setting::called('API_KEY', WhatASettingHolds::withheld('set, not shown')),
-        Setting::called('BIND', WhatASettingHolds::shown('lan')),
+        Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media'), WhereASettingCameFrom::bundled()),
+        Setting::called('API_KEY', WhatASettingHolds::withheld('set, not shown'), WhereASettingCameFrom::bundled()),
+        Setting::called('BIND', WhatASettingHolds::shown('lan'), WhereASettingCameFrom::bundled()),
     );
 }
 

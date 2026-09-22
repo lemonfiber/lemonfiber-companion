@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Arranging;
+use Modules\Kernel\Api\ASettingsOriginIsUnnamed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItIsSet;
 use Modules\Kernel\Api\Nonce;
@@ -17,6 +18,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatASettingHolds;
+use Modules\Kernel\Api\WhereASettingCameFrom;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Dials;
 use Modules\Sdk\Api\PinnedClients;
@@ -60,16 +62,27 @@ function theSessionAnOperatorHolds(): Session
 }
 
 /**
- * Two settings: one shown, one withheld.
+ * Two settings: one shown, one withheld, and each from somewhere different.
  *
  * Both kinds in every reading, because the failure worth refusing is a fold
- * that treats them alike — and a listing of one kind cannot catch it.
+ * that treats them alike — and a listing of one kind cannot catch it. The same
+ * argument now runs twice over: the origins are one arm that carries nothing
+ * and one that carries a name, so a fold that reached the wrong arm, or the
+ * right arm with the wrong payload, fails here rather than on a screen.
  */
 function theSameSettings(): Settings
 {
     return Settings::of(
-        Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media')),
-        Setting::called('API_KEY', WhatASettingHolds::withheld('set, not shown')),
+        Setting::called(
+            'LIBRARY_PATH',
+            WhatASettingHolds::shown('/data/media'),
+            WhereASettingCameFrom::operator(),
+        ),
+        Setting::called(
+            'API_KEY',
+            WhatASettingHolds::withheld('set, not shown'),
+            WhereASettingCameFrom::plugin('plex'),
+        ),
     );
 }
 
@@ -247,8 +260,11 @@ it('an unreadable listing is refused rather than shortened', function (): void {
             // present a short listing as a complete one, which is the one
             // thing this screen must never do.
             'settings' => [
-                ['key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false],
-                ['key' => 'API_KEY', 'value' => 'set, not shown'],
+                [
+                    'key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false,
+                    'origin' => ['origin' => 'bundled'],
+                ],
+                ['key' => 'API_KEY', 'value' => 'set, not shown', 'origin' => ['origin' => 'operator']],
             ],
         ],
     ])]);
@@ -257,8 +273,11 @@ it('an unreadable listing is refused rather than shortened', function (): void {
 });
 
 it('a setting with no name is refused rather than drawn nameless', function (): void {
-    expect(static fn(): Setting => Setting::called('   ', WhatASettingHolds::shown('x')))
-        ->toThrow(SettingIsUnnamed::class);
+    expect(static fn(): Setting => Setting::called(
+        '   ',
+        WhatASettingHolds::shown('x'),
+        WhereASettingCameFrom::bundled(),
+    ))->toThrow(SettingIsUnnamed::class);
 });
 
 it('HowItIsSet reaches the arm the answer calls for, and hands it what it was given', function (): void {
@@ -333,7 +352,10 @@ it('refuses a row that is not a setting, and says which row', function (): void 
     expect(static fn(): Settings => Dials::in(new Envelope(1, 'config', [
         'changed' => false, 'rehearsed' => false,
         'settings' => [
-            ['key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false],
+            [
+                'key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false,
+                'origin' => ['origin' => 'bundled'],
+            ],
             'API_KEY',
         ],
     ])))->toThrow(SettingIsUnreadable::class, 'position 1');
@@ -342,18 +364,18 @@ it('refuses a row that is not a setting, and says which row', function (): void 
 it('refuses a row with no key, and one whose key is not text', function (): void {
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false,
-        'settings' => [['value' => '/data/media', 'secret' => false]],
+        'settings' => [['value' => '/data/media', 'secret' => false, 'origin' => ['origin' => 'bundled']]],
     ])))->toBe('refused:no_answer')
         ->and(howAStackReadsAsText(aStackAnsweringWith([
             'changed' => false, 'rehearsed' => false,
-            'settings' => [['key' => 7, 'value' => '/data/media', 'secret' => false]],
+            'settings' => [['key' => 7, 'value' => '/data/media', 'secret' => false, 'origin' => ['origin' => 'bundled']]],
         ])))->toBe('refused:no_answer');
 });
 
 it('refuses a row whose value is not text', function (): void {
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false,
-        'settings' => [['key' => 'PORT', 'value' => 8443, 'secret' => false]],
+        'settings' => [['key' => 'PORT', 'value' => 8443, 'secret' => false, 'origin' => ['origin' => 'bundled']]],
     ])))->toBe('refused:no_answer');
 });
 
@@ -364,7 +386,7 @@ it('refuses a secret flag that is not a boolean rather than reading it for truth
     // withheld note as a value.
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false,
-        'settings' => [['key' => 'API_KEY', 'value' => 'set, not shown', 'secret' => 'false']],
+        'settings' => [['key' => 'API_KEY', 'value' => 'set, not shown', 'secret' => 'false', 'origin' => ['origin' => 'bundled']]],
     ])))->toBe('refused:no_answer');
 });
 
@@ -374,4 +396,108 @@ it('says which field was missing, for whoever has to find it', function (): void
     expect(static fn(): Settings => Dials::in(
         new Envelope(1, 'config', ['changed' => false, 'rehearsed' => false]),
     ))->toThrow(SettingIsUnreadable::class, '`settings`');
+});
+
+/**
+ * One row carrying whatever a case puts in `origin`, and nothing else wrong.
+ *
+ * Every case below is about the attribution, so the rest of the row is the one
+ * this suite reads everywhere else. A payload broken twice would pass for the
+ * wrong reason, and this rules that out by construction.
+ *
+ * @return array<string, mixed>
+ */
+function aStackAttributingASettingTo(mixed $origin): array
+{
+    return [
+        'changed' => false, 'rehearsed' => false,
+        'settings' => [
+            ['key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false, 'origin' => $origin],
+        ],
+    ];
+}
+
+it('refuses a row that does not say where its value came from', function (): void {
+    // Not read as the stack's own. A row whose origin is missing is a row this
+    // app cannot attribute, and reading it as bundled would be the one repair
+    // the requirement forbids: a default is the attribution an operator is
+    // least likely to question, so a wrong one survives longest.
+    expect(howAStackReadsAsText(aStackAnsweringWith([
+        'changed' => false, 'rehearsed' => false,
+        'settings' => [['key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false]],
+    ])))->toBe('refused:no_answer');
+
+    expect(static fn(): Settings => Dials::in(new Envelope(1, 'config', [
+        'changed' => false, 'rehearsed' => false,
+        'settings' => [['key' => 'LIBRARY_PATH', 'value' => '/data/media', 'secret' => false]],
+    ])))->toThrow(SettingIsUnreadable::class, '`origin`');
+});
+
+it('refuses an origin that is not a table, and one whose word is not text', function (): void {
+    expect(howAStackReadsAsText(aStackAnsweringWith(aStackAttributingASettingTo('bundled'))))
+        ->toBe('refused:no_answer')
+        ->and(howAStackReadsAsText(aStackAnsweringWith(aStackAttributingASettingTo(['origin' => 7]))))
+        ->toBe('refused:no_answer');
+});
+
+it('refuses an origin naming a word this app has not been taught, and quotes it', function (): void {
+    // The one refusal here that points somewhere other than a broken stack.
+    // A word this app does not know means the contract gained an arm and this
+    // app has not taken it, so the message names the word — it is the only
+    // thing that finds the release that added it.
+    expect(static fn(): Settings => Dials::in(
+        new Envelope(1, 'config', aStackAttributingASettingTo(['origin' => 'inherited'])),
+    ))->toThrow(SettingIsUnreadable::class, 'inherited');
+});
+
+it('refuses a plugin attribution with no plugin in it', function (): void {
+    // Missing, and present but blank, are two defects with one consequence:
+    // the screen reads *set by the  plugin*, which asserts a provenance and
+    // then withholds the only part of it anybody came for.
+    expect(static fn(): Settings => Dials::in(
+        new Envelope(1, 'config', aStackAttributingASettingTo(['origin' => 'plugin'])),
+    ))->toThrow(SettingIsUnreadable::class, '`named`');
+
+    expect(static fn(): WhereASettingCameFrom => WhereASettingCameFrom::plugin('   '))
+        ->toThrow(ASettingsOriginIsUnnamed::class);
+});
+
+it('refuses an unknown origin that does not say why it is unknown', function (): void {
+    // *Unknown* with nothing after it is read as a default by everyone who
+    // sees it, which is the reading the arm exists to prevent.
+    expect(static fn(): Settings => Dials::in(
+        new Envelope(1, 'config', aStackAttributingASettingTo(['origin' => 'unknown'])),
+    ))->toThrow(SettingIsUnreadable::class, '`why`');
+
+    expect(static fn(): WhereASettingCameFrom => WhereASettingCameFrom::unknown(' '))
+        ->toThrow(ASettingsOriginIsUnnamed::class);
+});
+
+it('reads all four attributions, and hands each arm what it was given', function (): void {
+    // The fold itself, every arm, for the reason the `HowItIsSet` case above
+    // gives: an arm that fired with the wrong payload would pass a test that
+    // only counted which one ran.
+    $whichArm = static fn(WhereASettingCameFrom $from): string => $from->whichever(
+        bundled: static fn(): WhatOneRowSaid => new WhatOneRowSaid('bundled'),
+        operator: static fn(): WhatOneRowSaid => new WhatOneRowSaid('operator'),
+        plugin: static fn(string $named): WhatOneRowSaid => new WhatOneRowSaid(sprintf('plugin:%s', $named)),
+        unknown: static fn(string $why): WhatOneRowSaid => new WhatOneRowSaid(sprintf('unknown:%s', $why)),
+    )->said;
+
+    // Read off the wire rather than built here, so the arm proven is the one
+    // the adapter reaches — a fold exercised only on values this file made
+    // would pass against a reader that never produces two of them.
+    $readOffTheWire = static function (array $origin) use ($whichArm): string {
+        foreach (Dials::in(new Envelope(1, 'config', aStackAttributingASettingTo($origin))) as $setting) {
+            return $whichArm($setting->from);
+        }
+
+        return 'nothing was read';
+    };
+
+    expect($readOffTheWire(['origin' => 'bundled']))->toBe('bundled')
+        ->and($readOffTheWire(['origin' => 'operator']))->toBe('operator')
+        ->and($readOffTheWire(['origin' => 'plugin', 'named' => 'plex']))->toBe('plugin:plex')
+        ->and($readOffTheWire(['origin' => 'unknown', 'why' => 'the stack was rebuilt']))
+        ->toBe('unknown:the stack was rebuilt');
 });

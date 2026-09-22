@@ -59,4 +59,23 @@ final class SettingIsUnreadable extends InvalidArgumentException
             $position,
         ));
     }
+
+    /**
+     * The origin names a word this app does not know.
+     *
+     * Apart from {@see missing()} because it is a different defect and points
+     * somewhere else. Missing means the answer did not come from a lemonfiber
+     * this app can read; this means it came from a *newer* one, which added an
+     * arm to the origin and this app has not been taught it. The word is
+     * quoted because it is the only thing that finds the release that added
+     * it.
+     */
+    public static function anOriginNobodyHere(string $word): self
+    {
+        return new self(sprintf(
+            'The config envelope attributes a setting to `%s`, which is not a `%s` this app knows. This answer came from a lemonfiber newer than this app.',
+            $word,
+            WireField::Origin->value,
+        ));
+    }
 }
