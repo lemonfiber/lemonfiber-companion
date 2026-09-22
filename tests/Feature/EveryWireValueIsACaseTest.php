@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
@@ -15,6 +16,7 @@ use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stage;
+use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
@@ -72,6 +74,12 @@ function theGeneratedHeldEnvelope(): string
 function theGeneratedLogEnvelope(): string
 {
     return theGeneratedEnvelope('LogEnvelope');
+}
+
+/** The generated envelope that carries what a stack is set to, as text. */
+function theGeneratedConfigEnvelope(): string
+{
+    return theGeneratedEnvelope('ConfigEnvelope');
 }
 
 /** The generated envelope that carries what the whole stack is doing, as text. */
@@ -335,6 +343,26 @@ it('N1-R13 — every stream the contract describes has a case', function (): voi
     expect(valuesOf(Stream::cases()))->toBe($streams);
 });
 
+it('N1-R13 — every cost the contract describes has a case', function (): void {
+    $costs = unionIn(theGeneratedConfigEnvelope(), 'cost');
+
+    expect($costs)->not->toBe([], 'no cost union was found in the generated envelope');
+    expect(valuesOf(Cost::cases()))->toBe($costs);
+});
+
+it('N1-R13 — every stance the contract describes has a case', function (): void {
+    // The one where a missing case would be worst. A stance this app did not
+    // know would be refused as unreadable, which is correct — but the reason
+    // to hold the set to the wire here is the pair the enum exists to keep
+    // apart: `unchanged` and `applied` both mean the setting holds what was
+    // asked for, and a contract that grew a third of those would need reading
+    // rather than guessing at.
+    $stances = unionIn(theGeneratedConfigEnvelope(), 'stance');
+
+    expect($stances)->not->toBe([], 'no stance union was found in the generated envelope');
+    expect(valuesOf(Stance::cases()))->toBe($stances);
+});
+
 it('N1-R13 — every way a service can be running has a case', function (): void {
     $states = unionIn(theGeneratedStatusEnvelope(), 'state');
 
@@ -408,6 +436,8 @@ const CHECKED_AGAINST_THE_WIRE = [
     Standing::class => 'state',
     Stream::class => 'stream',
     Medium::class => 'medium',
+    Cost::class => 'cost',
+    Stance::class => 'stance',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

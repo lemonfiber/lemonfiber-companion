@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
+use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatWasDecided;
 use Tests\Support\Tree;
@@ -89,6 +90,21 @@ const DOORS_THE_APP_OPENS = [
 
 /** Every verb this application can ask a stack for, and why that one. */
 const VERBS_THE_APP_ASKS_FOR = [
+    // The one that writes a setting, and the one this list exists to be read
+    // carefully about. Unconfirmed it changes nothing and answers with the
+    // review; confirmed it writes. Both go through this name, and which of
+    // the two happened is decided by an argument rather than by a second
+    // verb — so a reader asking *what can this app write* gets one answer
+    // here rather than having to find the flag.
+    //
+    // It cannot reach a credential's value. The app offers a change only on a
+    // setting the stack showed it a value for, and a withheld one is not a
+    // value — so the control an operator would type into never appears beside
+    // one. That is a property of the type the listing is read into rather
+    // than of this list, which is why it is worth saying here: this line
+    // would otherwise read as the app being able to set anything.
+    'config-set' => 'puts a value in one setting, having first been told what that would come to',
+
     // A start disturbs nothing, which is why it is the one verb
     // that asks for no confirmation.
     'up' => 'starts a form, or a service inside one',
@@ -359,6 +375,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
     $asked = [
         ...array_map(static fn(WhatToDoWithIt $doing): string => $doing->asked(), WhatToDoWithIt::cases()),
         ...array_map(static fn(WhatWasDecided $decided): string => $decided->asked(), WhatWasDecided::cases()),
+        ...array_map(static fn(WhatToChange $change): string => $change->asked(), WhatToChange::cases()),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
 

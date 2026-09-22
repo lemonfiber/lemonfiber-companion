@@ -80,6 +80,7 @@ requirement is right and this page is a defect.
 | `N1-R40` | An action the app could not deliver is refused rather than queued | `Attempted`; `ADR-0020` is the design |
 | `N1-R41` | No retaining an undelivered action, no replaying one on reconnecting, no presenting one as pending | `Attempted` |
 | `N1-R42` | An idempotency key is never serialised | `IdempotencyKey`, whose `serialize()` writes nothing |
+| `N1-R43` | A refused attempt leaves the action offered — the attempt failed, the capability did not go away | `Attempted`, which carries no arm for *unavailable*: a refusal is a thing that happened to one attempt and there is nowhere on the type to record it as a fact about the verb. `app-modules/kernel/tests/Api/AttemptedTest.php` names it |
 | `N1-R65` | One reading per frame | `Asking`, which publishes one method |
 | `N1-R66` | Nothing polls on the app's behalf | `HowTheOfferIsGoing` — a job that ended is where an automatic one would start |
 | `N3-R13` | An identity removed from the household is a signed-out app at the next refused call | `Obstacle` |
