@@ -33,9 +33,23 @@ enum WhyNothingWasKept: string
      * two: it tells an operator to try again, where the other tells them to
      * give up on the phone. Being wrong in the first direction costs a retry;
      * being wrong in the second costs them the application.
+     *
+     * **Two branches rather than `tryFrom($said ?? '')`.** Routing *nothing
+     * said* through the empty string makes it the same path as a word this
+     * type does not know, and the two are not the same thing — one is a
+     * machine with no device behind it, the other is a bridge that grew a case
+     * since this was written. Nothing could tell them apart either: the empty
+     * string is not a case here, so every unrecognised word already lands where
+     * it lands and swapping one for another changes nothing anybody can
+     * observe. That is a line no test can hold, which is what the mutation
+     * floor said about it. `WhatTheBridgeSaidTest` drives both.
      */
     public static function orTheStoreWouldNotOpen(?string $said): self
     {
-        return self::tryFrom($said ?? '') ?? self::StoreWouldNotOpen;
+        if ($said === null) {
+            return self::StoreWouldNotOpen;
+        }
+
+        return self::tryFrom($said) ?? self::StoreWouldNotOpen;
     }
 }

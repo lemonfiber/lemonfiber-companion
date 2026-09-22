@@ -231,3 +231,21 @@ it('says there is no store where nothing answers at all', function (): void {
 
     expect(new Storage()->canBeAsked())->toBeFalse();
 });
+
+it('does not send a payload it could not encode, and says so as nothing said', function (): void {
+    // `"\xB1"` is a continuation byte with nothing in front of it, which is
+    // not valid UTF-8 and which `json_encode` refuses by answering false.
+    //
+    // A `(string)` cast turns that false into `''`, and the call then reaches
+    // the device carrying no parameters — a write with no key and no value, which the store
+    // would answer for as though something had been kept.
+    //
+    // Nothing is sent instead, and the answer is the same one every other way
+    // of not reaching the bridge gives. The second assertion is the one that
+    // matters: the bridge was not called at all.
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Storage.Keep', ['outcome' => 'kept']);
+
+    expect(whyTheStoreRefused(new Storage()->keep("\xB1", 'v', WhenAValueMayBeRead::WhileUnlocked)))
+        ->toBe(WhyNothingWasKept::StoreWouldNotOpen)
+        ->and($bridge->calls)->toBe([]);
+});

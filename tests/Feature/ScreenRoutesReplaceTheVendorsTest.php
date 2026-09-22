@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Bootstrap\Composition\CompositionRoot;
 use Bootstrap\Composition\NativePHP\ScreenIsNotAScreen;
 use Bootstrap\Composition\NativePHP\ScreenRouter;
 use Bootstrap\Composition\NativePHP\ScreenRoutes;
@@ -55,6 +56,32 @@ it('A3 — the macro registered is ours, not the package\'s', function (): void 
         ->not->toBeNull('our macro must still register with the navigation stack');
 });
 
+it('is the composition root that leaves our macro in place', function (): void {
+    // `Route::macro()` writes to a static on the router class, so a macro any
+    // test registers outlives the application that test was given — and every
+    // other assertion here about `native` is satisfied by whichever macro
+    // happens to be there, ours or the package's. Flushing first is what makes
+    // this one about the boot rather than about what ran before it.
+    //
+    // Deleting the `declare()` in `CompositionRoot` leaves every other test
+    // here green: the package registers a macro of the same name in its own
+    // boot, so every test that asks for one gets one.
+    Route::flushMacros();
+
+    expect(Route::hasMacro('native'))->toBeFalse(
+        'the flush has to have worked, or what is asserted below is whatever was already there',
+    );
+
+    new CompositionRoot(app())->boot();
+
+    expect(Route::hasMacro('native'))->toBeTrue(
+        'the composition root is what registers `Route::native()`. With that line gone '
+        . 'nothing in this application registers one, and the package\'s — which builds '
+        . 'a screen with `new` and cannot give it a port — is what every screen route '
+        . 'would be served by',
+    );
+});
+
 it('answers a request for a screen through the runloop it was given', function (): void {
     // The route's own closure, called rather than routed. `Route::run()` raises
     // a checked exception and every Pest body is a closure — the same rule that
@@ -96,7 +123,8 @@ it('serves the route this application actually registered', function (): void {
 
     $said = $answered instanceof Response ? (string) $answered->getContent() : '';
 
-    expect($said)->toContain(YourStacks::class);
+    expect($said)->toContain(YourStacks::class)
+        ->and($said)->toContain('Native::test()');
 });
 
 it('takes no parameters from a path the navigation stack does not know', function (): void {
@@ -203,11 +231,21 @@ it('hands the screen its router, its parameters and its data, as the package doe
     // The other three lines of `createComponent` are the parent's, in the
     // parent's order. A screen that lost its router could not navigate, and
     // nothing else in this application would notice.
+    //
+    // Asserting the parameters and the data and not the router makes that
+    // sentence true of this test as well: `setRouter()` could be deleted and
+    // the suite would stay green, under the comment saying so.
+    //
+    // Read through the same door `createComponent` was. `nativeRouter` is
+    // protected because only a router writes it, and the alternative — render
+    // the component and look for `currentUri` in the tree — would be asserting
+    // the vendor's template rather than our line.
     $router = screensBuiltNormally();
 
     $component = withCreateComponent($router, YourStacks::class, ['id' => '7'], ['from' => 'a test']);
 
-    expect($component->param('id'))->toBe('7')
+    expect(theRouterHeldBy($component))->toBe($router)
+        ->and($component->param('id'))->toBe('7')
         ->and($component->data('from'))->toBe('a test');
 });
 
@@ -362,6 +400,24 @@ function aScreen(): YourStacks
         FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
         new Opening(ADeviceThatKnowsYou::willing(), StacksInMemory::working(), ADeviceOnANetwork::connected()),
     );
+}
+
+/**
+ * The router a screen was handed, read the way `createComponent` is reached.
+ *
+ * A function rather than a line in the test body, for the reason the comment
+ * above `ranTheRouteAt` gives: `ReflectionProperty` raises a checked exception
+ * and a Pest body is a closure, which may not.
+ *
+ * `nativeRouter` is protected because only a router writes it. Reading it here
+ * rather than rendering the component and looking for `currentUri` in the tree
+ * keeps the assertion on our line instead of on the vendor's template.
+ */
+function theRouterHeldBy(NativeComponent $component): ?NativeRouter
+{
+    $held = new ReflectionProperty($component, 'nativeRouter')->getValue($component);
+
+    return $held instanceof NativeRouter ? $held : null;
 }
 
 /**
