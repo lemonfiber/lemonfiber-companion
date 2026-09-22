@@ -492,3 +492,83 @@ it('says nothing happened when the session went between the reading and the tap'
     expect($screen->proposal()?->went->isSignedIn)->toBeFalse()
         ->and($adjusting->rehearsals())->toBe(0);
 });
+
+it('closes whatever was open when a key the listing did not offer arrives', function (): void {
+    // The half of the withheld-key refusal that a clean screen cannot show.
+    // Asked from nothing open, closing is indistinguishable from never having
+    // opened; asked with a shown setting already open and half typed into, a
+    // screen that only declined to open the new one would leave the old one
+    // open — and the operator's next agreement would be about a setting they
+    // had stopped looking at.
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()));
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+    $screen->change('API_KEY');
+
+    expect($screen->changing())->toBe('')
+        ->and($screen->typed())->toBe('');
+});
+
+it('offers no proposal for a setting when none has been asked for', function (): void {
+    // The guard that a screen with a proposal in hand cannot exercise. Asked
+    // before anything is proposed there is nothing to confuse it with; what
+    // this pins is that *nothing proposed* answers nothing rather than
+    // reaching past the check into a value that is not there.
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()));
+
+    $screen->change('LIBRARY_PATH');
+
+    expect($screen->proposalFor('LIBRARY_PATH'))->toBeNull()
+        ->and($screen->proposal())->toBeNull();
+});
+
+it('hands the template what has been typed, so the field keeps it', function (): void {
+    // The view data rather than the view name. A screen that rendered the right
+    // template with nothing in it draws an empty field over what the operator
+    // was halfway through typing, which is the one thing a change screen must
+    // not do between two taps.
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()));
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+
+    expect($screen->render()->getData())->toHaveKey('typed')
+        ->and($screen->render()->getData()['typed'])->toBe('/data/films');
+});
+
+it('asks nothing of the stack for a setting that is not the open one', function (): void {
+    // A tap on a control the template is not drawing, with a different setting
+    // open. What must not happen is the screen asking the stack what setting
+    // *that* one to the value typed into *this* one would come to — a question
+    // about a pair the operator never put together.
+    $adjusting = AStackToldToChangeSomething::saying(aCheapChangeStaged());
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), $adjusting);
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+    $screen->wouldBe('BIND');
+
+    expect($adjusting->rehearsals())->toBe(0)
+        ->and($adjusting->askedFor())->toBeNull()
+        ->and($screen->proposal()?->key)->toBe('');
+});
+
+it('N3-R13 — lets the session go when a change is refused on the credential', function (): void {
+    // The same release the listing does, on the other call this screen makes.
+    // A read refused on the credential and a write refused on it are the same
+    // signed-out device, and a screen that let go on one and not the other
+    // would leave the operator signed in until they happened to read again.
+    $keychain = AKeychainInMemory::working();
+    $screen = theSettingsScreen(
+        AStackThatIsSet::to(whatTheLoftIsSetTo()),
+        AStackToldToChangeSomething::met(Obstacle::CredentialWasRefused),
+        keychain: $keychain,
+    );
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+    $screen->wouldBe('LIBRARY_PATH');
+
+    expect($keychain->isHolding(theStackWhoseSettingsAreRead()->id()))->toBeFalse();
+});

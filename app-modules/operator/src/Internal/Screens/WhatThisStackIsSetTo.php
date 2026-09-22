@@ -254,10 +254,17 @@ final class WhatThisStackIsSetTo extends NativeComponent
      */
     private function put(string $key, Closure $asking): WhatAChangeTurnedOutToBe
     {
-        if ($this->changing !== $key || $key === '') {
+        if ($this->changing !== $key) {
             // Reached only by a tap on a control the template is not drawing.
             // Answered the way the screen would answer any other — nothing
             // happened — rather than by raising at somebody.
+            //
+            // One clause and not two. A blank key was tested for beside this
+            // and could never be the one that decided: `$changing` is either
+            // nothing or a key off the listing, so it is never blank, and a
+            // blank key therefore fails the comparison first. A test for a
+            // state that cannot occur is a line no case can reach, which is
+            // the same thing as a line nobody has checked.
             return new HowAChangeReads()->nothingOpen();
         }
 
