@@ -34,6 +34,26 @@ A page naming only the first is a second copy of the spec that will drift from
 it. A page naming only the second is an index, and an index is what the reader
 already has.
 
+## This directory is not the spec, and answers no question about it
+
+A requirement absent here is not a requirement that does not exist. These pages
+cover what somebody has written up, and the spec is far larger than the part of
+it this app has had reason to touch.
+
+It matters because the question gets asked in the other direction. A field
+arrives on the wire, nothing reads it, and somebody has to decide whether
+anything should — `WhatTheContractCarriesThatNothingReadsTest` is where that
+decision is written down, and *no requirement asks for this* is one of its two
+legitimate answers. Deciding that by searching this directory, or by searching
+`N1`–`N4`, has now been wrong twice: `F7-R3` requires a setting's origin shown
+beside it wherever it is shown, and `E5-R6` requires the changelog in the
+stack-update flow. Both bind a surface this app has, neither is in area `N`,
+and neither had a page here until the field that needed it turned up.
+
+So the answer is searched for in the spec, across every area, before it is
+written down as absent. Then the page is added here, which is how the next
+lookup stops being wrong.
+
 ## The pages
 
 | Page | What it covers |
