@@ -68,7 +68,7 @@ const NOT_YET = [
     'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
     'Glossary', 'History', 'Hosting', 'Import',
     'Invitation', 'Lifecycle', 'Migration', 'Music', 'Outbound',
-    'Preview', 'Provenance', 'Pull', 'Quality', 'Removal',
+    'Plugins', 'Preview', 'Provenance', 'Pull', 'Quality', 'Removal',
     'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',
     'Space', 'Start', 'Step', 'StopSeeding', 'Stored',
     'Substitution', 'Trace', 'Undo', 'Uninstall', 'Upgrade',
