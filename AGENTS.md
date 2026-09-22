@@ -149,7 +149,7 @@ checks and the reference comment. None of them runs from a clone.
 | Module manifests | `composer validate:modules` | Each module's own manifest, `--strict`. They generate the architecture rules, so a typo in one would otherwise disable a module's rules silently. |
 | Dependencies | `composer deps` | Unused and shadow dependencies. Plus `validate --strict`, `normalize`, `audit`. |
 | Tests | `composer test:report` | 100% line coverage. The Blade checks live here too, in `tests/Templates` — no analyser reads a template. |
-| Mutation | `composer test:mutation` | The floor each module declared for itself, in its own manifest. |
+| Mutation | `composer test:mutation` | The floor declared for each tree the suite measures, in the manifest nearest it. |
 
 `composer test:report` rather than `composer test:coverage`, which is the same run
 without the reports. `test:coverage` writes no clover, and `test:floors` and Sonar
@@ -157,13 +157,15 @@ both read clover — so a contributor who runs `test:coverage`, sees 100%, and p
 is refused by a floor test reading a file that is not there. `composer ci` runs
 `test:report`, and so does CI.
 
-Mutation floors are per module and declared in the module's own manifest, under
-`extra.lemonfiber.floors.mutation`. A module declaring `0` is taking a position
-rather than being skipped, and `scripts/mutation.php` says which positions those
-are and why — a component holds state and an adapter forwards a call, so mutating
-either measures the fake. Four of the thirteen declare it. Templates are not in
-the picture at all: the run mutates each module's `src/`, and a Blade file is not
-in it.
+Mutation floors are per measured tree and declared in the manifest nearest that
+tree, under `extra.lemonfiber.floors.mutation`: a module's own for
+`app-modules/<name>/src`, the plugin's for `bridge/src`, and the root's for
+`bootstrap/Composition`. A manifest declaring `0` is taking a position rather
+than being skipped, and `scripts/mutation.php` says which positions those are
+and why — a component holds state and an adapter forwards a call, so mutating
+either measures the fake. Four of the fifteen declare it. Templates are not in
+the picture at all: the run mutates the trees `phpunit.xml` measures, and a
+Blade file is not in one.
 
 ### ARCHITECTURE.md is checked, not just written
 

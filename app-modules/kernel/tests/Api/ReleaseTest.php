@@ -14,17 +14,18 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\VersionIsBlank;
+use Modules\Kernel\Api\WhatAReleaseDelivers;
 
 it('refuses a release with no version to call it by', function (): void {
     // A payload short of the name is the stack's half of the conversation gone
     // wrong, not a release with an empty name — and a screen handed one would
     // draw a row an operator could tap with nothing behind it.
-    expect(fn(): Release => Release::called('   ', noticeable: true, withdrawn: false))
+    expect(fn(): Release => Release::called('   ', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()))
         ->toThrow(VersionIsBlank::class);
 });
 
 it('takes the version as it was written, without the space around it', function (): void {
-    expect(Release::called('  4.1.0  ', noticeable: true, withdrawn: false)->version())->toBe('4.1.0');
+    expect(Release::called('  4.1.0  ', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())->version())->toBe('4.1.0');
 });
 
 it('N2-R20 — offers nothing where the stack reported it is current', function (): void {
@@ -33,7 +34,7 @@ it('N2-R20 — offers nothing where the stack reported it is current', function 
     // has nothing to offer either.
     $current = Upkeep::reported(
         HowCurrent::Current,
-        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false)),
+        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
@@ -41,7 +42,7 @@ it('N2-R20 — offers nothing where the stack reported it is current', function 
 
     $allTakenBack = Upkeep::reported(
         HowCurrent::Pending,
-        Releases::these(Release::called('4.0.17', noticeable: true, withdrawn: true)),
+        Releases::these(Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
@@ -49,7 +50,7 @@ it('N2-R20 — offers nothing where the stack reported it is current', function 
 
     $waiting = Upkeep::reported(
         HowCurrent::Pending,
-        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false)),
+        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
@@ -73,7 +74,7 @@ it('says when an update would leave the stack alone', function (): void {
     // A release that changes no service is a changelog entry rather than an
     // evening, and a screen can say so instead of asking somebody to confirm
     // nothing.
-    $release = Release::called('4.1.0', noticeable: true, withdrawn: false);
+    $release = Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing());
 
     expect(TakingAnUpdate::agreed($release, Services::none(), Services::none())->changesNothing())->toBeTrue()
         ->and(TakingAnUpdate::agreed($release, Services::these(ServiceId::called('jellyfin')), Services::none())
@@ -86,8 +87,8 @@ it('hands out a list however it was built', function (): void {
     // map — and a template indexing `[0]` would find nothing while `count()`
     // said there was something there.
     $releases = Releases::these(
-        newest: Release::called('4.1.0', noticeable: true, withdrawn: false),
-        older: Release::called('4.0.16', noticeable: false, withdrawn: false),
+        newest: Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+        older: Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
     );
 
     expect(keysOf($releases))->toBe([0, 1]);
@@ -98,8 +99,8 @@ it('hands out a list after narrowing one', function (): void {
     // would leave a collection whose first index is 1. The same failure as
     // above, arrived at from the other direction.
     $releases = Releases::these(
-        Release::called('4.0.17', noticeable: true, withdrawn: true),
-        Release::called('4.1.0', noticeable: true, withdrawn: false),
+        Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()),
+        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
     )->worthOffering();
 
     expect(keysOf($releases))->toBe([0]);

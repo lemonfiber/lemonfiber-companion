@@ -25,6 +25,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\WireField;
@@ -97,7 +98,7 @@ function whatTakingItMade(MockResponse $answer): Underway
         theStackWhoseUpkeepTheAdapterAsksAfter(),
         Session::of('a-session-not-a-secret'),
         TakingAnUpdate::agreed(
-            Release::called('4.1.0', noticeable: true, withdrawn: false),
+            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
             Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
             Services::none(),
         ),
@@ -208,7 +209,7 @@ it('N2-R17 — sends the services that were agreed to, by name', function (): vo
         theStackWhoseUpkeepTheAdapterAsksAfter(),
         Session::of('a-session-not-a-secret'),
         TakingAnUpdate::agreed(
-            Release::called('4.1.0', noticeable: true, withdrawn: false),
+            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
             Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
             Services::none(),
         ),

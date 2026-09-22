@@ -1,8 +1,8 @@
 {
     "name": "lemonfiber/bridge",
     "description": "The native capabilities lemonfiber uses",
-    "type": "nativephp-plugin",
     "license": "proprietary",
+    "type": "nativephp-plugin",
     "version": "0.1.0",
     "require": {
         "php": "^8.5",
@@ -18,6 +18,12 @@
             "providers": [
                 "Lemonfiber\\Native\\NativeServiceProvider"
             ]
+        },
+        "lemonfiber": {
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            }
         },
         "nativephp": {
             "manifest": "nativephp.json"

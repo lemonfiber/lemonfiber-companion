@@ -36,6 +36,8 @@ return [
     'nothing_applied' => 'Op deze machine is nog geen update genomen.',
     'running_on' => 'Draait :version',
     'running_withdrawn' => 'Deze versie is teruggetrokken',
+    'delivers_unsaid' => 'De stack heeft niet gezegd wat deze verandert',
+
     'would_be_noticed' => 'Het huishouden ziet het verschil',
     'would_not_be_noticed' => 'Hier merkt niemand iets van',
     'nothing_waiting' => 'Er staat niets klaar.',

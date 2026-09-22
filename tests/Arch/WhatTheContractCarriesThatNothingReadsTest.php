@@ -59,16 +59,6 @@ use Tests\Support\WhatTheReadersRead;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
-        'path' => 'ConfigEnvelope.settings[].origin',
-        'because' => 'Where a setting\'s value came from — bundled, the operator, a plugin that names '
-            . 'itself, or unknown with a reason. It arrived with the core learning to say so, and nothing '
-            . 'here asked for it: no requirement in `.docs/requirements/` mentions provenance on the '
-            . 'settings screen, and a field wants a requirement before it wants a screen. It is a plausible '
-            . 'thing to draw — an operator looking at a value a plugin set has a different question about it '
-            . 'than one they set themselves — so this row is the place that argument gets made when somebody '
-            . 'makes it, rather than the field being read because it was there.',
-    ],
-    [
         'path' => 'ConfigEnvelope.review.findings',
         'because' => 'What a change comes to on this machine beyond the value it changes — the services it '
             . 'would stop, the library paths it would invalidate, the clients mid-transfer. Read by nothing '
@@ -241,12 +231,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The version it was going to, and the same answer.',
     ],
     [
-        'path' => 'UpdateEnvelope.changelog.releases[].delivers',
-        'because' => 'What a release delivers, in prose. `N2-R16` has the app distinguish a release the '
-            . 'household would notice from one it would not, which is the decision; the prose is a '
-            . 'changelog screen and no requirement asks for one.',
-    ],
-    [
         'path' => 'UpdateEnvelope.changelog.releases[].patches',
         'because' => 'The same, for what a release fixes.',
     ],
@@ -266,11 +250,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'What the release in use brought forward from the one before it. The app reads a '
             . 'release\'s version and whether it was taken back, which is what `N2-R15` and `N2-R16` ask '
             . 'of it; the rest of the entry is a changelog screen nobody has asked for.',
-    ],
-    [
-        'path' => 'UpdateEnvelope.changelog.running.delivers',
-        'because' => 'The same field the row on `changelog.releases[].delivers` is about, on the other '
-            . 'place the contract writes a release out.',
     ],
     [
         'path' => 'UpdateEnvelope.changelog.running.patches',

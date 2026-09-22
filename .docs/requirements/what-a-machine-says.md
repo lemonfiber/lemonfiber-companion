@@ -46,6 +46,8 @@ requirement is right and this page is a defect.
 | `N2-R19` | Undoing is not offered where the stack named neither way | `HowAServiceTookIt` |
 | `N2-R20` | Applying one is not offered where the stack reported none | `HowCurrent` |
 | `N2-R22` | A change that cannot be undone is said before it is agreed to, naming the services it is true of | `TakingAnUpdate::cannotBePutBack()`, read from the wire by `Changes::permanentIn()` and drawn between the list and the buttons — an operator who has read what moves tonight and not yet agreed. Named per service rather than over the whole run: an update can move four services and be undoable for three, and a warning covering all four is refused as easily as it is believed |
+| `E5-R6` | The changelog is shown in the stack-update flow, not only on a release page | `WhatAReleaseDelivers`, carried on `Release` and drawn on the row the *take this one* control sits on. The grouped notes for the running version are not drawn, and `WhatTheContractCarriesThatNothingReadsTest` records that as owed rather than unasked |
+| `E5-R10` | A release with no user-facing change is stated as such rather than shown as an empty one | `WhatAReleaseDelivers::saidNothing()`, a separate arm — a row the stack said nothing about says so rather than drawing a blank where a sentence belongs |
 
 ## What has stopped coming in
 
@@ -53,6 +55,14 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N2-R9` | Stuck downloads are reachable, and *stuck* on its own is not something anybody can act on | `Stage` |
 | `N2-R10` | A log read is bounded, and a bound is only a bound if something holds it | `HowManyLines` |
+
+## What a machine is set to, and who set it
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `F7-R3` | Wherever a setting is shown, its origin — bundled, operator, or a named plugin — is shown beside it | `WhereASettingCameFrom`, carried on `Setting` beside the key rather than anywhere a screen could draw the row without it; `HowASettingReads` folds all four arms, so every row has one |
+| `F7-R11` | An origin that cannot be determined is reported as unknown and never as bundled | `WhereASettingCameFrom::unknown()`, a separate arm carrying the stack's reason and refusing a blank one. `Dials::from()` refuses an unreadable origin rather than defaulting it, and `ASettingsOriginIsUnnamed` keeps *unknown* from becoming the arm this app's own read failures land in |
+| `F7-R12` | Plugins do not get parallel surfaces of their own; they appear on the existing ones | A plugin-set value is a row on the settings screen with a different origin, not a screen of its own |
 
 ## What the household asked for
 

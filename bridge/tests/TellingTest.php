@@ -163,7 +163,15 @@ it('reads no answer at all as the device having refused', function (): void {
         ->toBe(WhyNothingWasTold::TheDeviceRefused);
 });
 
-it('sends the moment a scheduled notification is wanted at', function (): void {
+it('sends every field a scheduled notification is described by', function (): void {
+    // The whole payload rather than the moment alone. Three of these four are
+    // what the operator reads off a lock screen and the fourth is when they
+    // read it, and a notification that arrives at the right second carrying
+    // somebody else's title is not a smaller failure than one that is late.
+    //
+    // Asserting `$sent['at']` alone left the other three unheld, which cost
+    // three mutants: the identifier, the title and the body could each be
+    // dropped from the call with this suite green.
     $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Telling.Schedule', ['outcome' => 'scheduled']);
 
     expect(whyTheCentreDidNot(new Telling()->schedule('a', 'b', 'c', 1_800_000_000)))
@@ -171,7 +179,12 @@ it('sends the moment a scheduled notification is wanted at', function (): void {
 
     $bridge->assertCalled(
         'Lemonfiber.Telling.Schedule',
-        fn(array $sent): bool => $sent['at'] === 1_800_000_000,
+        fn(array $sent): bool => $sent === [
+            'id' => 'a',
+            'title' => 'b',
+            'body' => 'c',
+            'at' => 1_800_000_000,
+        ],
     );
 });
 
@@ -200,12 +213,60 @@ it('sends every field a repeat is described by', function (): void {
     );
 });
 
-it('describes each of the five ways a notification can repeat', function (): void {
-    expect(Repeat::hourly(15)->asAsked()['frequency'])->toBe(HowOften::Hourly->value)
-        ->and(Repeat::daily(9, 0)->asAsked()['frequency'])->toBe(HowOften::Daily->value)
-        ->and(Repeat::weekly(3, 9, 0)->asAsked()['weekday'])->toBe(3)
-        ->and(Repeat::monthly(12, 9, 0)->asAsked()['dayOfMonth'])->toBe(12)
-        ->and(Repeat::yearly(6, 12, 9, 0)->asAsked()['month'])->toBe(6);
+it('describes each of the five ways a notification can repeat, in full', function (): void {
+    // The whole payload per constructor rather than the one field that
+    // constructor is named for.
+    //
+    // A `Repeat` puts six fields on the wire whatever it was built as, and
+    // four of them are placeholders for any given frequency: `hourly` chooses
+    // an hour of nought, a weekday of nought, a first of the month and a
+    // January, none of which the centre reads for an hourly alert. Asserting
+    // one field each leaves the other four unheld — twenty placeholders that
+    // can each shift by one, in both directions, with the suite green.
+    // `weekly` is the exception, because `sends every field a repeat is
+    // described by` above sends a weekly one and compares the lot.
+    //
+    // They are placeholders on this side and numbers on the wire, and the day
+    // the
+    // centre starts reading `dayOfMonth` for an hourly repeat is the day a
+    // silent one matters. Asserting the whole array is the same test with
+    // nothing left out of it.
+    expect(Repeat::hourly(15)->asAsked())->toBe([
+        'frequency' => HowOften::Hourly->value,
+        'hour' => 0,
+        'minute' => 15,
+        'weekday' => 0,
+        'dayOfMonth' => 1,
+        'month' => 1,
+    ])->and(Repeat::daily(9, 0)->asAsked())->toBe([
+        'frequency' => HowOften::Daily->value,
+        'hour' => 9,
+        'minute' => 0,
+        'weekday' => 0,
+        'dayOfMonth' => 1,
+        'month' => 1,
+    ])->and(Repeat::weekly(3, 9, 0)->asAsked())->toBe([
+        'frequency' => HowOften::Weekly->value,
+        'hour' => 9,
+        'minute' => 0,
+        'weekday' => 3,
+        'dayOfMonth' => 1,
+        'month' => 1,
+    ])->and(Repeat::monthly(12, 9, 0)->asAsked())->toBe([
+        'frequency' => HowOften::Monthly->value,
+        'hour' => 9,
+        'minute' => 0,
+        'weekday' => 0,
+        'dayOfMonth' => 12,
+        'month' => 1,
+    ])->and(Repeat::yearly(6, 12, 9, 0)->asAsked())->toBe([
+        'frequency' => HowOften::Yearly->value,
+        'hour' => 9,
+        'minute' => 0,
+        'weekday' => 0,
+        'dayOfMonth' => 12,
+        'month' => 6,
+    ]);
 });
 
 it('takes one notification back by name', function (): void {
@@ -257,13 +318,41 @@ it('tells nothing pending apart from nobody answering', function (): void {
     expect(new Telling()->pending())->toBeNull();
 });
 
-it('drops anything in a pending list that is not a name', function (): void {
+it('drops anything in a pending list that is not a name, and closes the gap', function (): void {
     // A bridge that grew a richer entry would otherwise reach a caller expecting
     // strings, which is a type error on a handset and nowhere else.
+    //
+    // The names it does keep are not first in this list, and that is the whole
+    // of the second half: filtering leaves the keys where they were, so
+    // dropping entry nought and entry two leaves names at one and three. A
+    // caller reading `$pending[0]` off that finds nothing, and the declared
+    // `list<string>` is no longer true of what was returned.
+    //
+    // A fixture whose kept entries all sit at the front holds none of that:
+    // re-indexing moves nothing there, so `array_values` could be deleted and
+    // the test would stay green.
     FakeBridge::enable()->respondTo(
         'Lemonfiber.Telling.Pending',
-        ['outcome' => 'read', 'pending' => ['one', 17, ['two']]],
+        ['outcome' => 'read', 'pending' => [17, 'one', ['two'], 'three']],
     );
 
-    expect(new Telling()->pending())->toBe(['one']);
+    expect(new Telling()->pending())->toBe(['one', 'three']);
+});
+
+it('does not send a payload it could not encode, and says so as nothing said', function (): void {
+    // `"\xB1"` is a continuation byte with nothing in front of it, which is
+    // not valid UTF-8 and which `json_encode` refuses by answering false.
+    //
+    // A `(string)` cast turns that false into `''`, and the call then reaches
+    // the device carrying no parameters — a notification with no identifier, no title and no
+    // body, which the centre shows as an empty row an operator cannot read.
+    //
+    // Nothing is sent instead, and the answer is the same one every other way
+    // of not reaching the bridge gives. The second assertion is the one that
+    // matters: the bridge was not called at all.
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Telling.Show', ['outcome' => 'told']);
+
+    expect(whyTheCentreDidNot(new Telling()->show('a', "\xB1", 'c')))
+        ->toBe(WhyNothingWasTold::TheDeviceRefused)
+        ->and($bridge->calls)->toBe([]);
 });

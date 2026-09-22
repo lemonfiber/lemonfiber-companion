@@ -6,6 +6,7 @@ namespace Lemonfiber\Native;
 
 use function array_key_exists;
 use function is_array;
+use function is_string;
 use function json_decode;
 use function json_encode;
 use function nativephp_call;
@@ -138,8 +139,28 @@ final readonly class Screen
      */
     private function asked(Call $function, string $key, array $with = []): bool
     {
+        // A payload that will not encode is not sent.
+        //
+        // `json_encode` answers false for a string that is not valid UTF-8.
+        // A `(string)` cast turns that false into `''`, which reaches the
+        // device as a call carrying no parameters at all — indistinguishable
+        // from one that meant to carry none. The device answers whatever it
+        // answers to a call with everything missing, and the operator sees the
+        // result of a request nobody made.
+        //
+        // Refused here instead, as the same false every other way of
+        // not reaching the bridge produces: nobody answered, because nobody
+        // was asked. It is also the only shape a test can hold: a cast
+        // between two values nothing downstream can tell apart is a line
+        // nothing can fail on.
+        $payload = json_encode($with);
+
+        if (! is_string($payload)) {
+            return false;
+        }
+
         $said = json_decode(
-            (string) nativephp_call($function->value, (string) json_encode($with)),
+            (string) nativephp_call($function->value, $payload),
             associative: true,
         );
 

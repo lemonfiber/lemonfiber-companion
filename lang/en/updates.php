@@ -38,6 +38,11 @@ return [
     'nothing_applied' => 'No update has been taken on this machine yet.',
     'running_on' => 'Running :version',
     'running_withdrawn' => 'This version has been withdrawn',
+    // Where a release carries no prose. Said rather than left blank: an empty
+    // line reads as a screen that failed to load something, and this is a
+    // release the stack has nothing to say about.
+    'delivers_unsaid' => 'The stack did not say what this one changes',
+
     'would_be_noticed' => 'The household will see the difference',
     'would_not_be_noticed' => 'Nobody will notice this one',
     'nothing_waiting' => 'There is nothing waiting.',

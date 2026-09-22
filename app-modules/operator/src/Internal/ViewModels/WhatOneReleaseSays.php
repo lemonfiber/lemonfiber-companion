@@ -12,6 +12,14 @@ use Modules\Kernel\Api\Release;
  * **Whether the household would notice travels as a flag, not as a sentence.**
  * The distinction is what a screen sorts and leads on, and a row handed
  * a finished phrase could not be grouped by it.
+ *
+ * **What it delivers travels as the stack's own words, or as nothing.** The
+ * opposite of the line above, and for the opposite reason: this is prose the
+ * stack wrote and nothing here composes it. A release it said nothing about
+ * carries `null` rather than an empty string beside a flag — an empty string
+ * claims there is a sentence and it happens to be blank, and it is a value the
+ * template never prints on that arm, so nothing could tell one from another.
+ * The template reads the absence and says so in as many words.
  */
 final readonly class WhatOneReleaseSays
 {
@@ -19,6 +27,7 @@ final readonly class WhatOneReleaseSays
         public string $version,
         public bool $theHouseholdWouldNotice,
         private Release $release,
+        public ?string $deliversSaid = null,
     ) {}
 
     /**

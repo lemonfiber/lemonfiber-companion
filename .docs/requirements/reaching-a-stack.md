@@ -23,6 +23,8 @@ requirement is right and this page is a defect.
 | `N1-R41` | An action delivered with nothing to ask after it by has no handle | `Handles`, and `Job::named()` one layer in |
 | `ARCH-R79` | A word this build has not heard of means the contract moved, and is refused rather than rendered raw | `Lines` |
 
+| `ARCH-R56` | The contract artefact is generated from the types the server serialises, never hand-written | Nothing here generates it — this app takes it in `lemonfiber/sdk-php` and holds the pin. `sdk-drift` refuses a lock behind the client, and `WhatTheContractAccepts` refuses a stand-in payload the artefact would not accept, so a hand-edit on either side fails here rather than reaching a screen |
+
 ## What an obstacle is allowed to be
 
 | Requirement | What it asks | What keeps it |

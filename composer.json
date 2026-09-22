@@ -119,6 +119,12 @@
     "extra": {
         "laravel": {
             "dont-discover": []
+        },
+        "lemonfiber": {
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            }
         }
     },
     "scripts": {
@@ -161,17 +167,17 @@
         "test:guards": "pest --testsuite=Guards",
         "test:mutation": "@php scripts/mutation.php",
         "test:report": "php -d pcov.directory=. -d pcov.exclude='~/(vendor|bootstrap/cache)/~' vendor/bin/pest --exclude-testsuite=Guards,Floors --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
-        "validate:modules": "@php scripts/manifests.php validate --strict --no-check-publish"
+        "validate:modules": "@php scripts/manifests.php validate --strict --no-check-publish --no-check-version"
     },
     "scripts-descriptions": {
         "ci": "Every PHP gate CI runs, in the order it runs them, and only those. It does not run the native halves \u2014 the Kotlin and Swift harnesses and the check that both ask the same questions \u2014 nor CodeQL, SonarCloud, the security and supply-chain scans, the repository hygiene checks, or the commit, spec-reference and SDK-pin gates. Those need a toolchain, a network or a pull request that a local run has not got.",
         "normalize:modules": "Check every module manifest against the normalizer; the root normalize does not look at them.",
         "normalize:modules:fix": "Normalize every module manifest in place.",
         "test": "Every suite but Guards and Floors, in parallel. Guards plants a violation of every rule into the working tree, so a process reading that tree beside it sees files appear and vanish. Floors reads the clover report test:report writes, and refuses to run without one.",
-        "test:floors": "Check every module against the coverage floor it declared, over the report test:report writes (G9).",
+        "test:floors": "Check every tree phpunit.xml measures against the coverage floor its nearest manifest declared, over the report test:report writes (G9).",
         "test:guards": "Plant a violation of every rule and require each rule to report it (R2).",
-        "test:mutation": "Mutation testing at the floor each module declares. Modules sharing a floor share a run, because a floor of 100 admits no offsetting between them; a module whose floor differs gets its own.",
+        "test:mutation": "Mutation testing at the floor declared for each tree phpunit.xml measures, in the manifest nearest it. Trees sharing a floor share a run, because a floor of 100 admits no offsetting between them; a tree whose floor differs gets its own.",
         "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud and the Floors suite read (Q-R64, G9). The pcov flags are load-bearing: left alone, pcov instruments the longest common prefix of the phpunit source includes, which is `app` \u2014 and that reaches `app-modules` only because the match is on the string rather than the path. `bridge/src` falls outside it, so every line of the plugin's PHP read as never executed while its tests passed. Pointing the directory at the repository root fixes that, and excluding vendor makes the run faster than it was before.",
-        "validate:modules": "Validate every module manifest; the root validate does not look at them."
+        "validate:modules": "Validate every manifest this repository owns \u2014 every package the root declares as a path repository, which is the twelve modules and the bridge. Not --check-version: a path package the root pins by version has to declare one, and composer's advice to leave it out is about publishing to Packagist, which none of these do."
     }
 }

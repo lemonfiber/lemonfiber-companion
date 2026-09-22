@@ -39,10 +39,57 @@ if ($arguments === []) {
 }
 
 $root = dirname(__DIR__);
-$manifests = glob(sprintf('%s/app-modules/*/composer.json', $root));
 
-if ($manifests === false || $manifests === []) {
-    fwrite(STDERR, "No module manifests found, so there is nothing to check.\n");
+/*
+ * Where the manifests are, asked of the one file that already knows.
+ *
+ * This globbed `app-modules/*` and missed `bridge/composer.json`, which is a
+ * manifest this repository owns, carries its own `extra` block, and was
+ * un-normalized for as long as nobody looked — `license` and `type` the wrong
+ * way round. The root's own `composer validate` and `normalize` read the root
+ * and stop there, so nothing reached it from either direction.
+ *
+ * A second entry beside the glob would have fixed that file and left the next
+ * one to be found the same way. The root already declares every package this
+ * repository owns, as a `path` repository, because that is how composer is
+ * told to symlink them — so that declaration is the list, and a package added
+ * tomorrow is checked the day it is added rather than the day somebody
+ * remembers this file.
+ *
+ * Which is the argument the header above already makes about the modules: two
+ * copies of *where the packages are* disagree the day one moves.
+ */
+$declared = json_decode((string) file_get_contents(sprintf('%s/composer.json', $root)), associative: true);
+$repositories = is_array($declared) && array_key_exists('repositories', $declared) && is_array($declared['repositories'])
+    ? $declared['repositories']
+    : [];
+
+$manifests = [];
+
+foreach ($repositories as $repository) {
+    if (! is_array($repository) || ! array_key_exists('type', $repository) || $repository['type'] !== 'path') {
+        continue;
+    }
+
+    // A path repository with no `url` is not a package this can find, and is
+    // composer's to complain about rather than this script's.
+    if (! array_key_exists('url', $repository) || ! is_string($repository['url'])) {
+        continue;
+    }
+
+    $found = glob(sprintf('%s/%s/composer.json', $root, $repository['url']));
+
+    if ($found !== false) {
+        // In the order the root declares them, and within one entry in the
+        // order `glob` returns — which is already sorted. Not sorted again
+        // here: the order a person reads these in is the order the root lists
+        // them, and re-sorting would put `bridge` among the modules.
+        $manifests = [...$manifests, ...$found];
+    }
+}
+
+if ($manifests === []) {
+    fwrite(STDERR, "The root manifest declares no path repositories, so there is nothing to check.\n");
 
     exit(1);
 }

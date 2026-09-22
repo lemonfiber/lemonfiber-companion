@@ -93,3 +93,20 @@ it('does not read an outcome that is not a word as the sheet having opened', fun
     expect(whyTheSheetWasRefused(new Handover()->offer('a', 'b')))
         ->toBe(WhyNothingWasHandedOver::ThePlatformWouldNot);
 });
+
+it('does not send a payload it could not encode, and says so as nothing said', function (): void {
+    // `"\xB1"` is a continuation byte with nothing in front of it, which is
+    // not valid UTF-8 and which `json_encode` refuses by answering false.
+    //
+    // A `(string)` cast turns that false into `''`, and the call then reaches
+    // the device carrying no parameters — a share sheet with no title and no report in it.
+    //
+    // Nothing is sent instead, and the answer is the same one every other way
+    // of not reaching the bridge gives. The second assertion is the one that
+    // matters: the bridge was not called at all.
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Offer', ['outcome' => 'offered']);
+
+    expect(whyTheSheetWasRefused(new Handover()->offer("\xB1", 'b')))
+        ->toBe(WhyNothingWasHandedOver::ThePlatformWouldNot)
+        ->and($bridge->calls)->toBe([]);
+});
