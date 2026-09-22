@@ -17,5 +17,33 @@ return [
 
     'what_this_is_set_to' => 'Waarop deze machine is ingesteld',
 
+    'cost' => [
+        'cheap' => 'Een herstart van de betrokken diensten, en verder niets',
+        'consequential' => 'Deze is het waard om twee keer te lezen',
+    ],
+
+    'stance' => [
+        'unchanged' => 'Dit staat er al in',
+        'pending' => 'Klaargezet — er is nog niets geschreven',
+        'blocked' => 'Er is niets geschreven',
+        'applied' => 'Geschreven',
+    ],
+
+    'what_it_would_hold' => 'Wat erin zou komen te staan',
+    'holds_now' => 'Er staat nu :value in',
+    'holds_nothing_yet' => 'Er staat nog niets in',
+    'what_would_happen' => 'Bekijk wat dit zou doen',
+    'agree' => 'Deze wijziging doorvoeren',
+    'never_mind' => 'Laat het zoals het is',
+    'change_this' => 'Dit wijzigen',
+
+    'agree_to' => 'Deze wijziging aan :key doorvoeren',
+    'what_would_happen_to' => 'Bekijk wat het wijzigen van :key zou doen',
+    'change_key' => ':key wijzigen',
+
+    'would_hold' => 'Er zou :value in komen te staan',
+    'services_will_restart' => 'De betrokken diensten starten opnieuw op.',
+    'worth_reading_twice' => 'Deze kan gegevens verplaatsen of een dienst wegnemen.',
+
     'ask_again' => 'Opnieuw vragen',
 ];

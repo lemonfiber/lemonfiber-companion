@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use function count;
-
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Settings;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
@@ -21,11 +19,7 @@ final readonly class HowTheSettingsRead
 {
     public function signedOut(): WhatThisStackIsSetToTurnedOutToBe
     {
-        return new WhatThisStackIsSetToTurnedOutToBe(
-            went: HowTheReadingWent::theSessionEnded(),
-            set: [],
-            howMany: 0,
-        );
+        return new WhatThisStackIsSetToTurnedOutToBe(HowTheReadingWent::theSessionEnded());
     }
 
     public function these(Settings $set): WhatThisStackIsSetToTurnedOutToBe
@@ -36,23 +30,11 @@ final readonly class HowTheSettingsRead
             $rows[] = new HowASettingReads()->in($one);
         }
 
-        // Counted off the listing rather than off `$rows`, so how many the
-        // screen says there are is decided where the stack said it. A fold
-        // that dropped a row would then disagree with the count beside it
-        // rather than presenting a short listing as a whole one.
-        return new WhatThisStackIsSetToTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            set: $rows,
-            howMany: count($set),
-        );
+        return new WhatThisStackIsSetToTurnedOutToBe(HowTheReadingWent::itCameBack(), $rows);
     }
 
     public function met(Obstacle $why): WhatThisStackIsSetToTurnedOutToBe
     {
-        return new WhatThisStackIsSetToTurnedOutToBe(
-            went: HowTheReadingWent::somethingStopped($why),
-            set: [],
-            howMany: 0,
-        );
+        return new WhatThisStackIsSetToTurnedOutToBe(HowTheReadingWent::somethingStopped($why));
     }
 }
