@@ -45,15 +45,50 @@ updates:
       prefix: build
       include: scope
 
+  # Daily, and the shared gates on their own. Weekly was the arrangement here
+  # and it is the one every other repository in the org gave up, for a reason
+  # this repository then demonstrated: `#285` opened on a Monday proposing
+  # `v1.0.4` for fourteen `lemonfiber/spec` pins, landed a day later, and was
+  # already four tags behind when it did. A shared gate is not a dependency
+  # this repository chooses to take — it is the gate `Q-R68` requires be
+  # current, and a week is long enough for it to go stale and block every open
+  # pull request until the next Monday comes round.
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
+      time: "05:00"
+      timezone: Europe/Amsterdam
+    # A release waits three days before it is offered, so a revision pulled
+    # shortly after publication is one somebody else has already run. The
+    # shared gates are excluded from the wait: a repository running a stale
+    # gate is the failure the exclusion exists to prevent, and three days of
+    # delay is its whole cost. Security updates are never held by a cooldown.
+    cooldown:
+      default-days: 3
+      exclude: ['lemonfiber/spec*']
     groups:
+      # First match wins, so the shared gates are claimed before the wildcard
+      # and arrive as a pull request of their own. Inside the wildcard they
+      # rode with sixteen other updates, which is sixteen ways for the bump
+      # that unblocks every other pull request to be held up by something
+      # unrelated to it.
+      shared-workflows:
+        patterns: ['lemonfiber/spec*']
+      # `init` and `analyze` are one action published from one repository, and
+      # CodeQL refuses a run whose two halves are different revisions of it.
+      # Offered separately they are two pull requests neither of which can pass
+      # until the other lands. Majors are grouped here and nowhere else in this
+      # file: the judgement is still a judgement, but it is one about the
+      # action rather than two that have to be made together and in step.
+      codeql:
+        patterns: ['github/codeql-action*']
+        update-types: ['major', 'minor', 'patch']
       actions:
-        patterns:
-          - '*'
+        patterns: ['*']
+        exclude-patterns: ['lemonfiber/spec*']
+        # Majors left out, so each arrives on its own carrying `major`.
+        update-types: ['minor', 'patch']
     commit-message:
       prefix: build
       include: scope
