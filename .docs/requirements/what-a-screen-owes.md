@@ -52,7 +52,7 @@ requirement is right and this page is a defect.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `N1-R1` | Parity across surfaces, rather than parity by everybody remembering | the catalogues, and the rules over them |
-| `N1-R2` | An operator away from the machine can see whether their house is working | the whole module |
+| `N1-R2` | **Every action available from another surface is offered here**, unless a requirement says otherwise and why | **Not kept.** See *What is not built* below |
 | `N2-R1` | The app opens on the overall verdict | `HowThisStackIs` |
 | `N2-R2` | Worst first, ordered here rather than trusted to arrive that way | `WorstFirst`, reached by `HowThisStackIs` |
 | `N2-R3` | A finding carries its code, its meaning and its remedy, in the core's own words | `HowAFindingReads` |
@@ -60,3 +60,81 @@ requirement is right and this page is a defect.
 | `G4-R4` | Plain explanation leads; technical detail is available and does not lead | it arrives on the row beneath everything above it |
 | `N1-R9`, `N2-R13` | An age comes out beside the word or not at all | both are broken by omission rather than by disagreement |
 | `N2-R14` | A value the contract did not carry is not substituted | *nought seconds* is the worst answer, and is refused |
+
+## What is not built, and what holds it open
+
+`N1-R2` is a parity rule, and it is the widest requirement this app answers:
+
+> Every action available from another surface MUST be offered by the app, except
+> where a requirement here states otherwise and why.
+
+**It is not kept, and this page said it was.** The row above used to read *an
+operator away from the machine can see whether their house is working*, with
+*the whole module* as what keeps it. That is a sentence about seeing, and the
+requirement is about doing — so the one rule that would have caught the gap
+below was written down as something it is not. This page's own header says the
+spec is canonical and a disagreement is a defect here; this was one.
+
+**The measurement.** The stack serves 61 envelopes and this app follows 11.
+Forty-eight are never referenced anywhere in `app-modules` or `bridge`. They
+resolve to the features below — each one an action available from another
+surface and not offered here.
+
+```
+ls vendor/lemonfiber/sdk-php/src/Generated/*Envelope.php | wc -l   # 61
+Tests\Support\WhatTheReadersRead::envelopes()                      # 11
+```
+
+`A2` is not in the list: first-run setup is the one exception `N1-R2` allows
+for, and `N1-R4` states it and why — a phone cannot perform the act that makes a
+phone able to perform acts.
+
+Nothing here is a commitment to build a screen. `N1-R17` still holds: a field
+wants a requirement before it wants a surface. What each row needs is a decision
+— a companion surface, or a requirement stating why not, the way `N1-R4` does
+for setup.
+
+| Feature | What it is |
+|---|---|
+| `A5` | Migration from an existing stack |
+| `A6` | Clean uninstall |
+| `A7` | Credential management & rotation |
+| `B1` | Forms & partial stacks |
+| `B10` | Hosting long-running commands |
+| `B2` | Lifecycle control |
+| `B5` | Notifications & alerting |
+| `B8` | Autostart & boot persistence |
+| `C4` | Support bundle |
+| `C7` | Queue health & stuck items |
+| `D1` | Service auto-wiring |
+| `D10` | Bandwidth & scheduling |
+| `D2` | Quality presets in plain language |
+| `D3` | First-content walkthrough |
+| `D5` | Disk space management |
+| `D6` | Household identity & invitations |
+| `D7` | Request approval & quotas |
+| `D9` | "Where is my show?" pipeline trace |
+| `E2` | Self-update |
+| `E3` | Backup & restore |
+| `E4` | Rollback |
+| `F4` | The capability vocabulary |
+| `F5` | The plugin catalogue and what vouches for a plugin |
+| `F7` | Plugin provenance |
+| `F9` | Capabilities of the bundled services |
+| `G2` | Plain-language layer & in-product help |
+| `G5` | The front door |
+| `G8` | Privacy stance |
+| `H1` | Cross-seeding |
+| `H2` | Announce-driven grabbing |
+| `H3` | Quality-profile sync |
+| `H5` | Queue self-healing |
+| `H6` | Library cleanup |
+| `H8` | Playback statistics |
+| `K1` | Metrics & dashboards |
+
+**Why no rule caught this.** `WhatTheContractCarriesThatNothingReadsTest` is the
+register for unread fields, and it is a good rule — every path on an envelope
+this app reads is either followed to a reader or listed with a reason. It walks
+`WhatTheReadersRead::envelopes()`, so an envelope nothing touches contributes no
+paths and can never be flagged. It watches fields arriving on doors already
+opened; nothing watched the doors never opened at all.
