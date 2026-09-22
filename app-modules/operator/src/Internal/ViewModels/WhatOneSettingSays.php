@@ -33,6 +33,7 @@ final readonly class WhatOneSettingSays
         public string $key,
         public string $said,
         public bool $withheld,
+        public bool $mayBeChanged,
         public WhoSetIt $came,
         public ?string $attributed = null,
     ) {}

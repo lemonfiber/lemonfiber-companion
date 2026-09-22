@@ -8,6 +8,7 @@ use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
+use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\SizeUnit;
 use Modules\Kernel\Api\Stage;
+use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
@@ -105,6 +107,14 @@ function everyDerivedKey(): array
         Awaiting::class => aPairPerCase(
             Awaiting::cases(),
             static fn(Awaiting $awaiting): array => [$awaiting->saidOnTheScreen()],
+        ),
+        Cost::class => aPairPerCase(
+            Cost::cases(),
+            static fn(Cost $cost): array => [$cost->saidOnTheScreen()],
+        ),
+        Stance::class => aPairPerCase(
+            Stance::cases(),
+            static fn(Stance $stance): array => [$stance->saidOnTheScreen()],
         ),
         HowCurrent::class => aPairPerCase(
             HowCurrent::cases(),
