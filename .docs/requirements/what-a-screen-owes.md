@@ -35,10 +35,13 @@ requirement is right and this page is a defect.
 | `N4-R13` | A diagnostic report is assembled from what the operator chooses to send, not from whatever a screen happened to hold | `Concealed` on every stack-facing screen |
 | `N4-R18` | Credentials and pairing material are kept out of a capture, and so is the report | `tests/Arch/NothingIsCapturedFromAGuardedScreenTest.php` |
 
+| `N1-R43` | A refused attempt leaves the action offered — the attempt failed, the capability did not become unavailable | `Attempted`, which has no arm that withdraws what was tried; `AnActionIsNeverHeldTest` is what stops a screen inventing one |
+
 ## What a screen looks like
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
+| `G3-R16` | On a surface operated by touch, every control presents a target at least as large as the platform's own stated minimum | `EveryTargetIsBigEnoughToHitTest`, which reads the templates rather than trusting a component to have been used |
 | `DES-R15` | The accent is not set as text — measured at 1.6:1, it fails | `tests/Templates/ThemeColourIsNotSetAsTextTest.php` |
 | `DES-R24` | One platform mapping, decided once rather than at each call site | the class lists are literal; `tests/Arch/NoClassDecidedAtRuntimeTest.php` |
 | `DES-R25` | Two things are not told apart by colour alone | the same rule, which also keeps `G3-R1` |

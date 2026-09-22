@@ -22,6 +22,8 @@ requirement is right and this page is a defect.
 | `N1-R20` | Re-pairing is the remedy for a certificate that changed, and is deliberately a different act from first pairing | `Introducing` does not offer it |
 | `N1-R10` | A device offering no store at all and a store that refused are different things with different remedies | `HowThePairingWent` |
 
+| `N1-R47` | The stack produces pairing material on demand, from a surface the operator is already admitted to, and does not require this app to have one first | Nothing here produces it, which is the point: this app reads a code the operator brings and never mints one. `PairingAStackByScanningTest` and `PairingAStackByTypingTest` are the two ways it arrives |
+
 ## Opening it
 
 | Requirement | What it asks | What keeps it |
