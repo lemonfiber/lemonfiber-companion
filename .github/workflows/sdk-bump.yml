@@ -170,19 +170,45 @@ jobs:
           echo "moved=yes" >> "$GITHUB_OUTPUT"
 
           base="$(gh api "repos/${REPO}/commits/main" --jq .sha)"
-          if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" >/dev/null 2>&1; then
-            # The branch is the bot's alone. Reset it, so yesterday's bump is not
-            # carried under today's and described as one change.
-            #
-            # After the check above rather than before it: resetting the branch
-            # closes the pull request open on it (a ref moved out from under a
-            # PR is a PR GitHub closes), so a run that turns out to have nothing
-            # to take would otherwise shut yesterday's correct bump.
-            gh api --method PATCH "repos/${REPO}/git/refs/heads/${BRANCH}" \
+
+          # Asked *before* the reset, because after it the answer cannot be
+          # trusted. Resetting the branch closes whatever pull request is open
+          # on it, and GitHub does that asynchronously: a read a moment later is
+          # still answered with the pull request that is on its way to closed.
+          # The step below believed that answer twice on 2026-09-22 — it logged
+          # `#298 updated` and `#300 updated`, opened nothing either time, and
+          # left each commit on a branch whose pull request was shut. `sdk-drift`
+          # is required here, so both times that was every pull request in the
+          # repository red, with nothing saying why.
+          #
+          # Carried forward as a number rather than re-derived, so the reopen
+          # below does not depend on what GitHub has got round to.
+          # Built on a scratch ref and moved across in one step, rather than
+          # resetting the pull request's own branch to main first.
+          #
+          # The reset is what the branch needs — it is the bot's alone, and
+          # carrying yesterday's bump under today's would describe two changes
+          # as one — but doing it in place leaves the branch briefly equal to
+          # `main`, and GitHub closes a pull request whose branch holds no
+          # commits ahead of its base. That is not a hazard in the abstract: it
+          # shut `#298` at 17:32 and `#300` at 17:56 on 2026-09-22, and because
+          # the run then read `--state open` before GitHub had finished closing
+          # them, it reported `#N updated` and opened nothing either time. With
+          # `sdk-drift` required here, each occurrence was every pull request in
+          # the repository red for a bump nobody could see was missing.
+          #
+          # `lemonfiber-web` met the same thing and answered it this way; this
+          # is that answer, not a second one. Building elsewhere and moving the
+          # branch straight from yesterday's commit to today's means it is never
+          # equal to `main`, so nothing closes and the number people have
+          # commented on survives.
+          staging="${BRANCH}-staging"
+          if gh api "repos/${REPO}/git/ref/heads/${staging}" >/dev/null 2>&1; then
+            gh api --method PATCH "repos/${REPO}/git/refs/heads/${staging}" \
               -F sha="${base}" -F force=true >/dev/null
           else
             gh api --method POST "repos/${REPO}/git/refs" \
-              -f ref="refs/heads/${BRANCH}" -f sha="${base}" >/dev/null
+              -f ref="refs/heads/${staging}" -f sha="${base}" >/dev/null
           fi
 
           if [ "$INSTALLED" != "success" ]; then
@@ -200,7 +226,7 @@ jobs:
           #
           # Building the JSON in Python also means the message and the file
           # contents are encoded rather than quoted into place by hand.
-          python3 - "$REPO" "$BRANCH" "$base" "$HEAD_SHA" "$PIN" "$body" <<'PY' >request.json
+          python3 - "$REPO" "$staging" "$base" "$HEAD_SHA" "$PIN" "$body" <<'PY' >request.json
           import base64
           import json
           import sys
@@ -248,7 +274,27 @@ jobs:
           }))
           PY
 
-          gh api graphql --input request.json >/dev/null
+          built="$(gh api graphql --input request.json \
+            --jq '.data.createCommitOnBranch.commit.oid')"
+
+          if ! printf '%s' "$built" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::the commit was not created; got '${built}'"
+            exit 1
+          fi
+
+          # One move, so the branch goes from yesterday's commit to today's
+          # without ever being equal to `main`.
+          if gh api "repos/${REPO}/git/ref/heads/${BRANCH}" >/dev/null 2>&1; then
+            gh api --method PATCH "repos/${REPO}/git/refs/heads/${BRANCH}" \
+              -F sha="${built}" -F force=true >/dev/null
+          else
+            gh api --method POST "repos/${REPO}/git/refs" \
+              -f ref="refs/heads/${BRANCH}" -f sha="${built}" >/dev/null
+          fi
+
+          # The scratch ref has done its job. Left behind it would show up in
+          # the branch list as something a reader has to work out.
+          gh api --method DELETE "repos/${REPO}/git/refs/heads/${staging}" >/dev/null 2>&1 || true
 
           echo "clean=${CLEAN}" >> "$GITHUB_OUTPUT"
           echo "installed=${INSTALLED}" >> "$GITHUB_OUTPUT"
@@ -291,8 +337,20 @@ jobs:
             verdict="**The analyser or the suite did not pass.** The client has changed a shape this surface uses, so taking it is a change here rather than a bump. Read the failing run before merging; do not force it green."
           fi
 
+          # Read plainly, because the branch was never equal to `main` and so
+          # nothing closed the pull request on it. This read was unsafe while
+          # the branch was reset in place — it answered with a pull request
+          # already on its way to closed — and it is safe now for the same
+          # reason the reset moved to a scratch ref.
+          #
+          # The title is rewritten where one is already open. It names a
+          # revision, a later run takes a different one, and a pull request
+          # whose title says it takes `f866c1c` above a diff taking `7d5c138`
+          # is one somebody has to open to find out what it does.
           existing="$(gh pr list --repo "${REPO}" --head "${BRANCH}" --state open --json number --jq '.[0].number // ""')"
           if [ -n "$existing" ]; then
+            gh pr edit "${existing}" --repo "${REPO}" \
+              --title "chore(sdk): take sdk-php ${HEAD_SHA:0:7}" >/dev/null 2>&1 || true
             echo "::notice::#${existing} updated to ${HEAD_SHA}"
           else
             created="$(gh pr create --repo "${REPO}" --head "${BRANCH}" --base main \
