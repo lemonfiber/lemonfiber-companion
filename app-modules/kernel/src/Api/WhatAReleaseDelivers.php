@@ -6,6 +6,7 @@ namespace Modules\Kernel\Api;
 
 use Closure;
 
+use function is_string;
 use function trim;
 
 /**
@@ -17,6 +18,11 @@ use function trim;
  * decides an evening on `4.0.15`. Whether the household would notice is the
  * other half and is already on the row, and it says *whether* this matters
  * rather than *what* it is.
+ *
+ * **The arm that says nothing holds nothing.** Not an empty string beside a
+ * flag: that slot is never handed out on the silent arm, so nothing could read
+ * it and no test could tell one value of it from another. `null` says there is
+ * no sentence, and is what the fold reads.
  *
  * **Two arms rather than a string that may be empty.** The wire carries this
  * as optional, and a release the generator had nothing to say about is a real
@@ -32,7 +38,7 @@ use function trim;
  */
 final readonly class WhatAReleaseDelivers
 {
-    private function __construct(private string $said, private bool $told) {}
+    private function __construct(private ?string $said) {}
 
     /**
      * The stack said what this release delivers.
@@ -46,7 +52,7 @@ final readonly class WhatAReleaseDelivers
     {
         $told = trim($prose);
 
-        return $told === '' ? self::saidNothing() : new self(said: $told, told: true);
+        return $told === '' ? self::saidNothing() : new self(said: $told);
     }
 
     /**
@@ -54,7 +60,7 @@ final readonly class WhatAReleaseDelivers
      */
     public static function saidNothing(): self
     {
-        return new self(said: '', told: false);
+        return new self(said: null);
     }
 
     /**
@@ -69,9 +75,13 @@ final readonly class WhatAReleaseDelivers
      */
     public function either(Closure $said, Closure $saidNothing): object
     {
-        // Read off the silence, as the other folds here read off the arm with
-        // a consequence: a fall-through that printed an empty string is the
-        // blank row this type exists to prevent.
-        return $this->told ? $said($this->said) : $saidNothing();
+        // Read off what is held rather than a flag beside it. A release the
+        // stack described holds its words; one it said nothing about holds
+        // nothing, and `null` says that where an empty string would claim
+        // there is a sentence and it happens to be blank — a slot nothing can
+        // reach, which is a slot nothing can hold right.
+        $prose = $this->said;
+
+        return is_string($prose) ? $said($prose) : $saidNothing();
     }
 }
