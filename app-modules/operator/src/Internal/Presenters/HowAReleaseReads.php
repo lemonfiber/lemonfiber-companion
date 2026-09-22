@@ -29,7 +29,6 @@ final readonly class HowAReleaseReads
                 version: $release->version(),
                 theHouseholdWouldNotice: $release->theHouseholdWouldNotice(),
                 release: $release,
-                deliversSaid: null,
             ),
         );
     }
