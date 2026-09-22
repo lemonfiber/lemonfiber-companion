@@ -18,10 +18,18 @@ final readonly class HowAReleaseReads
 {
     public function of(Release $release): WhatOneReleaseSays
     {
-        return new WhatOneReleaseSays(
-            version: $release->version(),
-            theHouseholdWouldNotice: $release->theHouseholdWouldNotice(),
-            release: $release,
+        return $release->delivers()->either(
+            said: static fn(string $prose): WhatOneReleaseSays => new WhatOneReleaseSays(
+                version: $release->version(),
+                theHouseholdWouldNotice: $release->theHouseholdWouldNotice(),
+                release: $release,
+                deliversSaid: $prose,
+            ),
+            saidNothing: static fn(): WhatOneReleaseSays => new WhatOneReleaseSays(
+                version: $release->version(),
+                theHouseholdWouldNotice: $release->theHouseholdWouldNotice(),
+                release: $release,
+            ),
         );
     }
 }

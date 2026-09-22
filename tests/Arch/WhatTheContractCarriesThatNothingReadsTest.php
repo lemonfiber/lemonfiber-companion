@@ -223,12 +223,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The version it was going to, and the same answer.',
     ],
     [
-        'path' => 'UpdateEnvelope.changelog.releases[].delivers',
-        'because' => 'What a release delivers, in prose. `N2-R16` has the app distinguish a release the '
-            . 'household would notice from one it would not, which is the decision; the prose is a '
-            . 'changelog screen and no requirement asks for one.',
-    ],
-    [
         'path' => 'UpdateEnvelope.changelog.releases[].patches',
         'because' => 'The same, for what a release fixes.',
     ],
@@ -248,11 +242,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'What the release in use brought forward from the one before it. The app reads a '
             . 'release\'s version and whether it was taken back, which is what `N2-R15` and `N2-R16` ask '
             . 'of it; the rest of the entry is a changelog screen nobody has asked for.',
-    ],
-    [
-        'path' => 'UpdateEnvelope.changelog.running.delivers',
-        'because' => 'The same field the row on `changelog.releases[].delivers` is about, on the other '
-            . 'place the contract writes a release out.',
     ],
     [
         'path' => 'UpdateEnvelope.changelog.running.patches',

@@ -23,6 +23,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\VersionInUse;
+use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
@@ -59,8 +60,8 @@ function anEveningWithSomethingPermanentInIt(): Upkeep
 {
     return Upkeep::runningOn(
         HowCurrent::Pending,
-        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false)),
-        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false)),
+        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
+        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
         // One of the two, deliberately. A fixture where every service is
         // permanent would pass a screen that drew the warning over the whole
@@ -75,10 +76,10 @@ function anEveningWorthSpending(): Upkeep
 {
     return Upkeep::runningOn(
         HowCurrent::Pending,
-        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false)),
+        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Releases::these(
-            Release::called('4.1.0', noticeable: true, withdrawn: false),
-            Release::called('4.0.16', noticeable: false, withdrawn: false),
+            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+            Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
         ),
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
         Services::none(),
@@ -152,8 +153,8 @@ it('N2-R16 — leaves a withdrawn release out of what is offered', function (): 
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         HowCurrent::Pending,
         Releases::these(
-            Release::called('4.1.0', noticeable: true, withdrawn: false),
-            Release::called('4.0.17', noticeable: true, withdrawn: true),
+            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+            Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()),
         ),
         Services::these(ServiceId::called('jellyfin')),
         Services::none(),
@@ -170,7 +171,7 @@ it('N2-R16 — says so where the stack is running one that was taken back', func
     // would leave an operator reading a screen that says nothing is wrong.
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::runningOn(
         HowCurrent::Pending,
-        VersionInUse::of(Release::called('4.0.17', noticeable: true, withdrawn: true)),
+        VersionInUse::of(Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing())),
         Releases::none(),
         Services::none(),
         Services::none(),
@@ -467,7 +468,7 @@ it('N2-R20 — offers taking one only where the stack said there is one', functi
     $waiting = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
     $current = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         HowCurrent::Current,
-        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false)),
+        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
@@ -638,7 +639,7 @@ it('N2-R16 — says when one of the releases waiting is one the household would 
     $noticed = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
     $chores = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
         HowCurrent::Pending,
-        Releases::these(Release::called('4.0.16', noticeable: false, withdrawn: false)),
+        Releases::these(Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::none(),
         Services::none(),
         HowServicesTookIt::none(),

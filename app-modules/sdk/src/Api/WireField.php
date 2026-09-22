@@ -290,6 +290,16 @@ enum WireField: string
     /** What one release is called. */
     case Version = 'version';
 
+    /**
+     * What a release delivers, in the stack's own prose.
+     *
+     * Optional on the wire, and a release the generator had nothing to say
+     * about is a state rather than a defect — read into the two arms of
+     * {@see \Modules\Kernel\Api\WhatAReleaseDelivers} so that nothing said
+     * and nothing to print cannot be confused on a row.
+     */
+    case Delivers = 'delivers';
+
     /** Whether somebody in the house would notice this release. */
     case UserFacing = 'user_facing';
 
