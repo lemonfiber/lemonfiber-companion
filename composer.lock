@@ -3067,7 +3067,7 @@
             "dist": {
                 "type": "path",
                 "url": "bridge",
-                "reference": "9a995ccb79790cad2b68896f14b3a2af01a44442"
+                "reference": "0155bb7bc6fb227e5e41952535e48963662bae4d"
             },
             "require": {
                 "nativephp/mobile": "^4.4",
@@ -3110,12 +3110,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "062b6c628985849832ef812f70cd814daa83c3cb"
+                "reference": "7d5c1387b3feb3f90fee54a5db4ce4b2525f9f24"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/062b6c628985849832ef812f70cd814daa83c3cb",
-                "reference": "062b6c628985849832ef812f70cd814daa83c3cb",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/7d5c1387b3feb3f90fee54a5db4ce4b2525f9f24",
+                "reference": "7d5c1387b3feb3f90fee54a5db4ce4b2525f9f24",
                 "shasum": ""
             },
             "require": {
@@ -3246,7 +3246,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-09-21T21:25:40+00:00"
+            "time": "2026-09-22T17:45:58+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
