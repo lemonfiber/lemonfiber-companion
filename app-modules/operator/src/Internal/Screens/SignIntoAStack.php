@@ -270,7 +270,7 @@ final class SignIntoAStack extends NativeComponent
     /** The frame, by name. */
     public function render(): View
     {
-        return view('operator::sign-into-a-stack', ['typed' => $this->typed]);
+        return view('operator::sign-into-a-stack');
     }
 
     /**

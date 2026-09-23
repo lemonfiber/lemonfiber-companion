@@ -287,7 +287,7 @@ final class PairByScanning extends NativeComponent
     /** The frame, by name. */
     public function render(): View
     {
-        return view('operator::pair-by-scanning', ['called' => $this->called]);
+        return view('operator::pair-by-scanning');
     }
 
     /**
