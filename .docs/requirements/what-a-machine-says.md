@@ -58,6 +58,20 @@ requirement is right and this page is a defect.
 | `N2-R9` | Stuck downloads are reachable, and *stuck* on its own is not something anybody can act on | `Stage` |
 | `N2-R10` | A log read is bounded, and a bound is only a bound if something holds it | `HowManyLines` |
 
+## What keeps running when nobody is signed in
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N16-R5` | Whether the stack comes back after a restart is shown, and where the platform cannot provide it the app says so rather than rendering it as off | `HowItIsHosted`, whose `cannotBePromisedHere()` is a separate question from `comesBackOnItsOwn()` so that *not available here* cannot be drawn as *off*; and `WhatKeepsItRunning::configuresAnything()`, the same line drawn about the machine rather than about one command |
+| `N16-R6` | A restart that did not bring everything back names what did not come back, and is not reported as a completed start | `HowItIsHosted::didNotComeBack()`, which counts `Orphaned` as well as `Stopped` — the definition is installed and the program it names is gone, so it cannot run — and does not count `NotHosted`, where nothing was installed and so nothing failed to start |
+| `N16-R13` | State that could not be read is told apart from there being nothing wrong | `HowItIsHosted::InstalledUnverified`, the manager declining to say. It answers none of the three questions, so a screen cannot draw it from a boolean and has to have a sentence for it — which is what `EveryDerivedKeyResolvesTest` then requires of both locales |
+
+`N16-R7` is deliberately absent. It asks for post-boot verification *with when
+it last ran*, and no envelope carries a time for one — `installed-unverified`
+is the service manager declining to confirm, which is a different subject. The
+spec's own notes on `N16` say so, and `N1-R17` is why the difference is written
+down here rather than approximated from the nearest field.
+
 ## What a machine is set to, and who set it
 
 | Requirement | What it asks | What keeps it |

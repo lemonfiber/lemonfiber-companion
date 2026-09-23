@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
+use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
@@ -31,6 +32,7 @@ use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
@@ -199,6 +201,14 @@ function everyDerivedKey(): array
         Waiting::class => aPairPerCase(
             Waiting::cases(),
             static fn(Waiting $standing): array => [$standing->saidOnTheScreen()],
+        ),
+        HowItIsHosted::class => aPairPerCase(
+            HowItIsHosted::cases(),
+            static fn(HowItIsHosted $standing): array => [$standing->saidOnTheScreen()],
+        ),
+        WhatKeepsItRunning::class => aPairPerCase(
+            WhatKeepsItRunning::cases(),
+            static fn(WhatKeepsItRunning $manager): array => [$manager->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by
