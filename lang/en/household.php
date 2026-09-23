@@ -14,6 +14,11 @@ return [
     'partly-here' => 'Partly here',
     'here' => 'Here',
     'gone' => 'No longer here',
+    // A status the request service reported and lemonfiber has no word for. It
+    // is shown rather than guessed at or dropped: the request is real, it
+    // belongs to somebody, and the one thing nobody can say is where it has
+    // got to.
+    'unnamed' => 'Status not known here',
     // The same states, said to the person who asked rather than to the
     // operator deciding. Only the first differs in meaning rather than in
     // wording: a member is not the one whose decision is waited on, and a
@@ -26,6 +31,9 @@ return [
         'partly-here' => 'Partly here',
         'here' => 'Here',
         'gone' => 'No longer here',
+        // The same, said to the person who asked. They can see their own
+        // request; what nobody can tell them is where it stands.
+        'unnamed' => 'Status not known here',
     ],
     'your_requests' => 'What you have asked for',
     'nothing_asked_for' => 'You have not asked for anything yet.',

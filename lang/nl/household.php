@@ -14,6 +14,11 @@ return [
     'partly-here' => 'Gedeeltelijk binnen',
     'here' => 'Binnen',
     'gone' => 'Niet meer aanwezig',
+    // Een status die de aanvraagdienst meldde en waar lemonfiber geen woord
+    // voor heeft. Die wordt getoond in plaats van geraden of weggelaten: de
+    // aanvraag bestaat, hij is van iemand, en het enige wat niemand kan zeggen
+    // is hoe ver hij is.
+    'unnamed' => 'Status hier niet bekend',
     // The same states, said to the person who asked rather than to the
     // operator deciding. Only the first differs in meaning rather than in
     // wording: a member is not the one whose decision is waited on, and a
@@ -26,6 +31,9 @@ return [
         'partly-here' => 'Gedeeltelijk binnen',
         'here' => 'Binnen',
         'gone' => 'Niet meer aanwezig',
+        // Hetzelfde, gezegd tegen degene die het vroeg. Ze zien hun eigen
+        // aanvraag; wat niemand ze kan vertellen is hoe ver hij is.
+        'unnamed' => 'Status hier niet bekend',
     ],
     'your_requests' => 'Wat je hebt aangevraagd',
     'nothing_asked_for' => 'Je hebt nog niets aangevraagd.',

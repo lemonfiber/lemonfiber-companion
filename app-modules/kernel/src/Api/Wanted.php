@@ -32,9 +32,9 @@ use function trim;
  *
  * **Not every request is waiting.** The wire carries ones that were declined,
  * that failed, that are being fetched and that have arrived, because a
- * household screen shows a member's history. {@see Waiting} says which, and a
- * screen offering to approve something already here would be offering to do
- * nothing.
+ * household screen shows a member's history. {@see HowARequestStands} says
+ * which, where the stack put it into words at all, and a screen offering to
+ * approve something already here would be offering to do nothing.
  *
  * Named for what the household member wants rather than for the record of it,
  * because {@see Asked} is already the answer to a different question — whether
@@ -47,7 +47,7 @@ final readonly class Wanted
         private string $by,
         private string $forWhat,
         private Size $size,
-        private Waiting $standing,
+        private HowARequestStands $standing,
         private ?TurnedDown $turnedDown = null,
     ) {}
 
@@ -72,7 +72,7 @@ final readonly class Wanted
         string $by,
         string $forWhat,
         Size $size,
-        Waiting $standing,
+        HowARequestStands $standing,
     ): self {
         $asker = trim($by);
         $title = trim($forWhat);
@@ -137,7 +137,7 @@ final readonly class Wanted
         Size $size,
         TurnedDown $why,
     ): self {
-        $was = self::of($number, $by, $forWhat, $size, Waiting::Declined);
+        $was = self::of($number, $by, $forWhat, $size, HowARequestStands::said(Waiting::Declined));
 
         return new self($was->number, $was->by, $was->forWhat, $was->size, $was->standing, $why);
     }
@@ -163,7 +163,7 @@ final readonly class Wanted
     }
 
     /** Where it stands, which is what says whether a decision is wanted. */
-    public function standing(): Waiting
+    public function standing(): HowARequestStands
     {
         return $this->standing;
     }
