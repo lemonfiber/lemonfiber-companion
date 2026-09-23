@@ -34,6 +34,7 @@ use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Mending;
@@ -61,6 +62,7 @@ use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Questions;
+use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -269,6 +271,11 @@ final class CompositionRoot extends ServiceProvider
         // place decides whether a certificate is checked, and a port that built
         // its own client would be a second.
         $this->app->bind(Hosting::class, Keepers::class);
+
+        // The record a stack keeps of what it changed. Beside the others for the
+        // reason they share: one place decides whether a certificate is checked,
+        // and a port that built its own client would be a second.
+        $this->app->bind(History::class, Recorders::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 
