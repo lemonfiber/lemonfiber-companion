@@ -71,25 +71,25 @@ final class WhatTheHouseholdAsked extends NativeComponent
     /**
      * What came back, once the frame has asked.
      *
-     * `protected` rather than private, which is what `NativeComponent`'s
-     * property syncing needs to reach — it assigns from the parent class, so a
-     * private member of a subclass becomes a dynamic property and the screen
-     * silently stops holding what it thinks it holds.
+     * `public`, which is what `NativeComponent`'s property syncing needs to
+     * reach: since 4.5.1 it writes only public, non-static properties, and a
+     * screen whose state it cannot write silently stops holding what it thinks
+     * it holds. It is also what fills the view's data, so the compiled
+     * template finds the variable rather than an undefined one.
      */
-    protected ?WhatTheHouseholdTurnedOutToWant $answered = null;
+    public ?WhatTheHouseholdTurnedOutToWant $answered = null;
 
     /** The request an operator is being asked to give a reason for, if any. */
-    protected ?WhatOneRequestSays $turningDown = null;
+    public ?WhatOneRequestSays $turningDown = null;
 
     /**
      * What they have typed as that reason.
      *
-     * `protected` for the reason above and one more: `native:model` syncs into
-     * it from the parent class, so a private member would become a dynamic
-     * property and the field would go on looking filled while this held
-     * nothing.
+     * `public` for the reason above and one more: `native:model` syncs into it,
+     * and the sync writes only public properties — so anything less would leave
+     * the field looking filled while this held nothing.
      */
-    protected string $because = '';
+    public string $because = '';
 
     public function __construct(
         private readonly Wanting $wanting,

@@ -58,12 +58,12 @@ final class WhatElseIsRunningHere extends NativeComponent
     /**
      * What came back, once the frame has asked.
      *
-     * `protected` for {@see WhatStoppedComingIn::$answered}'s reason —
-     * `NativeComponent` assigns it from the parent class, and a private member
-     * of a subclass becomes a dynamic property the screen then silently stops
-     * holding.
+     * `public` for {@see WhatStoppedComingIn::$answered}'s reason —
+     * `NativeComponent` writes only public, non-static properties, and a screen
+     * whose state it cannot write silently stops holding what it thinks it
+     * holds.
      */
-    protected ?WhatElseTurnedOutToBe $answered = null;
+    public ?WhatElseTurnedOutToBe $answered = null;
 
     public function __construct(
         private readonly Supervising $supervising,

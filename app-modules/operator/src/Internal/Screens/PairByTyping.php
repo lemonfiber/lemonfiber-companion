@@ -67,40 +67,42 @@ final class PairByTyping extends NativeComponent
     /**
      * The pairing code, as it stands in the field.
      *
-     * `protected` rather than public. A mutable public property is refused for
-     * a reason, and `NativeComponent::__syncProperty()` assigns from the parent
-     * class — which reaches a protected member of a subclass and does not reach
-     * a private one, so this is exactly as open as the framework needs and no
-     * more.
+     * `public`, and that is the framework's requirement rather than a
+     * preference. `NativeComponent::__syncProperty()` writes only public,
+     * non-static properties — 4.4.1 wrote any property that existed, and 4.5.1
+     * stopped, so a protected one is simply never assigned and the field goes
+     * back to what it was on every keystroke.
      *
-     * **That is why `render()` hands it to the view by name.**
-     * `native:model="typed"` expands to `:value="$typed"`, a bare variable in
-     * the compiled view, and the package fills the view's data from a
-     * component's *public* properties — so a protected one arrives undefined,
-     * which is a warning rather than a stop and draws an empty field.
+     * It is also what `render()` needs. `native:model` expands to a bare
+     * variable in the compiled view and the package fills the view's data from
+     * a component's public properties, so a protected one arrives undefined —
+     * a warning rather than a stop, drawing an empty field.
+     *
+     * Public mutable state is what `enforceReadonlyPublicProperty` refuses;
+     * `phpstan.neon` says why a screen is the one place it cannot apply.
      *
      * A bare string because a field holds characters rather than a value.
      * {@see Pairing} is what it becomes, and it becomes one in exactly one
      * place.
      */
-    protected string $typed = '';
+    public string $typed = '';
 
     /** What the operator is calling this machine. */
-    protected string $called = '';
+    public string $called = '';
 
     /** What became of the pairing, once they have confirmed one. */
-    protected HowThePairingWent $went = HowThePairingWent::NotYet;
+    public HowThePairingWent $went = HowThePairingWent::NotYet;
 
     /**
      * Which stack was paired, so the screen can lead to it.
      *
      * Written at the moment the stack is made rather than read back from the
      * store afterwards, which would be asking *which one did I just add* of a
-     * list that does not say. `protected` for `NativeComponent`'s property
+     * list that does not say. `public` for `NativeComponent`'s property
      * syncing, and the identifier rather than the {@see Stack} because a screen
      * that held a stack would be holding an address.
      */
-    protected string $paired = '';
+    public string $paired = '';
 
     public function __construct(
         private readonly Introducing $introducing,
@@ -286,10 +288,7 @@ final class PairByTyping extends NativeComponent
     /** The frame, by name. */
     public function render(): View
     {
-        return view('operator::pair-by-typing', [
-            'typed' => $this->typed,
-            'called' => $this->called,
-        ]);
+        return view('operator::pair-by-typing');
     }
 
     /**

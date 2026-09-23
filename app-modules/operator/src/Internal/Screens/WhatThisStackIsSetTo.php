@@ -60,11 +60,11 @@ final class WhatThisStackIsSetTo extends NativeComponent
     /**
      * What the operator has typed, bound to the one input on this screen.
      *
-     * `protected` rather than public, as {@see PairByTyping}'s is and for its
-     * reason: `NativeComponent::__syncProperty()` assigns from the parent
-     * class, which reaches a protected member of a subclass and not a private
-     * one — exactly as open as the framework needs and no more. A mutable
-     * public property is refused here, and this does not need to be one.
+     * `public`, as {@see PairByTyping}'s is and for its reason:
+     * `NativeComponent::__syncProperty()` writes only public, non-static
+     * properties, so a protected one is never assigned. Public mutable state is
+     * what `enforceReadonlyPublicProperty` refuses, and `phpstan.neon` says why
+     * a screen is the one place that rule cannot apply.
      *
      * That is why {@see render()} hands it to the view by name: the package
      * fills a view's data from a component's *public* properties, so a
@@ -74,15 +74,15 @@ final class WhatThisStackIsSetTo extends NativeComponent
      * common edit — one character of a path — does not begin by retyping the
      * whole thing.
      */
-    protected string $typed = '';
+    public string $typed = '';
 
-    protected ?WhatThisStackIsSetToTurnedOutToBe $answered = null;
+    public ?WhatThisStackIsSetToTurnedOutToBe $answered = null;
 
     /** Which setting is open for changing, where one is. */
-    protected ?string $changing = null;
+    public ?string $changing = null;
 
     /** Where the proposal stands, once one has been put to the stack. */
-    protected ?WhatAChangeTurnedOutToBe $proposed = null;
+    public ?WhatAChangeTurnedOutToBe $proposed = null;
 
     public function __construct(
         private readonly Arranging $arranging,

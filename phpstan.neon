@@ -123,6 +123,42 @@ parameters:
         class: 30
         function: 8
 
+    # The one rule in `shipmonk/phpstan-rules` this repository configures, and
+    # the only reason it needs configuring: `nativephp/mobile` 4.5.1 writes
+    # only public, non-static properties from the client, where 4.4.1 wrote any
+    # property that existed. A screen's state must therefore be public — and
+    # public mutable state is what `enforceReadonlyPublicProperty` refuses, so
+    # the framework's requirement and the rule cannot both hold unqualified.
+    #
+    # Excluding properties that carry a default is the narrowest switch the
+    # rule offers and the right one to reach for: a public property with an
+    # initialiser is state a component starts in, not a value somebody was
+    # asked to pass in. Nothing is ignored and no baseline is written — the
+    # rule stays on for every property without one.
+    #
+    # It is safe because `ModuleBoundariesTest` already requires every class in
+    # a module that does not render to be readonly outright, so this can only
+    # take effect inside a surface — which that test deliberately exempts, for
+    # the reason it states there: only a surface holds state the renderer
+    # re-reads. The architecture test remains the guard.
+    shipmonkRules:
+        enforceReadonlyPublicProperty:
+            excludePropertyWithDefaultValue: true
+
+    # `nativephp/mobile` 4.5.1 declares `@throws LockedPropertyException` on
+    # `__syncProperty()`, which 4.4.1 did not. Every test that drives a screen
+    # calls it and every Pest test body is a closure, so without this the
+    # analyser reports a checked exception thrown inside a callable eleven
+    # times over — about a refusal that cannot happen here.
+    #
+    # It cannot happen because the exception is thrown only for a property
+    # carrying `#[Locked]`, and no screen has one. That is asserted rather than
+    # assumed: `ScreensDeclarePaintingTest` goes red the day somebody locks a
+    # property, which is the day this listing would stop being true.
+    exceptions:
+        uncheckedExceptionClasses:
+            - Native\Mobile\Edge\Exceptions\LockedPropertyException
+
     ergebnis:
         # `allRules` is where several documented rules actually live rather than
         # in an arch test: C4 (no `@` suppression) is NoErrorSuppressionRule and

@@ -2443,16 +2443,23 @@ final readonly class Fixtures
             // silent about it. `lang/` is a real directory of real PHP and is
             // none of those things, so naming it as source is the smallest true
             // form of the mistake.
-            // The state a screen keeps, no longer handed to its view.
-            // `native:model` expands to a bare variable in the compiled view
-            // and the package fills a view's data from *public* properties, so
-            // taking the hand-off away leaves the field undefined — a warning
+            // A model binding naming state the screen does not keep.
+            // `native:model` expands to a bare variable in the compiled view,
+            // so a name nothing supplies leaves the field undefined — a warning
             // rather than a stop, which is why nothing but a render can see it.
+            //
+            // The binding, and not the hand-off in `render()`. A screen's state
+            // is public, and `nativephp/mobile` fills a view's data from public
+            // properties, so the field reaches the view whether or not
+            // `render()` names it — deleting the hand-off plants nothing, and a
+            // fixture that plants nothing is a rule with nothing to catch
+            // reporting that it caught something. The binding is the one edit
+            // that still leaves a name the screen does not answer to.
             Fixture::edit(
                 'F15',
-                'app-modules/operator/src/Internal/Screens/PairByScanning.php',
-                "view('operator::pair-by-scanning', ['called' => \$this->called])",
-                "view('operator::pair-by-scanning')",
+                'app-modules/operator/resources/views/pair-by-scanning.blade.php',
+                'native:model="called"',
+                'native:model="calledAndNotKept"',
                 'every screen the router serves draws',
                 'PairByScanning',
             ),
