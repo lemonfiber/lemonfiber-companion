@@ -100,4 +100,45 @@ return [
         // An answer, and not a machine that could not be asked.
         'nothing_declared' => 'This machine declares no services',
     ],
+
+    // Everything that leaves the machine, in two lists that are never merged.
+    'outbound' => [
+        // The road in, naming the question rather than the mechanism.
+        'road_in' => 'What leaves this machine',
+        // Each of lemonfiber's own requests, by what it asks for.
+        'asks_for' => [
+            'registry' => 'Fetching service images',
+            'guides' => 'Checking the quality guides',
+            'echo' => 'Finding this machine\'s public address',
+            'indexer' => 'Proving an indexer key',
+            'usenet' => 'Proving a Usenet login',
+            'household' => 'Telling a household member something',
+            'updates' => 'Checking for a newer lemonfiber',
+        ],
+        'allowed' => [
+            'allowed' => 'Allowed by this machine\'s settings',
+            'switched_off' => 'Switched off',
+        ],
+        'ours' => [
+            'heading' => 'What lemonfiber itself sends',
+            'sends' => 'Sends: :sends',
+            'goes_to' => 'To :destination',
+            // Not *switched off*: a request can be allowed with nowhere to go.
+            'nowhere' => 'Nowhere is configured for it to reach',
+            'switch' => 'Switched off by :switch',
+            // On every row, because turning something off is the decision.
+            'cost' => 'Turning it off: :cost',
+            'none' => 'lemonfiber itself sends nothing',
+        ],
+        'theirs' => [
+            'heading' => 'What the services send',
+            'reaches' => 'Reaches :destination',
+            // An answer: the stack records this service reaching nothing.
+            'reaches_nothing' => 'Reaches nothing',
+            // Not an answer. Said in this app's words rather than the stack's
+            // placeholder, and never as *nothing*.
+            'unrecorded' => 'lemonfiber has no record of what this reaches',
+            'none' => 'No service here sends anything',
+        ],
+    ],
 ];

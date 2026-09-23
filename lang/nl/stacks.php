@@ -73,4 +73,36 @@ return [
         'upstream' => 'Gebouwd vanuit :upstream',
         'nothing_declared' => 'Deze machine geeft geen diensten op',
     ],
+    'outbound' => [
+        'road_in' => 'Wat deze machine verlaat',
+        'asks_for' => [
+            'registry' => 'Images van diensten ophalen',
+            'guides' => 'De kwaliteitsgidsen controleren',
+            'echo' => 'Het publieke adres van deze machine opzoeken',
+            'indexer' => 'Een indexersleutel controleren',
+            'usenet' => 'Een Usenet-login controleren',
+            'household' => 'Een huisgenoot iets laten weten',
+            'updates' => 'Kijken of er een nieuwere lemonfiber is',
+        ],
+        'allowed' => [
+            'allowed' => 'Toegestaan door de instellingen van deze machine',
+            'switched_off' => 'Uitgeschakeld',
+        ],
+        'ours' => [
+            'heading' => 'Wat lemonfiber zelf verstuurt',
+            'sends' => 'Verstuurt: :sends',
+            'goes_to' => 'Naar :destination',
+            'nowhere' => 'Er is niets ingesteld om te bereiken',
+            'switch' => 'Uit te zetten met :switch',
+            'cost' => 'Als het uit staat: :cost',
+            'none' => 'lemonfiber verstuurt zelf niets',
+        ],
+        'theirs' => [
+            'heading' => 'Wat de diensten versturen',
+            'reaches' => 'Bereikt :destination',
+            'reaches_nothing' => 'Bereikt niets',
+            'unrecorded' => 'lemonfiber weet niet wat deze dienst bereikt',
+            'none' => 'Geen enkele dienst hier verstuurt iets',
+        ],
+    ],
 ];

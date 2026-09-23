@@ -14,6 +14,7 @@ use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
+use Modules\Operator\Internal\Screens\WhatLeavesHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
@@ -189,6 +190,12 @@ final class OperatorServiceProvider extends ServiceProvider
             // this is what it was done with — two questions asked at different
             // moments.
             Router::native(AStacksScreen::Origins->value, WhereThisComesFrom::class);
+
+            // Everything that leaves the machine. Its own screen, because what
+            // it answers is a privacy question asked apart from the others,
+            // and it keeps lemonfiber's connections and the services' in two
+            // lists that no other screen would have room to keep apart.
+            Router::native(AStacksScreen::Leaving->value, WhatLeavesHere::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

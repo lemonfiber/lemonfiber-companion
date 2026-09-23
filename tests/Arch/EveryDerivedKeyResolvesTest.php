@@ -34,7 +34,9 @@ use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatKeepsItRunning;
+use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
@@ -214,6 +216,14 @@ function everyDerivedKey(): array
         HowFarItGoesBack::class => aPairPerCase(
             HowFarItGoesBack::cases(),
             static fn(HowFarItGoesBack $reversal): array => [$reversal->saidOnTheScreen()],
+        ),
+        WhatLemonfiberAsksFor::class => aPairPerCase(
+            WhatLemonfiberAsksFor::cases(),
+            static fn(WhatLemonfiberAsksFor $asks): array => [$asks->saidOnTheScreen()],
+        ),
+        WhetherItIsAllowed::class => aPairPerCase(
+            WhetherItIsAllowed::cases(),
+            static fn(WhetherItIsAllowed $allowed): array => [$allowed->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by

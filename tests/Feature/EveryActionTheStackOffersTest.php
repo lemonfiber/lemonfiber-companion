@@ -34,7 +34,7 @@ use Tests\Support\WhatTheReadersRead;
  */
 const OFFERED = [
     'Config', 'Doctor', 'Error', 'Held', 'History', 'Hosting', 'Household',
-    'Job', 'Log', 'Provenance', 'Repair', 'Status', 'Stuck',
+    'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'Status', 'Stuck',
     'Update',
 ];
 
@@ -67,7 +67,7 @@ const NOT_YET = [
     'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients',
     'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
     'Glossary', 'Import',
-    'Invitation', 'Lifecycle', 'Migration', 'Music', 'Outbound',
+    'Invitation', 'Lifecycle', 'Migration', 'Music',
     'Plugins', 'Preview', 'Pull', 'Quality', 'Removal',
     'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',
     'Space', 'Start', 'Step', 'StopSeeding', 'Stored',

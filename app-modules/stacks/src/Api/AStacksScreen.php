@@ -129,6 +129,12 @@ enum AStacksScreen: string
      */
     case Origins = '/stacks/{stack}/origins';
 
+    /**
+     * Everything that leaves this machine: lemonfiber's own requests, and its
+     * services'.
+     */
+    case Leaving = '/stacks/{stack}/leaving';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
