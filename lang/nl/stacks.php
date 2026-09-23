@@ -57,7 +57,7 @@ return [
     // Wat de machine aan zichzelf heeft veranderd.
     'record' => [
         'road_in' => 'Wat hier is veranderd',
-        'horizon' => 'Het einde van wat bewaard wordt: :horizon',
+        'horizon' => 'Wat bewaard wordt: :horizon.',
         'by' => ':operation, aan :target',
         'alongside' => '{1} Op zichzelf gedaan|[2,*] Een van :count wijzigingen die samen zijn gedaan',
         'stops_short' => 'Stopt eerder omdat: :because',

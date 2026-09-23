@@ -62,8 +62,10 @@ return [
         'road_in' => 'What changed here',
         // The stack's own sentence about how far back the record reaches,
         // after a lead-in of ours. Said where the list ends, whether or not
-        // anything is above it.
-        'horizon' => 'The end of what is kept: :horizon',
+        // anything is above it. The lead-in claims nothing about what fell
+        // off: the stack's sentence says whether anything older was dropped,
+        // and a lead-in guessing either way would contradict it half the time.
+        'horizon' => 'What is kept: :horizon.',
         // What did it, and to what.
         'by' => ':operation, to :target',
         // Always said, including when it came alone: undoing one line of a
