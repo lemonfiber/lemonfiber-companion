@@ -130,6 +130,15 @@ it('N16-R6 — an orphan carries the program, and nothing else does', function (
 });
 
 it('refuses an envelope whose payload is not a payload at all', function (): void {
+    // The generated envelope asserts the payload's shape without checking it,
+    // so a `hosting` envelope carrying a sentence reaches this reader typed as
+    // the contract's shape and is not one. Refused by name, because everything
+    // below it reads subscripts.
+    expect(fn(): WhatRunsUnattended => Hosts::in(new Envelope(1, 'hosting', 'not a payload')))
+        ->toThrow(HostingIsUnreadable::class, 'data');
+});
+
+it('refuses a payload that carries none of the fields it must', function (): void {
     expect(fn(): WhatRunsUnattended => Hosts::in(hostingSaying([])))
         ->toThrow(HostingIsUnreadable::class, 'manager');
 });
