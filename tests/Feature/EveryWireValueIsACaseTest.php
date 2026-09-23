@@ -10,6 +10,7 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
+use Modules\Kernel\Api\HowItSettled;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -22,6 +23,7 @@ use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatKeepsItRunning;
+use Modules\Kernel\Api\WhoSettledIt;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 use Tests\Support\Tree;
@@ -64,6 +66,12 @@ function theGeneratedDoctorEnvelope(): string
 function theGeneratedStuckEnvelope(): string
 {
     return theGeneratedEnvelope('StuckEnvelope');
+}
+
+/** The generated envelope that carries what reaches what, as text. */
+function theGeneratedWiringEnvelope(): string
+{
+    return theGeneratedEnvelope('WiringEnvelope');
 }
 
 /** The generated envelope that carries what a member may watch, as text. */
@@ -317,6 +325,28 @@ it('N1-R13 — every severity the contract describes has a case', function (): v
     expect(valuesOf(Severity::cases()))->toBe(wireUnion('severity'));
 });
 
+it('N1-R13 — every settler the contract describes has a case', function (): void {
+    // Read from the wiring envelope, where the word is declared. `whose` says
+    // which of the stack and the operator resolved a contested capability, and
+    // the two may not be flattened — so an arm the contract grew that nothing
+    // here has a case for must fail rather than render as the other one.
+    $settlers = unionIn(theGeneratedWiringEnvelope(), 'whose');
+
+    expect($settlers)->not->toBe([], 'no whose union was found in the generated envelope');
+    expect(valuesOf(WhoSettledIt::cases()))->toBe($settlers);
+});
+
+it('N1-R13 — every settlement the contract describes has a case', function (): void {
+    // The five are tags on objects rather than one union, so they are gathered
+    // by tag. A word the contract adds and this does not have is the failure
+    // that matters: `contested` is the core declining to choose, and an arm
+    // nothing reads would render as whichever arm the reader fell through to.
+    $settlements = theSettlementsIn(theGeneratedWiringEnvelope());
+
+    expect($settlements)->not->toBe([], 'no settlement tag was found in the generated envelope');
+    expect(valuesOf(HowItSettled::cases()))->toBe($settlements);
+});
+
 it('N1-R13 — every stage the contract describes has a case', function (): void {
     // Read from the stuck envelope rather than the doctor one, which is the
     // first time these rules have looked at a second file. The union is only
@@ -445,12 +475,35 @@ function backedValuesOf(ReflectionClass $class): array
     return $values;
 }
 
+/**
+ * The words a settlement can be, read from the tagged objects that carry them.
+ *
+ * Not `unionIn`, which reads a union of literals joined by `|`. These five are
+ * each the tag of an object of its own — `array{settled: 'contested', ...}` —
+ * because four of them carry different fields alongside. So the literals are
+ * gathered from every occurrence of the tag rather than from one union, and the
+ * count is asserted by the rule that uses this rather than here.
+ *
+ * @return list<string>
+ */
+function theSettlementsIn(string $source): array
+{
+    preg_match_all("/\\bsettled: '([a-z_-]+)'/", $source, $found);
+
+    $words = array_values(array_unique($found[1]));
+
+    sort($words);
+
+    return $words;
+}
+
 /** The enums checked above, against the contract field each mirrors. */
 const CHECKED_AGAINST_THE_WIRE = [
     Category::class => 'category',
     Conclusion::class => 'outcome',
     Overall::class => 'overall',
     Severity::class => 'severity',
+    WhoSettledIt::class => 'whose',
     HowAServiceRuns::class => 'state',
     HowMuchItMatters::class => 'criticality',
     HowTheStackIsRunning::class => 'condition',

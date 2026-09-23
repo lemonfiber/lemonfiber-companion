@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -63,8 +64,8 @@ function theSessionTheHouseholdIsAskedWith(): Session
 function theSameRequests(): Requested
 {
     return Requested::of(
-        Wanted::of(41, 'Sam', 'A film nobody has seen', Size::guessedAt(4_000_000_000), Waiting::ForApproval),
-        Wanted::of(42, 'Robin', 'A series somebody has', Size::unknown(), Waiting::Here),
+        Wanted::of(41, 'Sam', 'A film nobody has seen', Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(42, 'Robin', 'A series somebody has', Size::unknown(), HowARequestStands::said(Waiting::Here)),
     );
 }
 
@@ -305,6 +306,27 @@ function whatTheHouseholdSaid(Wanting $wanting): string
     )->said;
 }
 
+/**
+ * One request's standing as a word, including where the stack named none.
+ *
+ * `either()` hands back an object, so the word travels in one — and the
+ * unnamed arm is spelled out rather than left blank, because a blank would
+ * read in a comparison as a standing that was named and happened to be empty.
+ */
+function theStandingOf(Wanted $one): string
+{
+    return $one->standing()->either(
+        said: static fn(Waiting $said): WhatTheStandingSaid => new WhatTheStandingSaid($said->value),
+        unnamed: static fn(): WhatTheStandingSaid => new WhatTheStandingSaid('unnamed'),
+    )->said;
+}
+
+/** One standing carried out of `either()`, since it must hand back an object. */
+final readonly class WhatTheStandingSaid
+{
+    public function __construct(public string $said) {}
+}
+
 /** Every request, folded to a word each, so an order can be compared. */
 function everyRequestIn(Wanting $wanting): string
 {
@@ -313,7 +335,7 @@ function everyRequestIn(Wanting $wanting): string
             $rows = [];
 
             foreach ($wanted as $one) {
-                $rows[] = sprintf('%d/%s/%s/%s', $one->number(), $one->by(), $one->forWhat(), $one->standing()->value);
+                $rows[] = sprintf('%d/%s/%s/%s', $one->number(), $one->by(), $one->forWhat(), theStandingOf($one));
             }
 
             return new WhatTheHouseholdTurnedOutToSay(implode(' | ', $rows));

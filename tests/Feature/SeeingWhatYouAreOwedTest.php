@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -75,7 +76,7 @@ function whatThisMemberIsTold(): Sentences
 function whatThisMemberAskedFor(): Requested
 {
     return Requested::of(
-        Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), Waiting::ForApproval),
+        Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
         Wanted::turnedDown(
             2,
             'Robin',
