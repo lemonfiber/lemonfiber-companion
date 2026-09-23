@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function count;
-
 use Illuminate\View\View;
 
 use function is_string;
@@ -95,12 +93,6 @@ final class WhatKeepsRunningHere extends NativeComponent
         return $this->stacks->configured()->stack(
             StackId::rememberedAs(is_string($named) ? $named : ''),
         );
-    }
-
-    /** How many are listed, which is what the empty state asks. */
-    public function howMany(): int
-    {
-        return count($this->answer()->commands);
     }
 
     /**

@@ -24,6 +24,12 @@ namespace Modules\Operator\Internal\ViewModels;
  * standing added to the contract cannot arrive here with a sentence written in
  * this file that no translator can reach (`L1`).
  *
+ * **Whether it came back is not a field here.** The standing already says it,
+ * and how many did not is a fact about the listing that
+ * {@see WhatKeepsRunningTurnedOutToBe} carries once rather than a boolean
+ * repeated on every row — a row-level copy would be a third place the same
+ * answer lives and the first to go stale.
+ *
  * **`$missing` is the one field that is empty on most rows, and the template
  * must branch on it rather than print it.** Only an orphan has a program that
  * is gone; a blank printed where a path belongs reads as *nothing is missing*
@@ -36,16 +42,14 @@ final readonly class WhatOneUnattendedCommandSays
      * @param string $name           what this product calls it, which is what an operator reads
      * @param string $command        how it is typed in a terminal
      * @param string $guarantees     what it does for as long as it runs
-     * @param string $standingSaid   the key for what stands between it and the machine
-     * @param bool   $didNotComeBack whether it is installed and is not running
-     * @param string $missing        the program that is gone, or empty where nothing is
+     * @param string $standingSaid the key for what stands between it and the machine
+     * @param string $missing      the program that is gone, or empty where nothing is
      */
     public function __construct(
         public string $name,
         public string $command,
         public string $guarantees,
         public string $standingSaid,
-        public bool $didNotComeBack,
         public string $missing,
     ) {}
 }

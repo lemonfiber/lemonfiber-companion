@@ -39,7 +39,6 @@ final readonly class HowAnUnattendedCommandReads
                 command: $command->command(),
                 guarantees: $command->guarantees(),
                 standingSaid: $standing->saidOnTheScreen(),
-                didNotComeBack: $standing->didNotComeBack(),
                 missing: $where,
             ),
             nothing: static fn(): WhatOneUnattendedCommandSays => new WhatOneUnattendedCommandSays(
@@ -47,7 +46,6 @@ final readonly class HowAnUnattendedCommandReads
                 command: $command->command(),
                 guarantees: $command->guarantees(),
                 standingSaid: $standing->saidOnTheScreen(),
-                didNotComeBack: $standing->didNotComeBack(),
                 missing: '',
             ),
         );

@@ -77,7 +77,7 @@ function theHostingScreen(
 it('N16-R5 — shows every command, what it guarantees, and where it stands', function (): void {
     $screen = theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()));
 
-    expect($screen->howMany())->toBe(2)
+    expect($screen->answer()->commands)->toHaveCount(2)
         // A machine that answered is not a session that ended. `isSignedIn` is
         // the template's first branch, so a fold reporting otherwise would put
         // the sign-in prompt in front of an operator whose session is working.
@@ -128,8 +128,11 @@ it('N16-R6 — counts what did not come back, and an orphan is in it', function 
     $answer = theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()))->answer();
 
     expect($answer->missing)->toBe(1)
-        ->and($answer->commands[1]->didNotComeBack)->toBeTrue()
-        ->and($answer->commands[0]->didNotComeBack)->toBeFalse();
+        // Which one, read off the standing the row carries rather than a
+        // boolean beside it: the standing is what the screen draws, so a count
+        // agreeing with a flag nothing shows would agree about nothing.
+        ->and($answer->commands[1]->standingSaid)->toBe(HowItIsHosted::Orphaned->saidOnTheScreen())
+        ->and($answer->commands[0]->standingSaid)->toBe(HowItIsHosted::Hosted->saidOnTheScreen());
 });
 
 it('N16-R6 — an orphan names the program that is gone, and nothing else does', function (): void {

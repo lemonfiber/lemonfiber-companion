@@ -37,6 +37,12 @@
             <native:text>{{ __($command->standingSaid) }}</native:text>
             <x-operator::note>{{ $command->guarantees }}</x-operator::note>
 
+            {{-- How it is typed. The row is only actionable with it: an
+                 operator who has just read that something did not come back
+                 goes to the machine and runs it, and a row carrying the name
+                 alone has shown them a label they cannot search for. --}}
+            <x-operator::note>{{ $command->command }}</x-operator::note>
+
             @if ($command->missing !== '')
                 {{-- Only an orphan has one. The program rather than the
                      service, because that is the difference between *this is
