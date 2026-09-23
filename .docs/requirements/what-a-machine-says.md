@@ -59,6 +59,23 @@ requirement is right and this page is a defect.
 | `N2-R10` | A log read is bounded, and a bound is only a bound if something holds it | `HowManyLines` |
 | `N16-R10` | Where self-healing could not reach what it manages, that is its own answer and is never rendered as nothing needing attention | `WhatIsUnsupported`, carried on `Stalled` beside the listing rather than anywhere a screen could draw the queue without it. `Unsupported` holds both halves and refuses a blank either side, so a limit cannot reach a screen as a fault with no reason. An absent field reads as `none()` — a stack that reached everything says nothing — while a malformed one is refused, because a limit shown with half its sentence is one nobody can act on |
 
+## What keeps running when nobody is signed in
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N16-R5` | Whether the stack comes back after a restart is shown, and where the platform cannot provide it the app says so rather than rendering it as off | `HowItIsHosted`, whose `cannotBePromisedHere()` is a separate question from `comesBackOnItsOwn()` so that *not available here* cannot be drawn as *off*; and `WhatKeepsItRunning::configuresAnything()`, the same line drawn about the machine rather than about one command |
+| `N16-R6` | A restart that did not bring everything back names what did not come back, and is not reported as a completed start | `HowItIsHosted::didNotComeBack()`, which counts `Orphaned` as well as `Stopped` — the definition is installed and the program it names is gone, so it cannot run — and does not count `NotHosted`, where nothing was installed and so nothing failed to start |
+| `N16-R13` | State that could not be read is told apart from there being nothing wrong | `HowItIsHosted::InstalledUnverified`, the manager declining to say. It answers none of the three questions, so a screen cannot draw it from a boolean and has to have a sentence for it — which is what `EveryDerivedKeyResolvesTest` then requires of both locales |
+| `N16-R5` | The sentence that makes *not available here* read differently from *off* | `WhatRunsUnattended::unsupported()`, which takes the instruction and refuses a blank one through `InstructionSaysNothing`. It is a named constructor rather than a nullable parameter, so an unsupported machine with no instruction and an instruction attached to a machine that has a manager are both unspellable |
+| `N16-R6` | What did not come back is named | `WhatRunsUnattended::didNotComeBack()`, answering `WhatDidNotComeBack` — a type of its own rather than a filtered array (`D1`), because *everything this machine hosts* and *everything that did not start* are different lists for different moments. What counts is `HowItIsHosted`'s, so the walk does not judge |
+| `N16-R6` | For an orphan, the honest name is the program rather than the service | `Unattended::orphaned()`, which carries the missing path and sets the standing itself — a row naming a missing program while claiming to be running cannot be built. `Unattended::missing()` hands it over in two arms, so a screen cannot print a blank where a path belongs |
+
+`N16-R7` is deliberately absent. It asks for post-boot verification *with when
+it last ran*, and no envelope carries a time for one — `installed-unverified`
+is the service manager declining to confirm, which is a different subject. The
+spec's own notes on `N16` say so, and `N1-R17` is why the difference is written
+down here rather than approximated from the nearest field.
+
 ## What a machine is set to, and who set it
 
 | Requirement | What it asks | What keeps it |

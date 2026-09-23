@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
+use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhoSettledIt;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -94,6 +96,12 @@ function theGeneratedConfigEnvelope(): string
 function theGeneratedStatusEnvelope(): string
 {
     return theGeneratedEnvelope('StatusEnvelope');
+}
+
+/** The generated envelope that carries what the machine keeps running, as text. */
+function theGeneratedHostingEnvelope(): string
+{
+    return theGeneratedEnvelope('HostingEnvelope');
 }
 
 /**
@@ -414,6 +422,24 @@ it('N1-R13 — every condition the whole stack can be in has a case', function (
     expect(valuesOf(HowTheStackIsRunning::cases()))->toBe($conditions);
 });
 
+it('N1-R13 — every way a command can be hosted has a case', function (): void {
+    // `standing` rather than `state`, which is the `hosting` envelope's own
+    // word for it and is a third union again — a problem's standing and a
+    // household request's are already two, under the wire's `state`. Naming the
+    // envelope here is what keeps the three from being read as one.
+    $hosted = unionIn(theGeneratedHostingEnvelope(), 'standing');
+
+    expect($hosted)->not->toBe([], 'no hosting standing union was found in the generated envelope');
+    expect(valuesOf(HowItIsHosted::cases()))->toBe($hosted);
+});
+
+it('N1-R13 — every service manager the contract describes has a case', function (): void {
+    $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
+
+    expect($managers)->not->toBe([], 'no manager union was found in the generated envelope');
+    expect(valuesOf(WhatKeepsItRunning::cases()))->toBe($managers);
+});
+
 it('N1-R13 — every standing the contract describes has a case', function (): void {
     // The contract calls this `state`. The enum is named for what it says about
     // a problem rather than for the field it arrives in, which is why the two
@@ -491,6 +517,9 @@ const CHECKED_AGAINST_THE_WIRE = [
     Medium::class => 'medium',
     Cost::class => 'cost',
     Stance::class => 'stance',
+
+    HowItIsHosted::class => 'standing',
+    WhatKeepsItRunning::class => 'manager',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in
