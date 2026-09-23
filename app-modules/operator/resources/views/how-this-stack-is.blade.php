@@ -166,6 +166,14 @@
          and the screen it leads to offers no verb against one. --}}
     <x-operator::quiet-action label="{{ __('health.what_else_is_running') }}" :goes="$this->goes()->elsewhere()" />
 
+    {{-- What survives a restart. Beside what is running rather than inside it,
+         because the two answer different questions about the same machine: that
+         screen says what is running now, and this one says what would still be
+         running after a reboot nobody was there for. An operator who has just
+         had a power cut is looking for the second and would read the first as
+         an answer to it. --}}
+    <x-operator::quiet-action label="{{ __('stacks.what_keeps_running') }}" :goes="$this->goes()->keepsRunning()" />
+
     {{-- Everything this machine is set to. Beside what is running rather than
          under one of the services, because a setting belongs to the machine
          and an operator looking for one does not know which service owns it —

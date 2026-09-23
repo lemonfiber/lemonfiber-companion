@@ -34,6 +34,7 @@ use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Networking;
@@ -55,6 +56,7 @@ use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Doors;
+use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
@@ -261,6 +263,12 @@ final class CompositionRoot extends ServiceProvider
         // certificate is checked, and a port that built its own client would be
         // a second.
         $this->app->bind(Stalling::class, Stalls::class);
+
+        // What the machine keeps running with nobody signed in. Beside the
+        // three above because it shares their reason for existing at all: one
+        // place decides whether a certificate is checked, and a port that built
+        // its own client would be a second.
+        $this->app->bind(Hosting::class, Keepers::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

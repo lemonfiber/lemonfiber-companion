@@ -65,6 +65,9 @@ enum AStacksScreen: string
     /** What this machine is running, as a list of rows. */
     case Services = '/stacks/{stack}/services';
 
+    /** What this machine keeps running when nobody is signed in. */
+    case Hosting = '/stacks/{stack}/keeps-running';
+
     /** Everything this machine is set to, as the machine itself lists it. */
     case Settings = '/stacks/{stack}/settings';
 

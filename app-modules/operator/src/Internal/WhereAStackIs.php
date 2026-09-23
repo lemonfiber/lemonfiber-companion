@@ -115,6 +115,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Services->forTheStack($this->stack);
     }
 
+    /** What this machine keeps running with nobody signed in. */
+    public function keepsRunning(): string
+    {
+        return AStacksScreen::Hosting->forTheStack($this->stack);
+    }
+
     /** Everything this machine is set to. */
     public function settings(): string
     {
