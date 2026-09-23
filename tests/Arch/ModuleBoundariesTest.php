@@ -152,7 +152,7 @@ foreach ($modules as $module) {
             foreach ($module->classNames() as $name) {
                 $class = new ReflectionClass($name);
 
-                if ($class->isInterface() || $class->isEnum() || $class->implementsInterface(Throwable::class)) {
+                if ($class->isInterface() || $class->isEnum() || $class->isSubclassOf(Throwable::class)) {
                     continue;
                 }
 
