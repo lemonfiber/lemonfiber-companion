@@ -475,6 +475,28 @@ enum WireField: string
     /** What to do instead, where putting a change back stops short. */
     case Instead = 'instead';
 
+    /** The image a service runs, without a version. */
+    case Image = 'image';
+
+    /**
+     * The exact version a stack pins a service at.
+     *
+     * Its own field rather than part of the image reference, so a caller
+     * comparing versions is not parsing them out of a string.
+     */
+    case Pinned = 'pinned';
+
+    /** The project a service is built from, where its licence is checked. */
+    case Upstream = 'upstream';
+
+    /**
+     * The licence a service is published under, as an SPDX identifier.
+     *
+     * Spelled as the wire spells it, which is the American way; the kernel's
+     * word is `licence` and this case is the one place the two meet.
+     */
+    case License = 'license';
+
     /**
      * This field's name as a path, where it is read off another field's value.
      *

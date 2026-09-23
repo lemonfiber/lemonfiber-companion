@@ -41,6 +41,7 @@ use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Owing;
+use Modules\Kernel\Api\Provenance;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
@@ -54,6 +55,7 @@ use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
+use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Doors;
@@ -276,6 +278,10 @@ final class CompositionRoot extends ServiceProvider
         // reason they share: one place decides whether a certificate is checked,
         // and a port that built its own client would be a second.
         $this->app->bind(History::class, Recorders::class);
+
+        // Where a stack's services come from, the other half of what it keeps
+        // about itself, and bound beside the record for the same reason.
+        $this->app->bind(Provenance::class, Archivists::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 
