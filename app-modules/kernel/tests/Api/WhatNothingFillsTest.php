@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_keys;
 use function count;
 use function expect;
 use function it;
+use function iterator_to_array;
 
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\ServiceId;
@@ -47,10 +49,16 @@ it('has an empty form, which is everything being answered rather than a gap', fu
 });
 
 it('is a list rather than whatever keys a variadic brought', function (): void {
+    // The keys are the whole of what this asks. Named arguments give a variadic
+    // string keys and this collection hands its items back out through its
+    // iterator, so a listing that kept `first` and `then` holds the same two
+    // items in the same order as one that reindexed — counting them, or reading
+    // them, cannot tell the two apart. Only `array_keys` can.
     $unfilled = WhatNothingFills::these(
         first: Unfilled::of(ServiceId::called('bazarr'), Capability::called('subtitle-provider')),
         then: Unfilled::of(ServiceId::called('sonarr'), Capability::called('indexer')),
     );
 
-    expect(count(theCapabilitiesUnfilled($unfilled)))->toBe(2);
+    expect(array_keys(iterator_to_array($unfilled, preserve_keys: true)))->toBe([0, 1])
+        ->and(count(theCapabilitiesUnfilled($unfilled)))->toBe(2);
 });

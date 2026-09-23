@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_keys;
 use function count;
 use function expect;
 use function it;
+use function iterator_to_array;
 
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\HowItReaches;
@@ -55,10 +57,14 @@ it('has an empty form, which a stack with one service can honestly answer', func
 });
 
 it('is a list rather than whatever keys a variadic brought', function (): void {
+    // The keys are the whole of what this asks, for the reason
+    // `WhatNothingFills`' own test gives: two items in one order either way, and
+    // nothing but `array_keys` distinguishes the listing that reindexed.
     $wirings = Wirings::these(
         first: aWiringBy('sonarr', 'download-client'),
         then: aWiringBy('bazarr', 'subtitle-provider'),
     );
 
-    expect(count(theServicesWiring($wirings)))->toBe(2);
+    expect(array_keys(iterator_to_array($wirings, preserve_keys: true)))->toBe([0, 1])
+        ->and(count(theServicesWiring($wirings)))->toBe(2);
 });

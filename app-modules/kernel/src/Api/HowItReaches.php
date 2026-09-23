@@ -35,7 +35,11 @@ final readonly class HowItReaches
         private Services $services,
         private ?WhatSettledIt $settled,
         private ?ServiceId $named,
-        private string $why,
+        // Absent as `null`, like every other field only one arm carries. A
+        // blank reason is not the absent one: `byName()` refuses it, so `''` is
+        // a value no reach of either arm holds — and a placeholder spelled that
+        // way is indistinguishable from a reason nobody checked.
+        private ?string $why,
     ) {}
 
     /**
@@ -50,7 +54,7 @@ final readonly class HowItReaches
             services: $services,
             settled: $settled,
             named: null,
-            why: '',
+            why: null,
         );
     }
 
@@ -102,7 +106,10 @@ final readonly class HowItReaches
             /** @var ServiceId $named */
             $named = $this->named;
 
-            return $byName($named, $this->why);
+            /** @var string $why */
+            $why = $this->why;
+
+            return $byName($named, $why);
         }
 
         // Both present by construction, for the same reason one step up.

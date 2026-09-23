@@ -97,12 +97,21 @@ it('refuses a by-name wiring that explains nothing', function (): void {
 });
 
 it('gives an asked reach no reason, because nobody gave it an instruction', function (): void {
+    // The reason's absence is kept by the signature, not by an assertion. The
+    // `asked` closure takes a capability, what answers it and how that settled,
+    // and there is no parameter a reason could arrive in — so `whatTheReachGave`
+    // has to supply one itself, and `expect($asked->why)` used to read that
+    // literal back. It could not fail, and a mutant proved it: the arm's own
+    // placeholder could be changed to anything and every test still passed.
+    //
+    // What this reads is what the arm does hand over.
     $asked = whatTheReachGave(HowItReaches::asked(
         Capability::called('indexer'),
         Services::none(),
         WhatSettledIt::unfilled(),
     ));
 
-    expect($asked->why)->toBe('')
+    expect($asked->arm)->toBe('asked')
+        ->and($asked->subject)->toBe('indexer')
         ->and(theServicesReached($asked->services))->toBe([]);
 });
