@@ -22,6 +22,7 @@ use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
+use Modules\Operator\Internal\Screens\WhereThisComesFrom;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -182,6 +183,12 @@ final class OperatorServiceProvider extends ServiceProvider
             // than a section of the settings, because a setting is how the
             // machine stands now and this is how it came to stand there.
             Router::native(AStacksScreen::Record->value, WhatWasChangedHere::class);
+
+            // Where every service comes from. Its own screen rather than a
+            // section of the record, because the record is what was done and
+            // this is what it was done with — two questions asked at different
+            // moments.
+            Router::native(AStacksScreen::Origins->value, WhereThisComesFrom::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

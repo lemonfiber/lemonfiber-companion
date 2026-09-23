@@ -82,4 +82,22 @@ return [
         // a date, because the only date the stack wrote was nobody's guess.
         'clock_unreadable' => 'At a time the machine could not tell',
     ],
+
+    // Where each service on the machine comes from.
+    'origins' => [
+        // The road in, naming the question rather than the mechanism.
+        'road_in' => 'Where this comes from',
+        // Said once over the list. Nothing here is looked up, so a project
+        // that has gone away changes none of it — which somebody reading a
+        // licence should know is not a check made today.
+        'as_declared' => 'As this machine declares it. Nothing here is looked up from the projects themselves.',
+        // The image and the version it is pinned at, printed together because
+        // a version without its image names nothing that can be fetched.
+        'runs' => 'Runs :image, pinned at :pinned',
+        // On every row, not only where it is unusual.
+        'licence' => 'Licence: :licence',
+        'upstream' => 'Built from :upstream',
+        // An answer, and not a machine that could not be asked.
+        'nothing_declared' => 'This machine declares no services',
+    ],
 ];

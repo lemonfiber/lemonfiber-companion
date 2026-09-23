@@ -1,8 +1,9 @@
-# What was done here
+# What was done here, and with what
 
-What a machine has changed about itself, how far each change goes back, and how
-far back the record goes at all. The code is the `N11` half of `app-modules/kernel`
-and `app-modules/sdk`, drawn by `WhatWasChangedHere`.
+What a machine has changed about itself, how far each change goes back and how
+far back the record goes at all — and where every service it runs comes from.
+The code is the `N11` half of `app-modules/kernel` and `app-modules/sdk`, drawn
+by `WhatWasChangedHere` and `WhereThisComesFrom`.
 
 Each row says what the requirement asks and what in this repository answers it.
 The spec is canonical; where this page and a requirement disagree, the
@@ -24,6 +25,14 @@ requirement is right and this page is a defect.
 | `N11-R3` | A change shows how many changes accompanied it | `Change`, which refuses fewer than one — a change that came alone says one, the least it can say. Drawn on every row, *on its own* included, because undoing one line of an operation that made more leaves a machine in a state nobody chose |
 | `N11-R10` | Changes at the same instant are ordered deterministically and are not presented as one preceding the other | `HowTheRecordReads` draws consecutive changes made at one moment under a single *when*, in the stack's order, rather than each with a time where the one above would read as the later. `WhenItWasMade` carries a clock the stack could not read as an arm of its own, never as 1970, and an unreadable moment is never the same moment as another — nobody knows those changes happened together, so they are not drawn together |
 
+## Where each service comes from
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N11-R6` | A service's provenance shows its image, the digest it is pinned to, its upstream and its licence | `WhereItComesFrom`, which cannot be built with any of its words blank — `OriginSaysNothing` names the one that was, and `Origins` refuses the row first so it reaches the screen as an obstacle rather than a raise. The image and the version are kept apart as the stack keeps them and drawn together, because a version without its image names nothing that can be fetched. **The digest is not drawn**: see below |
+| `N11-R7` | A licence is shown for every service, not only where it is unusual | The licence is a required word of `WhereItComesFrom`, and `WhereThisComesFrom` draws it on every row, whatever it says |
+| `N11-R8` | Where an upstream cannot be reached, the pin and the licence are still shown | Nothing here reaches an upstream. `Provenance` asks the stack and nothing else, and every word on the screen is one the stack declared — which the screen says once, over the list, so a licence is not read as a check made today |
+
 ## Asked for, and absent
 
 `N11-R4` asks that a change's reason be shown *where it carries one*. None
@@ -32,5 +41,9 @@ and nothing about why it was made. `WhereItStopsShort` is not that reason — it
 is why putting a change back stops short — and the screen says so in its own
 words rather than letting one stand in for the other.
 
-`N11-R6` to `N11-R8` are the other half of `N11`, where a service came from.
-They are not drawn yet.
+`N11-R6` asks for the digest a service is pinned to, and the screen draws its
+version instead. The stack does not carry a digest: its manifest pins each image
+by tag, and the `provenance` envelope's `pinned` is that tag. `E1-R1` requires
+every image pinned to an immutable digest with the tag beside it, so the gap is
+the stack's to close first; when the envelope carries a digest, it is drawn
+beside the version rather than in place of it.
