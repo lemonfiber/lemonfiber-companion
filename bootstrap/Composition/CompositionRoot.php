@@ -40,6 +40,7 @@ use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
+use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Provenance;
 use Modules\Kernel\Api\Reaching;
@@ -60,6 +61,7 @@ use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Keepers;
+use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
@@ -282,6 +284,10 @@ final class CompositionRoot extends ServiceProvider
         // Where a stack's services come from, the other half of what it keeps
         // about itself, and bound beside the record for the same reason.
         $this->app->bind(Provenance::class, Archivists::class);
+
+        // What leaves a stack, bound beside what it keeps about itself for the
+        // same reason: one place decides whether a certificate is checked.
+        $this->app->bind(Outgoing::class, Lookouts::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 
