@@ -540,6 +540,26 @@ enum WireField: string
      */
     case Recorded = 'recorded';
 
+    /** The alert preset in force for events with no exception of their own. */
+    case Preset = 'preset';
+
+    /** What an alert preset means, in the operator's terms. */
+    case Means = 'means';
+
+    /** The events set apart from an alert preset. */
+    case Exceptions = 'exceptions';
+
+    /**
+     * The kind of event set apart, by the name a finding gives it.
+     *
+     * A row's field, not the envelope's `kind`, which the transport reads
+     * before this app ever sees a payload.
+     */
+    case Kind = 'kind';
+
+    /** Whether an event set apart is heard about, whatever the preset says. */
+    case Wanted = 'wanted';
+
     /**
      * This field's name as a path, where it is read off another field's value.
      *

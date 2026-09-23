@@ -51,6 +51,7 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
@@ -60,6 +61,7 @@ use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Doors;
+use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
@@ -288,6 +290,10 @@ final class CompositionRoot extends ServiceProvider
         // What leaves a stack, bound beside what it keeps about itself for the
         // same reason: one place decides whether a certificate is checked.
         $this->app->bind(Outgoing::class, Lookouts::class);
+
+        // What the operator is told about, read beside the rest and bound for
+        // the same reason: one place decides whether a certificate is checked.
+        $this->app->bind(Telling::class, Heralds::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 
