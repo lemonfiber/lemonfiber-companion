@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\WhatIsStuck;
+use Modules\Kernel\Api\WhatIsUnsupported;
 
 /** One word carried out of an `either()` arm. */
 final readonly class WhatTheStallSaid
@@ -28,6 +29,7 @@ function whatCameBackAboutTheStall(WhatIsStuck $answer): string
 it('N2-R9 — a listing takes the arm that renders rows', function (): void {
     $stalled = Stalled::of(
         HowMuchIsShown::AllOfIt,
+        WhatIsUnsupported::none(),
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
     );
 

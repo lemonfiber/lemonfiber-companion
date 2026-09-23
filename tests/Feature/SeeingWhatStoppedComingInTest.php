@@ -16,6 +16,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
+use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Stacks\Api\AStacksScreen;
@@ -51,6 +52,7 @@ function aWeekOfStalledDownloads(): Stalled
 {
     return Stalled::of(
         HowMuchIsShown::AllOfIt,
+        WhatIsUnsupported::none(),
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
         Stuck::at('A series somebody has', 'sonarr', Stage::NotMonitored),
     );
@@ -119,6 +121,7 @@ it('N2-R9 — says how much of what the stack holds this is', function (): void 
     // stalled titles and told that is all of them stops looking.
     $partial = Stalled::of(
         HowMuchIsShown::SomeOfIt,
+        WhatIsUnsupported::none(),
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
     );
 

@@ -40,6 +40,7 @@ final readonly class Stalled implements IteratorAggregate
     /** @param array<int, Stuck> $items */
     private function __construct(
         private HowMuchIsShown $shown,
+        private WhatIsUnsupported $cannot,
         private array $items,
     ) {}
 
@@ -50,15 +51,15 @@ final readonly class Stalled implements IteratorAggregate
      * everything below reads this by position — see {@see Requested::of()},
      * where the same reindex is the same decision.
      */
-    public static function of(HowMuchIsShown $shown, Stuck ...$items): self
+    public static function of(HowMuchIsShown $shown, WhatIsUnsupported $cannot, Stuck ...$items): self
     {
-        return new self($shown, array_values($items));
+        return new self($shown, $cannot, array_values($items));
     }
 
     /** Nothing has stopped, and the stack said so about everything it has. */
     public static function nothing(): self
     {
-        return new self(HowMuchIsShown::AllOfIt, []);
+        return new self(HowMuchIsShown::AllOfIt, WhatIsUnsupported::none(), []);
     }
 
     /**
@@ -70,6 +71,23 @@ final readonly class Stalled implements IteratorAggregate
     public function howMuchIsShown(): HowMuchIsShown
     {
         return $this->shown;
+    }
+
+    /**
+     * What the stack found here and cannot act on.
+     *
+     * Published beside the rows rather than among them, for the reason
+     * {@see self::howMuchIsShown()} gives: a limit is a fact about the reading
+     * and not about any row in it, and a screen cannot ask a row about one.
+     *
+     * It is not a row that failed. A queue lemonfiber cannot reach and a queue
+     * with nothing in it produce the same empty listing, and this is the only
+     * thing that tells them apart — which is why an empty collection here is a
+     * value rather than an absence.
+     */
+    public function whatItCannotActOn(): WhatIsUnsupported
+    {
+        return $this->cannot;
     }
 
     public function count(): int
