@@ -1,9 +1,10 @@
-# What leaves a machine
+# What leaves a machine, and what it wakes somebody for
 
 Everything a machine says to the world while nobody is watching: every request
 lemonfiber makes on its own account, and apart from those, what each of the
-stack's services reaches. The code is the `N10` half of `app-modules/kernel` and
-`app-modules/sdk`, drawn by `WhatLeavesHere`.
+stack's services reaches — and what it will tell its operator about. The code is
+the `N10` half of `app-modules/kernel` and `app-modules/sdk`, drawn by
+`WhatLeavesHere` and `WhatYouAreToldAbout`.
 
 Each row says what the requirement asks and what in this repository answers it.
 The spec is canonical; where this page and a requirement disagree, the
@@ -25,11 +26,22 @@ purpose with placeholder words, and `recorded` is what says so; read as a
 destination, *nobody knows* would come out as *reaches nothing*. The screen
 says it in its own words instead.
 
+## What the operator is told about
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N10-R8` | An alert preset is shown with what it means and with the exceptions the operator has made | `WhatTheOperatorIsTold`, which cannot be built without the preset's name or what it means — `AlertSaysNothing` names the one missing. Each exception is `AnEventSetApart`, heard or kept quiet by `WhetherItIsHeard`, and `SetApart` refuses one event set apart twice, because whichever answer a screen drew, the other is the one the machine acts on |
+| `N10-R11` | The app raises no alerts of its own here; what is configured is the core's | `Telling` reads and has nothing that writes, and `WhatYouAreToldAbout` says once that the setting is changed at the machine. Nothing on the screen sends a notification |
+
+The stack's answer also says whether the call that produced it changed the
+setting and whether it only rehearsed. This app makes no call that changes it,
+so both are recorded as unread in `WhatTheContractCarriesThatNothingReadsTest`
+rather than drawn: a rehearsal label on a plain reading would describe
+something that never happened.
+
 ## Asked for, and not drawn yet
 
 `N10-R4` to `N10-R7` are the line — its capacity, the tunnel, what a cap does
-and a cap with no figure — and read the `bandwidth` envelope. `N10-R8` and
-`N10-R9` are alert presets and rehearsals, from the `alerts` envelope.
+and a cap with no figure — and read the `bandwidth` envelope. `N10-R9` is a rehearsed alert, which only
+a call that changes the setting produces, and this app makes none.
 `N10-R10` is what keeps running unattended, which the `hosting` envelope carries and a screen of its own reads.
-`N10-R11` asks that nothing here raise an alert of its own, and nothing here
-raises anything.

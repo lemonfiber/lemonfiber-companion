@@ -150,4 +150,19 @@ return [
             ],
         ],
     ],
+
+    // What the machine will tell its operator about.
+    'alerts' => [
+        'road_in' => 'What you are told about',
+        // The preset's name is the stack's; what it means is drawn beside it.
+        'preset' => 'Preset: :preset',
+        'set_apart' => 'Set apart from the preset',
+        'heard' => [
+            'heard' => 'You hear about this, whatever the preset says',
+            'silenced' => 'Kept quiet, whatever the preset says',
+        ],
+        'nothing_set_apart' => 'Nothing is set apart; every event follows the preset',
+        // This screen reads the setting and changes nothing.
+        'changed_at_the_machine' => 'Changed at the machine, not from here',
+    ],
 ];

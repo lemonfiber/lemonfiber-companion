@@ -200,16 +200,20 @@
     {{-- How it came to be set that way. Beside the settings rather than under
          them, because an operator who finds something moved is asking what
          changed it, and the settings only say where it stands now. --}}
-    <x-operator::quiet-action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->record()" />
+    <x-operator::quiet-action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
 
     {{-- What it was changed with: every service's image, pin, upstream and
          licence. Beside the record, which is the question somebody asks just
          before this one. --}}
-    <x-operator::quiet-action label="{{ __('stacks.origins.road_in') }}" :goes="$this->goes()->origins()" />
+    <x-operator::quiet-action label="{{ __('stacks.origins.road_in') }}" :goes="$this->goes()->ofItself()->origins()" />
 
     {{-- What it says to the world while nobody is watching. With the other
          two, because all three are what the machine keeps about itself. --}}
-    <x-operator::quiet-action label="{{ __('stacks.outbound.road_in') }}" :goes="$this->goes()->leaving()" />
+    <x-operator::quiet-action label="{{ __('stacks.outbound.road_in') }}" :goes="$this->goes()->ofItself()->leaving()" />
+
+    {{-- What it will wake somebody for, which is the last of what the
+         machine does while nobody is watching. --}}
+    <x-operator::quiet-action label="{{ __('stacks.alerts.road_in') }}" :goes="$this->goes()->ofItself()->told()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading

@@ -33,7 +33,7 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Config', 'Doctor', 'Error', 'Held', 'History', 'Hosting', 'Household',
+    'Alerts', 'Config', 'Doctor', 'Error', 'Held', 'History', 'Hosting', 'Household',
     'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'Status', 'Stuck',
     'Update',
 ];
@@ -63,7 +63,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Adoption', 'Alerts', 'Archives', 'Backup',
+    'Admission', 'Adoption', 'Archives', 'Backup',
     'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients',
     'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
     'Glossary', 'Import',

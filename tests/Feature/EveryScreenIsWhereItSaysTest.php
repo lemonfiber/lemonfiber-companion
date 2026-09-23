@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\WhatItKeepsOfItself;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
 use Modules\Stacks\Api\AStacksScreen;
@@ -154,24 +155,40 @@ it('every way this app asks where a machine is hands back a path the router know
     // without anybody remembering this file — the argument
     // `everyPathAScreenHandsOut()` makes about the enum, made about the type
     // that hands the enum's paths out.
+    //
+    // An accessor may hand out a further set of paths rather than one —
+    // `ofItself()` does, for the screens about what a machine keeps of itself
+    // — and the sweep follows it, so a route moved there is still read here
+    // rather than falling out of sight with the move.
     $where = WhereAStackIs::rememberedAs(Screens::aStackInTheUri());
     $unknown = [];
     $asked = 0;
+    $toSweep = [$where];
 
-    foreach (new ReflectionClass(WhereAStackIs::class)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-        if ($method->isStatic() || $method->getNumberOfParameters() > 0) {
-            continue;
-        }
+    while ($toSweep !== []) {
+        $holder = array_shift($toSweep);
 
-        $asked++;
+        foreach (new ReflectionClass($holder)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if ($method->isStatic() || $method->getNumberOfParameters() > 0) {
+                continue;
+            }
 
-        $path = $method->invoke($where);
+            $asked++;
 
-        // `is_string` as well as resolvable: an accessor that handed back
-        // anything else is a `@navigate` with an array in it, which the router
-        // cannot be asked about at all.
-        if (! is_string($path) || NativeRouter::resolve($path) === null) {
-            $unknown[] = sprintf('%s() hands back a path the router does not know', $method->getName());
+            $path = $method->invoke($holder);
+
+            if ($path instanceof WhatItKeepsOfItself) {
+                $toSweep[] = $path;
+
+                continue;
+            }
+
+            // `is_string` as well as resolvable: an accessor that handed back
+            // anything else is a `@navigate` with an array in it, which the
+            // router cannot be asked about at all.
+            if (! is_string($path) || NativeRouter::resolve($path) === null) {
+                $unknown[] = sprintf('%s() hands back a path the router does not know', $method->getName());
+            }
         }
     }
 

@@ -112,4 +112,15 @@ return [
             ],
         ],
     ],
+    'alerts' => [
+        'road_in' => 'Waarover je bericht krijgt',
+        'preset' => 'Voorinstelling: :preset',
+        'set_apart' => 'Apart gezet van de voorinstelling',
+        'heard' => [
+            'heard' => 'Je hoort hierover, wat de voorinstelling ook zegt',
+            'silenced' => 'Stil gehouden, wat de voorinstelling ook zegt',
+        ],
+        'nothing_set_apart' => 'Niets is apart gezet; elke gebeurtenis volgt de voorinstelling',
+        'changed_at_the_machine' => 'Aan te passen op de machine, niet hier',
+    ],
 ];
