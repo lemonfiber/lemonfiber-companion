@@ -194,8 +194,24 @@ foreach ($byFloor as $floor => $paths) {
     // it and the runner skips a file it has no covered lines for — which
     // matters more here than it reads: `TheRunloop::start()` blocks against the
     // real bridge, so a mutant of it would hang rather than fail.
+    // `--parallel` because this is the one gate whose cost anybody notices.
+    // `bootstrap/Composition` takes seventy-six to ninety-one minutes on a
+    // runner where every other tree takes three to five: it is the composition
+    // root, so almost every test touches it, and a floor of 100 means each
+    // mutant is judged by a suite run. A gate nobody can afford to re-run is a
+    // gate people learn to work around.
+    //
+    // Safe for the same reason `composer test` is: parallelism here is
+    // paratest's, and the two suites that cannot survive it are already
+    // excluded below — `Guards` plants violations into the working tree that a
+    // neighbouring process would see appear and vanish, and `Floors` reads a
+    // clover report this run never asks for. Those exclusions are what make the
+    // ordinary suite parallel, and they are the same ones.
+    //
+    // It changes what the run costs and not what it decides: the same mutants
+    // are generated and the same floor judges them.
     $command = sprintf(
-        '%s/vendor/bin/pest --mutate --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s',
+        '%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s',
         escapeshellarg($root),
         $floor,
         escapeshellarg(implode(',', array_map(
