@@ -15,6 +15,8 @@ use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
+use Modules\Kernel\Api\Unsupported;
+use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -53,7 +55,7 @@ final readonly class Stoppages
             throw StuckIsUnreadable::missing(WireField::Data);
         }
 
-        return Stalled::of(self::howMuchIsShown($data), ...self::items($data));
+        return Stalled::of(self::howMuchIsShown($data), self::whatItCannotActOn($data), ...self::items($data));
     }
 
     /**
@@ -93,6 +95,71 @@ final readonly class Stoppages
         }
 
         return $incomplete ? HowMuchIsShown::SomeOfIt : HowMuchIsShown::AllOfIt;
+    }
+
+    /**
+     * What the stack found here and cannot act on.
+     *
+     * **Absent is the ordinary answer, and is not the same as empty.** The
+     * field is optional on the wire — a reading where everything was reachable
+     * omits it — so an absence becomes an empty collection rather than a
+     * refusal. That is the opposite treatment from `incomplete` above, and the
+     * difference is which way the silence reads: a missing `incomplete` would
+     * let a partial listing pass as whole, where a missing `unsupported` can
+     * only mean there was nothing to say.
+     *
+     * A row that arrives and cannot be read is a different matter and is
+     * refused, for {@see self::items()}'s reason: a limit shown with half its
+     * sentence is a limit nobody can act on.
+     *
+     * @param array<mixed> $data
+     */
+    private static function whatItCannotActOn(array $data): WhatIsUnsupported
+    {
+        if (! array_key_exists(WireField::Unsupported->value, $data)) {
+            return WhatIsUnsupported::none();
+        }
+
+        $rows = $data[WireField::Unsupported->value];
+
+        if (! is_array($rows)) {
+            throw StuckIsUnreadable::missing(WireField::Unsupported);
+        }
+
+        $limits = [];
+
+        foreach ($rows as $row) {
+            if (! is_array($row)) {
+                throw StuckIsUnreadable::missing(WireField::Unsupported);
+            }
+
+            $limits[] = Unsupported::of(
+                self::said($row, WireField::What),
+                self::said($row, WireField::Because),
+            );
+        }
+
+        return WhatIsUnsupported::these(...$limits);
+    }
+
+    /**
+     * One string from a limit's row, refused where it is not one.
+     *
+     * @param array<mixed> $row
+     */
+    private static function said(array $row, WireField $field): string
+    {
+        if (! array_key_exists($field->value, $row)) {
+            throw StuckIsUnreadable::missing($field);
+        }
+
+        $said = $row[$field->value];
+
+        if (! is_string($said)) {
+            throw StuckIsUnreadable::missing($field);
+        }
+
+        return $said;
     }
 
     /**

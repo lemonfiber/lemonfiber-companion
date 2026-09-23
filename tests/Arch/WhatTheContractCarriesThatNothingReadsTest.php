@@ -373,10 +373,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'two would report a limitation as something wrong.',
     ],
     [
-        'path' => 'StuckEnvelope.unsupported',
-        'because' => 'The same field on the reading `N2-R9` is about, and the same answer.',
-    ],
-    [
         'path' => 'UpdateEnvelope.backup',
         'because' => 'The snapshot taken before a run. `N2-R19` has the app say which way back the stack '
             . 'named, and the stack performs it — naming the snapshot would be this app describing a file '

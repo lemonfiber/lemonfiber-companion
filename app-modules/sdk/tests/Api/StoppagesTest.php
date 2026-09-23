@@ -175,3 +175,77 @@ it('stands in for a stack with a payload the contract would accept', function ()
     expect(WhatTheContractAccepts::complaintsAbout('StuckEnvelope', ['kind' => 'stuck', 'data' => $payload]))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
+
+it('reads what the stack said it cannot act on', function (): void {
+    // The field the contract has always carried and this app used to drop. A
+    // queue lemonfiber cannot reach and a queue with nothing in it produce the
+    // same empty listing, and this is the only thing that tells them apart.
+    $stalled = Stoppages::in(stuckSaying([
+        'incomplete' => false,
+        'items' => [],
+        'unsupported' => [
+            ['what' => 'sabnzbd', 'because' => 'lemonfiber does not manage this download client'],
+        ],
+    ]));
+
+    $named = [];
+
+    foreach ($stalled->whatItCannotActOn() as $limit) {
+        $named[] = sprintf('%s: %s', $limit->what(), $limit->because());
+    }
+
+    expect($named)->toBe(['sabnzbd: lemonfiber does not manage this download client']);
+});
+
+it('reads a listing that says nothing about its limits as having none', function (): void {
+    // Absent is the ordinary answer: a reading where everything was reachable
+    // omits the field. That is the opposite treatment from `incomplete`, and
+    // the difference is which way the silence reads — a missing `incomplete`
+    // would let a partial listing pass as whole, where a missing `unsupported`
+    // can only mean there was nothing to say.
+    $stalled = Stoppages::in(stuckSaying(['incomplete' => false, 'items' => []]));
+
+    expect($stalled->whatItCannotActOn()->count())->toBe(0);
+});
+
+it('refuses a limit that arrives with half its sentence', function (): void {
+    // Refused rather than salvaged, on the same terms as a row this app cannot
+    // show: a limit missing its reason reads as a fault, which is the one thing
+    // a limitation is not.
+    expect(static fn(): Stalled => Stoppages::in(stuckSaying([
+        'incomplete' => false,
+        'items' => [],
+        'unsupported' => [['what' => 'sabnzbd']],
+    ])))->toThrow(StuckIsUnreadable::class);
+});
+
+it('refuses limits that are not a list of rows', function (): void {
+    expect(static fn(): Stalled => Stoppages::in(stuckSaying([
+        'incomplete' => false,
+        'items' => [],
+        'unsupported' => 'nothing to report',
+    ])))->toThrow(StuckIsUnreadable::class);
+});
+
+it('refuses a limit that is not a row at all', function (): void {
+    // The list arrived and one of its entries is a bare string. Reading it as
+    // the `what` and inventing the `because` would put a sentence in the
+    // stack's mouth, and the whole point of a limit is that its reason came
+    // from the stack rather than from here.
+    expect(static fn(): Stalled => Stoppages::in(stuckSaying([
+        'incomplete' => false,
+        'items' => [],
+        'unsupported' => ['sabnzbd'],
+    ])))->toThrow(StuckIsUnreadable::class);
+});
+
+it('refuses a limit whose halves are present but are not words', function (): void {
+    // Both fields are there, so the missing-field refusal above never fires.
+    // A limit is shown to a person as a sentence; a number cast to a string
+    // would render, which is exactly why this is refused instead.
+    expect(static fn(): Stalled => Stoppages::in(stuckSaying([
+        'incomplete' => false,
+        'items' => [],
+        'unsupported' => [['what' => 7, 'because' => 'lemonfiber does not manage this download client']],
+    ])))->toThrow(StuckIsUnreadable::class);
+});

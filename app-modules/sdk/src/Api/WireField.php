@@ -257,8 +257,24 @@ enum WireField: string
     /** Restarting services. */
     case Restarting = 'restarting';
 
-    /** Which of the two things an update reading is about. */
+    /**
+     * Which of the two things an update reading is about — and, on a listing's
+     * limits, the thing the stack cannot act on.
+     *
+     * One case for both, which is the opposite decision from {@see self::Refusal}
+     * and made for the opposite reason: there the wire spends two words on two
+     * ideas, and here it spends one word on one idea in two places. *What this
+     * is about* is the same question whether the answer is a copy of lemonfiber
+     * or a service a survey found, and a second case would assert a distinction
+     * the contract does not draw.
+     */
     case What = 'what';
+
+    /** The limits a reading carried: what the stack found and cannot act on. */
+    case Unsupported = 'unsupported';
+
+    /** Why the stack cannot act on one of them, in the operator's terms. */
+    case Because = 'because';
 
     /** The services, as opposed to this copy of lemonfiber. */
     case TheStack = 'stack';

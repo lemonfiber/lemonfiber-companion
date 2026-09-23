@@ -6,6 +6,7 @@ use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
+use Modules\Kernel\Api\WhatIsUnsupported;
 
 /** One title carried out of `stated()`, since it must hand back an object. */
 final readonly class WhatOneTitleSaid
@@ -38,6 +39,7 @@ it('holds what the stack listed, in the order it listed it', function (): void {
     // the oldest thing stuck is usually the one that has been wrong longest.
     $stalled = Stalled::of(
         HowMuchIsShown::AllOfIt,
+        WhatIsUnsupported::none(),
         aStalledItem('The first thing'),
         aStalledItem('The second thing'),
     );
@@ -47,7 +49,7 @@ it('holds what the stack listed, in the order it listed it', function (): void {
 });
 
 it('N2-R9 — carries whether this is the whole of what the stack holds', function (): void {
-    $partial = Stalled::of(HowMuchIsShown::SomeOfIt, aStalledItem('The only one shown'));
+    $partial = Stalled::of(HowMuchIsShown::SomeOfIt, WhatIsUnsupported::none(), aStalledItem('The only one shown'));
 
     expect($partial->howMuchIsShown())->toBe(HowMuchIsShown::SomeOfIt);
 });
@@ -74,6 +76,7 @@ it('reads by position, whatever keys the variadic arrived with', function (): vo
     // test reads them for the same reason.
     $stalled = Stalled::of(
         shown: HowMuchIsShown::AllOfIt,
+        cannot: WhatIsUnsupported::none(),
         first: aStalledItem('The first thing'),
         second: aStalledItem('The second thing'),
     );
