@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Showing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Native\Mobile\Attributes\Lazy;
+use Native\Mobile\Attributes\Locked;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Module;
 
@@ -205,3 +206,44 @@ function isToldWhichStack(ReflectionClass $class): bool
 
     return false;
 }
+
+it('no screen locks a property, which is what lets the analyser ignore the refusal', function (): void {
+    // `__syncProperty()` throws `LockedPropertyException` where the property it
+    // is asked to write carries `#[Locked]`. Every test that drives a screen
+    // calls it, and a Pest test body is a closure, so the analyser reports a
+    // checked exception thrown inside a callable at each one — eleven of them.
+    //
+    // `phpstan.neon` answers that by listing the exception as unchecked, on the
+    // grounds that nothing here is locked. This is the half that makes that
+    // true rather than merely believed: the day somebody locks a property, the
+    // exception becomes reachable and this goes red, instead of the analyser
+    // quietly not mentioning it.
+    $offenders = [];
+
+    foreach (Module::all() as $module) {
+        foreach ($module->classNames() as $name) {
+            $class = new ReflectionClass($name);
+
+            if (! $class->isSubclassOf(NativeComponent::class)) {
+                continue;
+            }
+
+            foreach ($class->getProperties() as $property) {
+                if ($property->getAttributes(Locked::class) !== []) {
+                    $offenders[] = sprintf('%s::$%s', $name, $property->getName());
+                }
+            }
+        }
+    }
+
+    expect($offenders)->toBe([], sprintf(
+        "These screen properties carry #[Locked]:\n  %s\n\n"
+        . '`phpstan.neon` lists `LockedPropertyException` as unchecked because nothing '
+        . 'here is locked, which is what lets every test drive a screen without the '
+        . 'analyser reporting an exception thrown inside a closure. A locked property '
+        . 'makes that exception reachable and the listing wrong. Either drop the '
+        . 'attribute, or take the exception off the unchecked list and handle it where '
+        . 'it can now be thrown.',
+        implode("\n  ", $offenders),
+    ));
+});

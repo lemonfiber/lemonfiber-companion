@@ -77,15 +77,16 @@ final class WhatWouldBePutRight extends NativeComponent
     /**
      * What came back, once the frame has asked.
      *
-     * `protected` rather than private, which is what `NativeComponent`'s
-     * property syncing needs to reach — it assigns from the parent class, so a
-     * private member of a subclass becomes a dynamic property and the screen
-     * silently stops holding what it thinks it holds.
+     * `public`, which is what `NativeComponent`'s property syncing needs to
+     * reach: since 4.5.1 it writes only public, non-static properties, and a
+     * screen whose state it cannot write silently stops holding what it thinks
+     * it holds. It is also what fills the view's data, so the compiled
+     * template finds the variable rather than an undefined one.
      */
-    protected ?WhatTheStackWouldPutRight $answered = null;
+    public ?WhatTheStackWouldPutRight $answered = null;
 
     /** What the stack did about the agreement, once it has been asked. */
-    protected ?WhatThisStackPutRight $carriedOut = null;
+    public ?WhatThisStackPutRight $carriedOut = null;
 
     /**
      * The handle, while there is one.
@@ -95,7 +96,7 @@ final class WhatWouldBePutRight extends NativeComponent
      * somebody's machine. Not shown and never persisted: an
      * action presented as pending, and a job name on the glass is exactly that.
      */
-    protected ?string $handle = null;
+    public ?string $handle = null;
 
     /**
      * The listing, while there is one to agree to.
@@ -104,7 +105,7 @@ final class WhatWouldBePutRight extends NativeComponent
      * only be made against the {@see Offer} itself — a yes quotes
      * the listing it was given, and a flattened copy is not that listing.
      */
-    protected ?Offer $offered = null;
+    public ?Offer $offered = null;
 
     /**
      * Whether the operator has agreed to something.
@@ -113,7 +114,7 @@ final class WhatWouldBePutRight extends NativeComponent
      * are different things, and a screen asking the wrong one would render a
      * listing of what a machine *would* do as a record of what it *did*.
      */
-    protected bool $agreed = false;
+    public bool $agreed = false;
 
     public function __construct(
         private readonly Mending $mending,

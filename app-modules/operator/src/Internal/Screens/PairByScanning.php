@@ -69,19 +69,21 @@ final class PairByScanning extends NativeComponent
     /**
      * What the operator is calling this machine.
      *
-     * `protected` rather than public. A mutable public property is refused for
-     * a reason, and `NativeComponent::__syncProperty()` assigns from the parent
-     * class — which reaches a protected member of a subclass and does not reach
-     * a private one, so this is exactly as open as the framework needs and no
-     * more.
+     * `public`, and that is the framework's requirement rather than a
+     * preference. `NativeComponent::__syncProperty()` writes only public,
+     * non-static properties — 4.4.1 wrote any property that existed, and 4.5.1
+     * stopped, so a protected one is simply never assigned and the field goes
+     * back to what it was on every keystroke.
      *
-     * **`render()` hands it to the view by name.** `native:model` expands to a
-     * bare `$called` in the compiled view, and the package fills the view's
-     * data from a component's *public* properties — so a protected one arrives
-     * undefined, which is a warning rather than a stop and draws an empty
-     * field.
+     * It is also what `render()` needs. `native:model` expands to a bare
+     * variable in the compiled view and the package fills the view's data from
+     * a component's public properties, so a protected one arrives undefined —
+     * a warning rather than a stop, drawing an empty field.
+     *
+     * Public mutable state is what `enforceReadonlyPublicProperty` refuses;
+     * `phpstan.neon` says why a screen is the one place it cannot apply.
      */
-    protected string $called = '';
+    public string $called = '';
 
     /**
      * What the camera came back with, or nothing yet.
@@ -91,24 +93,24 @@ final class PairByScanning extends NativeComponent
      * with. A scan happens once, at a moment the operator chose, and the result
      * is what the screen is about until they scan again.
      */
-    protected ?WhyNothingWasScanned $nothingCameBack = null;
+    public ?WhyNothingWasScanned $nothingCameBack = null;
 
     /** What became of the pairing, once a scan has completed one. */
-    protected HowThePairingWent $went = HowThePairingWent::NotYet;
+    public HowThePairingWent $went = HowThePairingWent::NotYet;
 
     /**
      * Which stack was paired, so the screen can lead to it.
      *
      * Written at the moment the stack is made rather than read back from the
      * store afterwards, which would be asking *which one did I just add* of a
-     * list that does not say. `protected` for `NativeComponent`'s property
+     * list that does not say. `public` for `NativeComponent`'s property
      * syncing, and the identifier rather than the {@see Stack} because a screen
      * that held a stack would be holding an address.
      */
-    protected string $paired = '';
+    public string $paired = '';
 
     /** Whether what the camera read could not be used as pairing material. */
-    protected bool $codeWasUnreadable = false;
+    public bool $codeWasUnreadable = false;
 
     public function __construct(
         private readonly Scanning $camera,

@@ -65,22 +65,23 @@ final class HowCurrentThisStackIs extends NativeComponent
     /**
      * What came back, once the frame has asked.
      *
-     * `protected` rather than private, which is what `NativeComponent`'s
-     * property syncing needs to reach — it assigns from the parent class, so a
-     * private member of a subclass becomes a dynamic property and the screen
-     * silently stops holding what it thinks it holds.
+     * `public`, which is what `NativeComponent`'s property syncing needs to
+     * reach: since 4.5.1 it writes only public, non-static properties, and a
+     * screen whose state it cannot write silently stops holding what it thinks
+     * it holds. It is also what fills the view's data, so the compiled
+     * template finds the variable rather than an undefined one.
      */
-    protected ?WhatTheUpkeepTurnedOutToBe $answered = null;
+    public ?WhatTheUpkeepTurnedOutToBe $answered = null;
 
     /**
      * The update being asked about, while the operator decides.
      *
-     * `protected` for the reason above, and held rather than passed through the
+     * `public` for the reason above, and held rather than passed through the
      * template because what is confirmed has to be the thing that was shown —
      * a release re-read after the yes is an update to whatever the stack had by
      * then, agreed against a screen that is no longer true.
      */
-    protected ?TakingAnUpdate $asking = null;
+    public ?TakingAnUpdate $asking = null;
 
     public function __construct(
         private readonly KeepingCurrent $keeping,

@@ -74,10 +74,9 @@ final class SignIntoAStack extends NativeComponent
     /**
      * The password, as it stands in the field.
      *
-     * `protected` rather than public, matching {@see PairByTyping}:
-     * `NativeComponent::__syncProperty()` assigns from the parent class, which
-     * reaches a protected member of a subclass and does not reach a private
-     * one.
+     * `public`, matching {@see PairByTyping}:
+     * `NativeComponent::__syncProperty()` writes only public, non-static
+     * properties, so a protected one is never assigned at all.
      *
      * **`render()` hands it to the view by name.** `native:model` expands to a
      * bare `$typed` in the compiled view, and the package fills the view's
@@ -92,10 +91,10 @@ final class SignIntoAStack extends NativeComponent
      * second attempt after a wrong password would fail for a reason having
      * nothing to do with the password.
      */
-    protected string $typed = '';
+    public string $typed = '';
 
     /** What became of the attempt, once one has been made. */
-    protected HowTheSignInWent $went = HowTheSignInWent::NotYet;
+    public HowTheSignInWent $went = HowTheSignInWent::NotYet;
 
     /**
      * Which application the person who just signed in is given.
@@ -111,7 +110,7 @@ final class SignIntoAStack extends NativeComponent
      * led to — so the default is what this screen did before it could tell one
      * person from another, rather than a third state meaning *not yet known*.
      */
-    protected WhichSurfaceTheyAreGiven $given = WhichSurfaceTheyAreGiven::TheReport;
+    public WhichSurfaceTheyAreGiven $given = WhichSurfaceTheyAreGiven::TheReport;
 
     public function __construct(
         private readonly Admitting $admitting,

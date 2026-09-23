@@ -71,10 +71,11 @@ final class WhatThisServiceSaid extends NativeComponent
     /**
      * What somebody has typed into the search box.
      *
-     * `protected` rather than private, which is what `NativeComponent`'s
-     * property syncing needs to reach — it assigns from the parent class, so a
-     * private member of a subclass becomes a dynamic property and the screen
-     * silently stops holding what it thinks it holds.
+     * `public`, which is what `NativeComponent`'s property syncing needs to
+     * reach: since 4.5.1 it writes only public, non-static properties, and a
+     * screen whose state it cannot write silently stops holding what it thinks
+     * it holds. It is also what fills the view's data, so the compiled
+     * template finds the variable rather than an undefined one.
      *
      * **`render()` hands it to the view by name.** `native:model` expands to a
      * bare `$looking` in the compiled view, and the package fills the view's
@@ -82,10 +83,10 @@ final class WhatThisServiceSaid extends NativeComponent
      * undefined, which is a warning rather than a stop and draws an empty
      * field.
      */
-    protected string $looking = '';
+    public string $looking = '';
 
     /** What came back, once the frame has asked. */
-    protected ?Scrollback $held = null;
+    public ?Scrollback $held = null;
 
     public function __construct(
         private readonly Saying $saying,

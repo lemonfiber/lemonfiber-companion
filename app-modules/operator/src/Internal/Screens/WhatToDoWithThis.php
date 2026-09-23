@@ -89,7 +89,7 @@ final class WhatToDoWithThis extends NativeComponent
     use AsksWhatTheStackIsRunning;
 
     /** What the operator has been asked about, where a verb is waiting on a yes. */
-    protected ?AgreedTo $asking = null;
+    public ?AgreedTo $asking = null;
 
     public function __construct(
         private readonly Supervising $supervising,

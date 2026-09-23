@@ -100,12 +100,12 @@ use function view;
 final class YourStacks extends NativeComponent
 {
     /** What became of the last attempt to hand a report over, as a key. */
-    protected ?Launch $launched = null;
+    public ?Launch $launched = null;
 
-    protected string $sharingWent = '';
+    public string $sharingWent = '';
 
     /** What to do about it, beside {@see sharingWent()}. */
-    protected string $sharingRemedy = '';
+    public string $sharingRemedy = '';
 
     /**
      * How far into the first run the operator has read.
@@ -117,7 +117,7 @@ final class YourStacks extends NativeComponent
      * question already answered by tying the sequence to an empty
      * store.
      */
-    protected WhereTheFirstRunIs $firstRunAt = WhereTheFirstRunIs::WhatThisIs;
+    public WhereTheFirstRunIs $firstRunAt = WhereTheFirstRunIs::WhatThisIs;
 
     public function __construct(
         private readonly Stacks $stacks,

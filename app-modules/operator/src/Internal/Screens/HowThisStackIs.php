@@ -81,12 +81,13 @@ final class HowThisStackIs extends NativeComponent
     /**
      * What came back, once the frame has asked.
      *
-     * `protected` rather than private, which is what `NativeComponent`'s
-     * property syncing needs to reach — it assigns from the parent class, so a
-     * private member of a subclass becomes a dynamic property and the screen
-     * silently stops holding what it thinks it holds.
+     * `public`, which is what `NativeComponent`'s property syncing needs to
+     * reach: since 4.5.1 it writes only public, non-static properties, and a
+     * screen whose state it cannot write silently stops holding what it thinks
+     * it holds. It is also what fills the view's data, so the compiled
+     * template finds the variable rather than an undefined one.
      */
-    protected ?WhatTheStackTurnedOutToBe $answered = null;
+    public ?WhatTheStackTurnedOutToBe $answered = null;
 
     /**
      * Which family of checks the operator is reading, or nothing for all of them.
@@ -114,7 +115,7 @@ final class HowThisStackIs extends NativeComponent
      * nothing can defend, which is `HowLongAgo`'s argument about a floor that
      * had three right answers.
      */
-    protected ?string $reading = null;
+    public ?string $reading = null;
 
     public function __construct(
         private readonly Asking $asking,

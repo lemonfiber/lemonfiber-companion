@@ -73,12 +73,13 @@ final class WhatYouAreOwed extends NativeComponent
     /**
      * What came back, once the frame has asked.
      *
-     * `protected` rather than private, which is what `NativeComponent`'s
-     * property syncing needs to reach — it assigns from the parent class, so a
-     * private member of a subclass becomes a dynamic property and the screen
-     * silently stops holding what it thinks it holds.
+     * `public`, which is what `NativeComponent`'s property syncing needs to
+     * reach: since 4.5.1 it writes only public, non-static properties, and a
+     * screen whose state it cannot write silently stops holding what it thinks
+     * it holds. It is also what fills the view's data, so the compiled
+     * template finds the variable rather than an undefined one.
      */
-    protected ?WhatAMemberTurnedOutToBeOwed $answered = null;
+    public ?WhatAMemberTurnedOutToBeOwed $answered = null;
 
     /**
      * What they have asked for, once the frame has asked.
@@ -88,9 +89,9 @@ final class WhatYouAreOwed extends NativeComponent
      * could not say what they asked for has answered half, and one field for both
      * would have to throw one away to report the other.
      *
-     * `protected` for {@see $answered}'s reason.
+     * `public` for {@see $answered}'s reason.
      */
-    protected ?WhatAMemberTurnedOutToHaveAsked $listed = null;
+    public ?WhatAMemberTurnedOutToHaveAsked $listed = null;
 
     public function __construct(
         private readonly Owing $owing,
