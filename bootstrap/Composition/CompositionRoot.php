@@ -43,6 +43,7 @@ use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Provenance;
+use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
@@ -67,6 +68,7 @@ use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
+use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Requests;
@@ -294,6 +296,10 @@ final class CompositionRoot extends ServiceProvider
         // What the operator is told about, read beside the rest and bound for
         // the same reason: one place decides whether a certificate is checked.
         $this->app->bind(Telling::class, Heralds::class);
+
+        // How the line is shared, read beside the rest and bound for the same
+        // reason: one place decides whether a certificate is checked.
+        $this->app->bind(Rationing::class, Quartermasters::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 
