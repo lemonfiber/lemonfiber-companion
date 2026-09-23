@@ -13,17 +13,21 @@ use function sprintf;
  * app cannot read is refused where the payload is read rather than guessed at —
  * {@see Waiting}'s argument, for the same reason.
  *
- * **Three of these are not two.** A screen showing *comes back* and *does not*
- * would have to put four of these six on one side and two on the other, and
- * every way of doing that is wrong. `Unsupported` is the platform having no
- * manager this product configures, which reads as *off* and invites switching
- * it on — a thing nobody can do here. `InstalledUnverified` is the manager
- * declining to say, which reads as *running* and is the one an operator most
- * needs to see. So the questions are asked separately and none of them answers
- * for another: {@see comesBackOnItsOwn()}, {@see didNotComeBack()} and
- * {@see cannotBePromisedHere()} are each false about the case that is not
- * theirs, and a case none of them claims is a case a screen has to say
- * something about rather than let fall through.
+ * **Six words, not two buckets.** A screen showing *comes back* and *does not*
+ * would have to put four of these on one side and two on the other, and every
+ * way of doing that is wrong: `Unsupported` is the platform having no manager
+ * this product configures, which reads as *off* and invites switching on a
+ * thing nobody can switch, and `InstalledUnverified` is the manager declining
+ * to say, which reads as *running* and is the one an operator most needs to
+ * see. So each case carries its own sentence and a screen draws the word.
+ *
+ * **One question is asked of it, because one is acted on.**
+ * {@see didNotComeBack()} is what a listing counts and a screen says out loud,
+ * and it is the only fact here that is not simply the word. *Comes back* and
+ * *not available here* were predicates too until a review found that nothing
+ * outside their own tests asked them — the screen draws all six words, which
+ * is a better answer than three buckets and made them an abstraction over a
+ * question nobody had.
  */
 enum HowItIsHosted: string
 {
@@ -46,19 +50,6 @@ enum HowItIsHosted: string
     case Unsupported = 'unsupported';
 
     /**
-     * Whether the machine brings this back without anybody being there.
-     *
-     * Only the one case, and that is the point. `InstalledUnverified` is
-     * installed and unconfirmed, which is the answer that looks most like this
-     * one and is not it — a screen treating *the manager would not say* as
-     * *yes* is the silence this whole area exists to refuse.
-     */
-    public function comesBackOnItsOwn(): bool
-    {
-        return $this === self::Hosted;
-    }
-
-    /**
      * Whether this is installed and is not running.
      *
      * `Orphaned` counts because it cannot run: the definition is installed and
@@ -73,18 +64,6 @@ enum HowItIsHosted: string
     public function didNotComeBack(): bool
     {
         return $this === self::Stopped || $this === self::Orphaned;
-    }
-
-    /**
-     * Whether this machine cannot be made to do it at all.
-     *
-     * Asked separately so a screen can say *not available here* instead of
-     * drawing the same empty box it draws for *off*. Off invites switching on;
-     * there is nothing here to switch.
-     */
-    public function cannotBePromisedHere(): bool
-    {
-        return $this === self::Unsupported;
     }
 
     /**
