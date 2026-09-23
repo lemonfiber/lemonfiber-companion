@@ -185,6 +185,11 @@
          them, because an operator who finds something moved is asking what
          changed it, and the settings only say where it stands now. --}}
     <x-operator::quiet-action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->record()" />
+
+    {{-- What it was changed with: every service's image, pin, upstream and
+         licence. Beside the record, which is the question somebody asks just
+         before this one. --}}
+    <x-operator::quiet-action label="{{ __('stacks.origins.road_in') }}" :goes="$this->goes()->origins()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading

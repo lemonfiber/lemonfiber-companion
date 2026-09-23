@@ -145,6 +145,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Record->forTheStack($this->stack);
     }
 
+    /** Where every service on this machine comes from. */
+    public function origins(): string
+    {
+        return AStacksScreen::Origins->forTheStack($this->stack);
+    }
+
     /** What one of this machine's services has been saying. */
     public function logsOf(ServiceId $service): string
     {

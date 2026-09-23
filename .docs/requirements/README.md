@@ -65,7 +65,7 @@ lookup stops being wrong.
 | [the-screens-themselves.md](the-screens-themselves.md) | What each screen is for, and the requirement that put it there |
 | [the-model-of-a-machine.md](the-model-of-a-machine.md) | The types this app thinks in: stacks, pairing, retained state, actions |
 | [what-a-machine-says.md](what-a-machine-says.md) | The values read back: verdicts, services, repairs, releases, requests |
-| [what-was-done-here.md](what-was-done-here.md) | What a machine has changed about itself, and how far back that record goes |
+| [what-was-done-here.md](what-was-done-here.md) | What a machine has changed about itself, how far back that record goes, and where every service it runs comes from |
 | [what-this-device-keeps-to-itself.md](what-this-device-keeps-to-itself.md) | Permissions, notifications, the lock, and what never leaves |
 | [what-the-rules-keep.md](what-the-rules-keep.md) | The requirements nothing in a module answers, because a rule reading this repository from outside it does |
 

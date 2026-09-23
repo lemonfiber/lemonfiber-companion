@@ -65,4 +65,12 @@ return [
         'nothing_changed' => 'Er is niets veranderd',
         'clock_unreadable' => 'Op een moment dat de machine niet kon vertellen',
     ],
+    'origins' => [
+        'road_in' => 'Waar dit vandaan komt',
+        'as_declared' => 'Zoals deze machine het opgeeft. Niets hiervan wordt bij de projecten zelf opgezocht.',
+        'runs' => 'Draait :image, vastgezet op :pinned',
+        'licence' => 'Licentie: :licence',
+        'upstream' => 'Gebouwd vanuit :upstream',
+        'nothing_declared' => 'Deze machine geeft geen diensten op',
+    ],
 ];

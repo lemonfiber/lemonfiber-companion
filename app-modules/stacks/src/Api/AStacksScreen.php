@@ -121,6 +121,14 @@ enum AStacksScreen: string
      */
     case Record = '/stacks/{stack}/record';
 
+    /**
+     * Where every service on this machine comes from.
+     *
+     * Beside the record: that screen is what was done, and this is what it was
+     * done with.
+     */
+    case Origins = '/stacks/{stack}/origins';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
