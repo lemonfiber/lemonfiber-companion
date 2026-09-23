@@ -46,4 +46,23 @@ return [
         'systemd' => 'systemd, in je eigen sessie',
         'unsupported' => 'Deze machine heeft geen servicebeheer dat lemonfiber instelt',
     ],
+
+    // Hoe ver een wijziging van de stack terug te draaien is.
+    'reversal' => [
+        'whole' => 'Kan helemaal worden teruggedraaid',
+        'partial' => 'Kan maar gedeeltelijk worden teruggedraaid',
+        'none' => 'Kan niet worden teruggedraaid',
+    ],
+
+    // Wat de machine aan zichzelf heeft veranderd.
+    'record' => [
+        'road_in' => 'Wat hier is veranderd',
+        'horizon' => 'Wat bewaard wordt: :horizon.',
+        'by' => ':operation, aan :target',
+        'alongside' => '{1} Op zichzelf gedaan|[2,*] Een van :count wijzigingen die samen zijn gedaan',
+        'stops_short' => 'Stopt eerder omdat: :because',
+        'instead' => 'In plaats daarvan: :instead',
+        'nothing_changed' => 'Er is niets veranderd',
+        'clock_unreadable' => 'Op een moment dat de machine niet kon vertellen',
+    ],
 ];

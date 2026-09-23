@@ -447,6 +447,35 @@ enum WireField: string
     case Missing = 'missing';
 
     /**
+     * How far back a record goes, in the operator's terms.
+     *
+     * Required, and read before any change is: a trimmed record and one that
+     * was always short look the same from their entries, and this is the only
+     * field that says which.
+     */
+    case Horizon = 'horizon';
+
+    /** What one change did, in the operator's terms. */
+    case Did = 'did';
+
+    /** The operation that made one change — a seed, a reconfigure, an applied fix. */
+    case Operation = 'operation';
+
+    /** What one change was made to. */
+    case Target = 'target';
+
+    /**
+     * How many changes the operation behind one change made, it among them.
+     *
+     * An operation is the unit an operator agreed to, so this is what a
+     * single line would take with it if it were undone.
+     */
+    case Alongside = 'alongside';
+
+    /** What to do instead, where putting a change back stops short. */
+    case Instead = 'instead';
+
+    /**
      * This field's name as a path, where it is read off another field's value.
      *
      * A refusal saying an envelope's `state` is unreadable is ambiguous in the

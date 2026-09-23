@@ -139,6 +139,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Elsewhere->forTheStack($this->stack);
     }
 
+    /** What this machine has changed about itself. */
+    public function record(): string
+    {
+        return AStacksScreen::Record->forTheStack($this->stack);
+    }
+
     /** What one of this machine's services has been saying. */
     public function logsOf(ServiceId $service): string
     {

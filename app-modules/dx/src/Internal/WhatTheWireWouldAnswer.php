@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Internal;
 
+use function array_filter;
+
+use const ARRAY_FILTER_USE_KEY;
+
 use function implode;
 use function is_array;
+use function is_string;
 use function json_encode;
 
 use Lemonfiber\Sdk\Admission;
@@ -107,13 +112,14 @@ final readonly class WhatTheWireWouldAnswer
     /**
      * When a stand-in session ends.
      *
-     * The one field in this whole surface whose *shape* a reader insists on:
+     * One of the two places in this whole surface whose *shape* a reader
+     * insists on beyond its type ({@see WHEN_A_CHANGE_WAS_MADE} is the other):
      * {@see \Lemonfiber\Sdk\Admitted::of()} puts `until` through `Stamp`, and
      * a stamp it cannot read is an `UnreadableResponse` — which arrives at the
      * sign-in screen as *this stack did not answer*, about a door that answered
-     * perfectly well. Every other string in a synthesised payload is free-form
-     * and carries its own field name, which is what makes a stand-in payload
-     * obvious on a screen; this one cannot.
+     * perfectly well. Nearly every other string in a synthesised payload is
+     * free-form and carries its own field name, which is what makes a stand-in
+     * payload obvious on a screen; this one cannot.
      *
      * Far enough ahead that it is never a session that has already ended, and
      * written rather than counted from a clock: `B1` keeps time behind a port,
@@ -121,6 +127,23 @@ final readonly class WhatTheWireWouldAnswer
      * of the same stand-in answer differently.
      */
     private const string LONG_AFTER_ANY_RUN = '2099-01-01T00:00:00Z';
+
+    /**
+     * When every stand-in change was made.
+     *
+     * The other field whose shape a reader insists on. The core declares a
+     * change's `at` as seconds since the epoch written in digits, and the
+     * generated type says only `string` — so a synthesised `at` is the word
+     * `at`, `Records` refuses it as it would refuse any stack that wrote one,
+     * and the record screen draws *this stack did not answer* against a machine
+     * answering everything.
+     *
+     * In the past, so every change reads with an age rather than as something
+     * yet to happen, and written rather than counted from a clock for the same
+     * reason {@see LONG_AFTER_ANY_RUN} is. Not `0`, which is how the stack says
+     * its clock could not be read.
+     */
+    private const string WHEN_A_CHANGE_WAS_MADE = '1700000000';
 
     /**
      * How many lines a stand-in scrollback carries.
@@ -178,13 +201,14 @@ final readonly class WhatTheWireWouldAnswer
      */
     private static function whatThatPathSends(string $endpoint): array|string
     {
-        // The three paths whose body is not one envelope built from the
+        // The four paths whose body is not one envelope built from the
         // contract's declaration, and then everything else. `match` rather than
-        // three early returns, because what this is doing is naming a path
+        // four early returns, because what this is doing is naming a path
         // rather than deciding anything (`H8`, `C5`).
         return match (true) {
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
+            $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
             default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint)),
         };
@@ -245,6 +269,57 @@ final readonly class WhatTheWireWouldAnswer
         $envelope['data'] = [...(is_array($data) ? $data : []), 'until' => self::LONG_AFTER_ANY_RUN];
 
         return $envelope;
+    }
+
+    /**
+     * A record whose changes say when they were made in a way a reader can
+     * parse.
+     *
+     * The `history` envelope's own declaration, corrected in the one field of
+     * every change whose shape the generated type leaves open, for the reason
+     * {@see aDoorThatOpened()} corrects one: everything else stays the
+     * contract's, so the rest of the record is still the shape the reader is
+     * about to insist on.
+     *
+     * @return array<string, mixed>
+     */
+    private static function aRecordThatReads(): array
+    {
+        $envelope = self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind('history'));
+        $data = $envelope['data'];
+        // One line for the same reason as the door's: `data` is always an
+        // array, and a second arm spread over lines is one no run reaches.
+        $record = is_array($data) ? $data : [];
+        // `changes` is required by the declaration, so the key is always
+        // there; what is not known to the analyser is that it holds a list.
+        $changes = $record['changes'];
+        $corrected = [];
+
+        foreach (is_array($changes) ? $changes : [] as $change) {
+            $corrected[] = self::aChangeThatReads($change);
+        }
+
+        $record['changes'] = $corrected;
+        $envelope['data'] = $record;
+
+        return $envelope;
+    }
+
+    /**
+     * One synthesised change, dated in digits.
+     *
+     * Its reversal is left as synthesised: the generated type closes that set,
+     * so the stand-in already picks a word `Records` reads.
+     *
+     * @return array<string, mixed>
+     */
+    private static function aChangeThatReads(mixed $change): array
+    {
+        // A change's fields are named, so only its named keys are carried.
+        return [
+            ...array_filter(is_array($change) ? $change : [], is_string(...), ARRAY_FILTER_USE_KEY),
+            'at' => self::WHEN_A_CHANGE_WAS_MADE,
+        ];
     }
 
     /**

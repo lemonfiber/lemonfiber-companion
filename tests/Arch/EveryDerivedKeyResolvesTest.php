@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItWasRead;
@@ -209,6 +210,10 @@ function everyDerivedKey(): array
         WhatKeepsItRunning::class => aPairPerCase(
             WhatKeepsItRunning::cases(),
             static fn(WhatKeepsItRunning $manager): array => [$manager->saidOnTheScreen()],
+        ),
+        HowFarItGoesBack::class => aPairPerCase(
+            HowFarItGoesBack::cases(),
+            static fn(HowFarItGoesBack $reversal): array => [$reversal->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by
