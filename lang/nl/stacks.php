@@ -16,6 +16,27 @@ return [
         'unsupported' => 'Niet beschikbaar op deze machine',
     ],
 
+    // De ingang, vanaf het scherm van de machine zelf. Het noemt de vraag
+    // en niet het mechanisme: een operator weet wat een herstart is en
+    // hoeft niet te weten wat een launch agent is om dit te willen.
+    'what_keeps_running' => 'Wat een herstart overleeft',
+
+    // Hoeveel er geïnstalleerd zijn en niet draaien. Voor de rijen genoemd,
+    // om dezelfde reden als bij het vastgelopen-scherm: wie dit de ochtend na
+    // een herstart opent, zou ze niet moeten hoeven tellen.
+    'did_not_come_back' => '{1} Eén ding kwam niet terug|[2,*] :count dingen kwamen niet terug',
+
+    // Alleen een wees heeft er een, en die noemt het programma en niet de
+    // service — het verschil tussen *dit draait niet* en *het bestand dat het
+    // draait is er niet meer*.
+    'missing_program' => 'Het programma dat het draait is weg: :program',
+
+    // Een machine die niets draaiend houdt. Een eigen zin in plaats van een
+    // lege lijst, en iets anders dan de machine die dit product niet kan
+    // instellen — die draagt een instructie.
+    'keeps_nothing_running' => 'Hier overleeft niets een herstart',
+    'keeps_nothing_running_action' => 'Stel er een in op de machine, dan verschijnt die hier.',
+
     // Waarmee de machine dingen draaiend houdt terwijl niemand is ingelogd.
     // Bij naam genoemd in plaats van omschreven: een operator die `launchd`
     // leest kan ernaar zoeken, en een zin over *het servicebeheer van het

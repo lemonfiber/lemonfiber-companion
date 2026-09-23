@@ -13,6 +13,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
+use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
@@ -134,6 +135,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // and what do I want on*, which an operator opens the app for even
             // when every check passes.
             Router::native(AStacksScreen::Services->value, WhatThisStackRuns::class);
+
+            // What the machine keeps running with nobody signed in. Beside the
+            // services listing rather than inside it, because the two answer
+            // different questions about the same machine: that one says what is
+            // running now, and this says what would still be running after a
+            // reboot nobody was there for.
+            Router::native(AStacksScreen::Hosting->value, WhatKeepsRunningHere::class);
 
             // Everything the stack is set to. Beside the services listing
             // rather than under one of them, because a setting is the
