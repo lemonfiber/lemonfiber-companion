@@ -180,6 +180,11 @@
          and should not have to. Quiet, with the other roads: it is somewhere
          to go and not the thing this screen is about. --}}
     <x-operator::quiet-action label="{{ __('config.what_this_is_set_to') }}" :goes="$this->goes()->settings()" />
+
+    {{-- How it came to be set that way. Beside the settings rather than under
+         them, because an operator who finds something moved is asking what
+         changed it, and the settings only say where it stands now. --}}
+    <x-operator::quiet-action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->record()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading

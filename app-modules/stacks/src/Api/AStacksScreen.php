@@ -113,6 +113,14 @@ enum AStacksScreen: string
      */
     case Shelf = '/stacks/{stack}/watch';
 
+    /**
+     * What this machine has changed about itself, and how far each could be put back.
+     *
+     * Beside what it is set to rather than under it: that screen is a setting
+     * as it stands now, and this is how it came to stand there.
+     */
+    case Record = '/stacks/{stack}/record';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
