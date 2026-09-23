@@ -12,6 +12,7 @@ use function iterator_to_array;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\InstructionSaysNothing;
 use Modules\Kernel\Api\Unattended;
+use Modules\Kernel\Api\WhatDidNotComeBack;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatRunsUnattended;
 
@@ -170,4 +171,47 @@ it('an unsupported machine still lists what it has, which is the point of it', f
 
     expect($running->count())->toBe(1)
         ->and(theNamesThatDidNotComeBack($running))->toBe([]);
+});
+
+// Three constructors reindex a variadic, and each is pinned the same way
+// `Effects::of()` is: called with named arguments rather than positionally.
+//
+// Positionally the reindex cannot be observed — a variadic collected from
+// positional arguments is already a list, so an assertion about its keys holds
+// with the reindex and without it. Spread a string-keyed array and PHP passes
+// them as named arguments, which a variadic collects *under those names*. That
+// is the one call shape where dropping the reindex changes the value, and the
+// shape a listing built by spreading a walk actually takes.
+//
+// Everything downstream reads these by position, so a string key is a row
+// nothing draws.
+
+it('keptBy survives named arguments without gaining string keys', function (): void {
+    $running = WhatRunsUnattended::keptBy(WhatKeepsItRunning::Launchd, ...[
+        'first' => aCommandCalled('Watching', HowItIsHosted::Hosted),
+        'second' => aCommandCalled('Seeding', HowItIsHosted::Stopped),
+    ]);
+
+    expect(array_keys(iterator_to_array($running, preserve_keys: true)))->toBe([0, 1]);
+});
+
+it('unsupported survives named arguments without gaining string keys', function (): void {
+    $running = WhatRunsUnattended::unsupported('Add it to your own login items.', ...[
+        'first' => aCommandCalled('Watching', HowItIsHosted::Unsupported),
+        'second' => aCommandCalled('Seeding', HowItIsHosted::Unsupported),
+    ]);
+
+    expect(array_keys(iterator_to_array($running, preserve_keys: true)))->toBe([0, 1]);
+});
+
+it('what did not come back survives named arguments without gaining string keys', function (): void {
+    // Reached directly rather than through `didNotComeBack()`, which builds its
+    // own list and so cannot hand this one string keys. The constructor is
+    // public, so the call this guards against is one somebody can make.
+    $missing = WhatDidNotComeBack::these(...[
+        'first' => aCommandCalled('Seeding', HowItIsHosted::Orphaned),
+        'second' => aCommandCalled('Watching', HowItIsHosted::Stopped),
+    ]);
+
+    expect(array_keys(iterator_to_array($missing, preserve_keys: true)))->toBe([0, 1]);
 });
