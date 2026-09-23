@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Tests\Support\Coverage;
 use Tests\Support\MeasuredTree;
+use Tests\Support\Tree;
 
 // G9 — no measured tree is below the floor its nearest manifest declared.
 //
@@ -24,6 +25,24 @@ use Tests\Support\MeasuredTree;
 // refuses to run without one rather than skipping: a floors gate that passes
 // when the report is missing is a floors gate that passes in exactly the case
 // nobody measured anything.
+
+/**
+ * Whether a tree holds source the report should have had something to say about.
+ *
+ * Hidden directories are dropped, because the report drops them too: PHPUnit
+ * excludes any file sitting under a dot-named directory relative to the source
+ * entry's root. Counting one would make a tree holding nothing but `.build/`
+ * read as unmeasured, which is the false alarm this walk exists to avoid.
+ */
+function holdsSource(string $tree): bool
+{
+    $root = Tree::at($tree);
+
+    return array_any(
+        Tree::filesUnder($root, '.php'),
+        static fn(string $file): bool => preg_match('=/\.[^/]*/=', str_replace($root, '', $file)) !== 1,
+    );
+}
 
 it('G9 — the coverage report is there to be read', function (): void {
     expect(Coverage::reportExists())->toBeTrue(sprintf(
@@ -120,5 +139,49 @@ it('G9 — the slack between the floors and the real numbers is visible', functi
         "  trees above their floor: %d%s\n",
         count($slack),
         $slack === [] ? '' : sprintf("\n    %s", implode("\n    ", $slack)),
+    ));
+});
+
+it('G9 — a tree that holds code was measured, and nothing passed over an empty report', function (): void {
+    // The printout below says how many trees held no code. A tree that holds
+    // none is genuinely not a failure, which is why that number is reported
+    // rather than asserted — but *holds no code* and *was measured as nothing*
+    // are two different facts wearing the same zero, and only the first is
+    // innocent. This separates them, because every gate downstream of the
+    // report reads the second as a pass.
+    //
+    // It is not hypothetical. A checkout under a dot-named directory — which is
+    // where `.claude/worktrees/agent-…` puts one — measured 34 files instead of
+    // 481, because PHPUnit subtracts `(string) false` from a file path when a
+    // source entry holds a wildcard and `realpath()` refuses it. Every one of
+    // the thirteen module trees came back empty, `--min=100` passed, and this
+    // suite printed `trees measured: 0` and went green.
+    // `scripts/patch_phpunit_source_mapper.php` is the cure; this is what would
+    // have said so.
+    $coverage = Coverage::fromReport();
+    $unmeasured = [];
+
+    foreach (MeasuredTree::all() as $tree) {
+        if ($tree->coverageFloor === null) {
+            continue;
+        }
+
+        if ($coverage->percentageUnder($tree->path) !== null) {
+            continue;
+        }
+
+        if (holdsSource($tree->path)) {
+            $unmeasured[] = $tree->path;
+        }
+    }
+
+    expect($unmeasured)->toBe([], sprintf(
+        "These trees hold PHP the report says nothing about:\n  %s\n\n"
+        . 'That is not a tree with no code — these have code, and the run measured none '
+        . 'of it. Every number taken from this report is therefore an average over a '
+        . "tree that is missing, and `--min=100` passed without seeing it.\n"
+        . 'Check that `composer install` ran its patch scripts, and that `phpunit.xml` '
+        . 'still names these trees under `<source>` (G9).',
+        implode("\n  ", $unmeasured),
     ));
 });

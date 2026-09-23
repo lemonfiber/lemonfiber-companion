@@ -7,20 +7,20 @@ namespace Modules\Sdk\Tests\Api;
 use function expect;
 use function it;
 use function iterator_to_array;
+use function json_encode;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\Wanted;
 use Modules\Sdk\Api\HouseholdIsUnreadable;
 use Modules\Sdk\Api\Households;
 
 use function sprintf;
 
 use Tests\Support\WhatTheContractAccepts;
-
-use function var_export;
 
 /**
  * A `household` envelope holding whatever the case under test is about.
@@ -110,7 +110,7 @@ it('reads a house into the flat list the screens work in', function (): void {
     expect($wanted)->toHaveCount(2)
         ->and($wanted[0]->by())->toBe('Robin')
         ->and($wanted[1]->by())->toBe('Sam')
-        ->and($wanted[1]->standing())->toBe(Waiting::Getting);
+        ->and(theStandingRead($wanted[1]))->toBe('getting');
 });
 
 it('refuses a payload that is not an object at all', function (): void {
@@ -243,11 +243,21 @@ it('refuses a request with no title, which the contract permits and a screen can
         ->toThrow(HouseholdIsUnreadable::class, 'Robin');
 });
 
-it('refuses a request with no state, for the same reason as one with no title', function (): void {
+it('reads a request with no state, which is not the same absence as no title', function (): void {
+    // This used to refuse, *for the same reason as one with no title*, and the
+    // two are not the same reason at all. A row with no title is a row nobody
+    // can decide on — the contract permits the absence and says nothing about
+    // what it means. A row with no state is the contract saying something
+    // precise: the request service reported a status lemonfiber has no word
+    // for, and it was left out rather than guessed into the nearest one.
+    //
+    // Treating the second like the first cost the whole reading, for one row.
     $data = ['members' => [aMember('Robin', [['id' => 1, 'title' => 'A film']])]];
 
-    expect(fn(): Requested => Households::in(householdSaying($data)))
-        ->toThrow(HouseholdIsUnreadable::class, 'Request 0');
+    $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
+
+    expect($wanted)->toHaveCount(1)
+        ->and(theStandingRead($wanted[0]))->toBe('nobody named it');
 });
 
 it('refuses a state word it does not know, and names the ones it reads', function (): void {
@@ -425,7 +435,13 @@ it('a refusal timed as whitespace is read as one the stack did not time', functi
             wasNot: static fn(): Code => Code::of('not refused'),
         );
 
-        expect($said->shown())->toBe('unstated', sprintf('a refusal timed as %s', var_export($blank, return: true)));
+        // `json_encode` rather than `var_export`: the point is to render a
+        // string of whitespace visibly in the failure message, and both do
+        // that — but `var_export` is on the list of calls that must not
+        // survive a commit, and a legible assertion is not a reason to keep
+        // one. This file held no class until now, which is the only reason
+        // the rule had never seen it.
+        expect($said->shown())->toBe('unstated', sprintf('a refusal timed as %s', json_encode($blank)));
     }
 });
 
@@ -504,4 +520,91 @@ it('stands in for a household with a payload the contract would accept', functio
 
     expect(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', ['kind' => 'household', 'data' => $payload]))
         ->toBe([], "The payload this suite stands in for a household with is not one a stack would send.\n");
+});
+
+/** One row's standing as a word, and what the unnamed arm reads as. */
+function theStandingRead(Wanted $one): string
+{
+    return $one->standing()->either(
+        said: static fn(Waiting $said): WhatThisRowStands => new WhatThisRowStands($said->value),
+        unnamed: static fn(): WhatThisRowStands => new WhatThisRowStands('nobody named it'),
+    )->said;
+}
+
+/** One standing carried out of `either()`, since it must hand back an object. */
+final readonly class WhatThisRowStands
+{
+    public function __construct(public string $said) {}
+}
+
+it('N2-R11 — a status nobody named is a row, not the end of the reading', function (): void {
+    // The contract leaves `state` out where the request service reported a
+    // status lemonfiber has no word for, rather than guessing it into the
+    // nearest one. Refusing it took the household down with it: one request
+    // nobody had a word for made every member, every other request, and every
+    // decision waiting on them unreadable — a surface asked to show what is
+    // awaiting a decision, showing none of it.
+    $data = aHouseholdOf([
+        aMember('Robin', [
+            ['id' => 1, 'title' => 'A film nobody has a word for'],
+            aRequest(2, 'A season', 'waiting-for-approval'),
+        ]),
+    ]);
+
+    $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
+    $read = [];
+
+    foreach ($wanted as $one) {
+        $read[] = sprintf('%s/%s', $one->forWhat(), theStandingRead($one));
+    }
+
+    expect($read)->toBe([
+        'A film nobody has a word for/nobody named it',
+        'A season/waiting-for-approval',
+    ]);
+});
+
+it('N2-R11 — a standing nobody named wants no decision, and is not a decline', function (): void {
+    // Two things follow from *nobody named it* and both matter. Nothing offers
+    // to approve it, because the app cannot say it is waiting. And it is not
+    // read as a decline, which would demand the refusal sentence a declined row
+    // owes — refusing the row for want of a sentence nobody wrote.
+    $data = aHouseholdOf([aMember('Robin', [['id' => 1, 'title' => 'A film']])]);
+
+    $wanted = Households::in(householdSaying($data));
+
+    expect($wanted->waiting())->toBe(0)
+        ->and($wanted->count())->toBe(1);
+});
+
+it('a standing that is not a word at all is refused, not read as absent', function (): void {
+    // The third case, and it sits between the other two. Absent is an answer;
+    // a word this app does not know is drift between the contract and the
+    // enum; a number is neither — it is a payload the contract does not permit
+    // in the first place, and reading it as *nobody named it* would turn a
+    // malformed row into an ordinary one.
+    $data = aHouseholdOf([aMember('Robin', [['id' => 1, 'title' => 'A film', 'state' => 7]])]);
+
+    expect(static fn(): Requested => Households::in(householdSaying($data)))
+        ->toThrow(HouseholdIsUnreadable::class);
+});
+
+it('a standing spelled out and unrecognised is still refused', function (): void {
+    // The other half of the same decision, and the one that stays a fault. The
+    // contract's union and `Waiting` are generated from one source, so a word
+    // that reaches here and is not a case means the two have drifted — which is
+    // about this app rather than about the household.
+    $data = aHouseholdOf([aMember('Robin', [aRequest(1, 'A film', 'mislaid')])]);
+
+    expect(static fn(): Requested => Households::in(householdSaying($data)))
+        ->toThrow(HouseholdIsUnreadable::class);
+});
+
+it('stands in for a household the contract would accept, with a state left out', function (): void {
+    // The claim the three cases above rest on: a request with no `state` is a
+    // payload a stack may really send, not one invented to make a point.
+    $data = aHouseholdOf([aMember('Robin', [['id' => 1, 'title' => 'A film']])]);
+
+    expect(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', ['kind' => 'household', 'data' => $data]))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });

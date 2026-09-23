@@ -9,6 +9,7 @@ use Modules\Household\Internal\ViewModels\WhatOneOfTheirRequestsSays;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\TurnedDown;
+use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 
 /**
@@ -24,7 +25,7 @@ use Modules\Kernel\Api\Wanted;
  * keeps a member surface from becoming a second voice about a household's rules.
  *
  * **It says where a request stands in the member's words, not the operator's.**
- * {@see \Modules\Kernel\Api\Waiting::saidToTheMember()} rather than
+ * {@see Waiting::saidToTheMember()} rather than
  * `saidOnTheScreen()`: *waiting for your decision* is true to an operator and
  * false to the person who asked, and the enum draws that line once so no screen
  * has to remember which reader it is.
@@ -80,8 +81,28 @@ final readonly class HowWhatAMemberAskedForReads
      */
     private function row(Wanted $wanted): WhatOneOfTheirRequestsSays
     {
-        $standing = $wanted->standing()->saidToTheMember();
+        // The word a member is owed where the stack never named the standing.
+        // It is a request of theirs and they can see it; what nobody can say is
+        // where it has got to, and saying the nearest thing would be this app
+        // telling them something lemonfiber declined to.
+        return $wanted->standing()->either(
+            said: fn(Waiting $said): WhatOneOfTheirRequestsSays
+                => $this->told($wanted, $said->saidToTheMember()),
+            unnamed: fn(): WhatOneOfTheirRequestsSays
+                => $this->told($wanted, 'household.asked.unnamed'),
+        );
+    }
 
+    /**
+     * The row itself, once the standing has a word.
+     *
+     * Split from {@see self::row()} so the refusal is answered once rather than
+     * once per standing — two independent questions written nested would be
+     * four arms where there are two facts, which is the split the operator's
+     * own row makes for the same reason.
+     */
+    private function told(Wanted $wanted, string $standing): WhatOneOfTheirRequestsSays
+    {
         return $wanted->refusal(
             was: static fn(TurnedDown $why): WhatOneOfTheirRequestsSays
                 => new WhatOneOfTheirRequestsSays($wanted->forWhat(), $standing, $why->reason()),

@@ -71,6 +71,7 @@ requirement is right and this page is a defect.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `N2-R11` | A waiting request is approvable and refusable from the app | `Decided` |
+| `N2-R11` | Requests awaiting a decision are surfaced, and one row nobody can label does not take the rest with it | `HowARequestStands`, a two-arm union carried on `Wanted` in place of the bare enum. The contract leaves `state` out where the request service reported a status lemonfiber has no word for, and `WhatWasAskedFor::standing()` reads that absence as `unnamed()` rather than refusing the household. `wantsADecision()` answers false for it, so nothing offers to approve a status the stack declined to name; a standing that arrives spelled out and unrecognised is still refused, because that is drift between the contract and the enum rather than a fact about the household |
 | `D7-R3` | A size is shown before a request is approved, and *how many bytes* becomes words somewhere | `HowBig` |
 | `D7-R4` | An estimate is labelled as one, because most of these are estimates | `HowBig` |
 | `D7-R7` | The reason is part of declining rather than something beside it | `Decided`, which has no arm that takes a nullable reason |
