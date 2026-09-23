@@ -31,8 +31,28 @@ final readonly class HowARequestReads
      */
     public function in(Wanted $wanted): WhatOneRequestSays
     {
-        $standing = $wanted->standing();
+        // A standing the stack never put into words gets a word of its own
+        // rather than the nearest one. It is a row an operator can see and
+        // cannot act on, which is what it is — and `wantsADecision()` answers
+        // false for it, so nothing here offers to approve a status lemonfiber
+        // declined to name.
+        return $wanted->standing()->either(
+            said: fn(Waiting $said): WhatOneRequestSays
+                => $this->told($wanted, $said->saidOnTheScreen()),
+            unnamed: fn(): WhatOneRequestSays
+                => $this->told($wanted, 'household.unnamed'),
+        );
+    }
 
+    /**
+     * The row, once the standing has a word.
+     *
+     * Split for {@see self::built()}'s reason one step up: the standing, the
+     * refusal and the size are three independent questions, and writing them
+     * nested would be twelve arms where there are three facts.
+     */
+    private function told(Wanted $wanted, string $standing): WhatOneRequestSays
+    {
         return $wanted->refusal(
             was: fn(TurnedDown $why): WhatOneRequestSays => $this->built($wanted, $standing, $why),
             wasNot: fn(): WhatOneRequestSays => $this->built($wanted, $standing),
@@ -46,8 +66,10 @@ final readonly class HowARequestReads
      * than once per arm — the two questions are independent and writing them
      * nested would be four arms where there are two facts.
      */
-    private function built(Wanted $wanted, Waiting $standing, ?TurnedDown $why = null): WhatOneRequestSays
+    private function built(Wanted $wanted, string $standing, ?TurnedDown $why = null): WhatOneRequestSays
     {
+        $wantsADecision = $wanted->standing()->wantsADecision();
+
         $reason = $why instanceof TurnedDown ? $why->reason() : '';
         $at = $why instanceof TurnedDown ? $why->when(
             then: static fn(string $when): AsText => AsText::of($when),
@@ -59,8 +81,8 @@ final readonly class HowARequestReads
                 number: $wanted->number(),
                 title: $wanted->forWhat(),
                 by: $wanted->by(),
-                standing: $standing->saidOnTheScreen(),
-                wantsADecision: $standing->wantsADecision(),
+                standing: $standing,
+                wantsADecision: $wantsADecision,
                 sizeSaid: 'household.size_measured',
                 sizeFigure: HowBig::of($bytes)->figure,
                 sizeUnit: HowBig::of($bytes)->said,
@@ -71,8 +93,8 @@ final readonly class HowARequestReads
                 number: $wanted->number(),
                 title: $wanted->forWhat(),
                 by: $wanted->by(),
-                standing: $standing->saidOnTheScreen(),
-                wantsADecision: $standing->wantsADecision(),
+                standing: $standing,
+                wantsADecision: $wantsADecision,
                 sizeSaid: 'household.size_guessed',
                 sizeFigure: HowBig::of($bytes)->figure,
                 sizeUnit: HowBig::of($bytes)->said,
@@ -83,8 +105,8 @@ final readonly class HowARequestReads
                 number: $wanted->number(),
                 title: $wanted->forWhat(),
                 by: $wanted->by(),
-                standing: $standing->saidOnTheScreen(),
-                wantsADecision: $standing->wantsADecision(),
+                standing: $standing,
+                wantsADecision: $wantsADecision,
                 sizeSaid: 'household.size_unknown',
                 // Nothing to render the sentence with, and *we do not know* is
                 // a sentence that needs nothing. The figure is unread on this

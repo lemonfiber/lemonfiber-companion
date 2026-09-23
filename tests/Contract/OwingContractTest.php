@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
@@ -246,6 +247,27 @@ function whatAMemberWasOwed(Owing $owing): string
     )->said;
 }
 
+/**
+ * One request's standing as a word, including where the stack named none.
+ *
+ * `either()` hands back an object, so the word travels in one — and the
+ * unnamed arm is spelled out rather than left blank, because a blank would
+ * read in a comparison as a standing that was named and happened to be empty.
+ */
+function theStandingOfTheirs(Wanted $one): string
+{
+    return $one->standing()->either(
+        said: static fn(Waiting $said): WhatTheirStandingSaid => new WhatTheirStandingSaid($said->value),
+        unnamed: static fn(): WhatTheirStandingSaid => new WhatTheirStandingSaid('unnamed'),
+    )->said;
+}
+
+/** One standing carried out of `either()`, since it must hand back an object. */
+final readonly class WhatTheirStandingSaid
+{
+    public function __construct(public string $said) {}
+}
+
 it('N3-R4 — hands over the sentences the core wrote, unchanged', function (): void {
     // Unchanged is the assertion. Both halves are on the wire in parts — a
     // policy, a standing, two counts, an instant — and an implementation that
@@ -350,7 +372,7 @@ function whatAMemberAskedFor(Owing $owing): string
                 $rows[] = sprintf(
                     '%s/%s/%s',
                     $one->forWhat(),
-                    $one->standing()->value,
+                    theStandingOfTheirs($one),
                     $one->refusal(
                         was: static fn(TurnedDown $why): WhatAMemberSawOfTheirRequests
                             => new WhatAMemberSawOfTheirRequests($why->reason()),
@@ -378,7 +400,7 @@ it('N3-R6 — hands over what they asked for, each with where it stands', functi
 
     $both = [
         'the fake' => static fn(): Owing => AMemberWhoIsOwed::asking(Requested::of(
-            Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), Waiting::ForApproval),
+            Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
             Wanted::turnedDown(2, 'Robin', 'Solaris', Size::unknown(), TurnedDown::because('Not for your age limit')),
         )),
         'the adapter' => static function () use ($answered): Owing {

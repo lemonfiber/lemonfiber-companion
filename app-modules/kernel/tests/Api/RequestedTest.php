@@ -9,6 +9,7 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\Waiting;
@@ -19,7 +20,7 @@ use function sprintf;
 /** One request, named so a case can say which row it expects back. */
 function aWant(int $number, string $forWhat, Waiting $standing): Wanted
 {
-    return Wanted::of($number, 'Robin', $forWhat, Size::unknown(), $standing);
+    return Wanted::of($number, 'Robin', $forWhat, Size::unknown(), HowARequestStands::said($standing));
 }
 
 it('holds what it was given, in the order it was given', function (): void {

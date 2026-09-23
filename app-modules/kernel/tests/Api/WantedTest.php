@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\RequestHasNobodyBehindIt;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\TurnedDown;
@@ -16,6 +17,12 @@ use Modules\Kernel\Api\Wanted;
 
 use function sprintf;
 
+/** One standing carried out of `either()`, since it must hand back an object. */
+final readonly class WhatTheStandingWas
+{
+    public function __construct(public string $said) {}
+}
+
 /** A request as it arrives, with whatever a case wants to change. */
 function aRequest(
     string $by = 'Sam',
@@ -23,7 +30,7 @@ function aRequest(
     ?Size $size = null,
     Waiting $standing = Waiting::ForApproval,
 ): Wanted {
-    return Wanted::of(41, $by, $forWhat, $size ?? Size::unknown(), $standing);
+    return Wanted::of(41, $by, $forWhat, $size ?? Size::unknown(), HowARequestStands::said($standing));
 }
 
 /**
@@ -92,9 +99,18 @@ it('L7 — every standing names a line, built from the case', function (): void 
     }
 });
 
+/** The standing a request came back carrying, named so a case can read it. */
+function whereItStands(Wanted $wanted): string
+{
+    return $wanted->standing()->either(
+        said: static fn(Waiting $said): WhatTheStandingWas => new WhatTheStandingWas($said->value),
+        unnamed: static fn(): WhatTheStandingWas => new WhatTheStandingWas('nobody named it'),
+    )->said;
+}
+
 it('carries where it stands, so a screen can tell waiting from arrived', function (): void {
-    expect(aRequest(standing: Waiting::Here)->standing())->toBe(Waiting::Here)
-        ->and(aRequest()->standing())->toBe(Waiting::ForApproval);
+    expect(whereItStands(aRequest(standing: Waiting::Here)))->toBe('here')
+        ->and(whereItStands(aRequest()))->toBe('waiting-for-approval');
 });
 
 it('D7-R3 — hands the size out with its label still on it', function (): void {
@@ -143,11 +159,12 @@ it('D7-R7 — a refused request is `declined` by construction', function (): voi
     // still waiting for was refused.
     $wanted = Wanted::turnedDown(41, 'Sam', 'A film', Size::unknown(), TurnedDown::because('No room'));
 
-    expect($wanted->standing())->toBe(Waiting::Declined);
+    expect(whereItStands($wanted))->toBe('declined')
+        ->and($wanted->standing()->wasDeclined())->toBeTrue();
 });
 
 it('a request that was not refused says so rather than answering with nothing', function (): void {
-    $wanted = Wanted::of(41, 'Sam', 'A film', Size::unknown(), Waiting::ForApproval);
+    $wanted = Wanted::of(41, 'Sam', 'A film', Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
 
     expect(whyItWasTurnedDown($wanted))->toBe('not refused');
 });
