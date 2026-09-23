@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
@@ -103,6 +104,12 @@ function theGeneratedStatusEnvelope(): string
 function theGeneratedHostingEnvelope(): string
 {
     return theGeneratedEnvelope('HostingEnvelope');
+}
+
+/** The generated `history` envelope, as text. */
+function theGeneratedHistoryEnvelope(): string
+{
+    return theGeneratedEnvelope('HistoryEnvelope');
 }
 
 /**
@@ -444,6 +451,15 @@ it('N1-R13 — every way a command can be hosted has a case', function (): void 
     expect(valuesOf(HowItIsHosted::cases()))->toBe($hosted);
 });
 
+it('N1-R13 — every way a change can be put back has a case', function (): void {
+    // `reversal` became a named union in the contract, so the three words this
+    // app reads are held to the wire rather than to a sentence describing it.
+    $reversals = unionIn(theGeneratedHistoryEnvelope(), 'reversal');
+
+    expect($reversals)->not->toBe([], 'no reversal union was found in the generated envelope');
+    expect(valuesOf(HowFarItGoesBack::cases()))->toBe($reversals);
+});
+
 it('N1-R13 — every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
@@ -553,6 +569,7 @@ const CHECKED_AGAINST_THE_WIRE = [
 
     HowItIsHosted::class => 'standing',
     WhatKeepsItRunning::class => 'manager',
+    HowFarItGoesBack::class => 'reversal',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

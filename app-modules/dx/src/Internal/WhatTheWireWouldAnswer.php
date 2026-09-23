@@ -146,16 +146,6 @@ final readonly class WhatTheWireWouldAnswer
     private const string WHEN_A_CHANGE_WAS_MADE = '1700000000';
 
     /**
-     * How far back every stand-in change goes.
-     *
-     * A word from a closed set the generated type does not close: it says
-     * `string`, where `Records` reads only the three the core writes. Whole,
-     * because it is the one that needs nothing beside it — no reason for
-     * stopping short — to read as complete.
-     */
-    private const string HOW_FAR_A_CHANGE_GOES_BACK = 'whole';
-
-    /**
      * How many lines a stand-in scrollback carries.
      *
      * More than one, because a window showing a single line looks the same as
@@ -285,8 +275,8 @@ final readonly class WhatTheWireWouldAnswer
      * A record whose changes say when they were made in a way a reader can
      * parse.
      *
-     * The `history` envelope's own declaration, corrected in the two fields of
-     * every change the generated type leaves open, for the reason
+     * The `history` envelope's own declaration, corrected in the one field of
+     * every change whose shape the generated type leaves open, for the reason
      * {@see aDoorThatOpened()} corrects one: everything else stays the
      * contract's, so the rest of the record is still the shape the reader is
      * about to insist on.
@@ -316,7 +306,10 @@ final readonly class WhatTheWireWouldAnswer
     }
 
     /**
-     * One synthesised change, dated and given a reversal the reader knows.
+     * One synthesised change, dated in digits.
+     *
+     * Its reversal is left as synthesised: the generated type closes that set,
+     * so the stand-in already picks a word `Records` reads.
      *
      * @return array<string, mixed>
      */
@@ -326,7 +319,6 @@ final readonly class WhatTheWireWouldAnswer
         return [
             ...array_filter(is_array($change) ? $change : [], is_string(...), ARRAY_FILTER_USE_KEY),
             'at' => self::WHEN_A_CHANGE_WAS_MADE,
-            'reversal' => self::HOW_FAR_A_CHANGE_GOES_BACK,
         ];
     }
 

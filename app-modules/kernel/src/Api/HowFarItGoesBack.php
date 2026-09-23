@@ -9,12 +9,11 @@ use function sprintf;
 /**
  * How far one change the stack made could be put back.
  *
- * Three, and the contract names all three in the sentence that describes the
- * field rather than in a closed type: `whole`, `partial`, `none`. They are
- * read as a closed set anyway, for {@see HowItIsHosted}'s reason — a word this
- * app has no case for is refused at the reading rather than drawn as the
- * nearest one, and the nearest one to an unknown word about undoing something
- * is always a guess about whether it can be undone.
+ * Three, and the contract closes the set: `whole`, `partial`, `none`, held to
+ * the wire by `EveryWireValueIsACaseTest`. A word this app has no case for is
+ * refused at the reading rather than drawn as the nearest one, for
+ * {@see HowItIsHosted}'s reason — the nearest one to an unknown word about
+ * undoing something is always a guess about whether it can be undone.
  *
  * **`None` is a case, not an absence.** A change which cannot be reversed
  * says so rather than omitting the field, and a nullable reversal is exactly
