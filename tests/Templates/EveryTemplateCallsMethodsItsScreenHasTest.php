@@ -77,6 +77,102 @@ it('F10 — every method a template calls is one its screen has', function (): v
     ));
 });
 
+/**
+ * Every property a template binds with `native:model`.
+ *
+ * The precompiler's own pattern, modifiers and all, so a binding this reads is
+ * exactly a binding the package expands — a looser one would judge markup the
+ * package never treats as a binding, and a stricter one would skip some that it
+ * does.
+ *
+ * @return list<string>
+ */
+function everyPropertyATemplateBinds(Template $template): array
+{
+    preg_match_all('/native:model(\.[a-zA-Z0-9.]+)?=["\']([^"\']+)["\']/', $template->source, $bound);
+
+    return array_values(array_unique($bound[2]));
+}
+
+/**
+ * Every property a binding can reach on a screen: public, and not static.
+ *
+ * Read as a list rather than asked of one name, because the list cannot throw
+ * and asking for a property that is not there can — and the answer this rule
+ * wants for a missing one is *not kept*, not an exception.
+ *
+ * @param  ReflectionClass<object> $screen
+ * @return list<string>
+ */
+function theStateABindingCanReach(ReflectionClass $screen): array
+{
+    $kept = [];
+
+    foreach ($screen->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        if (! $property->isStatic()) {
+            $kept[] = $property->getName();
+        }
+    }
+
+    return $kept;
+}
+
+it('F10 — every property a template binds is one its screen keeps where a binding can reach it', function (): void {
+    // The same join as the case above, for state rather than for a method, and
+    // it is the one that became silent. `nativephp/mobile` 4.4.1 expanded a
+    // binding to a bare variable, so a name the screen did not keep was an
+    // undefined variable and rendering raised. 4.5 expands it to
+    // `data_get(get_defined_vars(), …)`, which answers null for a name nothing
+    // supplies: the field draws empty, every keystroke is synced to a property
+    // that does not exist, and nothing anywhere raises. Read here instead, off
+    // the markup and the class, so the answer does not depend on which version
+    // of the package happens to be drawing.
+    //
+    // Public and not static, because that is what the package reaches from
+    // both ends: it fills the view from public properties and, since 4.5.1,
+    // writes back only to public, non-static ones.
+    $screens = Screens::byTheViewTheyRender();
+
+    expect($screens)->not->toBe([], 'no screen was paired with a view, so this rule read nothing');
+
+    $missing = [];
+    $read = 0;
+
+    foreach ($screens as $named => $screen) {
+        $path = Tree::at(Screens::theFileBehindTheView($named));
+
+        if (! is_file($path)) {
+            // The case above names this, and naming it twice is noise.
+            continue;
+        }
+
+        foreach (everyPropertyATemplateBinds(new Template($named, (string) file_get_contents($path))) as $property) {
+            $read++;
+
+            if (! in_array($property, theStateABindingCanReach($screen), strict: true)) {
+                $missing[] = sprintf(
+                    '%s binds native:model="%s", and %s keeps no public property of that name',
+                    $named,
+                    $property,
+                    $screen->getShortName(),
+                );
+            }
+        }
+    }
+
+    // A walk that read no binding would pass about nothing. The pairing and
+    // sign-in screens bind their fields, so none read means the pattern or the
+    // pairing stopped finding them.
+    expect($read)->toBeGreaterThan(0, 'no native:model binding was read, so this rule judged nothing')
+        ->and($missing)->toBe([], sprintf(
+            "These templates bind state their screen does not keep where a binding can reach it:\n  %s\n\n"
+            . 'Since nativephp/mobile 4.5 a binding is read through data_get, so a name nothing supplies '
+            . 'draws an empty field and raises nothing, on a phone or here. Every keystroke is then '
+            . "synced to a property that does not exist.\n",
+            implode("\n  ", $missing),
+        ));
+});
+
 it('F10 — every screen that renders is one this rule pairs', function (): void {
     // The other direction, and it is about the mapping rather than the markup:
     // a screen whose `render()` this could not read would be silently left out,

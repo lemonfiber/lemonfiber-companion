@@ -2443,25 +2443,39 @@ final readonly class Fixtures
             // silent about it. `lang/` is a real directory of real PHP and is
             // none of those things, so naming it as source is the smallest true
             // form of the mistake.
-            // A model binding naming state the screen does not keep.
-            // `native:model` expands to a bare variable in the compiled view,
-            // so a name nothing supplies leaves the field undefined — a warning
-            // rather than a stop, which is why nothing but a render can see it.
+            // A model binding naming state the screen does not keep. Read by
+            // `F10` off the markup and the class, because since
+            // `nativephp/mobile` 4.5 a binding expands to
+            // `data_get(get_defined_vars(), …)`: a name nothing supplies draws
+            // an empty field and raises nothing, so no render — here or on a
+            // phone — can see it any more.
             //
             // The binding, and not the hand-off in `render()`. A screen's state
-            // is public, and `nativephp/mobile` fills a view's data from public
+            // is public, and the package fills a view's data from public
             // properties, so the field reaches the view whether or not
-            // `render()` names it — deleting the hand-off plants nothing, and a
-            // fixture that plants nothing is a rule with nothing to catch
-            // reporting that it caught something. The binding is the one edit
-            // that still leaves a name the screen does not answer to.
+            // `render()` names it — deleting the hand-off plants nothing.
             Fixture::edit(
-                'F15',
+                'F10',
                 'app-modules/operator/resources/views/pair-by-scanning.blade.php',
                 'native:model="called"',
                 'native:model="calledAndNotKept"',
+                'every property a template binds',
+                'calledAndNotKept',
+            ),
+
+            // A frame that cannot be drawn, which is the whole of `F15`: a
+            // template echoing a variable nothing supplies. Unlike a binding
+            // this still raises under every version of the package — Blade
+            // compiles it to a bare `$variable` and a promoted warning is what
+            // the walk catches. Planted on a line the screen always draws, so
+            // the violation is reached whichever branch the stand-ins take.
+            Fixture::edit(
+                'F15',
+                'app-modules/operator/resources/views/sign-into-a-stack.blade.php',
+                '<native:text>{{ __($this->went()->remedy()) }}</native:text>',
+                '<native:text>{{ $nothingSuppliesThis }}</native:text>',
                 'every screen the router serves draws',
-                'PairByScanning',
+                'nothingSuppliesThis',
             ),
 
             // The component half of the same rule. Its own fixture rather

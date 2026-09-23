@@ -19,13 +19,14 @@ use Tests\Support\WhereAScreenCanSendYou;
 // is hoisted, and the screen's own state is passed to the view by the package
 // rather than by anything this repository wrote.
 //
-// That last one had three screens broken. `native:model="typed"` expands to
-// `:value="$typed"`, a bare variable in the compiled view, and `fromView()`
-// fills the view's data from the component's **public** properties. The state
-// these screens keep is `protected` — deliberately, and for a good reason — so
-// `$typed` was undefined, on the device, on every frame of the two pairing
-// screens and the sign-in screen. Every test passed: each reads `typed()` in
-// PHP, which is a different question from what the view gets.
+// What a render catches is a template naming a variable nothing supplies:
+// Blade compiles `{{ $x }}` to a bare `$x`, and an undefined one is a warning
+// the walk promotes and reports. A `native:model` binding is not that any more.
+// Since `nativephp/mobile` 4.5 it expands to `data_get(get_defined_vars(), …)`,
+// which answers null for a name nothing supplies and raises nothing, so a
+// misnamed binding draws an empty field here exactly as quietly as it would on
+// a phone. `F10` reads bindings off the markup and the class instead, where the
+// version of the package drawing them does not matter.
 //
 // So this builds each screen the way the application builds it — from the
 // container, with the route's own parameters — and draws it.
