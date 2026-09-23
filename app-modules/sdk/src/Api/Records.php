@@ -184,7 +184,7 @@ final readonly class Records
         $said = self::text($row, WireField::At, $position);
         $seconds = filter_var($said, FILTER_VALIDATE_INT);
 
-        if (preg_match('/^[0-9]+$/', $said) !== 1 || $seconds === false) {
+        if (preg_match('/^\d+$/', $said) !== 1 || $seconds === false) {
             throw HistoryIsUnreadable::at($said, $position);
         }
 

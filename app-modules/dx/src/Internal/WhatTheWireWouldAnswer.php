@@ -8,7 +8,6 @@ use function array_filter;
 
 use const ARRAY_FILTER_USE_KEY;
 
-use function array_map;
 use function implode;
 use function is_array;
 use function is_string;
@@ -304,7 +303,13 @@ final readonly class WhatTheWireWouldAnswer
         // `changes` is required by the declaration, so the key is always
         // there; what is not known to the analyser is that it holds a list.
         $changes = $record['changes'];
-        $record['changes'] = array_map(self::aChangeThatReads(...), is_array($changes) ? $changes : []);
+        $corrected = [];
+
+        foreach (is_array($changes) ? $changes : [] as $change) {
+            $corrected[] = self::aChangeThatReads($change);
+        }
+
+        $record['changes'] = $corrected;
         $envelope['data'] = $record;
 
         return $envelope;
