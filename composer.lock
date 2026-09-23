@@ -5560,16 +5560,16 @@
         },
         {
             "name": "saloonphp/saloon",
-            "version": "v4.0.1",
+            "version": "v4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/saloonphp/saloon.git",
-                "reference": "7eb41570730a3fb84bb434d3d88ae6b9c7dd6650"
+                "reference": "8476092949f1b544b2a04d7ecaa71d98c3c2f7fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/saloonphp/saloon/zipball/7eb41570730a3fb84bb434d3d88ae6b9c7dd6650",
-                "reference": "7eb41570730a3fb84bb434d3d88ae6b9c7dd6650",
+                "url": "https://api.github.com/repos/saloonphp/saloon/zipball/8476092949f1b544b2a04d7ecaa71d98c3c2f7fe",
+                "reference": "8476092949f1b544b2a04d7ecaa71d98c3c2f7fe",
                 "shasum": ""
             },
             "require": {
@@ -5629,7 +5629,7 @@
             ],
             "support": {
                 "issues": "https://github.com/saloonphp/saloon/issues",
-                "source": "https://github.com/saloonphp/saloon/tree/v4.0.1"
+                "source": "https://github.com/saloonphp/saloon/tree/v4.3.0"
             },
             "funding": [
                 {
@@ -5637,7 +5637,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-04T20:48:33+00:00"
+            "time": "2026-09-18T21:37:59+00:00"
         },
         {
             "name": "seld/jsonlint",
@@ -11096,11 +11096,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.14",
+            "version": "2.2.15",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9c672e7a8e791dfc3d30e55f683e73fc0b63a3ac",
-                "reference": "9c672e7a8e791dfc3d30e55f683e73fc0b63a3ac",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/b158556ffd26825cf615a1c1f72fb5157a2301b7",
+                "reference": "b158556ffd26825cf615a1c1f72fb5157a2301b7",
                 "shasum": ""
             },
             "require": {
@@ -11156,7 +11156,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-12T21:39:33+00:00"
+            "time": "2026-09-23T12:23:07+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -11799,12 +11799,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Roave/SecurityAdvisories.git",
-                "reference": "55a9238f51c5449fdaa650fb03322dfca498a2e5"
+                "reference": "2fd3139c169689cc42710d8b1228ccf7c84b274d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/55a9238f51c5449fdaa650fb03322dfca498a2e5",
-                "reference": "55a9238f51c5449fdaa650fb03322dfca498a2e5",
+                "url": "https://api.github.com/repos/Roave/SecurityAdvisories/zipball/2fd3139c169689cc42710d8b1228ccf7c84b274d",
+                "reference": "2fd3139c169689cc42710d8b1228ccf7c84b274d",
                 "shasum": ""
             },
             "conflict": {
@@ -11912,7 +11912,7 @@
                 "cadmium-org/cadmium-cms": "<=0.4.9",
                 "cakephp/authentication": "<2.11.1|>=3,<3.3.6|>=4,<4.1.1",
                 "cakephp/cakephp": "<4.5.12|>=4.6,<4.6.5|>=5,<5.1.10|>=5.2,<5.2.15|>=5.3,<5.3.7",
-                "cakephp/database": ">=4.2,<4.2.12|>=4.3,<4.3.11|>=4.4,<4.4.10|>=5.1,<5.1.10|>=5.2,<5.2.15|>=5.3,<5.3.7",
+                "cakephp/database": "<4.5.12|>=4.6,<4.6.5|>=5,<5.1.10|>=5.2,<5.2.15|>=5.3,<5.3.7",
                 "cakephp/debug_kit": "<4.10.3|>=5,<5.2.4",
                 "cakephp/queue": ">=0.1.10,<2.3.1",
                 "cardgate/magento2": "<2.0.33",
@@ -11926,6 +11926,7 @@
                 "centreon/centreon": "<22.10.15",
                 "cesargb/laravel-magiclink": ">=2,<2.25.1",
                 "cesnet/simplesamlphp-module-proxystatistics": "<3.1",
+                "chamilo/chamilo-lms": "<=2",
                 "chriskacerguis/codeigniter-restserver": "<=2.7.1",
                 "chrome-php/chrome": "<1.14",
                 "ci4-cms-erp/ci4ms": "<=0.31.8",
@@ -12331,7 +12332,7 @@
                 "mediawiki/data-transfer": ">=1.39,<1.39.11|>=1.41,<1.41.3|>=1.42,<1.42.2",
                 "mediawiki/maps": "<12.1.3",
                 "mediawiki/matomo": "<2.4.3",
-                "mediawiki/semantic-media-wiki": "<4.0.2",
+                "mediawiki/semantic-media-wiki": "<=7.2.1",
                 "mehrwert/phpmyadmin": "<3.2",
                 "melisplatform/melis-asset-manager": "<5.0.1",
                 "melisplatform/melis-cms": "<5.3.4",
@@ -12402,9 +12403,9 @@
                 "nzo/url-encryptor-bundle": ">=4,<4.3.2|>=5,<5.0.1",
                 "october/backend": "<1.1.2",
                 "october/cms": "<1.0.469|==1.0.469|==1.0.471|==1.1.1",
-                "october/october": "<3.7.14|>=4,<4.1.10",
+                "october/october": "<3.7.14|>=4,<4.1.10|>=4.3,<4.3.4",
                 "october/rain": "<=3.7.13|>=4,<=4.1.9",
-                "october/system": "<3.7.16|>=4,<4.1.16",
+                "october/system": "<3.7.17|>=4,<4.2.23",
                 "oliverklee/phpunit": "<3.5.15",
                 "omeka/omeka-s": "<4.0.3",
                 "onelogin/php-saml": "<2.21.1|>=3,<3.8.1|>=4,<4.3.1",
@@ -12435,7 +12436,7 @@
                 "paragonie/random_compat": "<2",
                 "paragonie/sodium_compat": "<1.24.1|>=2,<2.5.1",
                 "passbolt/passbolt_api": "<4.6.2",
-                "paymenter/paymenter": "<=1.5.4",
+                "paymenter/paymenter": "<=1.5.6",
                 "paypal/adaptivepayments-sdk-php": "<=3.9.2",
                 "paypal/invoice-sdk-php": "<=3.9",
                 "paypal/merchant-sdk-php": "<3.12",
@@ -12536,7 +12537,7 @@
                 "rap2hpoutre/laravel-log-viewer": "<0.13",
                 "react/http": ">=0.6,<1.11.1",
                 "really-simple-plugins/complianz-gdpr": "<6.4.2",
-                "redaxo/source": "<5.21.1",
+                "redaxo/source": "<=5.21.1",
                 "remdex/livehelperchat": "<4.29",
                 "renolit/reint-downloadmanager": "<4.0.2|>=5,<5.0.1",
                 "reportico-web/reportico": "<=8.1",
@@ -12564,7 +12565,7 @@
                 "sheng/yiicms": "<1.2.1",
                 "shlinkio/shlink": "<=5.0.1",
                 "shopper/cart": "<2.8",
-                "shopper/framework": "<2.8",
+                "shopper/framework": "<2.9.2",
                 "shopware/core": "<6.6.10.18-dev|>=6.7,<6.7.10.1-dev",
                 "shopware/platform": "<6.6.10.18-dev|>=6.7,<6.7.10.1-dev",
                 "shopware/production": "<=6.3.5.2",
@@ -12641,7 +12642,7 @@
                 "subhh/libconnect": "<7.0.8|>=8,<8.1",
                 "sukohi/surpass": "<1",
                 "sulu/form-bundle": ">=2,<2.5.3",
-                "sulu/sulu": "<=2.6.24|>=3,<3.0.8",
+                "sulu/sulu": "<2.6.25|>=3,<3.0.8",
                 "sumocoders/framework-user-bundle": "<1.4",
                 "superbig/craft-audit": "<3.0.2",
                 "svewap/a21glossary": "<=0.4.10",
@@ -12788,7 +12789,7 @@
                 "uvdesk/core-framework": "<=1.1.1",
                 "vanilla/safecurl": "<0.9.2",
                 "verbb/comments": "<1.5.5",
-                "verbb/formie": "<3.1.28",
+                "verbb/formie": "<3.1.31",
                 "verbb/image-resizer": "<2.0.9",
                 "verbb/knock-knock": "<1.2.8",
                 "verot/class.upload.php": "<=2.1.6",
@@ -12831,7 +12832,7 @@
                 "woocommerce/woocommerce": "<6.6|>=8.8,<8.8.5|>=8.9,<8.9.3",
                 "wp-cli/wp-cli": ">=0.12,<2.5",
                 "wp-coding-standards/wpcs": ">=0.14.1,<3.4.1",
-                "wp-graphql/wp-graphql": "<=2.6",
+                "wp-graphql/wp-graphql": "<2.22.2",
                 "wp-premium/gravityforms": "<2.4.21",
                 "wpanel/wpanel4-cms": "<=4.3.1",
                 "wpcloud/wp-stateless": "<3.2",
@@ -12937,7 +12938,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-09T20:29:53+00:00"
+            "time": "2026-09-23T19:28:27+00:00"
         },
         {
             "name": "sebastian/cli-parser",
