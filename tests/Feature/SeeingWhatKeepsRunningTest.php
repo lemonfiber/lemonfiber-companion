@@ -10,12 +10,14 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Unattended;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatHosts;
 use Tests\Support\Fakes\StacksInMemory;
@@ -165,7 +167,9 @@ it('N1-R10 — a stack that could not be asked is not a machine hosting nothing'
     expect($answer->went->cameBack())->toBeFalse()
         ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($answer->commands)->toBe([])
-        ->and($answer->keptBySaid)->toBe('');
+        ->and($answer->keptBySaid)->toBe('')
+        ->and($answer->instead)->toBe('')
+        ->and($answer->missing)->toBe(0);
 });
 
 it('N1-R10 — a device holding no session asks somebody to sign in', function (): void {
@@ -177,12 +181,40 @@ it('N1-R10 — a device holding no session asks somebody to sign in', function (
 
     expect($answer->went->isSignedIn)->toBeFalse()
         ->and($answer->went->met)->toBe('')
-        ->and($answer->commands)->toBe([]);
+        ->and($answer->commands)->toBe([])
+        ->and($answer->keptBySaid)->toBe('')
+        ->and($answer->instead)->toBe('')
+        ->and($answer->missing)->toBe(0);
 });
 
-it('N1-R25 — asks once per frame, and asking again is what asks again', function (): void {
+it('N1-R3 — an obstacle that is not a refused credential leaves the session standing', function (): void {
+    // A phone with no signal told to sign in is given advice for a problem it
+    // does not have, over the one it does.
+    $answer = theHostingScreen(AStackThatHosts::met(Obstacle::StackDidNotAnswer))->answer();
+
+    expect($answer->went->isSignedIn)->toBeTrue();
+});
+
+it('N3-R13 — a credential the stack refused signs this device out and lets the session go', function (): void {
+    // Both halves: if the session stayed, the next frame would resume it, be
+    // refused again, and draw a sign-in prompt over a device that still
+    // believes it is signed in.
+    $keychain = AKeychainInMemory::working();
+    $screen = theHostingScreen(AStackThatHosts::met(Obstacle::CredentialWasRefused), $keychain);
+
+    expect($keychain->isHolding(theStackWhoseHostingIsRead()->id()))->toBeTrue();
+
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->went->met)->toBe('')
+        ->and($screen->answer()->went->remedy)->toBe('')
+        ->and($keychain->isHolding(theStackWhoseHostingIsRead()->id()))->toBeFalse();
+});
+
+it('the machine is asked once for a frame, about the machine the route names', function (): void {
     // One read per frame. A home network with a machine that may be asleep is
-    // the wrong thing to talk to four times a second.
+    // the wrong thing to talk to four times a second — and the answers of a
+    // screen that asked on every accessor would all agree, so the count is
+    // what is read.
     $stack = AStackThatHosts::with(aMachineThatKeepsTwoThings());
     $screen = theHostingScreen($stack);
 
@@ -192,9 +224,34 @@ it('N1-R25 — asks once per frame, and asking again is what asks again', functi
     expect($stack->askings())->toBe(1)
         ->and($stack->wasGivenASession())->toBeTrue()
         ->and($stack->askedAbout()?->id()->stored())->toBe(theStackWhoseHostingIsRead()->id()->stored());
+});
 
+it('N1-R3 — asking again asks the machine again', function (): void {
+    $stack = AStackThatHosts::met(Obstacle::DeviceHasNoNetwork);
+    $screen = theHostingScreen($stack);
+
+    $screen->answer();
     $screen->again();
     $screen->answer();
 
     expect($stack->askings())->toBe(2);
+});
+
+it('refuses a route parameter that is not text', function (): void {
+    $screen = theHostingScreen(AStackThatHosts::met(Obstacle::DeviceHasNoNetwork));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
+});
+
+it('the way back to the machine is a route as well', function (): void {
+    $screen = theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()));
+
+    expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull();
+});
+
+it('renders its own view', function (): void {
+    $screen = theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()));
+
+    expect($screen->render()->name())->toBe('operator::what-keeps-running-here');
 });
