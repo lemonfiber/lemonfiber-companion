@@ -53,11 +53,10 @@ function writtenBeforeItsScreen(): array
         // written; the screen is the one that offers the typed road instead.
         'device.permission_refused' => 'the screen shown after a permission is declined',
 
-        // A repair an operator asked for and the stack would not do.
-        // The offer half is built — `Mending` asks what a stack would put right
-        // and the screen states all three clauses — and the
-        // agreeing half is not, so `Confirmed` and
-        // `RepairWasConfirmedAgainstAnOldReading` are still unreached.
+        // A repair an operator agreed to and the stack would not do.
+        // `WhatWouldBePutRight` sends the agreement through `Confirmed::against`,
+        // and `Mending::agreeTo` answers with a job or an `Obstacle`. Nothing
+        // tells a refused repair apart from the other obstacles.
         'health.repair_refused' => 'a repair the stack refused',
 
         // How old a reading is. The report carries no timestamp today,
