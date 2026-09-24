@@ -19,12 +19,14 @@ use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Permission;
+use Modules\Kernel\Api\RateUnit;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\SizeUnit;
 use Modules\Kernel\Api\Stage;
@@ -32,10 +34,14 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhereTheLineStands;
+use Modules\Kernel\Api\WhereTheMonthStands;
+use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Kernel\Api\WhoSetIt;
@@ -178,6 +184,10 @@ function everyDerivedKey(): array
             SizeUnit::cases(),
             static fn(SizeUnit $unit): array => [$unit->saidOnTheScreen()],
         ),
+        RateUnit::class => aPairPerCase(
+            RateUnit::cases(),
+            static fn(RateUnit $unit): array => [$unit->saidOnTheScreen()],
+        ),
         Stage::class => aPairPerCase(
             Stage::cases(),
             static fn(Stage $stage): array => [$stage->saidOnTheScreen()],
@@ -229,6 +239,26 @@ function everyDerivedKey(): array
         WhetherItIsHeard::class => aPairPerCase(
             WhetherItIsHeard::cases(),
             static fn(WhetherItIsHeard $heard): array => [$heard->saidOnTheScreen()],
+        ),
+        WhereTheLineStands::class => aPairPerCase(
+            WhereTheLineStands::cases(),
+            static fn(WhereTheLineStands $stands): array => [$stands->saidOnTheScreen()],
+        ),
+        HowTheLineWasMeasured::class => aPairPerCase(
+            HowTheLineWasMeasured::cases(),
+            static fn(HowTheLineWasMeasured $measured): array => [$measured->saidOnTheScreen()],
+        ),
+        WhatACapDoes::class => aPairPerCase(
+            WhatACapDoes::cases(),
+            static fn(WhatACapDoes $does): array => [$does->saidOnTheScreen()],
+        ),
+        WhereTheMonthStands::class => aPairPerCase(
+            WhereTheMonthStands::cases(),
+            static fn(WhereTheMonthStands $month): array => [$month->saidOnTheScreen()],
+        ),
+        WhetherItGoesThroughTheTunnel::class => aPairPerCase(
+            WhetherItGoesThroughTheTunnel::cases(),
+            static fn(WhetherItGoesThroughTheTunnel $tunnel): array => [$tunnel->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by

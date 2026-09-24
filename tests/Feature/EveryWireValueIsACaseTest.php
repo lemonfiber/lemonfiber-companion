@@ -14,6 +14,7 @@ use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
 use Modules\Kernel\Api\HowItWasReached;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Medium;
@@ -24,9 +25,12 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhereTheLineStands;
+use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhoSettledIt;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -118,6 +122,12 @@ function theGeneratedHostingEnvelope(): string
 function theGeneratedHistoryEnvelope(): string
 {
     return theGeneratedEnvelope('HistoryEnvelope');
+}
+
+/** The generated `bandwidth` envelope, as text. */
+function theGeneratedBandwidthEnvelope(): string
+{
+    return theGeneratedEnvelope('BandwidthEnvelope');
 }
 
 /** The generated `outbound` envelope, as text. */
@@ -495,6 +505,34 @@ it('N1-R13 — every request lemonfiber makes on its own account has a case', fu
     expect(valuesOf(WhatLemonfiberAsksFor::cases()))->toBe($asks);
 });
 
+it('N1-R13 — every state the shared line can be in has a case', function (): void {
+    $words = unionIn(theGeneratedBandwidthEnvelope(), 'restraint');
+
+    expect($words)->not->toBe([], 'no restraint union was found in the generated envelope');
+    expect(valuesOf(WhereTheLineStands::cases()))->toBe($words);
+});
+
+it('N1-R13 — every way the line\'s capacity can have been arrived at has a case', function (): void {
+    $words = unionIn(theGeneratedBandwidthEnvelope(), 'source');
+
+    expect($words)->not->toBe([], 'no source union was found in the generated envelope');
+    expect(valuesOf(HowTheLineWasMeasured::cases()))->toBe($words);
+});
+
+it('N1-R13 — everything reaching a cap can do has a case', function (): void {
+    $words = unionIn(theGeneratedBandwidthEnvelope(), 'exceeded');
+
+    expect($words)->not->toBe([], 'no exceeded union was found in the generated envelope');
+    expect(valuesOf(WhatACapDoes::cases()))->toBe($words);
+});
+
+it('N1-R13 — everywhere a month can stand against its cap has a case', function (): void {
+    $words = unionIn(theGeneratedBandwidthEnvelope(), 'reached');
+
+    expect($words)->not->toBe([], 'no reached union was found in the generated envelope');
+    expect(valuesOf(WhereTheMonthStands::cases()))->toBe($words);
+});
+
 it('N1-R13 — every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
@@ -606,6 +644,10 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhatKeepsItRunning::class => 'manager',
     HowFarItGoesBack::class => 'reversal',
     WhatLemonfiberAsksFor::class => 'reach',
+    WhereTheLineStands::class => 'restraint',
+    HowTheLineWasMeasured::class => 'source',
+    WhatACapDoes::class => 'exceeded',
+    WhereTheMonthStands::class => 'reached',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

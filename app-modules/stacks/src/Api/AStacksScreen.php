@@ -138,6 +138,9 @@ enum AStacksScreen: string
     /** What this machine will tell its operator about. */
     case Told = '/stacks/{stack}/told';
 
+    /** How this machine shares its line with the household. */
+    case Line = '/stacks/{stack}/line';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
