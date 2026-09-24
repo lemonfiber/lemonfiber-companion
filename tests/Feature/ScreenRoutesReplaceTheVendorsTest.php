@@ -28,6 +28,10 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\VerdictsInMemory;
 
+// Runs the composition root rather than reading it, so its mutants are judged
+// here: see `scripts/mutation.php`.
+pest()->group('holds:bootstrap/Composition');
+
 // A3 — a screen is built through the container, so it can be given a port.
 //
 // NativePHP's own router builds a screen with `new $class` and `mount()` takes

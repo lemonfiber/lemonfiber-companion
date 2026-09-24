@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use Modules\Design\Api\ThemeToken;
 
+// Runs the composition root rather than reading it, so its mutants are judged
+// here: see `scripts/mutation.php`.
+pest()->group('holds:bootstrap/Composition');
+
 // One brand colour maps to the accent role, leaving the rest of the
 // palette to the platform. What makes that true of a running app is the widget
 // theme, not a class: a filled button takes `primary` from it and honours no

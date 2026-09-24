@@ -8,6 +8,10 @@ use Bootstrap\Composition\NativePHP\TheRunloop;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
 
+// Runs the composition root rather than reading it, so its mutants are judged
+// here: see `scripts/mutation.php`.
+pest()->group('holds:bootstrap/Composition');
+
 // The Runloop contract, run against the harness and against the fake.
 //
 // `G2`'s shape at the seam the composition root keeps so that exactly one file
