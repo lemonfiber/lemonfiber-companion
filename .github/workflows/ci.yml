@@ -465,12 +465,13 @@ jobs:
 
   # The check branch protection actually names.
   #
-  # A matrix job reports one check per entry — `mutation (bridge/src)`,
-  # `mutation (app-modules/kernel/src, part 2 of 4)` — and none of them is
-  # called `mutation testing`. That required check would simply never report,
-  # and a required check that never reports blocks a pull request forever with
-  # nothing anywhere naming the cause. It is the same hole `sonar.yml`'s gate exists to close, and it is
-  # reached here by renaming rather than by a failure.
+  # A matrix job reports one check per entry — `mutation (app-modules/kernel/src,
+  # part 2 of 4)`, `mutation (paths a holds: group judges)` — and none of them
+  # is called `mutation testing`. That required check would simply never
+  # report, and a required check that never reports blocks a pull request
+  # forever with nothing anywhere naming the cause. It is the same hole
+  # `sonar.yml`'s gate exists to close, and it is reached here by renaming
+  # rather than by a failure.
   #
   # So this job keeps the name and answers for the shards. `!cancelled()` rather
   # than `always()`: a cancelled run is somebody pressing stop.
