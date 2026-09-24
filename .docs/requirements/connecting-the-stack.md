@@ -30,7 +30,7 @@ reads yet:
 
 | Requirement | What it still needs |
 |---|---|
-| `N5-R2` | What the stack reaches for now and what it would reach for after — `Wiring` is now one side of that comparison; the other is a rehearsed substitution, which nothing reads yet |
+| `N5-R2` | What the stack reaches for now and what it would reach for after — `HowItReaches` holds one side of that comparison; the other is a rehearsed substitution, which nothing reads yet |
 | `N5-R4` | The `leaves_unfilled` list, which the SDK carries on a substitution and nothing here reads |
 | `N5-R7` | A screen, which is where an offer could be made and so where one can be withheld |
 | `N5-R8`, `N5-R9` | The catalogue, which is a different envelope |

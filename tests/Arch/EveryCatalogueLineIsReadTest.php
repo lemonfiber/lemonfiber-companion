@@ -24,18 +24,11 @@ use Tests\Support\Tree;
 // older pair became words nobody would ever read again — still translated, still
 // reviewed, still in the file.
 //
-// What this rule does *not* do is refuse a catalogue written ahead of its
-// screen. Writing the words first is how this product decides what a screen
-// will say before deciding how it looks, and `backups.`, `updates.` and
-// `stacks.` are whole groups of it — a group nothing reads is a feature nobody
-// has started, and that is allowed without a word.
-//
-// A line inside a group that *is* read is the harder case, because the two
-// shapes look identical from here: a sentence waiting for its screen, and a
-// sentence its screen stopped saying. So those are named below, one line each,
-// with the screen they are waiting for. Adding a line to that table is cheap
-// and is the point — it costs one sentence of justification, and "it says the
-// same as the line above it" is not one.
+// A sentence waiting for its screen and a sentence its screen stopped saying
+// look identical from here. So the ones waiting are named below, one line
+// each, with the screen they are waiting for. Adding a line to that table
+// costs one sentence of justification, and "it says the same as the line
+// above it" is not one.
 
 /**
  * Lines written before the screen that will show them, and what that screen is.
@@ -152,46 +145,25 @@ function everyKeyADerivationCouldBuild(string $said): array
 it('L7 — every line the catalogue holds is one the application can show', function (): void {
     $said = everythingTheAppSays();
     $reachable = everyKeyADerivationCouldBuild($said);
-    $groups = [];
-
-    foreach (everyLineHeld() as $key) {
-        $group = explode('.', $key)[0];
-        $read = str_contains($said, sprintf("'%s'", $key)) || in_array($key, $reachable, strict: true);
-        $groups[$group][$read ? 'read' : 'unread'][] = $key;
-    }
-
-    $orphans = [];
-
-    foreach ($groups as $lines) {
-        // A group nothing reads at all is a catalogue written ahead of its
-        // screen, which is how this product decides what a screen will say
-        // before deciding how it looks. A group with some readers and not
-        // others is the other thing: work that moved on and left a sentence.
-        if (($lines['read'] ?? []) === []) {
-            continue;
-        }
-
-        $orphans = [...$orphans, ...($lines['unread'] ?? [])];
-    }
-
     $waiting = writtenBeforeItsScreen();
     $orphans = array_values(array_filter(
-        $orphans,
-        static fn(string $key): bool => ! array_key_exists($key, $waiting),
+        everyLineHeld(),
+        static fn(string $key): bool => ! array_key_exists($key, $waiting)
+            && ! str_contains($said, sprintf("'%s'", $key))
+            && ! in_array($key, $reachable, strict: true),
     ));
 
     sort($orphans);
 
     expect($orphans)->toBe([], sprintf(
-        "These lines are in a group the application reads, and nothing reads them:\n  %s\n\n"
+        "Nothing in the application reads these lines:\n  %s\n\n"
         . 'Either something should show them or they should go. A line nobody reads is '
         . 'still translated into every locale, still reviewed, and still read by whoever '
         . "comes to change the sentence beside it.\n"
         . 'Two shapes produce them: a sentence written twice under different names, and a '
         . "sentence left behind when a screen started saying it another way.\n"
-        . 'A group with no readers at all is exempt — that is a catalogue written before '
-        . "its screen, which is deliberate. So is a line named in `writtenBeforeItsScreen()`, \n"
-        . "which costs one sentence saying which screen is coming for it (L7).\n",
+        . 'A line named in `writtenBeforeItsScreen()` is exempt, which costs one sentence '
+        . "saying which screen is coming for it (L7).\n",
         implode("\n  ", $orphans),
     ));
 });

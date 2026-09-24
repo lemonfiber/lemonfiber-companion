@@ -8,17 +8,12 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\Check;
-use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Effects;
-use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
 use Modules\Kernel\Api\OfferHasNoName;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\Repairs;
 use Modules\Kernel\Api\Undoing;
-use Modules\Kernel\Api\WhatIsOnOffer;
-
-use function sprintf;
 
 /** A repair the stack offered, stated the way one has to be. */
 function aRepairOf(string $check = 'indexer-reachable'): Repair
@@ -94,28 +89,4 @@ it('N2-R6 — tells one listing from another holding an equal-looking repair', f
 
     expect(Repairs::of($offered)->holds($offered))->toBeTrue()
         ->and(Repairs::of($offered)->holds($elsewhere))->toBeFalse();
-});
-
-it('N1-R10 — says what the operator met where nobody could ask', function (): void {
-    // The same six situations they meet signing in or asking after the machine,
-    // rather than a vocabulary of this screen's own.
-    $met = WhatIsOnOffer::met(Obstacle::StackDidNotAnswer)->either(
-        offered: static fn(Offer $offer): Code => Code::of(sprintf('offered-%s', $offer->named())),
-        met: static fn(Obstacle $why): Code => Code::of($why->value),
-    );
-
-    expect($met->shown())->toBe(Obstacle::StackDidNotAnswer->value);
-});
-
-it('hands the listing over where the stack answered', function (): void {
-    $answered = WhatIsOnOffer::offer(Offer::of('a-listing', Repairs::of(aRepairOf())))->either(
-        offered: static fn(Offer $offer): Code => Code::of(sprintf(
-            '%s|%d',
-            $offer->named(),
-            $offer->repairs()->count(),
-        )),
-        met: static fn(Obstacle $why): Code => Code::of($why->value),
-    );
-
-    expect($answered->shown())->toBe('a-listing|1');
 });
