@@ -50,11 +50,6 @@ final readonly class Releases implements IteratorAggregate
         return count($this->releases);
     }
 
-    public function isEmpty(): bool
-    {
-        return $this->releases === [];
-    }
-
     /** @return Traversable<int, Release> */
     public function getIterator(): Traversable
     {
