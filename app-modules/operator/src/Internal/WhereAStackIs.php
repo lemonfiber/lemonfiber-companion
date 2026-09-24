@@ -151,6 +151,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Origins->forTheStack($this->stack);
     }
 
+    /** Everything that leaves this machine. */
+    public function leaving(): string
+    {
+        return AStacksScreen::Leaving->forTheStack($this->stack);
+    }
+
     /** What one of this machine's services has been saying. */
     public function logsOf(ServiceId $service): string
     {

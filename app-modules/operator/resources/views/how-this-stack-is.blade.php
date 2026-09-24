@@ -190,6 +190,10 @@
          licence. Beside the record, which is the question somebody asks just
          before this one. --}}
     <x-operator::quiet-action label="{{ __('stacks.origins.road_in') }}" :goes="$this->goes()->origins()" />
+
+    {{-- What it says to the world while nobody is watching. With the other
+         two, because all three are what the machine keeps about itself. --}}
+    <x-operator::quiet-action label="{{ __('stacks.outbound.road_in') }}" :goes="$this->goes()->leaving()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading

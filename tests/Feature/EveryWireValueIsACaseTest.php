@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatKeepsItRunning;
+use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhoSettledIt;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -110,6 +111,12 @@ function theGeneratedHostingEnvelope(): string
 function theGeneratedHistoryEnvelope(): string
 {
     return theGeneratedEnvelope('HistoryEnvelope');
+}
+
+/** The generated `outbound` envelope, as text. */
+function theGeneratedOutboundEnvelope(): string
+{
+    return theGeneratedEnvelope('OutboundEnvelope');
 }
 
 /**
@@ -460,6 +467,16 @@ it('N1-R13 — every way a change can be put back has a case', function (): void
     expect(valuesOf(HowFarItGoesBack::cases()))->toBe($reversals);
 });
 
+it('N1-R13 — every request lemonfiber makes on its own account has a case', function (): void {
+    // `reach` on the wire, and the closed set is the stack's claim: an eighth
+    // request is one somebody decided to add, and this is where the app hears
+    // of it rather than drawing it under the nearest name.
+    $asks = unionIn(theGeneratedOutboundEnvelope(), 'reach');
+
+    expect($asks)->not->toBe([], 'no reach union was found in the generated envelope');
+    expect(valuesOf(WhatLemonfiberAsksFor::cases()))->toBe($asks);
+});
+
 it('N1-R13 — every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
@@ -570,6 +587,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     HowItIsHosted::class => 'standing',
     WhatKeepsItRunning::class => 'manager',
     HowFarItGoesBack::class => 'reversal',
+    WhatLemonfiberAsksFor::class => 'reach',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in
