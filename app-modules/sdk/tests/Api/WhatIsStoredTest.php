@@ -129,12 +129,12 @@ it('refuses a list that is missing or is not a list, naming it', function (strin
         ->and(fn(): mixed => WhatIsStored::in(storedSaying($scalar)))->toThrow(StoredIsUnreadable::class, sprintf('`%s`', $list));
 })->with(['roots', 'kept', 'beside']);
 
-it('refuses a row that is not a row, by its position, rather than dropping it', function (): void {
+it('refuses a row that is not a row, by its position, rather than dropping it', function (string $list): void {
     $data = whatALoftStores();
-    $data['kept'][] = 'the third';
+    $data[$list] = [theFirstRowOf($list), 'the second'];
 
-    expect(fn(): mixed => WhatIsStored::in(storedSaying($data)))->toThrow(StoredIsUnreadable::class, 'Entry 2 of `kept`');
-});
+    expect(fn(): mixed => WhatIsStored::in(storedSaying($data)))->toThrow(StoredIsUnreadable::class, sprintf('Entry 1 of `%s`', $list));
+})->with(['roots', 'kept', 'beside']);
 
 it('refuses a field that is missing, blank or not text, naming the list, the field and the row', function (string $list, string $field): void {
     $row = theFirstRowOf($list);
