@@ -5,10 +5,20 @@ declare(strict_types=1);
 use Tests\Support\OurCode;
 use Tests\Support\Tree;
 
-// The two files that must name what they refuse in order to refuse it: this
-// one holds the markers, and the fixture registry holds a snippet carrying each
-// of them so the rule can be shown to fire.
-const EXEMPT = ['tests/Arch/CommentsTest.php', 'tests/Support/Fixtures.php'];
+// The files that must name what they refuse in order to refuse it: this one
+// holds the markers, and the fixture registry — `Fixtures.php` and the families
+// under `Violations/` — holds a snippet carrying each of them so the rule can be
+// shown to fire. An entry ending in a slash is a directory.
+const EXEMPT = ['tests/Arch/CommentsTest.php', 'tests/Support/Fixtures.php', 'tests/Support/Violations/'];
+
+function isExemptFromTheCommentRules(string $path): bool
+{
+    return array_any(
+        EXEMPT,
+        static fn(string $exempt): bool => $path === $exempt
+            || (str_ends_with($exempt, '/') && str_starts_with($path, $exempt)),
+    );
+}
 
 /**
  * How long a paragraph must be before K3 compares it.
@@ -293,7 +303,7 @@ it('K1 — a comment says what is true, not what happened', function (): void {
     $read = [];
 
     foreach (commentLines() as $path => $lines) {
-        if (in_array($path, EXEMPT, strict: true)) {
+        if (isExemptFromTheCommentRules($path)) {
             continue;
         }
 
@@ -365,7 +375,7 @@ it('K2 — a docblock says what a type cannot', function (): void {
     $read = [];
 
     foreach (commentLines() as $path => $lines) {
-        if (in_array($path, EXEMPT, strict: true)) {
+        if (isExemptFromTheCommentRules($path)) {
             continue;
         }
 
@@ -426,7 +436,7 @@ it('K3 — a docblock does not say the same thing twice', function (): void {
     $read = [];
 
     foreach (docblockParagraphs() as $path => $blocks) {
-        if (in_array($path, EXEMPT, strict: true)) {
+        if (isExemptFromTheCommentRules($path)) {
             continue;
         }
 
@@ -471,7 +481,7 @@ it('K4 — a docblock has something to describe', function (): void {
     $read = [];
 
     foreach (commentedFiles() as $path => $contents) {
-        if (in_array($path, EXEMPT, strict: true)) {
+        if (isExemptFromTheCommentRules($path)) {
             continue;
         }
 

@@ -283,12 +283,8 @@ function argument(array $given, string $prefix): ?string
  * `--parallel` because this is the one gate whose cost anybody notices, and
  * a gate nobody can afford to re-run is a gate people learn to work around.
  *
- * Safe for the same reason `composer test` is: parallelism here is
- * paratest's, and the two suites that cannot survive it are already
- * excluded here — `Guards` plants violations into the working tree that a
- * neighbouring process would see appear and vanish, and `Floors` reads a
- * clover report this run never asks for. Those exclusions are what make the
- * ordinary suite parallel, and they are the same ones.
+ * Parallel is safe because every suite this runs is one `composer test` runs,
+ * and that is how `composer test` runs them.
  *
  * Neither the parallelism nor a group changes what is decided: the same
  * mutants are generated and the same floor judges them. A group changes which

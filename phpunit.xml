@@ -76,10 +76,10 @@
             <directory>tests/Floors</directory>
         </testsuite>
 
-        <!-- R2, last and on its own: this plants a violation of every rule and
-             runs the analyser and the suite over them as subprocesses. It is
-             slow for a reason nothing can remove, and it must not run beside a
-             suite that would see its fixtures. -->
+        <!-- R2, last and on its own: this plants a violation of every rule in
+             a throwaway copy of the tree and runs the analyser and the suite
+             over it as subprocesses. It is slow for a reason nothing can
+             remove. -->
         <testsuite name="Guards">
             <directory>tests/Guards</directory>
         </testsuite>

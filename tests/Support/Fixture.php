@@ -47,10 +47,8 @@ final readonly class Fixture
      * directory it narrows to — and a fixture that cannot make its rule fire
      * proves the opposite of what it was written for.
      *
-     * It must sit in a directory called `Fixtures`, which is what keeps a
-     * deliberate violation out of a commit and away from the formatter for the
-     * seconds it is on disk. The analyser is pointed at it directly, so it is
-     * read whatever the configuration's own `paths` say.
+     * The analyser is pointed at it directly, so it is read whatever the
+     * configuration's own `paths` say.
      */
     public static function analyserInPlace(string $rule, string $path, string $code, string $marker): self
     {

@@ -2,19 +2,12 @@
 
 declare(strict_types=1);
 
+use Symfony\Component\Process\Process;
 use Tests\Support\Fixture;
 use Tests\Support\Fixtures;
 use Tests\Support\Proof;
 use Tests\Support\Rules;
 use Tests\Support\Tree;
-
-/**
- * Where this run records what it has written.
- *
- * Beside the analyser tree and gitignored with it, because it is the same kind
- * of thing: a working file of the guards run, present only while one is going.
- */
-const WRITTEN = '.rule-fixtures.written';
 
 // The third leg.
 //
@@ -30,70 +23,101 @@ const WRITTEN = '.rule-fixtures.written';
 // enforces it, and asserts the rule reported — and names the fixture in the
 // report, so a rule cannot pass on somebody else's violation.
 //
+// Every violation is planted in a throwaway copy of the checkout, and the
+// analyser and the suite run inside that copy. The checkout itself is only
+// read, so a run can be killed at any point and leave it exactly as it was,
+// and anything else can read or run in the checkout while this runs. A copy a
+// killed run left behind is swept at the start of the next one.
+//
 // A rule with no fixture fails here. That is the part worth having: it makes "I
 // did not check this one" impossible to leave implicit, which is the condition
 // the three above needed in order to survive.
 
-beforeEach(function (): void {
-    // Swept *before* planting, not only after. `afterEach` is the right place
-    // for the normal end of a run and it is not reached by the abnormal one: a
-    // killed process runs no hook, and this suite takes long enough to be the
-    // thing somebody kills. What it leaves behind then survives the whole of the
-    // next run, which fails on a rule nobody touched.
-    removeFixtures();
-    writeFixtures();
+beforeAll(function (): void {
+    sweepAbandonedCopies();
 });
 
-afterEach(function (): void {
-    removeFixtures();
+afterAll(function (): void {
+    discardTheRun();
 });
 
-it('takes back out what a killed run left behind', function (): void {
-    // The case `afterEach` cannot cover, asserted directly rather than trusted.
-    //
-    // A run that is killed leaves files and a manifest naming them. This stands
-    // in for that run: a path the current fixture list does not name, recorded
-    // the way a write records itself. Removing by name would walk straight past
-    // it — which is what happened, and what surfaced was an unrelated rule
-    // failing an hour before anybody suspected the tree rather than the rule.
-    $stray = Tree::at('app-modules/health/tests/Fixtures/LeftBehindTest.php');
+it('sweeps away a copy a run left behind, and only that one', function (): void {
+    // A killed run leaves its copy on disk and its lock released, because the
+    // kernel drops a lock with the process that held it. A run still going
+    // holds its lock, and its copy is the one thing the sweep must not touch.
+    $abandoned = sprintf('%s/abandoned-%s', whereCopiesAreMade(), aFreshName());
+    $live = sprintf('%s/live-%s', whereCopiesAreMade(), aFreshName());
 
-    writeFixture($stray, '<?php // yesterday\'s run, killed');
-
-    expect(is_file($stray))->toBeTrue();
-
-    removeFixtures();
-
-    expect(is_file($stray))->toBeFalse();
-});
-
-it('puts back what a killed run wrote over', function (): void {
-    // The other half, and the one with teeth. A fixture that edits a file the
-    // repository owns cannot be swept by deleting it, and a sweep that deleted
-    // it would take a source file with it. What the manifest records is
-    // therefore not the path but what the path held, so the file goes back
-    // exactly as it was — after a failure, an exception, or a kill.
-    $real = Tree::at('app-modules/health/tests/Fixtures/AlreadyHere.php');
-    $was = "<?php // the file this repository owns\n";
-
-    // Put there the way the repository has it — not through `writeFixture`,
-    // which would record it as something this run wrote and therefore as
-    // something the sweep should take away.
-    if (! is_dir(dirname($real))) {
-        mkdir(dirname($real), 0o755, recursive: true);
+    foreach ([$abandoned, $live] as $copy) {
+        mkdir(sprintf('%s/app-modules', $copy), 0o755, recursive: true);
+        file_put_contents(sprintf('%s/app-modules/Planted.php', $copy), '<?php // planted');
+        file_put_contents(theReportOf($copy), '<testsuites/>');
+        file_put_contents(sprintf('%s.lock', $copy), '');
     }
 
-    file_put_contents($real, $was);
+    lockTheCopy($live);
 
-    writeFixture($real, '<?php // what a fixture put over it');
-    writeFixture($real, '<?php // and what a second fixture put over that');
+    sweepAbandonedCopies();
 
-    removeFixtures();
+    expect(is_dir($abandoned))->toBeFalse()
+        ->and(is_file(theReportOf($abandoned)))->toBeFalse()
+        ->and(is_file(sprintf('%s.lock', $abandoned)))->toBeFalse()
+        ->and(is_file(sprintf('%s/app-modules/Planted.php', $live)))->toBeTrue()
+        ->and(is_file(sprintf('%s.lock', $live)))->toBeTrue();
 
-    expect(is_file($real))->toBeTrue()
-        ->and(file_get_contents($real))->toBe($was);
+    releaseTheLock($live);
+    sweepAbandonedCopies();
 
-    unlink($real);
+    expect(is_dir($live))->toBeFalse()
+        ->and(is_file(sprintf('%s.lock', $live)))->toBeFalse();
+});
+
+it('plants nothing in the checkout it was started from', function (): void {
+    // Asserted over the planted copy rather than trusted from where the paths
+    // point: every fixture is in its copy, and none of them is in the checkout.
+    $copy = theRun()['copy'];
+    $looked = 0;
+    $missing = [];
+    $leaked = [];
+
+    foreach (Fixtures::all() as $fixture) {
+        $where = whereTheFixtureWasPlanted($fixture);
+
+        if ($fixture->proof === Proof::Edit) {
+            $looked++;
+
+            if (! str_contains((string) file_get_contents(sprintf('%s/%s', $copy, $where)), $fixture->code)) {
+                $missing[] = $where;
+            }
+
+            if (str_contains((string) file_get_contents(Tree::at($where)), $fixture->code)) {
+                $leaked[] = $where;
+            }
+        }
+
+        if (! $fixture->proof->isAFileOfItsOwn()) {
+            continue;
+        }
+
+        if ($fixture->proof !== Proof::IsolatedSuite) {
+            $looked++;
+
+            if (! is_file(sprintf('%s/%s', $copy, $where))) {
+                $missing[] = $where;
+            }
+        }
+
+        // By what the file holds rather than by whether it is there, because
+        // one fixture takes the path of a real report: `coverage/clover.xml`
+        // is where `test:report` writes, and a checkout may well have one.
+        if (is_file(Tree::at($where)) && trim((string) file_get_contents(Tree::at($where))) === trim($fixture->code)) {
+            $leaked[] = $where;
+        }
+    }
+
+    expect($looked)->toBeGreaterThan(0)
+        ->and($missing)->toBe([])
+        ->and($leaked)->toBe([]);
 });
 
 it('has a fixture for every rule that claims to be enforced', function (): void {
@@ -144,18 +168,20 @@ it('the analyser reports every rule it is supposed to', function (): void {
         static fn(Fixture $f): bool => $f->proof->readByAnalyser(),
     ));
 
-    $reported = analyserFindings();
+    $run = theRun();
+    $reported = analyserFindings($run['analyser'], $run['copy']);
 
     // Told apart from "every rule stayed quiet" on purpose. A malformed module
     // manifest stops Larastan booting, the analyser writes a stack trace to
     // stderr and nothing to stdout, and every fixture below then reads as a
     // rule that did not fire — forty findings, all of them wrong, none of them
     // the real one.
-    expect($reported)->not->toBeNull(
-        'The analyser produced no readable output at all, so nothing below was measured. '
-        . 'Run `vendor/bin/phpstan analyse .rule-fixtures` and read stderr: a bootstrap '
-        . 'failure looks exactly like every rule going silent at once.',
-    );
+    expect($reported)->not->toBeNull(sprintf(
+        "The analyser produced no readable output at all, so nothing below was measured. "
+        . "A bootstrap failure looks exactly like every rule going silent at once. What it "
+        . "wrote to stderr:\n\n%s",
+        whatItSaidOnStderr($run['analyser']),
+    ));
 
     $silent = [];
 
@@ -189,29 +215,20 @@ it('the suite fails every rule it is supposed to', function (): void {
         static fn(Fixture $f): bool => $f->proof->readBySuite(),
     ));
 
-    $failures = suiteFailures();
+    $run = theRun();
+    $failures = suiteFailures($run['suite'], $run['copy']);
     $silent = [];
 
-    // The isolated ones each get a pass to themselves, with only their own
-    // file on disk, because each changes what the rest of the run does.
-    foreach (Fixtures::all() as $alone) {
-        if ($alone->proof !== Proof::IsolatedSuite) {
-            continue;
-        }
-
-        removeFixtures();
-        writeFixture(Tree::at($alone->path), $alone->code);
-
-        // The Arch suite alone, because a `->only()` in a module test narrows
-        // whatever run loads it — including the test that reports it. G6 is a
-        // text scan for exactly that reason: it reads the file rather than
-        // running it, so a suite that does not load the file still reports it.
-        if (! wasRefused(suiteFailures('Arch'), $alone)) {
+    // The isolated ones each get a pass to themselves, in a copy holding only
+    // their own file, because each changes what the rest of the run does. The
+    // Arch suite alone, because a `->only()` in a module test narrows whatever
+    // run loads it — including the test that reports it. G6 is a text scan for
+    // exactly that reason: it reads the file rather than running it, so a
+    // suite that does not load the file still reports it.
+    foreach ($run['isolated'] as [$alone, $pass, $copy]) {
+        if (! wasRefused(suiteFailures($pass, $copy), $alone)) {
             $silent[] = sprintf('%s — "%s" did not fail on its own', $alone->rule, $alone->marker);
         }
-
-        removeFixture(Tree::at($alone->path));
-        writeFixtures();
     }
 
     foreach ($fixtures as $fixture) {
@@ -325,19 +342,12 @@ function rulesWithNoFixture(array $claims, array $covered): array
  *
  * @return array<string, list<string>>|null
  */
-function analyserFindings(): ?array
+function analyserFindings(Process $analyser, string $copy): ?array
 {
-    $raw = shell_exec(sprintf(
-        '%s/vendor/bin/phpstan analyse %s --error-format=json --no-progress 2>/dev/null',
-        Tree::root(),
-        implode(' ', array_map(
-            static fn(string $where): string => escapeshellarg(Tree::at($where)),
-            whereTheAnalyserIsPointed(),
-        )),
-    ));
+    $analyser->wait();
 
     /** @var mixed $decoded */
-    $decoded = json_decode((string) $raw, associative: true);
+    $decoded = json_decode($analyser->getOutput(), associative: true);
     $files = is_array($decoded) ? ($decoded['files'] ?? null) : null;
 
     if (! is_array($files)) {
@@ -347,7 +357,7 @@ function analyserFindings(): ?array
     $found = [];
 
     foreach ($files as $path => $file) {
-        $relative = str_replace(sprintf('%s/', Tree::root()), '', (string) $path);
+        $relative = str_replace(sprintf('%s/', $copy), '', (string) $path);
         $found[$relative] = messagesIn($file);
     }
 
@@ -434,17 +444,11 @@ function text(mixed $value): string
  *
  * @return array<string, string>
  */
-function suiteFailures(string $suites = 'Arch,Templates,Modules,Feature,Floors'): array
+function suiteFailures(Process $pass, string $copy): array
 {
-    $log = sprintf('%s/fixtures-junit.xml', sys_get_temp_dir());
+    $pass->wait();
 
-    shell_exec(sprintf(
-        '%s/vendor/bin/pest --testsuite=%s --log-junit=%s > /dev/null 2>&1',
-        Tree::root(),
-        escapeshellarg($suites),
-        escapeshellarg($log),
-    ));
-
+    $log = theReportOf($copy);
     $report = is_file($log) ? file_get_contents($log) : false;
 
     if (! is_string($report) || $report === '') {
@@ -482,43 +486,365 @@ function wasRefused(array $failures, Fixture $fixture): bool
     return array_any($failures, fn(string $report, string $name): bool => str_contains($name, $fixture->marker) && str_contains($report, $fixture->evidence));
 }
 
-function writeFixtures(): void
+/**
+ * The planted copy, and every process reading it.
+ *
+ * Made on first use and shared by the tests that read it. Every pass starts at
+ * once — the analyser and the suite over the copy holding every fixture, and an
+ * Arch pass over a copy of its own for each fixture that has to be read alone —
+ * because each writes only to its own copy and its own report, so the run lasts
+ * as long as the slowest pass rather than as long as all of them.
+ *
+ * @return array{copy: string, analyser: Process, suite: Process, isolated: list<array{Fixture, Process, string}>}
+ */
+function theRun(): array
+{
+    /** @var array{copy: string, analyser: Process, suite: Process, isolated: list<array{Fixture, Process, string}>}|null $run */
+    static $run = null;
+
+    if ($run !== null) {
+        return $run;
+    }
+
+    $copy = aCopy();
+    plantEverything($copy);
+
+    $isolated = [];
+
+    foreach (Fixtures::all() as $alone) {
+        if ($alone->proof !== Proof::IsolatedSuite) {
+            continue;
+        }
+
+        $own = aCopy();
+        plantFile(sprintf('%s/%s', $own, $alone->path), $alone->code);
+        $isolated[] = [$alone, started(theSuiteIn($own, 'Arch')), $own];
+    }
+
+    $run = [
+        'copy' => $copy,
+        'analyser' => started(theAnalyserIn($copy)),
+        'suite' => started(theSuiteIn($copy, 'Arch,Templates,Modules,Feature,Floors')),
+        'isolated' => $isolated,
+    ];
+
+    return $run;
+}
+
+/**
+ * The analyser, over the fixture tree and each in-place fixture, inside a copy.
+ *
+ * Run from the copy, so the configuration it reads, the vendor directory it
+ * boots and the cache it writes are all the copy's own.
+ */
+function theAnalyserIn(string $copy): Process
+{
+    return new Process(
+        [
+            PHP_BINARY,
+            'vendor/bin/phpstan',
+            'analyse',
+            ...array_map(
+                static fn(string $where): string => sprintf('%s/%s', $copy, $where),
+                whereTheAnalyserIsPointed(),
+            ),
+            '--error-format=json',
+            '--no-progress',
+        ],
+        $copy,
+        timeout: null,
+    );
+}
+
+/** The named suites, inside a copy, reporting to the file beside it. */
+function theSuiteIn(string $copy, string $suites): Process
+{
+    $pass = new Process(
+        [
+            PHP_BINARY,
+            'vendor/bin/pest',
+            sprintf('--testsuite=%s', $suites),
+            sprintf('--log-junit=%s', theReportOf($copy)),
+        ],
+        $copy,
+        timeout: null,
+    );
+
+    $pass->disableOutput();
+
+    return $pass;
+}
+
+function whatItSaidOnStderr(Process $process): string
+{
+    return $process->getErrorOutput();
+}
+
+function started(Process $process): Process
+{
+    $process->start();
+    runningProcesses()->append($process);
+
+    return $process;
+}
+
+/**
+ * Where a suite pass over a copy writes its JUnit report.
+ *
+ * Beside the copy rather than in it, so no test in the pass can read it, and
+ * named after it, so the sweep that removes one removes the other.
+ */
+function theReportOf(string $copy): string
+{
+    return sprintf('%s.junit.xml', $copy);
+}
+
+/**
+ * Every process this run started, so the end of the run can stop any still
+ * going before their copies are removed from under them.
+ *
+ * @return ArrayObject<int, Process>
+ */
+function runningProcesses(): ArrayObject
+{
+    /** @var ArrayObject<int, Process> $running */
+    static $running = new ArrayObject();
+
+    return $running;
+}
+
+/**
+ * The lock held on every copy this run made, by the copy's path.
+ *
+ * Held for as long as the copy is in use. The kernel releases a lock when the
+ * process holding it ends, however it ends, which is what lets the sweep tell a
+ * copy a killed run left behind from one a live run is reading.
+ *
+ * @return ArrayObject<string, resource>
+ */
+function heldLocks(): ArrayObject
+{
+    /** @var ArrayObject<string, resource> $held */
+    static $held = new ArrayObject();
+
+    return $held;
+}
+
+/**
+ * Where every copy of the tree a guards run plants into is made, one directory
+ * per copy with a lock file beside it.
+ *
+ * Under the system's temporary directory rather than inside the checkout, so a
+ * walk of the checkout never meets one. Resolved, because on macOS the
+ * temporary directory is reached through a symlink and the analyser reports
+ * the resolved path, which is what a finding is matched against.
+ */
+function whereCopiesAreMade(): string
+{
+    $temporary = realpath(sys_get_temp_dir());
+
+    return sprintf('%s/lemonfiber-guards', $temporary === false ? sys_get_temp_dir() : $temporary);
+}
+
+/**
+ * A fresh copy of the checkout, locked for this run.
+ *
+ * What git would call the working tree: every tracked file as it is on disk
+ * now, uncommitted changes included, and every untracked file git does not
+ * ignore — so a run checks the tree somebody is working on, and nothing a
+ * build or an editor left lying about. Then `vendor`, which git ignores and
+ * everything here needs, copied whole rather than linked: the autoloader and
+ * Pest each find the project from where their own files sit, so a linked
+ * `vendor` would lead both back to the checkout. On macOS the copy
+ * is a clone, which shares blocks with the original until one side writes.
+ */
+function aCopy(): string
+{
+    $copies = whereCopiesAreMade();
+
+    if (! is_dir($copies)) {
+        mkdir($copies, 0o755, recursive: true);
+    }
+
+    $copy = sprintf('%s/%s', $copies, aFreshName());
+    lockTheCopy($copy);
+
+    copyTheWorkingTree($copy);
+
+    shell_exec(sprintf(
+        'cp -R%s %s %s',
+        PHP_OS_FAMILY === 'Darwin' ? 'c' : '',
+        escapeshellarg(Tree::at('vendor')),
+        escapeshellarg(sprintf('%s/vendor', $copy)),
+    ));
+
+    if (! is_file(sprintf('%s/vendor/autoload.php', $copy))) {
+        throw new RuntimeException(sprintf('vendor was not copied into %s.', $copy));
+    }
+
+    return $copy;
+}
+
+/** Every file git lists in the working tree, as it is on disk now. */
+function copyTheWorkingTree(string $copy): void
+{
+    $listed = shell_exec(sprintf(
+        'git -C %s ls-files -z --cached --others --exclude-standard',
+        escapeshellarg(Tree::root()),
+    ));
+
+    if (! is_string($listed) || $listed === '') {
+        throw new RuntimeException(sprintf(
+            'git listed no files in %s, so there is nothing to copy and nothing to plant into.',
+            Tree::root(),
+        ));
+    }
+
+    foreach (explode("\0", trim($listed, "\0")) as $path) {
+        // Tracked and deleted in the working tree, which is the state a run
+        // should see.
+        if (! is_file(Tree::at($path))) {
+            continue;
+        }
+
+        $to = sprintf('%s/%s', $copy, $path);
+
+        if (! is_dir(dirname($to))) {
+            mkdir(dirname($to), 0o755, recursive: true);
+        }
+
+        copy(Tree::at($path), $to);
+    }
+}
+
+/** Take the lock on a copy, and hold it until the copy is discarded. */
+function lockTheCopy(string $copy): void
+{
+    $lock = fopen(sprintf('%s.lock', $copy), 'c');
+
+    if ($lock === false || ! flock($lock, LOCK_EX)) {
+        throw new RuntimeException(sprintf('Could not lock %s for this run.', $copy));
+    }
+
+    heldLocks()[$copy] = $lock;
+}
+
+function releaseTheLock(string $copy): void
+{
+    $lock = heldLocks()[$copy] ?? null;
+
+    if ($lock === null) {
+        return;
+    }
+
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    unset(heldLocks()[$copy]);
+}
+
+/** A name no other copy has, so two runs never plant into one directory. */
+function aFreshName(): string
+{
+    return sodium_bin2hex(random_bytes(8));
+}
+
+/**
+ * Remove every copy no live run holds.
+ *
+ * A lock that can be taken is a lock nobody holds, so its copy belongs to a
+ * run that has ended — normally one killed before it could discard it.
+ */
+function sweepAbandonedCopies(): void
+{
+    $locks = glob(sprintf('%s/*.lock', whereCopiesAreMade()));
+
+    foreach ($locks === false ? [] : $locks as $path) {
+        $lock = fopen($path, 'c');
+
+        if ($lock === false) {
+            continue;
+        }
+
+        if (flock($lock, LOCK_EX | LOCK_NB)) {
+            removeTheCopy(substr($path, 0, -strlen('.lock')));
+            unlink($path);
+        }
+
+        fclose($lock);
+    }
+}
+
+/** Stop whatever is still running, and remove every copy this run made. */
+function discardTheRun(): void
+{
+    foreach (runningProcesses() as $process) {
+        $process->stop(0);
+    }
+
+    foreach (array_keys(heldLocks()->getArrayCopy()) as $copy) {
+        discardCopy($copy);
+    }
+}
+
+function discardCopy(string $copy): void
+{
+    removeTheCopy($copy);
+
+    if (is_file(sprintf('%s.lock', $copy))) {
+        unlink(sprintf('%s.lock', $copy));
+    }
+
+    releaseTheLock($copy);
+}
+
+function removeTheCopy(string $copy): void
+{
+    shell_exec(sprintf('rm -rf %s %s', escapeshellarg($copy), escapeshellarg(theReportOf($copy))));
+}
+
+/**
+ * Every fixture, and every file a fixture needs in order to compile, planted
+ * in a copy.
+ *
+ * All but the ones that are read alone, which get a copy each.
+ */
+function plantEverything(string $copy): void
 {
     foreach (Fixtures::companions() as $path => $code) {
-        writeFixture(Tree::at($path), $code);
+        plantFile(sprintf('%s/%s', $copy, $path), $code);
     }
 
     foreach (Fixtures::all() as $fixture) {
         if ($fixture->proof->readByAnalyser()) {
-            writeFixture(Tree::at(whereTheFixtureWasPlanted($fixture)), $fixture->code);
+            plantFile(sprintf('%s/%s', $copy, whereTheFixtureWasPlanted($fixture)), $fixture->code);
         }
 
         if ($fixture->proof === Proof::Suite) {
-            writeFixture(Tree::at($fixture->path), $fixture->code);
+            plantFile(sprintf('%s/%s', $copy, $fixture->path), $fixture->code);
         }
 
         if ($fixture->proof === Proof::Edit) {
-            editFixture($fixture);
+            plantEdit($copy, $fixture);
         }
     }
 }
 
 /**
- * Put a fixture's change into a file this repository owns.
+ * Put a fixture's change into the copy of a file this repository owns.
  *
  * The match is asserted before the edit, not after. A `$replacing` that no
  * longer appears — the real file was reformatted, the method renamed — would
- * leave the tree unedited and the rule reported as refusing a violation that was
- * never planted, which is exactly the vacuous green everything here exists to
- * make impossible. It raises instead, from `beforeEach`, naming the fixture.
+ * leave the file unedited and the rule reported as refusing a violation that
+ * was never planted, which is exactly the vacuous green everything here exists
+ * to make impossible. It raises instead, naming the fixture.
  *
  * Once, because two occurrences mean the snippet is not specific enough to say
  * which one is being broken, and a fixture that edits both is not the smallest
  * violation of anything.
  */
-function editFixture(Fixture $fixture): void
+function plantEdit(string $copy, Fixture $fixture): void
 {
-    $path = Tree::at($fixture->path);
+    $path = sprintf('%s/%s', $copy, $fixture->path);
     $was = is_file($path) ? (string) file_get_contents($path) : '';
     $found = substr_count($was, $fixture->replacing);
 
@@ -536,206 +862,14 @@ function editFixture(Fixture $fixture): void
         ));
     }
 
-    writeFixture($path, str_replace($fixture->replacing, $fixture->code, $was));
+    plantFile($path, str_replace($fixture->replacing, $fixture->code, $was));
 }
 
-function writeFixture(string $path, string $code): void
+function plantFile(string $path, string $code): void
 {
     if (! is_dir(dirname($path))) {
         mkdir(dirname($path), 0o755, recursive: true);
     }
 
-    // What was there first, recorded before it is gone. A fixture path is
-    // normally a name nothing else uses and the sweep can simply delete it —
-    // but a fixture that *edits* an existing file has to put that file back,
-    // and a fixture path that collided with a real one would otherwise have the
-    // sweep delete a source file and say nothing. One record covers both.
-    $before = is_file($path) ? (string) file_get_contents($path) : '';
-
     file_put_contents($path, sprintf("%s\n", trim($code)));
-    file_put_contents(
-        Tree::at(WRITTEN),
-        sprintf("%s\t%s\n", $path, sodium_bin2hex($before)),
-        FILE_APPEND,
-    );
-}
-
-/**
- * Every path this run has written, with whatever was there before it.
- *
- * An empty string means there was nothing — the ordinary case, where the sweep
- * deletes. Anything else is a file to put back exactly as it was.
- *
- * @return array<string, string>
- */
-function fixturesWritten(): array
-{
-    $manifest = Tree::at(WRITTEN);
-
-    if (! is_file($manifest)) {
-        return [];
-    }
-
-    $said = file_get_contents($manifest);
-
-    if (! is_string($said)) {
-        return [];
-    }
-
-    $written = [];
-
-    foreach (explode("\n", trim($said)) as $line) {
-        if ($line === '') {
-            continue;
-        }
-
-        // A line from before this record carried what it replaced is a path and
-        // nothing else, and a path with nothing behind it is the ordinary case.
-        [$path, $before] = array_pad(explode("\t", $line, 2), 2, '');
-
-        // The *first* record for a path, not the last. Two fixtures can edit
-        // one file, and the second one records what the first one left — so
-        // replaying in order would restore the file to a state this run made.
-        // What is wanted is what was there before this run touched it at all,
-        // which is the earliest line naming it.
-        if (array_key_exists($path, $written)) {
-            continue;
-        }
-
-        $written[$path] = $before === '' ? '' : sodium_hex2bin($before);
-    }
-
-    return $written;
-}
-
-/**
- * Take every fixture back out.
- *
- * Written as an afterEach rather than at the end of a test so that a fixture
- * survives nothing — not a failure, not an exception, not an interrupted run.
- * A fixture left behind turns every later run red for a reason that looks
- * nothing like the reason it is actually red.
- *
- * **The manifest is what makes that true of the interrupted run.** Removing by
- * name can only remove what the *current* fixture list names, and neither of the
- * two cases that matter is in it: a process killed mid-run leaves files nobody
- * asked about, and a fixture list edited between runs leaves yesterday's paths
- * unreachable by today's cleaner. Both happened on 2026-09-12, and what surfaced
- * was `G6` failing — a rule that had not been touched, whose fixture was fine,
- * and which passed the moment it was reproduced by hand. An hour went into
- * reading it as a real regression.
- *
- * So every write records its path, and the sweep reads that record first. The
- * by-name pass stays: it is the one that still works when the manifest itself is
- * what went missing.
- */
-function removeFixtures(): void
-{
-    foreach (fixturesWritten() as $path => $before) {
-        if ($before === '') {
-            removeFixture($path);
-
-            continue;
-        }
-
-        file_put_contents($path, $before);
-    }
-
-    removeFixture(Tree::at(WRITTEN));
-
-    foreach (array_keys(Fixtures::companions()) as $path) {
-        removeFixture(Tree::at($path));
-    }
-
-    foreach (Fixtures::all() as $fixture) {
-        if ($fixture->proof->isAFileOfItsOwn()) {
-            removeFixture(Tree::at(whereTheFixtureWasPlanted($fixture)));
-        }
-
-        // Never by name: the path is a file this repository owns, and deleting
-        // it is the one outcome worse than leaving it edited. Undone by putting
-        // the text back, which needs no manifest and is what covers the run
-        // where the manifest is itself what went missing.
-        if ($fixture->proof === Proof::Edit) {
-            unEditFixture($fixture);
-        }
-    }
-
-    shell_exec(sprintf('rm -rf %s', escapeshellarg(Tree::at(Fixtures::ANALYSER_TREE))));
-
-    pruneEmptyFixtureDirectories();
-}
-
-function removeFixture(string $path): void
-{
-    if (is_file($path)) {
-        unlink($path);
-    }
-}
-
-/**
- * Take a fixture's change back out of a file this repository owns.
- *
- * Reads what is there rather than trusting that the manifest pass has run:
- * where the planted text is present it goes back, and where it is not there is
- * nothing to do — which is the ordinary case, because the manifest restored the
- * file a moment ago.
- */
-function unEditFixture(Fixture $fixture): void
-{
-    $path = Tree::at($fixture->path);
-
-    if (! is_file($path)) {
-        return;
-    }
-
-    $now = (string) file_get_contents($path);
-
-    if (! str_contains($now, $fixture->code)) {
-        return;
-    }
-
-    file_put_contents($path, str_replace($fixture->code, $fixture->replacing, $now));
-}
-
-/**
- * Remove the directories the fixtures brought with them, and nothing else.
- *
- * Deepest first, so a directory whose only content was another fixture
- * directory goes too — and only when it is empty, because these paths run up
- * into `app-modules/health/src`, which is part of the repository.
- */
-function pruneEmptyFixtureDirectories(): void
-{
-    $directories = [];
-
-    $paths = [
-        ...array_keys(Fixtures::companions()),
-        ...array_map(static fn(Fixture $f): string => $f->path, Fixtures::all()),
-    ];
-
-    foreach ($paths as $path) {
-        for ($directory = dirname($path); str_contains($directory, '/'); $directory = dirname($directory)) {
-            $directories[$directory] = strlen($directory);
-        }
-    }
-
-    arsort($directories);
-
-    foreach (array_keys($directories) as $directory) {
-        removeIfEmpty(Tree::at($directory));
-    }
-}
-
-function removeIfEmpty(string $directory): void
-{
-    if (! is_dir($directory)) {
-        return;
-    }
-
-    $contents = scandir($directory);
-
-    if ($contents !== false && count($contents) === 2) {
-        rmdir($directory);
-    }
 }

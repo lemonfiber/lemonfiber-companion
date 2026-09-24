@@ -28,12 +28,9 @@ enum Proof: string
      * that does not work, so the register would be claiming ground no run had
      * tested.
      *
-     * So this one goes into the real tree, at the path the rule is looking at,
-     * and comes back out by the same manifest that puts an edited file back.
-     * Every such path sits in a directory called `Fixtures`, which `.gitignore`
-     * and `pint.json` already exclude and which `phpstan.neon` deliberately
-     * does not — the analyser has to be able to read it, or there is nothing
-     * gained by planting it there.
+     * So this one goes into the copy's own tree, at the path the rule is
+     * looking at. `phpstan.neon` does not exclude it — the analyser has to be
+     * able to read it, or there is nothing gained by planting it there.
      */
     case AnalyserInPlace = 'analyser-in-place';
 
@@ -61,10 +58,8 @@ enum Proof: string
      * question, because the harness could not edit rather than because nothing
      * could break the rule.
      *
-     * What makes it safe is the sweep: the manifest records what a write
-     * replaced, so an edited file goes back exactly as it was after a failure,
-     * an exception or a kill, and the by-name pass undoes the replacement
-     * directly for the run where the manifest is what went missing.
+     * The edit is made to a throwaway copy of the tree, like every other
+     * fixture, so the file the checkout holds is never written to.
      */
     case Edit = 'edit';
 
@@ -102,15 +97,12 @@ enum Proof: string
     }
 
     /**
-     * Whether this fixture is a file of its own, which the sweep may delete by
-     * name.
+     * Whether this fixture is a whole file of its own, rather than a change to
+     * a file the repository owns or no file at all.
      *
-     * The distinction the sweep rests on, and the reason it is a question about
-     * the kind rather than a list at the call site. A fixture that is a whole
-     * file sits at a path nothing else uses, so deleting it is safe even on the
-     * run where the manifest is itself what went missing. An edited file is one
-     * this repository owns, and deleting that is the one outcome worse than
-     * leaving it edited.
+     * A question about the kind rather than a list at the call site, so a kind
+     * added later has to answer it. The harness asks it to check that no
+     * fixture file ever appears in the checkout it copied.
      */
     public function isAFileOfItsOwn(): bool
     {

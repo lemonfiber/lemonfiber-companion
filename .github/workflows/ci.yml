@@ -269,9 +269,9 @@ jobs:
   # R2 — every rule refuses a planted violation.
   #
   # Its own job because it runs the analyser and the test suite as subprocesses,
-  # once each, which is a full framework boot twice over. It is also the one job
-  # that writes files into the working tree, so it must not share a runner with
-  # anything that would read them.
+  # once each, which is a full framework boot twice over. It plants into a copy
+  # of the checkout under the runner's temporary directory, never into the
+  # checkout itself.
   guards:
     name: the rules refuse violations
     needs: scope
