@@ -67,4 +67,4 @@ manifest names nothing at all. The builder emits an import and a call for what
 it is told about and emits nothing for what it is not, so a half nobody switches
 on produces no error: the plugin compiles, every bridge function registers and
 answers, every screen renders, and the one call that had to happen before any of
-them never did. `tests/Arch/BothHalvesAreSwitchedOnTest.php` is what notices.
+them never did. `bridge/tests/EveryDeclaredFunctionHasAHandlerTest.php` is what notices.

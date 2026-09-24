@@ -57,6 +57,7 @@ app-modules/
   connection/ stacks/ health/ backups/ updates/     capability
   operator/ household/                              surface
   sdk/ device/ vault/                               adapter
+  dx/                                               stand-in
 ```
 
 | Adding | Goes in |
@@ -82,14 +83,17 @@ What a kind may depend on:
 | `design` | `kernel`, `Native\Mobile` | the SDK, capabilities, surfaces |
 | `surface` | `kernel`, `design`, capabilities, `Native\Mobile` | the SDK, adapters, the other surface |
 | `adapter` | `kernel`, the one package it adapts | capabilities, surfaces, other adapters |
+| `stand-in` | `kernel`, adapters, any outside package | capabilities, design, surfaces |
 
 A module publishes `Modules\<Name>\Api`. Everything under `Internal` is
 unreachable from anywhere else, so it can be renamed or deleted without reading
 another module.
 
-`modules/sdk` is the only manifest that requires `lemonfiber/sdk-php`, which is
-what turns the rule at the top of this file into something the dependency
-resolver enforces rather than something a reviewer remembers.
+`modules/sdk` is the only shipped manifest that requires `lemonfiber/sdk-php`,
+which is what turns the rule at the top of this file into something the
+dependency resolver enforces rather than something a reviewer remembers. The
+one other, `modules/dx`, is a stand-in: the root installs it under
+`require-dev`, so a release does not contain it.
 
 ---
 

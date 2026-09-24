@@ -1,6 +1,6 @@
 # The operator surface
 
-One screen so far, and the requirements waiting here are mostly about what an
+Nineteen screens, and the requirements waiting here are mostly about what an
 operator is allowed to be shown — which makes them easy to break by adding a
 field rather than by making a decision.
 
@@ -30,19 +30,15 @@ rather than a reviewer.
 Written before the screen exists, deliberately. A rule added after the surface
 it governs is a rule written around whatever is already there.
 
-### The half that is not
+### The half that is a door
 
-Whether the app *offers* a credential-writing action is not checked. The only
-write path is `Client::act()`, which takes the endpoint as a string, so the
-check would be on a literal argument — and today nothing calls `act()` at all,
-because `tests/Feature/NothingReachesAStackUnpinnedTest.php` keeps every
-transport type unnamed until pinning lands.
-
-That is worth being precise about: **`N2-R12` is currently held by a rule that
-exists for another reason.** When the pinning list opens, it stops being held,
-and nothing will say so. The rule to write at that point is the one that reads
-the endpoint argument, and it belongs with the other `act()` rules rather than
-here.
+Whether the app *offers* a credential-writing action is checked at the door.
+The only write path is `Client::act()`, which takes the endpoint as a string,
+and `tests/Arch/TheAppOpensOnlyTheseDoorsTest.php` reads the argument: every
+call composes its path with `Api::action()` from an `asked()` the kernel spells,
+a string or a `->value` handed to `Api::action()` is refused, and the verbs are
+checked against its list of reasons in both directions — none of them a
+credential.
 
 ## `N2-R8` — a duration the core never sends
 
@@ -167,9 +163,9 @@ running nor finished — and because a listing of what a stack *would* do and a
 record of what it *did* are different answers. A single reading would hand a
 screen a value it has to narrow before rendering, and the narrowing is where an
 offer gets shown as an outcome. `N2-R7`'s start,
-stop and restart are in exactly the same position and will take the same shape —
-every action on this surface is a job, and `Job`, `Underway` and
-`HowTheOfferIsGoing` are already the types for one.
+stop and restart take the same shape — `Supervisors::told()` answers with an
+`Underway` — because every action on this surface is a job, and `Job`,
+`Underway` and `HowTheOfferIsGoing` are the types for one.
 
 ### One asymmetry worth knowing
 

@@ -113,7 +113,7 @@ survived, and the day this paragraph is deleted rather than edited.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `Q-R66` | A gate is shown to refuse the defect it exists to catch, in the environment it runs in, before it is relied on | Every rule that walks a set asserts it found one, across `tests/Arch`, `tests/Templates`, `tests/Feature` and `tests/Modules`. A rule whose subject list went empty passes with no iterations, and a green run over nothing looks exactly like a green run over everything. Where a rule has no floor the absence is written beside it with the reason: a permission list that has emptied and a root view directory holding nothing are both the state their rule is written to reach |
+| `Q-R66` | A gate is shown to refuse the defect it exists to catch, in the environment it runs in, before it is relied on | Every rule that walks a set asserts it found one, across `tests/Arch`, `tests/Templates`, `tests/Feature` and `app-modules/*/tests`. A rule whose subject list went empty passes with no iterations, and a green run over nothing looks exactly like a green run over everything. Where a rule has no floor the absence is written beside it with the reason: a permission list that has emptied and a root view directory holding nothing are both the state their rule is written to reach |
 
 ## What is not built, and what holds it open
 
@@ -123,7 +123,7 @@ here is not a thing this repository does.
 
 | Requirement | What it asks | What holds it open |
 |---|---|---|
-| `N3-R14` | What a member may watch is the core's answer, and the player holds no second copy of a library, an age limit or an entitlement | Not built: there is no player here yet. The shelf it would play from is blocked on the client, which carries the `held` envelope's shape and no endpoint to ask for it |
+| `N3-R14` | What a member may watch is the core's answer, and the player holds no second copy of a library, an age limit or an entitlement | Not built: there is no player here yet. The shelf it would play from is `WhatYouCanWatch`, read from `/api/held` |
 | `N3-R15` | Where the media server cannot be reached, playback is declined with the reason rather than queued or shown as buffering | Not built, with the player |
 | `N3-R16` | The player implements no request, approval or allowance logic of its own | Not built, with the player. What it will be held to is what `N3-R2` already holds the rest of this surface to |
 | `N1-R5` | Reconfiguration is offered in full once connected | The settings are not a list this side can know — `ConfigEnvelope` carries what the stack has, so a screen offering the settings it knows about offers a subset the day the stack adds one, silently. `tests/Feature/EveryActionTheStackOffersTest.php` says so rather than gating on a guess |
