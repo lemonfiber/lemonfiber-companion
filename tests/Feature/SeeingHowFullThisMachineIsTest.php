@@ -153,6 +153,26 @@ it('says what is free, the limit, what is on its way and what will be left, and 
         ->and($drawn)->toContain(__('stacks.room.as_of', ['ago' => trans_choice(HowLongAgo::Hours->saidOnTheScreen(), 2)]));
 });
 
+it('gives a live volume no age, and a share the age of its figures', function (): void {
+    $answer = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()))->answer();
+
+    expect(array_map(static fn(AVolumeAsShown $v): array => [$v->agoSaid, $v->agoCount], $answer->volumes))->toBe([
+        ['', 0],
+        [HowLongAgo::Hours->saidOnTheScreen(), 2],
+    ]);
+});
+
+it('gives a ratio only to a download that is seeding, and no figure where the tracker has none', function (): void {
+    $answer = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()))->answer();
+
+    expect(array_map(static fn(ADownloadAsShown $d): array => [$d->ratioSaid, $d->ratio], $answer->downloads))->toBe([
+        ['', ''],
+        ['stacks.room.ratio', '1.25'],
+        ['stacks.room.no_ratio', ''],
+        ['', ''],
+    ]);
+});
+
 it('says the stack has stopped new downloads where it has, and not otherwise', function (): void {
     $halted = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft(halted: true))))->said();
     $running = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft())))->said();
@@ -229,6 +249,7 @@ it('N12-R10 — a stack that could not be asked is not a machine with room to sp
         ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and($answer->standsSaid)->toBe('')
+        ->and($answer->halted)->toBeFalse()
         ->and($answer->volumes)->toBe([])
         ->and($answer->account)->toBe([])
         ->and($answer->downloads)->toBe([]);

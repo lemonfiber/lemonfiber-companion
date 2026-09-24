@@ -84,7 +84,7 @@ final readonly class HowTheRoomReads
     private function volume(AVolume $volume, Instant $now): AVolumeAsShown
     {
         $ago = $volume->reading()->either(
-            live: static fn(): AsText => AsText::nothing(),
+            live: AgoAsShown::live(...),
             asOf: static fn(Instant $taken): AgoAsShown => AgoAsShown::from(HowLongAgo::since($taken, $now), $taken, $now),
         );
 
@@ -96,8 +96,8 @@ final readonly class HowTheRoomReads
             limit: $this->amount($volume->room()->limit()),
             committed: $this->size($volume->room()->committed()),
             projected: $this->amount($volume->room()->projected()),
-            agoSaid: $ago instanceof AgoAsShown ? $ago->said : '',
-            agoCount: $ago instanceof AgoAsShown ? $ago->count : 0,
+            agoSaid: $ago->said,
+            agoCount: $ago->count,
         );
     }
 
