@@ -99,6 +99,7 @@ $given = array_slice($argv ?? [], 1);
 
 $asked = argument($given, '--shard=');
 $listing = in_array('--list', $given, strict: true);
+$since = argument($given, '--changed-since=');
 
 $trees = MeasuredTree::all();
 
@@ -191,7 +192,11 @@ foreach ($trees as $tree) {
     $byFloor[$floor][] = $tree->path;
 }
 
-$shards = shardsOf($byFloor, $held, $leftOut);
+// The paths a change can reach, or null for every path. Asked of `--list` and
+// of `--shard=` alike, so the two cut the same shards.
+$reach = $since === null ? null : whatTheChangeReaches($root, $since);
+
+$shards = shardsOf($byFloor, $held, $leftOut, $reach);
 
 // What a workflow matrix reads: one entry per runner. An empty array is a
 // legitimate answer — no tree holds code yet — and a matrix over it runs
@@ -271,14 +276,23 @@ exit($failed === 0 ? 0 : 1);
  * @param  array<int, list<string>>                                  $byFloor
  * @param  list<array{floor: int, path: string, group: string}>      $held
  * @param  array<int, list<string>>                                  $leftOut
+ * @param  list<string>|null                                         $reach   the paths a change reaches, or null for all of them
  * @return array<int, array{label: string, floor: int, files: list<string>, held: list<array{floor: int, path: string, group: string}>}>
  */
-function shardsOf(array $byFloor, array $held, array $leftOut): array
+function shardsOf(array $byFloor, array $held, array $leftOut, ?array $reach): array
 {
     $cut = [];
 
+    if ($reach !== null) {
+        $held = array_values(array_filter($held, static fn(array $run): bool => under($run['path'], $reach) || array_any($reach, static fn(string $path): bool => under($path, [$run['path']]))));
+    }
+
     foreach ($byFloor as $floor => $trees) {
         $files = filesToMutate($trees, array_key_exists($floor, $leftOut) ? $leftOut[$floor] : []);
+
+        if ($reach !== null) {
+            $files = array_filter($files, static fn(string $file): bool => under($file, $reach), ARRAY_FILTER_USE_KEY);
+        }
 
         foreach (cutIntoRuns($files) as $run) {
             $cut[] = ['floor' => $floor, 'files' => array_keys($run), 'held' => []];
@@ -490,6 +504,64 @@ function runHeld(string $root, array $run): int
     fwrite(STDOUT, sprintf("\nMutation at %d%%: %s, judged by %s\n", $run['floor'], $run['path'], $run['group']));
 
     return theGroupCoversWhatItHolds($root, $run['group'], $run['path']) ? mutate($root, $run['floor'], [$run['path']], $run['group'], []) : 1;
+}
+
+/**
+ * The paths a pull request's change reaches, from what it changed since the
+ * commit it is measured against; null where every path has to be mutated.
+ *
+ * - A changed PHP file under a measured tree is mutated.
+ * - A change to a module's own tests, or the bridge's, mutates that module's
+ *   whole tree, because those tests are what judge its mutants.
+ * - A change to what decides how the gate runs — a manifest, `phpunit.xml`,
+ *   the Pest bootstrap, the application's bootstrap and config, this script
+ *   and the workflow that runs it — mutates everything.
+ * - Anything else — documentation, templates, the shared test suites and
+ *   their support, translations, the lock, other workflows — mutates nothing
+ *   by itself.
+ *
+ * A change can still reach a mutant in a file it did not touch: a test under
+ * `tests/` edited to assert less, a template that decides what a screen test
+ * sees, or a dependency the lock moved. Those are what the run on `main`
+ * answers, where every path is mutated.
+ *
+ * Where git cannot say what changed, every path is mutated.
+ *
+ * @return list<string>|null
+ */
+function whatTheChangeReaches(string $root, string $since): ?array
+{
+    $said = shell_exec(sprintf('git -C %s diff --name-only %s HEAD 2>/dev/null', escapeshellarg($root), escapeshellarg($since)));
+
+    if (! is_string($said)) {
+        fwrite(STDERR, sprintf("git could not say what changed since %s, so every path is mutated.\n", $since));
+
+        return null;
+    }
+
+    $reach = [];
+
+    foreach (array_filter(explode("\n", $said), static fn(string $line): bool => $line !== '') as $path) {
+        if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) === 1) {
+            fwrite(STDERR, sprintf("%s decides how the gate runs, so every path is mutated.\n", $path));
+
+            return null;
+        }
+
+        if (preg_match('#^(app-modules/[^/]+|bridge)/tests/#u', $path, $found) === 1) {
+            $reach[] = sprintf('%s/src', $found[1]);
+
+            continue;
+        }
+
+        if (str_ends_with($path, '.php')) {
+            $reach[] = $path;
+        }
+    }
+
+    fwrite(STDERR, sprintf("The change reaches: %s\n", $reach === [] ? 'no path that is mutated' : implode(', ', $reach)));
+
+    return $reach;
 }
 
 /**
