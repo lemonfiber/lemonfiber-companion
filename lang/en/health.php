@@ -79,8 +79,11 @@ return [
         'fixed' => 'Put right',
         'fix_failed' => 'Could not be put right',
         'stopped' => 'Stopped part-way',
-        'declined' => 'The stack declined it',
+        'declined' => 'Left alone: it was not agreed to',
         'would_overwrite' => 'Not done: it would overwrite something',
+        // Apart from the line above: not something changed by hand, but an
+        // area the operator told the stack to leave alone.
+        'unmanaged' => 'Left alone: you declared this unmanaged',
     ],
     'nothing_was_carried_out' => 'There turned out to be nothing to do.',
     'look_again' => 'Look again at what could be put right',

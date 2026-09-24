@@ -389,6 +389,15 @@ function whatAStackThatActedSends(): array
                     ],
                     'outcome' => ['outcome' => 'stopped', 'leaving' => 'Half of the library on the old disk'],
                 ],
+                [
+                    'repair' => [
+                        'check' => 'config.drifted',
+                        'does' => 'Put the indexer settings back',
+                        'effects' => [],
+                        'reversible' => true,
+                    ],
+                    'outcome' => ['outcome' => 'unmanaged'],
+                ],
             ],
         ],
     ];
@@ -417,9 +426,17 @@ function theSameOutcomes(): WhatWasMended
         Undoing::Permanent,
     );
 
+    $leftAlone = Repair::offered(
+        Check::of('config.drifted'),
+        'Put the indexer settings back',
+        Effects::nothingElse(),
+        Undoing::Possible,
+    );
+
     return WhatWasMended::of(
         Mended::went($moved, WhatBecameOfIt::Fixed),
         Mended::stopped($forgot, LeftBehind::of('Half of the library on the old disk')),
+        Mended::went($leftAlone, WhatBecameOfIt::Unmanaged),
     );
 }
 
@@ -477,7 +494,9 @@ it('N2-R5 — a finished run says what became of each repair, and what it left',
     // Per repair, because a listing agreed to as a whole comes apart: one fix
     // takes and the next stops part-way. A run reported as one word would have
     // the operator believe either that everything worked or that nothing did,
-    // and there is half a library on the old disk either way.
+    // and there is half a library on the old disk either way. The third was
+    // left alone because the operator declared its area unmanaged, which a
+    // reader without that word refused whole, as a machine not answering.
     $ways = everyWayOfMending(
         aRecordOfWhatWasDone(),
         static fn(): Mending => AStackThatWouldMend::carryingOut(theSameOffer(), theSameOutcomes()),
@@ -485,7 +504,7 @@ it('N2-R5 — a finished run says what became of each repair, and what it left',
 
     foreach ($ways as $which => $make) {
         expect(whatWasDone($make()))->toBe(
-            '1: fixed | stopped/Half of the library on the old disk',
+            '1: fixed | stopped/Half of the library on the old disk | unmanaged',
             $which,
         );
     }
