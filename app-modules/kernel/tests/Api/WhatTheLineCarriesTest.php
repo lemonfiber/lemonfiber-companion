@@ -29,3 +29,9 @@ it('refuses a figure below zero in either direction', function (int $down, int $
     expect(fn(): WhatTheLineCarries => WhatTheLineCarries::measured($down, $up, HowTheLineWasMeasured::Declared, Instant::atEpochSeconds(1), WhetherItGoesThroughTheTunnel::Beside))
         ->toThrow(LineSaysNothing::class, sprintf('`%s`', $field));
 })->with([[-1, 5, 'down'], [5, -1, 'up']]);
+
+it('takes nought in either direction as a figure, since a line can be measured carrying nothing', function (): void {
+    $line = WhatTheLineCarries::measured(0, 0, HowTheLineWasMeasured::Observed, Instant::atEpochSeconds(1), WhetherItGoesThroughTheTunnel::Through);
+
+    expect([$line->down(), $line->up()])->toBe([0, 0]);
+});

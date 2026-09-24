@@ -160,6 +160,11 @@ it('refuses words it has no case for, naming what it reads', function (array $ov
     [['reached' => 'nearly'], 'reached'],
 ]);
 
+it('names every word it reads when it refuses one, each quoted, so the message is the whole set', function (): void {
+    expect(fn(): HowTheLineIsShared => HowTheLineIs::in(bandwidthSaying([...aPlainLine(), ...everythingItCouldKnow(), 'cap' => ['monthly' => 1, 'exceeded' => 'explode']])))
+        ->toThrow(BandwidthIsUnreadable::class, 'this app reads `pause`, `throttle`, `continue`.');
+});
+
 it('refuses a capacity or cap whose figures cannot be counts', function (array $overrides, string $where): void {
     expect(fn(): HowTheLineIsShared => HowTheLineIs::in(bandwidthSaying([...aPlainLine(), ...$overrides])))
         ->toThrow(BandwidthIsUnreadable::class, sprintf('`%s`', $where));
