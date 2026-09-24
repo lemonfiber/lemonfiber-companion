@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhoSettledIt;
@@ -63,6 +64,12 @@ use Tests\Support\Tree;
 function theGeneratedDoctorEnvelope(): string
 {
     return theGeneratedEnvelope('DoctorEnvelope');
+}
+
+/** The generated envelope that carries what a repair came to, as text. */
+function theGeneratedRepairEnvelope(): string
+{
+    return theGeneratedEnvelope('RepairEnvelope');
 }
 
 /** The generated envelope that carries what has stopped coming in, as text. */
@@ -330,6 +337,17 @@ it('N1-R13 — every verdict the contract describes has a case', function (): vo
     expect(valuesOf(Conclusion::cases()))->toBe(wireOutcomes());
 });
 
+it('N1-R13 — every repair outcome the contract describes has a case', function (): void {
+    // A union of object shapes, each arm fixing `outcome` to a literal of its
+    // own, as a verdict is — so the literal-union rule below cannot see it, and
+    // for as long as this rule did not exist the stack's `unmanaged` arrived
+    // at an enum with no case for it and refused the whole answer.
+    $outcomes = outcomesIn(theGeneratedRepairEnvelope());
+
+    expect($outcomes)->not->toBe([], 'no repair outcome was found in the generated envelope');
+    expect(valuesOf(WhatBecameOfIt::cases()))->toBe($outcomes);
+});
+
 it('N1-R13 — every overall the contract describes has a case', function (): void {
     expect(wireUnion('overall'))->not->toBe([], 'no overall union was found in the generated envelope');
     expect(valuesOf(Overall::cases()))->toBe(wireUnion('overall'));
@@ -593,6 +611,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     // a problem's standing and a household request's are different unions in
     // different envelopes. Each has a rule above naming which envelope it reads.
     Waiting::class => 'state',
+    WhatBecameOfIt::class => 'outcome',
 ];
 
 /**
@@ -634,9 +653,9 @@ it('N1-R13 — an enum that is a wire union is checked against it', function ():
     // It reads literal unions only, and that is a real limit rather than an
     // oversight. `Conclusion` is not one: the verdict is a union of object
     // shapes and each arm fixes `outcome` to a literal of its own, which is why
-    // it has `wireOutcomes()` instead. An enum written from that shape — the
-    // repair outcomes are the same — would pass here. Name the shape a rule can
-    // see, or add the rule.
+    // it has `wireOutcomes()` instead, and the repair outcomes are the same
+    // shape with a rule of their own. An enum written from a shape like that
+    // would pass here: name the shape a rule can see, or add the rule.
     $unions = everyWireUnion();
 
     expect($unions)->not->toBe([], 'no literal union was found in any generated envelope');

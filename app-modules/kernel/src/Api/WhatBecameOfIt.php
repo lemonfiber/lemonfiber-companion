@@ -44,11 +44,13 @@ enum WhatBecameOfIt: string
     case Stopped = 'stopped';
 
     /**
-     * The stack would not do it.
+     * It was not agreed to, so it was left alone.
      *
-     * Told apart from a failure because nothing was attempted: the machine
-     * looked at what was asked and declined, which is a decision rather than a
-     * fault, and *try again* is the wrong advice for it.
+     * The operator's answer rather than the machine's: the stack asks before
+     * each repair, and this is the one it was told no about. Told apart from a
+     * failure because nothing was attempted, which is a decision rather than a
+     * fault — and saying the stack declined it would put somebody's own *no*
+     * in the machine's mouth.
      */
     case Declined = 'declined';
 
@@ -63,13 +65,25 @@ enum WhatBecameOfIt: string
     case WouldOverwrite = 'would_overwrite';
 
     /**
+     * The operator declared the area it would write unmanaged, so it was left
+     * alone.
+     *
+     * Apart from {@see self::WouldOverwrite}, and the difference is the
+     * sentence an operator is owed: that one is the stack declining to write
+     * over a change it can see, and this is the stack obeying an instruction it
+     * was given. Told the first after writing the second, somebody goes looking
+     * for a change they never made.
+     */
+    case Unmanaged = 'unmanaged';
+
+    /**
      * Whether anything was changed on the machine.
      *
-     * The line drawn once rather than at each screen that needs it. Three of
-     * these changed nothing at all — declined and would-overwrite never
-     * started, and a failed fix is the machine's own report that it did not
-     * take — and *stopped* is the one that both failed and left something, so
-     * it answers false here and is still the case that needs saying most.
+     * The line drawn once rather than at each screen that needs it. Four of
+     * these changed nothing at all — declined, would-overwrite and unmanaged
+     * never started, and a failed fix is the machine's own report that it did
+     * not take — and *stopped* is the one that both failed and left something,
+     * so it answers false here and is still the case that needs saying most.
      */
     public function changedSomething(): bool
     {
@@ -79,8 +93,8 @@ enum WhatBecameOfIt: string
     /**
      * Whether it is worth agreeing to again.
      *
-     * A failed fix and a stopped one may work on a second attempt. Declined and
-     * would-overwrite will not, and offering the operator a button that does
+     * A failed fix and a stopped one may work on a second attempt. Declined,
+     * would-overwrite and unmanaged will not, and offering the operator a button that does
      * exactly what it did last time is the behaviour {@see Standing} refuses:
      * a screen that offers to do something it cannot do teaches people that the
      * app is lying to them.
