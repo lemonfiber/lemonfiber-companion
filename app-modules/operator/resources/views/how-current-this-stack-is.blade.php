@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
 @if ($this->asking() !== null)
     {{-- Asked before it runs, and the question names the services
          it would change. A screen of its own rather than a line beside the
@@ -198,7 +198,7 @@
          reading, and that is where they want to ask whether it took. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 @endif
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

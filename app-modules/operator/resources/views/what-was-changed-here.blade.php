@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     @forelse ($this->answer()->moments as $moment)
         {{-- One *when* over every change made then. Changes made at one
              moment are drawn under it together rather than each with a time,
@@ -57,7 +57,7 @@
     {{-- On the answered arm too: somebody who has just changed something at
          the machine is looking at a screen they want to ask again. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

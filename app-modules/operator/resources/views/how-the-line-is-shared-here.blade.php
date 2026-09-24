@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- Where the line stands and what that means for the house, first:
          it is the answer to *why is the internet slow*. --}}
     <x-operator::emphasis>{{ __($this->answer()->standsSaid) }}</x-operator::emphasis>
@@ -70,7 +70,7 @@
     <x-operator::note>{{ __('stacks.line.changed_at_the_machine') }}</x-operator::note>
 
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

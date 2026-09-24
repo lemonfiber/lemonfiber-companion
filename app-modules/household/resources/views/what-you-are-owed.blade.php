@@ -1,7 +1,7 @@
 <native:top-bar title="{{ __('household.yours') }}" />
 
 @if ($this->answer()->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- The core's own sentences, in the core's own order and wording.
          Rendered rather than translated: the household's rules are the core's
          to state, and putting them through this app's catalogue would mean
@@ -83,9 +83,9 @@
     <native:pressable native:key="back-to-the-machine" class="w-full min-h-12 justify-center py-2" @navigate="$this->health()" a11y-label="{{ __('household.back_to_the_machine') }}" :press-opacity="0.6">
         <native:text class="text-sm">{{ __('household.back_to_the_machine') }}</native:text>
     </native:pressable>
-</native:column>
+</x-operator::content>
 @elseif ($this->answer()->isSignedIn)
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- What stood in the way and what to do about it, both off the obstacle,
          so this screen cannot describe a condition differently from the one
          beside it. A refusal is drawn as a refusal here: an account that may
@@ -101,9 +101,9 @@
     <native:pressable native:key="back-to-the-machine" class="w-full min-h-12 justify-center py-2" @navigate="$this->health()" a11y-label="{{ __('household.back_to_the_machine') }}" :press-opacity="0.6">
         <native:text class="text-sm">{{ __('household.back_to_the_machine') }}</native:text>
     </native:pressable>
-</native:column>
+</x-operator::content>
 @else
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- The session has ended, so nothing was asked and there is nothing to
          report. The remedy is a screen rather than a sentence. --}}
     <native:text>{{ __('connection.session_has_ended') }}</native:text>
@@ -112,5 +112,5 @@
     <native:pressable native:key="back-to-the-machine" class="w-full min-h-12 justify-center py-2" @navigate="$this->health()" a11y-label="{{ __('household.back_to_the_machine') }}" :press-opacity="0.6">
         <native:text class="text-sm">{{ __('household.back_to_the_machine') }}</native:text>
     </native:pressable>
-</native:column>
+</x-operator::content>
 @endif

@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- The preset first, with what it means beside it: a preset's name alone
          is a word somebody has to look up before they know whether they will
          be woken at three. --}}
@@ -26,7 +26,7 @@
     <x-operator::note>{{ __('stacks.alerts.changed_at_the_machine') }}</x-operator::note>
 
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

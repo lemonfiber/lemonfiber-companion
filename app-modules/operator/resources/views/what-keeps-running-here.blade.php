@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- What keeps them running, said before the list. It is a fact about the
          machine rather than about any row, and an operator reading rows without
          it cannot tell a launch agent from a login item they set up themselves
@@ -66,7 +66,7 @@
          the stuck screen's reason: somebody who has just started something at
          the machine is looking at a screen they want to ask again. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

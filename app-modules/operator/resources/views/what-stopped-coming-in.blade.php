@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- How many stopped, said before the list, so an operator who opened
          this because somebody in the house asked them to does not have to
          count rows. --}}
@@ -63,7 +63,7 @@
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

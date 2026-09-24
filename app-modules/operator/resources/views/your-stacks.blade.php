@@ -1,6 +1,6 @@
 <x-operator::screen-opens :title="__('navigation.your_stacks')" />
 
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     @if ($this->howItOpened()->isLocked)
         {{-- The device's own authentication on a cold start, asked
              before anything reads retained state or touches a network. Nothing
@@ -146,4 +146,4 @@
         <x-operator::quiet-action label="{{ __('device.share_diagnostics') }}" tap="share()" />
     @endunless
     @endif
-</native:column>
+</x-operator::content>

@@ -1,6 +1,6 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
 
     @unless ($this->isSignedIn())
         {{-- The session has ended, so nothing was asked. --}}
@@ -156,6 +156,6 @@
          offers an agreement, a retry and whatever a finished run left behind.
          `ScreensSpeakToTheOperatorTest` reads the composed screen, which is why
          removing it leaves the leaf still reachable. --}}
-</native:column>
+</x-operator::content>
 
 <x-operator::screen-closes :goes="$this->goes()" here="repairs" />

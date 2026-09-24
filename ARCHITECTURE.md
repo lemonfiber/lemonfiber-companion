@@ -314,6 +314,7 @@ automatic and the operator never sees the question.
 | F13 | A component draws its slot on every branch it has — Blade renders a slot before the component, so one behind an `@if` reaches the device anyway | arch |
 | F14 | Every step a template takes after its screen answered, and every step a component takes off what it was handed — a field or a further call — is one that value has | `tests/Templates`: the chain walked by declared type, from the screen's return type or the component's property onward |
 | F15 | Every screen the router serves is built the way the app builds it, drawn, and draws something — the render path is where a frame is actually decided | `tests/Feature`: every route's screen, rendered with stand-ins answering |
+| F16 | The column a screen's content sits in is written once, in the `content` component, whose slot is drawn inside it | arch |
 
 **Why F12 is a rule of its own, given the three beside it.** Three rules already
 ask about reachability and every one of them asks it of a single screen: each
