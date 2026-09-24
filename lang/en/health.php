@@ -90,12 +90,19 @@ return [
     // What has stopped coming in. The stage is where it stopped, and it
     // is the whole difference between an indexer with nothing and a file the
     // library never picked up.
+    //
+    // `:stage` is the stack's own word, put in untranslated. The sentences
+    // under `stage` sit beside it and say where that leaves the item; they
+    // are not the word, and they do not swap one of its words for a word of
+    // this app's — `grab` is lemonfiber's, so the sentences say what a grab
+    // did rather than calling it something else.
+    'at_stage' => 'Stage: :stage',
     'stage' => [
         'not-monitored' => 'Nothing is watching for this',
         'monitored' => 'Being watched for, not looked for yet',
         'searching' => 'Being looked for',
-        'found' => 'A copy exists and has not been taken',
-        'grabbed' => 'Taken, not started coming down',
+        'found' => 'A release exists and has not been sent to the download client',
+        'grabbed' => 'Sent to the download client, not started coming down',
         'downloading' => 'Coming down now',
         'downloaded' => 'Down, not handed to the library yet',
         'importing' => 'Being handed over',

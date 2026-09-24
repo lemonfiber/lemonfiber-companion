@@ -24,6 +24,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatStalled;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Stuck downloads are reachable.
 //
@@ -99,10 +100,29 @@ it('N2-R9 — shows what stopped, where it stopped, and who has it', function ()
 
     expect($rows[0]->title)->toBe('A film nobody has seen')
         ->and($rows[0]->service)->toBe('radarr')
+        ->and($rows[0]->stage)->toBe('searching')
         ->and($rows[0]->stageSaid)->toBe(Stage::Searching->saidOnTheScreen())
         ->and($rows[1]->title)->toBe('A series somebody has')
         ->and($rows[1]->service)->toBe('sonarr')
+        ->and($rows[1]->stage)->toBe('not-monitored')
         ->and($rows[1]->stageSaid)->toBe(Stage::NotMonitored->saidOnTheScreen());
+});
+
+it('N15-R9 — draws the stack\'s word for a stage, with the plain sentence beside it', function (): void {
+    // Asked of the drawn screen rather than of the row, because a row can
+    // carry the word and a template can still draw only the sentence.
+    // Both locales, because the word is not the catalogue's and must come
+    // through a Dutch screen exactly as an English one draws it.
+    foreach (['en', 'nl'] as $locale) {
+        app()->setLocale($locale);
+
+        $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads())))->said();
+
+        expect($drawn)->toContain(__('health.at_stage', ['stage' => 'searching']))
+            ->and($drawn)->toContain(__(Stage::Searching->saidOnTheScreen()))
+            ->and($drawn)->toContain(__('health.at_stage', ['stage' => 'not-monitored']))
+            ->and($drawn)->toContain(__(Stage::NotMonitored->saidOnTheScreen()));
+    }
 });
 
 it('keeps the stack\'s order rather than putting the hopeless ones first', function (): void {
