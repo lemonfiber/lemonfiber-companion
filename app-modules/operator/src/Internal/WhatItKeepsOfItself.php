@@ -60,4 +60,10 @@ final readonly class WhatItKeepsOfItself
     {
         return AStacksScreen::Line->forTheStack($this->stack);
     }
+
+    /** What this machine keeps, where, and why, and the copies it holds. */
+    public function keeps(): string
+    {
+        return AStacksScreen::Keeps->forTheStack($this->stack);
+    }
 }

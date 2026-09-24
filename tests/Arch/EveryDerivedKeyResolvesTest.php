@@ -42,6 +42,7 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
+use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Kernel\Api\WhoSetIt;
@@ -259,6 +260,10 @@ function everyDerivedKey(): array
         WhetherItGoesThroughTheTunnel::class => aPairPerCase(
             WhetherItGoesThroughTheTunnel::cases(),
             static fn(WhetherItGoesThroughTheTunnel $tunnel): array => [$tunnel->saidOnTheScreen()],
+        ),
+        WhetherItHoldsASecret::class => aPairPerCase(
+            WhetherItHoldsASecret::cases(),
+            static fn(WhetherItHoldsASecret $secret): array => [$secret->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by

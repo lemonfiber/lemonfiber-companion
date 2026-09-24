@@ -18,6 +18,7 @@ use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
@@ -207,6 +208,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // How the line is shared. Its own screen, because *why is the
             // internet slow* is asked by the household at the moment it is slow.
             Router::native(AStacksScreen::Line->value, HowTheLineIsSharedHere::class);
+
+            // What it keeps on the machine and the copies it holds: two
+            // readings on one screen.
+            Router::native(AStacksScreen::Keeps->value, WhatThisMachineKeepsHere::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

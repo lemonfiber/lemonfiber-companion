@@ -166,6 +166,27 @@ return [
         'changed_at_the_machine' => 'Changed at the machine, not from here',
     ],
 
+    // What the machine keeps, where, and why, and the copies it holds.
+    'keeps' => [
+        'road_in' => 'What this machine keeps',
+        'roots' => 'Where it is all kept',
+        'no_roots' => 'The stack names nowhere it keeps things',
+        'kept' => 'What the stack keeps',
+        'nothing_kept' => 'The stack keeps nothing here',
+        // Said on every row; the value is never shown.
+        'secret' => [
+            'secret' => 'Holds a secret, which is never shown here',
+            'plain' => 'Holds no secret',
+        ],
+        'beside' => 'Here, and not the stack\'s',
+        'nothing_beside' => 'Nothing here belongs to anybody else',
+        'copies' => 'Copies of the stack',
+        'no_copies' => 'No copy has been taken',
+        // Never drawn as an empty list.
+        'copies_unread' => 'The copies could not be listed',
+        'at_the_machine' => 'Copies are taken and put back at the machine, not from here',
+    ],
+
     // How the machine shares its line with the household.
     'line' => [
         'road_in' => 'How the line is shared',

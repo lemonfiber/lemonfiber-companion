@@ -32,6 +32,7 @@ use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\History;
@@ -51,6 +52,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
+use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Verdicts;
@@ -61,6 +63,7 @@ use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
+use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Keepers;
@@ -75,6 +78,7 @@ use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
+use Modules\Sdk\Api\Storekeepers;
 use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upkeepers;
@@ -300,6 +304,11 @@ final class CompositionRoot extends ServiceProvider
         // How the line is shared, read beside the rest and bound for the same
         // reason: one place decides whether a certificate is checked.
         $this->app->bind(Rationing::class, Quartermasters::class);
+
+        // What the stack keeps and the copies it holds, read beside the rest
+        // and bound for the same reason.
+        $this->app->bind(Storing::class, Storekeepers::class);
+        $this->app->bind(Copying::class, Copyists::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

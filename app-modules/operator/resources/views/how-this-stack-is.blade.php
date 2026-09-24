@@ -218,6 +218,9 @@
     {{-- How it shares the line, which is the one of these the household asks
          about, when the internet is slow. --}}
     <x-operator::quiet-action label="{{ __('stacks.line.road_in') }}" :goes="$this->goes()->ofItself()->line()" />
+
+    {{-- What it keeps on the machine, and the copies it holds. --}}
+    <x-operator::quiet-action label="{{ __('stacks.keeps.road_in') }}" :goes="$this->goes()->ofItself()->keeps()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading

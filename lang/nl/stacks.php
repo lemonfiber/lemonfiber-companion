@@ -123,6 +123,24 @@ return [
         'nothing_set_apart' => 'Niets is apart gezet; elke gebeurtenis volgt de voorinstelling',
         'changed_at_the_machine' => 'Aan te passen op de machine, niet hier',
     ],
+    'keeps' => [
+        'road_in' => 'Wat deze machine bewaart',
+        'roots' => 'Waar alles bewaard wordt',
+        'no_roots' => 'De stack noemt geen plek waar hij iets bewaart',
+        'kept' => 'Wat de stack bewaart',
+        'nothing_kept' => 'De stack bewaart hier niets',
+        'secret' => [
+            'secret' => 'Bevat een geheim, dat hier nooit getoond wordt',
+            'plain' => 'Bevat geen geheim',
+        ],
+        'beside' => 'Hier, en niet van de stack',
+        'nothing_beside' => 'Niets hier is van iemand anders',
+        'copies' => 'Kopieën van de stack',
+        'no_copies' => 'Er is nog geen kopie gemaakt',
+        'copies_unread' => 'De kopieën konden niet opgesomd worden',
+        'at_the_machine' => 'Kopieën worden op de machine gemaakt en teruggezet, niet vanaf hier',
+    ],
+
     'line' => [
         'road_in' => 'Hoe de lijn gedeeld wordt',
         'restraint' => [
