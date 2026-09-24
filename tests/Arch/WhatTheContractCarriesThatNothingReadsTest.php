@@ -463,6 +463,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . '`N2-R4` has the app state what a repair did in the words the core produced.',
     ],
     [
+        'path' => 'StoredEnvelope.removal',
+        'because' => 'Whether the call that answered removed what it lists. The listing this app asks for '
+            . 'removes nothing and always answers `not-asked`; only the errand that forgets everything fills '
+            . 'it in, and that errand is taking away (`N13`), which this app does not offer. A screen showing '
+            . 'it would report on an act nothing here asked for.',
+    ],
+    [
         'path' => 'StatusEnvelope.unsupported',
         'because' => 'What this stack cannot do, and why. It is the stack describing its own limits '
             . 'rather than its condition, and `N2-R1` opens this app on a verdict. A screen mixing the '

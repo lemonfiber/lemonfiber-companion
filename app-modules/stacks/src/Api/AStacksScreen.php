@@ -141,6 +141,9 @@ enum AStacksScreen: string
     /** How this machine shares its line with the household. */
     case Line = '/stacks/{stack}/line';
 
+    /** What this machine keeps, where, and why, and the copies it holds. */
+    case Keeps = '/stacks/{stack}/keeps';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 

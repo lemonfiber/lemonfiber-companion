@@ -33,8 +33,8 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Alerts', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Held', 'History', 'Hosting', 'Household',
-    'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'Status', 'Stuck',
+    'Alerts', 'Archives', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Held', 'History', 'Hosting', 'Household',
+    'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'Status', 'Stored', 'Stuck',
     'Update',
 ];
 
@@ -69,14 +69,14 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Adoption', 'Archives', 'Backup',
+    'Admission', 'Adoption', 'Backup',
     'Beside', 'Bundle', 'Catalogue', 'Clients',
     'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
     'Glossary', 'Import',
     'Invitation', 'Lifecycle', 'Migration', 'Music',
     'Plugins', 'Preview', 'Pull', 'Quality', 'Removal',
     'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',
-    'Space', 'Start', 'Step', 'StopSeeding', 'Stored',
+    'Space', 'Start', 'Step', 'StopSeeding',
     'Substitution', 'Trace', 'Undo', 'Uninstall', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
 ];

@@ -613,6 +613,18 @@ enum WireField: string
     /** What throttling the upload costs, where an upload limit is in force. */
     case Ratio = 'ratio';
 
+    /** The directories everything a stack keeps sits under. */
+    case Roots = 'roots';
+
+    /** Each thing a stack keeps on its machine. */
+    case Kept = 'kept';
+
+    /** What is on the machine that is not the stack's to keep or remove. */
+    case Beside = 'beside';
+
+    /** The copies of a stack its machine holds, by name. */
+    case Archives = 'archives';
+
     /**
      * This field's name as a path, where it is read off another field's value.
      *
