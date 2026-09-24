@@ -38,18 +38,21 @@ declare(strict_types=1);
  * arguments is the whole of it, in one process, which is what somebody running
  * it by hand wants.
  *
- * **A tree may name the tests that hold it, and is then judged by those.** A
- * test file that runs a tree rather than merely passing through it declares
- * `pest()->group('holds:<tree>')`, and that tree is mutated against its group
- * instead of against the suite. This is for a tree every test passes through:
+ * **A tree, or a path inside one, may name the tests that hold it, and is then
+ * judged by those.** A test file that asserts on what some code does, rather
+ * than merely passing through it, declares `pest()->group('holds:<path>')`,
+ * and that path is mutated against its group instead of against the suite —
+ * in a run of its own, with the rest of its tree mutated as before and the
+ * held path left out of it. This is for code every test passes through:
  * `bootstrap/Composition` is the composition root, so every test covers it,
  * the covering-test filter for each of its mutants is the whole suite, and a
  * mutant killed by one binding test still costs a full suite run — `--bail`
  * does not stop paratest's other workers. On a runner that made it the one
  * shard taking fifteen to thirty minutes, with most of its mutants recorded as
- * timeouts rather than killed by a test that says what broke.
+ * timeouts rather than killed by a test that says what broke. A module's
+ * service provider is the same thing one file wide: every test boots it.
  *
- * A group is held to covering its whole tree before anything is mutated,
+ * A group is held to covering all of what it holds before anything is mutated,
  * because `--covered-only` skips a line the group does not reach without
  * saying so — and a line the suite covers and the group does not is a mutant
  * this gate would stop judging in silence.
@@ -83,8 +86,11 @@ $holders = $listing ? [] : whatHoldsEachTree($root, $trees);
 /** @var array<int, list<string>> $byFloor */
 $byFloor = [];
 
-/** @var list<array{floor: int, tree: string, group: string}> $held */
+/** @var list<array{floor: int, path: string, group: string}> $held */
 $held = [];
+
+/** @var array<int, list<string>> $leftOut */
+$leftOut = [];
 
 /** @var list<string> $worthMutating */
 $worthMutating = [];
@@ -156,9 +162,18 @@ foreach ($trees as $tree) {
 
     // Its own run, like a tree whose floor differs: a group narrows every
     // tree in an invocation, so one sharing a run would narrow its neighbours.
-    if (array_key_exists($tree->path, $holders)) {
-        $held[] = ['floor' => $floor, 'tree' => $tree->path, 'group' => $holders[$tree->path]];
+    // A held path inside a tree is the same, and the tree's own run leaves it
+    // out, so no mutant is judged twice or by the wrong tests.
+    foreach ($holders as $path => $group) {
+        if ($path !== $tree->path && ! str_starts_with($path, sprintf('%s/', $tree->path))) {
+            continue;
+        }
 
+        $held[] = ['floor' => $floor, 'path' => $path, 'group' => $group];
+        $leftOut[$floor][] = $path;
+    }
+
+    if (array_key_exists($tree->path, $holders)) {
         continue;
     }
 
@@ -205,16 +220,18 @@ if ($byFloor === [] && $held === []) {
 $failed = 0;
 
 foreach ($held as $run) {
-    fwrite(STDOUT, sprintf("\nMutation at %d%%: %s, judged by %s\n", $run['floor'], $run['tree'], $run['group']));
+    fwrite(STDOUT, sprintf("\nMutation at %d%%: %s, judged by %s\n", $run['floor'], $run['path'], $run['group']));
 
-    $status = theGroupCoversTheTree($root, $run['group'], $run['tree']) ? mutate($root, $run['floor'], [$run['tree']], $run['group']) : 1;
+    $status = theGroupCoversWhatItHolds($root, $run['group'], $run['path']) ? mutate($root, $run['floor'], [$run['path']], $run['group'], []) : 1;
     $failed = $failed === 0 ? $status : $failed;
 }
 
 foreach ($byFloor as $floor => $paths) {
     fwrite(STDOUT, sprintf("\nMutation at %d%%: %s\n", $floor, implode(', ', $paths)));
 
-    $status = mutate($root, $floor, $paths, null);
+    // Most floors hold no path a group judges apart, and those have nothing
+    // to leave out: absent here is an answer, not a gap.
+    $status = mutate($root, $floor, $paths, null, array_key_exists($floor, $leftOut) ? $leftOut[$floor] : []);
     $failed = $failed === 0 ? $status : $failed;
 }
 
@@ -278,18 +295,19 @@ function argument(array $given, string $prefix): ?string
  * tests judge them, and is held to covering its tree before it may.
  *
  * @param list<string> $paths
+ * @param list<string> $leftOut paths inside these trees that a group judges in a run of their own
  */
-function mutate(string $root, int $floor, array $paths, ?string $group): int
+function mutate(string $root, int $floor, array $paths, ?string $group, array $leftOut): int
 {
+    $absolute = static fn(string $path): string => sprintf('%s/%s', $root, $path);
+
     $command = sprintf(
-        '%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s%s',
+        '%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s%s%s',
         escapeshellarg($root),
         $floor,
-        escapeshellarg(implode(',', array_map(
-            static fn(string $path): string => sprintf('%s/%s', $root, $path),
-            $paths,
-        ))),
+        escapeshellarg(implode(',', array_map($absolute, $paths))),
         $group === null ? '' : sprintf(' --group=%s', escapeshellarg($group)),
+        $leftOut === [] ? '' : sprintf(' --ignore=%s', escapeshellarg(implode(',', array_map($absolute, $leftOut)))),
     );
 
     passthru($command, $status);
@@ -298,13 +316,14 @@ function mutate(string $root, int $floor, array $paths, ?string $group): int
 }
 
 /**
- * Each tree a group declares it holds, by the tree's path.
+ * Each path a group declares it holds — a measured tree, or a file or directory
+ * inside one — by that path.
  *
  * Asked of the suite rather than read out of test sources, so the answer is
- * the groups Pest will actually select by. A group naming a tree nothing
- * measures is refused rather than ignored: a misspelt tree would otherwise be
- * mutated against the whole suite again, correct and slow and with no sign the
- * declaration was never read.
+ * the groups Pest will actually select by. A group naming a path nothing
+ * measures, or one that is not there, is refused rather than ignored: a
+ * misspelt path would otherwise be mutated against the whole suite again,
+ * correct and slow and with no sign the declaration was never read.
  *
  * @param  list<MeasuredTree>    $trees
  * @return array<string, string>
@@ -333,13 +352,14 @@ function whatHoldsEachTree(string $root, array $trees): array
             continue;
         }
 
-        if (! in_array($found[2], $measured, strict: true)) {
+        if (! isMeasured($root, $found[2], $measured)) {
             fwrite(STDERR, sprintf(<<<'SAID'
-                A test declares the group %s, and %s is not a tree phpunit.xml measures.
+                A test declares the group %s, and %s is not a tree phpunit.xml measures or a path inside one.
 
-                The group names the tree its tests hold, so the name has to be one of
-                the measured trees exactly — otherwise the tree it meant is mutated
-                against the whole suite again, and nothing says why it is slow.
+                The group names what its tests hold, so the name has to be a measured tree
+                or a file or directory in one, spelt as the repository spells it —
+                otherwise what it meant is mutated against the whole suite again, and
+                nothing says why it is slow.
 
                 SAID, $found[1], $found[2]));
 
@@ -353,7 +373,7 @@ function whatHoldsEachTree(string $root, array $trees): array
 }
 
 /**
- * Whether a group reaches every line of its tree that anything could reach.
+ * Whether a group reaches every line of what it holds that anything could reach.
  *
  * Measured the way `test:report` measures, over the group alone, and held to
  * every statement in the tree: the coverage floor already holds the suite to
@@ -362,7 +382,7 @@ function whatHoldsEachTree(string $root, array $trees): array
  * word. Files `phpunit.xml` leaves out of `<source>` are not in the report,
  * which is the same exemption the device-only runloop has everywhere else.
  */
-function theGroupCoversTheTree(string $root, string $group, string $tree): bool
+function theGroupCoversWhatItHolds(string $root, string $group, string $tree): bool
 {
     $clover = sprintf('%s/lemonfiber-held-%s.xml', sys_get_temp_dir(), hash('sha256', $group));
 
@@ -402,25 +422,26 @@ function theGroupCoversTheTree(string $root, string $group, string $tree): bool
 }
 
 /**
- * Every statement in a tree a clover report says nothing reached.
+ * Every statement under a path a clover report says nothing reached.
  *
- * A tree with no file in the report at all is answered as unreached as a
- * whole, rather than as nothing missed: a group that runs none of its tree
- * covers none of it, and an empty list would read as the opposite.
+ * A path with no file in the report at all is answered as unreached as a
+ * whole, rather than as nothing missed: a group that runs none of it covers
+ * none of it, and an empty list would read as the opposite.
  *
  * @return list<string>
  */
 function whatTheReportLeavesUnreached(string $clover, string $root, string $tree): array
 {
     $report = simplexml_load_file($clover);
-    $under = sprintf('%s/%s/', $root, $tree);
+    $exactly = sprintf('%s/%s', $root, $tree);
+    $under = sprintf('%s/', $exactly);
     $missed = [];
     $reached = false;
 
     foreach ($report === false ? [] : $report->xpath('//file') ?? [] as $file) {
         $name = (string) $file['name'];
 
-        if (! str_starts_with($name, $under)) {
+        if ($name !== $exactly && ! str_starts_with($name, $under)) {
             continue;
         }
 
@@ -432,4 +453,24 @@ function whatTheReportLeavesUnreached(string $clover, string $root, string $tree
     }
 
     return $reached ? $missed : [sprintf('%s, all of it', $tree)];
+}
+
+/**
+ * Whether a path is a measured tree, or a file or directory that exists in one.
+ *
+ * @param list<string> $measured
+ */
+function isMeasured(string $root, string $path, array $measured): bool
+{
+    foreach ($measured as $tree) {
+        if ($path === $tree) {
+            return true;
+        }
+
+        if (str_starts_with($path, sprintf('%s/', $tree)) && file_exists(sprintf('%s/%s', $root, $path))) {
+            return true;
+        }
+    }
+
+    return false;
 }

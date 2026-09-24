@@ -13,6 +13,10 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
 
+// Asserts on the routes the operator's provider declares, so its mutants are
+// judged here: see `scripts/mutation.php`.
+pest()->group('holds:app-modules/operator/src/Providers/OperatorServiceProvider.php');
+
 // Both directions, the way `EveryCatalogueLineIsReadTest` and
 // `EveryDerivedKeyResolvesTest` ask about a key.
 //

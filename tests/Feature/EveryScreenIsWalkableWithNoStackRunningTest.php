@@ -15,6 +15,10 @@ use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
 
+// Asserts on the routes the operator's provider declares, so its mutants are
+// judged here: see `scripts/mutation.php`.
+pest()->group('holds:app-modules/operator/src/Providers/OperatorServiceProvider.php');
+
 // The whole application, drawn, with no stack running anywhere.
 //
 // That is what `modules/dx` is for, and until this rule existed nothing said
