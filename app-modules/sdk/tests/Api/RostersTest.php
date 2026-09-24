@@ -9,6 +9,9 @@ use function it;
 use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -35,6 +38,20 @@ use Tests\Support\WhatTheContractAccepts;
 function aRosterSaying(array $data): Envelope
 {
     return new Envelope(1, 'status', $data);
+}
+
+/**
+ * What the reader makes of a `status` envelope, handed no forms.
+ *
+ * The forms are {@see \Modules\Sdk\Api\Repertoires}' to read and are handed
+ * in, so every case here that is not about them hands in none — which is what
+ * keeps a case about a service from passing on the strength of a form.
+ *
+ * @param Envelope<mixed> $envelope
+ */
+function theRosterIn(Envelope $envelope): Daemons
+{
+    return Rosters::in($envelope, Forms::none());
 }
 
 /**
@@ -78,7 +95,7 @@ function whatTheServiceExitedWith(array $differently): string
 {
     $said = '';
 
-    foreach (Rosters::in(aRosterSaying($differently)) as $daemon) {
+    foreach (theRosterIn(aRosterSaying($differently)) as $daemon) {
         $said = $daemon->exit(
             said: static fn(int $code): object => new readonly class ((string) $code) {
                 public function __construct(public string $said) {}
@@ -122,7 +139,9 @@ function aRosterOf(array $differently = []): array
 {
     return [
         'condition' => 'active',
-        'forms' => ['downloads'],
+        // The forms the reading was asked about, which for the whole stack is
+        // none — what a stack actually sends here, however many it declares.
+        'forms' => [],
         'disturbs' => whatTheseVerbsCostOnTheWire(),
         'services' => [aServiceSaying($differently)],
         // A container the machine is running that this stack's own
@@ -157,26 +176,46 @@ function somethingElseSaying(array $differently = []): array
 }
 
 it('reads what the stack says it all amounts to', function (): void {
-    $daemons = Rosters::in(aRosterSaying(aRosterOf()));
+    $daemons = theRosterIn(aRosterSaying(aRosterOf()));
 
     expect($daemons->running())->toBe(HowTheStackIsRunning::Active);
     expect($daemons->count())->toBe(1);
-    expect($daemons->forms()->count())->toBe(1);
 });
 
-it('reads a form nothing in it is running', function (): void {
-    // The forms come from the stack's own list rather than from the rows, so a
-    // form with everything stopped survives the reading. It is the one form an
-    // operator opens the app to start.
-    $daemons = Rosters::in(aRosterSaying([
-        'condition' => 'inactive',
-        'disturbs' => whatTheseVerbsCostOnTheWire(),
-        'forms' => ['media', 'downloads'],
-        'services' => [],
-    ]));
+it('N2-R7 — carries the forms it is handed, and neither the forms the reading asked about nor the profiles', function (): void {
+    // The `status` envelope's `forms` are the forms the reading was asked
+    // about, and each row's `profile` is a compose profile. Neither is the
+    // list of forms a verb can be asked for by, so neither may become one: a
+    // form here is only ever one the stack's list of forms named.
+    $daemons = Rosters::in(
+        aRosterSaying(aRosterOf(['profile' => 'media'])),
+        Forms::these(Form::called('library'), Form::called('full')),
+    );
 
-    expect($daemons->forms()->count())->toBe(2);
-    expect($daemons->count())->toBe(0);
+    $named = [];
+
+    foreach ($daemons->forms() as $form) {
+        $named[] = $form->named();
+    }
+
+    $profiles = [];
+
+    foreach ($daemons as $daemon) {
+        $profiles[] = $daemon->profile()->named();
+    }
+
+    expect($named)->toBe(['library', 'full'])
+        ->and($profiles)->toBe(['media']);
+});
+
+it('ignores the forms the reading asked about, whatever shape they arrive in', function (): void {
+    // Not read, so not refused: a reader that checked a field it does not use
+    // would turn a stack that sent something odd there into a listing nobody
+    // can act on, for a fact nothing on the screen shows.
+    $daemons = theRosterIn(aRosterSaying([...aRosterOf(), 'forms' => 'downloads']));
+
+    expect($daemons->count())->toBe(1)
+        ->and($daemons->forms()->count())->toBe(0);
 });
 
 it('reads a service that ended by the constructor that says so', function (): void {
@@ -192,7 +231,7 @@ it('reads a service that is still going as one that said nothing', function (): 
 it('reads `exit: null` as a service that did not end', function (): void {
     // Absent and null are the same fact said two ways, and the contract allows
     // both. Neither is a service that exited with nothing.
-    $daemons = Rosters::in(aRosterSaying(aRosterOf(['exit' => null])));
+    $daemons = theRosterIn(aRosterSaying(aRosterOf(['exit' => null])));
 
     foreach ($daemons as $daemon) {
         expect($daemon->runs())->toBe(HowAServiceRuns::Running);
@@ -208,10 +247,9 @@ it('refuses a list the stack sent as something other than a list', function (): 
     // key would fail somewhere further in, about something else, with the
     // stack's real mistake nowhere in the message.
     //
-    // All three lists, because the guard is one method and a caller that
+    // Both lists, because the guard is one method and a caller that
     // reached it by a different road is a caller it has never been asked about.
     $each = [
-        'forms as a word' => ['condition' => 'active', 'forms' => 'downloads', 'disturbs' => whatTheseVerbsCostOnTheWire(), 'services' => []],
         'services as a number' => ['condition' => 'active', 'forms' => [], 'services' => 7],
         'depends_on as a word' => [
             'condition' => 'active',
@@ -221,7 +259,7 @@ it('refuses a list the stack sent as something other than a list', function (): 
     ];
 
     foreach ($each as $which => $said) {
-        expect(fn(): object => Rosters::in(aRosterSaying($said)))
+        expect(fn(): object => theRosterIn(aRosterSaying($said)))
             ->toThrow(RosterIsUnreadable::class, 'not what the contract says it is', $which);
     }
 });
@@ -229,7 +267,7 @@ it('refuses a list the stack sent as something other than a list', function (): 
 it('refuses an `exit` that is neither absent, null, nor a number', function (): void {
     // Refused rather than read as still running, which is the reading that
     // turns a service that died into one nobody looks at.
-    expect(fn(): object => Rosters::in(aRosterSaying(aRosterOf(['exit' => 'oom']))))
+    expect(fn(): object => theRosterIn(aRosterSaying(aRosterOf(['exit' => 'oom']))))
         ->toThrow(RosterIsUnreadable::class, 'exit');
 });
 
@@ -237,17 +275,17 @@ it('refuses a listing with no condition at all', function (): void {
     // Read before any row is, and refused rather than worked out from the rows:
     // a second opinion assembled on a phone would disagree with the machine the
     // first time lemonfiber changed how it weighs a degraded service.
-    expect(fn(): object => Rosters::in(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'forms' => [], 'services' => []])))
+    expect(fn(): object => theRosterIn(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'forms' => [], 'services' => []])))
         ->toThrow(RosterIsUnreadable::class, 'condition');
 });
 
 it('refuses a condition that is not a word', function (): void {
-    expect(fn(): object => Rosters::in(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'condition' => 41, 'forms' => [], 'services' => []])))
+    expect(fn(): object => theRosterIn(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'condition' => 41, 'forms' => [], 'services' => []])))
         ->toThrow(RosterIsUnreadable::class, 'condition');
 });
 
 it('refuses a condition this build has not heard of', function (): void {
-    expect(fn(): object => Rosters::in(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'condition' => 'brilliant', 'forms' => [], 'services' => []])))
+    expect(fn(): object => theRosterIn(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'condition' => 'brilliant', 'forms' => [], 'services' => []])))
         ->toThrow(RosterIsUnreadable::class, 'brilliant');
 });
 
@@ -260,19 +298,19 @@ it('names what it does read, in the words the enum has', function (): void {
     // and `degraded` bare in a sentence is a word a reader has to work out the
     // status of — which is the whole difference between a message naming a
     // vocabulary and one describing a machine.
-    expect(fn(): object => Rosters::in(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'condition' => 'brilliant', 'forms' => [], 'services' => []])))
+    expect(fn(): object => theRosterIn(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'condition' => 'brilliant', 'forms' => [], 'services' => []])))
         ->toThrow(RosterIsUnreadable::class, sprintf('`%s`', HowTheStackIsRunning::Degraded->value));
 });
 
 it('refuses a state this build has not heard of', function (): void {
-    expect(fn(): object => Rosters::in(aRosterSaying(aRosterOf(['state' => 'thinking']))))
+    expect(fn(): object => theRosterIn(aRosterSaying(aRosterOf(['state' => 'thinking']))))
         ->toThrow(RosterIsUnreadable::class, 'thinking');
 });
 
 it('refuses a criticality this build has not heard of', function (): void {
     // How much a service matters decides how loudly a stop is asked about, so
     // an unrecognised word must not become the quietest one.
-    expect(fn(): object => Rosters::in(aRosterSaying(aRosterOf(['criticality' => 'whatever']))))
+    expect(fn(): object => theRosterIn(aRosterSaying(aRosterOf(['criticality' => 'whatever']))))
         ->toThrow(RosterIsUnreadable::class, HowMuchItMatters::Critical->value);
 });
 
@@ -280,7 +318,7 @@ it('refuses a service with no id', function (): void {
     $row = aServiceSaying();
     unset($row['id']);
 
-    expect(fn(): object => Rosters::in(aRosterSaying([
+    expect(fn(): object => theRosterIn(aRosterSaying([
         'disturbs' => whatTheseVerbsCostOnTheWire(),
         'condition' => 'active',
         'forms' => [],
@@ -291,7 +329,7 @@ it('refuses a service with no id', function (): void {
 it('names which service it could not read', function (): void {
     // The position is only knowable here, and a refusal saying *service 1* can
     // be acted on where one saying *a service* leaves somebody reading forty.
-    expect(fn(): object => Rosters::in(aRosterSaying([
+    expect(fn(): object => theRosterIn(aRosterSaying([
         'disturbs' => whatTheseVerbsCostOnTheWire(),
         'condition' => 'active',
         'forms' => [],
@@ -300,7 +338,7 @@ it('names which service it could not read', function (): void {
 });
 
 it('refuses a row that is not a service at all', function (): void {
-    expect(fn(): object => Rosters::in(aRosterSaying([
+    expect(fn(): object => theRosterIn(aRosterSaying([
         'disturbs' => whatTheseVerbsCostOnTheWire(),
         'condition' => 'active',
         'forms' => [],
@@ -308,34 +346,20 @@ it('refuses a row that is not a service at all', function (): void {
     ])))->toThrow(RosterIsUnreadable::class, 'Service 0');
 });
 
-it('refuses a form that is not a name', function (): void {
-    expect(fn(): object => Rosters::in(aRosterSaying([
-        'condition' => 'active',
-        'forms' => ['media', ''],
-        'services' => [],
-    ])))->toThrow(RosterIsUnreadable::class, 'Form 1');
-});
-
-it('refuses a name that is only spacing, in both lists that read one', function (): void {
+it('refuses a name that is only spacing, wherever a row reads one', function (): void {
     // `''` and `'   '` are one name on a screen and two values on the wire.
-    // Both lists decide after trimming, so a form or a dependency padded into
-    // looking like a word is refused here rather than becoming a `Form` or a
-    // `ServiceId` that renders as nothing everywhere it is shown — a row
+    // Both are decided after trimming, so a dependency or a profile padded into
+    // looking like a word is refused here rather than becoming a `ServiceId` or
+    // a `Profile` that renders as nothing everywhere it is shown — a row
     // leaning on a blank understates what a stop disturbs, which is the reading
     // `leaning()`'s own message says it exists to prevent.
     $each = [
-        'a form' => [
-            ['condition' => 'active', 'forms' => ['media', '   '], 'services' => []],
-            'Form 1',
-        ],
-        'a dependency' => [
-            aRosterOf(['depends_on' => ['jellyfin', "\t"]]),
-            'depends_on',
-        ],
+        'a dependency' => [aRosterOf(['depends_on' => ['jellyfin', "\t"]]), 'depends_on'],
+        'a profile' => [aRosterOf(['profile' => '   ']), 'profile'],
     ];
 
     foreach ($each as $which => [$said, $named]) {
-        expect(fn(): object => Rosters::in(aRosterSaying($said)))
+        expect(fn(): object => theRosterIn(aRosterSaying($said)))
             ->toThrow(RosterIsUnreadable::class, $named, $which);
     }
 });
@@ -343,12 +367,12 @@ it('refuses a name that is only spacing, in both lists that read one', function 
 it('refuses a dependency that is not a name', function (): void {
     // What leans on a service is the sentence put in front of stopping it, so a
     // name that cannot be read would understate what a stop disturbs.
-    expect(fn(): object => Rosters::in(aRosterSaying(aRosterOf(['depends_on' => [41]]))))
+    expect(fn(): object => theRosterIn(aRosterSaying(aRosterOf(['depends_on' => [41]]))))
         ->toThrow(RosterIsUnreadable::class, 'depends_on');
 });
 
 it('reads what leans on a service', function (): void {
-    $daemons = Rosters::in(aRosterSaying(aRosterOf(['depends_on' => ['jellyfin', 'prowlarr']])));
+    $daemons = theRosterIn(aRosterSaying(aRosterOf(['depends_on' => ['jellyfin', 'prowlarr']])));
 
     foreach ($daemons as $daemon) {
         expect($daemon->whatLeansOnIt()->count())->toBe(2);
@@ -358,12 +382,12 @@ it('reads what leans on a service', function (): void {
 });
 
 it('refuses a listing with no services field at all', function (): void {
-    expect(fn(): object => Rosters::in(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'condition' => 'active', 'forms' => []])))
+    expect(fn(): object => theRosterIn(aRosterSaying(['disturbs' => whatTheseVerbsCostOnTheWire(), 'condition' => 'active', 'forms' => []])))
         ->toThrow(RosterIsUnreadable::class, 'services');
 });
 
 it('refuses a payload that is not a shape at all', function (): void {
-    expect(fn(): object => Rosters::in(new Envelope(1, 'status', 'a sentence where a payload belongs')))
+    expect(fn(): object => theRosterIn(new Envelope(1, 'status', 'a sentence where a payload belongs')))
         ->toThrow(RosterIsUnreadable::class, 'data');
 });
 

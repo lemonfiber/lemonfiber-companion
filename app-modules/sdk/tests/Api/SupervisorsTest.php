@@ -106,6 +106,25 @@ function whatAStackRunningNothingSends(): array
     ];
 }
 
+/**
+ * The payload a stack sends when asked which forms it declares.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackDeclaringFormsSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'forms',
+        'data' => ['forms' => [[
+            'id' => 'library',
+            'name' => 'Library',
+            'description' => 'Serve what exists. Requires no third-party accounts.',
+            'composable' => true,
+        ]]],
+    ];
+}
+
 /** What a stack answers a verb with. */
 function anAcknowledgement(): MockResponse
 {
@@ -261,19 +280,34 @@ it('N2-R7 — asks for a start at the same door as a stop', function (): void {
     expect($sent->getUrl())->toEndWith('/api/actions/up');
 });
 
-it('N1-R17 — reads what is running at the one endpoint for it', function (): void {
+it('N1-R17 — reads what is running, then the forms the stack declares, each at its own endpoint', function (): void {
+    // Two readings and in this order. The status envelope's `forms` are the
+    // forms that reading asked about — none — so the forms a verb can be asked
+    // for by are read where the stack lists them, and nowhere else.
     MockClient::destroyGlobal();
-    $mock = MockClient::global([MockResponse::make((string) json_encode(whatAStackRunningNothingSends()))]);
+    $mock = MockClient::global([
+        MockResponse::make((string) json_encode(whatAStackRunningNothingSends())),
+        MockResponse::make((string) json_encode(whatAStackDeclaringFormsSends())),
+    ]);
 
     new Supervisors(new PinnedClients(), SequencedEntropy::counting())->running(theSupervisedStack(), Session::of('a-session-not-a-secret'));
 
-    expect($mock->getLastPendingRequest()?->getUrl())->toEndWith('/api/status');
+    $asked = [];
+
+    foreach ($mock->getRecordedResponses() as $response) {
+        $asked[] = $response->getPendingRequest()->getUrl();
+    }
+
+    expect($asked)->toHaveCount(2)
+        ->and($asked[0])->toEndWith(Api::STATUS_ENDPOINT)
+        ->and($asked[1])->toEndWith(Api::FORMS_ENDPOINT);
 });
 
 it('stands in for a stack with payloads the contract would accept', function (): void {
     $payloads = [
         'the handle' => ['JobEnvelope', whatAStackTakingAVerbSends()],
         'the listing' => ['StatusEnvelope', whatAStackRunningNothingSends()],
+        'the forms' => ['FormsEnvelope', whatAStackDeclaringFormsSends()],
     ];
 
     foreach ($payloads as $which => [$envelope, $payload]) {

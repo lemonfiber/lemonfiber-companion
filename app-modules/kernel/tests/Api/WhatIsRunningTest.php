@@ -11,6 +11,7 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Profile;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatIsRunning;
@@ -49,7 +50,7 @@ function aServiceThatIsRunning(): Daemon
     return Daemon::called(
         'Sonarr',
         ServiceId::called('sonarr'),
-        Form::called('downloads'),
+        Profile::called('tv'),
         HowAServiceRuns::Running,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),

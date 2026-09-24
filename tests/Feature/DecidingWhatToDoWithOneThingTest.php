@@ -25,6 +25,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // One thing this machine runs, and the verbs about it.
 //
@@ -82,7 +83,7 @@ it('N2-R7 — the frame is about the one thing the route names', function (): vo
         ->and($thing->service?->name)->toBe('Sonarr')
         // The details that belong to the one thing rather than to the list.
         // A row carrying all of them is a list nobody can scan.
-        ->and($thing->service?->form)->toBe('downloads')
+        ->and($thing->service?->profile)->toBe('tv')
         ->and($thing->service?->leaning)->toBe(['jellyfin']);
 });
 
@@ -128,7 +129,7 @@ it('N2-R7 — a service this stack does not run is offered no verb at all', func
 });
 
 it('N2-R7 — a whole form takes all three, because it has no state of its own', function (): void {
-    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'media');
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library');
 
     expect($screen->thing()->isAForm)->toBeTrue()
         ->and($screen->thing()->service)->toBeNull()
@@ -140,7 +141,7 @@ it('N2-R7 — a whole form is agreed to as a form', function (): void {
     // as a service: a form's name sent under `services` would stop nothing and
     // report that it had.
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
-    $screen = theThingScreen($supervising, 'media');
+    $screen = theThingScreen($supervising, 'library');
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
     $screen->agree();
@@ -149,14 +150,39 @@ it('N2-R7 — a whole form is agreed to as a form', function (): void {
 
     expect($told)->toHaveCount(1)
         ->and($told[0]->isAboutAForm())->toBeTrue()
-        ->and($told[0]->named())->toBe('media');
+        ->and($told[0]->named())->toBe('library');
+});
+
+it('N18-R7 — a service\'s profile is not a form, and no verb is offered about it', function (): void {
+    // `tv` is the profile the row names. The stack declares no form of that
+    // name, so asking for it as one would be refused as a form it has never
+    // heard of — and where the spellings happen to meet, it would reach a
+    // different set of services from the one the row was about.
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
+    $screen = theThingScreen($supervising, 'tv');
+
+    expect($screen->thing()->isRun())->toBeFalse()
+        ->and($screen->thing()->isAForm)->toBeFalse()
+        ->and($screen->thing()->verbs)->toBe([]);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
+    $screen->agree();
+
+    expect($supervising->whatItWasToldToDo())->toBe([]);
+});
+
+it('N18-R7 — a row names its profile as a profile', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())))->said();
+
+    expect($drawn)->toContain(__('health.in_profile', ['profile' => 'tv']))
+        ->and($drawn)->toContain('In the tv profile');
 });
 
 it('N2-R7 — a service wins over a form that shares its name', function (): void {
     // The narrower reading is the safer one: agreeing about one service and
     // being sent a whole form is the mistake that costs a household something.
-    $supervising = AStackThatSupervises::with(WhatAMachineRuns::oneThing('downloads', HowAServiceRuns::Running, HowTheStackIsRunning::Active));
-    $screen = theThingScreen($supervising, 'downloads');
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::oneThing('library', HowAServiceRuns::Running, HowTheStackIsRunning::Active));
+    $screen = theThingScreen($supervising, 'library');
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
     $screen->agree();

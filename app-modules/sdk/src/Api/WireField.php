@@ -209,7 +209,14 @@ enum WireField: string
     /** What the whole stack amounts to, over the services listed beside it. */
     case Condition = 'condition';
 
-    /** The forms a stack has, whether or not anything in them is running. */
+    /**
+     * The forms a stack declares, or the forms a reading or an action names.
+     *
+     * One name for three things the wire keeps apart by where it appears: the
+     * `forms` envelope lists every form the stack declares, the `status`
+     * envelope repeats the forms that reading was asked about, and an action
+     * takes the forms it is to act on.
+     */
     case Forms = 'forms';
 
     /** The services a stack has, each with its own state. */
@@ -227,7 +234,7 @@ enum WireField: string
     /** The services one service will not work without. */
     case DependsOn = 'depends_on';
 
-    /** Which form a service belongs to. */
+    /** The one compose profile a service belongs to, which is not a form. */
     case Profile = 'profile';
 
     /** What a service that has ended exited with. Absent while it runs. */

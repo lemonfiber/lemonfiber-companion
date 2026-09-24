@@ -41,7 +41,7 @@ final readonly class Daemon
     private function __construct(
         private ServiceId $id,
         private string $name,
-        private Form $profile,
+        private Profile $profile,
         private HowAServiceRuns $runs,
         private HowMuchItMatters $matters,
         private WhatLeansOnIt $leaning,
@@ -58,7 +58,7 @@ final readonly class Daemon
     public static function called(
         string $name,
         ServiceId $id,
-        Form $profile,
+        Profile $profile,
         HowAServiceRuns $runs,
         HowMuchItMatters $matters,
         WhatLeansOnIt $leaning,
@@ -85,7 +85,7 @@ final readonly class Daemon
     public static function thatExited(
         string $name,
         ServiceId $id,
-        Form $profile,
+        Profile $profile,
         HowAServiceRuns $runs,
         HowMuchItMatters $matters,
         WhatLeansOnIt $leaning,
@@ -108,8 +108,14 @@ final readonly class Daemon
         return $this->name;
     }
 
-    /** Which form it belongs to, for reading a stack by form. */
-    public function profile(): Form
+    /**
+     * The one group it belongs to in the compose file.
+     *
+     * Not the form that brought it: a service has one profile and may be
+     * started by any of the forms that include it, and which of them did is
+     * not something the listing says.
+     */
+    public function profile(): Profile
     {
         return $this->profile;
     }

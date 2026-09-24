@@ -26,7 +26,7 @@ use Traversable;
  *
  * **Carried beside the services rather than derived from them.** A form with
  * nothing running in it still exists, and it is the one an operator most wants:
- * a stack whose whole media form is stopped has a form to start, and a list
+ * a stack whose `library` form is wholly stopped has a form to start, and a list
  * built from the running services would be missing exactly that one.
  *
  * @implements IteratorAggregate<int, Form>

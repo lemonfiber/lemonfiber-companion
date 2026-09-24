@@ -74,17 +74,21 @@ final readonly class Supervisors implements Supervising
         try {
             $envelope = $client->read(Api::STATUS_ENDPOINT);
 
-            // Inside the same `try` as the request, deliberately — the argument
-            // {@see Stalls::stoppedOn()} makes. A payload the client fetched
-            // and this side could not read is the same thing to an operator as
-            // one that never arrived.
+            // Two readings, because the forms are not on the first. The status
+            // envelope's `forms` are the forms that reading asked about — none,
+            // for the whole stack — and a service's profile is not a form, so
+            // the forms a verb can be asked for by come only from their own
+            // endpoint. Both inside the same `try` as the requests, the
+            // argument {@see Stalls::stoppedOn()} makes: a listing whose forms
+            // could not be read is not one to present as a stack that has
+            // none.
             return WhatIsRunning::these(
-                Rosters::in($envelope),
+                Rosters::in($envelope, Repertoires::in($client->read(Api::FORMS_ENDPOINT))),
                 Rosters::whatElseIsRunning($envelope),
             );
         } catch (RequestFailed $why) {
             return WhatIsRunning::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|RosterIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|RosterIsUnreadable|RepertoireIsUnreadable) {
             return WhatIsRunning::met(Obstacle::StackDidNotAnswer);
         }
     }
