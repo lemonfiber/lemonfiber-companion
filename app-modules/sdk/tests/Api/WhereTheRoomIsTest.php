@@ -213,6 +213,15 @@ it('refuses an entry that is not an entry, by its position, rather than dropping
         ->toThrow(SpaceIsUnreadable::class, sprintf('Entry 0 of `%s`', $list));
 })->with(['volumes', 'consumption', 'candidates']);
 
+it('names an entry past the first by its own position', function (string $list, array $readable): void {
+    expect(fn(): WhereTheRoomWent => WhereTheRoomIs::in(spaceSaying([...aMachineWithRoom(), $list => [$readable, 'one']])))
+        ->toThrow(SpaceIsUnreadable::class, sprintf('Entry 1 of `%s`', $list));
+})->with([
+    'a volume' => ['volumes', aVolumeSaying()],
+    'a line' => ['consumption', ['category' => ['of' => 'landing'], 'reclaim' => 'marginally', 'tally' => ['logical' => 1, 'physical' => 1]]],
+    'a download' => ['candidates', aDownloadSaying()],
+]);
+
 it('refuses a word it has no case for, naming the path and every word it reads', function (array $data, string $where, string $accepts): void {
     expect(fn(): WhereTheRoomWent => WhereTheRoomIs::in(spaceSaying($data)))->toThrow(SpaceIsUnreadable::class, sprintf('`%s` is', $where))
         ->and(fn(): WhereTheRoomWent => WhereTheRoomIs::in(spaceSaying($data)))->toThrow(SpaceIsUnreadable::class, $accepts);

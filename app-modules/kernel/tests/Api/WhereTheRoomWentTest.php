@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_keys;
 use function count;
 use function expect;
 use function it;
@@ -39,4 +40,14 @@ it('hands back everything one reading said, each list in the order given', funct
         ->and(iterator_to_array($room->account(), preserve_keys: false))->toBe([$line])
         ->and(iterator_to_array($room->downloads(), preserve_keys: false))->toBe([$first, $second])
         ->and([count($room->volumes()), count($room->account()), count($room->downloads())])->toBe([1, 1, 2]);
+});
+
+it('is a list in each of its three parts however they were handed their items', function (): void {
+    $volume = AVolume::measured(WhatAVolumeHolds::Data, '/srv', HowMuchRoomAVolumeHas::counted(AnAmountOfRoom::unread(), AnAmountOfRoom::unread(), 0, AnAmountOfRoom::unread()), WhereTheRoomStands::Unknown, HowFreshAReadingIs::live());
+    $line = ALineOfTheAccount::for(WhatALineIsAbout::Landing, WhatItOccupies::counted(1, 1), WhatGettingItBackCosts::InProgress);
+    $download = ADownloadOnDisk::neverImported('a', 1);
+
+    expect(array_keys(iterator_to_array(TheVolumes::of(...['first' => $volume, 'second' => $volume]), preserve_keys: true)))->toBe([0, 1])
+        ->and(array_keys(iterator_to_array(TheAccount::of(...['first' => $line, 'second' => $line]), preserve_keys: true)))->toBe([0, 1])
+        ->and(array_keys(iterator_to_array(TheDownloadsOnDisk::of(...['first' => $download, 'second' => $download]), preserve_keys: true)))->toBe([0, 1]);
 });
