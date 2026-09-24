@@ -393,10 +393,10 @@ jobs:
       - run: composer test:report
       - run: composer test:floors
 
-  # Which trees are worth mutating, asked of the same script that mutates
-  # them. A list written here would be a second source of truth that goes stale
-  # the day a tree gains its first class — silently, because the run still
-  # passes, over less.
+  # Which shards to mutate, asked of the same script that mutates them. A list
+  # written here would be a second source of truth that goes stale the day a
+  # tree gains its first class — silently, because the run still passes, over
+  # less.
   #
   # The dependencies are installed for one `--list`, which reads as waste and
   # is not. The script derives the trees from `phpunit.xml` through
@@ -404,14 +404,19 @@ jobs:
   # suite and `G7` read — and the only way a script reaches it is the
   # autoloader. The alternative is a second copy of "what is measured" written
   # out here in a file nothing compares against the first.
+  #
+  # It runs beside `tests` rather than after it: the listing reads the tree,
+  # not the test results, so waiting for them only put its install on the
+  # critical path. It runs on exactly the events and changes `tests` does, so
+  # the two skip together; `mutation` below is what waits for the tests.
   mutation-scope:
     name: what to mutate
-    needs: tests
-    if: ${{ !cancelled() && needs.tests.result == 'success' }}
+    needs: scope
+    if: ${{ !cancelled() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
-      trees: ${{ steps.list.outputs.trees }}
+      shards: ${{ steps.list.outputs.shards }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -421,29 +426,30 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       - id: list
-        run: echo "trees=$(php scripts/mutation.php --list)" >> "$GITHUB_OUTPUT"
+        run: echo "shards=$(php scripts/mutation.php --list)" >> "$GITHUB_OUTPUT"
 
   # The most expensive gate in the repository, so it is the most guarded: only
   # on a pull request, only once the tests have passed, and only over the app's
   # own logic. Mutating code whose tests are already failing measures nothing.
   #
-  # A runner per measured tree, because this is the one gate whose work
-  # genuinely separates: a floor of 100 admits no offsetting between trees, so
-  # each is already judged alone and running them in one process only made the
-  # wall clock the sum of them. It was several minutes and the longest thing in
-  # the repository; now it is the slowest single tree.
+  # A runner per shard, because this is the one gate whose work genuinely
+  # separates: a floor of 100 admits no offsetting between files, so each is
+  # already judged alone. `scripts/mutation.php` cuts the files of every tree
+  # into shards of about the same lines of code, so the largest tree is spread
+  # over several runners and the smallest share one; the wall clock is the
+  # slowest shard, and no shard is much slower than the rest.
   #
   # `fail-fast: false` because the point of a shard is to learn about all of
   # them: cancelling nine runners over one escaped mutant means a second push
   # to find the next one.
   mutation:
-    name: mutation
+    name: mutation (${{ matrix.shard.label }})
     needs: [tests, mutation-scope]
-    if: ${{ !cancelled() && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.trees != '[]' }}
+    if: ${{ !cancelled() && needs.tests.result == 'success' && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.shards != '[]' }}
     strategy:
       fail-fast: false
       matrix:
-        tree: ${{ fromJson(needs.mutation-scope.outputs.trees) }}
+        shard: ${{ fromJson(needs.mutation-scope.outputs.shards) }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -455,16 +461,15 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - run: composer test:mutation -- --tree=${{ matrix.tree }}
+      - run: composer test:mutation -- --shard=${{ matrix.shard.id }}
 
   # The check branch protection actually names.
   #
   # A matrix job reports one check per entry — `mutation (bridge/src)`,
-  # `mutation (app-modules/kernel/src)` — and none of them is called
-  # `mutation testing`. That
-  # required check would simply never report, and a required check that never
-  # reports blocks a pull request forever with nothing anywhere naming the
-  # cause. It is the same hole `sonar.yml`'s gate exists to close, and it is
+  # `mutation (app-modules/kernel/src, part 2 of 4)` — and none of them is
+  # called `mutation testing`. That required check would simply never report,
+  # and a required check that never reports blocks a pull request forever with
+  # nothing anywhere naming the cause. It is the same hole `sonar.yml`'s gate exists to close, and it is
   # reached here by renaming rather than by a failure.
   #
   # So this job keeps the name and answers for the shards. `!cancelled()` rather
@@ -543,6 +548,6 @@ jobs:
           fi
 
           if [ "$SHARDS" != success ] && [ "$SHARDS" != skipped ]; then
-            echo "::error::A tree's mutation run did not pass. Open the mutation (<tree>) job that is red."
+            echo "::error::A shard's mutation run did not pass. Open the mutation (<shard>) job that is red."
             exit 1
           fi
