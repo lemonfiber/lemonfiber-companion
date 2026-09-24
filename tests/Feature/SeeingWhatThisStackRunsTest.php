@@ -63,7 +63,7 @@ function theServicesScreen(
     return $screen;
 }
 
-it('N2-R7 — shows every service, how it runs, and which profile it is in', function (): void {
+it('N2-R7 — shows every service, and how it runs', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
     $answer = $screen->answer();
 
@@ -79,7 +79,6 @@ it('N2-R7 — shows every service, how it runs, and which profile it is in', fun
         // it* under a machine where nothing went wrong.
         ->and($answer->went->remedy)->toBe('')
         ->and($answer->services[0]->id->named())->toBe('sonarr')
-        ->and($answer->services[0]->profile)->toBe('tv')
         ->and($answer->services[0]->runsSaid)->toBe(HowAServiceRuns::Running->saidOnTheScreen());
 });
 
@@ -111,15 +110,13 @@ it('N2-R7 — carries the forms whether or not anything in them is running', fun
         ->toBe(['library', 'full']);
 });
 
-it('N2-R7 — draws a control for each form the stack declares, and none for a profile', function (): void {
-    // The rows carry the profile `tv`; the stack declares `library` and
-    // `full`. A control is drawn for each form and for no profile, so nothing
-    // on this screen can ask the stack to start something it never declared.
+it('N2-R7 — draws a control for each form the stack declares', function (): void {
+    // The stack declares `library` and `full`, and a control is drawn for
+    // each, so the form an operator opens this screen to start is on it.
     $drawn = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())))->said();
 
     expect($drawn)->toContain(__('health.open_form', ['name' => 'library']))
         ->and($drawn)->toContain(__('health.open_form', ['name' => 'full']))
-        ->and($drawn)->not->toContain(__('health.open_form', ['name' => 'tv']))
         ->and($drawn)->not->toContain(__('health.no_forms_at_all'));
 });
 
@@ -133,8 +130,7 @@ it('a stack that declares no forms says that, rather than that nothing is set up
 
     $drawn = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with($none)))->said();
 
-    expect($drawn)->toContain('This stack declares no forms')
-        ->and($drawn)->not->toContain(__('health.open_form', ['name' => 'tv']));
+    expect($drawn)->toContain('This stack declares no forms');
 });
 
 it('N1-R27 — looks again only while something is settling', function (): void {

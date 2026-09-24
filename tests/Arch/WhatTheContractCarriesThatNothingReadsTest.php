@@ -330,6 +330,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The same, for switching. A verb this surface does not offer.',
     ],
     [
+        'path' => 'StatusEnvelope.services[].profile',
+        'because' => 'The compose profile a service belongs to. Profiles are how the stack assembles a '
+            . 'form, and `B1` keeps them from the operator: they are not selectable (`B1-R8`), and the '
+            . 'one place `N18` shows them is a form\'s preview before it is started (`N18-R4`), which '
+            . 'is the `preview` reading rather than this field.',
+    ],
+    [
         'path' => 'StatusEnvelope.services[].describes',
         'because' => 'What a service is for, in the stack\'s words. Genuinely operator-facing — somebody '
             . 'reading a list of nineteen names would be better off knowing which is the one that fetches '

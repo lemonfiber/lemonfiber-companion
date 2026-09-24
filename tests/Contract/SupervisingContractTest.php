@@ -16,7 +16,6 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Profile;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -96,7 +95,6 @@ function theSameRunning(): Daemons
         Daemon::called(
             'Jellyfin',
             ServiceId::called('jellyfin'),
-            Profile::called('media'),
             HowAServiceRuns::Healthy,
             HowMuchItMatters::Core,
             WhatLeansOnIt::nothing(),
@@ -104,7 +102,6 @@ function theSameRunning(): Daemons
         Daemon::thatExited(
             'Sonarr',
             ServiceId::called('sonarr'),
-            Profile::called('tv'),
             HowAServiceRuns::Failed,
             HowMuchItMatters::Important,
             WhatLeansOnIt::these(ServiceId::called('jellyfin')),
@@ -357,13 +354,13 @@ it('carries the stack\'s own judgement rather than one worked out from the rows'
 });
 
 /**
- * The forms and the profiles a listing came to, as two lines to compare.
+ * The forms a listing came to, as one line to compare.
  *
- * Both at once, because the failure is one turning into the other: a profile
- * read as a form is a control that asks a stack for something it has never
- * heard of, and the forms read off the wrong field are no control at all.
+ * Every row on the wire names its profile, so a profile read as a form would
+ * show up here: a control that asks a stack for something it has never heard
+ * of. The forms read off the wrong field would show up as none.
  */
-function theFormsAndProfilesIn(Supervising $supervising): string
+function theFormsIn(Supervising $supervising): string
 {
     return $supervising->running(aStackWithServices(), theSessionTheStackIsSupervisedWith())->either(
         these: static function (Daemons $daemons): WhatSupervisingTurnedOutToSay {
@@ -373,17 +370,7 @@ function theFormsAndProfilesIn(Supervising $supervising): string
                 $forms[] = $form->named();
             }
 
-            $profiles = [];
-
-            foreach ($daemons as $daemon) {
-                $profiles[] = $daemon->profile()->named();
-            }
-
-            return new WhatSupervisingTurnedOutToSay(sprintf(
-                'forms: %s; profiles: %s',
-                implode(', ', $forms),
-                implode(', ', $profiles),
-            ));
+            return new WhatSupervisingTurnedOutToSay(sprintf('forms: %s', implode(', ', $forms)));
         },
         met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay
             => new WhatSupervisingTurnedOutToSay($why->value),
@@ -393,10 +380,9 @@ function theFormsAndProfilesIn(Supervising $supervising): string
 it('N2-R7 — the forms are the ones the stack declares, and no profile is one of them', function (): void {
     // The status envelope says it was asked about no form and each service
     // names its profile; the stack's list of forms names `library` and `full`.
-    // Only the last is a form a verb can be asked for by, and the profiles
-    // stay on the rows they describe.
+    // Only the last is a form a verb can be asked for by.
     foreach (everyWayOfSupervising(aRunningAnswer()) as $which => $make) {
-        expect(theFormsAndProfilesIn($make()))->toBe('forms: library, full; profiles: media, tv', $which);
+        expect(theFormsIn($make()))->toBe('forms: library, full', $which);
     }
 });
 
@@ -417,7 +403,7 @@ it('N18-R9 — forms that could not be read are a stack that did not answer, not
 
     foreach ($table as $case => $forms) {
         foreach (everyWayOfSupervising([$running, $forms], Obstacle::StackDidNotAnswer) as $which => $make) {
-            expect(theFormsAndProfilesIn($make()))->toBe(Obstacle::StackDidNotAnswer->value, sprintf('%s: %s', $case, $which));
+            expect(theFormsIn($make()))->toBe(Obstacle::StackDidNotAnswer->value, sprintf('%s: %s', $case, $which));
         }
     }
 });

@@ -234,9 +234,6 @@ enum WireField: string
     /** The services one service will not work without. */
     case DependsOn = 'depends_on';
 
-    /** The one compose profile a service belongs to, which is not a form. */
-    case Profile = 'profile';
-
     /** What a service that has ended exited with. Absent while it runs. */
     case Exit = 'exit';
 

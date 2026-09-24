@@ -10,7 +10,6 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
-use Modules\Kernel\Api\Profile;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
@@ -31,7 +30,6 @@ function oneItRuns(string $name, HowAServiceRuns $runs = HowAServiceRuns::Health
     return Daemon::called(
         $name,
         ServiceId::called($name),
-        Profile::called('media'),
         $runs,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),

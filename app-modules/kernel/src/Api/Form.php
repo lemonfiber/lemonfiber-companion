@@ -20,10 +20,10 @@ use function trim;
  * serves to stop, and a screen that could only act service by service would make
  * that nineteen taps and a mistake.
  *
- * **Not a {@see Profile}.** A service carries the one profile it belongs to,
- * and a form is a combination of profiles the stack declares; the two share
- * some spellings and are different sets, so a form is only ever read off the
- * stack's list of the forms it declares.
+ * **Not a profile.** Each service on the wire names the one compose profile it
+ * belongs to, and a form is a combination of profiles the stack declares; the
+ * two share some spellings and are different sets, so a form is only ever read
+ * off the stack's list of the forms it declares.
  *
  * The name is the identifier, carried exactly as the stack spelled it and never
  * title-cased — the same argument {@see ServiceId} makes, and for the same

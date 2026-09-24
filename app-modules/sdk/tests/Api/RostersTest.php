@@ -198,14 +198,7 @@ it('N2-R7 — carries the forms it is handed, and neither the forms the reading 
         $named[] = $form->named();
     }
 
-    $profiles = [];
-
-    foreach ($daemons as $daemon) {
-        $profiles[] = $daemon->profile()->named();
-    }
-
-    expect($named)->toBe(['library', 'full'])
-        ->and($profiles)->toBe(['media']);
+    expect($named)->toBe(['library', 'full']);
 });
 
 it('ignores the forms the reading asked about, whatever shape they arrive in', function (): void {
@@ -347,22 +340,15 @@ it('refuses a row that is not a service at all', function (): void {
     ])))->toThrow(RosterIsUnreadable::class, 'Service 0');
 });
 
-it('refuses a name that is only spacing, wherever a row reads one', function (): void {
+it('refuses a dependency that is only spacing', function (): void {
     // `''` and `'   '` are one name on a screen and two values on the wire.
-    // Both are decided after trimming, so a dependency or a profile padded into
-    // looking like a word is refused here rather than becoming a `ServiceId` or
-    // a `Profile` that renders as nothing everywhere it is shown — a row
-    // leaning on a blank understates what a stop disturbs, which is the reading
-    // `leaning()`'s own message says it exists to prevent.
-    $each = [
-        'a dependency' => [aRosterOf(['depends_on' => ['jellyfin', "\t"]]), 'depends_on'],
-        'a profile' => [aRosterOf(['profile' => '   ']), 'profile'],
-    ];
-
-    foreach ($each as $which => [$said, $named]) {
-        expect(fn(): object => theRosterIn(aRosterSaying($said)))
-            ->toThrow(RosterIsUnreadable::class, $named, $which);
-    }
+    // The dependencies are decided after trimming, so one padded into looking
+    // like a word is refused here rather than becoming a `ServiceId` that
+    // renders as nothing everywhere it is shown — a row leaning on a blank
+    // understates what a stop disturbs, which is the reading `leaning()`'s own
+    // message says it exists to prevent.
+    expect(fn(): object => theRosterIn(aRosterSaying(aRosterOf(['depends_on' => ['jellyfin', "\t"]]))))
+        ->toThrow(RosterIsUnreadable::class, 'depends_on');
 });
 
 it('refuses a dependency that is not a name', function (): void {

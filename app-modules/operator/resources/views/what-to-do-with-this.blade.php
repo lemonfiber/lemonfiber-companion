@@ -72,12 +72,6 @@
         <native:text>{{ __('health.a_whole_form') }}</native:text>
     @else
         <native:text>{{ __($this->thing()->service->runsSaid) }}</native:text>
-        {{-- The one profile it belongs to, named as a profile. It is not the
-             form that brought it — several forms can include one profile, and
-             which of them did is not something the listing says. --}}
-        <x-operator::note>
-            {{ __('health.in_profile', ['profile' => $this->thing()->service->profile]) }}
-        </x-operator::note>
         <x-operator::note>{{ __($this->thing()->service->mattersSaid) }}</x-operator::note>
 
         @if ($this->thing()->service->exited !== '')

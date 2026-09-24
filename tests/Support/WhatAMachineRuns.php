@@ -12,7 +12,6 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
-use Modules\Kernel\Api\Profile;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatLeansOnIt;
@@ -53,7 +52,6 @@ final readonly class WhatAMachineRuns
         return Daemon::called(
             ucfirst($id),
             ServiceId::called($id),
-            Profile::called('tv'),
             $runs,
             HowMuchItMatters::Important,
             $leaning ?? WhatLeansOnIt::nothing(),
@@ -61,9 +59,8 @@ final readonly class WhatAMachineRuns
     }
 
     /**
-     * Two services in one profile, one of them leaned on by the other, on a
-     * stack declaring two forms — none of them spelled like the profile, so a
-     * screen that mistook one for the other has nowhere to hide it.
+     * Two services, one of them leaned on by the other, on a stack declaring
+     * two forms.
      */
     public static function twoThings(): Daemons
     {

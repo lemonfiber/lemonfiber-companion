@@ -41,7 +41,6 @@ final readonly class Daemon
     private function __construct(
         private ServiceId $id,
         private string $name,
-        private Profile $profile,
         private HowAServiceRuns $runs,
         private HowMuchItMatters $matters,
         private WhatLeansOnIt $leaning,
@@ -58,7 +57,6 @@ final readonly class Daemon
     public static function called(
         string $name,
         ServiceId $id,
-        Profile $profile,
         HowAServiceRuns $runs,
         HowMuchItMatters $matters,
         WhatLeansOnIt $leaning,
@@ -69,7 +67,7 @@ final readonly class Daemon
             throw ServiceIsUnnamed::whereOneWasExpected();
         }
 
-        return new self($id, $shown, $profile, $runs, $matters, $leaning);
+        return new self($id, $shown, $runs, $matters, $leaning);
     }
 
     /**
@@ -85,15 +83,14 @@ final readonly class Daemon
     public static function thatExited(
         string $name,
         ServiceId $id,
-        Profile $profile,
         HowAServiceRuns $runs,
         HowMuchItMatters $matters,
         WhatLeansOnIt $leaning,
         int $code,
     ): self {
-        $was = self::called($name, $id, $profile, $runs, $matters, $leaning);
+        $was = self::called($name, $id, $runs, $matters, $leaning);
 
-        return new self($was->id, $was->name, $was->profile, $was->runs, $was->matters, $was->leaning, $code);
+        return new self($was->id, $was->name, $was->runs, $was->matters, $was->leaning, $code);
     }
 
     /** What an action is asked for by, and what its scrollback is read for. */
@@ -106,18 +103,6 @@ final readonly class Daemon
     public function name(): string
     {
         return $this->name;
-    }
-
-    /**
-     * The one group it belongs to in the compose file.
-     *
-     * Not the form that brought it: a service has one profile and may be
-     * started by any of the forms that include it, and which of them did is
-     * not something the listing says.
-     */
-    public function profile(): Profile
-    {
-        return $this->profile;
     }
 
     /** Where it stands right now. */

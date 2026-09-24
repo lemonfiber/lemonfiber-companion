@@ -17,7 +17,6 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
-use Modules\Kernel\Api\Profile;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomethingElseRunning;
 use Modules\Kernel\Api\WhatElseIsRunning;
@@ -208,7 +207,6 @@ final readonly class Rosters
     {
         $name = self::text($row, WireField::Name, $position);
         $id = ServiceId::called(self::text($row, WireField::Id, $position));
-        $profile = Profile::called(self::text($row, WireField::Profile, $position));
         $runs = self::runs($row, $position);
         $matters = self::matters($row, $position);
         $leaning = self::leaning($row, $position);
@@ -216,10 +214,10 @@ final readonly class Rosters
         $code = self::howItEnded($row, $position);
 
         if ($code === null) {
-            return Daemon::called($name, $id, $profile, $runs, $matters, $leaning);
+            return Daemon::called($name, $id, $runs, $matters, $leaning);
         }
 
-        return Daemon::thatExited($name, $id, $profile, $runs, $matters, $leaning, $code);
+        return Daemon::thatExited($name, $id, $runs, $matters, $leaning, $code);
     }
 
     /**
