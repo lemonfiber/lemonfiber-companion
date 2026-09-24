@@ -16,12 +16,11 @@ namespace Modules\Kernel\Api;
  * separate sessions and the pinning cannot be paired up wrongly by a
  * caller.
  *
- * **Taking an update takes a {@see TakingAnUpdate}, which rendering cannot
- * produce.** The confirmation names the services an update
- * would change, and the way that requirement is broken is never deliberate: a
- * screen draws the pending release, the button is right there, and a tap
- * handler calls the thing that applies it. Nothing in the code says *this was
- * confirmed*, because nothing had to.
+ * **Taking an update takes a {@see TakingAnUpdate}, which only a reading that
+ * offered one can produce.** {@see TakingAnUpdate::offeredBy()} refuses an
+ * {@see Upkeep} whose pins said nothing would move, so an update the stack did
+ * not report cannot reach this port — and the confirmation names the services
+ * the offer carries, which are the ones sent.
  */
 interface KeepingCurrent
 {
