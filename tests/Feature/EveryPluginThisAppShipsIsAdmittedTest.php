@@ -7,6 +7,10 @@ use Illuminate\Support\Collection;
 use Native\Mobile\Plugins\Plugin;
 use Native\Mobile\Plugins\PluginRegistry;
 
+// Runs the composition root rather than reading it, so its mutants are judged
+// here: see `scripts/mutation.php`.
+pest()->group('holds:bootstrap/Composition');
+
 // The native halves that implement them reach a build.
 //
 // NativePHP refuses every plugin unless `App\Providers\NativeServiceProvider`

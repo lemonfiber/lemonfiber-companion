@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use Tests\Support\Module;
 
+// Runs the composition root rather than reading it, so its mutants are judged
+// here: see `scripts/mutation.php`.
+pest()->group('holds:bootstrap/Composition');
+
 // G8 — every port the kernel publishes is bound, once, to something real.
 //
 // A port with no binding fails at the moment a screen first asks for it, which

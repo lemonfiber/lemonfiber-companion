@@ -37,6 +37,22 @@ declare(strict_types=1);
  * Neither changes what is mutated locally: `composer test:mutation` with no
  * arguments is the whole of it, in one process, which is what somebody running
  * it by hand wants.
+ *
+ * **A tree may name the tests that hold it, and is then judged by those.** A
+ * test file that runs a tree rather than merely passing through it declares
+ * `pest()->group('holds:<tree>')`, and that tree is mutated against its group
+ * instead of against the suite. This is for a tree every test passes through:
+ * `bootstrap/Composition` is the composition root, so every test covers it,
+ * the covering-test filter for each of its mutants is the whole suite, and a
+ * mutant killed by one binding test still costs a full suite run — `--bail`
+ * does not stop paratest's other workers. On a runner that made it the one
+ * shard taking fifteen to thirty minutes, with most of its mutants recorded as
+ * timeouts rather than killed by a test that says what broke.
+ *
+ * A group is held to covering its whole tree before anything is mutated,
+ * because `--covered-only` skips a line the group does not reach without
+ * saying so — and a line the suite covers and the group does not is a mutant
+ * this gate would stop judging in silence.
  */
 
 use Tests\Support\MeasuredTree;
@@ -62,8 +78,13 @@ if ($trees === []) {
     exit(1);
 }
 
+$holders = $listing ? [] : whatHoldsEachTree($root, $trees);
+
 /** @var array<int, list<string>> $byFloor */
 $byFloor = [];
+
+/** @var list<array{floor: int, tree: string, group: string}> $held */
+$held = [];
 
 /** @var list<string> $worthMutating */
 $worthMutating = [];
@@ -133,6 +154,14 @@ foreach ($trees as $tree) {
         continue;
     }
 
+    // Its own run, like a tree whose floor differs: a group narrows every
+    // tree in an invocation, so one sharing a run would narrow its neighbours.
+    if (array_key_exists($tree->path, $holders)) {
+        $held[] = ['floor' => $floor, 'tree' => $tree->path, 'group' => $holders[$tree->path]];
+
+        continue;
+    }
+
     $byFloor[$floor][] = $tree->path;
 }
 
@@ -154,7 +183,7 @@ if ($listing) {
     exit(0);
 }
 
-if ($asked !== null && $byFloor === []) {
+if ($asked !== null && $byFloor === [] && $held === []) {
     fwrite(STDERR, sprintf(<<<'SAID'
         There is no measured tree at %s with code to mutate.
 
@@ -167,7 +196,7 @@ if ($asked !== null && $byFloor === []) {
     exit(1);
 }
 
-if ($byFloor === []) {
+if ($byFloor === [] && $held === []) {
     fwrite(STDOUT, "No measured tree has code to mutate yet.\n");
 
     exit(0);
@@ -175,53 +204,17 @@ if ($byFloor === []) {
 
 $failed = 0;
 
+foreach ($held as $run) {
+    fwrite(STDOUT, sprintf("\nMutation at %d%%: %s, judged by %s\n", $run['floor'], $run['tree'], $run['group']));
+
+    $status = theGroupCoversTheTree($root, $run['group'], $run['tree']) ? mutate($root, $run['floor'], [$run['tree']], $run['group']) : 1;
+    $failed = $failed === 0 ? $status : $failed;
+}
+
 foreach ($byFloor as $floor => $paths) {
     fwrite(STDOUT, sprintf("\nMutation at %d%%: %s\n", $floor, implode(', ', $paths)));
 
-    // The same two suites `composer test` leaves out, for the same reasons and
-    // with an extra one here. `Floors` reads the clover report rather than
-    // producing one, so it fails outright in a run that was never asked for
-    // coverage — and a mutation run is exactly that. `Guards` plants violations
-    // and runs the analyser and the suite over them as subprocesses, which
-    // under mutation would be re-run once per mutant.
-    //
-    // Nothing was catching this: with no tree holding code, the loop above
-    // never reached a run at all, so the invocation was unexercised until the
-    // first one did.
-    //
-    // `--covered-only` is what keeps the device-only file out of this. It is
-    // excluded from `<source>` in `phpunit.xml`, so no coverage is recorded for
-    // it and the runner skips a file it has no covered lines for — which
-    // matters more here than it reads: `TheRunloop::start()` blocks against the
-    // real bridge, so a mutant of it would hang rather than fail.
-    // `--parallel` because this is the one gate whose cost anybody notices.
-    // `bootstrap/Composition` takes seventy-six to ninety-one minutes on a
-    // runner where every other tree takes three to five: it is the composition
-    // root, so almost every test touches it, and a floor of 100 means each
-    // mutant is judged by a suite run. A gate nobody can afford to re-run is a
-    // gate people learn to work around.
-    //
-    // Safe for the same reason `composer test` is: parallelism here is
-    // paratest's, and the two suites that cannot survive it are already
-    // excluded below — `Guards` plants violations into the working tree that a
-    // neighbouring process would see appear and vanish, and `Floors` reads a
-    // clover report this run never asks for. Those exclusions are what make the
-    // ordinary suite parallel, and they are the same ones.
-    //
-    // It changes what the run costs and not what it decides: the same mutants
-    // are generated and the same floor judges them.
-    $command = sprintf(
-        '%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s',
-        escapeshellarg($root),
-        $floor,
-        escapeshellarg(implode(',', array_map(
-            static fn(string $path): string => sprintf('%s/%s', $root, $path),
-            $paths,
-        ))),
-    );
-
-    passthru($command, $status);
-
+    $status = mutate($root, $floor, $paths, null);
     $failed = $failed === 0 ? $status : $failed;
 }
 
@@ -249,4 +242,194 @@ function argument(array $given, string $prefix): ?string
     }
 
     return null;
+}
+
+/**
+ * One mutation run over some trees, at a floor, judged by a group where given.
+ *
+ * It leaves out the two suites `composer test` does, for the same reasons
+ * and with an extra one here. `Floors` reads the clover report rather than
+ * producing one, so it fails outright in a run that was never asked for
+ * coverage — and a mutation run is exactly that. `Guards` plants violations
+ * and runs the analyser and the suite over them as subprocesses, which
+ * under mutation would be re-run once per mutant.
+ *
+ * Nothing was catching this: with no tree holding code, the loops that
+ * call this never reached a run at all, so the invocation was unexercised until the
+ * first one did.
+ *
+ * `--covered-only` is what keeps the device-only file out of this. It is
+ * excluded from `<source>` in `phpunit.xml`, so no coverage is recorded for
+ * it and the runner skips a file it has no covered lines for — which
+ * matters more here than it reads: `TheRunloop::start()` blocks against the
+ * real bridge, so a mutant of it would hang rather than fail.
+ * `--parallel` because this is the one gate whose cost anybody notices, and
+ * a gate nobody can afford to re-run is a gate people learn to work around.
+ *
+ * Safe for the same reason `composer test` is: parallelism here is
+ * paratest's, and the two suites that cannot survive it are already
+ * excluded here — `Guards` plants violations into the working tree that a
+ * neighbouring process would see appear and vanish, and `Floors` reads a
+ * clover report this run never asks for. Those exclusions are what make the
+ * ordinary suite parallel, and they are the same ones.
+ *
+ * Neither the parallelism nor a group changes what is decided: the same
+ * mutants are generated and the same floor judges them. A group changes which
+ * tests judge them, and is held to covering its tree before it may.
+ *
+ * @param list<string> $paths
+ */
+function mutate(string $root, int $floor, array $paths, ?string $group): int
+{
+    $command = sprintf(
+        '%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s%s',
+        escapeshellarg($root),
+        $floor,
+        escapeshellarg(implode(',', array_map(
+            static fn(string $path): string => sprintf('%s/%s', $root, $path),
+            $paths,
+        ))),
+        $group === null ? '' : sprintf(' --group=%s', escapeshellarg($group)),
+    );
+
+    passthru($command, $status);
+
+    return $status;
+}
+
+/**
+ * Each tree a group declares it holds, by the tree's path.
+ *
+ * Asked of the suite rather than read out of test sources, so the answer is
+ * the groups Pest will actually select by. A group naming a tree nothing
+ * measures is refused rather than ignored: a misspelt tree would otherwise be
+ * mutated against the whole suite again, correct and slow and with no sign the
+ * declaration was never read.
+ *
+ * @param  list<MeasuredTree>    $trees
+ * @return array<string, string>
+ */
+function whatHoldsEachTree(string $root, array $trees): array
+{
+    $said = shell_exec(sprintf('%s/vendor/bin/pest --list-groups --colors=never 2>&1', escapeshellarg($root)));
+    $said = is_string($said) ? $said : '';
+
+    // Refused rather than read as *no groups*: a listing that failed and one
+    // that found none would otherwise both mutate every tree against the whole
+    // suite, and only one of them is true.
+    if (! str_contains($said, 'Available test group')) {
+        fwrite(STDERR, sprintf("Pest could not list the suite's groups:\n%s\n", $said));
+
+        exit(1);
+    }
+
+    $listed = explode("\n", $said);
+
+    $measured = array_map(static fn(MeasuredTree $tree): string => $tree->path, $trees);
+    $holders = [];
+
+    foreach ($listed as $line) {
+        if (preg_match('/^\s*-\s+(holds:(\S+))\s+\(/u', $line, $found) !== 1) {
+            continue;
+        }
+
+        if (! in_array($found[2], $measured, strict: true)) {
+            fwrite(STDERR, sprintf(<<<'SAID'
+                A test declares the group %s, and %s is not a tree phpunit.xml measures.
+
+                The group names the tree its tests hold, so the name has to be one of
+                the measured trees exactly — otherwise the tree it meant is mutated
+                against the whole suite again, and nothing says why it is slow.
+
+                SAID, $found[1], $found[2]));
+
+            exit(1);
+        }
+
+        $holders[$found[2]] = $found[1];
+    }
+
+    return $holders;
+}
+
+/**
+ * Whether a group reaches every line of its tree that anything could reach.
+ *
+ * Measured the way `test:report` measures, over the group alone, and held to
+ * every statement in the tree: the coverage floor already holds the suite to
+ * all of them, so a statement the group misses is one the suite reaches and
+ * the group does not — and `--covered-only` would drop its mutants without a
+ * word. Files `phpunit.xml` leaves out of `<source>` are not in the report,
+ * which is the same exemption the device-only runloop has everywhere else.
+ */
+function theGroupCoversTheTree(string $root, string $group, string $tree): bool
+{
+    $clover = sprintf('%s/lemonfiber-held-%s.xml', sys_get_temp_dir(), hash('sha256', $group));
+
+    passthru(sprintf(
+        "php -d pcov.directory=%s -d pcov.exclude='~/(vendor|bootstrap/cache)/~' %s/vendor/bin/pest --group=%s --coverage-clover=%s",
+        escapeshellarg($root),
+        escapeshellarg($root),
+        escapeshellarg($group),
+        escapeshellarg($clover),
+    ), $status);
+
+    if ($status !== 0 || ! is_file($clover)) {
+        fwrite(STDERR, sprintf("The group %s did not pass on its own, so it cannot judge %s.\n", $group, $tree));
+
+        return false;
+    }
+
+    $missed = whatTheReportLeavesUnreached($clover, $root, $tree);
+    unlink($clover);
+
+    if ($missed === []) {
+        return true;
+    }
+
+    fwrite(STDERR, sprintf(<<<'SAID'
+        %s does not cover %s, so its mutants cannot be judged by it.
+
+        Not reached: %s
+
+        Every line the suite reaches has to be reached by the tests that hold the
+        tree, or `--covered-only` stops mutating it and nothing says so. Add the
+        test that runs it to the group.
+
+        SAID, $group, $tree, implode(', ', $missed)));
+
+    return false;
+}
+
+/**
+ * Every statement in a tree a clover report says nothing reached.
+ *
+ * A tree with no file in the report at all is answered as unreached as a
+ * whole, rather than as nothing missed: a group that runs none of its tree
+ * covers none of it, and an empty list would read as the opposite.
+ *
+ * @return list<string>
+ */
+function whatTheReportLeavesUnreached(string $clover, string $root, string $tree): array
+{
+    $report = simplexml_load_file($clover);
+    $under = sprintf('%s/%s/', $root, $tree);
+    $missed = [];
+    $reached = false;
+
+    foreach ($report === false ? [] : $report->xpath('//file') ?? [] as $file) {
+        $name = (string) $file['name'];
+
+        if (! str_starts_with($name, $under)) {
+            continue;
+        }
+
+        $reached = true;
+
+        foreach ($file->xpath('line[@type="stmt"][@count="0"]') ?? [] as $line) {
+            $missed[] = sprintf('%s:%s', mb_substr($name, mb_strlen($root) + 1), (string) $line['num']);
+        }
+    }
+
+    return $reached ? $missed : [sprintf('%s, all of it', $tree)];
 }

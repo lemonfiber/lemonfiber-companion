@@ -7,6 +7,10 @@ use Modules\Design\Api\ThemeToken;
 use Native\Mobile\Edge\TailwindParser;
 use Tests\Support\Edge;
 
+// Runs the composition root rather than reading it, so its mutants are judged
+// here: see `scripts/mutation.php`.
+pest()->group('holds:bootstrap/Composition');
+
 // The one line that connects the design module to the renderer.
 //
 // `Theme::resolver()` can be correct and the application still render without
