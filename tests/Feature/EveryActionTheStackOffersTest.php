@@ -47,13 +47,19 @@ const OFFERED = [
  * judgement. Anything that merely has not been built yet belongs below.
  */
 const ELSEWHERE = [
-    // On a launch with no stack configured the app says that setup
-    // happens at the machine and offers pairing. Setup is the one thing the
-    // companion is required *not* to carry out, so the three kinds that are
-    // setup are not omissions.
-    'Setup' => 'N1-R35 — setup happens at the machine, and the app says so',
-    'Wizard' => 'N1-R35 — the wizard is the machine-side setup flow',
-    'Walkthrough' => 'N1-R35 — the walkthrough is the machine-side setup flow',
+    // First-run setup is the one thing the companion is required *not* to
+    // carry out: it happens at the machine, and the app says so and why. So
+    // the two kinds that are setup are not omissions. Each is read off what
+    // the stack answers with rather than off its name: the setup endpoints
+    // answer with `wizard`, and `setup` is produced by the command line's own
+    // setup and by no endpoint.
+    //
+    // A walkthrough is not one of them. It is an ordinary action taking an
+    // item — the first acquisition narrated end to end, on a stack already
+    // set up — and its lines and its handover are for the app to show. It
+    // waits below with everything else nobody has offered yet.
+    'Setup' => 'N1-R4 — setup settles at the machine, and the app says so rather than offering it',
+    'Wizard' => 'N1-R4 — the wizard is setup asking its questions, which happens at the machine',
 ];
 
 /**
@@ -72,7 +78,7 @@ const NOT_YET = [
     'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',
     'Space', 'Start', 'Step', 'StopSeeding', 'Stored',
     'Substitution', 'Trace', 'Undo', 'Uninstall', 'Upgrade',
-    'Version', 'Watch', 'Wiring', 'Word',
+    'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {

@@ -55,9 +55,9 @@ start, stop and restart live — carries `plan.services`, `plan.forms`,
 a screen list what an action disturbs rather than summarise it. Nothing in it
 answers *for how long*, and nothing in `start`, `undo`, `beside` or `stuck`
 does either. The only time estimates in the contract are `dashboard.eta`,
-`household.estimate`, `bandwidth.seconds` and `step.eta`, and `step` is the
-walkthrough — the machine-side setup flow this app is required not to carry out
-(`N1-R35`).
+`household.estimate`, `bandwidth.seconds` and `step.eta`, and `step` is one
+line of a walkthrough — the first acquisition narrated as it happens, which is
+about one item arriving rather than about a service coming back.
 
 An estimate written here would be a guess at something the stack knows and this
 side does not: how long a service takes to come back depends on what it was
