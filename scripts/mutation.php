@@ -27,12 +27,14 @@ declare(strict_types=1);
  * lines of shipped PHP the coverage floor holds and this file walked straight
  * past — silently, because the run still passed, over less.
  *
- * **Two arguments, both for CI.** `--list` prints the trees worth mutating as
- * a JSON array, which is what a workflow matrix reads; `--tree=<path>` narrows
- * a run to one of them. Together they let the slowest gate in the repository
- * run a tree per runner instead of all of them in a row — it is the one gate
- * where the work is genuinely separable, because a floor of 100 admits no
- * offsetting between trees and each is already judged alone.
+ * **Two arguments, both for CI.** `--list` prints the shards as a JSON array,
+ * which is what a workflow matrix reads; `--shard=<id>` runs one of them. A
+ * shard is a run of files cut to about the same weight — lines of code — out
+ * of every tree at one floor, so one large tree is spread over several runners
+ * and several small ones share one, and the slowest runner is about as long as
+ * the others. It is the one gate where the work is genuinely separable, because
+ * a floor of 100 admits no offsetting between files and each is already judged
+ * alone.
  *
  * Neither changes what is mutated locally: `composer test:mutation` with no
  * arguments is the whole of it, in one process, which is what somebody running
@@ -59,6 +61,13 @@ declare(strict_types=1);
  */
 
 use Tests\Support\MeasuredTree;
+use Tests\Support\OurCode;
+use Tests\Support\Tree;
+
+// The weight of one shard, in lines of code (`linesOfCode()`). Every shard pays
+// a checkout, an install and one run of the suite before its first mutant, so
+// a smaller weight buys a shorter slowest runner with more of those.
+const LINES_PER_SHARD = 1400;
 
 $root = dirname(__DIR__);
 
@@ -70,7 +79,7 @@ require sprintf('%s/vendor/autoload.php', $root);
 /** @var list<string> $given */
 $given = array_slice($argv ?? [], 1);
 
-$asked = argument($given, '--tree=');
+$asked = argument($given, '--shard=');
 $listing = in_array('--list', $given, strict: true);
 
 $trees = MeasuredTree::all();
@@ -81,7 +90,9 @@ if ($trees === []) {
     exit(1);
 }
 
-$holders = $listing ? [] : whatHoldsEachTree($root, $trees);
+// Asked for the listing too: a held path is mutated in the shard for held
+// paths and left out of every other, so the shards cannot be cut without it.
+$holders = whatHoldsEachTree($root, $trees);
 
 /** @var array<int, list<string>> $byFloor */
 $byFloor = [];
@@ -91,9 +102,6 @@ $held = [];
 
 /** @var array<int, list<string>> $leftOut */
 $leftOut = [];
-
-/** @var list<string> $worthMutating */
-$worthMutating = [];
 
 foreach ($trees as $tree) {
     $floor = $tree->mutationFloor;
@@ -135,27 +143,12 @@ foreach ($trees as $tree) {
         continue;
     }
 
-    // Narrowed to one tree where a runner was given one. The floor is still
-    // read for every tree rather than only this one, because the refusal
-    // above is the check that a tree was declared a floor at all — and a shard
-    // that skipped it would let an undeclared floor through on fourteen runners
-    // out of fifteen.
-    if ($asked !== null && $asked !== $tree->path) {
-        continue;
-    }
-
     // Nothing to mutate yet. Said out loud rather than skipped in silence,
     // because "no mutants" and "every mutant killed" print the same way.
     if ($tree->sourceFiles() === []) {
         if (! $listing) {
             fwrite(STDOUT, sprintf("  %s: no code yet, nothing to mutate\n", $tree->path));
         }
-
-        continue;
-    }
-
-    if ($listing) {
-        $worthMutating[] = $tree->path;
 
         continue;
     }
@@ -180,35 +173,41 @@ foreach ($trees as $tree) {
     $byFloor[$floor][] = $tree->path;
 }
 
-// What a workflow matrix reads. An empty array is a legitimate answer — no
-// tree holds code yet — and a matrix over it runs nothing, which is why the
-// job that aggregates the shards has to treat "nothing ran" as a pass rather
-// than as an absence.
+$shards = shardsOf($byFloor, $held, $leftOut);
+
+// What a workflow matrix reads: one entry per runner. An empty array is a
+// legitimate answer — no tree holds code yet — and a matrix over it runs
+// nothing, which is why the job that aggregates the shards has to treat
+// "nothing ran" as a pass rather than as an absence. Slashes unescaped,
+// because a label names paths and `bootstrap\/Composition` is what a runner
+// would be labelled with otherwise.
 if ($listing) {
-    // Not sorted here, and that is not an omission. The trees arrive in the
-    // order `phpunit.xml` writes them, with each glob expanded by `glob()`,
-    // which sorts — so this list is stable across commits, which is all a
-    // matrix needs so that its runners do not reshuffle. Sorting it again would
-    // have meant reaching for a byte comparison `L6` forbids, and claiming an
-    // exemption for a line that changes nothing is worse than the line.
-    // Slashes unescaped, because a tree is a path now rather than a bare name
-    // and `bootstrap\/Composition` is what a runner would be labelled with.
-    fwrite(STDOUT, sprintf("%s\n", json_encode($worthMutating, JSON_UNESCAPED_SLASHES)));
+    $matrix = [];
+
+    foreach ($shards as $id => $shard) {
+        $matrix[] = ['id' => $id, 'label' => $shard['label']];
+    }
+
+    fwrite(STDOUT, sprintf("%s\n", json_encode($matrix, JSON_UNESCAPED_SLASHES)));
 
     exit(0);
 }
 
-if ($asked !== null && $byFloor === [] && $held === []) {
-    fwrite(STDERR, sprintf(<<<'SAID'
-        There is no measured tree at %s with code to mutate.
+if ($asked !== null) {
+    if (! array_key_exists($asked, $shards)) {
+        fwrite(STDERR, sprintf(<<<'SAID'
+            There is no shard %s here; this commit cuts %d.
 
-        A shard naming one that is gone is a shard that passes having done nothing,
-        which is the whole failure this gate exists to prevent. The matrix is built
-        from `--list` on the same commit, so this means the two disagree.
+            A shard naming one that is gone is a shard that passes having done nothing,
+            which is the whole failure this gate exists to prevent. The matrix is built
+            from `--list` on the same commit, so this means the two disagree.
 
-        SAID, $asked));
+            SAID, $asked, count($shards)));
 
-    exit(1);
+        exit(1);
+    }
+
+    exit(runShard($root, $shards[$asked]));
 }
 
 if ($byFloor === [] && $held === []) {
@@ -220,9 +219,7 @@ if ($byFloor === [] && $held === []) {
 $failed = 0;
 
 foreach ($held as $run) {
-    fwrite(STDOUT, sprintf("\nMutation at %d%%: %s, judged by %s\n", $run['floor'], $run['path'], $run['group']));
-
-    $status = theGroupCoversWhatItHolds($root, $run['group'], $run['path']) ? mutate($root, $run['floor'], [$run['path']], $run['group'], []) : 1;
+    $status = runHeld($root, $run);
     $failed = $failed === 0 ? $status : $failed;
 }
 
@@ -236,6 +233,226 @@ foreach ($byFloor as $floor => $paths) {
 }
 
 exit($failed === 0 ? 0 : 1);
+
+/**
+ * The runners the gate is spread over, keyed by the id `--shard=` names.
+ *
+ * Every file a floor mutates is weighed by its lines of code and the files are
+ * cut, in path order, into runs of about {@see LINES_PER_SHARD} lines each. A
+ * floor of 100 admits no offsetting, so a file judged on one runner is judged
+ * exactly as it would be beside every other file at that floor: the cut decides
+ * where a mutant runs, not whether it has to be killed. Files of different
+ * floors are never cut into one shard, because that is where a shared run
+ * would let the stricter carry the looser.
+ *
+ * Every path a group holds is mutated in one shard of its own, in the order
+ * the full run takes them. Those runs are short — the group is a handful of
+ * tests — and each is an invocation of its own either way.
+ *
+ * @param  array<int, list<string>>                                  $byFloor
+ * @param  list<array{floor: int, path: string, group: string}>      $held
+ * @param  array<int, list<string>>                                  $leftOut
+ * @return array<int, array{label: string, floor: int, files: list<string>, held: list<array{floor: int, path: string, group: string}>}>
+ */
+function shardsOf(array $byFloor, array $held, array $leftOut): array
+{
+    $cut = [];
+
+    foreach ($byFloor as $floor => $trees) {
+        $files = filesToMutate($trees, array_key_exists($floor, $leftOut) ? $leftOut[$floor] : []);
+
+        foreach (cutIntoRuns($files) as $run) {
+            $cut[] = ['floor' => $floor, 'files' => array_keys($run), 'held' => []];
+        }
+    }
+
+    if ($held !== []) {
+        $cut[] = ['floor' => 0, 'files' => [], 'held' => $held];
+    }
+
+    $shards = [];
+
+    foreach ($cut as $at => $shard) {
+        $shards[$at + 1] = [...$shard, 'label' => labelFor($at, $cut, $byFloor)];
+    }
+
+    return $shards;
+}
+
+/**
+ * Every file under these trees, relative to the repository and in path order,
+ * each with its lines of code. A file a group holds is left out: its shard
+ * is the one for held paths.
+ *
+ * `OurCode::sourceFiles()` is the list the rules read, sorted there. The order
+ * is what lets every runner cut the same shards: a directory listing comes
+ * back in whatever order the filesystem keeps, and two runners are two
+ * filesystems.
+ *
+ * @param  list<string>       $trees
+ * @param  list<string>       $leftOut
+ * @return array<string, int>
+ */
+function filesToMutate(array $trees, array $leftOut): array
+{
+    $root = sprintf('%s/', Tree::root());
+    $files = [];
+
+    foreach (OurCode::sourceFiles() as $file) {
+        $relative = mb_substr($file, mb_strlen($root));
+
+        if (under($relative, $trees) && ! under($relative, $leftOut)) {
+            $files[$relative] = linesOfCode($file);
+        }
+    }
+
+    return $files;
+}
+
+/**
+ * Whether a path is one of these, or inside one of them.
+ *
+ * @param list<string> $paths
+ */
+function under(string $file, array $paths): bool
+{
+    return array_any($paths, fn(string $path): bool => $file === $path || str_starts_with($file, sprintf('%s/', $path)));
+}
+
+/**
+ * The lines of a PHP file that hold code: a line with at least one token that
+ * is not whitespace, a comment or the opening tag. A line holding only a
+ * brace or a semicolon counts for nothing: `token_get_all()` gives those
+ * tokens as bare strings, with no line number.
+ *
+ * It is the weight the shards are balanced by, and only that. It does not
+ * decide what is mutated.
+ */
+function linesOfCode(string $file): int
+{
+    $source = file_get_contents($file);
+    $lines = [];
+
+    foreach (token_get_all(is_string($source) ? $source : '') as $token) {
+        if (is_array($token) && ! in_array($token[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT, T_OPEN_TAG], strict: true)) {
+            $lines[$token[2]] = true;
+        }
+    }
+
+    return count($lines);
+}
+
+/**
+ * Files, in the order given, cut into consecutive runs of about
+ * {@see LINES_PER_SHARD} lines of code.
+ *
+ * The number of runs is the total over that size, rounded up, and each cut
+ * falls on the first file that takes its run past an equal share of the total.
+ * No run is left empty.
+ *
+ * @param  array<string, int>       $files
+ * @return list<array<string, int>>
+ */
+function cutIntoRuns(array $files): array
+{
+    $total = array_sum($files);
+    $count = max(1, (int) ceil($total / LINES_PER_SHARD));
+    $share = $total / $count;
+
+    $runs = [[]];
+    $weighed = 0;
+
+    foreach ($files as $file => $lines) {
+        $runs[array_key_last($runs)][$file] = $lines;
+        $weighed += $lines;
+
+        if (count($runs) < $count && $weighed >= $share * count($runs)) {
+            $runs[] = [];
+        }
+    }
+
+    return array_values(array_filter($runs, static fn(array $run): bool => $run !== []));
+}
+
+/**
+ * What a shard's runner is called: the trees it mutates, each marked with the
+ * part it takes where the tree is cut across more than one shard.
+ *
+ * @param list<array{floor: int, files: list<string>, held: list<array{floor: int, path: string, group: string}>}> $cut
+ * @param array<int, list<string>>                                                                                  $byFloor
+ */
+function labelFor(int $at, array $cut, array $byFloor): string
+{
+    $shard = $cut[$at];
+
+    if ($shard['held'] !== []) {
+        return 'paths a holds: group judges';
+    }
+
+    $named = [];
+
+    foreach ($byFloor[$shard['floor']] as $tree) {
+        if (! treeIn($tree, $shard['files'])) {
+            continue;
+        }
+
+        $spans = array_keys(array_filter($cut, static fn(array $other): bool => treeIn($tree, $other['files'])));
+
+        $named[] = count($spans) === 1
+            ? $tree
+            : sprintf('%s, part %d of %d', $tree, (int) array_search($at, $spans, strict: true) + 1, count($spans));
+    }
+
+    return implode('; ', $named);
+}
+
+/**
+ * Whether any of these files is inside a tree.
+ *
+ * @param list<string> $files
+ */
+function treeIn(string $tree, array $files): bool
+{
+    return array_any($files, fn(string $file): bool => under($file, [$tree]));
+}
+
+/**
+ * One shard's runs: every held path in it against its group, then its files
+ * against the suite.
+ *
+ * @param array{label: string, floor: int, files: list<string>, held: list<array{floor: int, path: string, group: string}>} $shard
+ */
+function runShard(string $root, array $shard): int
+{
+    $failed = 0;
+
+    foreach ($shard['held'] as $run) {
+        $status = runHeld($root, $run);
+        $failed = $failed === 0 ? $status : $failed;
+    }
+
+    if ($shard['files'] !== []) {
+        fwrite(STDOUT, sprintf("\nMutation at %d%%: %s\n  %s\n", $shard['floor'], $shard['label'], implode("\n  ", $shard['files'])));
+
+        $status = mutate($root, $shard['floor'], $shard['files'], null, []);
+        $failed = $failed === 0 ? $status : $failed;
+    }
+
+    return $failed === 0 ? 0 : 1;
+}
+
+/**
+ * A held path, mutated against the group that holds it once the group is shown
+ * to cover all of it.
+ *
+ * @param array{floor: int, path: string, group: string} $run
+ */
+function runHeld(string $root, array $run): int
+{
+    fwrite(STDOUT, sprintf("\nMutation at %d%%: %s, judged by %s\n", $run['floor'], $run['path'], $run['group']));
+
+    return theGroupCoversWhatItHolds($root, $run['group'], $run['path']) ? mutate($root, $run['floor'], [$run['path']], $run['group'], []) : 1;
+}
 
 /**
  * The value of a `--name=` argument, or null where it was not given.

@@ -10,8 +10,8 @@ on:
   # `main` requires has to report on it. One that does not is not read as a
   # failure — it is read as a wait, and the pull request is dropped from the
   # queue when the status-check timeout expires, with nothing naming the cause.
-  # That is the same hole `mutation-gate` and `sonar.yml`'s gate exist to close,
-  # reached from a third direction.
+  # That is the same hole `mutation-gate` and the SonarCloud `gate` exist to
+  # close, reached from a third direction.
   #
   # It carries no pull request. `github.event.pull_request` is null here, and
   # `github.head_ref` and `github.base_ref` are empty — so a job reading any of
@@ -57,10 +57,12 @@ env:
 # mutation waits for the tests, because mutating code whose tests already fail
 # tells you nothing and costs the most of anything here.
 #
-# Everything heavy runs on pull requests only. A push to `main` arrives through
-# a pull request that already ran it; repeating the whole thing on the merge
-# commit buys a second opinion on the same tree. `main` keeps the fast job as a
-# net for anything that lands another way.
+# Mutation runs on pull requests and merge groups only. A push to `main`
+# arrives through a pull request that already ran it; repeating it on the merge
+# commit buys a second opinion on the same tree. `main` keeps the fast jobs as a
+# net for anything that lands another way, and runs the tests too: SonarCloud's
+# analysis of `main` is the baseline every pull request is measured against,
+# and it reads the coverage report the tests write.
 
 jobs:
   # Which of the following are worth running at all. A documentation change
@@ -371,12 +373,13 @@ jobs:
     #
     # So the condition asks the result as well as the output.
     #
-    # A merge group runs this exactly as a pull request does, and that is the
-    # single most important line in this file. Left as `pull_request` alone this
-    # job skips in the queue, a skipped required check reports success, and the
-    # queue merges a batch the suite was never run over — the whole tree of
-    # comments above, undone by the one event that has the last word.
-    if: ${{ !cancelled() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
+    # It runs on every event this workflow has. A merge group runs it exactly as
+    # a pull request does, and that is the single most important property of
+    # this job: left to `pull_request` alone it skips in the queue, a skipped
+    # required check reports success, and the queue merges a batch the suite
+    # was never run over. A push to `main` runs it because `sonar` below reads
+    # its report to analyse `main`.
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -392,11 +395,21 @@ jobs:
       # the global number and the fifteen per-tree ones.
       - run: composer test:report
       - run: composer test:floors
+      # The same two reports are what `sonar` hands SonarCloud, so the suite
+      # runs once for both.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-report
+          path: |
+            coverage/clover.xml
+            coverage/junit.xml
+          if-no-files-found: error
+          retention-days: 1
 
-  # Which trees are worth mutating, asked of the same script that mutates
-  # them. A list written here would be a second source of truth that goes stale
-  # the day a tree gains its first class — silently, because the run still
-  # passes, over less.
+  # Which shards to mutate, asked of the same script that mutates them. A list
+  # written here would be a second source of truth that goes stale the day a
+  # tree gains its first class — silently, because the run still passes, over
+  # less.
   #
   # The dependencies are installed for one `--list`, which reads as waste and
   # is not. The script derives the trees from `phpunit.xml` through
@@ -404,14 +417,19 @@ jobs:
   # suite and `G7` read — and the only way a script reaches it is the
   # autoloader. The alternative is a second copy of "what is measured" written
   # out here in a file nothing compares against the first.
+  #
+  # It runs beside `tests` rather than after it: the listing reads the tree,
+  # not the test results, so waiting for them only put its install on the
+  # critical path. It runs on exactly the events and changes `tests` does, so
+  # the two skip together; `mutation` below is what waits for the tests.
   mutation-scope:
     name: what to mutate
-    needs: tests
-    if: ${{ !cancelled() && needs.tests.result == 'success' }}
+    needs: scope
+    if: ${{ !cancelled() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
-      trees: ${{ steps.list.outputs.trees }}
+      shards: ${{ steps.list.outputs.shards }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -421,29 +439,30 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       - id: list
-        run: echo "trees=$(php scripts/mutation.php --list)" >> "$GITHUB_OUTPUT"
+        run: echo "shards=$(php scripts/mutation.php --list)" >> "$GITHUB_OUTPUT"
 
   # The most expensive gate in the repository, so it is the most guarded: only
   # on a pull request, only once the tests have passed, and only over the app's
   # own logic. Mutating code whose tests are already failing measures nothing.
   #
-  # A runner per measured tree, because this is the one gate whose work
-  # genuinely separates: a floor of 100 admits no offsetting between trees, so
-  # each is already judged alone and running them in one process only made the
-  # wall clock the sum of them. It was several minutes and the longest thing in
-  # the repository; now it is the slowest single tree.
+  # A runner per shard, because this is the one gate whose work genuinely
+  # separates: a floor of 100 admits no offsetting between files, so each is
+  # already judged alone. `scripts/mutation.php` cuts the files of every tree
+  # into shards of about the same lines of code, so the largest tree is spread
+  # over several runners and the smallest share one; the wall clock is the
+  # slowest shard, and no shard is much slower than the rest.
   #
   # `fail-fast: false` because the point of a shard is to learn about all of
   # them: cancelling nine runners over one escaped mutant means a second push
   # to find the next one.
   mutation:
-    name: mutation
+    name: mutation (${{ matrix.shard.label }})
     needs: [tests, mutation-scope]
-    if: ${{ !cancelled() && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.trees != '[]' }}
+    if: ${{ !cancelled() && needs.tests.result == 'success' && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.shards != '[]' }}
     strategy:
       fail-fast: false
       matrix:
-        tree: ${{ fromJson(needs.mutation-scope.outputs.trees) }}
+        shard: ${{ fromJson(needs.mutation-scope.outputs.shards) }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -455,17 +474,17 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - run: composer test:mutation -- --tree=${{ matrix.tree }}
+      - run: composer test:mutation -- --shard=${{ matrix.shard.id }}
 
   # The check branch protection actually names.
   #
-  # A matrix job reports one check per entry — `mutation (bridge/src)`,
-  # `mutation (app-modules/kernel/src)` — and none of them is called
-  # `mutation testing`. That
-  # required check would simply never report, and a required check that never
-  # reports blocks a pull request forever with nothing anywhere naming the
-  # cause. It is the same hole `sonar.yml`'s gate exists to close, and it is
-  # reached here by renaming rather than by a failure.
+  # A matrix job reports one check per entry — `mutation (app-modules/kernel/src,
+  # part 2 of 4)`, `mutation (paths a holds: group judges)` — and none of them
+  # is called `mutation testing`. That required check would simply never
+  # report, and a required check that never reports blocks a pull request
+  # forever with nothing anywhere naming the cause. It is the same hole the
+  # SonarCloud `gate` job exists to close, and it is reached here by renaming
+  # rather than by a failure.
   #
   # So this job keeps the name and answers for the shards. `!cancelled()` rather
   # than `always()`: a cancelled run is somebody pressing stop.
@@ -499,40 +518,33 @@ jobs:
           # a cancelled run — is already covered by the two results above it.
           echo "tests=$TESTS scope=$SCOPE shards=$SHARDS event=$EVENT scoped=$SCOPED changed=$CHANGED"
 
-          # `merge_group` is named beside `pull_request` below because `tests`
-          # now runs on both. Left out, a merge group whose tests skipped for
-          # any reason at all would read as "not a pull request, so nothing was
-          # meant to run" — and the queue is the event where that sentence is
-          # least true, being the last thing between the batch and `main`.
+          # Mutation runs on a pull request or a merge group that touched code,
+          # and on nothing else. Both of the other cases are deliberate, and
+          # this job is downstream of them, so without the two checks below it
+          # fails on every push to the default branch — main is then
+          # permanently red for a reason that has nothing to do with the commit
+          # — and a documentation-only pull request cannot merge at all,
+          # because this is a required context and a required context that
+          # fails blocks rather than skips.
           #
-          # `tests` runs on a pull request or a merge group that touched code,
-          # and skips otherwise. Both of those skips are deliberate and this job
-          # is downstream of them, so without this it fails on every push to the
-          # default branch — main is then permanently red for a reason that has
-          # nothing to do with the commit — and a documentation-only pull
-          # request cannot merge at all, because this is a required context and
-          # a required context that fails blocks rather than skips.
+          # `merge_group` is named beside `pull_request` because both run the
+          # tests and mutation. Left out, a merge group would read as "not a
+          # pull request, so nothing was meant to run" — and the queue is the
+          # event where that sentence is least true, being the last thing
+          # between the batch and `main`.
           #
-          # That is the failure `tests`' own comment was written to prevent,
-          # reintroduced one job downstream of it.
-          #
-          # The condition is restated rather than inferred. `needs.tests.result`
-          # says `skipped` whether the skip was intended or whether something
-          # above it broke, and treating those alike is what would let a real
-          # breakage pass as a quiet day. So this asks the same two questions
-          # `tests` asks, of the same inputs, and calls only those two skips a
-          # pass.
-          BY_DESIGN=no
-
-          if [ "$TESTS" = skipped ]; then
-            if [ "$EVENT" != pull_request ] && [ "$EVENT" != merge_group ]; then
-              BY_DESIGN=yes
-            elif [ "$SCOPED" = success ] && [ "$CHANGED" != true ]; then
-              BY_DESIGN=yes
-            fi
+          # The documentation-only skip is restated rather than inferred.
+          # `needs.tests.result` says `skipped` whether the skip was intended or
+          # whether something above it broke, and treating those alike is what
+          # would let a real breakage pass as a quiet day. So this asks the
+          # question `tests` asks, of the same inputs, and calls only that skip
+          # a pass.
+          if [ "$EVENT" != pull_request ] && [ "$EVENT" != merge_group ]; then
+            echo "Nothing to mutate: mutation runs on pull requests and merge groups, and this is a ${EVENT}."
+            exit 0
           fi
 
-          if [ "$BY_DESIGN" = yes ]; then
+          if [ "$TESTS" = skipped ] && [ "$SCOPED" = success ] && [ "$CHANGED" != true ]; then
             echo "Nothing to mutate: the tests did not run, and were not meant to."
             exit 0
           fi
@@ -543,6 +555,204 @@ jobs:
           fi
 
           if [ "$SHARDS" != success ] && [ "$SHARDS" != skipped ]; then
-            echo "::error::A tree's mutation run did not pass. Open the mutation (<tree>) job that is red."
+            echo "::error::A shard's mutation run did not pass. Open the mutation (<shard>) job that is red."
             exit 1
           fi
+
+  # SonarCloud, moved here from its own workflow so that it reads the report
+  # `tests` writes instead of running the suite a second time.
+  sonar:
+    name: sonarcloud
+    # A fork has no access to the token, and a job that cannot authenticate
+    # should not report a red tick that nobody can fix.
+    #
+    # A merge group is named here rather than left to the fork comparison. Its
+    # branch is this repository's own — the queue builds it here, never in a
+    # fork — so the token is present and the scan can run; but the field that
+    # comparison reads is `github.event.pull_request.head.repo.full_name`, which
+    # is null on this event, and what a null compares equal to is not a rule a
+    # required check should rest on. Unnamed, this job would skip in the queue,
+    # and a skipped required check reports success.
+    #
+    # What the scan proves there is less than it proves on a pull request, and
+    # saying so is cheaper than discovering it. There is no pull request for
+    # SonarCloud to decorate, so the run is recorded against the queue's own
+    # short-lived branch, and the gate below — which reads a pull request's
+    # summary — skips. So in a merge group this check means the scan ran over
+    # the merged tree and neither it nor the coverage run fell over. `Q-R64`
+    # itself is enforced on the pull request, which cannot be queued while that
+    # gate is red.
+    #
+    # It reads the report `tests` wrote rather than running the suite again.
+    # Where `tests` skipped because nothing but documentation changed, there is
+    # no report and no code for one to be about, and the scan runs without it.
+    # Where `tests` failed, this skips: the pull request is already blocked on
+    # `tests and coverage`, and a scan without coverage would read every new
+    # line as untested.
+    needs: tests
+    if: ${{ !cancelled() && (needs.tests.result == 'success' || needs.tests.result == 'skipped') && (github.event_name == 'push' || github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Sonar reads history to attribute an issue to the change that
+          # introduced it, which is what makes "new code" a usable gate.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: The coverage and test report `tests` wrote
+        if: needs.tests.result == 'success'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: coverage-report
+          path: coverage
+
+      # A Dependabot run reads its secrets from the Dependabot store rather than
+      # the Actions store, and `SONAR_TOKEN` lives only in the second. The
+      # scanner was handed an empty string, died on "Not authorized or project
+      # not found", and turned this job red over a step with nothing to do with
+      # the bump. No dependency update in this repository has ever merged; #155
+      # was the first one to try, and it sat on a stack trace about credentials
+      # while the two action SHAs it carried were never in question.
+      #
+      # Skipped rather than left to fail: a scan that cannot authenticate has no
+      # verdict to give, and a red tick meaning "the runner held no credential"
+      # is worth less than a step that says so in a sentence. The coverage and
+      # test report come from `tests and coverage`, which needs no token, so
+      # what that check measures is unchanged on these pull requests.
+      #
+      # Keyed on who opened the pull request, because that is what selects the
+      # secret store. Not `github.triggering_actor`, which becomes whoever
+      # pressed re-run — keyed on that, this step would come back on the re-run
+      # of a Dependabot pull request and fail it a second time.
+      #
+      # The event is named as well as the author. A push to main carries no pull
+      # request, so the author field is null there, and what a null compares
+      # equal to is not a rule this workflow should rest on: SonarCloud's
+      # analysis of main is the baseline every pull request is measured against,
+      # and a comparison that quietly went the other way would switch it off with
+      # nothing anywhere to notice.
+      - uses: SonarSource/sonarqube-scan-action@ba9859eae8dd6bd29e412f25ddbbef3d032000f4 # v8.2.2
+        id: scan
+        if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # Runs when the scan failed, and asks the one question its output does not
+      # answer: was that this repository or the host?
+      #
+      # A scanner that cannot reach SonarCloud fails with a Spring bean-creation
+      # trace forty lines deep and `Error 503` somewhere in the middle, and the
+      # required check beside it goes red exactly as it does for a real finding.
+      # On 2026-09-13 SonarCloud answered 503 for over an hour and fourteen pull
+      # requests across the organisation sat blocked behind a stack trace nobody
+      # had read to the middle of.
+      #
+      # It reports and changes nothing: the scan still failed, the check is still
+      # red, and `Q-R64` was still not enforced on this run. What it adds is the
+      # sentence that says which of those two things happened.
+      - name: Whether SonarCloud was answering
+        if: always() && steps.scan.outcome == 'failure'
+        run: |
+          set -uo pipefail
+          code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 \
+            https://sonarcloud.io/api/system/status 2>/dev/null || echo "000")
+
+          # 000 is curl reaching nothing at all, which is the same news as a 5xx
+          # for the purpose of this sentence.
+          case "$code" in
+          5?? | 000)
+            said="The scan failed and SonarCloud answered ${code} to a plain status request, so the host was unavailable rather than this pull request being at fault. Coverage and the test report come from the tests and coverage job, which this scan does not change. Re-run this job once sonarcloud.io is answering — nothing on this run enforced Q-R64."
+            ;;
+          *)
+            said="The scan failed and SonarCloud answered ${code} to a plain status request, so the host was reachable and the failure is in this run rather than an outage. Read the scanner output above. Nothing on this run enforced Q-R64."
+            ;;
+          esac
+
+          echo "::notice::${said}"
+          printf '### Why the SonarCloud scan failed\n\n%s\n' "$said" >> "$GITHUB_STEP_SUMMARY"
+
+      # Runs in exactly the case the scan does not. A step absent from a log
+      # reads the same as a step that ran and found nothing, and this repository
+      # has been caught by that reading before, so the skip appears under its own
+      # name carrying its reason and the identifier it was decided on.
+      - name: Why the scan was skipped
+        if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          set -euo pipefail
+          said="The SonarCloud scan was skipped: ${AUTHOR} opened this pull request, and a Dependabot run reads secrets from the Dependabot store rather than the Actions store, so SONAR_TOKEN is empty here and the scanner could only have failed on it. Coverage and the test report come from the tests and coverage job, which this scan does not change. No analysis was produced, so nothing on this run enforced Q-R64."
+          echo "::notice::${said}"
+          printf '### SonarCloud scan skipped\n\n%s\n' "$said" >> "$GITHUB_STEP_SUMMARY"
+
+  # Q-R64 — the check this repository was the only one in the estate without.
+  #
+  # The scan above produces the analysis; nothing here read it. SonarCloud's free
+  # plan cannot express "zero issues" as a quality gate condition, so a green
+  # `SonarCloud Code Analysis` tick means the *quality gate* passed, not that the
+  # project is clean — and this repository merged a pull request with two issues
+  # standing open under exactly that tick. `php:S1186` on an empty constructor and
+  # `php:S1142` on a method with four returns, both reported, both unread, because
+  # no check in this repository ever asked for the number.
+  #
+  # Every other repository here calls the shared reusable in `spec`, which asks
+  # both questions Q-R64 needs — new issues on this pull request, and open issues
+  # against the project — and blocks on either. One definition, so a repository
+  # cannot drift into gating differently from its neighbours, and so a fix to the
+  # gate reaches all of them at once.
+  gate:
+    # No `name:`, deliberately. The required-check context is built from the job
+    # ids — `gate / gate` — and every other repository here is protected under
+    # exactly that string. A display name would rename the context and leave
+    # this repository's branch protection pointing at a check that never
+    # reports, which is the same hole this file exists to close.
+    #
+    # After the scan, so there is a summary to read. Without this the gate polls
+    # for a comment the scan has not been started to produce yet and spends its
+    # whole timeout waiting for one.
+    needs: sonar
+    # Ordering only, though. `needs` on its own also makes this job disappear
+    # when the scan fails, and a required check that never reports blocks a pull
+    # request with no line anywhere saying by what — the very hole the comment
+    # above says this file exists to close, reopened from the other side. On
+    # 2026-09-13 SonarCloud answered 503 for over an hour and every pull request
+    # in the organisation sat on `MISSING: gate / gate`, while the job written to
+    # explain exactly that was never scheduled to say it.
+    #
+    # Nothing is loosened by running it anyway: a failed scan leaves `sonar` red,
+    # and `sonar` is a required check in its own right, so the pull request stays
+    # blocked for the reason it should be. The gate then does what it always did
+    # with no summary to read — warns, says Q-R64 went unenforced, and passes.
+    #
+    # `!cancelled()` rather than `always()`: a cancelled run is somebody pressing
+    # stop, and finishing the job they stopped serves nobody.
+    #
+    # On a merge group `gate / gate` skips, and reports success by skipping. The
+    # condition that does it is in the reusable rather than here — its `gate` job
+    # is `if: github.event_name == 'pull_request'`, and its `not-a-pull-request`
+    # job runs in its place and says in the log that nothing was gated. Nothing
+    # in this file can change that, and there is nothing for it to read anyway:
+    # the gate wants a SonarCloud summary about a pull request and an allowance
+    # to compare against a base branch, and a merge group has neither. `Q-R64`
+    # is enforced one step earlier, on the pull request, which is where the two
+    # things it reads exist.
+    if: ${{ !cancelled() }}
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@719d8380ff919dccc74d056cd4e1b32153ca08a0 # v1.0.14
+    with:
+      # Nothing, which is now true: `main` carries zero open issues, and the two
+      # it did carry went out with the commit that installed this gate.
+      #
+      # This is what the previous value was for. `allowed-open` is a ceiling and
+      # not a budget — the shared gate refuses any raise past the count actually
+      # standing against the base branch — so a repository installs the gate at
+      # whatever it inherited and walks it down. Two was the honest number for
+      # one merge; zero is the honest number now, and from here the gate refuses
+      # the first issue rather than the first issue past a tolerance.
+      allowed-open: 0
+    secrets:
+      sonar-token: ${{ secrets.SONAR_TOKEN }}

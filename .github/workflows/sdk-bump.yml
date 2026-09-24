@@ -41,8 +41,8 @@ env:
   SDK: lemonfiber/sdk-php
   PACKAGE: lemonfiber/sdk-php
   # Without this the install cannot reach the paid plugin repository and stops
-  # at HTTP 401, which is not a failing gate — it is no gate at all. `ci.yml`,
-  # `sonar.yml` and `sdk-drift.yml` all carry it; this one did not, so every
+  # at HTTP 401, which is not a failing gate — it is no gate at all. `ci.yml`
+  # and `sdk-drift.yml` both carry it; this one did not, so every
   # bump it has ever opened said the analyser failed when the analyser had not
   # run.
   COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
