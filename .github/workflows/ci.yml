@@ -106,11 +106,29 @@ jobs:
           # A Markdown file is documentation wherever it sits, a module's
           # README as much as the root's; the one suite that reads Markdown is
           # Arch, and `rules` runs it on every change.
-          if printf '%s\n' "${changed}" | grep -qvE '^(\.docs/.*|.*\.md|LICENSE)$'; then
-            echo "code=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "code=false" >> "$GITHUB_OUTPUT"
-            echo "Documentation only; the PHP gates are skipped."
+          #
+          # Under `.github/`, only this file runs the PHP gates, so a change to
+          # any other file there starts none of them. A change to this file
+          # starts none of them either where every line it changes is a pin
+          # on a shared workflow from `lemonfiber/spec`: those jobs run no PHP.
+          code=false
+          while IFS= read -r path; do
+            case "${path}" in
+            '' | .docs/* | *.md | LICENSE) continue ;;
+            .github/workflows/ci.yml)
+              if git diff -U0 "${BASE}" HEAD -- "${path}" \
+                | grep -E '^[-+]' | grep -vE '^(\+\+\+|---) ' \
+                | grep -qvE '^[-+][[:space:]]*uses: lemonfiber/spec/\.github/workflows/[^@]+@[0-9a-f]{40}( # .*)?$'; then
+                code=true
+              fi
+              ;;
+            .github/*) continue ;;
+            *) code=true ;;
+            esac
+          done <<< "${changed}"
+          echo "code=${code}" >> "$GITHUB_OUTPUT"
+          if [ "${code}" = false ]; then
+            echo "Documentation, and workflows that run no PHP gate; the PHP gates are skipped."
           fi
 
   # The gates every repository in the org shares, defined once in the spec repo
