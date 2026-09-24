@@ -57,12 +57,14 @@ env:
 # mutation waits for the tests, because mutating code whose tests already fail
 # tells you nothing and costs the most of anything here.
 #
-# Mutation runs on pull requests and merge groups only. A push to `main`
-# arrives through a pull request that already ran it; repeating it on the merge
-# commit buys a second opinion on the same tree. `main` keeps the fast jobs as a
-# net for anything that lands another way, and runs the tests too: SonarCloud's
-# analysis of `main` is the baseline every pull request is measured against,
-# and it reads the coverage report the tests write.
+# A pull request mutates what its change reaches; `main` mutates everything.
+# `scripts/mutation.php --changed-since` says what a change reaches, and a
+# change to how the gate runs — a manifest, `phpunit.xml`, this file —
+# mutates everything on the pull request too. What a change can reach without
+# touching it, such as a test under `tests/` edited to assert less, is what
+# the run on `main` answers. That run takes every push that changed code, and
+# a newer push cancels the one before it, so the tip of `main` is the commit
+# held to every mutant.
 
 jobs:
   # Which of the following are worth running at all. A documentation change
@@ -85,13 +87,16 @@ jobs:
           # so the diff below covers every pull request in the batch at once,
           # which is the whole point of a queue: one answer for the lot.
           #
-          # Two fields rather than one because only one of them exists at a
-          # time: `github.event.pull_request` is null on a merge group and
-          # `github.event.merge_group` is null on a pull request. A single
-          # expression reading either would fall through to the empty string on
-          # the other, take the "no usable base commit" arm, and run every gate
-          # — safe, and a sentence in the log that is not true.
-          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          # One field per event because only one of them exists at a time:
+          # `github.event.pull_request` is null on a merge group and on a push,
+          # and `github.event.merge_group` is null on the other two. A single
+          # expression reading one would fall through to the empty string on
+          # the others, take the "no usable base commit" arm, and run every
+          # gate — safe, and a sentence in the log that is not true.
+          #
+          # A push to `main` is measured against the commit before it, so a
+          # push of documentation alone starts no PHP gate there either.
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
         run: |
           set -euo pipefail
           # No base to compare against means run everything rather than guess.
@@ -422,10 +427,14 @@ jobs:
   # not the test results, so waiting for them only put its install on the
   # critical path. It runs on exactly the events and changes `tests` does, so
   # the two skip together; `mutation` below is what waits for the tests.
+  #
+  # On a pull request it lists only the shards the change reaches, and reads
+  # that from git against the base commit, which is fetched for it. On a merge
+  # group and on `main` it lists every shard.
   mutation-scope:
     name: what to mutate
     needs: scope
-    if: ${{ !cancelled() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
@@ -438,12 +447,19 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+      - name: The commit the pull request is measured against
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: git fetch --no-tags --depth=1 origin "${BASE}"
       - id: list
-        run: echo "shards=$(php scripts/mutation.php --list)" >> "$GITHUB_OUTPUT"
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+        run: echo "shards=$(php scripts/mutation.php --list ${BASE:+--changed-since="${BASE}"})" >> "$GITHUB_OUTPUT"
 
   # The most expensive gate in the repository, so it is the most guarded: only
-  # on a pull request, only once the tests have passed, and only over the app's
-  # own logic. Mutating code whose tests are already failing measures nothing.
+  # once the tests have passed, and only over the app's own logic. Mutating code
+  # whose tests are already failing measures nothing.
   #
   # A runner per shard, because this is the one gate whose work genuinely
   # separates: a floor of 100 admits no offsetting between files, so each is
@@ -474,7 +490,17 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - run: composer test:mutation -- --shard=${{ matrix.shard.id }}
+      - name: The commit the pull request is measured against
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: git fetch --no-tags --depth=1 origin "${BASE}"
+      # The same `--changed-since` as the listing, so this cuts the shards the
+      # matrix was built from.
+      - env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          SHARD: ${{ matrix.shard.id }}
+        run: composer test:mutation -- --shard="${SHARD}" ${BASE:+--changed-since="${BASE}"}
 
   # The check branch protection actually names.
   #
@@ -513,37 +539,23 @@ jobs:
           CHANGED: ${{ needs.scope.outputs.code }}
         run: |
           # `skipped` is a pass here and only here: the shards are skipped when
-          # no measured tree holds code yet, which `mutation-scope` reports as an empty
-          # list. Every other reason a shard does not run — a failure upstream,
+          # the change reaches no mutated file, or no measured tree holds code
+          # yet, which `mutation-scope` reports as an empty list. Every other reason a shard does not run — a failure upstream,
           # a cancelled run — is already covered by the two results above it.
           echo "tests=$TESTS scope=$SCOPE shards=$SHARDS event=$EVENT scoped=$SCOPED changed=$CHANGED"
 
-          # Mutation runs on a pull request or a merge group that touched code,
-          # and on nothing else. Both of the other cases are deliberate, and
-          # this job is downstream of them, so without the two checks below it
-          # fails on every push to the default branch — main is then
-          # permanently red for a reason that has nothing to do with the commit
-          # — and a documentation-only pull request cannot merge at all,
-          # because this is a required context and a required context that
-          # fails blocks rather than skips.
+          # Mutation runs wherever the tests run: on every event, once a change
+          # touches code. A documentation-only change skips both, deliberately,
+          # and this job is downstream of that skip — without the check below a
+          # documentation-only pull request could not merge at all, because
+          # this is a required context and a required context that fails
+          # blocks rather than skips.
           #
-          # `merge_group` is named beside `pull_request` because both run the
-          # tests and mutation. Left out, a merge group would read as "not a
-          # pull request, so nothing was meant to run" — and the queue is the
-          # event where that sentence is least true, being the last thing
-          # between the batch and `main`.
-          #
-          # The documentation-only skip is restated rather than inferred.
-          # `needs.tests.result` says `skipped` whether the skip was intended or
-          # whether something above it broke, and treating those alike is what
-          # would let a real breakage pass as a quiet day. So this asks the
-          # question `tests` asks, of the same inputs, and calls only that skip
-          # a pass.
-          if [ "$EVENT" != pull_request ] && [ "$EVENT" != merge_group ]; then
-            echo "Nothing to mutate: mutation runs on pull requests and merge groups, and this is a ${EVENT}."
-            exit 0
-          fi
-
+          # The skip is restated rather than inferred. `needs.tests.result`
+          # says `skipped` whether the skip was intended or whether something
+          # above it broke, and treating those alike is what would let a real
+          # breakage pass as a quiet day. So this asks the question `tests`
+          # asks, of the same inputs, and calls only that skip a pass.
           if [ "$TESTS" = skipped ] && [ "$SCOPED" = success ] && [ "$CHANGED" != true ]; then
             echo "Nothing to mutate: the tests did not run, and were not meant to."
             exit 0
@@ -585,12 +597,14 @@ jobs:
     #
     # It reads the report `tests` wrote rather than running the suite again.
     # Where `tests` skipped because nothing but documentation changed, there is
-    # no report and no code for one to be about, and the scan runs without it.
-    # Where `tests` failed, this skips: the pull request is already blocked on
-    # `tests and coverage`, and a scan without coverage would read every new
-    # line as untested.
+    # no report and no code for one to be about: on a pull request the scan
+    # runs without it, because `sonarcloud` is required there, and on `main`
+    # it skips, because an analysis of `main` without a report would set the
+    # project's coverage to nothing. Where `tests` failed, this skips: the pull
+    # request is already blocked on `tests and coverage`, and a scan without
+    # coverage would read every new line as untested.
     needs: tests
-    if: ${{ !cancelled() && (needs.tests.result == 'success' || needs.tests.result == 'skipped') && (github.event_name == 'push' || github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    if: ${{ !cancelled() && (needs.tests.result == 'success' || (needs.tests.result == 'skipped' && github.event_name != 'push')) && (github.event_name == 'push' || github.event_name == 'merge_group' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
