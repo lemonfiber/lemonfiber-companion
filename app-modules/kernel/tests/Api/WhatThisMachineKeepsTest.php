@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_keys;
 use function count;
 use function expect;
 use function it;
@@ -38,4 +39,14 @@ it('a machine that keeps nothing is an answer with three empty lists', function 
     $keeps = WhatThisMachineKeeps::of(TheRoots::of(), WhatIsKept::of(), WhatIsBeside::of());
 
     expect([count($keeps->roots()), count($keeps->kept()), count($keeps->beside())])->toBe([0, 0, 0]);
+});
+
+it('is a list in each of its three parts however they were handed their items', function (): void {
+    $root = WhereThingsAreKept::at('/srv/lemonfiber', 'Everything the stack writes');
+    $kept = SomethingKept::kept('Sonarr\'s settings', '/srv/lemonfiber/config/sonarr', 'So Sonarr starts as it was left', WhetherItHoldsASecret::Plain);
+    $beside = SomethingBeside::named('/srv/media', 'Your library');
+
+    expect(array_keys(iterator_to_array(TheRoots::of(...['first' => $root, 'second' => $root]), preserve_keys: true)))->toBe([0, 1])
+        ->and(array_keys(iterator_to_array(WhatIsKept::of(...['first' => $kept, 'second' => $kept]), preserve_keys: true)))->toBe([0, 1])
+        ->and(array_keys(iterator_to_array(WhatIsBeside::of(...['first' => $beside, 'second' => $beside]), preserve_keys: true)))->toBe([0, 1]);
 });

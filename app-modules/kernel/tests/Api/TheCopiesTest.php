@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_keys;
 use function expect;
 use function it;
 use function iterator_to_array;
@@ -24,4 +25,8 @@ it('N6-R9 — no copy is an answer with nothing in it', function (): void {
 
 it('N6-R9 — refuses a copy nobody could name', function (): void {
     expect(fn(): TheCopies => TheCopies::named('lemonfiber-20260924-0300-full', ' '))->toThrow(KeepingSaysNothing::class, '`archive`');
+});
+
+it('is a list however it was handed its names', function (): void {
+    expect(array_keys(iterator_to_array(TheCopies::named(...['first' => 'lemonfiber-20260924-0300-full', 'second' => 'lemonfiber-20260923-0300-full']), preserve_keys: true)))->toBe([0, 1]);
 });
