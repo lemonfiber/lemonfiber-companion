@@ -23,6 +23,7 @@ use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
+use Modules\Operator\Internal\Screens\WhatYouAreToldAbout;
 use Modules\Operator\Internal\Screens\WhereThisComesFrom;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Stacks\Api\AStacksScreen;
@@ -196,6 +197,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // and it keeps lemonfiber's connections and the services' in two
             // lists that no other screen would have room to keep apart.
             Router::native(AStacksScreen::Leaving->value, WhatLeavesHere::class);
+
+            // What the operator will be told about. Its own screen, because
+            // *will this wake me* is asked before a night away and not while
+            // reading what the machine sends.
+            Router::native(AStacksScreen::Told->value, WhatYouAreToldAbout::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

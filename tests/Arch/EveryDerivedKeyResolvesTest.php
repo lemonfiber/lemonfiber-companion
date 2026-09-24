@@ -37,6 +37,7 @@ use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhetherItIsAllowed;
+use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
@@ -224,6 +225,10 @@ function everyDerivedKey(): array
         WhetherItIsAllowed::class => aPairPerCase(
             WhetherItIsAllowed::cases(),
             static fn(WhetherItIsAllowed $allowed): array => [$allowed->saidOnTheScreen()],
+        ),
+        WhetherItIsHeard::class => aPairPerCase(
+            WhetherItIsHeard::cases(),
+            static fn(WhetherItIsHeard $heard): array => [$heard->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by

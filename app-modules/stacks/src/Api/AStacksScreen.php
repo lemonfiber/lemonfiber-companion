@@ -135,6 +135,9 @@ enum AStacksScreen: string
      */
     case Leaving = '/stacks/{stack}/leaving';
 
+    /** What this machine will tell its operator about. */
+    case Told = '/stacks/{stack}/told';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 

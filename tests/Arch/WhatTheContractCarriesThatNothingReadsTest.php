@@ -59,6 +59,20 @@ use Tests\Support\WhatTheReadersRead;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
+        'path' => 'AlertsEnvelope.changed',
+        'because' => 'Whether the call that answered changed what the operator is told about. This app '
+            . 'reads the setting and never changes it — what is heard about is the core\'s decision, '
+            . 'configured where the core is — so every answer it asks for says no, and a screen showing '
+            . 'that would be reporting on an act it did not perform.',
+    ],
+    [
+        'path' => 'AlertsEnvelope.rehearsed',
+        'because' => 'Whether the call that answered only reported what it would have written. The same '
+            . 'reason as `changed`: this app makes no call that writes, so it makes none that '
+            . 'rehearses, and a rehearsal label on a plain reading would describe something that never '
+            . 'happened.',
+    ],
+    [
         'path' => 'HostingEnvelope.caveat',
         'because' => 'What is true of this machine\'s service manager and worth knowing before it is '
             . 'relied on — a launch agent runs in a login session, so a Mac that is never signed in keeps '

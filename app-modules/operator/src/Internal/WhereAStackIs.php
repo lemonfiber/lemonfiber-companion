@@ -139,22 +139,13 @@ final readonly class WhereAStackIs
         return AStacksScreen::Elsewhere->forTheStack($this->stack);
     }
 
-    /** What this machine has changed about itself. */
-    public function record(): string
+    /**
+     * Where what this machine keeps about itself is: what it changed, what it
+     * runs, what it sends and what it wakes somebody for.
+     */
+    public function ofItself(): WhatItKeepsOfItself
     {
-        return AStacksScreen::Record->forTheStack($this->stack);
-    }
-
-    /** Where every service on this machine comes from. */
-    public function origins(): string
-    {
-        return AStacksScreen::Origins->forTheStack($this->stack);
-    }
-
-    /** Everything that leaves this machine. */
-    public function leaving(): string
-    {
-        return AStacksScreen::Leaving->forTheStack($this->stack);
+        return WhatItKeepsOfItself::of($this->stack);
     }
 
     /** What one of this machine's services has been saying. */
