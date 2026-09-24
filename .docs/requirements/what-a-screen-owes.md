@@ -75,14 +75,15 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The stack serves 62 envelopes and this app follows 11.
-Forty-nine are never referenced anywhere in `app-modules` or `bridge`. They
+**The measurement.** The SDK ships 62 envelopes and this app follows 17.
+Forty-three are never referenced anywhere in `app-modules` or `bridge`, and two
+more — `Admission` and `Pull` — are referenced without being followed. They
 resolve to the features below — each one an action available from another
-surface and not offered here.
+surface and not offered here, or offered only in part.
 
 ```
 ls vendor/lemonfiber/sdk-php/src/Generated/*Envelope.php | wc -l   # 62
-Tests\Support\WhatTheReadersRead::envelopes()                      # 11
+Tests\Support\WhatTheReadersRead::envelopes()                      # 17
 ```
 
 `A2` is not in the list: first-run setup is the one exception `N1-R2` allows
@@ -102,7 +103,20 @@ reaches that action another way. So those four are *partly* built, and the
 question they ask is narrower than the rest: not whether this app does the
 thing, but whether it reads everything the wire now says about it.
 
-That leaves **thirty-two** with nothing documented at all.
+**Five more are partly built, the other way round:** the envelope is read and
+drawn, and it answers some of the feature's requirements rather than all of
+them. `B5` is the alert preset and its exceptions (`N10-R8`); `B8` is whether
+the stack comes back after a restart and what did not (`N16-R5`, `N16-R6`,
+`N16-R13`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E4`
+is the record of what was changed and how far back it goes (`N11-R1` to
+`N11-R3`, `N11-R9`, `N11-R10`); `G8` is what leaves the machine, ours and
+theirs apart (`N10-R1` to `N10-R3`, `N10-R12`). Each is kept on
+[what leaves a machine](what-leaves-a-machine.md),
+[what a machine says](what-a-machine-says.md) or
+[what was done here](what-was-done-here.md), and the rest of each feature is
+still a decision nobody has made.
+
+That leaves **twenty-seven** with nothing documented at all.
 
 | Feature | What it is |
 |---|---|
@@ -112,12 +126,12 @@ That leaves **thirty-two** with nothing documented at all.
 | `B1` | Forms & partial stacks |
 | `B10` | Hosting long-running commands |
 | `B2` | Lifecycle control — **partly built**, see above |
-| `B5` | Notifications & alerting |
-| `B8` | Autostart & boot persistence |
+| `B5` | Notifications & alerting — **partly built**, see above |
+| `B8` | Autostart & boot persistence — **partly built**, see above |
 | `C4` | Support bundle |
 | `C7` | Queue health & stuck items |
 | `D1` | Service auto-wiring |
-| `D10` | Bandwidth & scheduling |
+| `D10` | Bandwidth & scheduling — **partly built**, see above |
 | `D2` | Quality presets in plain language |
 | `D3` | First-content walkthrough |
 | `D5` | Disk space management |
@@ -126,7 +140,7 @@ That leaves **thirty-two** with nothing documented at all.
 | `D9` | "Where is my show?" pipeline trace |
 | `E2` | Self-update |
 | `E3` | Backup & restore |
-| `E4` | Rollback |
+| `E4` | Rollback — **partly built**, see above |
 | `F4` | The capability vocabulary |
 | `F6` | Plugin lifecycle |
 | `F5` | The plugin catalogue and what vouches for a plugin |
@@ -134,7 +148,7 @@ That leaves **thirty-two** with nothing documented at all.
 | `F9` | Capabilities of the bundled services |
 | `G2` | Plain-language layer & in-product help — **partly built**, see above |
 | `G5` | The front door |
-| `G8` | Privacy stance |
+| `G8` | Privacy stance — **partly built**, see above |
 | `H1` | Cross-seeding |
 | `H2` | Announce-driven grabbing |
 | `H3` | Quality-profile sync |
