@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->service()->named()])" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- The view is a window rather than the whole, said before the
          lines rather than under them. Both cases have a line — a screen
          silent when the bound cut nothing teaches an operator to read
@@ -76,7 +76,7 @@
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

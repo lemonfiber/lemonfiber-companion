@@ -1,6 +1,6 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     <x-operator::heading>{{ __($this->went()->said(), ['stack' => $this->stack()->name()->shown()]) }}</x-operator::heading>
     <native:text>{{ __($this->went()->remedy()) }}</native:text>
 
@@ -29,4 +29,4 @@
 
         <x-operator::action label="{{ __($this->went()->isWorthAnotherAttempt() ? 'connection.try_that_again' : 'connection.sign_in') }}" :disabled="! $this->mayOffer()" tap="offer()" />
     @endif
-</native:column>
+</x-operator::content>

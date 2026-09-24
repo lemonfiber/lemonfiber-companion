@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- Said once, over the list: every word below is what this machine
          declares, and none was looked up. A project that has gone away
          changes nothing here, which is worth knowing before somebody reads a
@@ -25,7 +25,7 @@
     @endforelse
 
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

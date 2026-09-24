@@ -3,7 +3,7 @@
      second expression of the same rule, and two expressions are how a screen
      comes to draw both arms or neither. --}}
 @if ($went->isSignedIn)
-    <native:column class="w-full gap-4 px-6 py-4">
+    <x-operator::content>
         {{-- What stood in the way and what to do about it, both off the
              obstacle — so no screen describes a condition differently from the
              one beside it. --}}
@@ -15,12 +15,12 @@
              is leaving and returning, which `N1-R27` names separately as what a
              screen must not rely on. --}}
         <x-operator::action label="{{ __('health.ask_again') }}" tap="{{ $askAgain }}" />
-    </native:column>
+    </x-operator::content>
 @else
-    <native:column class="w-full gap-4 px-6 py-4">
+    <x-operator::content>
         {{-- The session has ended, so nothing was asked and there is nothing to
              report. The remedy is a screen rather than a sentence. --}}
         <native:text>{{ __('connection.session_has_ended') }}</native:text>
         <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$signInGoesTo" />
-    </native:column>
+    </x-operator::content>
 @endif

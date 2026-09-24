@@ -119,6 +119,14 @@ final readonly class Templates
                 </native:column>
                 BLADE, 'draws its slot on every branch', 'a-slot-behind-a-branch'),
 
+            // The column a screen's content sits in, written out rather than
+            // opened by the component that holds it.
+            Fixture::suite('F16', sprintf('%s/a-content-column-written-out.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full gap-4 px-6 py-4">
+                    <native:text>{{ __('health.overall.healthy') }}</native:text>
+                </native:column>
+                BLADE, 'no template but the component writes the content column out', 'a-content-column-written-out'),
+
             Fixture::suite('L1', sprintf('%s/english-sentence.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">
                     <native:text>This stack cannot be reached from here.</native:text>

@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     <x-operator::emphasis>{{ __($this->answer()->overall) }}</x-operator::emphasis>
 
     {{-- The families this run has something to say about, so that a
@@ -221,7 +221,7 @@
 
     {{-- What it keeps on the machine, and the copies it holds. --}}
     <x-operator::quiet-action label="{{ __('stacks.keeps.road_in') }}" :goes="$this->goes()->ofItself()->keeps()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     {{-- What it all amounts to, as the stack judged it — said before the
          rows, so an operator who opened this because a film would not play
          reads the answer before the list. --}}
@@ -69,7 +69,7 @@
          The rows are, and a filled bar beside a column of them reads as one
          more of the same kind of control. --}}
     <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"

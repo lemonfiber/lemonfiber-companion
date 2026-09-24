@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="$this->stack()->name()->shown()" />
 
 @if ($this->answer()->went->cameBack())
-<native:column class="w-full gap-4 px-6 py-4">
+<x-operator::content>
     <x-operator::emphasis>{{ __('stacks.keeps.roots') }}</x-operator::emphasis>
     @forelse ($this->answer()->roots as $root)
         <x-operator::entry>
@@ -63,7 +63,7 @@
     <x-operator::note>{{ __('stacks.keeps.at_the_machine') }}</x-operator::note>
 
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
-</native:column>
+</x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
         :went="$this->answer()->went"
