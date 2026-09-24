@@ -117,10 +117,11 @@ rule.
 ```
 app-modules/health/src/
   Api/            ← other modules may name these
-    Queries/WorstFirst.php    the order a screen reads a report in
-    Queries/InCategory.php    one family of checks, and nothing else
+    Queries/WorstFirst.php                 the order a screen reads a report in
+    Queries/InCategory.php                 one family of checks, and nothing else
+    Queries/TheCauseBeforeItsSymptoms.php  findings that share a cause, cause first
   Internal/       ← nothing outside this module may name these
-    FindingRanker.php
+    WhatExplainedIt.php                    the check that explains a finding, as a name
 ```
 
 The benefit is refactoring: anything in `Internal` can be renamed, split or
