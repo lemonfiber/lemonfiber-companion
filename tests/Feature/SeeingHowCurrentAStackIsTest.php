@@ -255,6 +255,22 @@ it('N2-R17 — asks before it takes one, and names what it would change', functi
         ->toContain('jellyfin', 'sonarr', trans_choice('updates.would_change', 2));
 });
 
+it('asking again where nothing is offered leaves the update already being asked about as it was', function (): void {
+    $held = TakingAnUpdate::offeredBy(anEveningWorthSpending());
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
+        AgainstThePins::Current,
+        Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
+        Services::none(),
+        Services::none(),
+        HowServicesTookIt::none(),
+    )));
+    $screen->asking = $held;
+
+    $screen->wouldYouLike();
+
+    expect($screen->asking())->toBe($held);
+});
+
 it('N2-R22 — the confirmation names what taking it will not put back', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
 
