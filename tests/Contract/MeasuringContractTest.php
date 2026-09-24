@@ -10,6 +10,7 @@ use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AVolume;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFreshAReadingIs;
+use Modules\Kernel\Api\HowMuchRoomAVolumeHas;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Nonce;
@@ -58,8 +59,8 @@ function theSameRoom(): WhereTheRoomWent
 {
     return WhereTheRoomWent::measured(
         TheVolumes::of(
-            AVolume::measured(WhatAVolumeHolds::Data, '/srv', AnAmountOfRoom::of(40_000_000_000, 'free'), AnAmountOfRoom::of(4_000_000_000_000, 'limit'), 60_000_000_000, AnAmountOfRoom::of(0, 'projected'), WhereTheRoomStands::Warning, HowFreshAReadingIs::live()),
-            AVolume::measured(WhatAVolumeHolds::Services, '', AnAmountOfRoom::unread(), AnAmountOfRoom::unread(), 0, AnAmountOfRoom::unread(), WhereTheRoomStands::Unknown, HowFreshAReadingIs::asOf(Instant::atEpochSeconds(1_790_100_000))),
+            AVolume::measured(WhatAVolumeHolds::Data, '/srv', HowMuchRoomAVolumeHas::counted(AnAmountOfRoom::of(40_000_000_000, 'free'), AnAmountOfRoom::of(4_000_000_000_000, 'limit'), 60_000_000_000, AnAmountOfRoom::of(0, 'projected')), WhereTheRoomStands::Warning, HowFreshAReadingIs::live()),
+            AVolume::measured(WhatAVolumeHolds::Services, '', HowMuchRoomAVolumeHas::counted(AnAmountOfRoom::unread(), AnAmountOfRoom::unread(), 0, AnAmountOfRoom::unread()), WhereTheRoomStands::Unknown, HowFreshAReadingIs::asOf(Instant::atEpochSeconds(1_790_100_000))),
         ),
         WhereTheRoomStands::Warning,
         TheAccount::of(
@@ -160,10 +161,10 @@ function everythingTheRoomSays(Measuring $measuring): string
                     $volume->holds()->value,
                     $volume->point(),
                     $volume->stands()->value,
-                    roomAmount($volume->free()),
-                    roomAmount($volume->limit()),
-                    $volume->committed(),
-                    roomAmount($volume->projected()),
+                    roomAmount($volume->room()->free()),
+                    roomAmount($volume->room()->limit()),
+                    $volume->room()->committed(),
+                    roomAmount($volume->room()->projected()),
                     $volume->reading()->either(
                         live: static fn(): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay('live'),
                         asOf: static fn(Instant $at): WhatTheRoomTurnedOutToSay => new WhatTheRoomTurnedOutToSay(sprintf('as of %d', $at->epochSeconds())),

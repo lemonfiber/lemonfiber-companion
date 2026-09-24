@@ -94,7 +94,7 @@ function theVolumeRead(array $data): string
     $said = '';
 
     foreach (WhereTheRoomIs::in(spaceSaying($data))->volumes() as $volume) {
-        $said = sprintf('%s|%s|%s|%s', $volume->point(), roomFigure($volume->free()), roomFigure($volume->projected()), $volume->reading()->either(
+        $said = sprintf('%s|%s|%s|%s', $volume->point(), roomFigure($volume->room()->free()), roomFigure($volume->room()->projected()), $volume->reading()->either(
             live: static fn(): WhatTheReaderCarried => new WhatTheReaderCarried('live'),
             asOf: static fn(Instant $at): WhatTheReaderCarried => new WhatTheReaderCarried((string) $at->epochSeconds()),
         )->said);

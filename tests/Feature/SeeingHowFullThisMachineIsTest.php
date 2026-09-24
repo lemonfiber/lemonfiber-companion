@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowFreshAReadingIs;
 use Modules\Kernel\Api\HowLongAgo;
+use Modules\Kernel\Api\HowMuchRoomAVolumeHas;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -67,8 +68,8 @@ function aFillingLoft(bool $halted = false): WhereTheRoomWent
 {
     return WhereTheRoomWent::measured(
         TheVolumes::of(
-            AVolume::measured(WhatAVolumeHolds::Data, '/srv', AnAmountOfRoom::of(40_000_000_000, 'free'), AnAmountOfRoom::of(4_000_000_000_000, 'limit'), 60_000_000_000, AnAmountOfRoom::of(0, 'projected'), WhereTheRoomStands::Warning, HowFreshAReadingIs::live()),
-            AVolume::measured(WhatAVolumeHolds::Services, '', AnAmountOfRoom::unread(), AnAmountOfRoom::unread(), 0, AnAmountOfRoom::unread(), WhereTheRoomStands::Unknown, HowFreshAReadingIs::asOf(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT - 7_200))),
+            AVolume::measured(WhatAVolumeHolds::Data, '/srv', HowMuchRoomAVolumeHas::counted(AnAmountOfRoom::of(40_000_000_000, 'free'), AnAmountOfRoom::of(4_000_000_000_000, 'limit'), 60_000_000_000, AnAmountOfRoom::of(0, 'projected')), WhereTheRoomStands::Warning, HowFreshAReadingIs::live()),
+            AVolume::measured(WhatAVolumeHolds::Services, '', HowMuchRoomAVolumeHas::counted(AnAmountOfRoom::unread(), AnAmountOfRoom::unread(), 0, AnAmountOfRoom::unread()), WhereTheRoomStands::Unknown, HowFreshAReadingIs::asOf(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT - 7_200))),
         ),
         WhereTheRoomStands::Warning,
         TheAccount::of(

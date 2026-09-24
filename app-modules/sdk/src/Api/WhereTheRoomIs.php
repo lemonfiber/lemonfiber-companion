@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function array_map;
+use function implode;
 use function is_array;
 use function is_bool;
 use function is_int;
@@ -20,6 +21,7 @@ use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AVolume;
 use Modules\Kernel\Api\HowAVolumeWasRead;
 use Modules\Kernel\Api\HowFreshAReadingIs;
+use Modules\Kernel\Api\HowMuchRoomAVolumeHas;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\TheAccount;
 use Modules\Kernel\Api\TheDownloadsOnDisk;
@@ -59,6 +61,9 @@ final readonly class WhereTheRoomIs
      * shown as a figure.
      */
     private const int NO_RATIO = 4_294_967_295;
+
+    /** How a refusal names one entry of a list, the way the contract's paths do. */
+    private const string AN_ENTRY = '%s[%d]';
 
     /**
      * How full a machine is, where the room went, and what is on its disk.
@@ -105,22 +110,19 @@ final readonly class WhereTheRoomIs
         $found = [];
         $position = 0;
 
-        foreach (self::rows($data, SpaceField::Volumes) as $row) {
+        foreach (self::object($data, SpaceField::Volumes->value, SpaceField::Volumes) as $row) {
             if (! is_array($row)) {
                 throw SpaceIsUnreadable::row(SpaceField::Volumes->value, $position);
             }
 
-            $where = sprintf('%s[%d]', SpaceField::Volumes->value, $position);
-            $holds = self::text($row, sprintf('%s.%s', $where, SpaceField::Role->value), SpaceField::Role);
+            $where = self::entry(SpaceField::Volumes, $position);
+            $holds = self::text($row, self::path($where, SpaceField::Role), SpaceField::Role);
 
             $found[] = AVolume::measured(
-                WhatAVolumeHolds::tryFrom($holds) ?? throw SpaceIsUnreadable::word(sprintf('%s.%s', $where, SpaceField::Role->value), $holds, ...array_map(static fn(WhatAVolumeHolds $case): string => $case->value, WhatAVolumeHolds::cases())),
+                WhatAVolumeHolds::tryFrom($holds) ?? throw SpaceIsUnreadable::word(self::path($where, SpaceField::Role), $holds, ...array_map(static fn(WhatAVolumeHolds $case): string => $case->value, WhatAVolumeHolds::cases())),
                 self::point($row, $where),
-                self::amount($row, $where, SpaceField::Free),
-                self::amount($row, $where, SpaceField::Limit),
-                self::count($row, sprintf('%s.%s', $where, SpaceField::Committed->value), SpaceField::Committed),
-                self::amount($row, $where, SpaceField::Projected),
-                self::level($row, sprintf('%s.%s', $where, SpaceField::Level->value)),
+                HowMuchRoomAVolumeHas::counted(self::amount($row, $where, SpaceField::Free), self::amount($row, $where, SpaceField::Limit), self::count($row, self::path($where, SpaceField::Committed), SpaceField::Committed), self::amount($row, $where, SpaceField::Projected)),
+                self::level($row, self::path($where, SpaceField::Level)),
                 self::reading($row, $where),
             );
             $position++;
@@ -137,7 +139,7 @@ final readonly class WhereTheRoomIs
     private static function point(array $row, string $where): string
     {
         if (! array_key_exists(SpaceField::Point->value, $row) || ! is_string($row[SpaceField::Point->value])) {
-            throw SpaceIsUnreadable::missing(sprintf('%s.%s', $where, SpaceField::Point->value));
+            throw SpaceIsUnreadable::missing(self::path($where, SpaceField::Point));
         }
 
         return $row[SpaceField::Point->value];
@@ -154,7 +156,7 @@ final readonly class WhereTheRoomIs
             return AnAmountOfRoom::unread();
         }
 
-        return AnAmountOfRoom::of(self::count($row, sprintf('%s.%s', $where, $field->value), $field), $field->value);
+        return AnAmountOfRoom::of(self::count($row, self::path($where, $field), $field), $field->value);
     }
 
     /**
@@ -164,19 +166,19 @@ final readonly class WhereTheRoomIs
      */
     private static function reading(array $row, string $where): HowFreshAReadingIs
     {
-        $path = sprintf('%s.%s', $where, SpaceField::Reading->value);
+        $path = self::path($where, SpaceField::Reading);
 
         if (! array_key_exists(SpaceField::Reading->value, $row) || ! is_array($row[SpaceField::Reading->value])) {
             throw SpaceIsUnreadable::missing($path);
         }
 
         $reading = $row[SpaceField::Reading->value];
-        $as = self::text($reading, sprintf('%s.%s', $path, SpaceField::As->value), SpaceField::As);
+        $as = self::text($reading, self::path($path, SpaceField::As), SpaceField::As);
 
         return match (HowAVolumeWasRead::tryFrom($as)) {
             HowAVolumeWasRead::Live => HowFreshAReadingIs::live(),
-            HowAVolumeWasRead::AsOf => HowFreshAReadingIs::asOf(Instant::atEpochSeconds(self::count($reading, sprintf('%s.%s', $path, WireField::At->value), WireField::At))),
-            null => throw SpaceIsUnreadable::word(sprintf('%s.%s', $path, SpaceField::As->value), $as, ...array_map(static fn(HowAVolumeWasRead $case): string => $case->value, HowAVolumeWasRead::cases())),
+            HowAVolumeWasRead::AsOf => HowFreshAReadingIs::asOf(Instant::atEpochSeconds(self::count($reading, self::path($path, WireField::At), WireField::At))),
+            null => throw SpaceIsUnreadable::word(self::path($path, SpaceField::As), $as, ...array_map(static fn(HowAVolumeWasRead $case): string => $case->value, HowAVolumeWasRead::cases())),
         };
     }
 
@@ -191,12 +193,12 @@ final readonly class WhereTheRoomIs
         $found = [];
         $position = 0;
 
-        foreach (self::rows($data, SpaceField::Consumption) as $row) {
+        foreach (self::object($data, SpaceField::Consumption->value, SpaceField::Consumption) as $row) {
             if (! is_array($row)) {
                 throw SpaceIsUnreadable::row(SpaceField::Consumption->value, $position);
             }
 
-            $found[] = self::line($row, sprintf('%s[%d]', SpaceField::Consumption->value, $position));
+            $found[] = self::line($row, self::entry(SpaceField::Consumption, $position));
             $position++;
         }
 
@@ -210,19 +212,19 @@ final readonly class WhereTheRoomIs
      */
     private static function line(array $row, string $where): ALineOfTheAccount
     {
-        $category = self::object($row, sprintf('%s.%s', $where, WireField::Category->value), WireField::Category);
-        $of = self::text($category, sprintf('%s.%s.%s', $where, WireField::Category->value, SpaceField::Of->value), SpaceField::Of);
-        $about = WhatALineIsAbout::tryFrom($of) ?? throw SpaceIsUnreadable::word(sprintf('%s.%s.%s', $where, WireField::Category->value, SpaceField::Of->value), $of, ...array_map(static fn(WhatALineIsAbout $case): string => $case->value, WhatALineIsAbout::cases()));
-        $tally = self::object($row, sprintf('%s.%s', $where, SpaceField::Tally->value), SpaceField::Tally);
+        $category = self::object($row, self::path($where, WireField::Category), WireField::Category);
+        $of = self::text($category, self::path($where, WireField::Category, SpaceField::Of), SpaceField::Of);
+        $about = WhatALineIsAbout::tryFrom($of) ?? throw SpaceIsUnreadable::word(self::path($where, WireField::Category, SpaceField::Of), $of, ...array_map(static fn(WhatALineIsAbout $case): string => $case->value, WhatALineIsAbout::cases()));
+        $tally = self::object($row, self::path($where, SpaceField::Tally), SpaceField::Tally);
         $occupies = WhatItOccupies::counted(
-            self::count($tally, sprintf('%s.%s.%s', $where, SpaceField::Tally->value, SpaceField::Logical->value), SpaceField::Logical),
-            self::count($tally, sprintf('%s.%s.%s', $where, SpaceField::Tally->value, SpaceField::Physical->value), SpaceField::Physical),
+            self::count($tally, self::path($where, SpaceField::Tally, SpaceField::Logical), SpaceField::Logical),
+            self::count($tally, self::path($where, SpaceField::Tally, SpaceField::Physical), SpaceField::Physical),
         );
-        $said = self::text($row, sprintf('%s.%s', $where, SpaceField::Reclaim->value), SpaceField::Reclaim);
-        $costs = WhatGettingItBackCosts::tryFrom($said) ?? throw SpaceIsUnreadable::word(sprintf('%s.%s', $where, SpaceField::Reclaim->value), $said, ...array_map(static fn(WhatGettingItBackCosts $case): string => $case->value, WhatGettingItBackCosts::cases()));
+        $said = self::text($row, self::path($where, SpaceField::Reclaim), SpaceField::Reclaim);
+        $costs = WhatGettingItBackCosts::tryFrom($said) ?? throw SpaceIsUnreadable::word(self::path($where, SpaceField::Reclaim), $said, ...array_map(static fn(WhatGettingItBackCosts $case): string => $case->value, WhatGettingItBackCosts::cases()));
 
         return $about === WhatALineIsAbout::Tree
-            ? ALineOfTheAccount::forTheTree(self::text($category, sprintf('%s.%s.%s', $where, WireField::Category->value, WireField::Name->value), WireField::Name), $occupies, $costs)
+            ? ALineOfTheAccount::forTheTree(self::text($category, self::path($where, WireField::Category, WireField::Name), WireField::Name), $occupies, $costs)
             : ALineOfTheAccount::for($about, $occupies, $costs);
     }
 
@@ -237,12 +239,12 @@ final readonly class WhereTheRoomIs
         $found = [];
         $position = 0;
 
-        foreach (self::rows($data, SpaceField::Candidates) as $row) {
+        foreach (self::object($data, SpaceField::Candidates->value, SpaceField::Candidates) as $row) {
             if (! is_array($row)) {
                 throw SpaceIsUnreadable::row(SpaceField::Candidates->value, $position);
             }
 
-            $found[] = self::download($row, sprintf('%s[%d]', SpaceField::Candidates->value, $position));
+            $found[] = self::download($row, self::entry(SpaceField::Candidates, $position));
             $position++;
         }
 
@@ -259,8 +261,8 @@ final readonly class WhereTheRoomIs
         return self::standing(
             $row,
             $where,
-            self::text($row, sprintf('%s.%s', $where, WireField::Name->value), WireField::Name),
-            self::count($row, sprintf('%s.%s', $where, WireField::Bytes->value), WireField::Bytes),
+            self::text($row, self::path($where, WireField::Name), WireField::Name),
+            self::count($row, self::path($where, WireField::Bytes), WireField::Bytes),
             self::consequence($row, $where),
         );
     }
@@ -276,7 +278,7 @@ final readonly class WhereTheRoomIs
             return '';
         }
 
-        return self::text($row, sprintf('%s.%s', $where, SpaceField::Consequence->value), SpaceField::Consequence);
+        return self::text($row, self::path($where, SpaceField::Consequence), SpaceField::Consequence);
     }
 
     /**
@@ -286,15 +288,15 @@ final readonly class WhereTheRoomIs
      */
     private static function standing(array $row, string $where, string $name, int $bytes, string $consequence): ADownloadOnDisk
     {
-        $path = sprintf('%s.%s', $where, WireField::Standing->value);
+        $path = self::path($where, WireField::Standing);
         $standing = self::object($row, $path, WireField::Standing);
-        $said = self::text($standing, sprintf('%s.%s', $path, WireField::Standing->value), WireField::Standing);
+        $said = self::text($standing, self::path($path, WireField::Standing), WireField::Standing);
 
         return match (WhereADownloadStands::tryFrom($said)) {
             WhereADownloadStands::NeverImported => ADownloadOnDisk::neverImported($name, $bytes, $consequence),
-            WhereADownloadStands::Seeding => ADownloadOnDisk::seeding($name, $bytes, self::ratio(self::count($standing, sprintf('%s.%s', $path, WireField::Ratio->value), WireField::Ratio)), $consequence),
+            WhereADownloadStands::Seeding => ADownloadOnDisk::seeding($name, $bytes, self::ratio(self::count($standing, self::path($path, WireField::Ratio), WireField::Ratio)), $consequence),
             WhereADownloadStands::LeftAlone => ADownloadOnDisk::leftAlone($name, $bytes, $consequence),
-            null => throw SpaceIsUnreadable::word(sprintf('%s.%s', $path, WireField::Standing->value), $said, ...array_map(static fn(WhereADownloadStands $case): string => $case->value, WhereADownloadStands::cases())),
+            null => throw SpaceIsUnreadable::word(self::path($path, WireField::Standing), $said, ...array_map(static fn(WhereADownloadStands $case): string => $case->value, WhereADownloadStands::cases())),
         };
     }
 
@@ -317,14 +319,23 @@ final readonly class WhereTheRoomIs
     }
 
     /**
-     * One list, required to be a list.
-     *
-     * @param  array<mixed> $data
-     * @return array<mixed>
+     * Where a field sits, as a refusal names it: the path so far, then each name below it.
      */
-    private static function rows(array $data, NamesAWireField $list): array
+    private static function path(string $where, NamesAWireField ...$below): string
     {
-        return self::object($data, $list->value, $list);
+        $path = [$where];
+
+        foreach ($below as $field) {
+            $path[] = $field->value;
+        }
+
+        return implode('.', $path);
+    }
+
+    /** Which entry of a list a refusal is about, counted from nought. */
+    private static function entry(NamesAWireField $list, int $position): string
+    {
+        return sprintf(self::AN_ENTRY, $list->value, $position);
     }
 
     /**

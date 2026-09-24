@@ -7,20 +7,15 @@ namespace Modules\Kernel\Api;
 /**
  * One volume the stack watches, as one reading measured it.
  *
- * What is free, the volume's limit and what will be free once what is on its
- * way has landed are each {@see AnAmountOfRoom}, which has a case for a figure
- * the stack could not read. What is on its way is always a figure: the stack
- * counts it from its own queue.
+ * Which of the two it is, where it is mounted, its figures, where it stands,
+ * and how far those figures can be relied on.
  */
 final readonly class AVolume
 {
     private function __construct(
         private WhatAVolumeHolds $holds,
         private string $point,
-        private AnAmountOfRoom $free,
-        private AnAmountOfRoom $limit,
-        private int $committed,
-        private AnAmountOfRoom $projected,
+        private HowMuchRoomAVolumeHas $room,
         private WhereTheRoomStands $stands,
         private HowFreshAReadingIs $reading,
     ) {}
@@ -29,18 +24,11 @@ final readonly class AVolume
     public static function measured(
         WhatAVolumeHolds $holds,
         string $point,
-        AnAmountOfRoom $free,
-        AnAmountOfRoom $limit,
-        int $committed,
-        AnAmountOfRoom $projected,
+        HowMuchRoomAVolumeHas $room,
         WhereTheRoomStands $stands,
         HowFreshAReadingIs $reading,
     ): self {
-        if ($committed < 0) {
-            throw RoomSaysNothing::negative('committed', $committed);
-        }
-
-        return new self($holds, $point, $free, $limit, $committed, $projected, $stands, $reading);
+        return new self($holds, $point, $room, $stands, $reading);
     }
 
     /** Which of the two volumes this is. */
@@ -60,28 +48,10 @@ final readonly class AVolume
         return $this->point;
     }
 
-    /** Bytes free now. */
-    public function free(): AnAmountOfRoom
+    /** What is free, its limit, what is on its way, and what will be free after. */
+    public function room(): HowMuchRoomAVolumeHas
     {
-        return $this->free;
-    }
-
-    /** The volume's own size, or the quota where it has one. */
-    public function limit(): AnAmountOfRoom
-    {
-        return $this->limit;
-    }
-
-    /** Bytes already on their way to landing here. */
-    public function committed(): int
-    {
-        return $this->committed;
-    }
-
-    /** What will be free once what is on its way has landed. */
-    public function projected(): AnAmountOfRoom
-    {
-        return $this->projected;
+        return $this->room;
     }
 
     /** Where it stands. */
