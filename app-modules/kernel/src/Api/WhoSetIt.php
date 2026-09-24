@@ -7,9 +7,10 @@ namespace Modules\Kernel\Api;
 use function sprintf;
 
 /**
- * The four things a stack can say about where a setting's value came from.
+ * The four things a stack can say about who put something there — a setting's
+ * value, a check, a service.
  *
- * The word, as a closed set. {@see WhereASettingCameFrom} is the reading built
+ * The word, as a closed set. {@see WhoPutItThere} is the reading built
  * from it — the arm that carries a plugin's name, the arm that carries a
  * stack's reason, and the refusal of a blank one — and this is the vocabulary
  * both that and the wire are spelled in.
@@ -45,14 +46,32 @@ enum WhoSetIt: string
     case Unknown = 'unknown';
 
     /**
-     * The key for the sentence naming who set it.
+     * The key for the sentence naming who set a setting.
      *
      * A key rather than the words: a class reaching for a translator it never
      * asked for has stopped telling the truth about what it needs, and the
      * template is where the words belong.
+     *
+     * **One key per surface, from one vocabulary.** The four words are the
+     * core's and are the same everywhere; the sentence is not. *Set by the
+     * plex plugin* is right of a value and wrong of a check, which the plugin
+     * did not set but brought — so each surface that shows an origin has its
+     * own line, and every line is derived from the same case.
      */
-    public function said(): string
+    public function ofASetting(): string
     {
         return sprintf('config.came_from_%s', $this->value);
+    }
+
+    /** The key for the sentence naming who put a check in the report. */
+    public function ofACheck(): string
+    {
+        return sprintf('health.origin.%s', $this->value);
+    }
+
+    /** The key for the sentence naming who put a service on the stack. */
+    public function ofAService(): string
+    {
+        return sprintf('stacks.outbound.theirs.origin.%s', $this->value);
     }
 }

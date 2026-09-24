@@ -29,6 +29,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
@@ -72,6 +73,7 @@ function aRunWithAWarning(): Report
             'The disk is nearly full',
             Conclusion::Warned,
             WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
         ),
     ));
 }
@@ -96,6 +98,7 @@ function aRunThatExplainsItself(): Report
                 Standing::Remediable,
                 WhatItSaysUnderneath::none(),
             ),
+            WhoPutItThere::bundled(),
         ),
     ));
 }
@@ -193,6 +196,7 @@ it('N2-R3 — says so where the machine knows what is wrong and has nothing to s
                 Standing::Remediable,
                 WhatItSaysUnderneath::none(),
             ),
+            WhoPutItThere::bundled(),
         ),
     ))));
 
@@ -314,6 +318,8 @@ it('N1-R10 — says what the operator met where the stack did not answer', funct
         expect($screen->answer()->went->met)->toBe(sprintf('connection.%s', $why->value), $why->value)
             ->and($screen->answer()->went->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
             ->and($screen->answer()->overall)->toBe('', $why->value)
+            // Nothing ran, so nothing is marked and no legend is owed.
+            ->and($screen->answer()->marksAnOrigin)->toBeFalse($why->value)
             // Still signed in. An obstacle is the stack not answering, not this
             // device losing its session — and a screen that read the two as one
             // would send an operator to sign in again over a machine that is
@@ -339,6 +345,7 @@ it('N1-R44 — a session that has ended sends them to sign in rather than to an 
         ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->answer()->went->remedy)->toBe('')
         ->and($screen->answer()->overall)->toBe('')
+        ->and($screen->answer()->marksAnOrigin)->toBeFalse()
         ->and($asking->askings())->toBe(0);
 });
 
@@ -420,6 +427,7 @@ it('N2-R3 — a row with nothing graded carries no cost at all', function (): vo
                 'Room to grow',
                 Conclusion::Passed,
                 WhatTheCheckSaid::nothingWrong(),
+                WhoPutItThere::bundled(),
             ),
         )),
     ));
@@ -449,6 +457,7 @@ it('N2-R3 — a row whose check could not run carries the reason and nothing els
                     'The tunnel was down, so where the traffic left could not be established',
                     Remedies::of(Remedy::of('Start the tunnel and run the checks again')),
                 ),
+                WhoPutItThere::bundled(),
             ),
         )),
     ));
@@ -486,6 +495,7 @@ function aFindingRowFor(WhatItSaysUnderneath $underneath): WhatOneFindingSays
                 Standing::Guided,
                 $underneath,
             ),
+            WhoPutItThere::bundled(),
         ),
     ))));
 
@@ -516,6 +526,7 @@ it('N2-R3 — a row names the service it is about, and what explains it', functi
             'The tunnel',
             Conclusion::Failed,
             aFailingVerdict(),
+            WhoPutItThere::bundled(),
         )->about(AboutWhat::theService('gluetun')),
         Finding::of(
             Check::of('vpn.egress-match'),
@@ -523,6 +534,7 @@ it('N2-R3 — a row names the service it is about, and what explains it', functi
             'Torrent traffic leaves through the tunnel',
             Conclusion::Failed,
             aFailingVerdict(),
+            WhoPutItThere::bundled(),
         )->about(AboutWhat::theService('qbittorrent'))->because(Because::theCheck(Check::of('vpn.up'))),
     ))));
 
@@ -546,6 +558,7 @@ it('N2-R3 — a cause the report does not hold is shown as the identifier', func
             'Torrent traffic leaves through the tunnel',
             Conclusion::Failed,
             aFailingVerdict(),
+            WhoPutItThere::bundled(),
         )->because(Because::theCheck(Check::of('a.check.that.did.not.run'))),
     ))));
 
@@ -569,6 +582,7 @@ function aRunWhoseWorstRanLast(): Report
             'Room to grow',
             Conclusion::Passed,
             WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
         ),
         Finding::of(
             Check::of('vpn.egress-match'),
@@ -583,6 +597,7 @@ function aRunWhoseWorstRanLast(): Report
                 Standing::Remediable,
                 WhatItSaysUnderneath::none(),
             ),
+            WhoPutItThere::bundled(),
         ),
     ));
 }
@@ -597,6 +612,7 @@ function aRunAcrossTwoFamilies(): Report
             'Two downloads have not moved',
             Conclusion::Warned,
             WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
         ),
         Finding::of(
             Check::of('queue.imports'),
@@ -604,6 +620,7 @@ function aRunAcrossTwoFamilies(): Report
             'An import keeps failing',
             Conclusion::Warned,
             WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
         ),
         Finding::of(
             Check::of('storage.room'),
@@ -611,6 +628,7 @@ function aRunAcrossTwoFamilies(): Report
             'The disk is nearly full',
             Conclusion::Warned,
             WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
         ),
     ));
 }
@@ -804,6 +822,7 @@ it('N2-R10 — a finding about a service offers what that service said', functio
             'The tunnel',
             Conclusion::Failed,
             aFailingVerdict(),
+            WhoPutItThere::bundled(),
         )->about(AboutWhat::theService('gluetun')),
     ))));
 
@@ -835,6 +854,7 @@ it('N2-R10 — a finding about the machine has no log to go to, and asking for o
             'The disk',
             Conclusion::Failed,
             aFailingVerdict(),
+            WhoPutItThere::bundled(),
         ),
     ))));
 
@@ -928,6 +948,7 @@ it('G4-R4 — a check with no verdict to explain carries no detail either', func
             'Torrent traffic leaves through the tunnel',
             Conclusion::Passed,
             WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
         ),
         Finding::of(
             Check::of('vpn.killswitch'),
@@ -938,6 +959,7 @@ it('G4-R4 — a check with no verdict to explain carries no detail either', func
                 'The tunnel was down, so the killswitch could not be exercised',
                 Remedies::of(Remedy::of('Bring the tunnel up and ask again')),
             ),
+            WhoPutItThere::bundled(),
         ),
     ))));
 
@@ -970,4 +992,60 @@ it('N1-R2 — the findings reach the glass, not only the view model', function (
 
     expect($drawn->said())->toContain(__(Overall::Degraded->saidOnTheScreen()))
         ->and($drawn->said())->toContain($screen->findings()[0]->title);
+});
+
+/**
+ * A run where the stack's own check ran first and a plugin's second.
+ *
+ * In that order so a screen deciding from the first row alone — whether to
+ * mark, or whether to say what an unmarked row is — gets this one wrong.
+ */
+function aRunWithAPluginsCheck(WhoPutItThere $second): Report
+{
+    return Report::of(Overall::Degraded, Findings::of(
+        Finding::of(
+            Check::of('disk.space'),
+            Category::Storage,
+            'The disk is nearly full',
+            Conclusion::Warned,
+            WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
+        ),
+        Finding::of(
+            Check::of('plex.reachable'),
+            Category::Services,
+            'Plex answers',
+            Conclusion::Warned,
+            WhatTheCheckSaid::nothingWrong(),
+            $second,
+        ),
+    ));
+}
+
+it('C1-R15 — a plugin\'s check says so beside its title, and the report says once what an unmarked row is', function (): void {
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAPluginsCheck(WhoPutItThere::plugin('plex'))));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->answer()->marksAnOrigin)->toBeTrue()
+        ->and($drawn)->toContain(__('health.origin.plugin', ['named' => 'plex']))
+        ->and($drawn)->toContain(__('health.origin.legend'))
+        // The stack's own is left unmarked: the legend is what says it.
+        ->and($drawn)->not->toContain(__('health.origin.bundled'));
+});
+
+it('F7-R11 — a check nobody could attribute is marked with the stack\'s reason, never left to read as its own', function (): void {
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAPluginsCheck(WhoPutItThere::unknown('the plugin was removed'))));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('health.origin.unknown', ['why' => 'the plugin was removed']))
+        ->and($drawn)->toContain(__('health.origin.legend'));
+});
+
+it('a report of only the stack\'s own checks marks none and explains nothing', function (): void {
+    // The legend explains marks, and a legend under a list with none is a
+    // sentence about something that is not on the screen.
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAPluginsCheck(WhoPutItThere::bundled())));
+
+    expect($screen->answer()->marksAnOrigin)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.origin.legend'));
 });

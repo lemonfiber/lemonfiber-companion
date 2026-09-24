@@ -45,6 +45,16 @@
                 {{ __($finding->about) }}@if ($finding->service !== '') · {{ $finding->service }}@endif
             </x-operator::note>
             <x-operator::emphasis>{{ $finding->title }}</x-operator::emphasis>
+            {{-- Who put the check there, beside the title, so reading the row
+                 and reading whose it is are one act. Only where it is not the
+                 stack's own: nearly every check is, and a word repeated on
+                 every row is a word nobody reads — so the report says once,
+                 under the list, what an unmarked row is. *Unknown* is always
+                 marked, which is the reading that must never pass for the
+                 stack's own. --}}
+            @unless ($finding->from->isTheStacksOwn())
+                <x-operator::came-from :from="$finding->from" :said="$finding->from->came->ofACheck()" />
+            @endunless
             {{-- The verdict and what it costs, on one line. They answer
                  different questions and a row showing only the first makes
                  two failures look alike where one puts data at risk. A row
@@ -112,6 +122,12 @@
     @empty
         <native:text>{{ __('health.no_findings') }}</native:text>
     @endforelse
+
+    {{-- Said once, and only where a row is marked, so what the unmarked rows
+         are is never left to be inferred from the marked ones. --}}
+    @if ($this->answer()->marksAnOrigin)
+        <x-operator::note>{{ __('health.origin.legend') }}</x-operator::note>
+    @endif
 
     {{-- Under the findings rather than above them: somebody who has just
          fixed something scrolls to the end of what was wrong, and that is

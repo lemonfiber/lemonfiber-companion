@@ -30,11 +30,14 @@ final readonly class WhatTheStackTurnedOutToBe
 {
     /**
      * @param string   $overall  the key for the headline, or empty where nothing ran
-     * @param Findings $findings what the checks produced, empty where they did not run
+     * @param Findings $findings      what the checks produced, empty where they did not run
+     * @param bool     $marksAnOrigin whether any check is not the stack's own, which is when the
+     *                                report says once what an unmarked row is
      */
     public function __construct(
         public HowTheReadingWent $went,
         public string $overall,
         public Findings $findings,
+        public bool $marksAnOrigin,
     ) {}
 }

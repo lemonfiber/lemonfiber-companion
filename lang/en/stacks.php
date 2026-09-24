@@ -139,6 +139,15 @@ return [
             // placeholder, and never as *nothing*.
             'unrecorded' => 'lemonfiber has no record of what this reaches',
             'none' => 'No service here sends anything',
+            // Who put the service on the stack, drawn where that is not the
+            // stack itself, with the legend said once where anything is.
+            'origin' => [
+                'bundled' => 'One of the stack\'s own services',
+                'operator' => 'A service added here',
+                'plugin' => 'Brought by the :named plugin',
+                'unknown' => 'Nobody could say where this service came from — :why',
+                'legend' => 'A service marked with where it came from is not one of the stack\'s own; every other is.',
+            ],
         ],
     ],
 ];

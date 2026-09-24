@@ -20,6 +20,8 @@ use Modules\Kernel\Api\WhatLeavesThisMachine;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhereItGoes;
 use Modules\Kernel\Api\WhetherItIsAllowed;
+use Modules\Kernel\Api\WhoPutItThere;
+use Modules\Sdk\Internal\Attributions;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -39,7 +41,8 @@ use function trim;
  * fills them with words of its own where it has no record, and `recorded` is
  * the field that says so — so a row with `recorded: false` becomes the
  * unrecorded arm whatever else it carries, and the screen writes its own
- * sentence for *nobody knows*.
+ * sentence for *nobody knows*. Who put the service there is read on both
+ * arms.
  */
 final readonly class WhatLeaves
 {
@@ -133,16 +136,37 @@ final readonly class WhatLeaves
     private static function oneOfTheirs(array $row, int $position): ARequestOfTheirs
     {
         $service = ServiceId::called(self::text($row, WireField::Theirs, WireField::Service, $position));
+        $origin = self::origin($row, $position);
 
         if (! self::flag($row, WireField::Theirs, WireField::Recorded, $position)) {
-            return ARequestOfTheirs::unrecorded($service);
+            return ARequestOfTheirs::unrecorded($service, $origin);
         }
 
         return ARequestOfTheirs::recorded(
             $service,
             self::destination($row, $position),
             self::text($row, WireField::Theirs, WireField::Purpose, $position),
+            $origin,
         );
+    }
+
+    /**
+     * Who put the row's service on the stack, read on both arms.
+     *
+     * An unrecorded row's destination and purpose are the stack's placeholders
+     * and are not read; its origin is not a placeholder, and a plugin's service
+     * is the likeliest row to be unrecorded — so skipping it there would drop
+     * the attribution exactly where it is most needed.
+     *
+     * @param array<mixed> $row
+     */
+    private static function origin(array $row, int $position): WhoPutItThere
+    {
+        try {
+            return Attributions::of($row);
+        } catch (OriginIsUnreadable $why) {
+            throw OutboundIsUnreadable::origin($position, $why);
+        }
     }
 
     /**

@@ -52,6 +52,7 @@ final readonly class WhatOneFindingSays
      * @param string   $because  the title of what explains this, or empty
      * @param Remedies $remedies what to try, likeliest first, empty where none
      * @param string   $underneath the technical detail the core added, or empty
+     * @param WhereARowSaysItCameFrom $from who put the check there
      */
     public function __construct(
         public string $title,
@@ -64,6 +65,7 @@ final readonly class WhatOneFindingSays
         public string $because,
         public Remedies $remedies,
         public string $underneath,
+        public WhereARowSaysItCameFrom $from,
     ) {}
 
     /** Whether there is anything to explain, which is what the template asks. */

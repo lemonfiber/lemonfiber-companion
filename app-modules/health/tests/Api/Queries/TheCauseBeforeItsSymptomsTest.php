@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\WhoPutItThere;
 
 /** One finding, optionally explained by another check. Named for this file (`G10`). */
 function aCheckThatRan(string $named, string $explainedBy = ''): Finding
@@ -20,6 +21,7 @@ function aCheckThatRan(string $named, string $explainedBy = ''): Finding
         $named,
         Conclusion::Failed,
         WhatTheCheckSaid::nothingWrong(),
+        WhoPutItThere::bundled(),
     );
 
     return $explainedBy === ''

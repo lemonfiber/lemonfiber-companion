@@ -54,6 +54,23 @@ final class OutboundIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /**
+     * One service could not say who put it on the stack.
+     *
+     * Refused rather than listed unattributed: a plugin's service read as the
+     * stack's own is a connection an operator will not think to trace back to
+     * the plugin that brought it.
+     */
+    public static function origin(int $position, OriginIsUnreadable $why): self
+    {
+        return new self(sprintf(
+            'Entry %d of `%s` in the outbound envelope cannot say where its service came from. %s',
+            $position,
+            WireField::Theirs->value,
+            $why->getMessage(),
+        ), previous: $why);
+    }
+
     public static function reach(string $said, int $position): self
     {
         // The accepted list comes from the enum, so a request added cannot

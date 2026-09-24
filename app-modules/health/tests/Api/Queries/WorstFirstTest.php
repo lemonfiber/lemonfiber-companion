@@ -21,10 +21,11 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\WhoPutItThere;
 
 function row(string $check, Conclusion $conclusion): Finding
 {
-    return Finding::of(Check::of($check), Category::Vpn, 'A check that ran', $conclusion, WhatTheCheckSaid::nothingWrong());
+    return Finding::of(Check::of($check), Category::Vpn, 'A check that ran', $conclusion, WhatTheCheckSaid::nothingWrong(), WhoPutItThere::bundled());
 }
 
 /** A row the engine graded, which is what the order turns on and so the first key. */
@@ -43,6 +44,7 @@ function costing(string $check, Severity $severity, Conclusion $conclusion = Con
             Standing::Guided,
             WhatItSaysUnderneath::none(),
         ),
+        WhoPutItThere::bundled(),
     );
 }
 

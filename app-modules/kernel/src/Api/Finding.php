@@ -9,9 +9,16 @@ use function trim;
 /**
  * One thing a check established, and how it turned out.
  *
- * The four fields every finding on the wire carries: which check, which
- * family it belongs to, a one-line summary of what was checked, and the
- * conclusion.
+ * The fields every finding on the wire carries: which check, which family it
+ * belongs to, a one-line summary of what was checked, the conclusion, and who
+ * put the check there.
+ *
+ * **Who put it there is the check's own, so it is an argument.** A check a
+ * plugin declared runs beside the stack's own and reports the same verdicts,
+ * and an operator reading a red row needs to know which of the two they are
+ * looking at before they go looking for the fault. Required rather than
+ * defaulted to the stack's own: a finding with no attribution read as bundled
+ * is the one wrong answer an operator would never think to question.
  *
  * **Two more the engine sets after the run**, and they are set the way the
  * engine sets them: a finding is made complete and then said to be about a
@@ -37,6 +44,7 @@ final readonly class Finding
         private string $title,
         private Conclusion $conclusion,
         private WhatTheCheckSaid $said,
+        private WhoPutItThere $origin,
         private AboutWhat $about,
         private Because $because,
     ) {}
@@ -55,6 +63,7 @@ final readonly class Finding
         string $title,
         Conclusion $conclusion,
         WhatTheCheckSaid $said,
+        WhoPutItThere $origin,
     ): self {
         $trimmed = trim($title);
 
@@ -68,6 +77,7 @@ final readonly class Finding
             $trimmed,
             $conclusion,
             $said,
+            $origin,
             AboutWhat::theMachine(),
             Because::nothingElse(),
         );
@@ -77,7 +87,7 @@ final readonly class Finding
      * The same finding, said to be about a particular service.
      *
      * Written as the engine writes it — `Finding::in_category(..).about("x")` —
-     * rather than as a sixth argument, because that is what it is: a fact added
+     * rather than as another argument, because that is what it is: a fact added
      * once the run knows which service a check turned out to be about, not
      * something the check itself established.
      *
@@ -94,6 +104,7 @@ final readonly class Finding
             $this->title,
             $this->conclusion,
             $this->said,
+            $this->origin,
             $about,
             $this->because,
         );
@@ -115,6 +126,7 @@ final readonly class Finding
             $this->title,
             $this->conclusion,
             $this->said,
+            $this->origin,
             $this->about,
             $because,
         );
@@ -152,6 +164,15 @@ final readonly class Finding
     public function said(): WhatTheCheckSaid
     {
         return $this->said;
+    }
+
+    /**
+     * Who put this check there: the stack, the operator, a named plugin, or
+     * nobody the stack could establish.
+     */
+    public function origin(): WhoPutItThere
+    {
+        return $this->origin;
     }
 
     /**

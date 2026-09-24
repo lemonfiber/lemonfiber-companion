@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhatLeavesThisMachine;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhereItGoes;
 use Modules\Kernel\Api\WhetherItIsAllowed;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Presenters\HowWhatLeavesReads;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
@@ -27,6 +28,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSaysWhatLeavesIt;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Everything that leaves this machine, in two lists.
 //
@@ -53,9 +55,9 @@ function aMachineThatSendsThings(): WhatLeavesThisMachine
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Updates, WhereItGoes::to(), 'To say when a newer lemonfiber is out', 'Nothing but the request itself', WhetherItIsAllowed::SwitchedOff, 'updates.check', 'Nobody hears that a version came out'),
         ),
         TheirRequests::of(
-            ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata'),
-            ARequestOfTheirs::recorded(ServiceId::called('gluetun'), '', 'Nothing of its own'),
-            ARequestOfTheirs::unrecorded(ServiceId::called('my-fork')),
+            ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled()),
+            ARequestOfTheirs::recorded(ServiceId::called('gluetun'), '', 'Nothing of its own', WhoPutItThere::bundled()),
+            ARequestOfTheirs::unrecorded(ServiceId::called('my-fork'), WhoPutItThere::bundled()),
         ),
     );
 }
@@ -198,4 +200,47 @@ it('renders its own view', function (): void {
     $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()));
 
     expect($screen->render()->name())->toBe('operator::what-leaves-here');
+});
+
+/**
+ * A machine whose services include a plugin's, after one of the stack's own.
+ *
+ * The stack's own first, so a screen deciding from the first row alone gets
+ * this wrong; the plugin's service unrecorded, which is how one arrives.
+ */
+function aMachineWithAPluginsService(WhoPutItThere $second): WhatLeavesThisMachine
+{
+    return WhatLeavesThisMachine::of(
+        OurRequests::of(),
+        TheirRequests::of(
+            ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled()),
+            ARequestOfTheirs::unrecorded(ServiceId::called('plex'), $second),
+        ),
+    );
+}
+
+it('F7-R9 — a plugin\'s service says who brought it, and the list says once what an unmarked row is', function (): void {
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineWithAPluginsService(WhoPutItThere::plugin('plex'))));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->answer()->marksAnOrigin())->toBeTrue()
+        ->and($screen->answer()->theirs[0]->from->isTheStacksOwn())->toBeTrue()
+        ->and($screen->answer()->theirs[1]->from->attributed)->toBe('plex')
+        ->and($drawn)->toContain(__('stacks.outbound.theirs.origin.plugin', ['named' => 'plex']))
+        ->and($drawn)->toContain(__('stacks.outbound.theirs.origin.legend'))
+        ->and($drawn)->not->toContain(__('stacks.outbound.theirs.origin.bundled'));
+});
+
+it('F7-R11 — a service nobody could attribute is marked with the stack\'s reason', function (): void {
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineWithAPluginsService(WhoPutItThere::unknown('its plugin was removed'))));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())
+        ->toContain(__('stacks.outbound.theirs.origin.unknown', ['why' => 'its plugin was removed']));
+});
+
+it('a list of only the stack\'s own services marks none and explains nothing', function (): void {
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineWithAPluginsService(WhoPutItThere::bundled())));
+
+    expect($screen->answer()->marksAnOrigin())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('stacks.outbound.theirs.origin.legend'));
 });

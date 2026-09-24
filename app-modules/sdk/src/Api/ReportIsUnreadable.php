@@ -58,6 +58,22 @@ final class ReportIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /**
+     * One finding could not say who put its check there.
+     *
+     * Refused with the rest of the report rather than shown unattributed: a
+     * plugin's check whose origin is lost reads as the stack's own, and a red
+     * row the operator then goes looking for in the wrong place.
+     */
+    public static function origin(int $position, OriginIsUnreadable $why): self
+    {
+        return new self(sprintf(
+            'Finding %d cannot say where its check came from. %s',
+            $position,
+            $why->getMessage(),
+        ), previous: $why);
+    }
+
     public static function finding(int $position): self
     {
         return new self(sprintf(

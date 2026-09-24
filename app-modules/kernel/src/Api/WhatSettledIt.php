@@ -21,7 +21,7 @@ use Closure;
  * There is no accessor and no `isContested()`. {@see whichever()} cannot be
  * entered without saying what happens in all five cases, so a screen cannot
  * quietly draw nothing for the one arm that matters most. That is the argument
- * {@see WhereASettingCameFrom} makes, and it applies harder here: the arm a
+ * {@see WhoPutItThere} makes, and it applies harder here: the arm a
  * careless reader would skip is not a rare edge, it is the one the surface was
  * built for.
  *
@@ -32,7 +32,7 @@ use Closure;
  * core marks that field optional, so absence is ordinary rather than a fault,
  * and a blank is normalised to absence rather than shown. *Chosen, because: ▒*
  * asserts a reason and then withholds it, which reads worse than not claiming
- * one — the argument {@see WhereASettingCameFrom::plugin()} makes about a name.
+ * one — the argument {@see WhoPutItThere::plugin()} makes about a name.
  *
  * **`unfilled` is a state, not a fault.** A stack with a capability nothing
  * claims is not broken, and an arm that made it look like one would be this app

@@ -39,6 +39,14 @@
     @forelse ($this->answer()->theirs as $request)
         <x-operator::entry>
             <x-operator::emphasis>{{ $request->service }}</x-operator::emphasis>
+            {{-- Who put the service on the stack, where that is not the stack
+                 itself — the report's rule, for its reason: nearly every row is
+                 the stack's own, and the list says once what an unmarked row
+                 is. A plugin's service is the row this matters on, since it is
+                 the one likeliest to arrive with no record of where it goes. --}}
+            @unless ($request->from->isTheStacksOwn())
+                <x-operator::came-from :from="$request->from" :said="$request->from->came->ofAService()" />
+            @endunless
             {{-- One of three sentences — where it goes, that it goes nowhere,
                  or that nobody knows — chosen by the presenter from the arm the
                  service took, never from whether a destination is empty. --}}
@@ -51,6 +59,10 @@
     @empty
         <x-operator::note>{{ __('stacks.outbound.theirs.none') }}</x-operator::note>
     @endforelse
+
+    @if ($this->answer()->marksAnOrigin())
+        <x-operator::note>{{ __('stacks.outbound.theirs.origin.legend') }}</x-operator::note>
+    @endif
 
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 </native:column>

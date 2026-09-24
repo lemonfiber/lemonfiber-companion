@@ -62,7 +62,7 @@ function doctorSaying(array $data): Envelope
  */
 function aFinding(string $check, string $category, string $title, array $verdict): array
 {
-    return ['check' => $check, 'category' => $category, 'title' => $title, 'verdict' => $verdict];
+    return ['check' => $check, 'category' => $category, 'title' => $title, 'verdict' => $verdict, 'origin' => ['origin' => 'bundled']];
 }
 
 /** @return array<string, mixed> */
@@ -678,4 +678,57 @@ it('stands in for a stack with a payload the contract would accept', function ()
     // not there.
     expect(WhatTheContractAccepts::complaintsAbout('DoctorEnvelope', ['kind' => 'doctor', 'data' => aWholeRun()]))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});
+
+/** Who put a check there, carried out of the fold as one line. */
+final readonly class WhoBroughtTheCheck
+{
+    public function __construct(public string $said) {}
+}
+
+/** Who a finding says put its check there, as one line a case can compare. */
+function whoPutTheCheckThere(Finding $finding): string
+{
+    return $finding->origin()->whichever(
+        bundled: static fn(): WhoBroughtTheCheck => new WhoBroughtTheCheck('bundled'),
+        operator: static fn(): WhoBroughtTheCheck => new WhoBroughtTheCheck('operator'),
+        plugin: static fn(string $named): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('plugin:%s', $named)),
+        unknown: static fn(string $why): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('unknown:%s', $why)),
+    )->said;
+}
+
+it('C1-R15 — reads who put each check there, row by row', function (): void {
+    // Two rows with different origins, so a reader that read the first row's
+    // origin for every row, or the same arm for both, fails here.
+    $report = Reports::in(doctorSaying(aRun('degraded', [
+        aFinding('storage.one-filesystem', 'storage', 'Disk', ['outcome' => 'pass']),
+        [...aFinding('plex.reachable', 'services', 'Plex answers', ['outcome' => 'pass']), 'origin' => ['named' => 'plex', 'origin' => 'plugin']],
+    ])));
+
+    expect(array_map(whoPutTheCheckThere(...), iterator_to_array($report->findings(), preserve_keys: false)))
+        ->toBe(['bundled', 'plugin:plex']);
+});
+
+it('refuses a finding that cannot say who put its check there, naming which', function (): void {
+    // Never shown as the stack's own: a plugin's check read as bundled is a red
+    // row the operator goes looking for in the wrong place. The bad row is the
+    // second, so a refusal that dropped the position fails.
+    $data = aRun('broken', [
+        aFinding('storage.one-filesystem', 'storage', 'Disk', ['outcome' => 'pass']),
+        [...aFinding('plex.reachable', 'services', 'Plex answers', ['outcome' => 'pass']), 'origin' => ['origin' => 'inherited']],
+    ]);
+
+    expect(fn(): Report => Reports::in(doctorSaying($data)))
+        ->toThrow(ReportIsUnreadable::class, 'Finding 1 cannot say where its check came from. It attributes this to `inherited`');
+});
+
+it('refuses a finding whose plugin is named in blanks as the report\'s own refusal', function (): void {
+    // The adapter catches the report's refusal and nothing narrower, so a
+    // blank name that escaped as the kernel's would end the screen instead.
+    $data = aRun('broken', [
+        [...aFinding('plex.reachable', 'services', 'Plex answers', ['outcome' => 'pass']), 'origin' => ['named' => ' ', 'origin' => 'plugin']],
+    ]);
+
+    expect(fn(): Report => Reports::in(doctorSaying($data)))
+        ->toThrow(ReportIsUnreadable::class, 'Finding 0 cannot say where its check came from. It names nobody');
 });

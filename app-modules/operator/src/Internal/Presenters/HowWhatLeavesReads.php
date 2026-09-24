@@ -97,6 +97,7 @@ final readonly class HowWhatLeavesReads
     private function theirs(ARequestOfTheirs $request): OneOfTheirRequests
     {
         $service = $request->service()->named();
+        $from = new HowAnOriginReads()->of($request->origin());
 
         return $request->reaches(
             recorded: static fn(string $destination, string $purpose): OneOfTheirRequests => new OneOfTheirRequests(
@@ -104,12 +105,14 @@ final readonly class HowWhatLeavesReads
                 reachesSaid: $destination === '' ? self::REACHES_NOTHING : self::REACHES,
                 destination: $destination,
                 purpose: $purpose,
+                from: $from,
             ),
             unrecorded: static fn(): OneOfTheirRequests => new OneOfTheirRequests(
                 service: $service,
                 reachesSaid: self::UNRECORDED,
                 destination: '',
                 purpose: '',
+                from: $from,
             ),
         );
     }

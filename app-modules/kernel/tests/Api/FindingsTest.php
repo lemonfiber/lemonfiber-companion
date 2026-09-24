@@ -16,10 +16,11 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\WhoPutItThere;
 
 function finding(string $check, Conclusion $conclusion): Finding
 {
-    return Finding::of(Check::of($check), Category::Vpn, 'A check that ran', $conclusion, WhatTheCheckSaid::nothingWrong());
+    return Finding::of(Check::of($check), Category::Vpn, 'A check that ran', $conclusion, WhatTheCheckSaid::nothingWrong(), WhoPutItThere::bundled());
 }
 
 it('holds what it was given, in the order it was given', function (): void {

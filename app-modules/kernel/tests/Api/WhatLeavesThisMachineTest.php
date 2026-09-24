@@ -19,6 +19,7 @@ use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatWasFoundLeaving;
 use Modules\Kernel\Api\WhereItGoes;
 use Modules\Kernel\Api\WhetherItIsAllowed;
+use Modules\Kernel\Api\WhoPutItThere;
 
 use function sprintf;
 
@@ -54,7 +55,7 @@ function whatWasFoundLeaving(WhatWasFoundLeaving $answer): string
 it('N10-R1 — keeps lemonfiber\'s requests and its services\' apart', function (): void {
     $leaving = WhatLeavesThisMachine::of(
         OurRequests::of(aRequestOfOursAboutImages()),
-        TheirRequests::of(ARequestOfTheirs::unrecorded(ServiceId::called('my-fork')), ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata')),
+        TheirRequests::of(ARequestOfTheirs::unrecorded(ServiceId::called('my-fork'), WhoPutItThere::bundled()), ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled())),
     );
 
     expect($leaving->ours())->toHaveCount(1)

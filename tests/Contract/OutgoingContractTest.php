@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhatLeavesThisMachine;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhereItGoes;
 use Modules\Kernel\Api\WhetherItIsAllowed;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
@@ -58,9 +59,9 @@ function theSameConnections(): WhatLeavesThisMachine
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Updates, WhereItGoes::to(), 'To say when a newer lemonfiber is out', 'Nothing but the request itself', WhetherItIsAllowed::SwitchedOff, 'updates.check', 'Nobody hears that a version came out'),
         ),
         TheirRequests::of(
-            ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata'),
-            ARequestOfTheirs::recorded(ServiceId::called('gluetun'), '', 'Nothing of its own'),
-            ARequestOfTheirs::unrecorded(ServiceId::called('my-fork')),
+            ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled()),
+            ARequestOfTheirs::recorded(ServiceId::called('gluetun'), '', 'Nothing of its own', WhoPutItThere::bundled()),
+            ARequestOfTheirs::unrecorded(ServiceId::called('my-fork'), WhoPutItThere::bundled()),
         ),
     );
 }
@@ -81,9 +82,9 @@ function whatAStackSaysLeavesIt(string $reachOfTheFirst = 'registry'): array
                 ['reach' => 'updates', 'destination' => [], 'purpose' => 'To say when a newer lemonfiber is out', 'sends' => 'Nothing but the request itself', 'allowed' => false, 'switch' => 'updates.check', 'cost' => 'Nobody hears that a version came out'],
             ],
             'theirs' => [
-                ['service' => 'sonarr', 'destination' => 'thetvdb.com', 'purpose' => 'Series metadata', 'recorded' => true],
-                ['service' => 'gluetun', 'destination' => '', 'purpose' => 'Nothing of its own', 'recorded' => true],
-                ['service' => 'my-fork', 'destination' => 'unknown', 'purpose' => 'no record of what this service reaches', 'recorded' => false],
+                ['service' => 'sonarr', 'destination' => 'thetvdb.com', 'purpose' => 'Series metadata', 'recorded' => true, 'origin' => ['origin' => 'bundled']],
+                ['service' => 'gluetun', 'destination' => '', 'purpose' => 'Nothing of its own', 'recorded' => true, 'origin' => ['origin' => 'bundled']],
+                ['service' => 'my-fork', 'destination' => 'unknown', 'purpose' => 'no record of what this service reaches', 'recorded' => false, 'origin' => ['named' => 'my-plugin', 'origin' => 'plugin']],
             ],
         ],
     ];

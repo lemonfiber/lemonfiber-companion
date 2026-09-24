@@ -31,6 +31,7 @@ final readonly class ARequestOfTheirs
     private function __construct(
         private ServiceId $service,
         private ?array $record,
+        private WhoPutItThere $origin,
     ) {}
 
     /**
@@ -38,25 +39,38 @@ final readonly class ARequestOfTheirs
      *
      * @param string $destination where its requests go, or empty where it reaches nothing
      */
-    public static function recorded(ServiceId $service, string $destination, string $purpose): self
+    public static function recorded(ServiceId $service, string $destination, string $purpose, WhoPutItThere $origin): self
     {
         if (trim($purpose) === '') {
             throw RequestSaysNothing::about('purpose');
         }
 
-        return new self($service, ['destination' => $destination, 'purpose' => $purpose]);
+        return new self($service, ['destination' => $destination, 'purpose' => $purpose], $origin);
     }
 
     /** A service the stack has no record of, listed anyway so the list is not short. */
-    public static function unrecorded(ServiceId $service): self
+    public static function unrecorded(ServiceId $service, WhoPutItThere $origin): self
     {
-        return new self($service, null);
+        return new self($service, null, $origin);
     }
 
     /** The service, by the name the stack declares it under. */
     public function service(): ServiceId
     {
         return $this->service;
+    }
+
+    /**
+     * Who put this service here, and so whose request this is.
+     *
+     * On both arms, because a plugin's service is the likeliest to arrive with
+     * no record of where it reaches — its manifest has nowhere to say — and a
+     * row reading *nobody knows what this reaches* is the one where knowing
+     * who brought it matters most.
+     */
+    public function origin(): WhoPutItThere
+    {
+        return $this->origin;
     }
 
     /**

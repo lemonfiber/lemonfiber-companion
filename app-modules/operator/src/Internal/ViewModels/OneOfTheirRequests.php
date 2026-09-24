@@ -20,11 +20,13 @@ final readonly class OneOfTheirRequests
      * @param string $reachesSaid the catalogue key for what it reaches, or that nobody knows
      * @param string $destination where it goes, where the key takes one; empty otherwise
      * @param string $purpose     what it asks for; empty where there is no record
+     * @param WhereARowSaysItCameFrom $from who put the service on the stack
      */
     public function __construct(
         public string $service,
         public string $reachesSaid,
         public string $destination,
         public string $purpose,
+        public WhereARowSaysItCameFrom $from,
     ) {}
 }
