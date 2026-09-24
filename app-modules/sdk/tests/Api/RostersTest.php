@@ -249,18 +249,19 @@ it('refuses a list the stack sent as something other than a list', function (): 
     //
     // Both lists, because the guard is one method and a caller that
     // reached it by a different road is a caller it has never been asked about.
+    //
+    // Each whole but for the list under test, and the message names that
+    // list: a listing short of `disturbs` as well is refused for `disturbs`
+    // first, and a case that only matched the shared sentence would pass
+    // without the guard ever being reached.
     $each = [
-        'services as a number' => ['condition' => 'active', 'forms' => [], 'services' => 7],
-        'depends_on as a word' => [
-            'condition' => 'active',
-            'forms' => ['downloads'],
-            'services' => [aServiceSaying(['depends_on' => 'gluetun'])],
-        ],
+        'services' => [...aRosterOf(), 'services' => 7],
+        'depends_on' => aRosterOf(['depends_on' => 'gluetun']),
     ];
 
     foreach ($each as $which => $said) {
         expect(fn(): object => theRosterIn(aRosterSaying($said)))
-            ->toThrow(RosterIsUnreadable::class, 'not what the contract says it is', $which);
+            ->toThrow(RosterIsUnreadable::class, sprintf('no `%s`, or it is not what the contract says it is', $which), $which);
     }
 });
 
