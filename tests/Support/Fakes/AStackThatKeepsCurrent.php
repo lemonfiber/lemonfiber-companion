@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Closure;
-use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
@@ -59,7 +59,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
     public static function withNothingWaiting(): self
     {
         return self::with(Upkeep::reported(
-            HowCurrent::Current,
+            AgainstThePins::Current,
             Releases::none(),
             Services::none(),
             Services::none(),
@@ -79,7 +79,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
      * Answers the reading and refuses the verb.
      *
      * The shape a test needs to reach the screen's refusal path at all: a stack
-     * refusing both halves never hands over a release to agree to, so the
+     * refusing both halves never hands over an update to agree to, so the
      * assertion about what happens after the yes is never reached and the test
      * passes by re-proving the read.
      */

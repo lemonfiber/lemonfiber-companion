@@ -53,8 +53,8 @@ requirement is right and this page is a defect.
 | `N2-R6` | A repair's yes quotes the listing it was given | `Menders`, whose signature is that requirement in a parameter list: there is no way to name a repair the listing did not offer |
 | `N2-R8` | What a verb costs is said before an operator confirms | `Costs` |
 | `N2-R9` | The four things a stall can be, built whole — no filter to get wrong and no narrowing a screen could be tempted into | `Stalls` |
-| `N2-R15`, `N2-R16` | What is installed and what is available, and a stack running a withdrawn release still has something to say about it | `Standings` |
+| `N2-R15`, `N2-R16` | Whether an update is available is read off the pins, the release history is read as history, and a stack running a withdrawn release still has something to say about it | `Standings`, with the `changelog` block read by `Changelogs` |
 | `N2-R18` | What happened last time an update was made, kept apart from what is on offer now | `Endings` |
 | `N2-R19` | No false promise about undoing | `Standings` |
-| `N2-R20` | A changelog is not something an update can be agreed about | `Standings` |
+| `N2-R20` | A changelog is not something an update can be agreed about | `Standings`, which reads availability from the top-level `state` and never from `changelog.state` |
 | `N2-R21` | A service the host runs is not presented as part of the stack, and no caller is given a way to spell one | `Rosters`; `Daemons` cannot hold one |

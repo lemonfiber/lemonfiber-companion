@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceTookIt;
-use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -22,14 +23,15 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
-use Modules\Kernel\Api\VersionInUse;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
+use Modules\Sdk\Api\Standings;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
 
@@ -37,8 +39,8 @@ use Tests\Support\WhatTheKeychainStillHolds;
 //
 // The screen that answers the question an operator asks themselves on a sofa:
 // *is there an update, and is tonight the night*. Not a version string to
-// compare — the decision is whether anybody in the house will notice, and
-// whether the evening is worth spending.
+// compare — whether there is one is the stack's answer off its pins, and the
+// decision is whether anybody in the house will notice.
 //
 // Here rather than in the operator module's own tests because a screen renders,
 // and rendering needs the application — `view()` and `__()` are not there in a
@@ -59,8 +61,8 @@ function theStackWhoseUpkeepIsRead(): Stack
 function anEveningWithSomethingPermanentInIt(): Upkeep
 {
     return Upkeep::runningOn(
-        HowCurrent::Pending,
-        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
+        AgainstThePins::UpdatesAvailable,
+        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
         Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
         // One of the two, deliberately. A fixture where every service is
@@ -71,14 +73,18 @@ function anEveningWithSomethingPermanentInIt(): Upkeep
     );
 }
 
-/** An update waiting, with one release nobody will notice and one they will. */
+/**
+ * An update waiting: two services behind their pins, and the release carrying
+ * those pins one the household will notice. Its history holds that release and
+ * one before it nobody noticed.
+ */
 function anEveningWorthSpending(): Upkeep
 {
     return Upkeep::runningOn(
-        HowCurrent::Pending,
-        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
+        AgainstThePins::UpdatesAvailable,
+        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
         Releases::these(
-            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
             Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
         ),
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
@@ -127,8 +133,8 @@ function theUpkeepScreen(
 it('N2-R15 — opens on the stack\'s own answer rather than on a version to compare', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
 
-    expect($screen->answer()->howSaid)->toBe(HowCurrent::Pending->saidOnTheScreen())
-        ->and($screen->answer()->running)->toBe('4.0.15')
+    expect($screen->answer()->pinsSaid)->toBe(AgainstThePins::UpdatesAvailable->saidOnTheScreen())
+        ->and($screen->answer()->running)->toBe('4.1.0')
         // A stack that answered is not a session that ended. `isSignedIn` is
         // the template's first branch, so a fold reporting otherwise would put
         // the sign-in prompt in front of an operator whose session is working.
@@ -140,53 +146,61 @@ it('N2-R16 — says which releases the household would notice', function (): voi
     // The distinction that makes this a decision rather than a chore. Both rows
     // are checked, because a screen that marked everything noticeable and one
     // that marked nothing would each pass a test that only looked at one.
-    $waiting = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()))->answer()->waiting;
+    $history = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()))->answer()->history;
 
-    expect($waiting)->toHaveCount(2)
-        ->and($waiting[0]->version)->toBe('4.1.0')
-        ->and($waiting[0]->theHouseholdWouldNotice)->toBeTrue()
-        ->and($waiting[1]->version)->toBe('4.0.16')
-        ->and($waiting[1]->theHouseholdWouldNotice)->toBeFalse();
+    expect($history)->toHaveCount(2)
+        ->and($history[0]->version)->toBe('4.1.0')
+        ->and($history[0]->theHouseholdWouldNotice)->toBeTrue()
+        ->and($history[1]->version)->toBe('4.0.16')
+        ->and($history[1]->theHouseholdWouldNotice)->toBeFalse();
 });
 
-it('N2-R16 — leaves a withdrawn release out of what is offered', function (): void {
+it('marks a withdrawn release in the history rather than dropping it', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
-        HowCurrent::Pending,
+        AgainstThePins::Current,
         Releases::these(
             Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
             Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()),
         ),
-        Services::these(ServiceId::called('jellyfin')),
+        Services::none(),
         Services::none(),
         HowServicesTookIt::none(),
     )));
 
-    expect($screen->howMany())->toBe(1)
-        ->and($screen->answer()->waiting[0]->version)->toBe('4.1.0');
+    $history = $screen->answer()->history;
+
+    expect($history)->toHaveCount(2)
+        ->and($history[1]->version)->toBe('4.0.17')
+        ->and($history[1]->wasWithdrawn)->toBeTrue()
+        ->and($history[0]->wasWithdrawn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.withdrawn'));
 });
 
 it('N2-R16 — says so where the stack is running one that was taken back', function (): void {
     // The opposite errand from the rule above, and the reason a withdrawn
     // release is carried rather than filtered upstream: dropping it from both
     // would leave an operator reading a screen that says nothing is wrong.
+    // And no update is offered onto the pins that release carries, though
+    // the stack says a service would move: taking them is taking the release.
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::runningOn(
-        HowCurrent::Pending,
-        VersionInUse::of(Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing())),
+        AgainstThePins::UpdatesAvailable,
+        Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()),
         Releases::none(),
-        Services::none(),
+        Services::these(ServiceId::called('jellyfin')),
         Services::none(),
         HowServicesTookIt::none(),
     )));
 
     expect($screen->answer()->runningWasWithdrawn)->toBeTrue()
-        ->and($screen->answer()->running)->toBe('4.0.17');
+        ->and($screen->answer()->running)->toBe('4.0.17')
+        ->and($screen->answer()->offer)->toBeNull();
 });
 
 it('N2-R20 — offers nothing where the stack reported it is current', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
 
-    expect($screen->howMany())->toBe(0)
-        ->and($screen->answer()->howSaid)->toBe(HowCurrent::Current->saidOnTheScreen());
+    expect($screen->answer()->offer)->toBeNull()
+        ->and($screen->answer()->pinsSaid)->toBe(AgainstThePins::Current->saidOnTheScreen());
 });
 
 it('N1-R44 — a session that has ended is a sign-in rather than an obstacle', function (): void {
@@ -212,7 +226,7 @@ it('N1-R65 — asks once per frame, however many fields the template reads', fun
 
     $screen->answer();
     $screen->answer();
-    $screen->howMany();
+    $screen->wouldYouLike();
 
     expect($keeping->askings())->toBe(1);
 });
@@ -231,21 +245,20 @@ it('N1-R3 — asking again is offered, and asks again', function (): void {
 it('N2-R17 — asks before it takes one, and names what it would change', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
 
-    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike();
     $asking = $screen->asking();
 
     expect($asking)->toBeInstanceOf(TakingAnUpdate::class)
-        ->and($asking?->release()->version())->toBe('4.1.0')
-        // Both services, and the count the confirmation leads with. A question
-        // that named the release and not the evening would be asking somebody
-        // to agree to the half they can already see.
-        ->and($screen->wouldChange())->toBe(2);
+        // Both services, and the count the confirmation leads with.
+        ->and($screen->wouldChange())->toBe(2)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())
+        ->toContain('jellyfin', 'sonarr', trans_choice('updates.would_change', 2));
 });
 
 it('N2-R22 — the confirmation names what taking it will not put back', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
 
-    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike();
     $asking = $screen->asking();
 
     $named = [];
@@ -263,7 +276,7 @@ it('N2-R22 — the confirmation names what taking it will not put back', functio
 });
 
 it('N2-R22 — counts nothing permanent where nothing has been asked yet', function (): void {
-    // Before a release is chosen there is no confirmation, so there is nothing
+    // Before the offer is taken up there is no confirmation, so there is nothing
     // it would not put back. Asserted rather than left to the accessor's
     // fall-through: a template asking this on every frame asks it first on the
     // frame where the answer is nobody's yet.
@@ -281,7 +294,7 @@ it('N2-R22 — says so before the yes, and not after it', function (): void {
     // fails here rather than passing on the accessor alone.
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWithSomethingPermanentInIt()));
 
-    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike();
 
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
@@ -295,7 +308,7 @@ it('N2-R22 — an evening that can be undone says nothing about permanence', fun
     // operator to read past it by the third update.
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
 
-    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike();
 
     expect($screen->asking()?->cannotBeWhollyUndone())->toBeFalse()
         ->and($screen->cannotBePutBack())->toBe(0)
@@ -303,14 +316,12 @@ it('N2-R22 — an evening that can be undone says nothing about permanence', fun
         ->not->toContain(__('updates.cannot_be_put_back_after'));
 });
 
-it('N2-R17 — will not be talked into a release it never showed', function (): void {
-    // The version arrives as a string because a template can hand over nothing
-    // else, so the screen matches it against what it read rather than trusting
-    // it. A withdrawn release is the case that matters: it is kept off
-    // the list, and this keeps it off the list of things that can be agreed to.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
+it('asks nothing where the stack offered nothing', function (): void {
+    // The offer comes from the reading, so a tap reaching this on a stack whose
+    // services are on their pins has nothing to ask about.
+    $screen = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting());
 
-    $screen->wouldYouLike('9.9.9');
+    $screen->wouldYouLike();
 
     expect($screen->asking())->toBeNull()
         ->and($screen->wouldChange())->toBe(0);
@@ -325,11 +336,10 @@ it('N2-R17 — sends what was agreed to, and nothing where nothing was', functio
 
     expect($keeping->taken())->toBe([]);
 
-    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike();
     $screen->agree();
 
     expect($keeping->taken())->toHaveCount(1)
-        ->and($keeping->taken()[0]->release()->version())->toBe('4.1.0')
         ->and($keeping->taken()[0]->changing()->count())->toBe(2)
         // The question is gone once it is answered, so a second frame does not
         // redraw a confirmation for an evening that has already started.
@@ -343,7 +353,7 @@ it('N2-R17 — forgets what it read once an update is taken', function (): void 
     $screen = theUpkeepScreen($keeping);
 
     $screen->answer();
-    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike();
     $screen->agree();
     $screen->answer();
 
@@ -354,7 +364,7 @@ it('N2-R17 — leaving it sends nothing', function (): void {
     $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
     $screen = theUpkeepScreen($keeping);
 
-    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike();
     $screen->neverMind();
 
     expect($screen->asking())->toBeNull()
@@ -375,7 +385,7 @@ it('N1-R44 — a yes on a phone whose session ended sends nothing', function ():
     $screen = new HowCurrentThisStackIs($keeping, $keychain, StacksInMemory::holding($stack));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
-    $screen->wouldYouLike('4.1.0');
+    $screen->wouldYouLike();
     $keychain->forget($stack->id());
     $screen->agree();
 
@@ -424,7 +434,7 @@ it('N2-R18 — counts what is not where the operator wanted it, apart from what 
 
 it('N2-R18 — says when the stack cannot tell what a service is doing', function (): void {
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
-        HowCurrent::Current,
+        AgainstThePins::Current,
         Releases::none(),
         Services::none(),
         Services::none(),
@@ -462,23 +472,23 @@ it('reaches this machine\'s other screens', function (): void {
 });
 
 it('N2-R20 — offers taking one only where the stack said there is one', function (): void {
-    // Asked of the reading rather than worked out from the list. A stack that
-    // lists releases while calling itself current is the case this exists for,
-    // and a screen counting rows would offer an update to it.
+    // Asked of the reading rather than worked out from the history. Releases
+    // are listed whatever the pins say, so a screen counting rows would offer
+    // an update to every stack that has a history.
     $waiting = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
     $current = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
-        HowCurrent::Current,
+        AgainstThePins::Current,
         Releases::these(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
-        Services::none(),
+        Services::these(ServiceId::called('jellyfin')),
         Services::none(),
         HowServicesTookIt::none(),
     )));
 
-    expect($waiting->answer()->canTakeOne)->toBeTrue()
-        // A release is listed and the stack says it is up to date, so there is
-        // a row and nothing to offer on it.
-        ->and($current->answer()->canTakeOne)->toBeFalse()
-        ->and($current->howMany())->toBe(1);
+    expect($waiting->answer()->offer)->toBeInstanceOf(TakingAnUpdate::class)
+        // A release is listed and the stack says every service is on its pin,
+        // so there is a row and nothing to offer.
+        ->and($current->answer()->offer)->toBeNull()
+        ->and($current->answer()->history)->toHaveCount(1);
 });
 
 it('renders the template it is paired with', function (): void {
@@ -516,18 +526,6 @@ it('keeps a session the stack merely could not answer with', function (): void {
     expect(WhatTheKeychainStillHolds::forThe($keychain, theStackWhoseUpkeepIsRead()->id())->held)->toBeTrue();
 });
 
-it('N2-R17 — a version it never showed does not clear the question it is holding', function (): void {
-    // The guard is not decoration. Without it a second tap on something this
-    // screen never offered would replace a live confirmation with nothing, and
-    // the operator would watch their question disappear.
-    $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
-
-    $screen->wouldYouLike('4.1.0');
-    $screen->wouldYouLike('9.9.9');
-
-    expect($screen->asking()?->release()->version())->toBe('4.1.0');
-});
-
 it('refuses a route that named no stack it can identify', function (): void {
     // A route parameter that is not a name becomes the blank one rather than
     // whatever it happened to be, so the refusal says *retained state named a
@@ -547,23 +545,22 @@ it('N1-R44 — a signed-out screen states nothing about the stack at all', funct
     // Every field, not just the two the template branches on. A fold that left
     // a version, a count or a flag behind would have a phone whose session
     // ended report a house it can no longer see — and the one that matters most
-    // is `canTakeOne`: a signed-out screen offering to apply an update is an
-    // offer nothing can honour.
+    // is `offer`: a signed-out screen offering to apply an update is an offer
+    // nothing can honour.
     $answer = theUpkeepScreen(AStackThatKeepsCurrent::withNothingWaiting(), signedIn: false)->answer();
 
     expect($answer->went->isSignedIn)->toBeFalse()
         ->and($answer->went->met)->toBe('')
         ->and($answer->went->remedy)->toBe('')
-        ->and($answer->howSaid)->toBe('')
+        ->and($answer->pinsSaid)->toBe('')
         ->and($answer->running)->toBe('')
         ->and($answer->runningWasWithdrawn)->toBeFalse()
-        ->and($answer->waiting)->toBe([])
-        ->and($answer->changing->isEmpty())->toBeTrue()
+        ->and($answer->inUse)->toBeNull()
+        ->and($answer->history)->toBe([])
+        ->and($answer->offer)->toBeNull()
         ->and($answer->applied)->toBe([])
         ->and($answer->didNotArrive)->toBe(0)
-        ->and($answer->anythingUnanswered)->toBeFalse()
-        ->and($answer->canTakeOne)->toBeFalse()
-        ->and($answer->anyWorthNoticing)->toBeFalse();
+        ->and($answer->anythingUnanswered)->toBeFalse();
 });
 
 it('N1-R10 — an obstacle states what stood in the way and nothing about the stack', function (): void {
@@ -575,16 +572,15 @@ it('N1-R10 — an obstacle states what stood in the way and nothing about the st
     expect($answer->went->isSignedIn)->toBeTrue()
         ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($answer->went->remedy)->toBe(Obstacle::StackDidNotAnswer->remedy())
-        ->and($answer->howSaid)->toBe('')
+        ->and($answer->pinsSaid)->toBe('')
         ->and($answer->running)->toBe('')
         ->and($answer->runningWasWithdrawn)->toBeFalse()
-        ->and($answer->waiting)->toBe([])
-        ->and($answer->changing->isEmpty())->toBeTrue()
+        ->and($answer->inUse)->toBeNull()
+        ->and($answer->history)->toBe([])
+        ->and($answer->offer)->toBeNull()
         ->and($answer->applied)->toBe([])
         ->and($answer->didNotArrive)->toBe(0)
-        ->and($answer->anythingUnanswered)->toBeFalse()
-        ->and($answer->canTakeOne)->toBeFalse()
-        ->and($answer->anyWorthNoticing)->toBeFalse();
+        ->and($answer->anythingUnanswered)->toBeFalse();
 });
 
 it('N2-R15 — a stack that named no release in use says so rather than showing a blank', function (): void {
@@ -593,7 +589,7 @@ it('N2-R15 — a stack that named no release in use says so rather than showing 
     // about the version teaches an operator to read silence, and silence is
     // also what a screen that forgot the field produces.
     $answer = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
-        HowCurrent::Stale,
+        AgainstThePins::Current,
         Releases::none(),
         Services::none(),
         Services::none(),
@@ -601,7 +597,9 @@ it('N2-R15 — a stack that named no release in use says so rather than showing 
     )))->answer();
 
     expect($answer->running)->toBe(WhatTheStackIsOn::NOT_NAMED)
-        ->and($answer->howSaid)->toBe(HowCurrent::Stale->saidOnTheScreen())
+        ->and($answer->pinsSaid)->toBe(AgainstThePins::Current->saidOnTheScreen())
+        // No release named, so nothing is said about what one changed.
+        ->and($answer->inUse)->toBeNull()
         ->and($answer->runningWasWithdrawn)->toBeFalse()
         // A reading that came through carries neither of the obstacle's keys.
         // They are read as a pair, and a template branching on one while
@@ -615,7 +613,7 @@ it('N2-R18 — reads what needs attention before what is fine', function (): voi
     // The ordering is the `updates` module's decision, made before the fold so
     // the template draws rows in the order they are read in.
     $screen = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
-        HowCurrent::Current,
+        AgainstThePins::Current,
         Releases::none(),
         Services::none(),
         Services::none(),
@@ -635,19 +633,133 @@ it('N2-R18 — reads what needs attention before what is fine', function (): voi
     expect($named)->toBe(['sonarr', 'jellyfin', 'radarr']);
 });
 
-it('N2-R16 — says when one of the releases waiting is one the household would see', function (): void {
-    $noticed = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()));
-    $chores = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::reported(
-        HowCurrent::Pending,
-        Releases::these(Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
-        Services::none(),
+it('says whether the household will notice what the release carrying the pins changed', function (): void {
+    $noticed = theUpkeepScreen(AStackThatKeepsCurrent::with(anEveningWorthSpending()))->answer()->inUse;
+    $chore = theUpkeepScreen(AStackThatKeepsCurrent::with(Upkeep::runningOn(
+        AgainstThePins::UpdatesAvailable,
+        Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+        Releases::none(),
+        Services::these(ServiceId::called('jellyfin')),
         Services::none(),
         HowServicesTookIt::none(),
-    )));
+    )))->answer()->inUse;
 
-    expect($noticed->answer()->anyWorthNoticing)->toBeTrue()
-        // Releases waiting, and not one of them is an evening. The screen says
-        // so rather than leading with a line that would be untrue.
-        ->and($chores->answer()->anyWorthNoticing)->toBeFalse()
-        ->and($chores->howMany())->toBe(1);
+    expect($noticed?->theHouseholdWouldNotice)->toBeTrue()
+        ->and($noticed?->deliversSaid)->toBe('Adds series search.')
+        ->and($chore?->theHouseholdWouldNotice)->toBeFalse()
+        ->and($chore?->deliversSaid)->toBeNull();
+});
+
+/**
+ * The `update` payload a stack sends just after it was updated, before the
+ * notes for its build are written.
+ *
+ * Every service on its pin, so the top-level `state` is `current`. The
+ * changelog says `pending` — the running build's release has no notes yet —
+ * names no running release, and lists the releases before this build.
+ *
+ * @return array<string, mixed>
+ */
+function aStackJustUpdatedWithItsNotesPending(): array
+{
+    return [
+        'state' => 'current',
+        'confirmed' => false,
+        'in_flight' => [],
+        'stack_edits' => [],
+        'applied' => [],
+        'changes' => [],
+        'changelog' => [
+            'state' => 'pending',
+            'requirements' => [],
+            'releases' => [
+                ['version' => '4.0.16', 'user_facing' => true, 'delivers' => 'Adds series search.'],
+                ['version' => '4.0.15', 'user_facing' => false],
+            ],
+        ],
+    ];
+}
+
+/**
+ * The same stack a release later, with one service behind its pin.
+ *
+ * @return array<string, mixed>
+ */
+function aStackWithOneServiceBehindItsPin(): array
+{
+    return [
+        'state' => 'updates-available',
+        'confirmed' => false,
+        'in_flight' => [],
+        'stack_edits' => [],
+        'applied' => [],
+        'changes' => [[
+            'service' => 'jellyfin',
+            'refused' => false,
+            'irreversible' => false,
+            'because' => 'a newer image is pinned',
+            'current' => '10.9.0',
+            'target' => '10.10.0',
+            'jump' => 'minor',
+        ]],
+        'changelog' => [
+            'state' => 'current',
+            'requirements' => [],
+            'running' => ['version' => '4.1.0', 'user_facing' => true, 'tag' => 'v4.1.0', 'groups' => []],
+            'releases' => [
+                ['version' => '4.1.0', 'user_facing' => true],
+                ['version' => '4.0.16', 'user_facing' => true],
+            ],
+        ],
+    ];
+}
+
+/**
+ * The screen drawn over what the adapter's reader makes of an `update` payload.
+ *
+ * @param  array<string, mixed>  $payload
+ * @return list<string>
+ */
+function theUpkeepScreenDrawnOver(array $payload): array
+{
+    $upkeep = Standings::in(new Envelope(1, 'update', $payload));
+
+    return WhatTheDeviceWouldDraw::by(theUpkeepScreen(AStackThatKeepsCurrent::with($upkeep)))->said();
+}
+
+it('does not say an update is waiting where the notes are pending and the services are on their pins', function (): void {
+    // The payload the screen used to read as *an update is waiting*: the
+    // changelog's `pending` is about the notes, and its releases are past
+    // ones. Drawn in both locales, because the sentence is the catalogue's.
+    foreach (['en', 'nl'] as $locale) {
+        app()->setLocale($locale);
+
+        $drawn = theUpkeepScreenDrawnOver(aStackJustUpdatedWithItsNotesPending());
+
+        expect($drawn)->toContain(__('updates.pins.current'), __('updates.history'), '4.0.16', '4.0.15')
+            ->and($drawn)->not->toContain(__('updates.pins.updates-available'))
+            ->and($drawn)->not->toContain(__('updates.take_it'));
+    }
+});
+
+it('says an update is waiting where a service is behind its pin, and offers it', function (): void {
+    foreach (['en', 'nl'] as $locale) {
+        app()->setLocale($locale);
+
+        $drawn = theUpkeepScreenDrawnOver(aStackWithOneServiceBehindItsPin());
+
+        expect($drawn)->toContain(
+            __('updates.pins.updates-available'),
+            __('updates.take_it'),
+            trans_choice('updates.would_change', 1),
+            __('updates.what_it_changed', ['version' => '4.1.0']),
+        )->and($drawn)->not->toContain(__('updates.pins.current'));
+    }
+});
+
+it('stands in for a stack with payloads the contract would accept', function (): void {
+    foreach ([aStackJustUpdatedWithItsNotesPending(), aStackWithOneServiceBehindItsPin()] as $payload) {
+        expect(WhatTheContractAccepts::complaintsAbout('UpdateEnvelope', ['kind' => 'update', 'data' => $payload]))
+            ->toBe([], "The payload this suite draws the screen over is not one a stack would send.\n");
+    }
 });

@@ -11,31 +11,22 @@
          Every update asks. There is no unconfirmed arm here the way there
          is for a start: there is no update that takes nothing away, and
          which services it takes away is the whole of what this says. --}}
-    <x-operator::heading>
-        {{ __('updates.about_to_take', ['version' => $this->asking()->release()->version()]) }}
-    </x-operator::heading>
+    <x-operator::heading>{{ __('updates.about_to_take') }}</x-operator::heading>
 
-    @if ($this->asking()->changesNothing())
-        {{-- A release that changes no service is a changelog entry rather
-             than an evening, and saying so is better than asking somebody
-             to confirm nothing. --}}
-        <native:text>{{ __('updates.changes_nothing') }}</native:text>
-    @else
-        {{-- The count first, because it is the size of the evening, and
-             then the names — an operator deciding at eleven at night reads
-             *four services* before they read which four. --}}
-        <native:text>{{ trans_choice('updates.would_change', $this->wouldChange()) }}</native:text>
+    {{-- The count first, because it is the size of the evening, and then the
+         names — an operator deciding at eleven at night reads *four services*
+         before they read which four. --}}
+    <native:text>{{ trans_choice('updates.would_change', $this->wouldChange()) }}</native:text>
 
-        @forelse ($this->asking()->changing() as $service)
-            <x-operator::note>{{ $service->named() }}</x-operator::note>
-        @empty
-            {{-- Unreachable while the branch above guards it, and written
-                 anyway: `F6` wants the empty case to be the same edit as
-                 the loop, so removing the guard cannot silently turn
-                 *it changes nothing* into a blank space. --}}
-            <x-operator::note>{{ __('updates.changes_nothing') }}</x-operator::note>
-        @endforelse
-    @endif
+    @forelse ($this->asking()->changing() as $service)
+        <x-operator::note>{{ $service->named() }}</x-operator::note>
+    @empty
+        {{-- Unreachable while an offer needs a service that would move, and
+             written anyway: `F6` wants the empty case to be the same edit as
+             the loop, so a change to that rule cannot silently turn *it
+             changes nothing* into a blank space. --}}
+        <x-operator::note>{{ __('updates.changes_nothing') }}</x-operator::note>
+    @endforelse
 
     @if ($this->asking()->cannotBeWhollyUndone())
         {{-- Between the list and the buttons, which is where it has to be:
@@ -64,10 +55,10 @@
     <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
     <x-operator::action label="{{ __('health.never_mind') }}" tap="neverMind()" />
 @else
-    {{-- The answer, first. Current, waiting, or not looked at
-         recently — the stack's own word, not one worked out here from two
-         version strings. --}}
-    <x-operator::emphasis>{{ __($this->answer()->howSaid) }}</x-operator::emphasis>
+    {{-- The answer, first: whether any service would move onto the version
+         its pins name — the stack's own word, not one worked out here from
+         two version strings. --}}
+    <x-operator::emphasis>{{ __($this->answer()->pinsSaid) }}</x-operator::emphasis>
 
     {{-- What it is on. Rendered in every state rather than only where
          something is waiting: a screen silent about the version teaches an
@@ -78,53 +69,64 @@
     </x-operator::note>
 
     @if ($this->answer()->runningWasWithdrawn)
-        {{-- A stack running a release that has since been taken
-             back is something the operator has to be told. Left out of what
-             is offered below, and said here — dropping it from both would
-             leave them reading a screen that says nothing is wrong. --}}
+        {{-- A stack running a release that has since been taken back is
+             something the operator has to be told, and the reason no update
+             is offered onto the pins that release carries. --}}
         <x-operator::emphasis>{{ __('updates.running_withdrawn') }}</x-operator::emphasis>
     @endif
 
-    @if ($this->answer()->anyWorthNoticing)
-        {{-- Said before the list, because it is what makes tonight
-             a decision rather than a chore. An operator who reads *the
-             household will see the difference* before the versions is
-             deciding on the evening rather than on a number. --}}
-        <x-operator::emphasis>{{ __('updates.something_worth_noticing') }}</x-operator::emphasis>
+    @if ($this->answer()->offer !== null)
+        {{-- One offer, for the stack: it moves each service onto the version
+             its build pins, and the confirmation names which services. --}}
+        <native:text>{{ trans_choice('updates.would_change', $this->answer()->offer->changing()->count()) }}</native:text>
+        <x-operator::action label="{{ __('updates.take_it') }}" tap="wouldYouLike()" />
     @endif
 
-    @forelse ($this->answer()->waiting as $release)
+    @if ($this->answer()->inUse !== null)
+        {{-- What the release in use changed. Its build carries the pins, so
+             this is the reason an update would move anything — and whether the
+             household will notice is what makes it a decision. --}}
+        <x-operator::emphasis>
+            {{ __('updates.what_it_changed', ['version' => $this->answer()->inUse->version]) }}
+        </x-operator::emphasis>
+
+        @if ($this->answer()->inUse->deliversSaid !== null)
+            <native:text>{{ $this->answer()->inUse->deliversSaid }}</native:text>
+        @else
+            <x-operator::note>{{ __('updates.delivers_unsaid') }}</x-operator::note>
+        @endif
+
+        <x-operator::note>
+            @if ($this->answer()->inUse->theHouseholdWouldNotice)
+                {{ __('updates.would_be_noticed') }}
+            @else
+                {{ __('updates.would_not_be_noticed') }}
+            @endif
+        </x-operator::note>
+    @endif
+
+    {{-- Every release the stack's record holds, newest first. History up to
+         the release running, drawn as history: nothing here is offered, and
+         nothing is taken from this list. --}}
+    <x-operator::emphasis>{{ __('updates.history') }}</x-operator::emphasis>
+
+    @forelse ($this->answer()->history as $release)
         <x-operator::entry>
             <x-operator::emphasis>{{ $release->version }}</x-operator::emphasis>
 
-            @if ($this->answer()->canTakeOne)
-                {{-- Offered only where the stack reported an update
-                     waiting. A screen that counted rows would offer one to a
-                     stack that listed releases while calling itself current,
-                     which is the case this requirement exists for. --}}
-                <x-operator::action
-                    label="{{ __('updates.take_this_one') }}"
-                    answers-to="{{ __('updates.take_that_one', ['version' => $release->version]) }}"
-                    tap="wouldYouLike('{{ $release->version }}')"
-                />
+            @if ($release->wasWithdrawn)
+                <x-operator::note>{{ __('updates.withdrawn') }}</x-operator::note>
             @endif
 
-            {{-- What taking it would change, in the stack's own words, where
-                 the operator is deciding. A version string is an identifier
-                 and not an argument, and this is the row the *take this one*
-                 control sits on — so the sentence belongs here rather than
-                 behind it. Said as the stack said it: this app composes
-                 nothing, and a release the stack had nothing to say about says
-                 so rather than drawing a blank. --}}
+            {{-- Said as the stack said it: this app composes nothing, and a
+                 release the stack had nothing to say about says so rather than
+                 drawing a blank. --}}
             @if ($release->deliversSaid !== null)
                 <native:text>{{ $release->deliversSaid }}</native:text>
             @else
                 <x-operator::note>{{ __('updates.delivers_unsaid') }}</x-operator::note>
             @endif
 
-            {{-- Whether somebody in the house would see the
-                 difference. This is what makes the update a decision rather
-                 than a chore, so it is on the row and not in a footnote. --}}
             <x-operator::note>
                 @if ($release->theHouseholdWouldNotice)
                     {{ __('updates.would_be_noticed') }}
@@ -134,10 +136,7 @@
             </x-operator::note>
         </x-operator::entry>
     @empty
-        {{-- Nothing is offered where the stack reported none
-             waiting, and the empty state says so rather than leaving a
-             blank where a list belongs. --}}
-        <native:text>{{ __('updates.nothing_waiting') }}</native:text>
+        <native:text>{{ __('updates.no_history') }}</native:text>
     @endforelse
 
     {{-- What became of the last update, per service. Below what is

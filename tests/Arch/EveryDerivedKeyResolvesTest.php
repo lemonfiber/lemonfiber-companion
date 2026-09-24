@@ -5,12 +5,12 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
-use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
@@ -129,9 +129,9 @@ function everyDerivedKey(): array
             Stance::cases(),
             static fn(Stance $stance): array => [$stance->saidOnTheScreen()],
         ),
-        HowCurrent::class => aPairPerCase(
-            HowCurrent::cases(),
-            static fn(HowCurrent $how): array => [$how->saidOnTheScreen()],
+        AgainstThePins::class => aPairPerCase(
+            AgainstThePins::cases(),
+            static fn(AgainstThePins $pins): array => [$pins->saidOnTheScreen()],
         ),
         Medium::class => aPairPerCase(
             Medium::cases(),

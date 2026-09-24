@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
-use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
@@ -630,7 +630,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     HowMuchItMatters::class => 'criticality',
     HowTheStackIsRunning::class => 'condition',
     Stage::class => 'stage',
-    HowCurrent::class => 'state',
+    AgainstThePins::class => 'state',
     HowItEnded::class => 'ending',
     HowToUndoIt::class => 'reversal',
     Awaiting::class => 'until',

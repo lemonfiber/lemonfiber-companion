@@ -82,12 +82,10 @@ final readonly class WhatALeafCanBe
      * A word read against a type that may be a closed set.
      *
      * The half a shape check cannot do without, and the half that names the
-     * defect rather than a symptom of it. `Standings` read the `update`
-     * payload's top-level `state` for the *current, pending, stale* triple,
-     * which the contract puts under `changelog`; the top-level field exists and
-     * answers a different question, so no key was unknown and no key was
-     * missing there. What was wrong was the word: `pending` is not one of the
-     * five the contract allows at that path.
+     * defect rather than a symptom of it. A fixture put `pending` in the
+     * `update` payload's top-level `state`; the field exists there, so no key
+     * was unknown and no key was missing. What was wrong was the word:
+     * `pending` is not one of the five the contract allows at that path.
      *
      * Only closed sets are checked. A field typed `string` or `int` accepts
      * whatever a fixture wants to say, and what it says is the reader's business

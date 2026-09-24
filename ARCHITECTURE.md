@@ -830,10 +830,11 @@ reader looks for a field at a path the contract has not got and the payload
 obliges, both sides pass and the application is broken against every real
 machine.
 
-That is not a hypothetical. `Standings` read `state` and `running` off the top
-of the `update` payload; the contract puts the first under `changelog` and
-gives the top-level one another meaning. Three rules passed, and the screen
-would have refused every stack with an update waiting. So the payload is now
+That is not a hypothetical. A fixture put `state: pending` and `running` at the
+top of the `update` payload, where the contract has `running` only under
+`changelog` and allows none of `current`, `pending` or `stale` for the
+top-level `state`. `Standings` read them there, three rules passed, and against
+a real stack the reader would have refused every reading. So the payload is now
 read against the generated types instead of against the reader — a key the
 contract has not got there, a key it requires that the payload leaves out, and
 a word outside a closed set it declares. The third is the one that names a

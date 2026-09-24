@@ -1,12 +1,11 @@
 # Updates
 
 What the app decides about an update that the stack has not already decided for
-it — and nothing else. Two decisions, both about a screen:
+it — and nothing else. One decision, about a screen:
 
 | | |
 |---|---|
 | `NotArrivedFirst` | what became of each service, with what needs attention first (`N2-R18`) |
-| `WorthNoticing` | the releases somebody in the house would see the difference from (`N2-R16`) |
 
 ## What is deliberately not here
 
@@ -17,16 +16,13 @@ grading them would be this app forming an opinion about a situation it cannot
 see. They stay told apart on the row, which is where an operator reads what to
 do about one.
 
-**Whether the stack is current, pending or stale.** That is the stack's answer
-and `N2-R15` forbids deriving it here. The app holds no opinion about which of
-two version strings is later, and one that formed one would be wrong about a
-withdrawn release, a patch series, and a stack whose channel the operator
-changed — wrong silently, because nothing on either side would compare its
-opinion to the stack's.
+**Whether an update is waiting.** That is the stack's answer, the `update`
+envelope's top-level `state`, and `N2-R15` forbids deriving it here. The app
+holds no opinion about which of two version strings is later.
 
-**Refusing a withdrawn release.** `Releases::worthOffering()` does that before
-anything reaches here. A second place one could be let through is a second place
-to get `N2-R16` wrong.
+**Which release to take.** There is no such choice. The stack moves each
+service onto the version its own build pins, and the release history is where
+those pins came from rather than a list of offers.
 
 **Applying one.** `KeepingCurrent` is the port and `Upkeepers` is the adapter;
 this module may not name the SDK (`N1-R16`) and has nothing to say about a wire.

@@ -32,13 +32,13 @@ use Tests\Support\WhereAShapeHoldsItself;
 // and `update.changelog.state` alike. Twenty-nine names do that across
 // ninety-nine of the two hundred and twenty-three paths here.
 //
-// The last of those four is the argument. `update.changelog.state` is the field
-// `Tests\Support\WhatTheContractAccepts` exists because a reader misread — the
-// top-level `state` taken for the triple the contract puts under `changelog` —
-// and a register built to catch that could not see it, because a case written
-// for the `status` envelope had already answered for it. So the question is
-// *does anything read this path*, and `Tests\Support\WhatTheReadersRead`
-// answers it by following the reader.
+// The last of those four is the argument. `update.changelog.state` says whether
+// the release record matches the running build, and the top-level `state` beside
+// it says whether any service would move. The screen once read the first for
+// the second, and a register keyed on names could not see which one it read,
+// because a case written for the `status` envelope had already answered for
+// both. So the question is *does anything read this path*, and
+// `Tests\Support\WhatTheReadersRead` answers it by following the reader.
 //
 // **It is a register of decisions, not of gaps.** Most rows here will never be
 // read, and saying so is the point: *the household surface is blocked* and *no
@@ -378,8 +378,9 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     [
         'path' => 'UpdateEnvelope.changelog.running.carried',
         'because' => 'What the release in use brought forward from the one before it. The app reads a '
-            . 'release\'s version and whether it was taken back, which is what `N2-R15` and `N2-R16` ask '
-            . 'of it; the rest of the entry is a changelog screen nobody has asked for.',
+            . 'release\'s version, what it delivers, whether the household would notice and whether it was '
+            . 'taken back, which is what `N2-R16` and `E5-R6` ask of it; the rest of the entry is a '
+            . 'changelog screen nobody has asked for.',
     ],
     [
         'path' => 'UpdateEnvelope.changelog.running.patches',
@@ -428,12 +429,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'near neighbour of that and wants a requirement of its own before it wants a screen.',
     ],
     [
-        'path' => 'UpdateEnvelope.state',
-        'because' => 'How the last run of an update ended, at the top of the payload. It is the field this '
-            . 'whole rule is about: `N2-R15` is answered from `changelog.state`, the two share half a '
-            . 'vocabulary, and reading this one for that question is the mistake that would have refused '
-            . 'every stack with an update waiting. What became of a run is `N2-R18`, which the app answers '
-            . 'service by service off `applied` — a summary beside it is a second answer to one question.',
+        'path' => 'UpdateEnvelope.changelog.state',
+        'because' => 'Whether the release record describes what this build could have shipped: `current` '
+            . 'where it holds the running release, `pending` where that release has no notes yet, `stale` '
+            . 'where it lists a later release or a version it cannot order. It says nothing about whether '
+            . 'an update is available — that is the top-level `state` — and no requirement on the update '
+            . 'screen asks for it. `N14-R7` asks for it on the version screen, which reads the same block '
+            . 'through `Changelogs`.',
     ],
     [
         'path' => 'RepairEnvelope.beyond',
@@ -517,22 +519,22 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     ],
     [
         'path' => 'UpdateEnvelope.confirmed',
-        'because' => 'Whether the stack considers an update confirmed. `N2-R17` is about the operator '
-            . 'confirming it *here*, before it runs, and reading the stack\'s own flag would let a '
-            . 'confirmation somewhere else stand in for the one this app asked for.',
+        'because' => 'Whether the run that answered was agreed to. The reading this app asks for never is, '
+            . 'and `N2-R17` is about the operator confirming *here*, before it runs — reading the stack\'s '
+            . 'own flag would let a confirmation somewhere else stand in for the one this app asked for.',
     ],
     [
         'path' => 'UpdateEnvelope.halted',
-        'because' => 'When an update was stopped part way. `N2-R18` reports what became of each service, '
-            . 'which is what an operator acts on; *when it stopped* is a different screen and no '
-            . 'requirement asks for one.',
+        'because' => 'Why the stack is not as a run found it, where a run stopped part way or left it down. '
+            . '`N2-R18` reports what became of each service, which is what an operator acts on; a '
+            . 'sentence about the run as a whole is a second answer and no requirement asks for one.',
     ],
     [
         'path' => 'UpdateEnvelope.in_flight',
-        'because' => 'The services an update is being applied to right now. Taking one hands back a job '
-            . '(`Underway`), and what a job is doing is the job\'s reading rather than this one\'s — two '
-            . 'places saying what is in flight can disagree, and the operator would believe whichever '
-            . 'they were looking at.',
+        'because' => 'What the download clients are still transferring, named so an operator can tell '
+            . 'whether what they are waiting for is among them. `E1-R12` has an update report these '
+            . 'before it runs; no `N2` requirement asks the app to, and the downloads screen is where an '
+            . 'operator reads what is in flight.',
     ],
 ];
 
@@ -692,13 +694,14 @@ it('N1-R17 — every path on an envelope this app reads has been decided about',
 it('N1-R17 — the reading follows a reader rather than recognising a name', function (): void {
     // What the rule above rests on, asserted on the pair that proves it. Both
     // of these are called `state`, one is read and one is not, and a reading
-    // that answered from `WireField` would call both of them read — which is
-    // how the register came to say nothing about the exact field
-    // `WhatTheContractAccepts` was written because a reader misread.
+    // that answered from `WireField` would call both of them read. The top-level
+    // one says whether an update is available; the changelog's says whether the
+    // release record matches the running build, and reading it for the first
+    // question is the mistake that offered updates nobody could take.
     $read = WhatTheReadersRead::paths();
 
-    expect($read)->toContain('UpdateEnvelope.changelog.state')
-        ->and($read)->not->toContain('UpdateEnvelope.state');
+    expect($read)->toContain('UpdateEnvelope.state')
+        ->and($read)->not->toContain('UpdateEnvelope.changelog.state');
 
     // And a second pair one level further in, where both paths are nested and
     // the app reads three of the five verbs the stack describes. A reading that

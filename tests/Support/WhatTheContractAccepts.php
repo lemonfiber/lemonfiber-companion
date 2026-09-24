@@ -24,11 +24,11 @@ use function str_starts_with;
  * survive, because a contract test is the only thing standing between a reader
  * and a machine nobody has run it against.
  *
- * That is not hypothetical. {@see \Modules\Sdk\Api\Standings} read `state` and
- * `running` off the top of the `update` payload, where the contract puts the
- * first under `changelog` and calls the top-level one something else entirely.
- * The fixture put them where the reader looked, three rules passed, and the
- * screen would have refused every stack with an update waiting.
+ * That is not hypothetical. A fixture put `state: pending` and `running` at the
+ * top of the `update` payload, where the contract has `running` only under
+ * `changelog` and allows other words for the top-level `state`. The reader
+ * looked where the fixture put them, three rules passed, and against a real
+ * stack {@see \Modules\Sdk\Api\Standings} would have refused every reading.
  *
  * So the fixture is checked against the contract rather than against the
  * reader. What is asserted is both directions: a key the contract does not have

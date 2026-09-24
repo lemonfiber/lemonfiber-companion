@@ -286,6 +286,9 @@ enum WireField: string
     /** What taking an update would change, service by service. */
     case Changes = 'changes';
 
+    /** The operator's yes, on an action that only describes itself without one. */
+    case Confirm = 'confirm';
+
     /**
      * Whether one of those changes cannot be put back.
      *
@@ -295,13 +298,13 @@ enum WireField: string
      */
     case Irreversible = 'irreversible';
 
-    /** Where the releases a stack could be on are listed. */
+    /** The stack's release record: the release running, and the history before it. */
     case Changelog = 'changelog';
 
-    /** The releases inside the changelog, newest as the stack ordered them. */
+    /** Every release the record holds, newest first. History, not offers. */
     case Releases = 'releases';
 
-    /** The release in use. Absent where the stack has not determined one. */
+    /** The release in use. Absent or null where the stack has not determined one. */
     case Running = 'running';
 
     /** The technical detail under a verdict, where the core gave one. */

@@ -7,18 +7,15 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * One version the stack could be on, and what taking it would mean here.
+ * One release in the stack's release record.
  *
- * Carries what the decision needs and nothing else. A version string is
- * an identifier rather than an argument — nobody decides an evening on `4.0.15`
- * — so what travels beside it is whether anyone in the house will notice, what
- * the stack says it delivers, and whether the release stands at all.
+ * A version string is an identifier rather than an argument, so what travels
+ * beside it is whether anyone in the house will notice, what the stack says it
+ * delivers, and whether the release stands at all.
  *
- * **Withdrawn is not a kind of available.** Presenting one as
- * an update, and the reason it is carried here rather than filtered away
- * upstream is that a stack running a withdrawn release is a thing an operator
- * has to be told: silently dropping it from a list would leave them reading a
- * screen that says nothing is wrong.
+ * **Withdrawn is carried, not filtered away.** A stack running a withdrawn
+ * release is a thing an operator has to be told, and a history that dropped it
+ * would describe releases that did not happen in the order they did.
  */
 final readonly class Release
 {
@@ -61,9 +58,8 @@ final readonly class Release
     /**
      * Whether somebody in the house would see the difference.
      *
-     * The distinction. A screen sorts on it and an operator
-     * decides on it; a patch nobody will notice is a different evening from a
-     * change to what the household watches.
+     * A patch nobody will notice is a different evening from a change to what
+     * the household watches.
      */
     public function theHouseholdWouldNotice(): bool
     {
@@ -71,11 +67,10 @@ final readonly class Release
     }
 
     /**
-     * What taking this one would change, as the stack put it.
+     * What this release changed, as the stack put it.
      *
      * Beside {@see theHouseholdWouldNotice()} rather than instead of it: that
-     * says whether this matters to the house, and this says what it is. An
-     * operator agreeing to an evening is owed both.
+     * says whether this matters to the house, and this says what it is.
      */
     public function delivers(): WhatAReleaseDelivers
     {
@@ -87,17 +82,4 @@ final readonly class Release
     {
         return $this->withdrawn;
     }
-
-    /**
-     * Whether this is something to offer.
-     *
-     * Asked here rather than by each caller, because the refusal is one
-     * rule and a screen that reimplemented it would be a second place to
-     * forget.
-     */
-    public function isWorthOffering(): bool
-    {
-        return ! $this->withdrawn;
-    }
-
 }

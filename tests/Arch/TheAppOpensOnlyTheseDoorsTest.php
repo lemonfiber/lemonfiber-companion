@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
-use Modules\Kernel\Api\Release;
+use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\Releases;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TakingAnUpdate;
-use Modules\Kernel\Api\WhatAReleaseDelivers;
+use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatWasDecided;
@@ -238,16 +241,18 @@ function theApplicationsSources(): array
  *
  * Built rather than read off an enum, because there is no enum: one thing can
  * be done about an update, and the name lives on the agreement. Nothing about
- * the release or the services changes what it is asked by, so the emptiest
- * agreement the type allows is enough to ask it.
+ * the services changes what it is asked by, so the smallest update a reading
+ * can offer is enough to ask it.
  */
 function anUpdateSomebodyAgreedTo(): TakingAnUpdate
 {
-    return TakingAnUpdate::agreed(
-        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+    return TakingAnUpdate::offeredBy(Upkeep::reported(
+        AgainstThePins::UpdatesAvailable,
+        Releases::none(),
+        Services::these(ServiceId::called('jellyfin')),
         Services::none(),
-        Services::none(),
-    );
+        HowServicesTookIt::none(),
+    ));
 }
 
 /**

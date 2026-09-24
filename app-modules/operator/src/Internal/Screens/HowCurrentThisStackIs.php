@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function count;
-
 use Illuminate\View\View;
 
 use function is_string;
@@ -23,7 +21,6 @@ use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
-use Modules\Operator\Internal\ViewModels\WhatOneReleaseSays;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -34,22 +31,19 @@ use function view;
 /**
  * Where this machine stands on being up to date.
  *
- * The up-to-date screen. It opens on the answer — current, an update waiting, or
- * not looked at recently — because that is the decision an operator holding a
- * phone is making. They are not comparing version strings; they are deciding
- * whether tonight is the night.
+ * The up-to-date screen. It opens on the answer — up to date, or an update
+ * waiting — because that is the decision an operator holding a phone is making.
+ * They are not comparing version strings; they are deciding whether tonight is
+ * the night.
  *
- * **It does not compare versions, and that is the requirement.** Which of the
- * three states the stack is in is the stack's answer, read and shown. An app
- * that worked it out from two strings would be wrong about a withdrawn
- * release, about a patch series, and about a stack whose channel the operator
- * changed — and wrong silently, because nothing on either side would compare
- * its opinion to the stack's.
+ * **It does not compare versions, and that is the requirement.** Whether any
+ * service would move is the stack's answer, read off the pins and shown. The
+ * release history is shown as history: it lists every release up to the one
+ * running, and an update is the stack moving onto its own build's pins rather
+ * than onto a release picked from that list.
  *
- * **A withdrawn release is left out of what is offered and said about what is
- * running.** Those are opposite errands: offering one is refused, and a
- * stack that is *on* one is something an operator has to be told. Dropping it
- * from both would leave them reading a screen that says nothing is wrong.
+ * **A withdrawn release is said, not offered.** A stack running one is told so,
+ * and moving onto the pins a withdrawn release carries is not offered.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is
@@ -76,10 +70,10 @@ final class HowCurrentThisStackIs extends NativeComponent
     /**
      * The update being asked about, while the operator decides.
      *
-     * `public` for the reason above, and held rather than passed through the
-     * template because what is confirmed has to be the thing that was shown —
-     * a release re-read after the yes is an update to whatever the stack had by
-     * then, agreed against a screen that is no longer true.
+     * `public` for the reason above, and held rather than re-read because what
+     * is confirmed has to be the thing that was shown — services re-read after
+     * the yes are an update to whatever the stack had by then, agreed against a
+     * screen that is no longer true.
      */
     public ?TakingAnUpdate $asking = null;
 
@@ -104,12 +98,6 @@ final class HowCurrentThisStackIs extends NativeComponent
         );
     }
 
-    /** How many releases are offered, which is what the empty state asks. */
-    public function howMany(): int
-    {
-        return count($this->answer()->waiting);
-    }
-
     /**
      * Ask the stack again.
      *
@@ -124,27 +112,24 @@ final class HowCurrentThisStackIs extends NativeComponent
     }
 
     /**
-     * Offer to take a release, and ask first.
+     * Offer to take the update, and ask first.
      *
-     * The version arrives as a string because a template can hand over nothing
-     * else, and is matched against what this screen actually read — so a
-     * release this screen never showed cannot be agreed to, whatever a template
-     * sends. That is the argument {@see WhatThisStackRuns::wouldYouLike()}
-     * makes about a service name, and it is the same one.
+     * The offer comes from the reading, so where the stack offered none there
+     * is nothing to ask about and this does nothing.
      *
      * Every update asks. There is no unconfirmed arm here the way there is for
      * a start, because there is no update that takes nothing away: it stops
      * services, and which ones is the whole of what the confirmation says.
      */
-    public function wouldYouLike(string $version): void
+    public function wouldYouLike(): void
     {
-        $taking = $this->agreementFor($version);
+        $offer = $this->answer()->offer;
 
-        if (! $taking instanceof TakingAnUpdate) {
+        if (! $offer instanceof TakingAnUpdate) {
             return;
         }
 
-        $this->asking = $taking;
+        $this->asking = $offer;
     }
 
     /** Take the update that was agreed to. */
@@ -211,42 +196,6 @@ final class HowCurrentThisStackIs extends NativeComponent
     public function answer(): WhatTheUpkeepTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
-    }
-
-    /**
-     * The confirmation for a version, where this screen actually showed it.
-     *
-     * Matched against what was read rather than trusted: a release this screen
-     * never offered cannot be agreed to, whatever a template sends — and the
-     * services travel from the same reading, so the confirmation names what
-     * was on the screen rather than what the stack has by the time somebody
-     * taps.
-     */
-    private function agreementFor(string $version): ?TakingAnUpdate
-    {
-        $row = $this->row($version);
-
-        if (! $row instanceof WhatOneReleaseSays) {
-            return null;
-        }
-
-        return TakingAnUpdate::agreed(
-            $row->release(),
-            $this->answer()->changing,
-            $this->answer()->cannotBePutBack,
-        );
-    }
-
-    /** The release this screen showed under that version, where it showed one. */
-    private function row(string $version): ?WhatOneReleaseSays
-    {
-        foreach ($this->answer()->waiting as $release) {
-            if ($release->version === $version) {
-                return $release;
-            }
-        }
-
-        return null;
     }
 
     /**

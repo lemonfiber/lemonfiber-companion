@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\ViewModels;
 
 /**
- * The version a stack is on, as the one word a line draws.
+ * The release a stack is on: the version a line draws, and its notes where the
+ * stack named it.
  *
- * Its own carrier rather than a {@see WhatOneReleaseSays}, which would mean
- * inventing a whole release to take one field off — a version nobody named,
- * said to be unnoticeable and not withdrawn — and those last two are answers
- * about a release that does not exist. Nothing reads them and nothing can be
- * wrong about them, which is how a placeholder outlives the reason for it.
+ * The notes are null where the stack named no release, rather than a
+ * {@see WhatOneReleaseSays} invented to fill the gap: a version nobody named,
+ * said to be unnoticeable and not withdrawn, would be answers about a release
+ * that does not exist.
  */
 final readonly class WhatTheStackIsOn
 {
@@ -24,5 +24,8 @@ final readonly class WhatTheStackIsOn
      */
     public const string NOT_NAMED = '—';
 
-    public function __construct(public string $version) {}
+    public function __construct(
+        public string $version,
+        public ?WhatOneReleaseSays $notes = null,
+    ) {}
 }

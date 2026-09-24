@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceTookIt;
-use Modules\Kernel\Api\HowCurrent;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -24,7 +24,6 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
-use Modules\Kernel\Api\VersionInUse;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Standings;
@@ -37,9 +36,10 @@ use Tests\Support\WhatTheContractAccepts;
 
 // The KeepingCurrent contract, run against the adapter and against the fake.
 //
-// `G2`'s shape. What is asserted here is what both must agree on: which of the
-// three states the stack is in, which releases are worth offering, and that a
-// refusal is told apart from a stack that did not answer. What only the adapter
+// `G2`'s shape. What is asserted here is what both must agree on: where the
+// services stand against their pins, what the release history holds, whether
+// there is an update to offer, and that a refusal is told apart from a stack
+// that did not answer. What only the adapter
 // can be asked — that an unreadable payload becomes an obstacle rather than an
 // exception — is asserted of it in its own suite, because the fake has no
 // payload to be short of.
@@ -68,29 +68,20 @@ function theSessionTheStackIsAskedAboutItsUpkeepWith(): Session
 /**
  * What both implementations answer with, where they answer.
  *
- * One release the household would notice, one it would not, and one that has
- * been taken back — so that filtering down to the ones worth showing has
- * something to do.
- *
- * One of them says what it delivers and one does not, for the same reason: the
- * wire marks that field optional, both are real answers, and a reading that
- * folded them into one string would draw a release the stack said nothing
- * about as a row with a blank where a sentence belongs.
+ * The report of an update that went part way, running `4.1.0`, whose record
+ * holds that release and two before it — one of them taken back. The history
+ * is carried whole, withdrawn release included, because it is history rather
+ * than a list of offers.
  */
 function theSameStanding(): Upkeep
 {
     return Upkeep::runningOn(
-        HowCurrent::Pending,
-        VersionInUse::of(Release::called('4.0.15', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing())),
+        AgainstThePins::Partial,
+        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
         Releases::these(
-            Release::called(
-                '4.1.0',
-                noticeable: true,
-                withdrawn: false,
-                delivers: WhatAReleaseDelivers::said('Adds series search.'),
-            ),
-            Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
             Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()),
+            Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
         ),
         // One service, not two. The stack has already refused the other, and a
         // confirmation naming it would have somebody agree to a service that
@@ -126,9 +117,9 @@ function theSameApplying(): HowServicesTookIt
  * every assertion passes.
  *
  * `state` appears twice on this payload and means two things. The top-level one
- * says how the last applied update finished; the *current, pending, stale*
- * triple a household is shown is under `changelog`. They are both words, so
- * nothing but the contract tells them apart.
+ * says whether any service would move onto its pin; the changelog's says
+ * whether the release record matches the running build. They are both words,
+ * so nothing but the contract tells them apart.
  *
  * @return array<string, mixed>
  */
@@ -166,22 +157,129 @@ function whatAStackWithUpdatesSends(): array
                 aChangeTo('sonarr', refused: true),
             ],
             'changelog' => [
-                'state' => 'pending',
+                'state' => 'current',
                 'requirements' => [],
                 'running' => [
-                    'version' => '4.0.15',
-                    'user_facing' => false,
-                    'tag' => 'v4.0.15',
+                    'version' => '4.1.0',
+                    'user_facing' => true,
+                    'delivers' => 'Adds series search.',
+                    'tag' => 'v4.1.0',
+                    'groups' => [],
+                ],
+                'releases' => [
+                    ['version' => '4.1.0', 'user_facing' => true, 'delivers' => 'Adds series search.'],
+                    ['version' => '4.0.17', 'user_facing' => true, 'withdrawn' => '2026-09-01'],
+                    ['version' => '4.0.16', 'user_facing' => false],
+                ],
+            ],
+        ],
+    ];
+}
+
+/**
+ * What a stack sends where its services are behind their pins.
+ *
+ * Nothing applied yet, two changes of which the stack refused one, and a
+ * changelog whose notes match the running build — `current` there, which is
+ * not what says an update is available.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackWithAnUpdateAvailableSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'update',
+        'data' => [
+            'state' => 'updates-available',
+            'confirmed' => false,
+            'in_flight' => [],
+            'stack_edits' => [],
+            'applied' => [],
+            'changes' => [aChangeTo('jellyfin', refused: false), aChangeTo('sonarr', refused: true)],
+            'changelog' => [
+                'state' => 'current',
+                'requirements' => [],
+                'running' => [
+                    'version' => '4.1.0',
+                    'user_facing' => true,
+                    'delivers' => 'Adds series search.',
+                    'tag' => 'v4.1.0',
                     'groups' => [],
                 ],
                 'releases' => [
                     ['version' => '4.1.0', 'user_facing' => true, 'delivers' => 'Adds series search.'],
                     ['version' => '4.0.16', 'user_facing' => false],
-                    ['version' => '4.0.17', 'user_facing' => true, 'withdrawn' => '2026-09-01'],
                 ],
             ],
         ],
     ];
+}
+
+/** The reading both implementations answer that payload with. */
+function theSameStandingWithAnUpdateAvailable(): Upkeep
+{
+    return Upkeep::runningOn(
+        AgainstThePins::UpdatesAvailable,
+        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
+        Releases::these(
+            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
+            Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+        ),
+        Services::these(ServiceId::called('jellyfin')),
+        Services::none(),
+        HowServicesTookIt::none(),
+    );
+}
+
+/**
+ * What a stack sends just after it was updated, before its notes are written.
+ *
+ * Every service is on its pin, so the top-level `state` is `current`. The
+ * running build's release has no notes yet, so the changelog says `pending`
+ * and names no running release, and its history holds only the releases
+ * before this build. Nothing here is an update: the changelog's `pending` is
+ * about the notes, and the releases are past ones.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackWithPendingNotesSends(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'update',
+        'data' => [
+            'state' => 'current',
+            'confirmed' => false,
+            'in_flight' => [],
+            'stack_edits' => [],
+            'applied' => [],
+            'changes' => [],
+            'changelog' => [
+                'state' => 'pending',
+                'requirements' => [],
+                'releases' => [
+                    ['version' => '4.0.16', 'user_facing' => true, 'delivers' => 'Adds series search.'],
+                    ['version' => '4.0.15', 'user_facing' => false],
+                ],
+            ],
+        ],
+    ];
+}
+
+/** The reading both implementations answer that payload with. */
+function theSameStandingWithPendingNotes(): Upkeep
+{
+    return Upkeep::reported(
+        AgainstThePins::Current,
+        Releases::these(
+            Release::called('4.0.16', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
+            Release::called('4.0.15', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+        ),
+        Services::none(),
+        Services::none(),
+        HowServicesTookIt::none(),
+    );
 }
 
 /**
@@ -215,12 +313,12 @@ function anUpkeepAnswer(): MockResponse
  *
  * @return array<string, Closure(): KeepingCurrent>
  */
-function everyWayOfKeepingCurrent(MockResponse $answered, ?Obstacle $why = null): array
+function everyWayOfKeepingCurrent(MockResponse $answered, ?Obstacle $why = null, ?Upkeep $standing = null): array
 {
     return [
         'the fake' => static fn(): KeepingCurrent => $why instanceof Obstacle
             ? AStackThatKeepsCurrent::met($why)
-            : AStackThatKeepsCurrent::with(theSameStanding()),
+            : AStackThatKeepsCurrent::with($standing ?? theSameStanding()),
         'the adapter' => static function () use ($answered): KeepingCurrent {
             MockClient::destroyGlobal();
             MockClient::global([$answered]);
@@ -252,20 +350,21 @@ function whereItStands(KeepingCurrent $keeping): string
 {
     return $keeping->standing(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith())->either(
         stands: static function (Upkeep $upkeep): WhatTheUpkeepTurnedOutToSay {
-            $offered = [];
+            $history = [];
 
-            foreach ($upkeep->waiting() as $release) {
-                $offered[] = $release->version();
+            foreach ($upkeep->history() as $release) {
+                $history[] = $release->wasWithdrawn() ? sprintf('%s(withdrawn)', $release->version()) : $release->version();
             }
 
             return new WhatTheUpkeepTurnedOutToSay(sprintf(
-                '%s/%s/%s',
-                $upkeep->how()->value,
+                '%s/%s/%s/%s',
+                $upkeep->againstThePins()->value,
                 $upkeep->inUse(
-                    named: static fn(VersionInUse $inUse): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($inUse->version()),
+                    named: static fn(Release $inUse): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($inUse->version()),
                     unstated: static fn(): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay('unstated'),
                 )->said,
-                implode(',', $offered),
+                $upkeep->hasSomethingToOffer() ? 'offered' : 'nothing offered',
+                implode(',', $history),
             ));
         },
         met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->name),
@@ -290,27 +389,43 @@ function howItWasTaken(KeepingCurrent $keeping, TakingAnUpdate $agreed): string
     )->said;
 }
 
-/** The yes an operator gave, naming the two services the stack said would change. */
+/** The yes an operator gave to the update the reading offered. */
 function theUpdateTheOperatorAgreedTo(): TakingAnUpdate
 {
-    return TakingAnUpdate::agreed(
-        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
-        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
-        Services::none(),
-    );
+    return TakingAnUpdate::offeredBy(theSameStandingWithAnUpdateAvailable());
 }
 
 it('N2-R15 — comes away with the state the stack reported and the release it is on', function (): void {
     foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
-        expect(whereItStands($build()))->toStartWith('pending/4.0.15', $which);
+        expect(whereItStands($build()))->toStartWith('partial/4.1.0/nothing offered', $which);
     }
 });
 
-it('N2-R16 — leaves out the release that was taken back', function (): void {
+it('comes away with every release the record holds, as history', function (): void {
+    // The withdrawn one included and marked: history is what happened, and
+    // nothing in it is offered.
     foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
-        expect(whereItStands($build()))
-            ->toEndWith('4.1.0,4.0.16', $which)
-            ->and(whereItStands($build()))->not->toContain('4.0.17', $which);
+        expect(whereItStands($build()))->toEndWith('/4.1.0,4.0.17(withdrawn),4.0.16', $which);
+    }
+});
+
+it('offers the update where the stack said one is available', function (): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackWithAnUpdateAvailableSends()));
+
+    foreach (everyWayOfKeepingCurrent($answered, standing: theSameStandingWithAnUpdateAvailable()) as $which => $build) {
+        expect(whereItStands($build()))->toBe('updates-available/4.1.0/offered/4.1.0,4.0.16', $which);
+    }
+});
+
+it('offers nothing where the notes are pending and every service is on its pin', function (): void {
+    // The payload that used to read as *an update is waiting*: the changelog
+    // says `pending` and lists releases. Both are about the release record —
+    // notes not yet written for this build, and the releases before it — and
+    // the top-level `current` is the stack saying no service would move.
+    $answered = MockResponse::make((string) json_encode(whatAStackWithPendingNotesSends()));
+
+    foreach (everyWayOfKeepingCurrent($answered, standing: theSameStandingWithPendingNotes()) as $which => $build) {
+        expect(whereItStands($build()))->toBe('current/unstated/nothing offered/4.0.16,4.0.15', $which);
     }
 });
 
@@ -394,8 +509,10 @@ it('stands in for a stack with a payload the contract would accept', function ()
     // contract does not have at that path is a reader looking in the wrong
     // place. A field it requires and this leaves out is a fixture standing in
     // for a payload no stack sends, which is a reader nothing has tested.
-    expect(WhatTheContractAccepts::complaintsAbout('UpdateEnvelope', whatAStackWithUpdatesSends()))
-        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+    foreach ([whatAStackWithUpdatesSends(), whatAStackWithAnUpdateAvailableSends(), whatAStackWithPendingNotesSends()] as $payload) {
+        expect(WhatTheContractAccepts::complaintsAbout('UpdateEnvelope', $payload))
+            ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+    }
 });
 
 it('N2-R19 — the contract still names a way back on every service', function (): void {
@@ -498,7 +615,7 @@ final readonly class WhichArmARowReached
 }
 
 /**
- * A stack with one release waiting, carrying whatever a case puts in `delivers`.
+ * A stack whose record holds one release, carrying whatever a case puts in `delivers`.
  *
  * Written out rather than reached into the payload above, because a case that
  * edited a shared fixture three levels down would be a helper about arrays and
@@ -506,10 +623,10 @@ final readonly class WhichArmARowReached
  * below, the same way the larger payload is — a shape no stack sends would fail
  * there rather than quietly proving the reader against nothing.
  *
- * @param  array<string, mixed>  $release  the one waiting release, whole
+ * @param  array<string, mixed>  $release  the one release in the record, whole
  * @return array<string, mixed>
  */
-function aStackWhoseWaitingReleaseIs(array $release): array
+function aStackWhoseRecordHolds(array $release): array
 {
     return [
         'state' => 'updates-available',
@@ -535,11 +652,11 @@ function aStackWhoseWaitingReleaseIs(array $release): array
 /**
  * What that release says it delivers, read through the reader the screen uses.
  *
- * @param array<string, mixed> $release the one waiting release, whole
+ * @param array<string, mixed> $release the one release in the record, whole
  */
-function whatThatWaitingReleaseDelivers(array $release): string
+function whatThatListedReleaseDelivers(array $release): string
 {
-    foreach (Standings::in(new Envelope(1, 'update', aStackWhoseWaitingReleaseIs($release)))->waiting() as $found) {
+    foreach (Standings::in(new Envelope(1, 'update', aStackWhoseRecordHolds($release)))->history() as $found) {
         return $found->delivers()->either(
             said: static fn(string $prose): WhichArmARowReached => new WhichArmARowReached(
                 sprintf('said:%s', $prose),
@@ -555,14 +672,14 @@ it('stands in for a release with a payload the contract would accept', function 
     expect(WhatTheContractAccepts::complaintsAbout('UpdateEnvelope', [
         'api_version' => 1,
         'kind' => 'update',
-        'data' => aStackWhoseWaitingReleaseIs([
+        'data' => aStackWhoseRecordHolds([
             'version' => '4.1.0', 'user_facing' => true, 'delivers' => 'Adds series search.',
         ]),
     ]))->toBe([], "The payload these cases stand in for a stack with is not one a stack would send.\n");
 });
 
-it('E5-R6 — reads what a waiting release delivers, so the row the control sits on can say it', function (): void {
-    expect(whatThatWaitingReleaseDelivers([
+it('E5-R6 — reads what a release delivers, so the row that draws it can say it', function (): void {
+    expect(whatThatListedReleaseDelivers([
         'version' => '4.1.0', 'user_facing' => true, 'delivers' => 'Adds series search.',
     ]))->toBe('said:Adds series search.');
 });
@@ -571,9 +688,9 @@ it('E5-R10 — a release the stack said nothing about is silent rather than blan
     // Absent, and present but empty. Both are the stack having nothing to say
     // and neither is a payload gone wrong — the contract marks the field
     // optional, and a reading that refused here would refuse the ordinary case.
-    expect(whatThatWaitingReleaseDelivers(['version' => '4.1.0', 'user_facing' => true]))
+    expect(whatThatListedReleaseDelivers(['version' => '4.1.0', 'user_facing' => true]))
         ->toBe('silent')
-        ->and(whatThatWaitingReleaseDelivers([
+        ->and(whatThatListedReleaseDelivers([
             'version' => '4.1.0', 'user_facing' => true, 'delivers' => '',
         ]))->toBe('silent');
 });
@@ -585,7 +702,7 @@ it('reads a delivers that is not text as nothing said rather than refusing the l
     // number where a sentence belongs is a stack that has given none. Refusing
     // would lose the whole listing — every other release included — over a line
     // that is not what the operator is deciding on.
-    expect(whatThatWaitingReleaseDelivers([
+    expect(whatThatListedReleaseDelivers([
         'version' => '4.1.0', 'user_facing' => true, 'delivers' => 7,
     ]))->toBe('silent');
 });
