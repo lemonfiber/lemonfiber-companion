@@ -25,7 +25,7 @@ use function sprintf;
 final class ShelfIsUnreadable extends InvalidArgumentException
 {
     /** A field the contract requires did not arrive, or arrived as another shape. */
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf('The held payload carried no readable `%s`.', $field->value));
     }

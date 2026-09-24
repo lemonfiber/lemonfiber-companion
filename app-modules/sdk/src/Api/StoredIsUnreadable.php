@@ -21,7 +21,7 @@ use function sprintf;
  */
 final class StoredIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The stored envelope has no `%s`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',
@@ -29,7 +29,7 @@ final class StoredIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function row(WireField $list, int $position): self
+    public static function row(NamesAWireField $list, int $position): self
     {
         return new self(sprintf(
             'Entry %d of `%s` in the stored envelope is not an entry. It is refused rather than dropped: a list one row short says this machine does not keep something it does.',
@@ -38,7 +38,7 @@ final class StoredIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function said(WireField $list, WireField $field, int $position): self
+    public static function said(NamesAWireField $list, NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Entry %d of `%s` in the stored envelope has no readable `%s`. An entry that will not say what it is reads as complete to somebody deciding what to keep.',

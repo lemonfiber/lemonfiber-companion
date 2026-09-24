@@ -25,7 +25,7 @@ use function sprintf;
  */
 final class OfferIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The answer has no `%s`, or it is not what the contract says it is. This did not come from a lemonfiber of a version this app can read.',

@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowAVolumeWasRead;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
@@ -26,11 +27,16 @@ use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatACapDoes;
+use Modules\Kernel\Api\WhatALineIsAbout;
+use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
+use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhoSettledIt;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -128,6 +134,30 @@ function theGeneratedHistoryEnvelope(): string
 function theGeneratedBandwidthEnvelope(): string
 {
     return theGeneratedEnvelope('BandwidthEnvelope');
+}
+
+/** The generated `space` envelope, as text. */
+function theGeneratedSpaceEnvelope(): string
+{
+    return theGeneratedEnvelope('SpaceEnvelope');
+}
+
+/**
+ * Every literal one field is fixed to across the arms of an object union.
+ *
+ * `standing` on a download and `of` on a line are not literal unions: each arm
+ * of the shape fixes the field to a literal of its own, the way `Conclusion`'s
+ * `outcome` is. Read off the generated type as `field: 'word'`, once each.
+ *
+ * @return list<string>
+ */
+function theArmsIn(string $envelope, string $field): array
+{
+    preg_match_all(sprintf("/\\b%s: '([a-z_]+)'/", $field), $envelope, $found);
+    $words = array_values(array_unique($found[1]));
+    sort($words);
+
+    return $words;
 }
 
 /** The generated `outbound` envelope, as text. */
@@ -533,6 +563,48 @@ it('N1-R13 — everywhere a month can stand against its cap has a case', functio
     expect(valuesOf(WhereTheMonthStands::cases()))->toBe($words);
 });
 
+it('N1-R13 — everywhere a machine or a volume can stand for room has a case', function (): void {
+    $words = unionIn(theGeneratedSpaceEnvelope(), 'level');
+
+    expect($words)->not->toBe([], 'no level union was found in the generated envelope');
+    expect(valuesOf(WhereTheRoomStands::cases()))->toBe($words);
+});
+
+it('N1-R13 — every volume the stack watches has a case', function (): void {
+    $words = unionIn(theGeneratedSpaceEnvelope(), 'role');
+
+    expect($words)->not->toBe([], 'no role union was found in the generated envelope');
+    expect(valuesOf(WhatAVolumeHolds::cases()))->toBe($words);
+});
+
+it('N1-R13 — everything getting room back can cost has a case', function (): void {
+    $words = unionIn(theGeneratedSpaceEnvelope(), 'reclaim');
+
+    expect($words)->not->toBe([], 'no reclaim union was found in the generated envelope');
+    expect(valuesOf(WhatGettingItBackCosts::cases()))->toBe($words);
+});
+
+it('N1-R13 — every category a line of the account can be has a case', function (): void {
+    $words = theArmsIn(theGeneratedSpaceEnvelope(), 'of');
+
+    expect($words)->not->toBe([], 'no category arm was found in the generated envelope');
+    expect(valuesOf(WhatALineIsAbout::cases()))->toBe($words);
+});
+
+it('N1-R13 — everywhere a download can stand has a case', function (): void {
+    $words = theArmsIn(theGeneratedSpaceEnvelope(), 'standing');
+
+    expect($words)->not->toBe([], 'no standing arm was found in the generated envelope');
+    expect(valuesOf(WhereADownloadStands::cases()))->toBe($words);
+});
+
+it('N1-R13 — every kind of reading a volume can have has a case', function (): void {
+    $words = theArmsIn(theGeneratedSpaceEnvelope(), 'as');
+
+    expect($words)->not->toBe([], 'no reading arm was found in the generated envelope');
+    expect(valuesOf(HowAVolumeWasRead::cases()))->toBe($words);
+});
+
 it('N1-R13 — every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
@@ -648,6 +720,9 @@ const CHECKED_AGAINST_THE_WIRE = [
     HowTheLineWasMeasured::class => 'source',
     WhatACapDoes::class => 'exceeded',
     WhereTheMonthStands::class => 'reached',
+    WhereTheRoomStands::class => 'level',
+    WhatAVolumeHolds::class => 'role',
+    WhatGettingItBackCosts::class => 'reclaim',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

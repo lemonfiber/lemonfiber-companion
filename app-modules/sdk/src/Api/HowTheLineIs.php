@@ -24,6 +24,7 @@ use Modules\Kernel\Api\WhatTheLineCarries;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
+use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -64,10 +65,10 @@ final readonly class HowTheLineIs
         $line = HowTheLineIsShared::standing(
             self::restraint($data),
             self::text($data, WireField::Means->value, WireField::Means),
-            self::says($data, WireField::Down),
-            self::says($data, WireField::Up),
-            self::remarks($data, WireField::Cautions),
-            self::remarks($data, WireField::Untouched),
+            self::says($data, BandwidthField::Down),
+            self::says($data, BandwidthField::Up),
+            self::remarks($data, BandwidthField::Cautions),
+            self::remarks($data, BandwidthField::Untouched),
         );
 
         return self::optionals($line, $data);
@@ -92,20 +93,20 @@ final readonly class HowTheLineIs
      */
     private static function optionals(HowTheLineIsShared $line, array $data): HowTheLineIsShared
     {
-        if (self::carries($data, WireField::Capacity)) {
-            $line = $line->measuredAt(self::capacity(self::object($data, WireField::Capacity)));
+        if (self::carries($data, BandwidthField::Capacity)) {
+            $line = $line->measuredAt(self::capacity(self::object($data, BandwidthField::Capacity)));
         }
 
-        if (! self::carries($data, WireField::Cap) && self::carries($data, WireField::Reached)) {
-            throw BandwidthIsUnreadable::missing(WireField::Cap->value);
+        if (! self::carries($data, BandwidthField::Cap) && self::carries($data, BandwidthField::Reached)) {
+            throw BandwidthIsUnreadable::missing(BandwidthField::Cap->value);
         }
 
-        if (self::carries($data, WireField::Cap)) {
+        if (self::carries($data, BandwidthField::Cap)) {
             $line = $line->cappedAt(self::cap($data));
         }
 
-        if (self::carries($data, WireField::Acting)) {
-            $line = $line->withASpentCapDoing(Remark::said(self::text($data, WireField::Acting->value, WireField::Acting), WireField::Acting->value));
+        if (self::carries($data, BandwidthField::Acting)) {
+            $line = $line->withASpentCapDoing(Remark::said(self::text($data, BandwidthField::Acting->value, BandwidthField::Acting), BandwidthField::Acting->value));
         }
 
         if (self::carries($data, WireField::Ratio)) {
@@ -122,10 +123,10 @@ final readonly class HowTheLineIs
      */
     private static function restraint(array $data): WhereTheLineStands
     {
-        $said = self::text($data, WireField::Restraint->value, WireField::Restraint);
+        $said = self::text($data, BandwidthField::Restraint->value, BandwidthField::Restraint);
 
         return WhereTheLineStands::tryFrom($said)
-            ?? throw BandwidthIsUnreadable::word(WireField::Restraint->value, $said, ...array_map(static fn(WhereTheLineStands $case): string => $case->value, WhereTheLineStands::cases()));
+            ?? throw BandwidthIsUnreadable::word(BandwidthField::Restraint->value, $said, ...array_map(static fn(WhereTheLineStands $case): string => $case->value, WhereTheLineStands::cases()));
     }
 
     /**
@@ -133,9 +134,9 @@ final readonly class HowTheLineIs
      *
      * @param array<mixed> $data
      */
-    private static function says(array $data, WireField $direction): string
+    private static function says(array $data, NamesAWireField $direction): string
     {
-        return self::text(self::object($data, $direction), WireField::Says->under($direction), WireField::Says);
+        return self::text(self::object($data, $direction), BandwidthField::Says->under($direction), BandwidthField::Says);
     }
 
     /**
@@ -143,7 +144,7 @@ final readonly class HowTheLineIs
      *
      * @param array<mixed> $data
      */
-    private static function remarks(array $data, WireField $list): Remarks
+    private static function remarks(array $data, NamesAWireField $list): Remarks
     {
         if (! array_key_exists($list->value, $data) || ! is_array($data[$list->value])) {
             throw BandwidthIsUnreadable::missing($list->value);
@@ -171,15 +172,15 @@ final readonly class HowTheLineIs
      */
     private static function capacity(array $capacity): WhatTheLineCarries
     {
-        $source = self::text($capacity, WireField::Source->under(WireField::Capacity), WireField::Source);
+        $source = self::text($capacity, BandwidthField::Source->under(BandwidthField::Capacity), BandwidthField::Source);
 
         return WhatTheLineCarries::measured(
-            self::count($capacity, WireField::Down, WireField::Capacity),
-            self::count($capacity, WireField::Up, WireField::Capacity),
+            self::count($capacity, BandwidthField::Down, BandwidthField::Capacity),
+            self::count($capacity, BandwidthField::Up, BandwidthField::Capacity),
             HowTheLineWasMeasured::tryFrom($source)
-                ?? throw BandwidthIsUnreadable::word(WireField::Source->under(WireField::Capacity), $source, ...array_map(static fn(HowTheLineWasMeasured $case): string => $case->value, HowTheLineWasMeasured::cases())),
-            Instant::atEpochSeconds(self::count($capacity, WireField::Taken, WireField::Capacity)),
-            WhetherItGoesThroughTheTunnel::said(throughTunnel: self::flag($capacity, WireField::ThroughTunnel, WireField::Capacity)),
+                ?? throw BandwidthIsUnreadable::word(BandwidthField::Source->under(BandwidthField::Capacity), $source, ...array_map(static fn(HowTheLineWasMeasured $case): string => $case->value, HowTheLineWasMeasured::cases())),
+            Instant::atEpochSeconds(self::count($capacity, BandwidthField::Taken, BandwidthField::Capacity)),
+            WhetherItGoesThroughTheTunnel::said(throughTunnel: self::flag($capacity, BandwidthField::ThroughTunnel, BandwidthField::Capacity)),
         );
     }
 
@@ -190,23 +191,23 @@ final readonly class HowTheLineIs
      */
     private static function cap(array $data): AMonthlyCap
     {
-        $cap = self::object($data, WireField::Cap);
-        $exceeded = self::text($cap, WireField::Exceeded->under(WireField::Cap), WireField::Exceeded);
+        $cap = self::object($data, BandwidthField::Cap);
+        $exceeded = self::text($cap, BandwidthField::Exceeded->under(BandwidthField::Cap), BandwidthField::Exceeded);
         $monthly = AMonthlyCap::of(
-            self::count($cap, WireField::Monthly, WireField::Cap),
+            self::count($cap, BandwidthField::Monthly, BandwidthField::Cap),
             WhatACapDoes::tryFrom($exceeded)
-                ?? throw BandwidthIsUnreadable::word(WireField::Exceeded->under(WireField::Cap), $exceeded, ...array_map(static fn(WhatACapDoes $case): string => $case->value, WhatACapDoes::cases())),
+                ?? throw BandwidthIsUnreadable::word(BandwidthField::Exceeded->under(BandwidthField::Cap), $exceeded, ...array_map(static fn(WhatACapDoes $case): string => $case->value, WhatACapDoes::cases())),
         );
 
-        if (! self::carries($data, WireField::Reached)) {
+        if (! self::carries($data, BandwidthField::Reached)) {
             return $monthly;
         }
 
-        $reached = self::text($data, WireField::Reached->value, WireField::Reached);
+        $reached = self::text($data, BandwidthField::Reached->value, BandwidthField::Reached);
 
         return $monthly->standing(
             WhereTheMonthStands::tryFrom($reached)
-                ?? throw BandwidthIsUnreadable::word(WireField::Reached->value, $reached, ...array_map(static fn(WhereTheMonthStands $case): string => $case->value, WhereTheMonthStands::cases())),
+                ?? throw BandwidthIsUnreadable::word(BandwidthField::Reached->value, $reached, ...array_map(static fn(WhereTheMonthStands $case): string => $case->value, WhereTheMonthStands::cases())),
         );
     }
 
@@ -216,7 +217,7 @@ final readonly class HowTheLineIs
      * @param  array<mixed> $data
      * @return array<mixed>
      */
-    private static function object(array $data, WireField $field): array
+    private static function object(array $data, NamesAWireField $field): array
     {
         if (! array_key_exists($field->value, $data) || ! is_array($data[$field->value])) {
             throw BandwidthIsUnreadable::missing($field->value);
@@ -230,7 +231,7 @@ final readonly class HowTheLineIs
      *
      * @param array<mixed> $data
      */
-    private static function count(array $data, WireField $field, WireField $parent): int
+    private static function count(array $data, NamesAWireField $field, NamesAWireField $parent): int
     {
         if (! array_key_exists($field->value, $data) || ! is_int($data[$field->value]) || $data[$field->value] < 0) {
             throw BandwidthIsUnreadable::missing($field->under($parent));
@@ -244,7 +245,7 @@ final readonly class HowTheLineIs
      *
      * @param array<mixed> $data
      */
-    private static function flag(array $data, WireField $field, WireField $parent): bool
+    private static function flag(array $data, NamesAWireField $field, NamesAWireField $parent): bool
     {
         if (! array_key_exists($field->value, $data) || ! is_bool($data[$field->value])) {
             throw BandwidthIsUnreadable::missing($field->under($parent));
@@ -261,7 +262,7 @@ final readonly class HowTheLineIs
      *
      * @param array<mixed> $data
      */
-    private static function carries(array $data, WireField $field): bool
+    private static function carries(array $data, NamesAWireField $field): bool
     {
         return array_key_exists($field->value, $data) && $data[$field->value] !== null;
     }
@@ -273,7 +274,7 @@ final readonly class HowTheLineIs
      *
      * @param array<mixed> $data
      */
-    private static function text(array $data, string $where, WireField $field): string
+    private static function text(array $data, string $where, NamesAWireField $field): string
     {
         // A guard rather than `?? null` on the subscript, which `C9` refuses.
         if (! array_key_exists($field->value, $data)) {

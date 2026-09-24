@@ -18,7 +18,7 @@ use function sprintf;
  */
 final class ChangelogIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf('A changelog arrived without its `%s`.', $field->value));
     }

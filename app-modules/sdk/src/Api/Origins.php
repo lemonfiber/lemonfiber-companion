@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Generated\ProvenanceEnvelope;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhereItComesFrom;
 use Modules\Kernel\Api\WhereTheServicesComeFrom;
+use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -139,10 +140,10 @@ final readonly class Origins
         return WhereItComesFrom::declared(
             ServiceId::called(self::text($row, WireField::Id, $position)),
             self::text($row, WireField::Name, $position),
-            self::text($row, WireField::Image, $position),
-            self::text($row, WireField::Pinned, $position),
-            self::text($row, WireField::Upstream, $position),
-            self::text($row, WireField::License, $position),
+            self::text($row, ProvenanceField::Image, $position),
+            self::text($row, ProvenanceField::Pinned, $position),
+            self::text($row, ProvenanceField::Upstream, $position),
+            self::text($row, ProvenanceField::License, $position),
         );
     }
 
@@ -151,7 +152,7 @@ final readonly class Origins
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, WireField $field, int $position): string
+    private static function text(array $row, NamesAWireField $field, int $position): string
     {
         // A guard rather than `?? null` on the subscript, which `C9` refuses.
         if (! array_key_exists($field->value, $row)) {

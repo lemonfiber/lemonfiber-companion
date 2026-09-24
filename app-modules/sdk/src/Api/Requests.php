@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\WhatWasWanted;
+use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Internal\WhatADecisionAsksWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -110,7 +111,7 @@ final readonly class Requests implements Wanting
      */
     private function saying(Decided $decided): array
     {
-        $asking = [WireField::Request->value => $decided->about()->number()];
+        $asking = [HouseholdField::Request->value => $decided->about()->number()];
 
         return $decided->why(
             was: static fn(string $because): WhatADecisionAsksWith

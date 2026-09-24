@@ -499,6 +499,49 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . '`N2-R4` has the app state what a repair did in the words the core produced.',
     ],
     [
+        'path' => 'SpaceEnvelope.agreement',
+        'because' => 'What the offer to reclaim names itself, so that an answer to it can say which offer it '
+            . 'was answering. It exists for the act of removing, and this app removes nothing (`N12-R9`); '
+            . 'the room is shown and the removing is done at the machine.',
+    ],
+    [
+        'path' => 'SpaceEnvelope.reclaimed',
+        'because' => 'What became of a confirmed cleanup. Only a call that removes fills it in, and this app '
+            . 'makes none, so every reading it asks for leaves it empty.',
+    ],
+    [
+        'path' => 'SpaceEnvelope.reclaimable',
+        'because' => 'A second reading of bytes `consumption` already counts, as the stack says itself, and '
+            . 'each line of `consumption` carries what getting it back would cost. Drawing both would show '
+            . 'the same room twice, which is the error the stack arranges its accounting to avoid.',
+    ],
+    [
+        'path' => 'SpaceEnvelope.outsized',
+        'because' => 'Single files far out of line with the rest, named by path. `N12-R6` has the room shown by '
+            . 'the categories the contract gives and never as a file listing, and a list of paths is one.',
+    ],
+    [
+        'path' => 'SpaceEnvelope.interrupted',
+        'because' => 'Imports that stopped part-way, with what is on disk for each. A stall is `N8`\'s, and the '
+            . '`stuck` envelope is where this app reads what did not come in; `N12` asks nothing about it.',
+    ],
+    [
+        'path' => 'SpaceEnvelope.volumes[].at',
+        'because' => 'The path the stack measured. The screen names a volume by where it is mounted, which is '
+            . 'what its limit and every figure beside it belong to.',
+    ],
+    [
+        'path' => 'SpaceEnvelope.consumption[].tally.files',
+        'because' => 'How many names a line counted. The line answers where the room went in bytes, and a count '
+            . 'of names beside it answers nothing `N12` asks.',
+    ],
+    [
+        'path' => 'SpaceEnvelope.consumption[].tally.shared',
+        'because' => 'How many of those names point at a file already counted. What sharing saves is shown as '
+            . 'the difference between what a line occupies and what it would take with nothing shared, which '
+            . 'is the figure an operator can weigh; the count of names is not.',
+    ],
+    [
         'path' => 'StoredEnvelope.removal',
         'because' => 'Whether the call that answered removed what it lists. The listing this app asks for '
             . 'removes nothing and always answers `not-asked`; only the errand that forgets everything fills '

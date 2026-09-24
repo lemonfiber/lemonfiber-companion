@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Sdk\Api\Fields\StatusField;
 
 use function sprintf;
 
@@ -37,7 +38,7 @@ use function sprintf;
  */
 final class RosterIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The status envelope has no `%s`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',
@@ -53,7 +54,7 @@ final class RosterIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function said(WireField $field, int $position): self
+    public static function said(NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Service %d in the status envelope has no readable `%s`. A row missing it is a row an operator cannot act on, and showing it anyway offers a verb about a blank.',
@@ -67,7 +68,7 @@ final class RosterIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'Service %d in the status envelope names something in `%s` that is not a service. What leans on a service is the sentence `N2-R8` puts in front of stopping it, so a name that cannot be read would understate what a stop disturbs.',
             $position,
-            WireField::DependsOn->value,
+            StatusField::DependsOn->value,
         ));
     }
 
@@ -76,7 +77,7 @@ final class RosterIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'Service %d in the status envelope carries an `%s` that is neither absent, empty, nor a number. It is refused rather than read as still running, which is the reading that turns a service that died into one nobody looks at.',
             $position,
-            WireField::Exit->value,
+            StatusField::Exit->value,
         ));
     }
 

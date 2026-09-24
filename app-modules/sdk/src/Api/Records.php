@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhereItStopsShort;
+use Modules\Sdk\Api\Fields\HistoryField;
 use Modules\Sdk\Internal\Wire;
 
 use function preg_match;
@@ -84,14 +85,14 @@ final readonly class Records
      */
     private static function horizon(array $data): string
     {
-        if (! array_key_exists(WireField::Horizon->value, $data)) {
-            throw HistoryIsUnreadable::missing(WireField::Horizon);
+        if (! array_key_exists(HistoryField::Horizon->value, $data)) {
+            throw HistoryIsUnreadable::missing(HistoryField::Horizon);
         }
 
-        $said = $data[WireField::Horizon->value];
+        $said = $data[HistoryField::Horizon->value];
 
         if (! is_string($said) || trim($said) === '') {
-            throw HistoryIsUnreadable::missing(WireField::Horizon);
+            throw HistoryIsUnreadable::missing(HistoryField::Horizon);
         }
 
         return $said;
@@ -152,9 +153,9 @@ final readonly class Records
     private static function one(array $row, int $position): Change
     {
         $change = Change::made(
-            self::text($row, WireField::Did, $position),
-            self::text($row, WireField::Operation, $position),
-            self::text($row, WireField::Target, $position),
+            self::text($row, HistoryField::Did, $position),
+            self::text($row, HistoryField::Operation, $position),
+            self::text($row, HistoryField::Target, $position),
             self::when($row, $position),
             self::reversal($row, $position),
             self::alongside($row, $position),
@@ -212,11 +213,11 @@ final readonly class Records
      */
     private static function alongside(array $row, int $position): int
     {
-        if (! array_key_exists(WireField::Alongside->value, $row)) {
+        if (! array_key_exists(HistoryField::Alongside->value, $row)) {
             throw HistoryIsUnreadable::alongside($position);
         }
 
-        $said = $row[WireField::Alongside->value];
+        $said = $row[HistoryField::Alongside->value];
 
         if (! is_int($said) || $said < 1) {
             throw HistoryIsUnreadable::alongside($position);
@@ -241,7 +242,7 @@ final readonly class Records
             return $change->stoppingShort(self::whereItStopsShort($row, $position));
         }
 
-        if (self::carries($row, WireField::Instead)) {
+        if (self::carries($row, HistoryField::Instead)) {
             throw HistoryIsUnreadable::insteadWithoutReason($position);
         }
 
@@ -257,11 +258,11 @@ final readonly class Records
     {
         $why = self::text($row, WireField::Because, $position);
 
-        if (! self::carries($row, WireField::Instead)) {
+        if (! self::carries($row, HistoryField::Instead)) {
             return WhereItStopsShort::because($why);
         }
 
-        return WhereItStopsShort::suggesting($why, self::text($row, WireField::Instead, $position));
+        return WhereItStopsShort::suggesting($why, self::text($row, HistoryField::Instead, $position));
     }
 
     /**
@@ -274,7 +275,7 @@ final readonly class Records
      *
      * @param array<mixed> $row
      */
-    private static function carries(array $row, WireField $field): bool
+    private static function carries(array $row, NamesAWireField $field): bool
     {
         return array_key_exists($field->value, $row) && $row[$field->value] !== null;
     }
@@ -284,7 +285,7 @@ final readonly class Records
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, WireField $field, int $position): string
+    private static function text(array $row, NamesAWireField $field, int $position): string
     {
         // A guard rather than `?? null` on the subscript, which `C9` refuses:
         // a row that carries the key and one that does not are the same

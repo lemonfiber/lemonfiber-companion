@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Said;
 use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stream;
+use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -74,7 +75,7 @@ final readonly class Lines
      */
     private static function line(array $row, int $position): Said
     {
-        $line = self::text($row, WireField::Line, $position, blankIsALine: true);
+        $line = self::text($row, LogField::Line, $position, blankIsALine: true);
         $service = ServiceId::called(self::text($row, WireField::Service, $position));
         $stream = self::stream($row, $position);
 
@@ -98,7 +99,7 @@ final readonly class Lines
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, WireField $field, int $position, bool $blankIsALine = false): string
+    private static function text(array $row, NamesAWireField $field, int $position, bool $blankIsALine = false): string
     {
         // A guard rather than `?? null` on the subscript, which `C9` refuses.
         if (! array_key_exists($field->value, $row)) {
@@ -130,7 +131,7 @@ final readonly class Lines
      */
     private static function stream(array $row, int $position): Stream
     {
-        $said = self::text($row, WireField::Stream, $position);
+        $said = self::text($row, LogField::Stream, $position);
 
         return Stream::tryFrom($said) ?? throw LineIsUnreadable::stream($said, $position);
     }

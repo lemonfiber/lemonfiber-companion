@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatIsCurrent;
+use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -41,7 +42,7 @@ final readonly class Upkeepers implements KeepingCurrent
             // different kind, and nothing an operator's phone is for.
             $envelope = $client->read(
                 Api::UPDATE_ENDPOINT,
-                [WireField::What->value => WireField::TheStack->value],
+                [WireField::What->value => UpdateField::TheStack->value],
             );
 
             // Inside the same `try` as the request, deliberately — the argument
@@ -67,7 +68,7 @@ final readonly class Upkeepers implements KeepingCurrent
             // `TakingAnUpdate::changing()` holds and the confirmation named.
             // The action narrows to one `service` and takes no list, so none
             // is sent: one would narrow the run, and a list is refused.
-            $envelope = $client->act(Api::action($agreed->asked()), [WireField::Confirm->value => true]);
+            $envelope = $client->act(Api::action($agreed->asked()), [UpdateField::Confirm->value => true]);
 
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {

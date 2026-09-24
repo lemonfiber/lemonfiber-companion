@@ -27,9 +27,9 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Upkeepers;
-use Modules\Sdk\Api\WireField;
 use RuntimeException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -222,7 +222,7 @@ it('confirms the update and names no services the action would refuse', function
         theUpdateTheAdapterIsHanded(),
     );
 
-    expect(whatWasSentAgreeing($mock))->toBe([WireField::Confirm->value => true]);
+    expect(whatWasSentAgreeing($mock))->toBe([UpdateField::Confirm->value => true]);
 });
 
 it('N2-R17 — carries the agreement through to the job the stack started', function (): void {

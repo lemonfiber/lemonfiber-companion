@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhoPutItThere;
+use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Internal\Attributions;
 use Modules\Sdk\Internal\Wire;
 
@@ -69,7 +70,7 @@ final readonly class Reports
             throw ReportIsUnreadable::missing(WireField::Data);
         }
 
-        return Report::of(self::overall(self::text($data, WireField::Overall)), self::findings($data));
+        return Report::of(self::overall(self::text($data, DoctorField::Overall)), self::findings($data));
     }
 
     /**
@@ -91,7 +92,7 @@ final readonly class Reports
      *
      * @param array<mixed> $data
      */
-    private static function text(array $data, WireField $field): string
+    private static function text(array $data, NamesAWireField $field): string
     {
         if (! array_key_exists($field->value, $data)) {
             throw ReportIsUnreadable::missing($field);
@@ -118,7 +119,7 @@ final readonly class Reports
      *
      * @param array<mixed> $row
      */
-    private static function saidIn(array $row, WireField $field, int $position): string
+    private static function saidIn(array $row, NamesAWireField $field, int $position): string
     {
         if (! array_key_exists($field->value, $row)) {
             throw ReportIsUnreadable::inFinding($position, $field);
@@ -230,11 +231,11 @@ final readonly class Reports
      */
     private static function because(array $row, int $position): Because
     {
-        if (! array_key_exists(WireField::CausedBy->value, $row)) {
+        if (! array_key_exists(DoctorField::CausedBy->value, $row)) {
             return Because::nothingElse();
         }
 
-        return Because::theCheck(Check::of(self::saidIn($row, WireField::CausedBy, $position)));
+        return Because::theCheck(Check::of(self::saidIn($row, DoctorField::CausedBy, $position)));
     }
 
     /**
@@ -326,11 +327,11 @@ final readonly class Reports
         // This is the field where the distinction is real — the contract marks
         // it optional, so absent is the core having nothing to add rather than
         // a conversation gone wrong.
-        if (! array_key_exists(WireField::Detail->value, $verdict)) {
+        if (! array_key_exists(DoctorField::Detail->value, $verdict)) {
             return WhatItSaysUnderneath::none();
         }
 
-        $said = $verdict[WireField::Detail->value];
+        $said = $verdict[DoctorField::Detail->value];
 
         return is_string($said) ? WhatItSaysUnderneath::said($said) : WhatItSaysUnderneath::none();
     }
@@ -348,14 +349,14 @@ final readonly class Reports
      */
     private static function remedy(array $verdict, int $position): Remedies
     {
-        if (! array_key_exists(WireField::Remedy->value, $verdict)) {
+        if (! array_key_exists(DoctorField::Remedy->value, $verdict)) {
             return Remedies::none();
         }
 
-        $offered = $verdict[WireField::Remedy->value];
+        $offered = $verdict[DoctorField::Remedy->value];
 
         if (! is_array($offered)) {
-            throw ReportIsUnreadable::inFinding($position, WireField::Remedy);
+            throw ReportIsUnreadable::inFinding($position, DoctorField::Remedy);
         }
 
         return Remedies::of(Remedy::of(self::saidIn($offered, WireField::Action, $position)));
@@ -444,14 +445,14 @@ final readonly class Reports
      */
     private static function verdict(array $row, int $position): array
     {
-        if (! array_key_exists(WireField::Verdict->value, $row)) {
-            throw ReportIsUnreadable::inFinding($position, WireField::Verdict);
+        if (! array_key_exists(DoctorField::Verdict->value, $row)) {
+            throw ReportIsUnreadable::inFinding($position, DoctorField::Verdict);
         }
 
-        $verdict = $row[WireField::Verdict->value];
+        $verdict = $row[DoctorField::Verdict->value];
 
         if (! is_array($verdict)) {
-            throw ReportIsUnreadable::inFinding($position, WireField::Verdict);
+            throw ReportIsUnreadable::inFinding($position, DoctorField::Verdict);
         }
 
         return $verdict;

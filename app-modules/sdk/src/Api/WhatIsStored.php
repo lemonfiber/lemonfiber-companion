@@ -19,6 +19,7 @@ use Modules\Kernel\Api\WhatIsKept;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Kernel\Api\WhereThingsAreKept;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
+use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -84,14 +85,14 @@ final readonly class WhatIsStored
 
         $position = 0;
 
-        foreach (self::rows($data, WireField::Roots) as $row) {
+        foreach (self::rows($data, StoredField::Roots) as $row) {
             if (! is_array($row)) {
-                throw StoredIsUnreadable::row(WireField::Roots, $position);
+                throw StoredIsUnreadable::row(StoredField::Roots, $position);
             }
 
             $found[] = WhereThingsAreKept::at(
-                self::text($row, WireField::Roots, WireField::At, $position),
-                self::text($row, WireField::Roots, WireField::What, $position),
+                self::text($row, StoredField::Roots, WireField::At, $position),
+                self::text($row, StoredField::Roots, WireField::What, $position),
             );
             $position++;
         }
@@ -111,16 +112,16 @@ final readonly class WhatIsStored
 
         $position = 0;
 
-        foreach (self::rows($data, WireField::Kept) as $row) {
+        foreach (self::rows($data, StoredField::Kept) as $row) {
             if (! is_array($row)) {
-                throw StoredIsUnreadable::row(WireField::Kept, $position);
+                throw StoredIsUnreadable::row(StoredField::Kept, $position);
             }
 
             $found[] = SomethingKept::kept(
-                self::text($row, WireField::Kept, WireField::What, $position),
-                self::text($row, WireField::Kept, WireField::At, $position),
-                self::text($row, WireField::Kept, WireField::Why, $position),
-                WhetherItHoldsASecret::said(secret: self::flag($row, WireField::Kept, WireField::Secret, $position)),
+                self::text($row, StoredField::Kept, WireField::What, $position),
+                self::text($row, StoredField::Kept, WireField::At, $position),
+                self::text($row, StoredField::Kept, WireField::Why, $position),
+                WhetherItHoldsASecret::said(secret: self::flag($row, StoredField::Kept, WireField::Secret, $position)),
             );
             $position++;
         }
@@ -140,14 +141,14 @@ final readonly class WhatIsStored
 
         $position = 0;
 
-        foreach (self::rows($data, WireField::Beside) as $row) {
+        foreach (self::rows($data, StoredField::Beside) as $row) {
             if (! is_array($row)) {
-                throw StoredIsUnreadable::row(WireField::Beside, $position);
+                throw StoredIsUnreadable::row(StoredField::Beside, $position);
             }
 
             $found[] = SomethingBeside::named(
-                self::text($row, WireField::Beside, WireField::What, $position),
-                self::text($row, WireField::Beside, WireField::Why, $position),
+                self::text($row, StoredField::Beside, WireField::What, $position),
+                self::text($row, StoredField::Beside, WireField::Why, $position),
             );
             $position++;
         }
@@ -166,7 +167,7 @@ final readonly class WhatIsStored
      * @param  array<mixed> $data
      * @return array<mixed>
      */
-    private static function rows(array $data, WireField $list): array
+    private static function rows(array $data, NamesAWireField $list): array
     {
         if (! array_key_exists($list->value, $data)) {
             throw StoredIsUnreadable::missing($list);
@@ -186,7 +187,7 @@ final readonly class WhatIsStored
      *
      * @param array<mixed> $row
      */
-    private static function flag(array $row, WireField $list, WireField $field, int $position): bool
+    private static function flag(array $row, NamesAWireField $list, NamesAWireField $field, int $position): bool
     {
         if (! array_key_exists($field->value, $row) || ! is_bool($row[$field->value])) {
             throw StoredIsUnreadable::said($list, $field, $position);
@@ -200,7 +201,7 @@ final readonly class WhatIsStored
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, WireField $list, WireField $field, int $position): string
+    private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
         // A guard rather than `?? null` on the subscript, which `C9` refuses.
         if (! array_key_exists($field->value, $row)) {

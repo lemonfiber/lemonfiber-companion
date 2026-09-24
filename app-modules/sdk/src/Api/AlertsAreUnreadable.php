@@ -20,7 +20,7 @@ use function sprintf;
  */
 final class AlertsAreUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The alerts envelope has no readable `%s`. This answer did not come from a lemonfiber of a version this app can read.',
@@ -36,7 +36,7 @@ final class AlertsAreUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function said(WireField $field, int $position): self
+    public static function said(NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Exception %d in the alerts envelope has no readable `%s`.',

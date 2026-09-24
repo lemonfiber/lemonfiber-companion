@@ -17,7 +17,7 @@ use function sprintf;
  */
 final class UpkeepIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf('An update reading arrived without its `%s`.', $field->value));
     }

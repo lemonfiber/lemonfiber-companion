@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\HouseholdEnvelope;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
+use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -54,7 +55,7 @@ final readonly class Tellings
         $data = self::payload(Wire::checked($envelope));
 
         if (! is_array($data)) {
-            throw HouseholdIsUnreadable::missing(WireField::Members);
+            throw HouseholdIsUnreadable::missing(HouseholdField::Members);
         }
 
 
@@ -135,14 +136,14 @@ final readonly class Tellings
      */
     private static function members(array $data): array
     {
-        if (! array_key_exists(WireField::Members->value, $data)) {
-            throw HouseholdIsUnreadable::missing(WireField::Members);
+        if (! array_key_exists(HouseholdField::Members->value, $data)) {
+            throw HouseholdIsUnreadable::missing(HouseholdField::Members);
         }
 
-        $members = $data[WireField::Members->value];
+        $members = $data[HouseholdField::Members->value];
 
         if (! is_array($members)) {
-            throw HouseholdIsUnreadable::missing(WireField::Members);
+            throw HouseholdIsUnreadable::missing(HouseholdField::Members);
         }
 
         return $members;
@@ -164,21 +165,21 @@ final readonly class Tellings
      */
     private static function owedIn(array $member): Sentences
     {
-        if (! array_key_exists(WireField::ToHandOver->value, $member)) {
-            throw HouseholdIsUnreadable::missing(WireField::ToHandOver);
+        if (! array_key_exists(HouseholdField::ToHandOver->value, $member)) {
+            throw HouseholdIsUnreadable::missing(HouseholdField::ToHandOver);
         }
 
-        $said = $member[WireField::ToHandOver->value];
+        $said = $member[HouseholdField::ToHandOver->value];
 
         if (! is_array($said)) {
-            throw HouseholdIsUnreadable::missing(WireField::ToHandOver);
+            throw HouseholdIsUnreadable::missing(HouseholdField::ToHandOver);
         }
 
         $sentences = [];
 
         foreach ($said as $sentence) {
             if (! is_string($sentence)) {
-                throw HouseholdIsUnreadable::missing(WireField::ToHandOver);
+                throw HouseholdIsUnreadable::missing(HouseholdField::ToHandOver);
             }
 
             $sentences[] = Sentence::of($sentence);

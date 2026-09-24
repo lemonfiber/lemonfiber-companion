@@ -31,7 +31,7 @@ use function sprintf;
  */
 final class HostingIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The hosting envelope has no `%s`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',
@@ -47,7 +47,7 @@ final class HostingIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function said(WireField $field, int $position): self
+    public static function said(NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Command %d in the hosting envelope has no readable `%s`. A row missing it asks an operator to decide whether a blank should survive every reboot.',

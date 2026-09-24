@@ -15,7 +15,9 @@ use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
+use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\HouseholdIsUnreadable;
+use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
 
 use function trim;
@@ -84,7 +86,7 @@ final readonly class WhatWasAskedFor
      *
      * @param array<mixed> $row
      */
-    private static function under(array $row, WireField $field): mixed
+    private static function under(array $row, NamesAWireField $field): mixed
     {
         // Written as a guard rather than as a ternary because the two gates
         // disagree about the ternary: rector rewrites
@@ -220,14 +222,14 @@ final readonly class WhatWasAskedFor
      */
     private static function size(array $row): Size
     {
-        $estimate = self::under($row, WireField::Estimate);
+        $estimate = self::under($row, HouseholdField::Estimate);
 
         if (! is_array($estimate)) {
             return Size::unknown();
         }
 
         $bytes = self::under($estimate, WireField::Bytes);
-        $measured = self::under($estimate, WireField::Measured);
+        $measured = self::under($estimate, HouseholdField::Measured);
 
         if (! is_int($bytes) || ! is_bool($measured)) {
             return Size::unknown();

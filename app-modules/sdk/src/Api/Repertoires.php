@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\FormsEnvelope;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
+use Modules\Sdk\Api\Fields\FormsField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -84,14 +85,14 @@ final readonly class Repertoires
      */
     private static function listed(array $data): array
     {
-        if (! array_key_exists(WireField::Forms->value, $data)) {
-            throw RepertoireIsUnreadable::missing(WireField::Forms);
+        if (! array_key_exists(FormsField::Forms->value, $data)) {
+            throw RepertoireIsUnreadable::missing(FormsField::Forms);
         }
 
-        $listed = $data[WireField::Forms->value];
+        $listed = $data[FormsField::Forms->value];
 
         if (! is_array($listed)) {
-            throw RepertoireIsUnreadable::missing(WireField::Forms);
+            throw RepertoireIsUnreadable::missing(FormsField::Forms);
         }
 
         return $listed;

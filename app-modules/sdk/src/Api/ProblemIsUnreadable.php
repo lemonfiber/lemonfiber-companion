@@ -29,7 +29,7 @@ use function sprintf;
  */
 final class ProblemIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         // One literal rather than a concatenation. A message split across lines
         // is a string built at runtime, and every join in it is a decision no

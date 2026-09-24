@@ -33,7 +33,7 @@ use function sprintf;
  */
 final class OriginIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'It has no `%s`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',

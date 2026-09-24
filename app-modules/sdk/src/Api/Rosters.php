@@ -22,6 +22,7 @@ use Modules\Kernel\Api\SomethingElseRunning;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatTheEngineCallsIt;
+use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Internal\Costs;
 use Modules\Sdk\Internal\Wire;
 
@@ -99,16 +100,16 @@ final readonly class Rosters
 
         $found = [];
 
-        foreach (self::listed($data, WireField::Undeclared) as $at => $row) {
+        foreach (self::listed($data, StatusField::Undeclared) as $at => $row) {
             if (! is_array($row)) {
-                throw RosterIsUnreadable::missing(WireField::Undeclared);
+                throw RosterIsUnreadable::missing(StatusField::Undeclared);
             }
 
             $position = is_int($at) ? $at : 0;
 
             $found[] = SomethingElseRunning::called(
                 id: WhatTheEngineCallsIt::called(self::text($row, WireField::Id, $position)),
-                describes: self::text($row, WireField::Describes, $position),
+                describes: self::text($row, StatusField::Describes, $position),
                 runs: self::runs($row, $position),
             );
         }
@@ -137,14 +138,14 @@ final readonly class Rosters
      */
     private static function condition(array $data): HowTheStackIsRunning
     {
-        if (! array_key_exists(WireField::Condition->value, $data)) {
-            throw RosterIsUnreadable::missing(WireField::Condition);
+        if (! array_key_exists(StatusField::Condition->value, $data)) {
+            throw RosterIsUnreadable::missing(StatusField::Condition);
         }
 
-        $said = $data[WireField::Condition->value];
+        $said = $data[StatusField::Condition->value];
 
         if (! is_string($said)) {
-            throw RosterIsUnreadable::missing(WireField::Condition);
+            throw RosterIsUnreadable::missing(StatusField::Condition);
         }
 
         return HowTheStackIsRunning::tryFrom($said) ?? throw RosterIsUnreadable::condition($said);
@@ -183,7 +184,7 @@ final readonly class Rosters
      * @param  array<mixed> $data
      * @return array<mixed>
      */
-    private static function listed(array $data, WireField $field): array
+    private static function listed(array $data, NamesAWireField $field): array
     {
         if (! array_key_exists($field->value, $data)) {
             throw RosterIsUnreadable::missing($field);
@@ -229,7 +230,7 @@ final readonly class Rosters
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, WireField $field, int $position): string
+    private static function text(array $row, NamesAWireField $field, int $position): string
     {
         // A guard rather than `?? null` on the subscript, which `C9` refuses
         // and {@see Stoppages::text()} explains.
@@ -265,7 +266,7 @@ final readonly class Rosters
      */
     private static function matters(array $row, int $position): HowMuchItMatters
     {
-        $said = self::text($row, WireField::Criticality, $position);
+        $said = self::text($row, StatusField::Criticality, $position);
 
         return HowMuchItMatters::tryFrom($said) ?? throw RosterIsUnreadable::matters($said, $position);
     }
@@ -279,7 +280,7 @@ final readonly class Rosters
     {
         $leaning = [];
 
-        foreach (self::listed($row, WireField::DependsOn) as $said) {
+        foreach (self::listed($row, StatusField::DependsOn) as $said) {
             if (! is_string($said) || trim($said) === '') {
                 throw RosterIsUnreadable::leaning($position);
             }
@@ -309,11 +310,11 @@ final readonly class Rosters
      */
     private static function howItEnded(array $row, int $position): ?int
     {
-        if (! array_key_exists(WireField::Exit->value, $row)) {
+        if (! array_key_exists(StatusField::Exit->value, $row)) {
             return null;
         }
 
-        $code = $row[WireField::Exit->value];
+        $code = $row[StatusField::Exit->value];
 
         if ($code === null) {
             return null;

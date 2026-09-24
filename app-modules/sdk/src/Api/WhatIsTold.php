@@ -16,6 +16,7 @@ use Modules\Kernel\Api\AnEventSetApart;
 use Modules\Kernel\Api\SetApart;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
 use Modules\Kernel\Api\WhetherItIsHeard;
+use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -46,7 +47,7 @@ final readonly class WhatIsTold
         }
 
         return WhatTheOperatorIsTold::byPreset(
-            self::word($data, WireField::Preset),
+            self::word($data, AlertsField::Preset),
             self::word($data, WireField::Means),
             SetApart::of(...self::exceptions($data)),
         );
@@ -72,15 +73,15 @@ final readonly class WhatIsTold
      */
     private static function exceptions(array $data): array
     {
-        if (! array_key_exists(WireField::Exceptions->value, $data) || ! is_array($data[WireField::Exceptions->value])) {
-            throw AlertsAreUnreadable::missing(WireField::Exceptions);
+        if (! array_key_exists(AlertsField::Exceptions->value, $data) || ! is_array($data[AlertsField::Exceptions->value])) {
+            throw AlertsAreUnreadable::missing(AlertsField::Exceptions);
         }
 
         $found = [];
         $kinds = [];
         $position = 0;
 
-        foreach ($data[WireField::Exceptions->value] as $row) {
+        foreach ($data[AlertsField::Exceptions->value] as $row) {
             if (! is_array($row)) {
                 throw AlertsAreUnreadable::exception($position);
             }
@@ -104,7 +105,7 @@ final readonly class WhatIsTold
      *
      * @param array<mixed> $data
      */
-    private static function word(array $data, WireField $field): string
+    private static function word(array $data, NamesAWireField $field): string
     {
         if (! array_key_exists($field->value, $data)) {
             throw AlertsAreUnreadable::missing($field);
@@ -126,14 +127,14 @@ final readonly class WhatIsTold
      */
     private static function kind(array $row, int $position): string
     {
-        if (! array_key_exists(WireField::Kind->value, $row)) {
-            throw AlertsAreUnreadable::said(WireField::Kind, $position);
+        if (! array_key_exists(AlertsField::Kind->value, $row)) {
+            throw AlertsAreUnreadable::said(AlertsField::Kind, $position);
         }
 
-        $said = $row[WireField::Kind->value];
+        $said = $row[AlertsField::Kind->value];
 
         if (! is_string($said) || trim($said) === '') {
-            throw AlertsAreUnreadable::said(WireField::Kind, $position);
+            throw AlertsAreUnreadable::said(AlertsField::Kind, $position);
         }
 
         return $said;
@@ -146,10 +147,10 @@ final readonly class WhatIsTold
      */
     private static function wanted(array $row, int $position): bool
     {
-        if (! array_key_exists(WireField::Wanted->value, $row) || ! is_bool($row[WireField::Wanted->value])) {
-            throw AlertsAreUnreadable::said(WireField::Wanted, $position);
+        if (! array_key_exists(AlertsField::Wanted->value, $row) || ! is_bool($row[AlertsField::Wanted->value])) {
+            throw AlertsAreUnreadable::said(AlertsField::Wanted, $position);
         }
 
-        return $row[WireField::Wanted->value];
+        return $row[AlertsField::Wanted->value];
     }
 }
