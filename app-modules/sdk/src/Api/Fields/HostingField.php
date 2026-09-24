@@ -32,9 +32,6 @@ enum HostingField: string implements NamesAWireField
      */
     case Instruction = 'instruction';
 
-    /** How a long-running command is typed in a terminal, which is what hosting installs. */
-    case Command = 'command';
-
     /** What a long-running command does for as long as it runs, in one sentence. */
     case Guarantees = 'guarantees';
 

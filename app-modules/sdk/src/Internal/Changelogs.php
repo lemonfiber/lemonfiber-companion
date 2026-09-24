@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Sdk\Api\ChangelogIsUnreadable;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Api\WireField;
 
 use function trim;
 
@@ -67,11 +68,11 @@ final readonly class Changelogs
      */
     public static function running(array $changelog): ?Release
     {
-        if (! array_key_exists(UpdateField::Running->value, $changelog)) {
+        if (! array_key_exists(WireField::Running->value, $changelog)) {
             return null;
         }
 
-        $said = $changelog[UpdateField::Running->value];
+        $said = $changelog[WireField::Running->value];
 
         if ($said === null) {
             return null;

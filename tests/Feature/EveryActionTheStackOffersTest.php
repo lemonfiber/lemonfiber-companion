@@ -33,9 +33,9 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Alerts', 'Archives', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Forms', 'Held', 'History', 'Hosting', 'Household',
-    'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'Space', 'Status', 'Stored', 'Stuck',
-    'Update',
+    'Alerts', 'Archives', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Forms', 'Held', 'History', 'Hosting',
+    'Household', 'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'SelfUpdate', 'Space', 'Status', 'Stored',
+    'Stuck', 'Update',
 ];
 
 /**
@@ -75,7 +75,7 @@ const NOT_YET = [
     'Glossary', 'Import',
     'Invitation', 'Lifecycle', 'Migration', 'Music',
     'Plugins', 'Preview', 'Pull', 'Quality', 'Removal',
-    'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',
+    'Replacement', 'Reset', 'Restore', 'Seed',
     'Start', 'Step', 'StopSeeding',
     'Substitution', 'Trace', 'Undo', 'Uninstall', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',

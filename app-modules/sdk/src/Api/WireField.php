@@ -214,4 +214,29 @@ enum WireField: string implements NamesAWireField
 
     /** What throttling the upload costs, where an upload limit is in force. */
     case Ratio = 'ratio';
+
+    /**
+     * What is running: the version of the running copy of lemonfiber on the
+     * `self-update` envelope, and the release in use inside an `update`
+     * changelog, which is absent where the stack has not determined one.
+     */
+    case Running = 'running';
+
+    /**
+     * What is on offer: the repairs a stack says it would carry out, and the
+     * newest version of lemonfiber released.
+     */
+    case Offered = 'offered';
+
+    /**
+     * What to type: how a long-running command is typed in a terminal, which
+     * is what hosting installs, and exactly what to type to update lemonfiber.
+     */
+    case Command = 'command';
+
+    /**
+     * What to do instead: where putting a change back stops short, and why
+     * there is nothing exact to type to update lemonfiber.
+     */
+    case Instead = 'instead';
 }

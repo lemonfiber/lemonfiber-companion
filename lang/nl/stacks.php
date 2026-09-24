@@ -125,6 +125,31 @@ return [
         'nothing_set_apart' => 'Niets is apart gezet; elke gebeurtenis volgt de voorinstelling',
         'changed_at_the_machine' => 'Aan te passen op de machine, niet hier',
     ],
+    'itself' => [
+        'road_in' => 'Welke lemonfiber dit is',
+        'running' => 'lemonfiber :version',
+        'installed' => [
+            'homebrew' => 'Geïnstalleerd met Homebrew',
+            'scoop' => 'Geïnstalleerd met Scoop',
+            'winget' => 'Geïnstalleerd met winget',
+            'cargo' => 'Geïnstalleerd met cargo',
+            'distribution' => 'Geïnstalleerd door de pakketbeheerder van het systeem',
+            'installer' => 'Geïnstalleerd met de installer van lemonfiber',
+            'elsewhere' => 'Op een andere manier geïnstalleerd',
+            'untellable' => 'Hoe hij geïnstalleerd is kon niet bepaald worden',
+        ],
+        'owner' => 'Wordt bijgewerkt door :owner',
+        'standing' => [
+            'current' => 'Dit is de nieuwste versie',
+            'update-available' => 'Er is een nieuwere versie',
+            'managed-externally' => 'Een ander programma werkt deze kopie bij',
+            'check-failed' => 'Of er een nieuwere versie is kon niet gecontroleerd worden',
+        ],
+        'offered' => 'Nieuwste: :version',
+        'run_at_the_machine' => 'Om bij te werken, voer dit uit op de machine:',
+        'not_the_services' => 'Dit is lemonfiber zelf. De services worden bijgewerkt vanaf hun eigen scherm.',
+    ],
+
     'room' => [
         'road_in' => 'Hoe vol deze machine is',
         'level' => [

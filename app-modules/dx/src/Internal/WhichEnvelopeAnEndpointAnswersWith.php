@@ -10,6 +10,8 @@ use Modules\Dx\Adapters\TheInstalledPackage;
 
 use function preg_match;
 use function preg_match_all;
+use function preg_quote;
+use function sprintf;
 use function str_starts_with;
 
 /**
@@ -54,6 +56,9 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
     /** A reading type named outright in a docblock. */
     private const string A_NAMED_TYPE = '~Generated\\\\(\w+Envelope)~';
 
+    /** One sentence of a docblock that quotes a word, the word going in at `%s`. */
+    private const string A_SENTENCE_QUOTING = '~[^.]*`%s`[^.]*~';
+
     /** A word in backticks, which is how the SDK writes a kind in prose. */
     private const string A_QUOTED_WORD = '~`([a-z][a-z_-]*)`~';
 
@@ -67,29 +72,42 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
      * real request to either.
      *
      * Longest rather than first, so a path that is a prefix of another cannot
-     * shadow it — nothing in today's contract is, and the day one is, the wrong
-     * answer would be a screen rendering the wrong shape rather than an error.
+     * shadow it.
+     *
+     * `$asked` is the values the request's query carries. One endpoint answers
+     * with a different envelope for each value of a parameter, and its
+     * docblock gives each value a sentence naming the envelope; the first
+     * value with such a sentence decides, and a request whose values have none
+     * gets the envelope the docblock names first.
      */
-    public static function at(string $path): string
+    public static function at(string $path, string ...$asked): string
     {
         $longest = '';
-        $answers = '';
+        $said = '';
 
-        foreach (self::everyOneNamed() as $endpoint => $envelope) {
+        foreach (self::everyOneDeclared() as $endpoint => $docblock) {
             if (str_starts_with($path, $endpoint) && mb_strlen($endpoint) > mb_strlen($longest)) {
                 $longest = $endpoint;
-                $answers = $envelope;
+                $said = $docblock;
             }
         }
 
-        return $answers;
+        foreach ($asked as $value) {
+            $envelope = self::namedIn(self::theSentenceQuoting($said, $value));
+
+            if ($envelope !== '') {
+                return $envelope;
+            }
+        }
+
+        return self::namedIn($said);
     }
 
     /**
      * Every endpoint whose docblock says what it answers with.
      *
      * Endpoints that say nothing are left out rather than guessed at. Three are
-     * in that position today and they are not one situation: `/api/events` is a
+     * in that position and they are not one situation: `/api/events` is a
      * stream and not an envelope at all, and `/api/actions` and `/api/jobs`
      * both answer with a name for work that `Client::repair()` documents and
      * `Api` does not. A guess made here would be indistinguishable from a
@@ -99,19 +117,43 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
      */
     public static function everyOneNamed(): array
     {
-        preg_match_all(self::AN_ENDPOINT, self::whatApiDeclares(), $found, PREG_SET_ORDER);
-
         $answers = [];
 
-        foreach ($found as $one) {
-            $envelope = self::namedIn($one[1]);
-
-            if ($envelope !== '') {
-                $answers[$one[2]] = $envelope;
-            }
+        foreach (self::everyOneDeclared() as $endpoint => $docblock) {
+            $answers[$endpoint] = self::namedIn($docblock);
         }
 
         return $answers;
+    }
+
+    /**
+     * Every endpoint whose docblock names an envelope, with that docblock.
+     *
+     * @return array<string, string> path => docblock
+     */
+    private static function everyOneDeclared(): array
+    {
+        preg_match_all(self::AN_ENDPOINT, self::whatApiDeclares(), $found, PREG_SET_ORDER);
+
+        $declared = [];
+
+        foreach ($found as $one) {
+            if (self::namedIn($one[1]) !== '') {
+                $declared[$one[2]] = $one[1];
+            }
+        }
+
+        return $declared;
+    }
+
+    /**
+     * The first sentence of a docblock that quotes a value, or nothing where none does.
+     */
+    private static function theSentenceQuoting(string $docblock, string $value): string
+    {
+        return preg_match(sprintf(self::A_SENTENCE_QUOTING, preg_quote($value, '~')), $docblock, $sentence) === 1
+            ? $sentence[0]
+            : '';
     }
 
     /**

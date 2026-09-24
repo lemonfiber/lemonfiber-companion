@@ -26,9 +26,6 @@ enum RepairField: string implements NamesAWireField
     /** What else that repair touches on its way. */
     case Effects = 'effects';
 
-    /** The repairs a stack says it would carry out. */
-    case Offered = 'offered';
-
     /** What became of each repair a stack was agreed to carry out. */
     case Mended = 'mended';
 

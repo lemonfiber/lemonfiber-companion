@@ -499,6 +499,28 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . '`N2-R4` has the app state what a repair did in the words the core produced.',
     ],
     [
+        'path' => 'SelfUpdateEnvelope.asked',
+        'because' => 'The version an operator asked to move to. This app asks about the running copy and names '
+            . 'no version, since it moves nothing (`N14-R6`), so every reading it asks for leaves this empty.',
+    ],
+    [
+        'path' => 'SelfUpdateEnvelope.at',
+        'because' => 'Where the running binary is on the machine, which tells apart several copies on one search '
+            . 'path. That is a question asked at the machine, where the command is run; the screen names the '
+            . 'version running and how it was installed (`N14-R1`), and a path adds nothing a phone can act on.',
+    ],
+    [
+        'path' => 'SelfUpdateEnvelope.configuration',
+        'because' => 'Whether a named version can read this machine\'s configuration. It is filled only where a '
+            . 'version was asked for, and this app asks for none.',
+    ],
+    [
+        'path' => 'SelfUpdateEnvelope.replaceable',
+        'because' => 'Whether the process answering can write where the binary sits. That describes the account '
+            . 'the stack runs as, not the one an operator types the command in, so it cannot say whether the '
+            . 'command shown will work for them; the command itself, or why there is none, is what `N14-R2` asks for.',
+    ],
+    [
         'path' => 'SpaceEnvelope.agreement',
         'because' => 'What the offer to reclaim names itself, so that an answer to it can say which offer it '
             . 'was answering. It exists for the act of removing, and this app removes nothing (`N12-R9`); '

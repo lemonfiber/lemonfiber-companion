@@ -50,6 +50,7 @@ use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\SelfChecking;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
@@ -67,6 +68,7 @@ use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Heralds;
+use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
@@ -315,6 +317,10 @@ final class CompositionRoot extends ServiceProvider
         // How full the machine is, read beside the rest and bound for the
         // same reason.
         $this->app->bind(Measuring::class, Surveyors::class);
+
+        // The running copy of lemonfiber, read beside the rest and bound for
+        // the same reason.
+        $this->app->bind(SelfChecking::class, Inspectors::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

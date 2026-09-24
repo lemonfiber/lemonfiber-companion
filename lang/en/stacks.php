@@ -168,6 +168,34 @@ return [
         'changed_at_the_machine' => 'Changed at the machine, not from here',
     ],
 
+    // Which version of lemonfiber the machine runs.
+    'itself' => [
+        'road_in' => 'Which lemonfiber this is',
+        'running' => 'lemonfiber :version',
+        'installed' => [
+            'homebrew' => 'Installed with Homebrew',
+            'scoop' => 'Installed with Scoop',
+            'winget' => 'Installed with winget',
+            'cargo' => 'Installed with cargo',
+            'distribution' => 'Installed by the system\'s package manager',
+            'installer' => 'Installed with lemonfiber\'s installer',
+            'elsewhere' => 'Installed some other way',
+            // Never read as a copy lemonfiber can replace.
+            'untellable' => 'How it was installed could not be told',
+        ],
+        'owner' => 'Kept up to date by :owner',
+        'standing' => [
+            'current' => 'This is the newest version',
+            'update-available' => 'A newer version is out',
+            'managed-externally' => 'Another tool updates this copy',
+            // Never read as up to date.
+            'check-failed' => 'Whether a newer version is out could not be checked',
+        ],
+        'offered' => 'Newest: :version',
+        'run_at_the_machine' => 'To update, run this at the machine:',
+        'not_the_services' => 'This is lemonfiber itself. The services are updated from their own screen.',
+    ],
+
     // How full the machine is, and where the room went.
     'room' => [
         'road_in' => 'How full this machine is',

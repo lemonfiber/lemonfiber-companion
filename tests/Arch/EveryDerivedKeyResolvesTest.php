@@ -15,6 +15,7 @@ use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItWasRead;
+use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
@@ -46,6 +47,7 @@ use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
@@ -269,6 +271,14 @@ function everyDerivedKey(): array
         WhetherItHoldsASecret::class => aPairPerCase(
             WhetherItHoldsASecret::cases(),
             static fn(WhetherItHoldsASecret $secret): array => [$secret->saidOnTheScreen()],
+        ),
+        HowLemonfiberWasInstalled::class => aPairPerCase(
+            HowLemonfiberWasInstalled::cases(),
+            static fn(HowLemonfiberWasInstalled $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereThisCopyStands::class => aPairPerCase(
+            WhereThisCopyStands::cases(),
+            static fn(WhereThisCopyStands $case): array => [$case->saidOnTheScreen()],
         ),
         WhereTheRoomStands::class => aPairPerCase(
             WhereTheRoomStands::cases(),

@@ -42,7 +42,4 @@ enum HistoryField: string implements NamesAWireField
      * single line would take with it if it were undone.
      */
     case Alongside = 'alongside';
-
-    /** What to do instead, where putting a change back stops short. */
-    case Instead = 'instead';
 }

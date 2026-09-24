@@ -35,9 +35,6 @@ enum UpdateField: string implements NamesAWireField
     /** The releases inside the changelog, newest as the stack ordered them. */
     case Releases = 'releases';
 
-    /** The release in use. Absent where the stack has not determined one. */
-    case Running = 'running';
-
     /** What one release is called. */
     case Version = 'version';
 

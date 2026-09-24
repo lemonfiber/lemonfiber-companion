@@ -224,6 +224,9 @@
 
     {{-- How full it is, and where the room went. --}}
     <x-operator::quiet-action label="{{ __('stacks.room.road_in') }}" :goes="$this->goes()->ofItself()->room()" />
+
+    {{-- Which version of lemonfiber runs, and whether a newer one exists. --}}
+    <x-operator::quiet-action label="{{ __('stacks.itself.road_in') }}" :goes="$this->goes()->ofItself()->itself()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

@@ -159,7 +159,7 @@ final readonly class Hosts
     {
         $standing = self::standing($row, $position);
         $name = self::text($row, WireField::Name, $position);
-        $command = self::text($row, HostingField::Command, $position);
+        $command = self::text($row, WireField::Command, $position);
         $guarantees = self::text($row, HostingField::Guarantees, $position);
 
         if ($standing !== HowItIsHosted::Orphaned) {

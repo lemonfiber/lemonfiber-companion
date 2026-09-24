@@ -72,4 +72,10 @@ final readonly class WhatItKeepsOfItself
     {
         return AStacksScreen::Room->forTheStack($this->stack);
     }
+
+    /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
+    public function itself(): string
+    {
+        return AStacksScreen::Itself->forTheStack($this->stack);
+    }
 }

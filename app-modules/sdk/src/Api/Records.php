@@ -242,7 +242,7 @@ final readonly class Records
             return $change->stoppingShort(self::whereItStopsShort($row, $position));
         }
 
-        if (self::carries($row, HistoryField::Instead)) {
+        if (self::carries($row, WireField::Instead)) {
             throw HistoryIsUnreadable::insteadWithoutReason($position);
         }
 
@@ -258,11 +258,11 @@ final readonly class Records
     {
         $why = self::text($row, WireField::Because, $position);
 
-        if (! self::carries($row, HistoryField::Instead)) {
+        if (! self::carries($row, WireField::Instead)) {
             return WhereItStopsShort::because($why);
         }
 
-        return WhereItStopsShort::suggesting($why, self::text($row, HistoryField::Instead, $position));
+        return WhereItStopsShort::suggesting($why, self::text($row, WireField::Instead, $position));
     }
 
     /**

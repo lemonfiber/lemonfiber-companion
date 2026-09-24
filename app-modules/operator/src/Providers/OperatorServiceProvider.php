@@ -15,6 +15,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
+use Modules\Operator\Internal\Screens\WhatIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
@@ -217,6 +218,9 @@ final class OperatorServiceProvider extends ServiceProvider
             // How full it is. Its own screen, because a warning that the disk
             // is filling arrives on its own.
             Router::native(AStacksScreen::Room->value, HowFullThisMachineIs::class);
+
+            // Which version of lemonfiber runs, apart from the services' updates.
+            Router::native(AStacksScreen::Itself->value, WhatIsRunningHere::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

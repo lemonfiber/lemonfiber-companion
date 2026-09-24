@@ -18,6 +18,7 @@ use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\RepairField;
+use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Api\Fields\StoredField;
@@ -58,6 +59,7 @@ function everyFieldNamedOnTheWire(): array
         ...OutboundField::cases(),
         ...ProvenanceField::cases(),
         ...RepairField::cases(),
+        ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
         ...StatusField::cases(),
         ...StoredField::cases(),

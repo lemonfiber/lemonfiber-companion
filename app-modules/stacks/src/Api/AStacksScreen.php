@@ -147,6 +147,9 @@ enum AStacksScreen: string
     /** How full this machine is, and where the room went. */
     case Room = '/stacks/{stack}/room';
 
+    /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
+    case Itself = '/stacks/{stack}/itself';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
