@@ -18,6 +18,7 @@ use function preg_quote;
 use RuntimeException;
 
 use function sprintf;
+use function str_starts_with;
 use function trim;
 
 /**
@@ -49,6 +50,12 @@ final readonly class Rules
      * enforcement of it.
      */
     private const array THAT_ONLY_NAME_THEM = ['TheRulesAreRealTest.php', 'Rules.php', 'Fixtures.php'];
+
+    /**
+     * The directory the fixture registry keeps its families in, left out for
+     * the reason `Fixtures.php` is: every file in it holds violations verbatim.
+     */
+    private const string THE_FIXTURE_FAMILIES = 'tests/Support/Violations/';
 
     /**
      * Every rule ARCHITECTURE.md documents, and the mechanism it claims.
@@ -240,6 +247,10 @@ final readonly class Rules
 
         foreach (Tree::filesUnder($directory, '.php') as $file) {
             if (in_array(basename($file), self::THAT_ONLY_NAME_THEM, strict: true)) {
+                continue;
+            }
+
+            if (str_starts_with($file, Tree::at(self::THE_FIXTURE_FAMILIES))) {
                 continue;
             }
 

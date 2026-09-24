@@ -648,15 +648,16 @@ Write the fixture from the sentence. If the sentence cannot be broken in a way
 the mechanism sees, that is the finding: the mechanism is narrower than the rule
 and one of the two has to move.
 
-**Every fixture that is a file sits under a directory called `Fixtures`**, with
-one exception: the coverage report a floors fixture needs goes to `coverage/`,
-which is generated output and wholly ignored already. For the length of a
-run the files are really on disk, so `.gitignore` and `pint.json` both exclude
-that one name. Without it, a commit made beside a run picks up a deliberate rule
-violation, `git status` reports a dirty tree that is about to clean itself, and
-the formatter fails on files whose whole purpose is to be wrong. The convention
-costs a directory name: a `Fixtures/` directory anywhere in this repository
-belongs to the harness and is never committed.
+**Every fixture is planted in a throwaway copy of the checkout, never in the
+checkout itself.** The copy is the working tree as git sees it — every tracked
+file as it is on disk, uncommitted changes included, and every untracked file
+git does not ignore — with `vendor` copied in beside it, under the system's
+temporary directory. The analyser and the suite run inside it, and it is removed
+when the run ends. The checkout is only read, so a run killed at any point leaves
+it exactly as it was, and anything else can read it or run in it meanwhile. A
+copy whose run was killed is swept at the start of the next run: each copy is
+locked by the run using it, and the kernel releases that lock with the process,
+however the process ended.
 
 **Some violations are not a file.** A second accessor on a type that already
 exists, a listener registered against another module's event, a `@param` that
@@ -670,13 +671,8 @@ the breaking.
 something else in its place, and it refuses a piece of text it cannot find
 exactly once — a fixture that matched nothing would leave the rule passing on an
 unedited tree, which is the vacuous green this whole harness exists to make
-impossible. What makes it safe to run against files that are committed is the
-same manifest the sweep already kept: every write records what it replaced, so
-an edited file goes back exactly as it was after a failure, an exception or a
-kill, and the by-name pass puts the text back directly for the run where the
-manifest is itself what went missing. The earliest record for a path wins, so
-two fixtures editing one file still restore it to what was there before the run
-began.
+impossible. The edit is made to the copy, like every other fixture, so the file
+the checkout holds is never written to.
 
 **Some violations are the run itself.** R2's own violation is a documented rule
 with nothing planted under it — and planting that would mean leaving a rule
@@ -725,12 +721,12 @@ came first. That path is the difference between comparing an enum against half a
 contract and refusing to compare at all, and until now it had only ever been
 described in a comment.
 
-**The `Guards` suite runs alone.** `composer test` is `pest --parallel` with
-`Guards` excluded; `composer test:guards` runs it by itself. The harness plants
-a violation of every rule into the working tree, so a process reading that tree
-beside it sees files appear and vanish mid-run — which is a failure that looks
-like anything except what it is. Everything else is deterministic in parallel
-and is checked that way.
+**The `Guards` suite runs on its own command.** `composer test` is
+`pest --parallel` with `Guards` excluded, and `composer test:guards` runs it:
+it boots the analyser and the whole suite again as subprocesses, which takes
+minutes. It plants into a copy of the tree rather than the tree, so it can run
+beside anything else — another suite, the analyser, an editor. Everything else
+is deterministic in parallel and is checked that way.
 
 A rule with no fixture fails R2. That is the part that matters — it makes *I did
 not check this one* impossible to leave implicit, which is the condition the
