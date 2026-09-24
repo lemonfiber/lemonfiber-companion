@@ -35,6 +35,7 @@ final readonly class HowAStalledItemReads
             ): WhatOneStalledItemSays => new WhatOneStalledItemSays(
                 title: $title,
                 service: $service->named(),
+                stage: $stage->shown(),
                 stageSaid: $stage->saidOnTheScreen(),
                 stillMoving: $stage->stillMoving(),
             ),

@@ -23,7 +23,14 @@
                  either alone strands the operator — a stage with no service
                  is a problem with nowhere to go, and a service with no
                  stage sends somebody to the download client for a title the
-                 indexer never found a release for. --}}
+                 indexer never found a release for.
+
+                 The stage is the stack's own word, drawn as it came and
+                 untranslated, with the plain sentence beside it rather than
+                 in its place: the word is the one the contract carries, and
+                 a phone that swapped it for its own would be speaking a
+                 vocabulary nobody else does. --}}
+            <native:text>{{ __('health.at_stage', ['stage' => $item->stage]) }}</native:text>
             <native:text>{{ __($item->stageSaid) }}</native:text>
             <x-operator::note>
                 {{ __('health.stuck_in', ['service' => $item->service]) }}

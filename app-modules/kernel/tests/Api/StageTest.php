@@ -11,6 +11,19 @@ it('N2-R9 — says which of the ten a stalled item is at, as a key', function ()
         ->and(Stage::Available->saidOnTheScreen())->toBe('health.stage.available');
 });
 
+it('N15-R9 — shows the stack\'s own word for a stage, spelled as the stack spells it', function (): void {
+    // Not a key and not a translation. The word is lemonfiber's vocabulary,
+    // and every case is held to it, so a case whose word was rewritten here
+    // would fail rather than put a word on a screen the contract does not
+    // carry.
+    foreach (Stage::cases() as $stage) {
+        expect($stage->shown())->toBe($stage->value);
+    }
+
+    expect(Stage::Grabbed->shown())->toBe('grabbed')
+        ->and(Stage::NotMonitored->shown())->toBe('not-monitored');
+});
+
 it('the hyphen in a wire value is carried into the key rather than smoothed out', function (): void {
     // `Waiting` already does this and the catalogue already holds such a key.
     // A second spelling rule for the same wire shape is the thing that drifts,

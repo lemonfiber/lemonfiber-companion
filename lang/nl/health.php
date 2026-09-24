@@ -85,12 +85,19 @@ return [
     // Wat niet meer binnenkomt. De fase is waar het bleef steken, en
     // dat is het hele verschil tussen een indexer die niets vindt en een
     // bestand dat de bibliotheek nooit heeft opgepakt.
+    //
+    // `:stage` is het eigen woord van de stack, onvertaald. De zinnen onder
+    // `stage` staan ernaast en zeggen waar het item daarmee staat; ze zijn
+    // niet het woord, en ze ruilen geen van zijn woorden in voor een woord
+    // van deze app — `grab` is van lemonfiber, dus de zinnen zeggen wat een
+    // grab deed in plaats van het anders te noemen.
+    'at_stage' => 'Fase: :stage',
     'stage' => [
         'not-monitored' => 'Hier wordt niet op gelet',
         'monitored' => 'Wordt in de gaten gehouden, nog niet gezocht',
         'searching' => 'Wordt gezocht',
-        'found' => 'Er is een kopie en die is nog niet gepakt',
-        'grabbed' => 'Gepakt, nog niet begonnen met binnenhalen',
+        'found' => 'Er is een release, en die is nog niet naar de downloadclient gestuurd',
+        'grabbed' => 'Naar de downloadclient gestuurd, nog niet begonnen met binnenhalen',
         'downloading' => 'Komt nu binnen',
         'downloaded' => 'Binnen, nog niet aan de bibliotheek gegeven',
         'importing' => 'Wordt overgedragen',

@@ -40,10 +40,10 @@ enum Stage: string
     /** Being looked for, with nothing found so far. */
     case Searching = 'searching';
 
-    /** A release exists and has not been taken. */
+    /** A release exists and has not been sent to the download client. */
     case Found = 'found';
 
-    /** Taken, and not started coming down. */
+    /** Sent to the download client, and not started coming down. */
     case Grabbed = 'grabbed';
 
     /** Coming down now. */
@@ -62,7 +62,22 @@ enum Stage: string
     case Available = 'available';
 
     /**
-     * What this is called on a screen, as a key.
+     * The stack's own word for this stage, spelled as the stack spells it.
+     *
+     * Shown as it came and never translated, because it is lemonfiber's
+     * vocabulary rather than this app's: *grabbed* is the word the contract
+     * carries, and a phone that said *taken* instead would be a second
+     * vocabulary that only the phone speaks. The sentence
+     * {@see saidOnTheScreen()} keys sits beside it and says where that leaves
+     * the item — it does not stand in for it.
+     */
+    public function shown(): string
+    {
+        return $this->value;
+    }
+
+    /**
+     * What this leaves the item at, in plain words, as a key.
      *
      * Built from the case, which is the shape every word in this app reaches
      * the catalogue by — see {@see Conclusion::saidOnTheScreen()} for the
