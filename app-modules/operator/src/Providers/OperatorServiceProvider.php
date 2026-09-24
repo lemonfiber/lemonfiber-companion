@@ -8,6 +8,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
+use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
@@ -202,6 +203,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // *will this wake me* is asked before a night away and not while
             // reading what the machine sends.
             Router::native(AStacksScreen::Told->value, WhatYouAreToldAbout::class);
+
+            // How the line is shared. Its own screen, because *why is the
+            // internet slow* is asked by the household at the moment it is slow.
+            Router::native(AStacksScreen::Line->value, HowTheLineIsSharedHere::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

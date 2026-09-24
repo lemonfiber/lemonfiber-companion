@@ -214,6 +214,10 @@
     {{-- What it will wake somebody for, which is the last of what the
          machine does while nobody is watching. --}}
     <x-operator::quiet-action label="{{ __('stacks.alerts.road_in') }}" :goes="$this->goes()->ofItself()->told()" />
+
+    {{-- How it shares the line, which is the one of these the household asks
+         about, when the internet is slow. --}}
+    <x-operator::quiet-action label="{{ __('stacks.line.road_in') }}" :goes="$this->goes()->ofItself()->line()" />
 </native:column>
 @else
     <x-operator::what-stopped-the-reading

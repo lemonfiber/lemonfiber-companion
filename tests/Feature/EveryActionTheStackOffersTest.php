@@ -33,7 +33,7 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Alerts', 'Config', 'Doctor', 'Error', 'Held', 'History', 'Hosting', 'Household',
+    'Alerts', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Held', 'History', 'Hosting', 'Household',
     'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'Status', 'Stuck',
     'Update',
 ];
@@ -70,7 +70,7 @@ const ELSEWHERE = [
  */
 const NOT_YET = [
     'Admission', 'Adoption', 'Archives', 'Backup',
-    'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients',
+    'Beside', 'Bundle', 'Catalogue', 'Clients',
     'Credentials', 'Dashboard', 'Forms', 'FrontDoor',
     'Glossary', 'Import',
     'Invitation', 'Lifecycle', 'Migration', 'Music',

@@ -165,4 +165,59 @@ return [
         // This screen reads the setting and changes nothing.
         'changed_at_the_machine' => 'Changed at the machine, not from here',
     ],
+
+    // How the machine shares its line with the household.
+    'line' => [
+        'road_in' => 'How the line is shared',
+        'restraint' => [
+            'unlimited' => 'Nothing holds the stack back',
+            'limited' => 'The stack is held to a limit',
+            'scheduled-active' => 'The house is up, so the stack is held back',
+            'scheduled-quiet' => 'The house is asleep, so the line is the stack\'s',
+            'overridden' => 'The limits are lifted for now',
+            'cap-warning' => 'Close to this month\'s cap',
+            'cap-exceeded' => 'This month\'s cap has been reached',
+        ],
+        // Each direction in the stack's own sentence.
+        'down' => 'Download: :says',
+        'up' => 'Upload: :says',
+        'upload_cost' => 'Holding the upload back costs: :costs',
+        'capacity' => 'What the line carries',
+        'carries' => ':down :down_unit down, :up :up_unit up',
+        // A line's speed, in what it is sold in.
+        'rate' => [
+            'kilobits' => 'kbit/s',
+            'megabits' => 'Mbit/s',
+            'gigabits' => 'Gbit/s',
+        ],
+        'measured' => [
+            // Declared is a claim; said as one.
+            'declared' => 'As declared, not measured',
+            'observed' => 'As the stack has seen it move',
+        ],
+        'tunnel' => [
+            'through' => 'Measured through the private tunnel the stack\'s traffic takes',
+            'beside' => 'Measured beside the private tunnel the stack\'s traffic takes',
+        ],
+        'unmeasured' => 'Nothing has measured the line',
+        'monthly_cap' => 'Monthly cap',
+        // Nought is a cap, and drawn as one.
+        'capped_at' => ':figure :unit a month',
+        'cap' => [
+            'pause' => 'Reaching it stops fetching until the month turns over',
+            'throttle' => 'Reaching it slows fetching so what is half-finished can finish',
+            'continue' => 'Reaching it changes nothing; fetching carries on',
+        ],
+        'month' => [
+            'within' => 'This month is comfortably inside it',
+            'warning' => 'This month is close to it',
+            'exceeded' => 'This month has reached it',
+        ],
+        // Not a cap of nothing: no cap was declared.
+        'uncapped' => 'No cap is declared',
+        'untouched' => 'Outside every limit',
+        'nothing_untouched' => 'Nothing is outside the limits',
+        'no_cautions' => 'The stack has nothing to add about this reading',
+        'changed_at_the_machine' => 'Limits and caps are changed at the machine, not from here',
+    ],
 ];

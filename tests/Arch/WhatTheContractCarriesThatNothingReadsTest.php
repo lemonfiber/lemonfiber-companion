@@ -59,6 +59,50 @@ use Tests\Support\WhatTheReadersRead;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
+        'path' => 'BandwidthEnvelope.applied',
+        'because' => 'Whether the call that answered wrote limits to the clients or only read them. This app reads the line and never writes a limit, so every answer it asks for says it only read, and a screen showing that would be reporting on an act it did not perform.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.clients',
+        'because' => 'What each download client was asked to hold to and what it is doing about it, direction by direction. A surface of its own — one row per client, with its verdict and whether it is fetching at all — and the next thing to read here; the line\'s standing, its capacity and its cap come first because they answer what `N10` asks, and a client\'s holding answers a question about that client.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.metered',
+        'because' => 'What the stack itself moved this calendar month, and what that count leaves out. It belongs beside the cap it is measured against, with its exclusions always said, and it is not read yet: the cap\'s standing already says within, warning or exceeded, and a byte count drawn without its exclusions would read as the whole line\'s usage.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.respite',
+        'because' => 'A temporary override lifting the limits, with how long it has left or how long ago it ran out. The line\'s standing already says *overridden* while one is in force; reading the countdown is part of the surface that reads each client, where an override is felt.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.respite_says',
+        'because' => 'What the override amounts to, in words. Read with `respite`, for its reason.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.rhythm',
+        'because' => 'The household\'s waking hours, declared once for every client. The line\'s standing already says whether it is inside or outside them right now; the hours themselves are a setting, shown where settings are, and read with the client surface that acts on them.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.zone',
+        'because' => 'The zone those hours are read in. Read with `rhythm`, for its reason.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.down.limit',
+        'because' => 'How the download limit was expressed — unlimited, a share, or a figure. The `says` sentence beside it carries the limit together with the line it is a share of, which is the rule the stack keeps in one place so that no surface shows a share without its figure; reading the structure here as well would be a second place for that rule.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.down.resolved',
+        'because' => 'What the download limit comes to against the measured line. Carried in the `says` sentence, for `down.limit`\'s reason.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.up.limit',
+        'because' => 'How the upload limit was expressed. Carried in the `says` sentence, for `down.limit`\'s reason.',
+    ],
+    [
+        'path' => 'BandwidthEnvelope.up.resolved',
+        'because' => 'What the upload limit comes to. Carried in the `says` sentence, for `down.limit`\'s reason.',
+    ],
+    [
         'path' => 'AlertsEnvelope.changed',
         'because' => 'Whether the call that answered changed what the operator is told about. This app '
             . 'reads the setting and never changes it — what is heard about is the core\'s decision, '
