@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AnOriginIsUnnamed;
 use Modules\Kernel\Api\Arranging;
-use Modules\Kernel\Api\ASettingsOriginIsUnnamed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItIsSet;
 use Modules\Kernel\Api\Nonce;
@@ -18,7 +18,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatASettingHolds;
-use Modules\Kernel\Api\WhereASettingCameFrom;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Dials;
 use Modules\Sdk\Api\PinnedClients;
@@ -76,12 +76,12 @@ function theSameSettings(): Settings
         Setting::called(
             'LIBRARY_PATH',
             WhatASettingHolds::shown('/data/media'),
-            WhereASettingCameFrom::operator(),
+            WhoPutItThere::operator(),
         ),
         Setting::called(
             'API_KEY',
             WhatASettingHolds::withheld('set, not shown'),
-            WhereASettingCameFrom::plugin('plex'),
+            WhoPutItThere::plugin('plex'),
         ),
     );
 }
@@ -276,7 +276,7 @@ it('a setting with no name is refused rather than drawn nameless', function (): 
     expect(static fn(): Setting => Setting::called(
         '   ',
         WhatASettingHolds::shown('x'),
-        WhereASettingCameFrom::bundled(),
+        WhoPutItThere::bundled(),
     ))->toThrow(SettingIsUnnamed::class);
 });
 
@@ -458,8 +458,20 @@ it('refuses a plugin attribution with no plugin in it', function (): void {
         new Envelope(1, 'config', aStackAttributingASettingTo(['origin' => 'plugin'])),
     ))->toThrow(SettingIsUnreadable::class, '`named`');
 
-    expect(static fn(): WhereASettingCameFrom => WhereASettingCameFrom::plugin('   '))
-        ->toThrow(ASettingsOriginIsUnnamed::class);
+    expect(static fn(): WhoPutItThere => WhoPutItThere::plugin('   '))
+        ->toThrow(AnOriginIsUnnamed::class);
+});
+
+it('refuses a plugin named in blanks as the listing\'s own refusal, so the screen says so', function (): void {
+    // The kernel refuses a blank name, and that refusal is not one the
+    // adapter catches — so a reader that let it through would end the screen
+    // on a stack's typo rather than saying the answer could not be read.
+    expect(howAStackReadsAsText(aStackAnsweringWith(aStackAttributingASettingTo(['origin' => 'plugin', 'named' => '   ']))))
+        ->toBe('refused:no_answer');
+
+    expect(static fn(): Settings => Dials::in(
+        new Envelope(1, 'config', aStackAttributingASettingTo(['origin' => 'plugin', 'named' => '   '])),
+    ))->toThrow(SettingIsUnreadable::class, 'A setting in the config envelope cannot say where its value came from. It names nobody');
 });
 
 it('refuses an unknown origin that does not say why it is unknown', function (): void {
@@ -469,15 +481,15 @@ it('refuses an unknown origin that does not say why it is unknown', function ():
         new Envelope(1, 'config', aStackAttributingASettingTo(['origin' => 'unknown'])),
     ))->toThrow(SettingIsUnreadable::class, '`why`');
 
-    expect(static fn(): WhereASettingCameFrom => WhereASettingCameFrom::unknown(' '))
-        ->toThrow(ASettingsOriginIsUnnamed::class);
+    expect(static fn(): WhoPutItThere => WhoPutItThere::unknown(' '))
+        ->toThrow(AnOriginIsUnnamed::class);
 });
 
 it('reads all four attributions, and hands each arm what it was given', function (): void {
     // The fold itself, every arm, for the reason the `HowItIsSet` case above
     // gives: an arm that fired with the wrong payload would pass a test that
     // only counted which one ran.
-    $whichArm = static fn(WhereASettingCameFrom $from): string => $from->whichever(
+    $whichArm = static fn(WhoPutItThere $from): string => $from->whichever(
         bundled: static fn(): WhatOneRowSaid => new WhatOneRowSaid('bundled'),
         operator: static fn(): WhatOneRowSaid => new WhatOneRowSaid('operator'),
         plugin: static fn(string $named): WhatOneRowSaid => new WhatOneRowSaid(sprintf('plugin:%s', $named)),

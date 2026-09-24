@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
+use function array_any;
+
 /**
  * What asking a stack what leaves it produced, flattened for a template.
  *
@@ -22,4 +24,13 @@ final readonly class WhatLeavesTurnedOutToBe
         public array $ours,
         public array $theirs,
     ) {}
+
+    /**
+     * Whether any service is not the stack's own, which is when the list says
+     * once what an unmarked row is.
+     */
+    public function marksAnOrigin(): bool
+    {
+        return array_any($this->theirs, static fn(OneOfTheirRequests $request): bool => ! $request->from->isTheStacksOwn());
+    }
 }

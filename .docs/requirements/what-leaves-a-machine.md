@@ -17,6 +17,7 @@ requirement is right and this page is a defect.
 | `N10-R2` | Each connection lemonfiber makes is shown with its purpose, its destination and the switch that turns it off | `ARequestOfOurs`, which cannot be built with its purpose, what it sends or its switch blank — `RequestSaysNothing` names the one that was. Where it goes is `WhereItGoes`, and *nowhere configured* is drawn as that, separately from `WhetherItIsAllowed`: a request can be allowed with nowhere to go |
 | `N10-R3` | Where turning a connection off has a cost, that cost is shown with it | The cost is a required word of `ARequestOfOurs` and drawn on every row, because turning something off is the decision the list exists to inform |
 | `N10-R12` | Connections that could not be read are told apart from there being none | `WhatWasFoundLeaving`, whose arms are the two lists or an obstacle. `WhatLeaves` refuses a row it cannot read rather than dropping it — a connection dropped is one the screen says this machine does not make |
+| `F7-R9` | A plugin's declared hosts appear in the account of what leaves this machine, attributed to the plugin | `ARequestOfTheirs` carries who put the service there on both arms — the unrecorded one is where a plugin's service lands — and `WhatLeaves` reads it through `Attributions`. The screen marks every service that is not the stack's own and says once under the list what an unmarked row is |
 
 A service the stack has no record of is its own arm of `ARequestOfTheirs`,
 carrying no destination at all. The stack fills such a row's destination and

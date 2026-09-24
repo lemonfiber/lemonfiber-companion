@@ -18,14 +18,15 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Kernel\Api\WhatItHoldsNow;
-use Modules\Kernel\Api\WhereASettingCameFrom;
 use Modules\Kernel\Api\WhereTheChangeStands;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatIsSet;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Everything a machine is set to, on one screen.
 //
@@ -59,9 +60,9 @@ function theStackWhoseSettingsAreRead(): Stack
 function whatTheLoftIsSetTo(): Settings
 {
     return Settings::of(
-        Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media'), WhereASettingCameFrom::bundled()),
-        Setting::called('API_KEY', WhatASettingHolds::withheld('set, not shown'), WhereASettingCameFrom::bundled()),
-        Setting::called('BIND', WhatASettingHolds::shown('lan'), WhereASettingCameFrom::bundled()),
+        Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media'), WhoPutItThere::bundled()),
+        Setting::called('API_KEY', WhatASettingHolds::withheld('set, not shown'), WhoPutItThere::bundled()),
+        Setting::called('BIND', WhatASettingHolds::shown('lan'), WhoPutItThere::bundled()),
     );
 }
 
@@ -572,4 +573,23 @@ it('N3-R13 — lets the session go when a change is refused on the credential', 
     $screen->wouldBe('LIBRARY_PATH');
 
     expect($keychain->isHolding(theStackWhoseSettingsAreRead()->id()))->toBeFalse();
+});
+
+it('F7-R3 — every setting is drawn with who set it, each arm in its own words', function (): void {
+    // Every row, unlike a report: settings are split between the stack's own
+    // and the operator's, so neither is the ordinary case a legend could name.
+    // Drawn rather than read off the view model, because the sentence and the
+    // name that fills it meet only in the template.
+    $screen = theSettingsScreen(AStackThatIsSet::to(Settings::of(
+        Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media'), WhoPutItThere::bundled()),
+        Setting::called('BIND', WhatASettingHolds::shown('lan'), WhoPutItThere::operator()),
+        Setting::called('PLEX_CLAIM', WhatASettingHolds::shown('claim-x'), WhoPutItThere::plugin('plex')),
+        Setting::called('TZ', WhatASettingHolds::shown('UTC'), WhoPutItThere::unknown('no baseline was recorded')),
+    )));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())
+        ->toContain(__('config.came_from_bundled'))
+        ->toContain(__('config.came_from_operator'))
+        ->toContain(__('config.came_from_plugin', ['named' => 'plex']))
+        ->toContain(__('config.came_from_unknown', ['why' => 'no baseline was recorded']));
 });

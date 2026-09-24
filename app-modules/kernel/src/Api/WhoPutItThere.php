@@ -10,17 +10,25 @@ use function is_string;
 use function trim;
 
 /**
- * Who put a setting's value there: the stack, the operator, a named plugin, or
- * nobody this stack could establish.
+ * Who put something there: the stack, the operator, a named plugin, or nobody
+ * the stack could establish.
+ *
+ * **One type for every surface that attributes, because the core publishes
+ * one.** A setting's value, a check in a report and a service reaching
+ * somewhere each arrive carrying the same four-armed `origin`, and the core
+ * keeps it as a single vocabulary so that a surface gaining an attribution
+ * reads the same four words rather than inventing its own set. A type per
+ * surface here would be three copies of one rule, and the copy that drifted
+ * would be the one that learned to default.
  *
  * **One requirement is why this exists and another is why it has four arms
- * rather than three.** Wherever a setting is shown its origin is shown beside
- * it, so that reading the value and reading where it came from are the same
- * act. And an origin the stack could not determine is reported as unknown —
- * never as bundled, which is the wrong answer that looks most like a right
- * one. A default is the thing an operator is least likely to question, so a
- * wrong attribution to the stack is the one that survives longest
- * unchallenged.
+ * rather than three.** Wherever a setting, a wiring or a check is shown its
+ * origin is shown beside it, so that reading the thing and reading where it
+ * came from are the same act. And an origin the stack could not determine is
+ * reported as unknown — never as bundled, which is the wrong answer that looks
+ * most like a right one. A default is the thing an operator is least likely to
+ * question, so a wrong attribution to the stack is the one that survives
+ * longest unchallenged.
  *
  * **An arm that names nothing holds nothing.** The two that do — a plugin, or
  * the reason an origin could not be worked out — hold a string; the other two
@@ -44,7 +52,7 @@ use function trim;
  * happens in all four cases, so an arm added here is a compile error at every
  * reader rather than a screen that silently draws nothing.
  */
-final readonly class WhereASettingCameFrom
+final readonly class WhoPutItThere
 {
     private function __construct(private WhoSetIt $arm, private ?string $said) {}
 
@@ -57,7 +65,8 @@ final readonly class WhereASettingCameFrom
     }
 
     /**
-     * Somebody set it, through this app or through the stack's own interfaces.
+     * Somebody put it there, through this app or through the stack's own
+     * interfaces.
      */
     public static function operator(): self
     {
@@ -65,7 +74,7 @@ final readonly class WhereASettingCameFrom
     }
 
     /**
-     * A plugin set it, and this is the plugin.
+     * A plugin put it there, and this is the plugin.
      *
      * The name is trimmed and then required, in that order, for the reason
      * {@see Setting::called()} requires a key: an attribution to a plugin
@@ -79,7 +88,7 @@ final readonly class WhereASettingCameFrom
         $plugin = trim($named);
 
         if ($plugin === '') {
-            throw ASettingsOriginIsUnnamed::fromAPlugin();
+            throw AnOriginIsUnnamed::fromAPlugin();
         }
 
         return new self(arm: WhoSetIt::Plugin, said: $plugin);
@@ -103,7 +112,7 @@ final readonly class WhereASettingCameFrom
         $reason = trim($why);
 
         if ($reason === '') {
-            throw ASettingsOriginIsUnnamed::unknownForNoStatedReason();
+            throw AnOriginIsUnnamed::unknownForNoStatedReason();
         }
 
         return new self(arm: WhoSetIt::Unknown, said: $reason);

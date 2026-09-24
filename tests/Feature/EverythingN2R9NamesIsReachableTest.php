@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
@@ -65,6 +66,7 @@ function aRunTouchingEachOfTheFour(): Report
             'Something worth saying',
             Conclusion::Warned,
             WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
         );
     }
 

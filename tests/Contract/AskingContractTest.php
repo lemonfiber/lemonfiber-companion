@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Questions;
 use Saloon\Http\Faking\MockClient;
@@ -78,6 +79,7 @@ function theSameReport(): Report
             'The disk is nearly full',
             Conclusion::Warned,
             WhatTheCheckSaid::nothingWrong(),
+            WhoPutItThere::bundled(),
         ),
     ));
 }
@@ -102,6 +104,7 @@ function whatADegradedStackSends(): array
                 'check' => 'disk.space',
                 'category' => 'storage',
                 'title' => 'The disk is nearly full',
+                'origin' => ['origin' => 'bundled'],
                 // `outcome` rather than `kind`, which is the wire's own
                 // spelling for a verdict's tag — a fixture that invented a
                 // shape no stack sends is a test that passes against an

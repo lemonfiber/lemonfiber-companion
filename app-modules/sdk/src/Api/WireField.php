@@ -397,7 +397,7 @@ enum WireField: string
      * Which plugin an origin is attributing a value to.
      *
      * Only on the `plugin` arm. Read into
-     * {@see \Modules\Kernel\Api\WhereASettingCameFrom} rather than carried
+     * {@see \Modules\Kernel\Api\WhoPutItThere} rather than carried
      * on beside the word, so that no screen holds a name it has not checked
      * belongs to the arm that has one.
      */

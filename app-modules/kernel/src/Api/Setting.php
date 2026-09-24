@@ -30,7 +30,7 @@ final readonly class Setting
     private function __construct(
         public string $key,
         public WhatASettingHolds $holds,
-        public WhereASettingCameFrom $from,
+        public WhoPutItThere $from,
     ) {}
 
     /**
@@ -43,7 +43,7 @@ final readonly class Setting
     public static function called(
         string $key,
         WhatASettingHolds $holds,
-        WhereASettingCameFrom $from,
+        WhoPutItThere $from,
     ): self {
         $named = trim($key);
 

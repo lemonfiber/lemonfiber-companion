@@ -95,7 +95,7 @@ final readonly class HowItReaches
      */
     public function whichever(Closure $asked, Closure $byName): object
     {
-        // Told apart by the word, which is `WhereASettingCameFrom`'s shape.
+        // Told apart by the word, which is `WhoPutItThere`'s shape.
         // The by-name arm is read first deliberately: it is the one an operator
         // created by hand, and making it the fall-through is how it becomes the
         // case nobody tested — the argument `Reach::either()` makes about its

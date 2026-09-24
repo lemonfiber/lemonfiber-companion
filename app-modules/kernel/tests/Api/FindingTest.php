@@ -10,6 +10,8 @@ use function implode;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\AboutWhat;
+use Modules\Kernel\Api\Because;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\CheckSaidNothing;
@@ -23,6 +25,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\WhoPutItThere;
 
 use function sprintf;
 
@@ -34,6 +37,7 @@ function aFinding(string $title = 'Torrent traffic leaves through the tunnel'): 
         $title,
         Conclusion::Passed,
         WhatTheCheckSaid::nothingWrong(),
+        WhoPutItThere::bundled(),
     );
 }
 
@@ -44,6 +48,26 @@ it('carries every field a row shows', function (): void {
         ->and($finding->category())->toBe(Category::Vpn)
         ->and($finding->title())->toBe('Torrent traffic leaves through the tunnel')
         ->and($finding->conclusion())->toBe(Conclusion::Passed);
+});
+
+it('carries who put the check there, and keeps it through what the run adds', function (): void {
+    // The two withers rebuild the finding, so each is a place the origin could
+    // be dropped or swapped for a default. The same instance comes out the far
+    // side of both, in either order.
+    $plex = WhoPutItThere::plugin('plex');
+    $finding = Finding::of(
+        Check::of('plex.reachable'),
+        Category::Services,
+        'Plex answers',
+        Conclusion::Passed,
+        WhatTheCheckSaid::nothingWrong(),
+        $plex,
+    );
+
+    expect($finding->origin())->toBe($plex)
+        ->and($finding->about(AboutWhat::theService('plex'))->origin())->toBe($plex)
+        ->and($finding->because(Because::theCheck(Check::of('vpn.up')))->origin())->toBe($plex)
+        ->and($finding->because(Because::nothingElse())->about(AboutWhat::theMachine())->origin())->toBe($plex);
 });
 
 it('trims the title before carrying it', function (): void {
@@ -84,6 +108,7 @@ it('N2-R3 — a finding carries the code, the meaning and the remedy the core pr
         'Egress does not match',
         Conclusion::Failed,
         $said,
+        WhoPutItThere::bundled(),
     )->said()->either(
         nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
         wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): Code => Code::of(sprintf(
@@ -115,6 +140,7 @@ it('N2-R3 — a check that passed carries none of it, and says so in its own arm
         'Egress matches',
         Conclusion::Passed,
         WhatTheCheckSaid::nothingWrong(),
+        WhoPutItThere::bundled(),
     )->said()->either(
         nothingWrong: static fn(): Code => Code::of('nothing-wrong'),
         wentWrong: static fn(Code $code, string $meaning, Remedies $remedies): Code => Code::of(sprintf(

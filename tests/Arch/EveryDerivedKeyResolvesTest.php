@@ -247,7 +247,7 @@ function everyDerivedKey(): array
         ),
         WhoSetIt::class => aPairPerCase(
             WhoSetIt::cases(),
-            static fn(WhoSetIt $who): array => [$who->said()],
+            static fn(WhoSetIt $who): array => [$who->ofASetting(), $who->ofACheck(), $who->ofAService()],
         ),
     ];
 }

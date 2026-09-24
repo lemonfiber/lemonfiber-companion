@@ -39,6 +39,7 @@ final readonly class HowAStackReads
             went: HowTheReadingWent::theSessionEnded(),
             overall: '',
             findings: Findings::none(),
+            marksAnOrigin: false,
         );
     }
 
@@ -49,6 +50,7 @@ final readonly class HowAStackReads
             went: HowTheReadingWent::itCameBack(),
             overall: $report->overall()->saidOnTheScreen(),
             findings: $report->findings(),
+            marksAnOrigin: $this->marksAnOrigin($report->findings()),
         );
     }
 
@@ -65,6 +67,27 @@ final readonly class HowAStackReads
             went: HowTheReadingWent::somethingStopped($why),
             overall: '',
             findings: Findings::none(),
+            marksAnOrigin: false,
         );
+    }
+
+    /**
+     * Whether any check in the run is not the stack's own.
+     *
+     * Asked of the whole run rather than of the family being read, because the
+     * sentence it turns on is about what an unmarked row means, and that is
+     * true of every row whichever family is open.
+     */
+    private function marksAnOrigin(Findings $findings): bool
+    {
+        $reads = new HowAnOriginReads();
+
+        foreach ($findings as $finding) {
+            if (! $reads->of($finding->origin())->isTheStacksOwn()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -76,12 +76,13 @@ is the service manager declining to confirm, which is a different subject. The
 spec's own notes on `N16` say so, and `N1-R17` is why the difference is written
 down here rather than approximated from the nearest field.
 
-## What a machine is set to, and who set it
+## What a machine is set to, and who put things there
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `F7-R3` | Wherever a setting is shown, its origin — bundled, operator, or a named plugin — is shown beside it | `WhereASettingCameFrom`, carried on `Setting` beside the key rather than anywhere a screen could draw the row without it; `HowASettingReads` folds all four arms, so every row has one |
-| `F7-R11` | An origin that cannot be determined is reported as unknown and never as bundled | `WhereASettingCameFrom::unknown()`, a separate arm carrying the stack's reason and refusing a blank one. `Dials::from()` refuses an unreadable origin rather than defaulting it, and `ASettingsOriginIsUnnamed` keeps *unknown* from becoming the arm this app's own read failures land in |
+| `F7-R3` | Wherever a setting, wiring or check is shown, its origin — bundled, operator, or a named plugin — is shown beside it | `WhoPutItThere`, one type for every surface because the core publishes one origin type for all of them. A setting carries it on `Setting` and every settings row draws it; a check carries it as a required argument of `Finding::of()`, and the report marks every check that is not the stack's own beside its title, saying once under the list what an unmarked row is. `HowAnOriginReads` is the one fold and `CameFrom` the one component, each screen choosing only its sentence off `WhoSetIt` |
+| `C1-R15` | A proof a plugin declares runs as a check like any other and is attributed to the plugin | The same `Finding`, the same verdicts and the same screen as any other check; the attribution is the check's origin, read by `Reports` and drawn beside the title |
+| `F7-R11` | An origin that cannot be determined is reported as unknown and never as bundled | `WhoPutItThere::unknown()`, a separate arm carrying the stack's reason and refusing a blank one. `Attributions`, the one reader every attributing envelope shares, refuses an unreadable origin rather than defaulting it, and turns a blank name into its own refusal so each envelope's adapter catches it. `AnOriginIsUnnamed` keeps *unknown* from becoming the arm this app's own read failures land in; an unknown check or service is always marked |
 | `F7-R12` | Plugins do not get parallel surfaces of their own; they appear on the existing ones | A plugin-set value is a row on the settings screen with a different origin, not a screen of its own |
 
 ## What the household asked for

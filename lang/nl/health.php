@@ -14,6 +14,13 @@ return [
         'queue' => 'Wachtrij',
         'config' => 'Configuratie',
     ],
+    'origin' => [
+        'bundled' => 'Een eigen controle van de stack',
+        'operator' => 'Een hier toegevoegde controle',
+        'plugin' => 'Een controle van de plug-in :named',
+        'unknown' => 'Niemand kon zeggen waar deze controle vandaan komt — :why',
+        'legend' => 'Een controle waarbij staat waar hij vandaan komt, is geen eigen controle van de stack; alle andere wel.',
+    ],
     'conclusion' => [
         'fail' => 'Mislukt',
         'unverified' => 'Kon niet worden gecontroleerd',

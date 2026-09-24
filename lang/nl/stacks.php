@@ -103,6 +103,13 @@ return [
             'reaches_nothing' => 'Bereikt niets',
             'unrecorded' => 'lemonfiber weet niet wat deze dienst bereikt',
             'none' => 'Geen enkele dienst hier verstuurt iets',
+            'origin' => [
+                'bundled' => 'Een eigen dienst van de stack',
+                'operator' => 'Een hier toegevoegde dienst',
+                'plugin' => 'Meegebracht door de plug-in :named',
+                'unknown' => 'Niemand kon zeggen waar deze dienst vandaan komt — :why',
+                'legend' => 'Een dienst waarbij staat waar hij vandaan komt, is geen eigen dienst van de stack; alle andere wel.',
+            ],
         ],
     ],
 ];

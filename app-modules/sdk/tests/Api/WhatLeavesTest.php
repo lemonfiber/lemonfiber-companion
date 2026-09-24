@@ -61,7 +61,7 @@ function oneOfOurRequests(): array
  */
 function oneOfTheirRequests(string $service = 'sonarr'): array
 {
-    return ['service' => $service, 'destination' => 'thetvdb.com', 'purpose' => 'Series metadata', 'recorded' => true];
+    return ['service' => $service, 'destination' => 'thetvdb.com', 'purpose' => 'Series metadata', 'recorded' => true, 'origin' => ['origin' => 'bundled']];
 }
 
 /**
@@ -151,7 +151,7 @@ it('reads a service recorded to reach nothing as reaching nothing', function ():
 it('reads an unrecorded service as unknown, whatever words the stack filled in', function (): void {
     // The stack fills an unrecorded row's destination and purpose with words
     // of its own; read as a destination, they would be an answer nobody has.
-    $leaving = WhatLeaves::in(whatLeavesAs([], [['service' => 'my-fork', 'destination' => 'unknown', 'purpose' => 'no record', 'recorded' => false]]));
+    $leaving = WhatLeaves::in(whatLeavesAs([], [['service' => 'my-fork', 'destination' => 'unknown', 'purpose' => 'no record', 'recorded' => false, 'origin' => ['origin' => 'bundled']]]));
 
     expect(oneLineForTheirs(theFirstOfTheirs($leaving)))->toBe('my-fork/unrecorded');
 });
@@ -228,4 +228,48 @@ it('refuses a recorded service whose destination is not text', function (): void
 it('judges the payload these cases are built on against the contract', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('OutboundEnvelope', ['api_version' => 1, 'kind' => 'outbound', 'data' => ['ours' => [oneOfOurRequests()], 'theirs' => [oneOfTheirRequests()]]]))
         ->toBe([]);
+});
+
+/** Who put a service there, carried out of the fold as one line. */
+final readonly class WhoBroughtTheService
+{
+    public function __construct(public string $said) {}
+}
+
+/** Who a service's row says put it on the stack, as one line a case can compare. */
+function whoPutTheServiceThere(ARequestOfTheirs $request): string
+{
+    return $request->origin()->whichever(
+        bundled: static fn(): WhoBroughtTheService => new WhoBroughtTheService('bundled'),
+        operator: static fn(): WhoBroughtTheService => new WhoBroughtTheService('operator'),
+        plugin: static fn(string $named): WhoBroughtTheService => new WhoBroughtTheService(sprintf('plugin:%s', $named)),
+        unknown: static fn(string $why): WhoBroughtTheService => new WhoBroughtTheService(sprintf('unknown:%s', $why)),
+    )->said;
+}
+
+it('F7-R9 — reads who put each service there, on a recorded row and an unrecorded one alike', function (): void {
+    // The unrecorded row is the one that matters: a plugin's service arrives
+    // with no record of where it goes, and its origin is still read.
+    $leaving = WhatLeaves::in(whatLeavesAs([], [
+        oneOfTheirRequests(),
+        [...oneOfTheirRequests('plex'), 'origin' => ['named' => 'plex', 'origin' => 'plugin']],
+        ['service' => 'overseerr', 'destination' => 'unknown', 'purpose' => 'no record', 'recorded' => false, 'origin' => ['named' => 'plex', 'origin' => 'plugin']],
+    ]));
+
+    expect(array_map(whoPutTheServiceThere(...), iterator_to_array($leaving->theirs(), preserve_keys: false)))
+        ->toBe(['bundled', 'plugin:plex', 'plugin:plex']);
+});
+
+it('refuses a service that cannot say who put it there, naming which entry', function (): void {
+    // Second entry, so a refusal that dropped the position fails.
+    expect(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [
+        oneOfTheirRequests(),
+        [...oneOfTheirRequests('plex'), 'origin' => ['origin' => 'plugin']],
+    ])))->toThrow(OutboundIsUnreadable::class, 'Entry 1 of `theirs` in the outbound envelope cannot say where its service came from. It has no `named`');
+});
+
+it('refuses an unrecorded service with no origin, rather than skipping it on that arm', function (): void {
+    expect(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [
+        ['service' => 'overseerr', 'destination' => 'unknown', 'purpose' => 'no record', 'recorded' => false],
+    ])))->toThrow(OutboundIsUnreadable::class, 'Entry 0 of `theirs`');
 });

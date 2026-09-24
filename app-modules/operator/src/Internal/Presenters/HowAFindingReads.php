@@ -75,6 +75,7 @@ final readonly class HowAFindingReads
         $said = $finding->said();
         $service = $this->serviceOf($finding);
         $because = $this->becauseOf($finding);
+        $from = new HowAnOriginReads()->of($finding->origin());
 
         return $said->either(
             nothingWrong: static fn(): WhatOneFindingSays => new WhatOneFindingSays(
@@ -88,6 +89,7 @@ final readonly class HowAFindingReads
                 because: $because,
                 remedies: Remedies::none(),
                 underneath: '',
+                from: $from,
             ),
             wentWrong: static fn(
                 Code $code,
@@ -119,6 +121,7 @@ final readonly class HowAFindingReads
                     none: static fn(): WhatTheCoreAddedUnderneath
                         => new WhatTheCoreAddedUnderneath(''),
                 )->said,
+                from: $from,
             ),
             couldNotSay: static fn(string $reason, Remedies $remedies): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),
@@ -136,6 +139,7 @@ final readonly class HowAFindingReads
                 because: $because,
                 remedies: $remedies,
                 underneath: '',
+                from: $from,
             ),
         );
     }

@@ -26,6 +26,8 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
+use Modules\Kernel\Api\WhoPutItThere;
+use Modules\Sdk\Internal\Attributions;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -185,6 +187,7 @@ final readonly class Reports
             self::saidIn($row, WireField::Title, $position),
             $conclusion,
             self::said($verdict, $conclusion, $position),
+            self::origin($row, $position),
         );
 
         // Set after the row is complete, which is how the engine sets them:
@@ -232,6 +235,21 @@ final readonly class Reports
         }
 
         return Because::theCheck(Check::of(self::saidIn($row, WireField::CausedBy, $position)));
+    }
+
+    /**
+     * Who put the row's check there, read by the reader every attributing
+     * envelope shares and refused with the report where it cannot be read.
+     *
+     * @param array<mixed> $row
+     */
+    private static function origin(array $row, int $position): WhoPutItThere
+    {
+        try {
+            return Attributions::of($row);
+        } catch (OriginIsUnreadable $why) {
+            throw ReportIsUnreadable::origin($position, $why);
+        }
     }
 
     private static function category(string $said): Category

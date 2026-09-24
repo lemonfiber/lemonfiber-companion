@@ -14,6 +14,15 @@ return [
         'queue' => 'Queue',
         'config' => 'Configuration',
     ],
+    // Who put a check in the report. Drawn beside a check that is not the
+    // stack's own, with the legend said once under a report that has one.
+    'origin' => [
+        'bundled' => 'One of the stack\'s own checks',
+        'operator' => 'A check added here',
+        'plugin' => 'A check from the :named plugin',
+        'unknown' => 'Nobody could say where this check came from — :why',
+        'legend' => 'A check marked with where it came from is not one of the stack\'s own; every other is.',
+    ],
     'conclusion' => [
         'fail' => 'Failed',
         'unverified' => 'Could not be checked',

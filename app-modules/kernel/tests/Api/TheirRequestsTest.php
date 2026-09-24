@@ -12,9 +12,10 @@ use function iterator_to_array;
 use Modules\Kernel\Api\ARequestOfTheirs;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheirRequests;
+use Modules\Kernel\Api\WhoPutItThere;
 
 it('keeps the services\' requests in the stack\'s order', function (): void {
-    $theirs = TheirRequests::of(ARequestOfTheirs::unrecorded(ServiceId::called('b')), ARequestOfTheirs::unrecorded(ServiceId::called('a')));
+    $theirs = TheirRequests::of(ARequestOfTheirs::unrecorded(ServiceId::called('b'), WhoPutItThere::bundled()), ARequestOfTheirs::unrecorded(ServiceId::called('a'), WhoPutItThere::bundled()));
     $named = [];
 
     foreach ($theirs as $request) {
@@ -25,7 +26,7 @@ it('keeps the services\' requests in the stack\'s order', function (): void {
 });
 
 it('is a list however it was handed its requests', function (): void {
-    $theirs = TheirRequests::of(...['first' => ARequestOfTheirs::unrecorded(ServiceId::called('a')), 'second' => ARequestOfTheirs::unrecorded(ServiceId::called('b'))]);
+    $theirs = TheirRequests::of(...['first' => ARequestOfTheirs::unrecorded(ServiceId::called('a'), WhoPutItThere::bundled()), 'second' => ARequestOfTheirs::unrecorded(ServiceId::called('b'), WhoPutItThere::bundled())]);
 
     expect(array_keys(iterator_to_array($theirs, preserve_keys: true)))->toBe([0, 1]);
 });

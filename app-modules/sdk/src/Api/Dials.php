@@ -18,9 +18,9 @@ use Modules\Kernel\Api\Settings;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Kernel\Api\WhatItHoldsNow;
-use Modules\Kernel\Api\WhereASettingCameFrom;
 use Modules\Kernel\Api\WhereTheChangeStands;
-use Modules\Kernel\Api\WhoSetIt;
+use Modules\Kernel\Api\WhoPutItThere;
+use Modules\Sdk\Internal\Attributions;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -279,50 +279,23 @@ final readonly class Dials
     }
 
     /**
-     * Who put this value here, read off the tagged table the contract sends.
+     * Who put this value here.
      *
-     * **Refused rather than defaulted, and the rule against guessing an origin
-     * is the whole reason.** A row whose `origin` is missing, is not a table,
-     * or names a word this app does not know is a row this app cannot
-     * attribute — and the repair that suggests itself, reading it as bundled,
-     * is precisely the one that rule forbids. Reading it as *unknown* is no
-     * better: the stack has
-     * a reason when it says unknown, and inventing one here would put this
-     * app's failure to read behind the stack's own words.
-     *
-     * So an unreadable origin refuses the listing, the way an unreadable
-     * `secret` does. The screen's promise is that it shows what the stack is
-     * set to and who set it; a listing that quietly loses the second half is
-     * the silent subset this reader exists to refuse.
+     * Read by {@see Attributions}, which every envelope carrying an origin
+     * shares, and refused with the listing where it cannot be read — the way
+     * an unreadable `secret` is. The screen's promise is that it shows what
+     * the stack is set to and who set it; a listing that quietly loses the
+     * second half is the silent subset this reader exists to refuse.
      *
      * @param array<mixed> $row
      */
-    private static function from(array $row): WhereASettingCameFrom
+    private static function from(array $row): WhoPutItThere
     {
-        if (! array_key_exists(WireField::Origin->value, $row)) {
-            throw SettingIsUnreadable::missing(WireField::Origin);
+        try {
+            return Attributions::of($row);
+        } catch (OriginIsUnreadable $why) {
+            throw SettingIsUnreadable::origin($why);
         }
-
-        $attributed = $row[WireField::Origin->value];
-
-        if (! is_array($attributed)) {
-            throw SettingIsUnreadable::missing(WireField::Origin);
-        }
-
-        $word = self::text($attributed, WireField::Origin);
-
-        // Converted at the boundary and once, which is what every adapter here
-        // does with a closed set. A word this app has not been taught is named
-        // in the refusal, because the search that follows is for the release
-        // that added it.
-        $who = WhoSetIt::tryFrom($word) ?? throw SettingIsUnreadable::anOriginNobodyHere($word);
-
-        return match ($who) {
-            WhoSetIt::Bundled => WhereASettingCameFrom::bundled(),
-            WhoSetIt::Operator => WhereASettingCameFrom::operator(),
-            WhoSetIt::Plugin => WhereASettingCameFrom::plugin(self::text($attributed, WireField::Named)),
-            WhoSetIt::Unknown => WhereASettingCameFrom::unknown(self::text($attributed, WireField::Why)),
-        };
     }
 
     /**
