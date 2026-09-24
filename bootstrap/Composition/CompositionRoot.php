@@ -35,6 +35,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\KeepingCurrent;
@@ -67,6 +68,7 @@ use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doors;
+use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
@@ -321,6 +323,7 @@ final class CompositionRoot extends ServiceProvider
         // The running copy of lemonfiber, read beside the rest and bound for
         // the same reason.
         $this->app->bind(SelfChecking::class, Inspectors::class);
+        $this->app->bind(Explaining::class, Explainers::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

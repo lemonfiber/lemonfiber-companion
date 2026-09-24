@@ -196,6 +196,19 @@ return [
         'not_the_services' => 'This is lemonfiber itself. The services are updated from their own screen.',
     ],
 
+    // What lemonfiber's words mean, as the stack's glossary explains them.
+    'words' => [
+        'road_in' => 'What lemonfiber\'s words mean',
+        'heading' => 'What lemonfiber\'s words mean',
+        'search_label' => 'Find a word',
+        'search_placeholder' => 'A word, or what another app calls it',
+        'also_called' => 'Also called: :names',
+        'more' => 'More about ‘:word’',
+        'less' => 'Less about ‘:word’',
+        'nothing_matched' => 'No word, and nothing else a word is called, matches that',
+        'none' => 'This machine explains no words',
+    ],
+
     // How full the machine is, and where the room went.
     'room' => [
         'road_in' => 'How full this machine is',

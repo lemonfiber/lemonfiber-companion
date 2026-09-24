@@ -9,6 +9,7 @@ use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\Fields\ErrorField;
 use Modules\Sdk\Api\Fields\FormsField;
+use Modules\Sdk\Api\Fields\GlossaryField;
 use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Api\Fields\HistoryField;
 use Modules\Sdk\Api\Fields\HostingField;
@@ -50,6 +51,7 @@ function everyFieldNamedOnTheWire(): array
         ...DoctorField::cases(),
         ...FormsField::cases(),
         ...ErrorField::cases(),
+        ...GlossaryField::cases(),
         ...HeldField::cases(),
         ...HistoryField::cases(),
         ...HostingField::cases(),

@@ -7,20 +7,24 @@ namespace Modules\Kernel\Api;
 use Closure;
 
 /**
- * The running copy of lemonfiber, or the reason it could not be read.
+ * The glossary, or the reason it could not be read.
  *
- * The answer {@see SelfChecking} gives, and a value rather than an exception for
+ * The answer {@see Explaining} gives, and a value rather than an exception for
  * {@see WhatWasRecorded}'s reason. The reason is an {@see Obstacle}, the set
  * every other screen reads.
+ *
+ * **An empty glossary comes back through the first arm.** It and a stack that
+ * could not be asked would otherwise both draw an empty list, and only one of
+ * them is an answer.
  */
-final readonly class WhatWasFoundOfItself
+final readonly class WhatWasFoundOfTheWords
 {
-    private function __construct(private ThisCopyOfLemonfiber|Obstacle $answer) {}
+    private function __construct(private TheGlossary|Obstacle $answer) {}
 
-    /** The stack answered, and this is what it said. */
-    public static function found(ThisCopyOfLemonfiber $copy): self
+    /** The stack answered, and these are its words. */
+    public static function found(TheGlossary $words): self
     {
-        return new self($copy);
+        return new self($words);
     }
 
     /** It did not, and this is what the operator met instead. */
@@ -38,7 +42,7 @@ final readonly class WhatWasFoundOfItself
      * @template TAnswered of object
      * @template TMet of object
      *
-     * @param Closure(ThisCopyOfLemonfiber): TAnswered $found
+     * @param Closure(TheGlossary): TAnswered $found
      * @param Closure(Obstacle): TMet $met
      *
      * @return TAnswered|TMet

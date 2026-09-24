@@ -150,6 +150,19 @@ return [
         'not_the_services' => 'Dit is lemonfiber zelf. De services worden bijgewerkt vanaf hun eigen scherm.',
     ],
 
+    // Wat de woorden van lemonfiber betekenen, zoals de woordenlijst van de stack ze uitlegt.
+    'words' => [
+        'road_in' => 'Wat de woorden van lemonfiber betekenen',
+        'heading' => 'Wat de woorden van lemonfiber betekenen',
+        'search_label' => 'Zoek een woord',
+        'search_placeholder' => 'Een woord, of hoe een andere app het noemt',
+        'also_called' => 'Ook wel: :names',
+        'more' => 'Meer over ‘:word’',
+        'less' => 'Minder over ‘:word’',
+        'nothing_matched' => 'Geen woord, en niets waarmee een woord ook wordt aangeduid, past daarbij',
+        'none' => 'Deze machine legt geen woorden uit',
+    ],
+
     'room' => [
         'road_in' => 'Hoe vol deze machine is',
         'level' => [

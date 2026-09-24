@@ -20,6 +20,7 @@ use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
@@ -221,6 +222,9 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // Which version of lemonfiber runs, apart from the services' updates.
             Router::native(AStacksScreen::Itself->value, WhatIsRunningHere::class);
+
+            // What its words mean, which every other screen uses.
+            Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

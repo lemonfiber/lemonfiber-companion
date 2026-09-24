@@ -150,6 +150,9 @@ enum AStacksScreen: string
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
     case Itself = '/stacks/{stack}/itself';
 
+    /** What lemonfiber's words mean. */
+    case Words = '/stacks/{stack}/words';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 

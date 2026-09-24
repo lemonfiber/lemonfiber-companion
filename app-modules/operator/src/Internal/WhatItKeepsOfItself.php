@@ -78,4 +78,10 @@ final readonly class WhatItKeepsOfItself
     {
         return AStacksScreen::Itself->forTheStack($this->stack);
     }
+
+    /** What lemonfiber's words mean. */
+    public function words(): string
+    {
+        return AStacksScreen::Words->forTheStack($this->stack);
+    }
 }

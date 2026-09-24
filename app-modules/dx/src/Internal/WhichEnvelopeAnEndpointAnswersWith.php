@@ -56,6 +56,9 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
     /** A reading type named outright in a docblock. */
     private const string A_NAMED_TYPE = '~Generated\\\\(\w+Envelope)~';
 
+    /** A clause of a docblock about a request that names none, or nothing. */
+    private const string A_CLAUSE_NAMING_NONE = '~[^.;]*\\bnaming (?:none|nothing)\\b[^.;]*~';
+
     /** One sentence of a docblock that quotes a word, the word going in at `%s`. */
     private const string A_SENTENCE_QUOTING = '~[^.]*`%s`[^.]*~';
 
@@ -74,11 +77,14 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
      * Longest rather than first, so a path that is a prefix of another cannot
      * shadow it.
      *
-     * `$asked` is the values the request's query carries. One endpoint answers
-     * with a different envelope for each value of a parameter, and its
-     * docblock gives each value a sentence naming the envelope; the first
-     * value with such a sentence decides, and a request whose values have none
-     * gets the envelope the docblock names first.
+     * `$asked` is the values the request's query carries. An endpoint that
+     * answers with more than one envelope says in its docblock which request
+     * gets which: a sentence quoting a value names that value's envelope, and a
+     * clause about naming none or nothing names the envelope for a request
+     * carrying no value. The first value with such a sentence decides; a
+     * request with no values takes the clause about naming none where one
+     * names an envelope; anything else gets the envelope the docblock names
+     * first.
      */
     public static function at(string $path, string ...$asked): string
     {
@@ -100,11 +106,11 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
             }
         }
 
-        return self::namedIn($said);
+        return $asked === [] ? self::theEnvelopeForNoValue($said) : self::namedIn($said);
     }
 
     /**
-     * Every endpoint whose docblock says what it answers with.
+     * Every endpoint whose docblock says what it answers with, for a request carrying no value.
      *
      * Endpoints that say nothing are left out rather than guessed at. Three are
      * in that position and they are not one situation: `/api/events` is a
@@ -120,7 +126,7 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
         $answers = [];
 
         foreach (self::everyOneDeclared() as $endpoint => $docblock) {
-            $answers[$endpoint] = self::namedIn($docblock);
+            $answers[$endpoint] = self::theEnvelopeForNoValue($docblock);
         }
 
         return $answers;
@@ -144,6 +150,24 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
         }
 
         return $declared;
+    }
+
+    /**
+     * The envelope a request carrying no value gets: the one the clause about naming none names, or the first named.
+     */
+    private static function theEnvelopeForNoValue(string $docblock): string
+    {
+        $forNone = self::namedIn(self::theClauseNamingNone($docblock));
+
+        return $forNone === '' ? self::namedIn($docblock) : $forNone;
+    }
+
+    /**
+     * The clause of a docblock about a request that names none, or nothing where there is no such clause.
+     */
+    private static function theClauseNamingNone(string $docblock): string
+    {
+        return preg_match(self::A_CLAUSE_NAMING_NONE, $docblock, $clause) === 1 ? $clause[0] : '';
     }
 
     /**

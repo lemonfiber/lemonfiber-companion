@@ -21,6 +21,11 @@ it('answers with the envelope named first where no value has a sentence of its o
         ->and(WhichEnvelopeAnEndpointAnswersWith::at(Api::STATUS_ENDPOINT, 'self'))->toBe('StatusEnvelope');
 });
 
+it('answers a request naming no value with the envelope the docblock gives naming none', function (): void {
+    expect(WhichEnvelopeAnEndpointAnswersWith::at(Api::EXPLAIN_ENDPOINT))->toBe('GlossaryEnvelope')
+        ->and(WhichEnvelopeAnEndpointAnswersWith::at(Api::EXPLAIN_ENDPOINT, 'pin'))->toBe('WordEnvelope');
+});
+
 it('answers nothing for a path nothing declares', function (): void {
     expect(WhichEnvelopeAnEndpointAnswersWith::at('/nowhere', 'self'))->toBe('');
 });

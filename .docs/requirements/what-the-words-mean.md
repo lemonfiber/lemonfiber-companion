@@ -1,0 +1,29 @@
+# What the words mean
+
+lemonfiber's own words, as the stack's glossary explains them: each with a
+short gloss, a longer one for whoever asks, and what else the thing is called.
+The code is the glossary half of `N15` in `app-modules/kernel` and
+`app-modules/sdk`, drawn by `WhatTheWordsMean`.
+
+Each row says what the requirement asks and what in this repository answers it.
+The spec is canonical; where this page and a requirement disagree, the
+requirement is right and this page is a defect.
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N15-R3` | A word the glossary carries can be explained, the short form in place and the longer one available without leading | `AWord` carries both glosses. The screen draws the short one under the word and opens the longer one only when asked |
+| `N15-R4` | What a word is also called is shown and searchable | The other names are drawn under each word, and `AWord::answers()` searches the word and every other name |
+| `N15-R9` | The app defines no word the glossary does not carry, and substitutes no term of its own | Every word and gloss on the screen is the stack's text. `TheWordsExplained` refuses a word with no short gloss rather than drawing one half-explained |
+| `N15-R10` | A glossary that could not be read is told apart from idle | A glossary that could not be read is an obstacle, drawn as one. An empty glossary and a search that found nothing each have their own sentence |
+
+The glossary is asked for once and held, so typing narrows what is shown
+without asking the machine again.
+
+## Asked for, and not drawn yet
+
+`N15-R3` asks for the explanation where the word is used, which is on the
+screens that use it rather than on a page of its own. That needs each screen to
+know which of the words it draws the glossary carries.
+
+`N15-R1`, `N15-R2` and `N15-R5` to `N15-R8` are about setup, job stages and
+walkthroughs, each a reading of its own.

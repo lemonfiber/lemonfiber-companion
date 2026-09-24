@@ -33,9 +33,9 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Alerts', 'Archives', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Forms', 'Held', 'History', 'Hosting',
-    'Household', 'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'SelfUpdate', 'Space', 'Status', 'Stored',
-    'Stuck', 'Update',
+    'Alerts', 'Archives', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Forms', 'Glossary', 'Held', 'History',
+    'Hosting', 'Household', 'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'SelfUpdate', 'Space', 'Status',
+    'Stored', 'Stuck', 'Update',
 ];
 
 /**
@@ -69,16 +69,10 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Adoption', 'Backup',
-    'Beside', 'Bundle', 'Catalogue', 'Clients',
-    'Credentials', 'Dashboard', 'FrontDoor',
-    'Glossary', 'Import',
-    'Invitation', 'Lifecycle', 'Migration', 'Music',
-    'Plugins', 'Preview', 'Pull', 'Quality', 'Removal',
-    'Replacement', 'Reset', 'Restore', 'Seed',
-    'Start', 'Step', 'StopSeeding',
-    'Substitution', 'Trace', 'Undo', 'Uninstall', 'Upgrade',
-    'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
+    'Admission', 'Adoption', 'Backup', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Credentials', 'Dashboard',
+    'FrontDoor', 'Import', 'Invitation', 'Lifecycle', 'Migration', 'Music', 'Plugins', 'Preview', 'Pull', 'Quality',
+    'Removal', 'Replacement', 'Reset', 'Restore', 'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Trace',
+    'Undo', 'Uninstall', 'Upgrade', 'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {

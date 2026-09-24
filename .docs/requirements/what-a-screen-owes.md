@@ -75,15 +75,15 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 62 envelopes and this app follows 21.
-Thirty-nine are never referenced anywhere in `app-modules` or `bridge`, and two
+**The measurement.** The SDK ships 62 envelopes and this app follows 22.
+Thirty-eight are never referenced anywhere in `app-modules` or `bridge`, and two
 more — `Admission` and `Pull` — are referenced without being followed. They
 resolve to the features below — each one an action available from another
 surface and not offered here, or offered only in part.
 
 ```
 ls vendor/lemonfiber/sdk-php/src/Generated/*Envelope.php | wc -l   # 62
-Tests\Support\WhatTheReadersRead::envelopes()                      # 21
+Tests\Support\WhatTheReadersRead::envelopes()                      # 22
 ```
 
 `A2` is not in the list: first-run setup is the one exception `N1-R2` allows
