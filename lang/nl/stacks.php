@@ -138,7 +138,12 @@ return [
         'up' => 'Upload: :says',
         'upload_cost' => 'De upload afremmen kost: :costs',
         'capacity' => 'Wat de lijn aankan',
-        'carries' => ':down :down_unit per seconde omlaag, :up :up_unit per seconde omhoog',
+        'carries' => ':down :down_unit omlaag, :up :up_unit omhoog',
+        'rate' => [
+            'kilobits' => 'kbit/s',
+            'megabits' => 'Mbit/s',
+            'gigabits' => 'Gbit/s',
+        ],
         'measured' => [
             'declared' => 'Zoals opgegeven, niet gemeten',
             'observed' => 'Zoals de stack het heeft zien gaan',

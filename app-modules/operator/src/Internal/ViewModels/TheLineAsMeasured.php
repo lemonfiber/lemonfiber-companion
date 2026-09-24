@@ -14,9 +14,9 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheLineAsMeasured
 {
     /**
-     * @param int    $downFigure   bytes a second down, as a whole figure of its unit
+     * @param int    $downFigure   how fast it carries down, as a whole figure of its unit
      * @param string $downUnit     the catalogue key for that unit
-     * @param int    $upFigure     bytes a second up, as a whole figure of its unit
+     * @param int    $upFigure     how fast it carries up, as a whole figure of its unit
      * @param string $upUnit       the catalogue key for that unit
      * @param string $measuredSaid the catalogue key for declared or observed
      * @param string $tunnelSaid   the catalogue key for through the tunnel or beside it

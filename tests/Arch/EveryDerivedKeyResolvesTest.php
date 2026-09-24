@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Permission;
+use Modules\Kernel\Api\RateUnit;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\SizeUnit;
 use Modules\Kernel\Api\Stage;
@@ -182,6 +183,10 @@ function everyDerivedKey(): array
         SizeUnit::class => aPairPerCase(
             SizeUnit::cases(),
             static fn(SizeUnit $unit): array => [$unit->saidOnTheScreen()],
+        ),
+        RateUnit::class => aPairPerCase(
+            RateUnit::cases(),
+            static fn(RateUnit $unit): array => [$unit->saidOnTheScreen()],
         ),
         Stage::class => aPairPerCase(
             Stage::cases(),

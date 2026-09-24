@@ -5,12 +5,15 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AMonthlyCap;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowBig;
+use Modules\Kernel\Api\HowFast;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowTheLineIsShared;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\RateUnit;
 use Modules\Kernel\Api\Remark;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\Session;
@@ -30,6 +33,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatRationsItsLine;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // How this machine shares its line with the household.
 //
@@ -103,7 +107,7 @@ it('N10-R4, N10-R5 — the capacity says down and up, declared or observed, whic
     $measured = theLineScreen(AStackThatRationsItsLine::with(aCappedLine()))->answer()->measured;
 
     expect($measured)->not->toBeNull()
-        ->and([$measured?->downFigure, $measured?->upFigure])->toBe([13, 3])
+        ->and([$measured?->downFigure, $measured?->downUnit, $measured?->upFigure, $measured?->upUnit])->toBe([100, RateUnit::Megabits->saidOnTheScreen(), 20, RateUnit::Megabits->saidOnTheScreen()])
         ->and($measured?->measuredSaid)->toBe(HowTheLineWasMeasured::Declared->saidOnTheScreen())
         ->and($measured?->tunnelSaid)->toBe(WhetherItGoesThroughTheTunnel::Through->saidOnTheScreen())
         ->and($measured?->agoSaid)->toBe(HowLongAgo::Hours->saidOnTheScreen())
@@ -214,4 +218,46 @@ it('renders its own view', function (): void {
     $screen = theLineScreen(AStackThatRationsItsLine::with(aCappedLine()));
 
     expect($screen->render()->name())->toBe('operator::how-the-line-is-shared-here');
+});
+
+/**
+ * A unit's word, as the sentence around it is handed it.
+ *
+ * A unit key names one line of the catalogue, never a group of them, so
+ * anything but text here is a catalogue gone wrong rather than a unit.
+ */
+function theUnitSaid(string $key): string
+{
+    $said = __($key);
+
+    return is_string($said) ? $said : throw new LogicException(sprintf('`%s` names a group of lines, not a unit', $key));
+}
+
+it('N10-R4, N10-R6 — the reading reaches the glass, each figure in its own unit', function (): void {
+    // Drawn rather than read off the view model, because the figure and its
+    // unit meet only in the template. Down and up sit in different units here
+    // — a gigabit line with a 500 kbit/s upload — and the cap in a unit of
+    // size, so a unit taken from the wrong figure is a different sentence.
+    $down = HowFast::of(125_000_000);
+    $up = HowFast::of(62_500);
+    $cap = HowBig::of(1_000_000_000_000);
+
+    $line = aBareLine()
+        ->measuredAt(WhatTheLineCarries::measured(125_000_000, 62_500, HowTheLineWasMeasured::Observed, Instant::atEpochSeconds(THE_LINE_IS_READ_AT - 7_200), WhetherItGoesThroughTheTunnel::Beside))
+        ->cappedAt(AMonthlyCap::of(1_000_000_000_000, WhatACapDoes::Throttle));
+
+    $drawn = WhatTheDeviceWouldDraw::by(theLineScreen(AStackThatRationsItsLine::with($line)))->said();
+
+    expect($down->said)->not->toBe($up->said)
+        ->and($cap->said)->not->toBe($down->said)
+        ->and($drawn)->toContain(__('stacks.line.carries', [
+            'down' => $down->figure,
+            'down_unit' => theUnitSaid($down->said),
+            'up' => $up->figure,
+            'up_unit' => theUnitSaid($up->said),
+        ]))
+        ->and($drawn)->toContain(__('stacks.line.capped_at', ['figure' => $cap->figure, 'unit' => theUnitSaid($cap->said)]))
+        ->and($drawn)->toContain(__(WhatACapDoes::Throttle->saidOnTheScreen()))
+        ->and($drawn)->toContain(__(WhetherItGoesThroughTheTunnel::Beside->saidOnTheScreen()))
+        ->and($drawn)->toContain('Nothing holds the stack back');
 });

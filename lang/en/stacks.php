@@ -183,7 +183,13 @@ return [
         'up' => 'Upload: :says',
         'upload_cost' => 'Holding the upload back costs: :costs',
         'capacity' => 'What the line carries',
-        'carries' => ':down :down_unit a second down, :up :up_unit a second up',
+        'carries' => ':down :down_unit down, :up :up_unit up',
+        // A line's speed, in what it is sold in.
+        'rate' => [
+            'kilobits' => 'kbit/s',
+            'megabits' => 'Mbit/s',
+            'gigabits' => 'Gbit/s',
+        ],
         'measured' => [
             // Declared is a claim; said as one.
             'declared' => 'As declared, not measured',

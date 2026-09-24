@@ -31,7 +31,7 @@ says it in its own words instead.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N10-R4` | The line's capacity says whether it was declared or observed | `WhatTheLineCarries`, which cannot be built without `HowTheLineWasMeasured`; the screen draws it under the figures every time, because a cap decided on a declared figure is decided on a guess |
+| `N10-R4` | The line's capacity says whether it was declared or observed | `WhatTheLineCarries`, which cannot be built without `HowTheLineWasMeasured`; the screen draws it under the figures every time, because a cap decided on a declared figure is decided on a guess. The figures are said in bits a second through `HowFast`, which is what a line is sold in and what the stack's own sentences beside them say |
 | `N10-R5` | Whether traffic passes through the tunnel is shown where the contract carries it | `WhetherItGoesThroughTheTunnel`, carried on the same measurement and drawn beside it |
 | `N10-R6` | Reaching a cap says which of pause, throttle or continue the stack does | `AMonthlyCap`, which cannot be built without `WhatACapDoes`, drawn on the same line as the allowance — *you have reached your cap* without which one is not an answer. Where the month stands is added only where the stack counted it |
 | `N10-R7` | A cap with no figure set is told apart from a cap of zero | A stack with no cap declared has no `AMonthlyCap` at all, and `HowTheLineIsShared::cap()` is a fold with an arm for that; a cap of nought is an `AMonthlyCap` and drawn as one. `HowTheLineIs` reads `null` as the first and `0` as the second, and refuses a month's standing with no cap to stand against |

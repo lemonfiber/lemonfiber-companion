@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AMonthlyCap;
 use Modules\Kernel\Api\HowBig;
+use Modules\Kernel\Api\HowFast;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowTheLineIsShared;
 use Modules\Kernel\Api\Instant;
@@ -23,9 +24,11 @@ use Modules\Operator\Internal\ViewModels\TheLineAsMeasured;
  * What asking a stack how it shares its line produces, as the fields a screen draws.
  *
  * `F2` — data in, view model out, with the moment the measurement's age is
- * counted from handed in (`B1`). Byte counts become figures and units through
- * {@see HowBig}, the one place a number of bytes becomes words, so a rate and
- * a monthly allowance are read in the units a request's size is.
+ * counted from handed in (`B1`). The line's speed becomes a figure and a unit
+ * through {@see HowFast}, in bits a second, which is what a line is sold in and
+ * what the stack's own sentences on the same screen say. The monthly allowance
+ * is an amount rather than a speed, and goes through {@see HowBig} like any
+ * other size.
  */
 final readonly class HowTheLineReads
 {
@@ -90,12 +93,16 @@ final readonly class HowTheLineReads
     private static function measured(WhatTheLineCarries $carries, Instant $now): TheLineAsMeasured
     {
         $ago = HowLongAgo::since($carries->taken(), $now);
+        // In bits a second, which is what a line is sold in and what the
+        // stack's own sentences beside these figures say.
+        $down = HowFast::of($carries->down());
+        $up = HowFast::of($carries->up());
 
         return new TheLineAsMeasured(
-            downFigure: HowBig::of($carries->down())->figure,
-            downUnit: HowBig::of($carries->down())->said,
-            upFigure: HowBig::of($carries->up())->figure,
-            upUnit: HowBig::of($carries->up())->said,
+            downFigure: $down->figure,
+            downUnit: $down->said,
+            upFigure: $up->figure,
+            upUnit: $up->said,
             measuredSaid: $carries->measuredAs()->saidOnTheScreen(),
             tunnelSaid: $carries->tunnel()->saidOnTheScreen(),
             agoSaid: $ago->saidOnTheScreen(),
