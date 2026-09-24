@@ -35,12 +35,17 @@ use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatACapDoes;
+use Modules\Kernel\Api\WhatALineIsAbout;
+use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
+use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
@@ -264,6 +269,26 @@ function everyDerivedKey(): array
         WhetherItHoldsASecret::class => aPairPerCase(
             WhetherItHoldsASecret::cases(),
             static fn(WhetherItHoldsASecret $secret): array => [$secret->saidOnTheScreen()],
+        ),
+        WhereTheRoomStands::class => aPairPerCase(
+            WhereTheRoomStands::cases(),
+            static fn(WhereTheRoomStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatAVolumeHolds::class => aPairPerCase(
+            WhatAVolumeHolds::cases(),
+            static fn(WhatAVolumeHolds $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatALineIsAbout::class => aPairPerCase(
+            WhatALineIsAbout::cases(),
+            static fn(WhatALineIsAbout $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatGettingItBackCosts::class => aPairPerCase(
+            WhatGettingItBackCosts::cases(),
+            static fn(WhatGettingItBackCosts $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereADownloadStands::class => aPairPerCase(
+            WhereADownloadStands::cases(),
+            static fn(WhereADownloadStands $case): array => [$case->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by
