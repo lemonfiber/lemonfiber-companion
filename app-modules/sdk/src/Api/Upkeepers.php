@@ -13,8 +13,10 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
@@ -55,7 +57,7 @@ final readonly class Upkeepers implements KeepingCurrent
             return WhatIsCurrent::stands(Standings::in($envelope));
         } catch (RequestFailed $why) {
             return WhatIsCurrent::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed) {
             return WhatIsCurrent::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -76,7 +78,7 @@ final readonly class Upkeepers implements KeepingCurrent
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }

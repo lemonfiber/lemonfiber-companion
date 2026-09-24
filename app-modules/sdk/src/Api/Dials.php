@@ -59,10 +59,8 @@ final readonly class Dials
      */
     public static function in(Envelope $envelope): Settings
     {
-        // No guard on `data` itself: the generated envelope types it, and a
-        // check the analyser can already prove is one that reads as dead to
-        // everything except the person adding it. What is not proven is the
-        // shape underneath, which is what `listing()` refuses.
+        // The generated envelope declares `data` a table and does not check
+        // that it is one, so `listing()` refuses a `data` that is not.
         $data = ConfigEnvelope::in(Wire::checked($envelope))->data;
 
         return Settings::of(...self::each(self::listing($data)));
@@ -150,12 +148,11 @@ final readonly class Dials
     /**
      * One field as a table, refused unless it is one.
      *
-     * @param array<mixed> $held
      * @return array<mixed>
      */
-    private static function table(array $held, NamesAWireField $field): array
+    private static function table(mixed $held, NamesAWireField $field): array
     {
-        if (! array_key_exists($field->value, $held)) {
+        if (! is_array($held) || ! array_key_exists($field->value, $held)) {
             throw SettingIsUnreadable::missing($field);
         }
 
@@ -224,12 +221,11 @@ final readonly class Dials
      * app could not read. A stack that has nothing set says so with an empty
      * list, which this accepts.
      *
-     * @param array<mixed> $data
      * @return array<mixed>
      */
-    private static function listing(array $data): array
+    private static function listing(mixed $data): array
     {
-        if (! array_key_exists(ConfigField::Settings->value, $data)) {
+        if (! is_array($data) || ! array_key_exists(ConfigField::Settings->value, $data)) {
             throw SettingIsUnreadable::missing(ConfigField::Settings);
         }
 

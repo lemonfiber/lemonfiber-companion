@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
+use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -111,7 +112,7 @@ final readonly class Supervisors implements Supervising
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }

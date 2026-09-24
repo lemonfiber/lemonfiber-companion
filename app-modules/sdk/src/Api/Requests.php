@@ -12,7 +12,9 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
+use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\RequestHasNobodyBehindIt;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
@@ -69,7 +71,7 @@ final readonly class Requests implements Wanting
             return WhatWasWanted::these(Households::in($envelope));
         } catch (RequestFailed $why) {
             return WhatWasWanted::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt) {
             return WhatWasWanted::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -93,7 +95,7 @@ final readonly class Requests implements Wanting
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }

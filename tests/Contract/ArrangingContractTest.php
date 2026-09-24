@@ -334,6 +334,13 @@ it('refuses an answer with no settings at all rather than reading it as none', f
         ->toBe('refused:no_answer');
 });
 
+it('refuses an answer whose data is not a table', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'config', 'data' => 'settings'])]);
+
+    expect(howAStackReadsAsText(new Arrangements(new PinnedClients())))->toBe('refused:no_answer');
+});
+
 it('refuses settings that are not a list', function (): void {
     expect(howAStackReadsAsText(aStackAnsweringWith([
         'changed' => false, 'rehearsed' => false, 'settings' => 'all of them',

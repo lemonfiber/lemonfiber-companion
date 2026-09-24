@@ -7,6 +7,7 @@ namespace Modules\Sdk\Tests\Internal;
 use function expect;
 use function it;
 
+use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\WireVersion;
@@ -35,4 +36,11 @@ it('N1-R13 — refuses an answer in a version this app does not read', function 
     // three layers in, handed to a screen as a fact.
     expect(fn(): Envelope => Wire::checked(new Envelope(99, 'doctor', [])))
         ->toThrow(EnvelopeIsNotRead::class, 'version 99');
+});
+
+it('reads the version the client speaks, so the client refuses every other one first', function (): void {
+    // The client refuses an answer in any version but its own with
+    // `ApiVersionMismatch`, which every adapter catches. While its version is
+    // one this app reads, `EnvelopeIsNotRead` cannot reach an adapter.
+    expect(WireVersion::tryFrom(Api::VERSION))->not->toBeNull();
 });

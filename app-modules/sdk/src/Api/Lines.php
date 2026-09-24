@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
+use function is_array;
 use function is_string;
 
 use Lemonfiber\Sdk\LogWindow;
@@ -70,11 +71,13 @@ final readonly class Lines
 
     /**
      * One line, with the three fields the contract promises and the optional one.
-     *
-     * @param array<mixed> $row
      */
-    private static function line(array $row, int $position): Said
+    private static function line(mixed $row, int $position): Said
     {
+        if (! is_array($row)) {
+            throw LineIsUnreadable::said(LogField::Line, $position);
+        }
+
         $line = self::text($row, LogField::Line, $position, blankIsALine: true);
         $service = ServiceId::called(self::text($row, WireField::Service, $position));
         $stream = self::stream($row, $position);
