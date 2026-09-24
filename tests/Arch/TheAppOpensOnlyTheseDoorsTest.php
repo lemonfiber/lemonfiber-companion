@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
+use Modules\Kernel\Api\Release;
+use Modules\Kernel\Api\Services;
+use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatWasDecided;
@@ -32,14 +36,14 @@ use Tests\Support\Tree;
 // three checks below — not the design.
 //
 // An action's name is the last segment of its path, and every call here
-// composes that path with `Api::action()` from `WhatToDoWithIt::asked()` —
-// three verbs, none of them `setup` and none of them a credential. Two things
-// are refused: a string handed to `Api::action()`, which would be a name this
-// app chose, and a `->value` handed to it, which is the operator's word for a
-// verb rather than lemonfiber's and would be refused by a machine in front of
-// somebody holding a phone. The three verbs are then checked against the list
-// of reasons in both directions, because the forward check catches one that
-// lost its reason and only the reverse catches the fourth verb somebody adds by
+// composes that path with `Api::action()` from an `asked()` the kernel spells —
+// a handful of verbs, none of them `setup` and none of them a credential. Two
+// things are refused: a string handed to `Api::action()`, which would be a name
+// this app chose, and a `->value` handed to it, which is the operator's word
+// for a verb rather than lemonfiber's and would be refused by a machine in
+// front of somebody holding a phone. The verbs are then checked against the
+// list of reasons in both directions, because the forward check catches one
+// that lost its reason and only the reverse catches the verb somebody adds by
 // hand.
 //
 // The list is compared against the client rather than trusted: a method renamed
@@ -70,10 +74,11 @@ const DOORS_THE_APP_OPENS = [
     // the rule matched a receiver.
     'whatBecameOf' => 'asks what became of work the stack named, changing nothing',
 
-    // The three verbs, and nothing else can reach it: the path is
-    // composed by `Api::action()` from a `WhatToDoWithIt` case, which is a
-    // closed set this app cannot add a name to at a call site.
-    'act' => 'asks for one of the three verbs `N2-R7` names, by a name the rule below holds it to',
+    // The verbs below, and nothing else can reach it: the path is composed by
+    // `Api::action()` from a name the kernel spells — a case of a closed set,
+    // or the one agreement to take an update — which this app cannot add a
+    // name to at a call site.
+    'act' => 'asks for one of the verbs the list below explains, by a name the rule below holds it to',
 
     // The one door that does nothing to anybody's machine: it hands back the
     // client's own transport. Opened in exactly one place and for the opposite
@@ -132,6 +137,13 @@ const VERBS_THE_APP_ASKS_FOR = [
     // asked a reason, and {@see \Modules\Kernel\Api\Decided} cannot be built
     // without one.
     'household-decline' => 'turns one waiting request down, with the reason it was turned down for',
+
+    // The one verb that moves the stack onto different software. It cannot be
+    // asked for bare: the only thing that spells it is an agreement naming the
+    // release and the services it would change, and a release is one the stack
+    // listed as waiting — so what reaches the wire is an update somebody was
+    // shown and said yes to.
+    'update' => 'takes a release the stack listed as waiting, against the services the operator was told it would change',
 ];
 
 /**
@@ -219,6 +231,23 @@ function theApplicationsSources(): array
         $sources,
         static fn(string $path): bool => ! str_contains($path, '/tests/'),
     ));
+}
+
+/**
+ * An agreement to take an update, which is the only thing that spells `update`.
+ *
+ * Built rather than read off an enum, because there is no enum: one thing can
+ * be done about an update, and the name lives on the agreement. Nothing about
+ * the release or the services changes what it is asked by, so the emptiest
+ * agreement the type allows is enough to ask it.
+ */
+function anUpdateSomebodyAgreedTo(): TakingAnUpdate
+{
+    return TakingAnUpdate::agreed(
+        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+        Services::none(),
+        Services::none(),
+    );
 }
 
 /**
@@ -365,17 +394,19 @@ it('N1-R4, N2-R12 — the door that writes whatever it is told is never told a n
 
 it('N2-R7 — every action this app asks for has a reason, and every reason an action', function (): void {
     // Both directions, because they catch different mistakes. The forward check
-    // finds a case that lost its reason; only the reverse finds the fourth verb
+    // finds a case that lost its reason; only the reverse finds the verb
     // somebody adds to this list by hand, which is the edit that would widen
     // what this app can ask for without widening the enum.
-    // Both closed sets, because both reach `Api::action()` and the rule is
-    // about that door rather than about services. A set left out here is a set
-    // this app can ask for and this rule does not explain, which is the shape
-    // of a rule claiming more than it enforces.
+    // Every closed set, and the one agreement that is not a set, because all
+    // of them reach `Api::action()` and the rule is about that door rather
+    // than about services. One left out here is a verb this app can ask for
+    // and this rule does not explain, which is the shape of a rule claiming
+    // more than it enforces.
     $asked = [
         ...array_map(static fn(WhatToDoWithIt $doing): string => $doing->asked(), WhatToDoWithIt::cases()),
         ...array_map(static fn(WhatWasDecided $decided): string => $decided->asked(), WhatWasDecided::cases()),
         ...array_map(static fn(WhatToChange $change): string => $change->asked(), WhatToChange::cases()),
+        anUpdateSomebodyAgreedTo()->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
 
