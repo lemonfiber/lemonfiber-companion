@@ -75,14 +75,14 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The stack serves 62 envelopes and this app follows 11.
-Forty-nine are never referenced anywhere in `app-modules` or `bridge`. They
+**The measurement.** The stack serves 62 envelopes and this app follows 16.
+Forty-four are never referenced anywhere in `app-modules` or `bridge`. They
 resolve to the features below — each one an action available from another
 surface and not offered here.
 
 ```
 ls vendor/lemonfiber/sdk-php/src/Generated/*Envelope.php | wc -l   # 62
-Tests\Support\WhatTheReadersRead::envelopes()                      # 11
+Tests\Support\WhatTheReadersRead::envelopes()                      # 16
 ```
 
 `A2` is not in the list: first-run setup is the one exception `N1-R2` allows

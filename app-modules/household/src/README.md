@@ -1,7 +1,7 @@
 # The household surface
 
-What a member of the house sees, which is one screen: what this machine says
-they can ask for, in the words the core wrote it in.
+What a member of the house sees, which is two screens: what this machine says
+they are owed, in the words the core wrote it in, and what they can watch.
 
 The module was empty for a long time and the reason is worth keeping, because it
 is what decides the shape of what is here now. `lemonfiber` minted one token for

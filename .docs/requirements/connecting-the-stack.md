@@ -46,8 +46,8 @@ returns it. Verified in three places rather than inferred from one:
 - `Lemonfiber\Sdk\Contract\Api` declares 34 endpoint constants, and no
   docblock in it names `WiringEnvelope`, `SubstitutionEnvelope` or
   `PluginsEnvelope`.
-- The core's HTTP crate serves 33 routes and its read table dispatches 29
-  kinds. `WIRING` is in neither, and `Kind::Wiring` appears nowhere in it.
+- The core's HTTP crate, `crates/lemonfiber-api`, registers no route for it.
+  Neither `kind::WIRING` nor `Command::Wiring` appears anywhere in it.
 - The core *can* answer it. `Command::Wiring` produces `Outcome::Wiring` and
   the contract publishes the schema, so it is reachable from the command line
   and not over the wire.

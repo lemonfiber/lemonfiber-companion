@@ -38,7 +38,7 @@ They are not shown the machinery, because it is not theirs to operate.
 ## Layout
 
 ```
-app/                    the composition root, and nothing else
+bootstrap/Composition/  the composition root, and nothing else
 app-modules/
   kernel/               ports, values, outcomes — depends on nothing
   design/               EDGE components and theme tokens
@@ -49,8 +49,10 @@ app-modules/
   operator/             navigation and screen composition
   household/            navigation and screen composition
 
-  sdk/                  the only module that names the SDK
+  sdk/                  the only module that calls the SDK
   device/  vault/       the platform, and secure storage
+
+  dx/                   stand-ins for a stack, installed only under require-dev
 ```
 
 Each module declares what kind it is, and that declaration generates the rules

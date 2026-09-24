@@ -36,9 +36,11 @@ app-modules/
   operator/               navigation + screen composition     (N2)
   household/              navigation + screen composition     (N3)
 
-  sdk/                    the only module that names the SDK  (N1-R16)
+  sdk/                    the only module that calls the SDK  (N1-R16)
   device/                 permissions, notifications          (N4)
   vault/                  secure storage, app lock            (N4)
+
+  dx/                     stand-ins for a stack, require-dev only
 ```
 
 Every module declares its kind in its own manifest:
@@ -61,6 +63,7 @@ is the difference between a convention and an invariant: nobody has to remember.
 | `design` | `kernel`, `Native\Mobile` | the SDK, capabilities, surfaces |
 | `surface` | `kernel`, `design`, capabilities, `Native\Mobile` | the SDK, adapters, the other surface |
 | `adapter` | `kernel`, the one package it adapts | capabilities, surfaces, other adapters |
+| `stand-in` | `kernel`, adapters, any outside package | capabilities, design, surfaces |
 
 Two consequences worth stating plainly:
 
@@ -68,10 +71,12 @@ Two consequences worth stating plainly:
 no clock of its own, so a test of it is a unit test whether or not anyone
 intended one.
 
-**`modules/sdk` is the only manifest that requires `lemonfiber/sdk-php`.** N1-R16
-therefore stops being a rule a reviewer enforces and becomes a fact the
+**`modules/sdk` is the only shipped manifest that requires `lemonfiber/sdk-php`.**
+N1-R16 therefore stops being a rule a reviewer enforces and becomes a fact the
 dependency resolver enforces: a surface module that types `Lemonfiber\Sdk` fails
-`composer-dependency-analyser` because its own manifest does not require it.
+`composer-dependency-analyser` because its own manifest does not require it. The
+one other manifest that requires it is `modules/dx`, the stand-in, which the root
+installs under `require-dev` and a release therefore does not contain.
 
 ### How a capability gets data from a stack
 
@@ -265,7 +270,7 @@ are two types, and the mistake stops compiling.
 |---|---|---|
 | E1 | Module kind enforcement | arch, generated from each manifest |
 | E2 | `Api` is the published surface; `Internal` is unreachable | arch |
-| E3 | The SDK is named in exactly one module | composer + arch |
+| E3 | The SDK is named only by the `sdk` adapter and by the stand-in for it | composer + arch |
 | E4 | `Native\*` confined to `design`, `surface`, `device`, `vault` | arch: module kind |
 | E5 | A listener obeys the module kinds, checked in the dispatcher rather than in the imports | test: the booted composition root |
 
@@ -537,7 +542,7 @@ tests/Templates/          Blade, which no analyser reads
 tests/Contract/           one suite per port, run against the adapter and the fake
 tests/Feature/            the composition root
 tests/Guards/             every rule, shown to refuse a violation
-tests/Support/            what the four above share
+tests/Support/            what the five above share
 phpstan/Rules/            the rules that are easier to write than to find
 ```
 
