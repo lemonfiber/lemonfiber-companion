@@ -32,6 +32,7 @@
                  vocabulary nobody else does. --}}
             <native:text>{{ __('health.at_stage', ['stage' => $item->stage]) }}</native:text>
             <native:text>{{ __($item->stageSaid) }}</native:text>
+            <x-operator::gloss :gloss="$this->gloss($item->stage)" />
             <x-operator::note>
                 {{ __('health.stuck_in', ['service' => $item->service]) }}
             </x-operator::note>

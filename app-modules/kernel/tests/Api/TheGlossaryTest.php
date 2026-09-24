@@ -10,6 +10,7 @@ use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\AWord;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\TheGlossary;
 
@@ -53,4 +54,11 @@ it('keeps the words a search finds by name or other name, in order, as a list', 
         ->and(iterator_to_array($found, preserve_keys: true))->toHaveKeys([0, 1])
         ->and(theWordsIn(aSmallGlossary()->matching(LookingFor::text('sharing'))))->toBe(['seeding'])
         ->and(aSmallGlossary()->matching(LookingFor::text('nothing like it')))->toHaveCount(0);
+});
+
+it('finds the word that explains one drawn, by its name or another it goes by, and nothing it does not carry', function (): void {
+    expect(theWordsIn(aSmallGlossary()->explaining(AWordInUse::named('PIN'))))->toBe(['pin'])
+        ->and(theWordsIn(aSmallGlossary()->explaining(AWordInUse::named('Sharing'))))->toBe(['seeding'])
+        ->and(aSmallGlossary()->explaining(AWordInUse::named('seed')))->toHaveCount(0)
+        ->and(iterator_to_array(aSmallGlossary()->explaining(AWordInUse::named('stack')), preserve_keys: true))->toHaveKeys([0]);
 });

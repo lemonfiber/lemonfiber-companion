@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Stacks\Api;
 
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
@@ -153,6 +154,14 @@ enum AStacksScreen: string
     /** What lemonfiber's words mean. */
     case Words = '/stacks/{stack}/words';
 
+    /**
+     * What one of lemonfiber's words means, opened where another screen drew it.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service and
+     * {@see self::Doing} with a service or a form; here it is a word.
+     */
+    case WordAbout = '/stacks/{stack}/words/{service}';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
@@ -217,6 +226,21 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $form->named()], $this->value);
+    }
+
+    /**
+     * This screen's path, for one of lemonfiber's words on one machine.
+     *
+     * A third filling of the segment, typed for the reason
+     * {@see self::forTheStacksForm()} gives.
+     */
+    public function forTheStacksWord(StackId $stack, AWordInUse $word): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $word->said()], $this->value);
     }
 
     /**

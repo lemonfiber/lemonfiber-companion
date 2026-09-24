@@ -225,6 +225,7 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);
+            Router::native(AStacksScreen::WordAbout->value, WhatTheWordsMean::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

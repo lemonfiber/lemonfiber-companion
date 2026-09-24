@@ -157,6 +157,7 @@ return [
         'search_label' => 'Zoek een woord',
         'search_placeholder' => 'Een woord, of hoe een andere app het noemt',
         'also_called' => 'Ook wel: :names',
+        'in_place' => ':word: :short',
         'more' => 'Meer over ‘:word’',
         'less' => 'Minder over ‘:word’',
         'nothing_matched' => 'Geen woord, en niets waarmee een woord ook wordt aangeduid, past daarbij',

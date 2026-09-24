@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -83,5 +84,11 @@ final readonly class WhatItKeepsOfItself
     public function words(): string
     {
         return AStacksScreen::Words->forTheStack($this->stack);
+    }
+
+    /** What one of lemonfiber's words means, opened on its own. */
+    public function wordAbout(AWordInUse $word): string
+    {
+        return AStacksScreen::WordAbout->forTheStacksWord($this->stack, $word);
     }
 }

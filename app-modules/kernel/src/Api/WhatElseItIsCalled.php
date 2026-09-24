@@ -57,6 +57,12 @@ final readonly class WhatElseItIsCalled implements Countable, IteratorAggregate
         return array_any($this->names, static fn(string $name): bool => mb_stripos($name, $looking->typed()) !== false);
     }
 
+    /** Whether one of these names is that word, whatever the case. */
+    public function include(AWordInUse $word): bool
+    {
+        return array_any($this->names, static fn(string $name): bool => $word->is(AWordInUse::named($name)));
+    }
+
     /** @return Traversable<int, string> */
     public function getIterator(): Traversable
     {

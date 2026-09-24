@@ -203,6 +203,7 @@ return [
         'search_label' => 'Find a word',
         'search_placeholder' => 'A word, or what another app calls it',
         'also_called' => 'Also called: :names',
+        'in_place' => ':word: :short',
         'more' => 'More about ‘:word’',
         'less' => 'Less about ‘:word’',
         'nothing_matched' => 'No word, and nothing else a word is called, matches that',

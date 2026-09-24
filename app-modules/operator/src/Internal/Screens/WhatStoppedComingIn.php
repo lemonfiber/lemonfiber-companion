@@ -11,6 +11,7 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAStallReads;
+use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -66,6 +68,7 @@ use function view;
 final class WhatStoppedComingIn extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use ShowsWhatItsWordsMean;
 
     /**
      * What came back, once the frame has asked.
@@ -82,6 +85,7 @@ final class WhatStoppedComingIn extends NativeComponent
         private readonly Stalling $stalling,
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
+        private readonly Explaining $explaining,
     ) {}
 
     /**
@@ -156,6 +160,12 @@ final class WhatStoppedComingIn extends NativeComponent
     public function answer(): WhatStoppedTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /** Where this screen's words are explained from. */
+    protected function explaining(): Explaining
+    {
+        return $this->explaining;
     }
 
     /**

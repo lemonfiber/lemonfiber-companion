@@ -69,6 +69,12 @@ final readonly class AWord
         return $this->alsoCalled;
     }
 
+    /** Whether this is the word a screen drew, by its own name or another it goes by. */
+    public function explains(AWordInUse $word): bool
+    {
+        return $word->is(AWordInUse::named($this->word)) || $this->alsoCalled->include($word);
+    }
+
     /**
      * Whether this word, or anything else it is called, holds what somebody is looking for.
      *

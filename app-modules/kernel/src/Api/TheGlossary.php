@@ -49,6 +49,15 @@ final readonly class TheGlossary implements Countable, IteratorAggregate
         )));
     }
 
+    /** The words that explain a word a screen drew: none where the glossary does not carry it. */
+    public function explaining(AWordInUse $word): self
+    {
+        return new self(array_values(array_filter(
+            $this->words,
+            static fn(AWord $entry): bool => $entry->explains($word),
+        )));
+    }
+
     /** @return Traversable<int, AWord> */
     public function getIterator(): Traversable
     {

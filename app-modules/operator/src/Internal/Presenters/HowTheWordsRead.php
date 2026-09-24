@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use function implode;
 
 use Modules\Kernel\Api\AWord;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheGlossary;
@@ -62,7 +63,7 @@ final readonly class HowTheWordsRead
             short: $word->short(),
             deep: $word->deep(),
             alsoCalled: implode(', ', $names),
-            isOpen: $word->deep() !== '' && $word->word() === $open,
+            isOpen: $word->deep() !== '' && $open !== '' && $word->explains(AWordInUse::named($open)),
         );
     }
 }

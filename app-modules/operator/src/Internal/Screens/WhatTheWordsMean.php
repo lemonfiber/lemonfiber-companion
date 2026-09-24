@@ -26,6 +26,7 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function sprintf;
+use function trim;
 use function view;
 
 /**
@@ -59,7 +60,7 @@ final class WhatTheWordsMean extends NativeComponent
     /** The glossary, once the frame has asked. */
     public ?TheGlossary $held = null;
 
-    /** The word whose longer gloss is open, or empty. By name, so a search does not move it to another word. */
+    /** The word whose longer gloss is open, by any name it goes by, or empty. By name, so a search does not move it to another word. */
     public string $open = '';
 
     public function __construct(
@@ -67,6 +68,22 @@ final class WhatTheWordsMean extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
     ) {}
+
+    /**
+     * Open on one word, where another screen sent somebody to it.
+     *
+     * The search is set to the word as well, so it is the one shown rather
+     * than one of many somebody has to scroll to.
+     */
+    public function mount(string $service = ''): void
+    {
+        if (trim($service) === '') {
+            return;
+        }
+
+        $this->looking = $service;
+        $this->open = $service;
+    }
 
     /**
      * The stack this screen is about.
@@ -93,7 +110,7 @@ final class WhatTheWordsMean extends NativeComponent
     {
         foreach ($this->answer()->words as $index => $word) {
             if (sprintf('%d', $index) === $place) {
-                $this->open = $this->open === $word->word ? '' : $word->word;
+                $this->open = $word->isOpen ? '' : $word->word;
             }
         }
     }

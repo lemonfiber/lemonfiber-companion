@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AWord;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -189,4 +190,35 @@ it('the way here and the way back are routes', function (): void {
 
 it('renders its own view', function (): void {
     expect(theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()))->render()->name())->toBe('operator::what-the-words-mean');
+});
+
+it('opens on the word another screen sent somebody to, by any name it goes by, and closes it on a tap', function (): void {
+    $glossary = TheGlossary::of(
+        AWord::explained('grab', 'Sending a release to the download client', 'The indexer found it; the client has it now.', 'snatch'),
+        AWord::explained('pin', 'The version a service is held at', ''),
+    );
+    $screen = theWordsScreen(AStackThatExplainsItsWords::with($glossary));
+    $screen->mount('snatch');
+
+    expect($screen->looking)->toBe('snatch')
+        ->and($screen->answer()->words)->toHaveCount(1)
+        ->and($screen->answer()->words[0]->isOpen)->toBeTrue();
+
+    $screen->toggle('0');
+
+    expect($screen->answer()->words[0]->isOpen)->toBeFalse();
+});
+
+it('opens on no word where the route names none', function (): void {
+    $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
+    $screen->mount(' ');
+
+    expect([$screen->looking, $screen->open])->toBe(['', ''])
+        ->and($screen->answer()->words)->toHaveCount(3);
+});
+
+it('the way to one word is a route to this screen', function (): void {
+    $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
+
+    expect(NativeRouter::resolve($screen->goes()->ofItself()->wordAbout(AWordInUse::named('pin'))))->not->toBeNull();
 });
