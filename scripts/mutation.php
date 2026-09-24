@@ -29,12 +29,11 @@ declare(strict_types=1);
  *
  * **Two arguments, both for CI.** `--list` prints the shards as a JSON array,
  * which is what a workflow matrix reads; `--shard=<id>` runs one of them. A
- * shard is a run of files cut to about the same weight — lines of code — out
- * of every tree at one floor, so one large tree is spread over several runners
- * and several small ones share one, and the slowest runner is about as long as
- * the others. It is the one gate where the work is genuinely separable, because
- * a floor of 100 admits no offsetting between files and each is already judged
- * alone.
+ * shard is a run of files cut to about the same weight — the measured cost of
+ * mutating their lines of code — out of every tree at one floor, so one large
+ * tree is spread over several runners and several small ones share one. It is
+ * the one gate where the work is genuinely separable, because a floor of 100
+ * admits no offsetting between files and each is already judged alone.
  *
  * Neither changes what is mutated locally: `composer test:mutation` with no
  * arguments is the whole of it, in one process, which is what somebody running
@@ -64,10 +63,29 @@ use Tests\Support\MeasuredTree;
 use Tests\Support\OurCode;
 use Tests\Support\Tree;
 
-// The weight of one shard, in lines of code (`linesOfCode()`). Every shard pays
-// a checkout, an install and one run of the suite before its first mutant, so
-// a smaller weight buys a shorter slowest runner with more of those.
-const LINES_PER_SHARD = 1400;
+// What a line of code costs to mutate on a runner, in seconds, by where it is;
+// the longest matching path wins. A line in a screen or a presenter costs more
+// than one in a value object, because the tests that judge its mutants render
+// the screen. The figures are CI mutation seconds over lines mutated.
+//
+// A path with no entry costs SECONDS_PER_LINE_ELSEWHERE. These numbers decide
+// only which runner a file goes to, never whether its mutants are run.
+const SECONDS_PER_LINE = [
+    'app-modules/household/src' => 0.51,
+    'app-modules/kernel/src' => 0.20,
+    'app-modules/operator/src' => 0.09,
+    'app-modules/operator/src/Internal/Presenters' => 0.43,
+    'app-modules/operator/src/Internal/Screens' => 0.36,
+    'app-modules/sdk/src' => 0.14,
+    'bridge/src' => 0.26,
+];
+
+const SECONDS_PER_LINE_ELSEWHERE = 0.20;
+
+// The mutation time one shard is cut to. Every shard also pays a checkout, an
+// install and one run of the suite before its first mutant, so a smaller share
+// buys a shorter slowest runner with more of those.
+const SECONDS_PER_SHARD = 210;
 
 $root = dirname(__DIR__);
 
@@ -237,8 +255,9 @@ exit($failed === 0 ? 0 : 1);
 /**
  * The runners the gate is spread over, keyed by the id `--shard=` names.
  *
- * Every file a floor mutates is weighed by its lines of code and the files are
- * cut, in path order, into runs of about {@see LINES_PER_SHARD} lines each. A
+ * Every file a floor mutates is weighed by what its lines cost to mutate, and
+ * the files are cut, in path order, into runs of about {@see SECONDS_PER_SHARD}
+ * seconds each. A
  * floor of 100 admits no offsetting, so a file judged on one runner is judged
  * exactly as it would be beside every other file at that floor: the cut decides
  * where a mutant runs, not whether it has to be killed. Files of different
@@ -281,8 +300,8 @@ function shardsOf(array $byFloor, array $held, array $leftOut): array
 
 /**
  * Every file under these trees, relative to the repository and in path order,
- * each with its lines of code. A file a group holds is left out: its shard
- * is the one for held paths.
+ * each with the seconds its lines cost to mutate. A file a group holds is left
+ * out: its shard is the one for held paths.
  *
  * `OurCode::sourceFiles()` is the list the rules read, sorted there. The order
  * is what lets every runner cut the same shards: a directory listing comes
@@ -291,7 +310,7 @@ function shardsOf(array $byFloor, array $held, array $leftOut): array
  *
  * @param  list<string>       $trees
  * @param  list<string>       $leftOut
- * @return array<string, int>
+ * @return array<string, float>
  */
 function filesToMutate(array $trees, array $leftOut): array
 {
@@ -302,7 +321,7 @@ function filesToMutate(array $trees, array $leftOut): array
         $relative = mb_substr($file, mb_strlen($root));
 
         if (under($relative, $trees) && ! under($relative, $leftOut)) {
-            $files[$relative] = linesOfCode($file);
+            $files[$relative] = linesOfCode($file) * secondsPerLine($relative);
         }
     }
 
@@ -320,13 +339,32 @@ function under(string $file, array $paths): bool
 }
 
 /**
+ * What a line of this file costs to mutate: the entry in SECONDS_PER_LINE for
+ * the longest path that holds it, or SECONDS_PER_LINE_ELSEWHERE.
+ */
+function secondsPerLine(string $file): float
+{
+    $cost = SECONDS_PER_LINE_ELSEWHERE;
+    $matched = '';
+
+    foreach (SECONDS_PER_LINE as $path => $seconds) {
+        if (under($file, [$path]) && mb_strlen($path) > mb_strlen($matched)) {
+            $cost = $seconds;
+            $matched = $path;
+        }
+    }
+
+    return $cost;
+}
+
+/**
  * The lines of a PHP file that hold code: a line with at least one token that
  * is not whitespace, a comment or the opening tag. A line holding only a
  * brace or a semicolon counts for nothing: `token_get_all()` gives those
  * tokens as bare strings, with no line number.
  *
- * It is the weight the shards are balanced by, and only that. It does not
- * decide what is mutated.
+ * With `secondsPerLine()` it is the weight the shards are balanced by, and only
+ * that. It does not decide what is mutated.
  */
 function linesOfCode(string $file): int
 {
@@ -344,27 +382,27 @@ function linesOfCode(string $file): int
 
 /**
  * Files, in the order given, cut into consecutive runs of about
- * {@see LINES_PER_SHARD} lines of code.
+ * {@see SECONDS_PER_SHARD} seconds of mutation each.
  *
  * The number of runs is the total over that size, rounded up, and each cut
  * falls on the first file that takes its run past an equal share of the total.
  * No run is left empty.
  *
- * @param  array<string, int>       $files
- * @return list<array<string, int>>
+ * @param  array<string, float>       $files
+ * @return list<array<string, float>>
  */
 function cutIntoRuns(array $files): array
 {
     $total = array_sum($files);
-    $count = max(1, (int) ceil($total / LINES_PER_SHARD));
+    $count = max(1, (int) ceil($total / SECONDS_PER_SHARD));
     $share = $total / $count;
 
     $runs = [[]];
     $weighed = 0;
 
-    foreach ($files as $file => $lines) {
-        $runs[array_key_last($runs)][$file] = $lines;
-        $weighed += $lines;
+    foreach ($files as $file => $seconds) {
+        $runs[array_key_last($runs)][$file] = $seconds;
+        $weighed += $seconds;
 
         if (count($runs) < $count && $weighed >= $share * count($runs)) {
             $runs[] = [];

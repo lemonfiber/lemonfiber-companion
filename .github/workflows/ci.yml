@@ -448,13 +448,13 @@ jobs:
   # A runner per shard, because this is the one gate whose work genuinely
   # separates: a floor of 100 admits no offsetting between files, so each is
   # already judged alone. `scripts/mutation.php` cuts the files of every tree
-  # into shards of about the same lines of code, so the largest tree is spread
-  # over several runners and the smallest share one; the wall clock is the
-  # slowest shard, and no shard is much slower than the rest.
+  # into shards of about the same measured mutation time, so the largest tree
+  # is spread over several runners and the smallest share one; the wall clock
+  # is the slowest shard.
   #
   # `fail-fast: false` because the point of a shard is to learn about all of
-  # them: cancelling nine runners over one escaped mutant means a second push
-  # to find the next one.
+  # them: cancelling every other runner over one escaped mutant means a second
+  # push to find the next one.
   mutation:
     name: mutation (${{ matrix.shard.label }})
     needs: [tests, mutation-scope]
