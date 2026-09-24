@@ -103,7 +103,10 @@ jobs:
           changed="$(git diff --name-only "${BASE}" HEAD)"
           # Anything that is not documentation is treated as code. The list is
           # deliberately short: a new kind of file defaults to running the gates.
-          if printf '%s\n' "${changed}" | grep -qvE '^(\.docs/|[^/]*\.md$|LICENSE$)'; then
+          # A Markdown file is documentation wherever it sits, a module's
+          # README as much as the root's; the one suite that reads Markdown is
+          # Arch, and `rules` runs it on every change.
+          if printf '%s\n' "${changed}" | grep -qvE '^(\.docs/.*|.*\.md|LICENSE)$'; then
             echo "code=true" >> "$GITHUB_OUTPUT"
           else
             echo "code=false" >> "$GITHUB_OUTPUT"
@@ -239,22 +242,10 @@ jobs:
   # reviewer sees "this crosses a module boundary" rather than a coverage number.
   rules:
     name: rules
-    needs: scope
-    # `scope` deciding "no code changed" is a skip, and the gates are scoped so
-    # that a documentation change does not start a PHP toolchain. `scope`
-    # *failing* produces the same skip — a checkout that broke or a runner that
-    # died leaves no output, and no output is not a "no".
-    #
-    # Either way that is wrong. If a skipped required check satisfies branch
-    # protection, a pull request merges with none of these run and nothing red.
-    # If it does not, the check never reports and the pull request is blocked
-    # forever with nothing anywhere naming the cause. The job's own comments say
-    # which way it means to fail — "No usable base commit, so every gate runs",
-    # "a new kind of file defaults to running the gates" — and its own failure
-    # was the one path that did the opposite.
-    #
-    # So the condition asks the result as well as the output.
-    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
+    # Every change, documentation included. `tests/Arch` reads ARCHITECTURE.md
+    # and `.docs/requirements/` against the code, so a documentation change is
+    # exactly the change that can break it — and at about a minute it costs
+    # less than any condition would save.
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
