@@ -5,15 +5,15 @@
 # `main` requires has passed, and the reusable reads this same list back out of
 # this file to know what it must see finish first — so a workflow missing from it
 # is a workflow the gate never waits for and never re-evaluates on. `main`
-# requires twenty-two checks here and they come from four workflows:
+# requires twenty-two checks here and they come from three workflows:
 #
 #   ci         spec-check / spec-check, dco / dco, attribution / attribution,
 #              commitlint / commitlint, hygiene / {actionlint, invite, links,
 #              markdown, pins, shared-files, typos},
 #              security / {gitleaks, osv-scanner},
 #              checks, rules, the rules refuse violations,
-#              tests and coverage, mutation testing
-#   sonar      gate / gate, sonarcloud
+#              tests and coverage, mutation testing,
+#              gate / gate, sonarcloud
 #   sdk-drift  sdk-drift
 #   codeql     alerts / alerts
 #
@@ -35,7 +35,7 @@
 #
 # Add a workflow to branch protection and it belongs here in the same change.
 #
-# All four also run on `merge_group`, and their merge-group runs reach this gate
+# All three also run on `merge_group`, and their merge-group runs reach this gate
 # too. Nothing here needs to know that: the reusable asks which pull request the
 # head commit belongs to, a merge group's head is a commit the queue built that
 # belongs to none, and it says so and stops. The flag is about a pull request
@@ -50,7 +50,7 @@ on:
   # with nothing afterwards to notice the pull request became mergeable. That day
   # has since arrived: `alerts / alerts` is required, and the list was already
   # right, which is the whole argument for naming a gating workflow early.
-    workflows: [ci, sonar, sdk-drift, codeql]
+    workflows: [ci, sdk-drift, codeql]
     types: [completed]
   pull_request_review:
     types: [submitted]
