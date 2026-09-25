@@ -227,3 +227,12 @@ it('keys each sentence under the walkthrough, by the word the stack writes', fun
         ->and(WhatToDoNext::ClientApps->saidOnTheScreen())->toBe('health.walkthrough.next.client-apps')
         ->and(WhyTheWalkthroughStopped::NoneMetThePreset->saidOnTheScreen())->toBe('health.walkthrough.stopped.none-met-the-preset');
 });
+
+it('numbers what each list holds from nought, whatever it was handed under', function (): void {
+    $line = ALineItSaid::withoutDetail(WalkthroughStep::Available, 'Available');
+
+    expect(iterator_to_array(TheLinesItSaid::of(...['x' => $line]), preserve_keys: true))->toBe([$line])
+        ->and(iterator_to_array(WhatTheServicesWereSaying::of(...['x' => 'a log line']), preserve_keys: true))->toBe(['a log line'])
+        ->and(iterator_to_array(WhatComesNext::of(...['x' => WhatToDoNext::Household]), preserve_keys: true))->toBe([WhatToDoNext::Household])
+        ->and(iterator_to_array(WhatCouldBeWalkedInstead::of(...['x' => 'Sintel']), preserve_keys: true))->toBe(['Sintel']);
+});

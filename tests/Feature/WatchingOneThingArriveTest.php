@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\TheLinesItSaid;
@@ -561,4 +562,13 @@ it('is where it says it is', function (): void {
 
     expect(NativeRouter::resolve($screen->goes()->ofItself()->walkthrough()))->toHaveKey('params.stack', theStackAWalkRunsOn()->id()->stored())
         ->and($screen->goes()->ofItself()->walkthrough())->toBe(sprintf('/stacks/%s/walkthrough', theStackAWalkRunsOn()->id()->stored()));
+});
+
+it('refuses a route parameter that is not text', function (): void {
+    // A parameter arrives as `mixed`, because the navigation stack's own
+    // parameter array is untyped. Anything that is not a string names no stack.
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
