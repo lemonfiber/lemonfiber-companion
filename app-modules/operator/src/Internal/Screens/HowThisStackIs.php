@@ -35,6 +35,7 @@ use Modules\Operator\Internal\Presenters\HowAStackReads;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
+use Modules\Operator\Internal\WhatItListensWith;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -336,6 +337,12 @@ final class HowThisStackIs extends NativeComponent
     public function answer(): WhatTheStackTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /** The ports the one line is listened for with, which only this screen holds. */
+    private function listensWith(): WhatItListensWith
+    {
+        return new WhatItListensWith($this->hearing, $this->clock, $this->capture);
     }
 
     /**
