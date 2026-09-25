@@ -74,13 +74,37 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
-      code: ${{ steps.diff.outputs.code }}
+      code: ${{ steps.proved.outputs.cache-hit == 'true' && 'false' || steps.diff.outputs.code }}
+      tree: ${{ steps.tree.outputs.tree }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
+      # The tree these gates would test. On a pull request that is the branch
+      # merged onto its base, so a rebase that leaves the result byte for byte
+      # as it was — a stacked branch whose base was squash-merged, a base that
+      # moved only where the branch already agreed — names the same tree. A
+      # tree every PHP gate already passed on is not tested again: the gates
+      # take the path a documentation change takes, and `mutation testing`
+      # and the SonarCloud gate read that as a pass. The proof is recorded by
+      # `proved-tree` below, only once every gate passed on it, and a branch
+      # can read its own proofs and `main`'s, never another branch's.
+      - id: tree
+        run: echo "tree=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
+      - id: proved
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .ci-proved
+          key: ci-proved-tree-${{ steps.tree.outputs.tree }}
+          lookup-only: true
+      - if: steps.proved.outputs.cache-hit == 'true'
+        env:
+          TREE: ${{ steps.tree.outputs.tree }}
+        run: |
+          echo "Every PHP gate already passed on tree ${TREE}; they are not run again." | tee -a "$GITHUB_STEP_SUMMARY"
       - id: diff
+        if: steps.proved.outputs.cache-hit != 'true'
         env:
           # What this branch is measured against, named per event rather than
           # inferred. A merge group's base is the tip the batch would land on,
@@ -876,3 +900,24 @@ jobs:
       allowed-open: 0
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
+
+  # Records that every PHP gate passed on this tree, so a later run on the same
+  # tree — see `scope` — does not test it again. Only where the gates actually
+  # ran and every one of them passed: a skipped gate proved nothing.
+  proved-tree:
+    name: record the proven tree
+    needs: [scope, guards, checks, tests, mutation-gate, sonar]
+    if: ${{ !cancelled() && needs.scope.outputs.code == 'true' && needs.guards.result == 'success' && needs.checks.result == 'success' && needs.tests.result == 'success' && needs.mutation-gate.result == 'success' && (needs.sonar.result == 'success' || needs.sonar.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          TREE: ${{ needs.scope.outputs.tree }}
+        run: |
+          mkdir -p .ci-proved
+          printf '%s\n' "${TREE}" > .ci-proved/tree
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .ci-proved
+          key: ci-proved-tree-${{ needs.scope.outputs.tree }}
+
