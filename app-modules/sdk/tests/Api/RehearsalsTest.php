@@ -121,6 +121,11 @@ it('refuses a payload that is not a table, or a part that is absent or not what 
     [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => 700]], 'unestimated'],
 ]);
 
+it('refuses the first service left out by its position, not as a list that is missing', function (): void {
+    expect(fn(): WhatStartingItWouldComeTo => Rehearsals::in(previewSaying([...aRehearsalInFull(), 'filtered' => ['nzbget']])))
+        ->toThrow(RehearsalIsUnreadable::class, 'Entry 0 of the preview\'s `filtered`');
+});
+
 it('refuses an entry that is not what the contract says, naming its list and position', function (mixed $data, string $field): void {
     expect(fn(): WhatStartingItWouldComeTo => Rehearsals::in(previewSaying($data)))
         ->toThrow(RehearsalIsUnreadable::class, sprintf('Entry 1 of the preview\'s `%s`', $field));
@@ -132,6 +137,7 @@ it('refuses an entry that is not what the contract says, naming its list and pos
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), array_diff_key(aServiceItWouldLeaveOut(), ['needs' => true])]], 'filtered'],
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['name' => ' '])]], 'filtered'],
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['id' => ''])]], 'filtered'],
+    [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['id' => ' '])]], 'filtered'],
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['needs' => 'money'])]], 'filtered'],
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['needs' => 7])]], 'filtered'],
     [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['forms' => [' ']])]], 'filtered'],

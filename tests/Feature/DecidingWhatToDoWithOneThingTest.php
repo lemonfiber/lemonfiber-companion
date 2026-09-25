@@ -6,10 +6,13 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AServiceLeftOut;
+use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Nonce;
@@ -23,6 +26,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\WhatItWouldNeed;
+use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\Whose;
@@ -547,6 +551,9 @@ it('a rehearsal that could not be had says what stood in the way, and lets go of
 
     expect($unanswered->rehearsal()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($unanswered->rehearsal()->wouldStart)->toBe([])
+        ->and($unanswered->rehearsal()->leftOut)->toBe([])
+        ->and($unanswered->rehearsal()->estimatedMib)->toBeNull()
+        ->and($unanswered->rehearsal()->unestimated)->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($unanswered)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
         ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
 });
@@ -554,5 +561,22 @@ it('a rehearsal that could not be had says what stood in the way, and lets go of
 it('a rehearsal on a device holding no session for the stack says so', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library', signedIn: false);
 
-    expect($screen->rehearsal()->went->isSignedIn)->toBeFalse();
+    expect($screen->rehearsal()->went->isSignedIn)->toBeFalse()
+        ->and($screen->rehearsal()->wouldStart)->toBe([])
+        ->and($screen->rehearsal()->leftOut)->toBe([])
+        ->and($screen->rehearsal()->estimatedMib)->toBeNull()
+        ->and($screen->rehearsal()->unestimated)->toBe([]);
+});
+
+it('says what a service that ended exited with', function (): void {
+    $ended = Daemons::of(
+        HowTheStackIsRunning::Degraded,
+        Forms::these(Form::called('library')),
+        WhatAMachineRuns::whatTheVerbsCost(),
+        Daemon::thatExited('Sonarr', ServiceId::called('sonarr'), HowAServiceRuns::Stopped, HowMuchItMatters::Important, WhatLeansOnIt::nothing(), 137),
+    );
+    $screen = theThingScreen(AStackThatSupervises::with($ended));
+
+    expect($screen->thing()->service?->exited)->toBe('137')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.it_exited', ['code' => '137']));
 });

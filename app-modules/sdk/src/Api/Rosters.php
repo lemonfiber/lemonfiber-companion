@@ -85,9 +85,8 @@ final readonly class Rosters
             ),
             WhatWasLeftOut::in(
                 self::required($data, WireField::Filtered),
-                static fn(int $position): Throwable => $position < 0
-                    ? RosterIsUnreadable::missing(WireField::Filtered)
-                    : RosterIsUnreadable::leftOut($position),
+                static fn(): Throwable => RosterIsUnreadable::missing(WireField::Filtered),
+                static fn(int $position): Throwable => RosterIsUnreadable::leftOut($position),
             ),
         );
     }

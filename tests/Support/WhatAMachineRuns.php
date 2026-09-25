@@ -91,7 +91,7 @@ final readonly class WhatAMachineRuns
      * Part of a stack running on purpose: `library` and `hunt` asked for,
      * Jellyfin running for both, Sonarr for `hunt`, and qBittorrent left out
      * of `hunt` for want of torrent credentials, which the stack also lists
-     * among the services as absent.
+     * among the services as absent, between the two it runs.
      */
     public static function partOfItOnPurpose(): Daemons
     {
@@ -100,8 +100,8 @@ final readonly class WhatAMachineRuns
             Forms::these(Form::called('library'), Form::called('hunt'), Form::called('full')),
             self::whatTheVerbsCost(),
             self::aService('jellyfin')->broughtInBy(Forms::these(Form::called('library'), Form::called('hunt'))),
-            self::aService('sonarr')->broughtInBy(Forms::these(Form::called('hunt'))),
             self::aService('qbittorrent', HowAServiceRuns::Absent),
+            self::aService('sonarr')->broughtInBy(Forms::these(Form::called('hunt'))),
         )->asked(
             Forms::these(Form::called('library'), Form::called('hunt')),
             TheServicesLeftOut::of(AServiceLeftOut::needing(

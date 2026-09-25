@@ -55,9 +55,8 @@ final readonly class Rehearsals
             self::services($data, WireField::Services),
             WhatWasLeftOut::in(
                 $data[WireField::Filtered->value],
-                static fn(int $position): Throwable => $position < 0
-                    ? RehearsalIsUnreadable::missing(WireField::Filtered)
-                    : RehearsalIsUnreadable::entry(WireField::Filtered, $position),
+                static fn(): Throwable => RehearsalIsUnreadable::missing(WireField::Filtered),
+                static fn(int $position): Throwable => RehearsalIsUnreadable::entry(WireField::Filtered, $position),
             ),
             self::footprint($data),
         );

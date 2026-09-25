@@ -36,13 +36,14 @@ final readonly class WhatWasLeftOut
     /**
      * Every service left out, in the stack's order.
      *
-     * @param mixed                   $listed  the `filtered` list, as it arrived
-     * @param Closure(int): Throwable $refused the refusal for the entry at a position, or the list itself at `-1`
+     * @param mixed                   $listed   the `filtered` list, as it arrived
+     * @param Closure(): Throwable    $unlisted the refusal where it is not a list
+     * @param Closure(int): Throwable $refused  the refusal for the entry at a position
      */
-    public static function in(mixed $listed, Closure $refused): TheServicesLeftOut
+    public static function in(mixed $listed, Closure $unlisted, Closure $refused): TheServicesLeftOut
     {
         if (! is_array($listed) || ! array_is_list($listed)) {
-            throw $refused(-1);
+            throw $unlisted();
         }
 
         $leftOut = [];

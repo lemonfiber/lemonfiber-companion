@@ -29,12 +29,12 @@ final readonly class HowARehearsalReads
     /** Asking for it met this instead. */
     public function met(Obstacle $why): WhatStartingItWouldShow
     {
-        return new WhatStartingItWouldShow(HowTheReadingWent::somethingStopped($why), [], [], 0, []);
+        return new WhatStartingItWouldShow(HowTheReadingWent::somethingStopped($why), [], [], null, []);
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): WhatStartingItWouldShow
     {
-        return new WhatStartingItWouldShow(HowTheReadingWent::theSessionEnded(), [], [], 0, []);
+        return new WhatStartingItWouldShow(HowTheReadingWent::theSessionEnded(), [], [], null, []);
     }
 }
