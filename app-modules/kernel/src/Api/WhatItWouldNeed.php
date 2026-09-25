@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function sprintf;
 
 /**
- * What a profile left out of a start would have needed, in the stack's words.
+ * What a service left out of a form would have needed, in the stack's words.
  *
  * The reason a service is filtered rather than failed: a form's profiles are
  * intersected with what the operator configured, so a machine with no torrent

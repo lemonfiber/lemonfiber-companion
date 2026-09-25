@@ -72,7 +72,7 @@
         <native:text>{{ __('health.a_whole_form') }}</native:text>
 
         {{-- What starting it would come to, before the verbs that start it,
-             and labelled as a rehearsal: nothing below has started. A profile
+             and labelled as a rehearsal: nothing below has started. A service
              left out says what it would need, so a service filtered on
              purpose never reads as one that failed. --}}
         <x-operator::emphasis>{{ __('health.rehearsal.heading') }}</x-operator::emphasis>
@@ -90,13 +90,23 @@
                 <x-operator::note>{{ __('health.rehearsal.would_start_nothing') }}</x-operator::note>
             @endforelse
 
-            @forelse ($this->rehearsal()->leftOut as $profile)
+            @forelse ($this->rehearsal()->leftOut as $left)
                 <x-operator::note>
-                    {{ __('health.rehearsal.left_out', ['profile' => $profile->profile, 'needs' => __($profile->needsSaid)]) }}
+                    {{ __('health.rehearsal.left_out', ['name' => $left->name, 'needs' => __($left->needsSaid)]) }}
                 </x-operator::note>
             @empty
                 <x-operator::note>{{ __('health.rehearsal.nothing_left_out') }}</x-operator::note>
             @endforelse
+
+            {{-- The stack's estimate, said as one, and the services it could
+                 not estimate, so a short sum reads as short. --}}
+            <x-operator::note>{{ __('health.rehearsal.estimate', ['mib' => $this->rehearsal()->estimatedMib]) }}</x-operator::note>
+
+            @if ($this->rehearsal()->unestimated !== [])
+                <x-operator::note>
+                    {{ __('health.rehearsal.unestimated', ['services' => implode(', ', $this->rehearsal()->unestimated)]) }}
+                </x-operator::note>
+            @endif
         @endif
     @else
         <native:text>{{ __($this->thing()->service->runsSaid) }}</native:text>

@@ -8,13 +8,13 @@ use InvalidArgumentException;
 
 use function sprintf;
 
-/** A rehearsal of a start arrived with a field blank that says what it is about. */
+/** A form's rehearsal, or what it left out, arrived with a field that cannot be. */
 final class TheRehearsalSaysNothing extends InvalidArgumentException
 {
     public static function about(string $field): self
     {
         return new self(sprintf(
-            'A rehearsal of a start arrived with its `%s` blank, and a profile named as nothing cannot be said to be left out.',
+            'What a form would start or left out arrived with its `%s` blank or below zero, and cannot be drawn as the stack meant it.',
             $field,
         ));
     }

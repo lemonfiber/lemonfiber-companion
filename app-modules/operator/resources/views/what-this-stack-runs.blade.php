@@ -7,6 +7,15 @@
          reads the answer before the list. --}}
     <x-operator::emphasis>{{ __($this->answer()->overall) }}</x-operator::emphasis>
 
+    {{-- The forms asked for, before the services they expand to: a stack
+         running part of itself is the operator's intent, and this says which
+         part. --}}
+    @if ($this->answer()->active !== [])
+        <native:text>{{ __('health.forms_running', ['forms' => implode(', ', $this->answer()->active)]) }}</native:text>
+    @else
+        <native:text>{{ __('health.no_form_running') }}</native:text>
+    @endif
+
     @if ($this->answer()->isSettling)
         {{-- Something here becomes something else on its own, and
              this says how often the screen looks. A screen that refreshes
@@ -28,6 +37,14 @@
         >
             <x-operator::emphasis>{{ $service->name }}</x-operator::emphasis>
             <native:text>{{ __($service->runsSaid) }}</native:text>
+
+            {{-- What brought it, every form that did, so a service is never
+                 shown without why it is there. --}}
+            @if ($service->runsFor !== [])
+                <x-operator::note>{{ __('health.runs_for', ['forms' => implode(', ', $service->runsFor)]) }}</x-operator::note>
+            @else
+                <x-operator::note>{{ __('health.runs_for_no_form') }}</x-operator::note>
+            @endif
         </native:pressable>
 
         @unless ($loop->last)
@@ -38,6 +55,18 @@
              running is the state the operator came here to change, and
              saying so is what tells it apart from the obstacle branch. --}}
         <x-operator::emphasis>{{ __('health.nothing_is_running') }}</x-operator::emphasis>
+    @endforelse
+
+    {{-- Filtered, not failed: each service the forms asked for and the
+         stack left out, with what it would need. --}}
+    <x-operator::emphasis>{{ __('health.left_out_heading') }}</x-operator::emphasis>
+
+    @forelse ($this->answer()->leftOut as $left)
+        <x-operator::note>
+            {{ __('health.left_out', ['name' => $left->name, 'forms' => implode(', ', $left->askedBy), 'needs' => __($left->needsSaid)]) }}
+        </x-operator::note>
+    @empty
+        <x-operator::note>{{ __('health.nothing_left_out') }}</x-operator::note>
     @endforelse
 
     {{-- The other granularity. The forms come from the stack's own list

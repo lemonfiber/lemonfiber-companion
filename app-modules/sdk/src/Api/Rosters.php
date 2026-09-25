@@ -24,7 +24,9 @@ use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatTheEngineCallsIt;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Internal\Costs;
+use Modules\Sdk\Internal\WhatWasLeftOut;
 use Modules\Sdk\Internal\Wire;
+use Throwable;
 
 use function trim;
 
@@ -76,6 +78,17 @@ final readonly class Rosters
             $forms,
             Costs::in($data),
             ...self::services($data),
+        )->asked(
+            WhatWasLeftOut::forms(
+                self::required($data, StatusField::ActiveForms),
+                static fn(): Throwable => RosterIsUnreadable::missing(StatusField::ActiveForms),
+            ),
+            WhatWasLeftOut::in(
+                self::required($data, WireField::Filtered),
+                static fn(int $position): Throwable => $position < 0
+                    ? RosterIsUnreadable::missing(WireField::Filtered)
+                    : RosterIsUnreadable::leftOut($position),
+            ),
         );
     }
 
@@ -214,11 +227,34 @@ final readonly class Rosters
 
         $code = self::howItEnded($row, $position);
 
-        if ($code === null) {
-            return Daemon::called($name, $id, $runs, $matters, $leaning);
+        if (! array_key_exists(WireField::Forms->value, $row)) {
+            throw RosterIsUnreadable::said(WireField::Forms, $position);
         }
 
-        return Daemon::thatExited($name, $id, $runs, $matters, $leaning, $code);
+        $broughtInBy = WhatWasLeftOut::forms(
+            $row[WireField::Forms->value],
+            static fn(): Throwable => RosterIsUnreadable::said(WireField::Forms, $position),
+        );
+
+        if ($code === null) {
+            return Daemon::called($name, $id, $runs, $matters, $leaning)->broughtInBy($broughtInBy);
+        }
+
+        return Daemon::thatExited($name, $id, $runs, $matters, $leaning, $code)->broughtInBy($broughtInBy);
+    }
+
+    /**
+     * A field that must be there, as it arrived; what it holds is its reader's to judge.
+     *
+     * @param array<mixed> $data
+     */
+    private static function required(array $data, NamesAWireField $field): mixed
+    {
+        if (! array_key_exists($field->value, $data)) {
+            throw RosterIsUnreadable::missing($field);
+        }
+
+        return $data[$field->value];
     }
 
     /**

@@ -124,6 +124,16 @@ enum WireField: string implements NamesAWireField
     case Forms = 'forms';
 
     /**
+     * The services the forms asked for left out, each with what it would
+     * need: of the forms running, on the `status` envelope, and of the forms
+     * named, on the `preview` envelope.
+     */
+    case Filtered = 'filtered';
+
+    /** What a service left out would have needed to be started. */
+    case Needs = 'needs';
+
+    /**
      * Which of the two things an update reading is about — and, on a listing's
      * limits, the thing the stack cannot act on.
      *

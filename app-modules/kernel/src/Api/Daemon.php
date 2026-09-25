@@ -45,6 +45,7 @@ final readonly class Daemon
         private HowMuchItMatters $matters,
         private WhatLeansOnIt $leaning,
         private ?int $exit = null,
+        private ?Forms $broughtInBy = null,
     ) {}
 
     /**
@@ -91,6 +92,24 @@ final readonly class Daemon
         $was = self::called($name, $id, $runs, $matters, $leaning);
 
         return new self($was->id, $was->name, $was->runs, $was->matters, $was->leaning, $code);
+    }
+
+    /**
+     * The same service, running for these forms.
+     *
+     * Every form it runs for, because several forms can ask for one service
+     * and it starts once: *why is this running* has as many answers as there
+     * are forms claiming it.
+     */
+    public function broughtInBy(Forms $forms): self
+    {
+        return new self($this->id, $this->name, $this->runs, $this->matters, $this->leaning, $this->exit, $forms);
+    }
+
+    /** The forms it is running for, in the stack's order; none where no form holding it is up. */
+    public function whatBroughtItIn(): Forms
+    {
+        return $this->broughtInBy ?? Forms::none();
     }
 
     /** What an action is asked for by, and what its scrollback is read for. */

@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\AgreedTo;
-use Modules\Kernel\Api\AProfileLeftOut;
+use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -18,7 +21,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\TheProfilesLeftOut;
+use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -31,6 +34,7 @@ use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
+use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // One thing this machine runs, and the verbs about it.
@@ -74,7 +78,7 @@ function theThingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheProfilesLeftOut::of()));
+    $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none())));
     $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, StacksInMemory::holding($stack));
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
@@ -471,20 +475,13 @@ it('renders its own view', function (): void {
     expect($screen->render()->name())->toBe('operator::what-to-do-with-this');
 });
 
-/** What a profile left out would need, as the catalogue says it. */
-function theNeedAsSaid(WhatItWouldNeed $needs): string
-{
-    $said = __($needs->saidOnTheScreen());
-
-    return is_string($said) ? $said : $needs->saidOnTheScreen();
-}
-
 /** Starting `library` on a machine with no torrent credentials. */
 function aRehearsalOfStartingTheLibrary(): WhatStartingItWouldComeTo
 {
     return WhatStartingItWouldComeTo::rehearsed(
         Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
-        TheProfilesLeftOut::of(AProfileLeftOut::needing('torrent', WhatItWouldNeed::Torrent)),
+        TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
+        AFootprint::estimated(700, Services::these(ServiceId::called('sonarr'))),
     );
 }
 
@@ -498,18 +495,24 @@ it('a form says what starting it would bring up and leave out, as a rehearsal, b
     expect($drawn)->toContain(__('health.rehearsal.nothing_started'))
         ->toContain(__('health.rehearsal.would_start', ['name' => 'jellyfin']))
         ->toContain(__('health.rehearsal.would_start', ['name' => 'sonarr']))
-        ->toContain(__('health.rehearsal.left_out', ['profile' => 'torrent', 'needs' => theNeedAsSaid(WhatItWouldNeed::Torrent)]))
+        ->toContain(__('health.rehearsal.left_out', ['name' => 'qBittorrent', 'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent)]))
+        ->toContain(__('health.rehearsal.estimate', ['mib' => 700]))
+        ->toContain(__('health.rehearsal.unestimated', ['services' => 'sonarr']))
         ->and(is_int($rehearsed) && is_int($firstVerb) && $rehearsed < $firstVerb)->toBeTrue()
         ->and($rehearsing->asked())->toHaveCount(1)
         ->and($rehearsing->asked()[0]->named())->toBe('library');
 });
 
-it('a rehearsal that brings nothing up and leaves nothing out says both', function (): void {
+it('a rehearsal that brings nothing up, leaves nothing out and takes nothing says so', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library');
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)
         ->toContain(__('health.rehearsal.would_start_nothing'))
-        ->toContain(__('health.rehearsal.nothing_left_out'));
+        ->toContain(__('health.rehearsal.nothing_left_out'))
+        ->toContain(__('health.rehearsal.estimate', ['mib' => 0]));
+    expect($drawn)->not->toContain(__('health.rehearsal.unestimated', ['services' => '']));
 });
 
 it('a service is not rehearsed, because a rehearsal is of a form', function (): void {

@@ -49,6 +49,8 @@ final readonly class Daemons implements IteratorAggregate
         private Forms $forms,
         private Disturbances $disturbs,
         private array $daemons,
+        private ?Forms $active = null,
+        private ?TheServicesLeftOut $leftOut = null,
     ) {}
 
     /**
@@ -78,6 +80,30 @@ final readonly class Daemons implements IteratorAggregate
     public static function none(Disturbances $disturbs): self
     {
         return new self(HowTheStackIsRunning::Inactive, Forms::none(), $disturbs, []);
+    }
+
+    /**
+     * The same reading, with the forms asked for and what they left out.
+     *
+     * A stack running part of itself is the operator's intent: the forms
+     * asked for say what that part is, and a service they left out is
+     * filtered, not absent.
+     */
+    public function asked(Forms $active, TheServicesLeftOut $leftOut): self
+    {
+        return new self($this->running, $this->forms, $this->disturbs, $this->daemons, $active, $leftOut);
+    }
+
+    /** The forms running, as the stack counts them; none where it named none. */
+    public function active(): Forms
+    {
+        return $this->active ?? Forms::none();
+    }
+
+    /** The services the forms asked for left out, each with why. */
+    public function leftOut(): TheServicesLeftOut
+    {
+        return $this->leftOut ?? TheServicesLeftOut::of();
     }
 
     /** What the stack says it all amounts to. */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
@@ -13,7 +14,9 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\WhatItTakesAway;
+use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatLeansOnIt;
 
 use function ucfirst;
@@ -81,6 +84,32 @@ final readonly class WhatAMachineRuns
             Forms::these(Form::called('library')),
             self::whatTheVerbsCost(),
             self::aService($id, $runs),
+        );
+    }
+
+    /**
+     * Part of a stack running on purpose: `library` and `hunt` asked for,
+     * Jellyfin running for both, Sonarr for `hunt`, and qBittorrent left out
+     * of `hunt` for want of torrent credentials, which the stack also lists
+     * among the services as absent.
+     */
+    public static function partOfItOnPurpose(): Daemons
+    {
+        return Daemons::of(
+            HowTheStackIsRunning::Active,
+            Forms::these(Form::called('library'), Form::called('hunt'), Form::called('full')),
+            self::whatTheVerbsCost(),
+            self::aService('jellyfin')->broughtInBy(Forms::these(Form::called('library'), Form::called('hunt'))),
+            self::aService('sonarr')->broughtInBy(Forms::these(Form::called('hunt'))),
+            self::aService('qbittorrent', HowAServiceRuns::Absent),
+        )->asked(
+            Forms::these(Form::called('library'), Form::called('hunt')),
+            TheServicesLeftOut::of(AServiceLeftOut::needing(
+                ServiceId::called('qbittorrent'),
+                'qBittorrent',
+                WhatItWouldNeed::Torrent,
+                Forms::these(Form::called('hunt')),
+            )),
         );
     }
 }

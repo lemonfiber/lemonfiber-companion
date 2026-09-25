@@ -39,6 +39,8 @@ final readonly class HowAListingReads
             overall: '',
             isSettling: false,
             disturbs: null,
+            active: [],
+            leftOut: [],
         );
     }
 
@@ -49,6 +51,13 @@ final readonly class HowAListingReads
         $settling = false;
 
         foreach ($daemons as $daemon) {
+            // A service the forms left out is filtered, and the stack also
+            // lists it among the services as absent. Drawn there, it reads as
+            // a service that failed; it is drawn once, with why, below.
+            if ($daemons->leftOut()->include($daemon->id())) {
+                continue;
+            }
+
             $row = new HowAServiceReads()->in($daemon);
             $rows[] = $row;
             $settling = $settling || $row->isSettling;
@@ -71,6 +80,8 @@ final readonly class HowAListingReads
             overall: $daemons->running()->saidOnTheScreen(),
             isSettling: $settling,
             disturbs: $daemons->disturbs(),
+            active: new HowWhatWasLeftOutReads()->forms($daemons->active()),
+            leftOut: new HowWhatWasLeftOutReads()->of($daemons->leftOut()),
         );
     }
 
@@ -99,6 +110,8 @@ final readonly class HowAListingReads
             overall: '',
             isSettling: false,
             disturbs: null,
+            active: [],
+            leftOut: [],
         );
     }
 }

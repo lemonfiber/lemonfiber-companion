@@ -247,6 +247,22 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'an answer. Saying it before the choice is made is a screen `N18` has not reached.',
     ],
     [
+        'path' => 'PreviewEnvelope.dropped',
+        'because' => 'The profiles a start would leave out, each with what it would need. `filtered` '
+            . 'says the same service by service, which is what an operator knows the stack by, and it '
+            . 'is what the rehearsal reads.',
+    ],
+    [
+        'path' => 'PreviewEnvelope.filtered[].profile',
+        'because' => 'Which profile a service left out belongs to. The service is named, with what it '
+            . 'would need; its profile is the stack\'s grouping of it and nothing an operator starts.',
+    ],
+    [
+        'path' => 'StatusEnvelope.filtered[].profile',
+        'because' => 'Which profile a service the running forms left out belongs to, for the reason '
+            . 'the same field on the rehearsal is not read.',
+    ],
+    [
         'path' => 'PreviewEnvelope.forms',
         'because' => 'The forms the rehearsal was asked about, repeated back. The screen asked about one '
             . 'form and draws the rehearsal under that form\'s own name, so the echo says nothing the '

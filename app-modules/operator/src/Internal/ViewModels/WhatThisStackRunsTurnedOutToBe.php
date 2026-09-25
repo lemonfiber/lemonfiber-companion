@@ -28,6 +28,8 @@ final readonly class WhatThisStackRunsTurnedOutToBe
      * @param list<string>             $forms      the forms it has, whether or not anything in them runs
      * @param string                   $overall    the key for what it all amounts to, or empty where there is none
      * @param bool                     $isSettling whether anything here becomes something else by itself
+     * @param list<string>                 $active  the forms running, as the stack counts them
+     * @param list<AServiceLeftOutAsShown> $leftOut the services those forms left out, each with why
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -36,5 +38,7 @@ final readonly class WhatThisStackRunsTurnedOutToBe
         public string $overall,
         public bool $isSettling,
         public ?Disturbances $disturbs,
+        public array $active,
+        public array $leftOut,
     ) {}
 }

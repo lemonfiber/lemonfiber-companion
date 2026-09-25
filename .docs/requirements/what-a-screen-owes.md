@@ -105,7 +105,7 @@ thing, but whether it reads everything the wire now says about it.
 
 **Eleven more are partly built, the other way round:** the envelope is read and
 drawn, and it answers some of the feature's requirements rather than all of
-them. `B1` is a stack running some of its forms, and what starting a form would come to (`N18-R2`, `N18-R4`, `N18-R7` to `N18-R9`); `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B8` is whether
+them. `B1` is a stack running some of its forms, and what starting a form would come to (`N18-R1`, `N18-R3` to `N18-R9`); `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B8` is whether
 the stack comes back after a restart and what did not (`N16-R5`, `N16-R6`,
 `N16-R13`); `D9` is where one item got to, followed through the services (`N8-R4` to `N8-R6`, `N8-R8`, `N8-R9`); `D5` is how full the machine is, where the room went and each download with where it stands (`N12-R1` to `N12-R3`, `N12-R6`, `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E2` is which version runs, how it was installed and what moving it would take (`N14-R1` to `N14-R8`); `E4`
 is the record of what was changed and how far back it goes (`N11-R1` to

@@ -20,6 +20,9 @@ enum StatusField: string implements NamesAWireField
     /** What the whole stack amounts to, over the services listed beside it. */
     case Condition = 'condition';
 
+    /** The forms running, as the stack counts them. */
+    case ActiveForms = 'active_forms';
+
     /** Containers on the machine that the stack's own configuration does not declare. */
     case Undeclared = 'undeclared';
 

@@ -229,3 +229,12 @@ it('is reached by a route carrying the title as it was drawn, and goes back to h
         ->and(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
         ->and($screen->render()->name())->toBe('operator::where-this-got-to');
 });
+
+it('names what was typed without the spaces around it, even where the device holds no session', function (): void {
+    $screen = theTraceScreen(AStackThatTraces::with(TracesToFollow::aSeriesStuckDownloading()), signedIn: false);
+    $screen->looking = '  Dune  ';
+    $screen->follow();
+
+    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->item)->toBe('Dune');
+});

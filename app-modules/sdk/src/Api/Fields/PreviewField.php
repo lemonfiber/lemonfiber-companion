@@ -20,12 +20,12 @@ enum PreviewField: string implements NamesAWireField
     /** The form a rehearsal is asked about, as the forms read's query names it. */
     case Form = 'form';
 
-    /** The profiles a start would leave out, each with what it would need. */
-    case Dropped = 'dropped';
+    /** What the stack estimates starting the forms named would take. */
+    case Footprint = 'footprint';
 
-    /** Which profile one of those is. */
-    case Profile = 'profile';
+    /** That estimate, in mebibytes. */
+    case EstimatedMib = 'estimated_mib';
 
-    /** What that profile would have needed to be started. */
-    case Needs = 'needs';
+    /** The services that declare no estimate, which the sum leaves out. */
+    case Unestimated = 'unestimated';
 }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use function array_diff_key;
 use function expect;
+use function implode;
 use function it;
 use function iterator_to_array;
 
@@ -15,6 +17,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Sdk\Api\RosterIsUnreadable;
 use Modules\Sdk\Api\Rosters;
@@ -72,6 +75,7 @@ function aServiceSaying(array $differently = []): array
         'name' => 'Sonarr',
         'describes' => 'Fetches the series somebody is following',
         'profile' => 'downloads',
+        'forms' => ['hunt'],
         'state' => 'running',
         'criticality' => 'important',
         'depends_on' => [],
@@ -130,6 +134,23 @@ function whatTheseVerbsCostOnTheWire(): array
 }
 
 /**
+ * One service a form left out, as a stack sends it.
+ *
+ * @param  array<mixed> $differently
+ * @return array<mixed>
+ */
+function aServiceLeftOutSaying(array $differently = []): array
+{
+    return [...[
+        'id' => 'qbittorrent',
+        'name' => 'qBittorrent',
+        'profile' => 'torrent',
+        'needs' => 'torrent',
+        'forms' => ['hunt'],
+    ], ...$differently];
+}
+
+/**
  * A whole listing of one service, with whatever this case is about changed.
  *
  * @param  array<mixed> $differently
@@ -143,7 +164,10 @@ function aRosterOf(array $differently = []): array
         // none — what a stack actually sends here, however many it declares.
         'forms' => [],
         'disturbs' => whatTheseVerbsCostOnTheWire(),
+        'active_forms' => ['hunt'],
         'services' => [aServiceSaying($differently)],
+        // A service `hunt` left out, which is filtered rather than absent.
+        'filtered' => [aServiceLeftOutSaying()],
         // A container the machine is running that this stack's own
         // configuration does not declare. Every stack sends the field, and it
         // carries a row rather than none so that the shape of a row is part of
@@ -466,3 +490,78 @@ it('stands in for a stack with a payload the contract would accept', function ()
     expect(WhatTheContractAccepts::complaintsAbout('StatusEnvelope', ['kind' => 'status', 'data' => aRosterOf()]))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
+
+/** Form names, in order, as one line. */
+function theFormsNamed(Forms $forms): string
+{
+    $named = [];
+
+    foreach ($forms as $form) {
+        $named[] = $form->named();
+    }
+
+    return implode(',', $named);
+}
+
+it('reads the forms running, every form each service runs for, and each service left out with why', function (): void {
+    $daemons = theRosterIn(aRosterSaying([
+        ...aRosterOf(['forms' => ['library', 'hunt']]),
+        'active_forms' => ['library', 'hunt'],
+        'filtered' => [aServiceLeftOutSaying(), aServiceLeftOutSaying(['id' => 'sabnzbd', 'name' => 'SABnzbd', 'needs' => 'usenet', 'forms' => ['library', 'hunt']])],
+    ]));
+    $leftOut = [...$daemons->leftOut()];
+    $service = [...$daemons][0];
+
+    expect(theFormsNamed($daemons->active()))->toBe('library,hunt')
+        ->and(theFormsNamed($service->whatBroughtItIn()))->toBe('library,hunt')
+        ->and($leftOut)->toHaveCount(2)
+        ->and([$leftOut[0]->id()->named(), $leftOut[0]->name(), $leftOut[0]->needs()->value, theFormsNamed($leftOut[0]->askedBy())])
+        ->toBe(['qbittorrent', 'qBittorrent', 'torrent', 'hunt'])
+        ->and([$leftOut[1]->name(), $leftOut[1]->needs()->value, theFormsNamed($leftOut[1]->askedBy())])
+        ->toBe(['SABnzbd', 'usenet', 'library,hunt'])
+        ->and($daemons->leftOut()->include(ServiceId::called('qbittorrent')))->toBeTrue()
+        ->and($daemons->leftOut()->include(ServiceId::called('sonarr')))->toBeFalse();
+});
+
+it('reads no forms running and nothing left out as none of either', function (): void {
+    $daemons = theRosterIn(aRosterSaying([...aRosterOf(['forms' => []]), 'active_forms' => [], 'filtered' => []]));
+
+    expect($daemons->active())->toHaveCount(0)
+        ->and($daemons->leftOut())->toHaveCount(0)
+        ->and([...$daemons][0]->whatBroughtItIn())->toHaveCount(0);
+});
+
+it('refuses forms running or services left out that are absent or not what the contract says', function (array $differently, string $said): void {
+    $data = [...aRosterOf(), ...$differently];
+
+    foreach ($differently as $field => $value) {
+        if ($value === 'absent') {
+            unset($data[$field]);
+        }
+    }
+
+    expect(fn(): Daemons => theRosterIn(aRosterSaying($data)))->toThrow(RosterIsUnreadable::class, $said);
+})->with([
+    'no forms running' => [['active_forms' => 'absent'], '`active_forms`'],
+    'forms running that are not a list' => [['active_forms' => 'hunt'], '`active_forms`'],
+    'a form running named as nothing' => [['active_forms' => ['hunt', ' ']], '`active_forms`'],
+    'nothing said of what was left out' => [['filtered' => 'absent'], '`filtered`'],
+    'what was left out not a list' => [['filtered' => 'qbittorrent'], '`filtered`'],
+    'an entry left out that is not a table' => [['filtered' => ['qbittorrent']], 'Entry 0 of the status envelope\'s `filtered`'],
+    'a service left out with no name' => [['filtered' => [aServiceLeftOutSaying(['name' => ' '])]], 'Entry 0 of the status envelope\'s `filtered`'],
+    'a service left out with no id' => [['filtered' => [array_diff_key(aServiceLeftOutSaying(), ['id' => true])]], 'Entry 0 of the status envelope\'s `filtered`'],
+    'a service left out needing something unknown' => [['filtered' => [aServiceLeftOutSaying(['needs' => 'money'])]], 'Entry 0 of the status envelope\'s `filtered`'],
+    'a service left out asked for by no list' => [['filtered' => [aServiceLeftOutSaying(['forms' => 'hunt'])]], 'Entry 0 of the status envelope\'s `filtered`'],
+]);
+
+it('refuses a service whose forms are absent or not a list of names, naming the service', function (mixed $forms): void {
+    $service = $forms === 'absent' ? array_diff_key(aServiceSaying(), ['forms' => true]) : aServiceSaying(['forms' => $forms]);
+
+    expect(fn(): Daemons => theRosterIn(aRosterSaying([...aRosterOf(), 'services' => [$service]])))
+        ->toThrow(RosterIsUnreadable::class, 'Service 0 in the status envelope has no readable `forms`');
+})->with([
+    'absent' => ['absent'],
+    'a word' => ['hunt'],
+    'a list of lists' => [[['hunt']]],
+    'a blank name' => [[' ']],
+]);

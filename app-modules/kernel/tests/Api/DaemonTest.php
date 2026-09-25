@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\ServiceId;
@@ -110,4 +112,19 @@ it('a service that ended is refused for the reasons every service is', function 
         WhatLeansOnIt::nothing(),
         1,
     ))->toThrow(ServiceIsUnnamed::class);
+});
+
+it('runs for no form until it is said to, and then for every form named, keeping everything else', function (): void {
+    $daemon = aDaemonCalled('Jellyfin');
+    $running = $daemon->broughtInBy(Forms::these(Form::called('library'), Form::called('hunt')));
+    $named = [];
+
+    foreach ($running->whatBroughtItIn() as $form) {
+        $named[] = $form->named();
+    }
+
+    expect($daemon->whatBroughtItIn()->count())->toBe(0)
+        ->and($named)->toBe(['library', 'hunt'])
+        ->and([$running->id()->named(), $running->name(), $running->runs()])->toBe([$daemon->id()->named(), 'Jellyfin', $daemon->runs()])
+        ->and(howItEnded($running))->toBe(howItEnded($daemon));
 });

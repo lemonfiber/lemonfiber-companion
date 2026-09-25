@@ -7,27 +7,28 @@ namespace Modules\Sdk\Api;
 use function array_is_list;
 use function array_key_exists;
 use function is_array;
+use function is_int;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\PreviewEnvelope;
-use Modules\Kernel\Api\AProfileLeftOut;
+use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
-use Modules\Kernel\Api\TheProfilesLeftOut;
-use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Sdk\Api\Fields\PreviewField;
+use Modules\Sdk\Internal\WhatWasLeftOut;
 use Modules\Sdk\Internal\Wire;
+use Throwable;
 
 use function trim;
 
 /**
  * Reads the `preview` envelope into what starting a form would come to.
  *
- * The services and the profiles left out are both required lists, and every
- * entry in them must be what the contract says; anything else is refused
- * with {@see RehearsalIsUnreadable}, never defaulted. A profile left out
+ * The services, the services left out and the footprint are all required,
+ * and every entry must be what the contract says; anything else is refused
+ * with {@see RehearsalIsUnreadable}, never defaulted. A service left out
  * needing something this app has no case for is refused too, because a
  * reason read as some other reason sends an operator to the wrong setting.
  */
@@ -46,7 +47,20 @@ final readonly class Rehearsals
             throw RehearsalIsUnreadable::missing(WireField::Data);
         }
 
-        return WhatStartingItWouldComeTo::rehearsed(self::services($data), self::leftOut($data));
+        if (! array_key_exists(WireField::Filtered->value, $data)) {
+            throw RehearsalIsUnreadable::missing(WireField::Filtered);
+        }
+
+        return WhatStartingItWouldComeTo::rehearsed(
+            self::services($data, WireField::Services),
+            WhatWasLeftOut::in(
+                $data[WireField::Filtered->value],
+                static fn(int $position): Throwable => $position < 0
+                    ? RehearsalIsUnreadable::missing(WireField::Filtered)
+                    : RehearsalIsUnreadable::entry(WireField::Filtered, $position),
+            ),
+            self::footprint($data),
+        );
     }
 
     /**
@@ -62,17 +76,17 @@ final readonly class Rehearsals
     }
 
     /**
-     * The services starting it would bring up.
+     * A list of services the payload must carry.
      *
      * @param array<array-key, mixed> $data
      */
-    private static function services(array $data): Services
+    private static function services(array $data, NamesAWireField $field): Services
     {
         $services = [];
 
-        foreach (self::listed($data, WireField::Services) as $position => $named) {
+        foreach (self::listed($data, $field) as $position => $named) {
             if (! is_string($named) || trim($named) === '') {
-                throw RehearsalIsUnreadable::entry(WireField::Services, $position);
+                throw RehearsalIsUnreadable::entry($field, $position);
             }
 
             $services[] = ServiceId::called($named);
@@ -82,43 +96,29 @@ final readonly class Rehearsals
     }
 
     /**
-     * The profiles it would leave out, each with what it would need.
+     * What the stack estimates starting would take, and what it could not estimate.
      *
      * @param array<array-key, mixed> $data
      */
-    private static function leftOut(array $data): TheProfilesLeftOut
+    private static function footprint(array $data): AFootprint
     {
-        $leftOut = [];
-
-        foreach (self::listed($data, PreviewField::Dropped) as $position => $row) {
-            $leftOut[] = self::aProfileLeftOut(is_array($row) ? $row : [], $position);
+        if (! array_key_exists(PreviewField::Footprint->value, $data) || ! is_array($data[PreviewField::Footprint->value])) {
+            throw RehearsalIsUnreadable::missing(PreviewField::Footprint);
         }
 
-        return TheProfilesLeftOut::of(...$leftOut);
-    }
+        $footprint = $data[PreviewField::Footprint->value];
 
-    /**
-     * One profile left out, with what it would need.
-     *
-     * @param array<array-key, mixed> $row
-     */
-    private static function aProfileLeftOut(array $row, int $position): AProfileLeftOut
-    {
-        if (! array_key_exists(PreviewField::Profile->value, $row) || ! array_key_exists(PreviewField::Needs->value, $row)) {
-            throw RehearsalIsUnreadable::entry(PreviewField::Dropped, $position);
+        if (! array_key_exists(PreviewField::EstimatedMib->value, $footprint)) {
+            throw RehearsalIsUnreadable::missing(PreviewField::EstimatedMib);
         }
 
-        $profile = $row[PreviewField::Profile->value];
-        $needs = $row[PreviewField::Needs->value];
+        $mebibytes = $footprint[PreviewField::EstimatedMib->value];
 
-        if (! is_string($profile) || trim($profile) === '' || ! is_string($needs)) {
-            throw RehearsalIsUnreadable::entry(PreviewField::Dropped, $position);
+        if (! is_int($mebibytes) || $mebibytes < 0) {
+            throw RehearsalIsUnreadable::missing(PreviewField::EstimatedMib);
         }
 
-        return AProfileLeftOut::needing(
-            $profile,
-            WhatItWouldNeed::tryFrom($needs) ?? throw RehearsalIsUnreadable::entry(PreviewField::Dropped, $position),
-        );
+        return AFootprint::estimated($mebibytes, self::services($footprint, PreviewField::Unestimated));
     }
 
     /**

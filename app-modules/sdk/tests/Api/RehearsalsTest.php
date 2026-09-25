@@ -29,6 +29,17 @@ function previewSaying(mixed $data): Envelope
 }
 
 /**
+ * One service a form would leave out, as a stack sends it.
+ *
+ * @param  array<string, mixed> $differently
+ * @return array<string, mixed>
+ */
+function aServiceItWouldLeaveOut(array $differently = []): array
+{
+    return [...['id' => 'qbittorrent', 'name' => 'qBittorrent', 'profile' => 'torrent', 'needs' => 'torrent', 'forms' => ['dl']], ...$differently];
+}
+
+/**
  * A rehearsal with everything said.
  *
  * @return array<string, mixed>
@@ -37,9 +48,11 @@ function aRehearsalInFull(): array
 {
     return [
         'forms' => ['dl'],
-        'profiles' => ['usenet', 'torrent'],
+        'profiles' => ['usenet', 'arr'],
         'services' => ['sabnzbd', 'sonarr'],
-        'dropped' => [['profile' => 'torrent', 'needs' => 'torrent'], ['profile' => 'nzb', 'needs' => 'usenet']],
+        'dropped' => [['profile' => 'torrent', 'needs' => 'torrent']],
+        'filtered' => [aServiceItWouldLeaveOut()],
+        'footprint' => ['estimated_mib' => 700, 'unestimated' => ['sonarr']],
     ];
 }
 
@@ -49,34 +62,48 @@ function theRehearsalRead(mixed $data): string
     $rehearsal = Rehearsals::in(previewSaying($data));
     $started = [];
     $leftOut = [];
+    $unestimated = [];
 
     foreach ($rehearsal->wouldStart() as $service) {
         $started[] = $service->named();
     }
 
-    foreach ($rehearsal->leftOut() as $profile) {
-        $leftOut[] = sprintf('%s:%s', $profile->profile(), $profile->needs()->value);
+    foreach ($rehearsal->leftOut() as $service) {
+        $leftOut[] = sprintf('%s:%s:%s', $service->name(), $service->needs()->value, $service->id()->named());
     }
 
-    return sprintf('%s / %s', implode(',', $started), implode(',', $leftOut));
+    foreach ($rehearsal->footprint()->unestimated() as $service) {
+        $unestimated[] = $service->named();
+    }
+
+    return sprintf(
+        '%s / %s / %d MiB, none for %s',
+        implode(',', $started),
+        implode(',', $leftOut),
+        $rehearsal->footprint()->mebibytes(),
+        implode(',', $unestimated),
+    );
 }
 
 it('stands in for a stack with a payload the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('PreviewEnvelope', ['api_version' => 1, 'kind' => 'preview', 'data' => aRehearsalInFull()]))->toBe([]);
 });
 
-it('reads what would start and every profile left out, in order', function (): void {
-    expect(theRehearsalRead(aRehearsalInFull()))->toBe('sabnzbd,sonarr / torrent:torrent,nzb:usenet');
+it('reads what would start, every service left out with why, and the estimate with what it leaves out', function (): void {
+    expect(theRehearsalRead([...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['id' => 'nzbget', 'name' => 'NZBGet', 'needs' => 'usenet'])]]))
+        ->toBe('sabnzbd,sonarr / qBittorrent:torrent:qbittorrent,NZBGet:usenet:nzbget / 700 MiB, none for sonarr');
 });
 
-it('reads a start that would bring nothing up and leave nothing out', function (): void {
-    $rehearsal = Rehearsals::in(previewSaying([...aRehearsalInFull(), 'services' => [], 'dropped' => []]));
+it('reads a start that would bring nothing up, leave nothing out and take nothing', function (): void {
+    $rehearsal = Rehearsals::in(previewSaying([...aRehearsalInFull(), 'services' => [], 'filtered' => [], 'footprint' => ['estimated_mib' => 0, 'unestimated' => []]]));
 
     expect($rehearsal->wouldStart()->isEmpty())->toBeTrue()
-        ->and($rehearsal->leftOut())->toHaveCount(0);
+        ->and($rehearsal->leftOut())->toHaveCount(0)
+        ->and($rehearsal->footprint()->mebibytes())->toBe(0)
+        ->and($rehearsal->footprint()->unestimated()->isEmpty())->toBeTrue();
 });
 
-it('refuses a payload that is not a table, or a list that is absent or not a list', function (mixed $data, string $field): void {
+it('refuses a payload that is not a table, or a part that is absent or not what the contract says', function (mixed $data, string $field): void {
     expect(fn(): WhatStartingItWouldComeTo => Rehearsals::in(previewSaying($data)))
         ->toThrow(RehearsalIsUnreadable::class, sprintf('no readable `%s`', $field));
 })->with([
@@ -84,8 +111,14 @@ it('refuses a payload that is not a table, or a list that is absent or not a lis
     [array_diff_key(aRehearsalInFull(), ['services' => true]), 'services'],
     [[...aRehearsalInFull(), 'services' => 'sonarr'], 'services'],
     [[...aRehearsalInFull(), 'services' => ['a' => 'sonarr']], 'services'],
-    [array_diff_key(aRehearsalInFull(), ['dropped' => true]), 'dropped'],
-    [[...aRehearsalInFull(), 'dropped' => 'torrent'], 'dropped'],
+    [array_diff_key(aRehearsalInFull(), ['filtered' => true]), 'filtered'],
+    [[...aRehearsalInFull(), 'filtered' => 'qbittorrent'], 'filtered'],
+    [array_diff_key(aRehearsalInFull(), ['footprint' => true]), 'footprint'],
+    [[...aRehearsalInFull(), 'footprint' => 700], 'footprint'],
+    [[...aRehearsalInFull(), 'footprint' => ['unestimated' => []]], 'estimated_mib'],
+    [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => '700', 'unestimated' => []]], 'estimated_mib'],
+    [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => -1, 'unestimated' => []]], 'estimated_mib'],
+    [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => 700]], 'unestimated'],
 ]);
 
 it('refuses an entry that is not what the contract says, naming its list and position', function (mixed $data, string $field): void {
@@ -94,10 +127,12 @@ it('refuses an entry that is not what the contract says, naming its list and pos
 })->with([
     [[...aRehearsalInFull(), 'services' => ['sabnzbd', ' ']], 'services'],
     [[...aRehearsalInFull(), 'services' => ['sabnzbd', 7]], 'services'],
-    [[...aRehearsalInFull(), 'dropped' => [['profile' => 'torrent', 'needs' => 'torrent'], 'nzb']], 'dropped'],
-    [[...aRehearsalInFull(), 'dropped' => [['profile' => 'torrent', 'needs' => 'torrent'], ['needs' => 'usenet']]], 'dropped'],
-    [[...aRehearsalInFull(), 'dropped' => [['profile' => 'torrent', 'needs' => 'torrent'], ['profile' => 'nzb']]], 'dropped'],
-    [[...aRehearsalInFull(), 'dropped' => [['profile' => 'torrent', 'needs' => 'torrent'], ['profile' => ' ', 'needs' => 'usenet']]], 'dropped'],
-    [[...aRehearsalInFull(), 'dropped' => [['profile' => 'torrent', 'needs' => 'torrent'], ['profile' => 'nzb', 'needs' => 'money']]], 'dropped'],
-    [[...aRehearsalInFull(), 'dropped' => [['profile' => 'torrent', 'needs' => 'torrent'], ['profile' => 'nzb', 'needs' => 7]]], 'dropped'],
+    [[...aRehearsalInFull(), 'footprint' => ['estimated_mib' => 700, 'unestimated' => ['sonarr', '']]], 'unestimated'],
+    [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), 'nzbget']], 'filtered'],
+    [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), array_diff_key(aServiceItWouldLeaveOut(), ['needs' => true])]], 'filtered'],
+    [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['name' => ' '])]], 'filtered'],
+    [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['id' => ''])]], 'filtered'],
+    [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['needs' => 'money'])]], 'filtered'],
+    [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['needs' => 7])]], 'filtered'],
+    [[...aRehearsalInFull(), 'filtered' => [aServiceItWouldLeaveOut(), aServiceItWouldLeaveOut(['forms' => [' ']])]], 'filtered'],
 ]);

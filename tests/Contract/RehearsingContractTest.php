@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
-use Modules\Kernel\Api\AProfileLeftOut;
+use Modules\Kernel\Api\AFootprint;
+use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rehearsing;
@@ -15,7 +17,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\TheProfilesLeftOut;
+use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Sdk\Api\PinnedClients;
@@ -48,7 +50,8 @@ function theSameRehearsal(): WhatStartingItWouldComeTo
 {
     return WhatStartingItWouldComeTo::rehearsed(
         Services::these(ServiceId::called('sabnzbd'), ServiceId::called('sonarr')),
-        TheProfilesLeftOut::of(AProfileLeftOut::needing('torrent', WhatItWouldNeed::Torrent)),
+        TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('dl')))),
+        AFootprint::estimated(700, Services::these(ServiceId::called('sonarr'))),
     );
 }
 
@@ -57,7 +60,7 @@ function theSameRehearsal(): WhatStartingItWouldComeTo
  *
  * @return array<string, mixed>
  */
-function whatAStackRehearsingAStartSends(string $profile = 'torrent'): array
+function whatAStackRehearsingAStartSends(string $name = 'qBittorrent'): array
 {
     return [
         'api_version' => 1,
@@ -66,7 +69,9 @@ function whatAStackRehearsingAStartSends(string $profile = 'torrent'): array
             'forms' => ['dl'],
             'profiles' => ['usenet', 'arr'],
             'services' => ['sabnzbd', 'sonarr'],
-            'dropped' => [['profile' => $profile, 'needs' => 'torrent']],
+            'dropped' => [['profile' => 'torrent', 'needs' => 'torrent']],
+            'filtered' => [['id' => 'qbittorrent', 'name' => $name, 'profile' => 'torrent', 'needs' => 'torrent', 'forms' => ['dl']]],
+            'footprint' => ['estimated_mib' => 700, 'unestimated' => ['sonarr']],
         ],
     ];
 }
@@ -104,8 +109,8 @@ function everythingTheRehearsalSays(Rehearsing $rehearsing): string
         found: static function (WhatStartingItWouldComeTo $rehearsal): WhatTheRehearsalTurnedOutToSay {
             $leftOut = [];
 
-            foreach ($rehearsal->leftOut() as $profile) {
-                $leftOut[] = sprintf('%s:%s', $profile->profile(), $profile->needs()->value);
+            foreach ($rehearsal->leftOut() as $service) {
+                $leftOut[] = sprintf('%s:%s:%d', $service->name(), $service->needs()->value, $service->askedBy()->count());
             }
 
             $started = [];
@@ -114,17 +119,22 @@ function everythingTheRehearsalSays(Rehearsing $rehearsing): string
                 $started[] = $service->named();
             }
 
-            return new WhatTheRehearsalTurnedOutToSay(sprintf('%s / %s', implode(',', $started), implode(',', $leftOut)));
+            return new WhatTheRehearsalTurnedOutToSay(sprintf(
+                '%s / %s / %d MiB',
+                implode(',', $started),
+                implode(',', $leftOut),
+                $rehearsal->footprint()->mebibytes(),
+            ));
         },
         met: static fn(Obstacle $why): WhatTheRehearsalTurnedOutToSay => new WhatTheRehearsalTurnedOutToSay($why->value),
     )->said;
 }
 
-it('comes away with what would start and each profile left out with what it would need', function (): void {
+it('comes away with what would start, each service left out with what it would need, and the estimate', function (): void {
     $answered = MockResponse::make((string) json_encode(whatAStackRehearsingAStartSends()));
 
     foreach (everyWayOfRehearsingAStart($answered) as $which => $make) {
-        expect(everythingTheRehearsalSays($make()))->toBe('sabnzbd,sonarr / torrent:torrent', $which);
+        expect(everythingTheRehearsalSays($make()))->toBe('sabnzbd,sonarr / qBittorrent:torrent:1 / 700 MiB', $which);
     }
 });
 
@@ -144,7 +154,7 @@ it('tells a session that has ended from a stack that is not answering', function
 
 it('a rehearsal this app cannot read is an obstacle, never a start half-described', function (): void {
     MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make((string) json_encode(whatAStackRehearsingAStartSends(profile: ' ')))]);
+    MockClient::global([MockResponse::make((string) json_encode(whatAStackRehearsingAStartSends(name: ' ')))]);
 
     expect(everythingTheRehearsalSays(new Rehearsers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
 });
