@@ -11,6 +11,7 @@ use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\StreamInterrupted;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\DashboardEnvelope;
 use Lemonfiber\Sdk\Time\Duration;
@@ -106,7 +107,7 @@ final class Listeners implements Hearing
         } catch (RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
         } catch (
-            ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted
+            Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted
             |SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing
         ) {
             $this->letGo();
