@@ -474,10 +474,12 @@ jobs:
   # On a pull request it lists only the shards the change reaches, and reads
   # that from git against the base commit, which is fetched for it. On `main`
   # it lists the shards reached since the last commit on `main` whose run of
-  # this workflow passed, so a merge is mutated once more as it landed, beside
-  # the changes merged with it; a push a newer one cancelled is carried into
-  # the newer one's reach rather than dropped; and a merge that reaches no code
-  # mutates nothing. Where no such commit is found, every shard runs. On a
+  # this workflow passed, so a push a newer one cancelled is carried into the
+  # newer one's reach rather than dropped, and a merge that reaches no code
+  # mutates nothing. Where every commit in that range is the tree of a pull
+  # request head whose own run passed, it lists none: the branch was up to
+  # date, so its run judged exactly the tree that landed. Where no such commit
+  # is found, every shard runs. On a
   # merge group it lists none: each pull request's own run judged the mutants
   # its change reaches, the queue's run of `tests` is what catches two changes
   # that break together, and the run on `main` mutates what they reach
@@ -496,6 +498,7 @@ jobs:
     permissions:
       contents: read
       actions: read
+      pull-requests: read
     outputs:
       shards: ${{ steps.list.outputs.shards }}
       base: ${{ steps.base.outputs.sha }}
@@ -513,10 +516,40 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EVENT: ${{ github.event_name }}
           PULL_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSHED: ${{ github.sha }}
         run: |
+          # Whether a commit on `main` is a tree its own pull request already
+          # passed every gate on. `main` takes only up-to-date branches, so a
+          # squash merge lands exactly the tree of the head it came from, and
+          # that head's run mutated what the change reaches.
+          proved() {
+            local head
+            head="$(gh api "repos/${GITHUB_REPOSITORY}/commits/$1/pulls" --jq '[.[] | select(.merged_at != null and .base.ref == "main")][0].head.sha // empty')" || return 1
+            [ -n "${head}" ] || return 1
+            [ "$(gh api "repos/${GITHUB_REPOSITORY}/git/commits/${head}" --jq .tree.sha)" = "$(gh api "repos/${GITHUB_REPOSITORY}/git/commits/$1" --jq .tree.sha)" ] || return 1
+            [ "$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${head}&event=pull_request&status=success&per_page=1" --jq .total_count)" -gt 0 ]
+          }
+
           case "${EVENT}" in
             pull_request) BASE="${PULL_BASE}" ;;
-            push) BASE="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty' || true)" ;;
+            push)
+              BASE="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty' || true)"
+              # Where every commit since that run was proved by its own pull
+              # request, there is nothing left to mutate. One commit that was
+              # not, or a range too long to ask about, mutates all of it.
+              if [ -n "${BASE}" ]; then
+                commits="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${BASE}...${PUSHED}" --jq 'select(.status == "ahead" and .total_commits <= 20) | .commits[].sha' || true)"
+                all=yes
+                [ -n "${commits}" ] || all=""
+                for commit in ${commits}; do
+                  proved "${commit}" || { all=""; echo "${commit} is not a tree its pull request proved."; break; }
+                done
+                if [ -n "${all}" ]; then
+                  echo "Every commit since ${BASE} is a tree its pull request proved, so nothing is mutated again." | tee -a "$GITHUB_STEP_SUMMARY"
+                  BASE="${PUSHED}"
+                fi
+              fi
+              ;;
             *) BASE="" ;;
           esac
           if [ -n "${BASE}" ] && git fetch --no-tags --depth=1 origin "${BASE}"; then
