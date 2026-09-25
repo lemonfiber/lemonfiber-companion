@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
@@ -61,7 +62,7 @@ final readonly class TheirOwn implements Owing
             return WhatTheyAreOwed::told(Tellings::in($envelope));
         } catch (RequestFailed $why) {
             return WhatTheyAreOwed::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|SentenceSaysNothing) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|SentenceSaysNothing) {
             // {@see SentenceSaysNothing} is in this list rather than guarded
             // against above, so one type decides what a blank sentence means
             // and this one decides what an unreadable answer means to whoever
@@ -106,7 +107,7 @@ final readonly class TheirOwn implements Owing
             return WhatTheyAsked::told(Households::theirOwnIn($envelope));
         } catch (RequestFailed $why) {
             return WhatTheyAsked::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt) {
             // {@see SentenceSaysNothing} is not in this list, and its absence is
             // the difference between the two readings: no sentence is read here,
             // so there is no blank one to meet. A request row this app cannot

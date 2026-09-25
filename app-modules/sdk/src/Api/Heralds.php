@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -39,7 +40,7 @@ final readonly class Heralds implements Telling
             return WhatTheAlertsWere::told(WhatIsTold::in($envelope));
         } catch (RequestFailed $why) {
             return WhatTheAlertsWere::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|AlertsAreUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|AlertsAreUnreadable) {
             return WhatTheAlertsWere::met(Obstacle::StackDidNotAnswer);
         }
     }

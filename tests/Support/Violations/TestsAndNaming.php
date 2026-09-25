@@ -40,9 +40,10 @@ final readonly class TestsAndNaming
             // The same rule in the tree it did not reach. The guard was bound
             // to four of the eight suites and `app-modules/*\/tests` was not
             // one of them — which is where every adapter that speaks to a stack
-            // is tested, and where an unmocked read raised Saloon's
-            // `FatalRequestException` rather than its `NoMockResponse`: the
-            // difference between having been stopped and having dialled. The
+            // is tested, and where an unmocked read raised a refused
+            // connection, which the SDK raises as `Unreachable`, rather than
+            // Saloon's `NoMockResponse`: the difference between having dialled
+            // and having been stopped. The
             // fixture is under a module's tests for exactly that reason (R4).
             Fixture::suite('G3', 'app-modules/sdk/tests/Fixtures/ReachesAStackTest.php', <<<'PHP'
                 <?php

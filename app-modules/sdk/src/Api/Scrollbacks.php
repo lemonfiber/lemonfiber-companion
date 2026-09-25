@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\ConfigurationProblem;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Logs;
 use Modules\Kernel\Api\HowManyLines;
@@ -65,7 +66,7 @@ final readonly class Scrollbacks implements Saying
             return WhatWasSaid::this(Lines::in($window));
         } catch (RequestFailed $why) {
             return WhatWasSaid::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|ConfigurationProblem|LineIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ConfigurationProblem|LineIsUnreadable) {
             return WhatWasSaid::met(Obstacle::StackDidNotAnswer);
         }
     }

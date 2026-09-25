@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\CheckGaveNoReason;
@@ -84,7 +85,7 @@ final readonly class Questions implements Asking
         } catch (RequestFailed $why) {
             return WhatCameBack::met(WhatARefusalMeant::obstacle($why));
         } catch (
-            ApiVersionMismatch|UnreadableResponse|UnexpectedKind|ReportIsUnreadable
+            ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ReportIsUnreadable
             |CheckIsUnnamed|ServiceIsUnnamed|FindingHasNoTitle|CodeIsBlank|CheckSaidNothing|RemedySaysNothing|CheckGaveNoReason
         ) {
             return WhatCameBack::met(Obstacle::StackDidNotAnswer);

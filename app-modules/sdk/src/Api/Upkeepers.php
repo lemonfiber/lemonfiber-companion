@@ -10,6 +10,7 @@ use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\Job;
@@ -57,7 +58,7 @@ final readonly class Upkeepers implements KeepingCurrent
             return WhatIsCurrent::stands(Standings::in($envelope));
         } catch (RequestFailed $why) {
             return WhatIsCurrent::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed) {
             return WhatIsCurrent::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -78,7 +79,7 @@ final readonly class Upkeepers implements KeepingCurrent
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -89,7 +90,7 @@ final readonly class Upkeepers implements KeepingCurrent
             return $this->outcome($stack, $session, $job);
         } catch (RequestFailed $why) {
             return HowTheUpdateIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed) {
             return HowTheUpdateIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }

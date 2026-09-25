@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Obstacle;
@@ -38,7 +39,7 @@ final readonly class Advisers implements Advising
             return WhatWasFoundToWatchOn::found(WhatToWatchWith::in($envelope));
         } catch (RequestFailed $why) {
             return WhatWasFoundToWatchOn::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|ClientsIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ClientsIsUnreadable) {
             return WhatWasFoundToWatchOn::met(Obstacle::StackDidNotAnswer);
         }
     }

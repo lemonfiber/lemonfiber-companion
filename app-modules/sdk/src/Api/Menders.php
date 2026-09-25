@@ -9,6 +9,7 @@ use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Repair as Asking;
 use Modules\Kernel\Api\Confirmed;
@@ -74,7 +75,7 @@ final readonly class Menders implements Mending
             return Underway::as(Handles::in($client->repair(Asking::offer())));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -99,7 +100,7 @@ final readonly class Menders implements Mending
             ));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -110,7 +111,7 @@ final readonly class Menders implements Mending
             return $this->outcome($stack, $session, $job);
         } catch (RequestFailed $why) {
             return HowTheRepairIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|EffectSaysNothing) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|EffectSaysNothing) {
             return HowTheRepairIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -121,7 +122,7 @@ final readonly class Menders implements Mending
             return $this->standing($stack, $session, $job);
         } catch (RequestFailed $why) {
             return HowTheOfferIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|OfferHasNoName|EffectSaysNothing) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|OfferHasNoName|EffectSaysNothing) {
             return HowTheOfferIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }

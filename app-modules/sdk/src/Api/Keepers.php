@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Obstacle;
@@ -60,7 +61,7 @@ final readonly class Keepers implements Hosting
             return WhatKeepsRunning::keeps(Hosts::in($envelope));
         } catch (RequestFailed $why) {
             return WhatKeepsRunning::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
             return WhatKeepsRunning::met(Obstacle::StackDidNotAnswer);
         }
     }
