@@ -13,6 +13,7 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
+use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatWasDecided;
 use Tests\Support\Tree;
@@ -163,6 +164,17 @@ const VERBS_THE_APP_ASKS_FOR = [
     // service to search again. The yes is only ever sent after a description,
     // which is the one thing `AnUpgradeDescribed` can be built from.
     'quality-upgrade' => 'upgrades what is already in the library, having first said what that comes to kind by kind',
+
+    // A copy of the stack's configuration, of the whole stack or one service.
+    // It overwrites nothing; what it can remove is older copies, which the
+    // stack reports with the copy.
+    'backup' => 'takes a copy of the whole stack or of one service, and says which older copies it removed',
+
+    // Two requests under one name. Without the yes it reads a copy's own
+    // account of itself and changes nothing; with it, it puts back exactly
+    // the listing the operator was shown, and nothing else, because the yes
+    // quotes that listing by name.
+    'restore' => 'says what putting one copy back would do, and puts it back only against that listing',
 ];
 
 /**
@@ -429,6 +441,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToChange $change): string => $change->asked(), WhatToChange::cases()),
         ...array_map(static fn(AskingThemIn $asking): string => $asking->asked(), AskingThemIn::cases()),
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
+        ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));

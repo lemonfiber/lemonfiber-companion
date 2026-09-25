@@ -17,9 +17,6 @@ enum RepairField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The name a stack gives one listing of repairs, quoted back on a yes. */
-    case Agreement = 'agreement';
-
     /** What one repair would do, said in the stack's own words. */
     case Does = 'does';
 

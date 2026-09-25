@@ -35,9 +35,6 @@ enum HouseholdField: string implements NamesAWireField
      */
     case Request = 'request';
 
-    /** The people in a household, each with what they have asked for. */
-    case Members = 'members';
-
     /**
      * The sentences a member is owed, written to them by the core.
      *

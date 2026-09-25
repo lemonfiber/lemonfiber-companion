@@ -72,7 +72,7 @@ final readonly class Households
             throw HouseholdIsUnreadable::unread();
         }
 
-        return self::wanted(self::rows($data, HouseholdField::Members));
+        return self::wanted(self::rows($data, WireField::Members));
     }
 
     /**
@@ -118,7 +118,7 @@ final readonly class Households
             throw HouseholdIsUnreadable::unread();
         }
 
-        $members = self::rows($data, HouseholdField::Members);
+        $members = self::rows($data, WireField::Members);
         $wanted = self::wanted($members);
 
         return count($members) === 1 ? $wanted : Requested::none();

@@ -20,9 +20,6 @@ enum MigrationField: string implements NamesAWireField
     /** Whether the engine answered at all, which is what tells an empty machine from an unread one. */
     case Read = 'read';
 
-    /** The Compose project a set of existing services was started under. */
-    case Project = 'project';
-
     /** Every host port an existing service publishes. */
     case Ports = 'ports';
 

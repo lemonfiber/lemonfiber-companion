@@ -100,11 +100,11 @@ final readonly class WhatIsAlreadyHere
 
         foreach (Required::rows($data, WireField::Standing, MigrationIsUnreadable::missing(WireField::Standing)) as $row) {
             if (! is_array($row)) {
-                throw MigrationIsUnreadable::entry(WireField::Standing, $position, MigrationField::Project);
+                throw MigrationIsUnreadable::entry(WireField::Standing, $position, WireField::Project);
             }
 
             $found[] = AProjectStanding::named(
-                Required::text($row, MigrationField::Project, MigrationIsUnreadable::entry(WireField::Standing, $position, MigrationField::Project)),
+                Required::text($row, WireField::Project, MigrationIsUnreadable::entry(WireField::Standing, $position, WireField::Project)),
                 ...self::services($row, $position),
             );
             $position++;

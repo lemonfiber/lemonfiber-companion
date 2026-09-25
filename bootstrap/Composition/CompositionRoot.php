@@ -52,6 +52,7 @@ use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Provenance;
+use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Rehearsing;
@@ -65,6 +66,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\UpgradingTheLibrary;
@@ -78,6 +80,7 @@ use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
+use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Doors;
@@ -97,6 +100,7 @@ use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -335,6 +339,11 @@ final class CompositionRoot extends ServiceProvider
         // and bound for the same reason.
         $this->app->bind(Storing::class, Storekeepers::class);
         $this->app->bind(Copying::class, Copyists::class);
+
+        // Taking a copy and putting one back, bound beside the listing of
+        // copies for the same reason.
+        $this->app->bind(TakingCopies::class, Copiers::class);
+        $this->app->bind(PuttingBack::class, Restorers::class);
 
         // How full the machine is, read beside the rest and bound for the
         // same reason.

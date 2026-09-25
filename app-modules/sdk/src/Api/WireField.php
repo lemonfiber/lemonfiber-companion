@@ -402,4 +402,34 @@ enum WireField: string implements NamesAWireField
 
     /** Where something would go: what a setting would hold, and the port a service would take instead. */
     case To = 'to';
+
+    /**
+     * Two groups under one word: the people in a household, each with what
+     * they have asked for, and what a copy holds, each with its label.
+     */
+    case Members = 'members';
+
+    /**
+     * The name a stack gives one listing, quoted back on a yes: a listing of
+     * repairs, and what putting a copy back would do.
+     */
+    case Agreement = 'agreement';
+
+    /**
+     * How much a copy covers, on a copy taken and on a copy put back — and,
+     * inside it, the word that says which of the three scopes it is.
+     */
+    case Scope = 'scope';
+
+    /**
+     * A Compose project: the one a set of existing services was started under,
+     * and the one a copy of an existing setup was taken from.
+     */
+    case Project = 'project';
+
+    /** The host trees a copy of an existing setup read. */
+    case Trees = 'trees';
+
+    /** Where one of those trees was read from on the machine. */
+    case HostPath = 'host_path';
 }

@@ -64,7 +64,7 @@ final readonly class Offers
             throw OfferIsUnreadable::missing(WireField::Data);
         }
 
-        return Offer::of(self::text($data, RepairField::Agreement), self::repairs($data));
+        return Offer::of(self::text($data, WireField::Agreement), self::repairs($data));
     }
 
     /**
