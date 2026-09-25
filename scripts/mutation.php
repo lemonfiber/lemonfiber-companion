@@ -86,9 +86,10 @@ const SECONDS_PER_LINE = [
 const SECONDS_PER_LINE_ELSEWHERE = 0.20;
 
 // The mutation time one shard is cut to. Every shard also pays a checkout, an
-// install and one run of the suite before its first mutant — about five
-// minutes on a runner — and the organisation's runners are shared, so a
-// shard cut smaller than this waits for a runner rather than finishing sooner.
+// install and the canary before its first mutant, since it reads the coverage
+// map the tests job wrote rather than running the suite again; and the
+// organisation's runners are shared, so a shard cut smaller than this waits
+// for a runner rather than finishing sooner.
 const SECONDS_PER_SHARD = 600;
 
 $root = dirname(__DIR__);
@@ -685,7 +686,8 @@ function mutate(string $root, int $floor, array $paths, ?string $group, array $l
     $absolute = static fn(string $path): string => sprintf('%s/%s', $root, $path);
 
     $command = sprintf(
-        '%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s%s%s',
+        '%s%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s%s%s',
+        $group === null ? theSharedCoverage() : '',
         escapeshellarg($root),
         $floor,
         escapeshellarg(implode(',', array_map($absolute, $paths))),
@@ -696,6 +698,31 @@ function mutate(string $root, int $floor, array $paths, ?string $group, array $l
     passthru($command, $status);
 
     return $status;
+}
+
+/**
+ * The coverage map a run against the whole suite takes from the tests job, as
+ * the environment the mutation plugin reads, or nothing where none was given.
+ *
+ * CI names the map the `tests` job wrote and how long that run took, in
+ * `MUTATION_SHARED_COVERAGE` and `MUTATION_SUITE_SECONDS`, so a shard opens on
+ * the canary rather than on the whole suite a second time: see
+ * scripts/patch_pest_mutate_shared_coverage.php. A run a group judges is never
+ * given it, because that run's own opening run is the group and nothing else.
+ */
+function theSharedCoverage(): string
+{
+    $map = getenv('MUTATION_SHARED_COVERAGE');
+
+    if (! is_string($map) || $map === '') {
+        return '';
+    }
+
+    return sprintf(
+        'LEMONFIBER_MUTATION_COVERAGE=%s LEMONFIBER_MUTATION_SUITE_SECONDS=%s ',
+        escapeshellarg($map),
+        escapeshellarg((string) getenv('MUTATION_SUITE_SECONDS')),
+    );
 }
 
 /**

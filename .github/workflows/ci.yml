@@ -408,8 +408,14 @@ jobs:
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       # Writes the clover report the floors gate reads. One run produces both
-      # the global number and the fifteen per-tree ones.
-      - run: composer test:report
+      # the global number and the fifteen per-tree ones. It also writes the
+      # coverage map every mutation shard reads, and how long the run took,
+      # which is what each mutant is timed out against: the shards open on the
+      # canary rather than on this whole suite again.
+      - run: |
+          started=$SECONDS
+          composer test:report
+          echo $((SECONDS - started)) > coverage/suite-seconds
       - run: composer test:floors
       # The same two reports are what `sonar` hands SonarCloud, so the suite
       # runs once for both.
@@ -419,6 +425,8 @@ jobs:
           path: |
             coverage/clover.xml
             coverage/junit.xml
+            coverage/mutation.php
+            coverage/suite-seconds
           if-no-files-found: error
           retention-days: 1
 
@@ -516,12 +524,20 @@ jobs:
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: git fetch --no-tags --depth=1 origin "${BASE}"
+      # The coverage map `tests` wrote on this commit, so the shard does not run
+      # the whole suite again to make its own.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: coverage-report
+          path: coverage
       # The same `--changed-since` as the listing, so this cuts the shards the
       # matrix was built from.
       - env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
           SHARD: ${{ matrix.shard.id }}
-        run: composer test:mutation -- --shard="${SHARD}" ${BASE:+--changed-since="${BASE}"}
+          MUTATION_SHARED_COVERAGE: ${{ github.workspace }}/coverage/mutation.php
+        run: |
+          MUTATION_SUITE_SECONDS="$(cat coverage/suite-seconds)" composer test:mutation -- --shard="${SHARD}" ${BASE:+--changed-since="${BASE}"}
 
   # The check branch protection actually names.
   #
