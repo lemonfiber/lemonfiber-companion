@@ -164,6 +164,76 @@ return [
         'none' => 'Deze machine legt geen woorden uit',
     ],
 
+    'credentials' => [
+        'road_in' => 'Wat hij bewaart om services binnen te laten',
+        'heading' => 'Credentials',
+        'state' => [
+            'absent' => 'Ontbreekt: iets hier heeft hem nodig en hij is nooit opgegeven',
+            'active' => 'Werkt',
+            'stale' => 'Niet meer bevestigd sinds hij voor het laatst is geschreven',
+            'invalid' => 'Geweigerd de laatste keer dat hij werd gebruikt',
+            'rotating' => 'Wordt vervangen; de huidige werkt nog',
+            'superseded' => 'Vervangen; de oude wacht om vernietigd te worden',
+        ],
+        'origin' => [
+            'operator' => 'Door jou opgegeven, van een account elders',
+            'service' => 'De service heeft hem zelf gemaakt',
+            'lemonfiber' => 'Door lemonfiber gemaakt',
+        ],
+        'used_by' => 'Gebruikt door',
+        'used_by_nothing' => 'Niets gebruikt hem',
+        'none' => 'Deze machine bewaart geen credentials',
+        'protection' => [
+            'heading' => 'Hoe ze bewaard worden',
+            'against' => 'Dit beschermt tegen:',
+            'not_against' => 'Dit beschermt niet tegen:',
+            'nothing_listed' => 'Niets opgesomd',
+        ],
+        'at_the_machine' => 'Een credential wordt op de machine ingesteld of vervangen, niet hier.',
+    ],
+    'clients' => [
+        'road_in' => 'Met welke app kijken',
+        'heading' => 'Waarop kijken',
+        'support' => [
+            'good' => 'Goed ondersteund',
+            'workable' => 'Werkt, met iets om vooraf te weten',
+            'poor' => 'Slecht ondersteund',
+            'fallback' => 'Werkt overal, niets te installeren',
+        ],
+        'instead' => 'In plaats daarvan: :instead',
+        'straining' => 'Afspelen kan hier moeite hebben met de voorinstelling :preset',
+        'no_devices' => 'Er staan geen apparaten in de lijst',
+        'trouble' => 'Als het niet werkt',
+        'no_causes' => 'Hierachter staat niets opgesomd',
+        'no_trouble' => 'Er staat niets opgesomd voor als het niet werkt',
+    ],
+    'front_door' => [
+        'road_in' => 'Waar het huishouden binnenkomt',
+        'standing' => [
+            'established' => 'De voordeur staat open',
+            'library-only' => 'De bibliotheek is de voordeur; hier valt niets aan te vragen',
+            'unreachable' => 'De voordeur antwoordt niet',
+            'stranded' => 'De voordeur antwoordt, en geen ander apparaat kan verteld worden waar hij is',
+            'none' => 'Niets hier staat open voor het huishouden',
+        ],
+        'chosen' => [
+            'derived' => 'Afgeleid van wat deze stack draait; niemand heeft hem gekozen',
+            'named' => 'Door jou gekozen: :named',
+            'refused' => 'Je koos :named, en dat werd geweigerd: :because',
+        ],
+        'facing' => [
+            'asking' => 'Waar iets aanvragen begint',
+            'watching' => 'De bibliotheek, waar bekeken wordt wat binnenkwam',
+            'shelf' => 'Eén soort media, bereikt vanuit de bibliotheek',
+            'operators' => 'Een overzicht van elke service, ook die het huishouden niet hoort te zien',
+            'carriage' => 'Hoe de andere bereikt worden',
+            'unstated' => 'Open voor het huishouden, en niets zegt wat het voor hen is',
+        ],
+        'no_address' => 'Deze machine zei niet waar hij bereikt wordt',
+        'beside' => 'Wat ze verder kunnen bereiken',
+        'nothing_beside' => 'Verder staat niets open voor het huishouden',
+    ],
+
     'room' => [
         'road_in' => 'Hoe vol deze machine is',
         'level' => [

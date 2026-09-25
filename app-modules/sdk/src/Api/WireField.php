@@ -65,10 +65,10 @@ enum WireField: string implements NamesAWireField
     /** What a stack calls one request, for naming it when acting on it. */
     case Id = 'id';
 
-    /** What a household member is called. */
+    /** What something is called: a household member, or a credential in the operator's words. */
     case Name = 'name';
 
-    /** What a problem means for the operator, in the core's words. */
+    /** What something comes to for the operator, in the core's words: a problem, or the front door. */
     case Meaning = 'meaning';
 
     /** Which arm of the verdict union this is — the tag, not a field beside it. */
@@ -100,10 +100,16 @@ enum WireField: string implements NamesAWireField
      * Named `state` on the wire and `Standing` in this app, because `state` is
      * a word a screen already uses for other things. The case is named for the
      * wire, which is what this enum is for; the type it becomes is not.
+     *
+     * The `credentials` envelope spends the same word on where a credential
+     * stands.
      */
     case State = 'state';
 
-    /** Which service something belongs to — a finding, or a stalled item. */
+    /**
+     * Which service something belongs to — a finding, or a stalled item — and
+     * the service the household begins at, or can reach beside it.
+     */
     case Service = 'service';
 
     /** What something is called in the core's words: a check, or a stalled item. */
@@ -146,7 +152,10 @@ enum WireField: string implements NamesAWireField
      */
     case What = 'what';
 
-    /** Why the stack cannot act on one of them, in the operator's terms. */
+    /**
+     * Why, in the operator's terms: why the stack cannot act on something,
+     * what is wrong behind a symptom, and why a service is not the front door.
+     */
     case Because = 'because';
 
     /** What taking an update would change, service by service. */
@@ -173,6 +182,9 @@ enum WireField: string implements NamesAWireField
      * The field and the tag inside it are both spelled `origin`, which is the
      * contract's doing and not worth a second case: the outer one is a table
      * and the inner one is the word that says which arm of it this is.
+     *
+     * On the `credentials` envelope it is a plain word, not a table: who
+     * produced the credential.
      */
     case Origin = 'origin';
 
@@ -183,6 +195,9 @@ enum WireField: string implements NamesAWireField
      * {@see \Modules\Kernel\Api\WhoPutItThere} rather than carried
      * on beside the word, so that no screen holds a name it has not checked
      * belongs to the arm that has one.
+     *
+     * On the front door, what the operator named as the door where the stack
+     * refused it.
      */
     case Named = 'named';
 
@@ -224,7 +239,7 @@ enum WireField: string implements NamesAWireField
      */
     case Value = 'value';
 
-    /** What stands between one long-running command and the machine. */
+    /** Where something stands: one long-running command, or the household's front door. */
     case Standing = 'standing';
 
     /** What an alert preset means, in the operator's terms. */
@@ -253,8 +268,9 @@ enum WireField: string implements NamesAWireField
     case Command = 'command';
 
     /**
-     * What to do instead: where putting a change back stops short, and why
-     * there is nothing exact to type to update lemonfiber.
+     * What to do instead: where putting a change back stops short, why there
+     * is nothing exact to type to update lemonfiber, what to use on a device
+     * that is poorly served, and what stops playback straining.
      */
     case Instead = 'instead';
 
@@ -270,4 +286,29 @@ enum WireField: string implements NamesAWireField
      * of a traced series were asked for.
      */
     case Wanted = 'wanted';
+
+    /**
+     * What happened, in one plain sentence, on an `error`; and what the
+     * credential store is, before any claim about what it protects against.
+     */
+    case Summary = 'summary';
+
+    /**
+     * A preset by the name it was chosen under: the alert preset in force, and
+     * the quality preset that strains playback on this machine.
+     */
+    case Preset = 'preset';
+
+    /**
+     * What sits beside the thing asked about: what is on the machine that is
+     * not the stack's to keep, and the services the household can reach that
+     * are not the front door.
+     */
+    case Beside = 'beside';
+
+    /**
+     * What is worth knowing before starting: on a device an app is recommended
+     * for, on what strains playback, and on an address handed to the household.
+     */
+    case Caution = 'caution';
 }

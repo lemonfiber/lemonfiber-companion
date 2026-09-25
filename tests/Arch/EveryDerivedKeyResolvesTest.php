@@ -21,9 +21,11 @@ use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
+use Modules\Kernel\Api\HowWellADeviceIsServed;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
@@ -42,11 +44,14 @@ use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
+use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
@@ -55,6 +60,7 @@ use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhetherItIsHeard;
+use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
@@ -290,6 +296,30 @@ function everyDerivedKey(): array
         HowLemonfiberWasInstalled::class => aPairPerCase(
             HowLemonfiberWasInstalled::cases(),
             static fn(HowLemonfiberWasInstalled $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereACredentialStands::class => aPairPerCase(
+            WhereACredentialStands::cases(),
+            static fn(WhereACredentialStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhoMadeACredential::class => aPairPerCase(
+            WhoMadeACredential::cases(),
+            static fn(WhoMadeACredential $case): array => [$case->saidOnTheScreen()],
+        ),
+        HowWellADeviceIsServed::class => aPairPerCase(
+            HowWellADeviceIsServed::cases(),
+            static fn(HowWellADeviceIsServed $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereTheFrontDoorStands::class => aPairPerCase(
+            WhereTheFrontDoorStands::cases(),
+            static fn(WhereTheFrontDoorStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatItFaces::class => aPairPerCase(
+            WhatItFaces::cases(),
+            static fn(WhatItFaces $case): array => [$case->saidOnTheScreen()],
+        ),
+        HowTheDoorWasChosen::class => aPairPerCase(
+            HowTheDoorWasChosen::cases(),
+            static fn(HowTheDoorWasChosen $case): array => [$case->saidOnTheScreen()],
         ),
         WhereThisCopyStands::class => aPairPerCase(
             WhereThisCopyStands::cases(),

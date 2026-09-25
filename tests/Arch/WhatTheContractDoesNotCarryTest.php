@@ -129,6 +129,23 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'to attempt it — and `N3-R16` is answered only by there being no player to implement '
             . 'anything in.',
     ],
+    [
+        'requirement' => 'N9-R7',
+        'asks' => 'to tell an invitation that lapsed unaccepted from one the invitee declined',
+        // Named, and watched as a whole payload: the distinction is two words
+        // the invitation's `standing` does not have, `lapsed` and `declined`,
+        // and either arriving changes the shape recorded here. A field row
+        // could watch only one of them, and `declined` is spent on this wire
+        // already, on a household request and on a repair.
+        'envelope' => 'InvitationEnvelope',
+        'field' => null,
+        'shape' => 'array{address: string, applied?: array{filtering: string, libraries: list<string>, limit?: string|null, requesting: \'made\'|\'not-yet\'|\'not-tried\', unrated: \'held-back\'|\'let-through\'}|null, caution?: string|null, hours: int, linked: \'made\'|\'not-yet\'|\'not-tried\', name: string, rehearsed: bool, standing: \'made\'|\'waiting\'|\'joined\'|\'reset\', withdrawn: list<string>}',
+        'raised' => 'An invitation\'s `standing` is `made`, `waiting`, `joined` or `reset`, and none of those '
+            . 'says that it ran out unaccepted or that the person turned it down. `waiting` past its '
+            . '`hours` is the nearest, and reading it as lapsed would be this app working out a state '
+            . 'the core has not stated, which `N2-R14` refuses. The invitation is not offered here '
+            . 'either, so `N9-R5` and `N9-R6` wait on the action; this one waits on the contract as well.',
+    ],
 ];
 
 /**

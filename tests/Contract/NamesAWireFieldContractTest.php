@@ -5,9 +5,11 @@ declare(strict_types=1);
 use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Api\Fields\BandwidthField;
+use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
+use Modules\Sdk\Api\Fields\CredentialsField;
 use Modules\Sdk\Api\Fields\DoctorField;
-use Modules\Sdk\Api\Fields\ErrorField;
+use Modules\Sdk\Api\Fields\FrontDoorField;
 use Modules\Sdk\Api\Fields\GlossaryField;
 use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Api\Fields\HistoryField;
@@ -48,11 +50,13 @@ function everyFieldNamedOnTheWire(): array
         ...AlertsField::cases(),
         ...ArchivesField::cases(),
         ...BandwidthField::cases(),
+        ...ClientsField::cases(),
         ...ConfigField::cases(),
+        ...CredentialsField::cases(),
         ...DoctorField::cases(),
-        ...ErrorField::cases(),
         ...GlossaryField::cases(),
         ...HeldField::cases(),
+        ...FrontDoorField::cases(),
         ...HistoryField::cases(),
         ...HostingField::cases(),
         ...HouseholdField::cases(),

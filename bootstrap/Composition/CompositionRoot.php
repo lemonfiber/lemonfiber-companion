@@ -28,6 +28,7 @@ use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Capture;
@@ -49,6 +50,7 @@ use Modules\Kernel\Api\Provenance;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Rehearsing;
+use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
@@ -63,18 +65,22 @@ use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
+use Modules\Kernel\Api\Welcoming;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
+use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
+use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
@@ -327,6 +333,13 @@ final class CompositionRoot extends ServiceProvider
         // The running copy of lemonfiber, read beside the rest and bound for
         // the same reason.
         $this->app->bind(SelfChecking::class, Inspectors::class);
+
+        // Who gets in: the credentials, which app to watch on, and the front
+        // door, each read beside the rest and bound for the same reason.
+        $this->app->bind(Safekeeping::class, Keyholders::class);
+        $this->app->bind(Advising::class, Advisers::class);
+        $this->app->bind(Welcoming::class, Doorkeepers::class);
+
         $this->app->bind(Explaining::class, Explainers::class);
         $this->app->bind(Rehearsing::class, Rehearsers::class);
         $this->app->bind(Tracing::class, Followers::class);

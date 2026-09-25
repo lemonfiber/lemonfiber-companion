@@ -153,6 +153,15 @@ enum AStacksScreen: string
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
     case Itself = '/stacks/{stack}/itself';
 
+    /** The credentials this machine holds to let services in, and what uses each. */
+    case Credentials = '/stacks/{stack}/credentials';
+
+    /** Which app the household should watch on, device by device. */
+    case Clients = '/stacks/{stack}/clients';
+
+    /** Where the household comes in, and what else they can reach. */
+    case FrontDoor = '/stacks/{stack}/front-door';
+
     /** What lemonfiber's words mean. */
     case Words = '/stacks/{stack}/words';
 

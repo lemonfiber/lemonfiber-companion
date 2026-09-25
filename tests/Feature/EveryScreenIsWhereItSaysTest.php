@@ -8,6 +8,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhatItKeepsOfItself;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Operator\Internal\WhoGetsIn;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -164,9 +165,10 @@ it('every way this app asks where a machine is hands back a path the router know
     // that hands the enum's paths out.
     //
     // An accessor may hand out a further set of paths rather than one —
-    // `ofItself()` does, for the screens about what a machine keeps of itself
-    // — and the sweep follows it, so a route moved there is still read here
-    // rather than falling out of sight with the move.
+    // `ofItself()` does, for the screens about what a machine keeps of itself,
+    // and `whoGetsIn()`, for who gets in to it — and the sweep follows each,
+    // so a route moved there is still read here rather than falling out of
+    // sight with the move.
     $where = WhereAStackIs::rememberedAs(Screens::aStackInTheUri());
     $unknown = [];
     $asked = 0;
@@ -184,7 +186,7 @@ it('every way this app asks where a machine is hands back a path the router know
 
             $path = $method->invoke($holder);
 
-            if ($path instanceof WhatItKeepsOfItself) {
+            if ($path instanceof WhatItKeepsOfItself || $path instanceof WhoGetsIn) {
                 $toSweep[] = $path;
 
                 continue;

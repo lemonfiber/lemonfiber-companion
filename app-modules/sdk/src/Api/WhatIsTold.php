@@ -47,7 +47,7 @@ final readonly class WhatIsTold
         }
 
         return WhatTheOperatorIsTold::byPreset(
-            self::word($data, AlertsField::Preset),
+            self::word($data, WireField::Preset),
             self::word($data, WireField::Means),
             SetApart::of(...self::exceptions($data)),
         );

@@ -189,6 +189,41 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'confirmation here because there is no change.',
     ],
     [
+        'path' => 'CredentialsEnvelope.held[].fingerprint',
+        'because' => 'A short likeness of the value, for telling two copies apart in a report. Nothing on the '
+            . 'credentials screen compares copies, and a likeness of a value drawn beside a credential is '
+            . 'the nearest this surface would come to drawing the value, which `N9-R4` refuses.',
+    ],
+    [
+        'path' => 'CredentialsEnvelope.held[].from',
+        'because' => 'Whose line the credential is: the stack\'s own, or an installed plugin\'s. `N9-R3` asks '
+            . 'who produced it, which `origin` answers; which plugin brought the service is a question about '
+            . 'provenance no requirement here asks, and it belongs beside the plugin, where `F7` draws it.',
+    ],
+    [
+        'path' => 'CredentialsEnvelope.held[].location',
+        'because' => 'Where the value lives on the machine, as a path. It is where somebody at the machine '
+            . 'goes to replace it, and nothing on this surface replaces a credential (`N9-R4`); a path on a '
+            . 'phone is a direction to a place the person holding it is not.',
+    ],
+    [
+        'path' => 'CredentialsEnvelope.held[].setting',
+        'because' => 'The setting the credential is recorded under, a name and never a value. It is how the '
+            . 'settings screen would find it, and no requirement here asks the credentials screen to link '
+            . 'there; the credential is named in the operator\'s words by `name`.',
+    ],
+    [
+        'path' => 'CredentialsEnvelope.revealed',
+        'because' => 'One value, handed back only where an operator asked at the terminal to see it and '
+            . 'confirmed. This app never asks for one and never draws one (`N9-R4`), so the field that '
+            . 'could carry a value is the one field of this envelope that is never read.',
+    ],
+    [
+        'path' => 'CredentialsEnvelope.rotated',
+        'because' => 'What became of a rotation, where one was asked for. Rotating is done at the machine, '
+            . 'and nothing here asks for one, so no answer this app receives carries it.',
+    ],
+    [
         'path' => 'DoctorEnvelope.findings[].said',
         'because' => 'A summary line beside the meaning. `N2-R3` has a finding carry its code, its meaning '
             . 'and its remedy, and a second sentence saying roughly the meaning again is the core being '

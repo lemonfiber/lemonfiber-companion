@@ -16,7 +16,6 @@ use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
-use Modules\Sdk\Api\Fields\ErrorField;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -66,7 +65,7 @@ final readonly class Problems
             Code::of(self::text($data, WireField::Code)),
             self::severity(self::text($data, WireField::Severity)),
             self::standing(self::text($data, WireField::State)),
-            self::text($data, ErrorField::Summary),
+            self::text($data, WireField::Summary),
             self::text($data, WireField::Meaning),
             self::remedies($data),
         );
