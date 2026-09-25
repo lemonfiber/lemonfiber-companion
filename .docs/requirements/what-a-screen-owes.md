@@ -75,8 +75,8 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 62 envelopes and this app follows 33.
-Of the rest, 27 are never named by the code in `app-modules` or `bridge`, tests
+**The measurement.** The SDK ships 62 envelopes and this app follows 35.
+Of the rest, 25 are never named by the code in `app-modules` or `bridge`, tests
 aside, and 2 more — `Admission` and `Pull` — are named without being followed.
 They resolve to the features below — each one an action available from another
 surface and not offered here, or offered only in part.
@@ -107,7 +107,7 @@ them. `A5` is the survey of what is already on a machine: every project and serv
 keeps running when nobody is signed in, what each command guarantees and what
 did not come back, and handing a command over or taking it back with what each did (`N10-R10`, `N23-R1` to `N23-R5`); `D9` is where one item got to, followed through the services (`N8-R4` to `N8-R6`, `N8-R8`, `N8-R9`); `D2` is the quality presets in force, choosing one overall or per kind of media, a held choice confirmed apart, and upgrading what is already here described kind by kind before it is carried out (`N24-R1` to `N24-R5`, `N24-R10`); `D5` is how full the machine is, where the room went and each download with where it stands (`N12-R1` to `N12-R3`, `N12-R6`, `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E2` is which version runs, how it was installed and what moving it would take (`N14-R1` to `N14-R8`); `E4`
 is the record of what was changed and how far back it goes (`N11-R1` to
-`N11-R3`, `N11-R9`, `N11-R10`); `E3` is the list of copies, with an empty one told apart from one that could not be read (`N6-R9`); `G8` is what leaves the machine, ours and
+`N11-R3`, `N11-R9`, `N11-R10`); `E3` is the list of copies, taking one and putting one back: an empty list told apart from one that could not be read, the scope named before and after, what a copy removed, how its size stood against the minute, a rehearsal labelled as one and where a restore put the data (`N6-R1` to `N6-R5`, `N6-R9`, `N6-R10`); `G8` is what leaves the machine, ours and
 theirs apart (`N10-R1` to `N10-R3`, `N10-R12`). Each is kept on
 [what leaves a machine](what-leaves-a-machine.md),
 [moving in](moving-in.md),

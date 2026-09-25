@@ -34,9 +34,10 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Alerts', 'Archives', 'Bandwidth', 'Clients', 'Config', 'Credentials', 'Doctor', 'Error', 'Forms', 'FrontDoor',
-    'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Log', 'Migration', 'Music', 'Outbound',
-    'Preview', 'Provenance', 'Quality', 'Repair', 'SelfUpdate', 'Space', 'Status', 'Stored', 'Stuck', 'Trace', 'Update', 'Upgrade',
+    'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Clients', 'Config', 'Credentials', 'Doctor', 'Error', 'Forms',
+    'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Log', 'Migration',
+    'Music', 'Outbound', 'Preview', 'Provenance', 'Quality', 'Repair', 'Restore', 'SelfUpdate', 'Space', 'Status',
+    'Stored', 'Stuck', 'Trace', 'Update', 'Upgrade',
 ];
 
 /**
@@ -70,8 +71,8 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Adoption', 'Backup', 'Beside', 'Bundle', 'Catalogue', 'Dashboard', 'Import', 'Lifecycle',
-    'Plugins', 'Pull', 'Removal', 'Replacement', 'Reset', 'Restore',
+    'Admission', 'Adoption', 'Beside', 'Bundle', 'Catalogue', 'Dashboard', 'Import', 'Lifecycle',
+    'Plugins', 'Pull', 'Removal', 'Replacement', 'Reset',
     'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall', 'Version',
     'Walkthrough', 'Watch', 'Wiring', 'Word',
 ];
