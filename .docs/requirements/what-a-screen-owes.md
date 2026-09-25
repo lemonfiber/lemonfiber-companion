@@ -76,15 +76,13 @@ below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
 **The measurement.** The SDK ships 62 envelopes and this app follows 25.
-Thirty-five are never referenced anywhere in `app-modules` or `bridge`, and two
-more — `Admission` and `Pull` — are referenced without being followed. They
-resolve to the features below — each one an action available from another
+Of the rest, 35 are never named by the code in `app-modules` or `bridge`, tests
+aside, and 2 more — `Admission` and `Pull` — are named without being followed.
+They resolve to the features below — each one an action available from another
 surface and not offered here, or offered only in part.
-
-```
-ls vendor/lemonfiber/sdk-php/src/Generated/*Envelope.php | wc -l   # 62
-Tests\Support\WhatTheReadersRead::envelopes()                      # 25
-```
+`tests/Feature/EveryActionTheStackOffersTest.php` classifies every kind the SDK
+ships as offered, excused by a requirement, or not yet offered, and holds these
+counts to what those lists come to.
 
 `A2` is not in the list: first-run setup is the one exception `N1-R2` allows
 for, and `N1-R4` states it and why — a phone cannot perform the act that makes a
@@ -162,9 +160,9 @@ That leaves **twenty-one** with nothing documented at all.
 | `H8` | Playback statistics |
 | `K1` | Metrics & dashboards |
 
-**Why no rule caught this.** `WhatTheContractCarriesThatNothingReadsTest` is the
-register for unread fields, and it is a good rule — every path on an envelope
-this app reads is either followed to a reader or listed with a reason. It walks
-`WhatTheReadersRead::envelopes()`, so an envelope nothing touches contributes no
-paths and can never be flagged. It watches fields arriving on doors already
-opened; nothing watched the doors never opened at all.
+**What each rule watches.** `WhatTheContractCarriesThatNothingReadsTest` holds
+every path on an envelope this app reads to a reader or a listed reason; it
+walks `WhatTheReadersRead::envelopes()`, so it sees only envelopes a reader
+opens. `EveryActionTheStackOffersTest` holds the envelopes themselves: each one
+the SDK ships is offered, excused or not yet offered, and the counts above are
+its measurement.
