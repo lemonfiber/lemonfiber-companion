@@ -22,6 +22,14 @@ return [
     'came_from_operator' => 'Set here',
     'came_from_plugin' => 'Set by the :named plugin',
     'came_from_unknown' => 'Nobody could say where this came from — :why',
+    'came_from_overridden' => 'Set by the :named plugin, over what was there before',
+    'came_from_orphaned' => 'Set by the :named plugin, which is no longer installed',
+    // What a plugin's change replaced, under the line naming the plugin.
+    'before' => [
+        'held' => 'Before, it held :value',
+        'nothing_set' => 'Before, nothing was set and the stack\'s default applied',
+        'withheld' => 'Before, it held a credential, which is not shown',
+    ],
 
     'what_this_is_set_to' => 'What this machine is set to',
 

@@ -33,4 +33,9 @@ final class AnOriginIsUnnamed extends InvalidArgumentException
     {
         return new self('an origin was reported unknown with no reason, and *unknown* with nothing after it reads as a default');
     }
+
+    public static function replacingABlank(): self
+    {
+        return new self('a plugin was said to have replaced a blank value, and a value with nothing in it is the stack saying nothing was set');
+    }
 }

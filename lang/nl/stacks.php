@@ -108,6 +108,8 @@ return [
                 'operator' => 'Een hier toegevoegde dienst',
                 'plugin' => 'Meegebracht door de plug-in :named',
                 'unknown' => 'Niemand kon zeggen waar deze dienst vandaan komt — :why',
+                'overridden' => 'Gewijzigd door de plug-in :named',
+                'orphaned' => 'Meegebracht door de plug-in :named, die niet meer is geïnstalleerd',
                 'legend' => 'Een dienst waarbij staat waar hij vandaan komt, is geen eigen dienst van de stack; alle andere wel.',
             ],
         ],

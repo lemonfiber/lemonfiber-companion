@@ -146,6 +146,8 @@ return [
                 'operator' => 'A service added here',
                 'plugin' => 'Brought by the :named plugin',
                 'unknown' => 'Nobody could say where this service came from — :why',
+                'overridden' => 'Changed by the :named plugin',
+                'orphaned' => 'Brought by the :named plugin, which is no longer installed',
                 'legend' => 'A service marked with where it came from is not one of the stack\'s own; every other is.',
             ],
         ],

@@ -21,6 +21,8 @@ return [
         'operator' => 'A check added here',
         'plugin' => 'A check from the :named plugin',
         'unknown' => 'Nobody could say where this check came from — :why',
+        'overridden' => 'A check the :named plugin changed',
+        'orphaned' => 'A check from the :named plugin, which is no longer installed',
         'legend' => 'A check marked with where it came from is not one of the stack\'s own; every other is.',
     ],
     'conclusion' => [

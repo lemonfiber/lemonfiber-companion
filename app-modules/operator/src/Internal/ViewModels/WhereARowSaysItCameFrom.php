@@ -9,9 +9,10 @@ use Modules\Kernel\Api\WhoSetIt;
 /**
  * One row's origin, as the two things a template needs to say it.
  *
- * A key naming which of the four arms this is, and the one string that arm
- * carries — a plugin's name, or the stack's reason an origin is unknown. The
- * two arms that name nothing carry `null`, not an empty string: a blank here
+ * A key naming which arm this is, and the one string that arm carries — a
+ * plugin's name, or the stack's reason an origin is unknown — with what an
+ * override replaced where it replaced something. The arms that name nothing
+ * carry `null`, not an empty string: a blank here
  * is never put on the screen, so nothing could tell one blank from another,
  * and the template reads the absence rather than interpolating a nothing.
  *
@@ -26,6 +27,7 @@ final readonly class WhereARowSaysItCameFrom
     public function __construct(
         public WhoSetIt $came,
         public ?string $attributed = null,
+        public ?WhatWasThereBefore $before = null,
     ) {}
 
     /**

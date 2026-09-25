@@ -131,6 +131,13 @@
                  is the one attribution that must never be mistaken for the
                  stack's own. --}}
             <x-operator::came-from :from="$setting->from" :said="$setting->from->came->ofASetting()" />
+            {{-- What a plugin's change replaced, and where that came from, so
+                 putting it back is known to return to a default or to
+                 somebody's choice. --}}
+            @if ($setting->from->before !== null)
+                <x-operator::note>{{ __($setting->from->before->said, ['value' => $setting->from->before->value]) }}</x-operator::note>
+                <x-operator::came-from :from="$setting->from->before->from" :said="$setting->from->before->from->came->ofASetting()" />
+            @endif
         </x-operator::entry>
     @empty
         {{-- A stack with nothing set is an answer, and not the same screen as

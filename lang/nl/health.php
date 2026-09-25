@@ -19,6 +19,8 @@ return [
         'operator' => 'Een hier toegevoegde controle',
         'plugin' => 'Een controle van de plug-in :named',
         'unknown' => 'Niemand kon zeggen waar deze controle vandaan komt — :why',
+        'overridden' => 'Een controle die de plug-in :named heeft gewijzigd',
+        'orphaned' => 'Een controle van de plug-in :named, die niet meer is geïnstalleerd',
         'legend' => 'Een controle waarbij staat waar hij vandaan komt, is geen eigen controle van de stack; alle andere wel.',
     ],
     'conclusion' => [
