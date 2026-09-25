@@ -66,26 +66,30 @@ use Tests\Support\Tree;
 // What a line of code costs to mutate on a runner, in seconds, by where it is;
 // the longest matching path wins. A line in a screen or a presenter costs more
 // than one in a value object, because the tests that judge its mutants render
-// the screen. The figures are CI mutation seconds over lines mutated.
+// the screen. The figures are CI mutation seconds over lines of code mutated,
+// fitted to every shard of CI run 36163604500, which mutated every tree. An
+// adapter under `sdk/src` costs the most: every one of its mutants runs the
+// contract suites that spoil each field of each answer it reads.
 //
 // A path with no entry costs SECONDS_PER_LINE_ELSEWHERE. These numbers decide
 // only which runner a file goes to, never whether its mutants are run.
 const SECONDS_PER_LINE = [
-    'app-modules/household/src' => 0.51,
-    'app-modules/kernel/src' => 0.20,
-    'app-modules/operator/src' => 0.09,
-    'app-modules/operator/src/Internal/Presenters' => 0.43,
-    'app-modules/operator/src/Internal/Screens' => 0.36,
-    'app-modules/sdk/src' => 0.14,
-    'bridge/src' => 0.26,
+    'app-modules/household/src' => 0.82,
+    'app-modules/kernel/src' => 0.42,
+    'app-modules/operator/src' => 0.13,
+    'app-modules/operator/src/Internal/Presenters' => 0.62,
+    'app-modules/operator/src/Internal/Screens' => 0.55,
+    'app-modules/sdk/src' => 1.20,
+    'bridge/src' => 0.44,
 ];
 
 const SECONDS_PER_LINE_ELSEWHERE = 0.20;
 
 // The mutation time one shard is cut to. Every shard also pays a checkout, an
-// install and one run of the suite before its first mutant, so a smaller share
-// buys a shorter slowest runner with more of those.
-const SECONDS_PER_SHARD = 210;
+// install and one run of the suite before its first mutant — about five
+// minutes on a runner — and the organisation's runners are shared, so a
+// shard cut smaller than this waits for a runner rather than finishing sooner.
+const SECONDS_PER_SHARD = 600;
 
 $root = dirname(__DIR__);
 
@@ -515,7 +519,9 @@ function runHeld(string $root, array $run): int
  *   whole tree, because those tests are what judge its mutants.
  * - A change to what decides how the gate runs — a manifest, `phpunit.xml`,
  *   the Pest bootstrap, the application's bootstrap and config, this script
- *   and the workflow that runs it — mutates everything.
+ *   and the workflow that runs it — mutates everything. A change to that
+ *   workflow which only moves the revisions its actions are pinned at is not
+ *   one: it mutates nothing by itself.
  * - Anything else — documentation, templates, the shared test suites and
  *   their support, translations, the lock, other workflows — mutates nothing
  *   by itself.
@@ -542,7 +548,7 @@ function whatTheChangeReaches(string $root, string $since): ?array
     $reach = [];
 
     foreach (array_filter(explode("\n", $said), static fn(string $line): bool => $line !== '') as $path) {
-        if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) === 1) {
+        if (decidesHowTheGateRuns($root, $since, $path)) {
             fwrite(STDERR, sprintf("%s decides how the gate runs, so every path is mutated.\n", $path));
 
             return null;
@@ -562,6 +568,60 @@ function whatTheChangeReaches(string $root, string $since): ?array
     fwrite(STDERR, sprintf("The change reaches: %s\n", $reach === [] ? 'no path that is mutated' : implode(', ', $reach)));
 
     return $reach;
+}
+
+/**
+ * Whether a changed path decides how the gate runs, which mutates every path.
+ *
+ * The workflow that runs this is one such path, unless all its change did was
+ * move the revisions its actions are pinned at.
+ */
+function decidesHowTheGateRuns(string $root, string $since, string $path): bool
+{
+    if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) !== 1) {
+        return false;
+    }
+
+    if ($path === '.github/workflows/ci.yml' && onlyPinsMoved($root, $since, $path)) {
+        fwrite(STDERR, sprintf("%s moved only the revisions its actions are pinned at, so it reaches nothing that is mutated.\n", $path));
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Whether every line a change touched in a workflow is an action's pin.
+ *
+ * A pin names the revision a step runs — `uses: owner/repo@<sha> # <tag>` —
+ * and moving it changes which revision of that action runs, not how this gate
+ * cuts, runs or judges its mutants. Any other line, or a diff git cannot give,
+ * is a change to how the gate runs.
+ */
+function onlyPinsMoved(string $root, string $since, string $path): bool
+{
+    $said = shell_exec(sprintf('git -C %s diff --unified=0 %s HEAD -- %s 2>/dev/null', escapeshellarg($root), escapeshellarg($since), escapeshellarg($path)));
+
+    if (! is_string($said)) {
+        return false;
+    }
+
+    $touched = 0;
+
+    foreach (explode("\n", $said) as $line) {
+        if (preg_match('#^(\+\+\+|---) #u', $line) === 1 || preg_match('#^[+-]#u', $line) !== 1) {
+            continue;
+        }
+
+        if (preg_match('#^[+-]\s*(-\s+)?uses:\s*\S+@[0-9a-f]{40}(\s+\#.*)?$#u', $line) !== 1) {
+            return false;
+        }
+
+        $touched++;
+    }
+
+    return $touched > 0;
 }
 
 /**

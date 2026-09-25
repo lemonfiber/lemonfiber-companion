@@ -140,19 +140,20 @@ jobs:
   # and pinned by commit. Those needing a pull request are guarded, because this
   # workflow also runs on pushes to main and on merge groups.
   #
-  # `dco` and `attribution` are not guarded, and are the two that need no
-  # `merge_group` handling at all: each reads a base..head range off the event,
-  # finds none outside a pull request, and says `no PR range; skipping` in its
-  # own log before passing. That is a reported pass rather than a silent one,
-  # which is the whole reason they are shaped that way.
+  # `dco` and `attribution` are not guarded, and need no `merge_group`
+  # handling here: each reads the range it checks off the event — a pull
+  # request's base..head, or a merge group's — and fails where a pull request
+  # or a merge group gives none. On a push to `main` there is no range, and each
+  # says `no PR range; skipping` in its own log before passing: a reported pass
+  # rather than a silent one.
   dco:
     uses: lemonfiber/spec/.github/workflows/dco.yml@f7ef911f4276d09240148d0c5ff5a18d9534497d # v1.0.15
 
   # Beside `dco` because the two read the same record from opposite directions:
   # that one insists a human attested to the work, this one insists no tool is
   # credited for it (`GOV-R46`). Unguarded for `dco`'s reason — it is shaped the
-  # same way and says "no PR range; skipping" on a push to main rather than
-  # needing an `if` here to say it for it.
+  # same way: it checks a pull request's or a merge group's range, and says
+  # "no PR range; skipping" on a push to main.
   attribution:
     uses: lemonfiber/spec/.github/workflows/attribution.yml@f7ef911f4276d09240148d0c5ff5a18d9534497d # v1.0.15
 
@@ -192,9 +193,10 @@ jobs:
     uses: lemonfiber/spec/.github/workflows/spec-check.yml@f7ef911f4276d09240148d0c5ff5a18d9534497d # v1.0.15
 
   commitlint:
-    # A merge group runs this, and not because there is anything to lint there:
-    # the shared gate finds no range, says `no PR range; skipping`, and passes.
-    # It runs because of how a skipped job is *named*. `commitlint / commitlint`
+    # A merge group runs this, and the shared gate lints the group's own
+    # base..head range, so every subject the queue is about to merge is read.
+    # It has to run for a second reason too, which is how a skipped job is
+    # *named*. `commitlint / commitlint`
     # is the caller job and the called job joined, and skipping the caller means
     # the called job never exists — so that name reports nothing at all rather
     # than reporting a skip, and a required context that reports nothing is a
@@ -438,8 +440,11 @@ jobs:
   # the two skip together; `mutation` below is what waits for the tests.
   #
   # On a pull request it lists only the shards the change reaches, and reads
-  # that from git against the base commit, which is fetched for it. On a merge
-  # group and on `main` it lists every shard.
+  # that from git against the base commit, which is fetched for it. On `main`
+  # it lists every shard. On a merge group it lists none: each pull request's
+  # own run judged the mutants its change reaches, the queue's run of `tests`
+  # is what catches two changes that break together, and the run on `main`
+  # mutates every path.
   mutation-scope:
     name: what to mutate
     needs: scope
@@ -464,7 +469,14 @@ jobs:
       - id: list
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
-        run: echo "shards=$(php scripts/mutation.php --list ${BASE:+--changed-since="${BASE}"})" >> "$GITHUB_OUTPUT"
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = merge_group ]; then
+            echo "A merge group mutates nothing: every pull request in it was mutated on its own run, and main mutates every path."
+            echo "shards=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "shards=$(php scripts/mutation.php --list ${BASE:+--changed-since="${BASE}"})" >> "$GITHUB_OUTPUT"
 
   # The most expensive gate in the repository, so it is the most guarded: only
   # once the tests have passed, and only over the app's own logic. Mutating code
@@ -752,15 +764,11 @@ jobs:
     # `!cancelled()` rather than `always()`: a cancelled run is somebody pressing
     # stop, and finishing the job they stopped serves nobody.
     #
-    # On a merge group `gate / gate` skips, and reports success by skipping. The
-    # condition that does it is in the reusable rather than here — its `gate` job
-    # is `if: github.event_name == 'pull_request'`, and its `not-a-pull-request`
-    # job runs in its place and says in the log that nothing was gated. Nothing
-    # in this file can change that, and there is nothing for it to read anyway:
-    # the gate wants a SonarCloud summary about a pull request and an allowance
-    # to compare against a base branch, and a merge group has neither. `Q-R64`
-    # is enforced one step earlier, on the pull request, which is where the two
-    # things it reads exist.
+    # On a merge group `gate / gate` judges the batch: it reads the new-issue
+    # count SonarCloud reported for every pull request in it — each named by
+    # the `(#N)` its squashed subject ends with — and the project's open count
+    # against `allowed-open`, and refuses anything it cannot read, so `Q-R64`
+    # holds on what the queue merges and not only on each pull request alone.
     if: ${{ !cancelled() }}
     permissions:
       contents: read
