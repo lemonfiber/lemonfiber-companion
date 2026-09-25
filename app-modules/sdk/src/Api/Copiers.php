@@ -10,6 +10,7 @@ use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Entropy;
@@ -57,7 +58,7 @@ final readonly class Copiers implements TakingCopies
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -68,7 +69,7 @@ final readonly class Copiers implements TakingCopies
             return $this->outcome($stack, $session, $job);
         } catch (RequestFailed $why) {
             return HowTheCopyIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BackupIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BackupIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
             return HowTheCopyIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }

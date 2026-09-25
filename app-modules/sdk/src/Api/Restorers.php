@@ -10,6 +10,7 @@ use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\Entropy;
@@ -67,7 +68,7 @@ final readonly class Restorers implements PuttingBack
             return WhatTheRestoreRehearsalFound::listed(TheRestore::listedIn($envelope, $copy));
         } catch (RequestFailed $why) {
             return WhatTheRestoreRehearsalFound::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
             return WhatTheRestoreRehearsalFound::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -91,7 +92,7 @@ final readonly class Restorers implements PuttingBack
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -102,7 +103,7 @@ final readonly class Restorers implements PuttingBack
             return $this->outcome($stack, $session, $job);
         } catch (RequestFailed $why) {
             return HowPuttingItBackIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
             return HowPuttingItBackIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }
