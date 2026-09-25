@@ -17,9 +17,11 @@ use Modules\Kernel\Api\HowItWasReached;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
+use Modules\Kernel\Api\HowWellADeviceIsServed;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
@@ -34,14 +36,18 @@ use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
+use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereThisCopyStands;
+use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -657,6 +663,48 @@ it('N1-R13 — everywhere a copy of lemonfiber can stand has a case', function (
     expect(valuesOf(WhereThisCopyStands::cases()))->toBe($words);
 });
 
+it('every state a credential can be in has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('CredentialsEnvelope'), 'state');
+
+    expect($words)->not->toBe([], 'no state union was found in the generated envelope');
+    expect(valuesOf(WhereACredentialStands::cases()))->toBe($words);
+});
+
+it('everybody who can have produced a credential has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('CredentialsEnvelope'), 'origin');
+
+    expect($words)->not->toBe([], 'no origin union was found in the generated envelope');
+    expect(valuesOf(WhoMadeACredential::cases()))->toBe($words);
+});
+
+it('every rating a device can be given has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('ClientsEnvelope'), 'support');
+
+    expect($words)->not->toBe([], 'no support union was found in the generated envelope');
+    expect(valuesOf(HowWellADeviceIsServed::cases()))->toBe($words);
+});
+
+it('everywhere a front door can stand has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('FrontDoorEnvelope'), 'standing');
+
+    expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
+    expect(valuesOf(WhereTheFrontDoorStands::cases()))->toBe($words);
+});
+
+it('everything a service can be to the household has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('FrontDoorEnvelope'), 'facing');
+
+    expect($words)->not->toBe([], 'no facing union was found in the generated envelope');
+    expect(valuesOf(WhatItFaces::cases()))->toBe($words);
+});
+
+it('every way a front door can have come to be has a case', function (): void {
+    $words = theArmsIn(theGeneratedEnvelope('FrontDoorEnvelope'), 'chosen');
+
+    expect($words)->not->toBe([], 'no chosen arms were found in the generated envelope');
+    expect(valuesOf(HowTheDoorWasChosen::cases()))->toBe($words);
+});
+
 it('N1-R13 — every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
@@ -780,6 +828,12 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhatItWouldNeed::class => 'needs',
     WhatHappenedToIt::class => 'outcome',
     WhereThisCopyStands::class => 'standing',
+    WhereACredentialStands::class => 'state',
+    WhoMadeACredential::class => 'origin',
+    HowWellADeviceIsServed::class => 'support',
+    WhereTheFrontDoorStands::class => 'standing',
+    WhatItFaces::class => 'facing',
+    HowTheDoorWasChosen::class => 'chosen',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in
