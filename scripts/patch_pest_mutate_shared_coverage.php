@@ -12,6 +12,13 @@ declare(strict_types=1);
  * that suite, under coverage, on the same commit, and every mutation shard ran
  * it again — about five minutes a shard, twenty times over, all identical.
  *
+ * That run is `composer test:report`, and it keeps its map by naming a path in
+ * `LEMONFIBER_KEEP_COVERAGE`. Pest's `--coverage` writes the map to a path of
+ * its own, after any `--coverage-php` given on the command line so that one is
+ * never written, and deletes it once the report is printed; the patch to
+ * `Support/Coverage.php` copies it out first, merged across the parallel
+ * workers.
+ *
  * With `LEMONFIBER_MUTATION_COVERAGE` naming a map written by that run, and
  * `LEMONFIBER_MUTATION_SUITE_SECONDS` saying how long the run took:
  *
@@ -41,6 +48,22 @@ declare(strict_types=1);
 
 /** Each file this rewrites, relative to this script, with what it ships and what it becomes. */
 const PATCHES = [
+    '/../vendor/pestphp/pest/src/Support/Coverage.php' => [
+        <<<'SHIPS'
+                CoverageMerger::applyIfMarked($reportPath);
+        SHIPS,
+        <<<'BECOMES'
+                CoverageMerger::applyIfMarked($reportPath);
+
+                // The map this run wrote, kept for the mutation shards before it is
+                // deleted below. See scripts/patch_pest_mutate_shared_coverage.php.
+                $keep = getenv('LEMONFIBER_KEEP_COVERAGE');
+
+                if (is_string($keep) && $keep !== '' && ! copy($reportPath, $keep)) {
+                    throw ShouldNotHappen::fromMessage(sprintf('The coverage map could not be kept at [%s].', $keep));
+                }
+        BECOMES,
+    ],
     '/../vendor/pestphp/pest-plugin-mutate/src/Plugins/Mutate.php' => [
         <<<'SHIPS'
                     $mutationTestRunner->setOriginalArguments($arguments);
@@ -99,13 +122,13 @@ foreach (PATCHES as $where => [$ships, $becomes]) {
     $source = file_exists($path) ? file_get_contents($path) : false;
 
     if (! is_string($source)) {
-        fwrite(STDERR, sprintf("patch_pest_mutate_shared_coverage: %s is not there or cannot be read.\n\nThe mutation plugin no longer ships a file this patch rewrites. Point this at the new path, or delete this script, its `composer.json` hooks and the `MUTATION_SHARED_COVERAGE` step in CI. Do not ignore this.\n", $path));
+        fwrite(STDERR, sprintf("patch_pest_mutate_shared_coverage: %s is not there or cannot be read.\n\nPest or its mutation plugin no longer ships a file this patch rewrites. Point this at the new path, or delete this script, its `composer.json` hooks and the `MUTATION_SHARED_COVERAGE` step in CI. Do not ignore this.\n", $path));
 
         exit(1);
     }
 
     if (! str_contains($source, $becomes) && ! str_contains($source, $ships)) {
-        fwrite(STDERR, sprintf("patch_pest_mutate_shared_coverage: the lines this patch rewrites are not in %s.\n\nThe plugin changed. Until this is pointed at what it ships now, a shard handed a shared map reads the canary's coverage for the whole suite's and skips every line the canary does not reach. Do not ignore this.\n", $path));
+        fwrite(STDERR, sprintf("patch_pest_mutate_shared_coverage: the lines this patch rewrites are not in %s.\n\nPest or its mutation plugin changed. Until this is pointed at what it ships now, a shard handed a shared map reads the canary's coverage for the whole suite's and skips every line the canary does not reach. Do not ignore this.\n", $path));
 
         exit(1);
     }

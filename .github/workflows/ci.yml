@@ -411,11 +411,13 @@ jobs:
       # the global number and the fifteen per-tree ones. It also writes the
       # coverage map every mutation shard reads, and how long the run took,
       # which is what each mutant is timed out against: the shards open on the
-      # canary rather than on this whole suite again.
+      # canary rather than on this whole suite again. The upload below errors
+      # only when none of its files exist, so a missing map is refused here.
       - run: |
           started=$SECONDS
           composer test:report
           echo $((SECONDS - started)) > coverage/suite-seconds
+          test -s coverage/mutation.php || { echo "::error::test:report wrote no coverage map at coverage/mutation.php"; exit 1; }
       - run: composer test:floors
       # The same two reports are what `sonar` hands SonarCloud, so the suite
       # runs once for both.
