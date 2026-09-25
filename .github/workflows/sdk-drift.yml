@@ -128,6 +128,39 @@ jobs:
             exit 1
           fi
 
+          # What composer installs is the client's archive, and its
+          # `.gitattributes` leaves out everything marked `export-ignore` — its
+          # workflows, tests and tooling. A commit that changed only those
+          # changed nothing this surface is built from, so it is not drift: it
+          # would otherwise turn every pull request here red over a change to
+          # the client's own CI. A path counts as shipped unless it, or a
+          # directory above it, is marked `export-ignore` on `main`.
+          shipped=""
+          while IFS= read -r path; do
+            [ -n "$path" ] || continue
+            at="$path"
+            ignored=""
+            while :; do
+              if [ "$(git -C sdk-php.git check-attr --source=main export-ignore -- "$at" | sed 's/.*: //')" = set ]; then
+                ignored=yes
+                break
+              fi
+              case "$at" in
+                */*) at="${at%/*}" ;;
+                *) break ;;
+              esac
+            done
+            [ -n "$ignored" ] || shipped="${shipped}${path}"$'\n'
+          done < <(git -C sdk-php.git diff --name-only "${pin}" main)
+
+          if [ -z "$shipped" ]; then
+            say '## The locked client is current'
+            say ''
+            say "The companion is built against sdk-php \`${pin}\`. Main is at \`${head}\`,"
+            say 'and every file changed since is one the client does not ship.'
+            exit 0
+          fi
+
           behind=$(git -C sdk-php.git log --oneline "${pin}..main")
 
           say '## The locked client is behind'
@@ -136,6 +169,12 @@ jobs:
           say ''
           say "- locked in \`composer.lock\`: \`${pin}\`"
           say "- sdk-php \`main\`: \`${head}\`"
+          say ''
+          say 'Files the client ships that changed since:'
+          say ''
+          say '```'
+          say "${shipped%$'\n'}"
+          say '```'
           say ''
           say 'The companion has not taken these:'
           say ''
