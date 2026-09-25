@@ -131,21 +131,19 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
     ],
     [
         'requirement' => 'N9-R7',
-        'asks' => 'to tell an invitation that lapsed unaccepted from one that was declined and from one never sent',
-        // Unnamed: the distinction could land on the invitation an action
-        // answers with, or on the household reading that lists who is in, and
-        // naming either would make a guess about where it arrives a condition
-        // for noticing that it has.
-        'envelope' => null,
-        // `declined` is spent on this wire already, on a household request and
-        // on a repair, so a row watching it would fire today. `lapsed` is free,
-        // and it is the half of the distinction nothing carries at all.
-        'field' => 'lapsed',
-        'shape' => null,
+        'asks' => 'to tell an invitation that lapsed unaccepted from one the invitee declined',
+        // Named, and watched as a whole payload: the distinction is two words
+        // the invitation's `standing` does not have, `lapsed` and `declined`,
+        // and either arriving changes the shape recorded here. A field row
+        // could watch only one of them, and `declined` is spent on this wire
+        // already, on a household request and on a repair.
+        'envelope' => 'InvitationEnvelope',
+        'field' => null,
+        'shape' => 'array{address: string, applied?: array{filtering: string, libraries: list<string>, limit?: string|null, requesting: \'made\'|\'not-yet\'|\'not-tried\', unrated: \'held-back\'|\'let-through\'}|null, caution?: string|null, hours: int, linked: \'made\'|\'not-yet\'|\'not-tried\', name: string, rehearsed: bool, standing: \'made\'|\'waiting\'|\'joined\'|\'reset\', withdrawn: list<string>}',
         'raised' => 'An invitation\'s `standing` is `made`, `waiting`, `joined` or `reset`, and none of those '
             . 'says that it ran out unaccepted or that the person turned it down. `waiting` past its '
             . '`hours` is the nearest, and reading it as lapsed would be this app working out a state '
-            . 'the core has not stated, which `N2-R14` refuses. The invitation is not offered here yet '
+            . 'the core has not stated, which `N2-R14` refuses. The invitation is not offered here '
             . 'either, so `N9-R5` and `N9-R6` wait on the action; this one waits on the contract as well.',
     ],
 ];

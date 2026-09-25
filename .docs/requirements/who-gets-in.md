@@ -32,7 +32,7 @@ and when it lapses. The invitation comes back from the `invite` action, and the
 offered.
 
 `N9-R7` asks that an invitation that lapsed unaccepted is told apart from one
-that was declined and from one never sent. The contract does not carry that
-distinction: an invitation's `standing` is `made`, `waiting`, `joined` or
-`reset`. It is blocked on the contract, and `WhatTheContractDoesNotCarryTest`
-holds it against the field that would answer it.
+the invitee declined. The contract does not carry that distinction: an
+invitation's `standing` is `made`, `waiting`, `joined` or `reset`. It is blocked
+on the contract, and `WhatTheContractDoesNotCarryTest` holds it against the
+invitation's shape, which either word arriving changes.
