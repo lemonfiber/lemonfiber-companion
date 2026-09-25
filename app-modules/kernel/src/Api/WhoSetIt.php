@@ -45,6 +45,12 @@ enum WhoSetIt: string
     /** The stack could not work it out, and the row says what it said about that. */
     case Unknown = 'unknown';
 
+    /** A plugin set it over a value that was there before. */
+    case Overridden = 'overridden';
+
+    /** A plugin set it and is no longer installed, and the value is still in force. */
+    case Orphaned = 'orphaned';
+
     /**
      * The key for the sentence naming who set a setting.
      *

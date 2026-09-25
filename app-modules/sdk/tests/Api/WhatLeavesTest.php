@@ -244,6 +244,8 @@ function whoPutTheServiceThere(ARequestOfTheirs $request): string
         operator: static fn(): WhoBroughtTheService => new WhoBroughtTheService('operator'),
         plugin: static fn(string $named): WhoBroughtTheService => new WhoBroughtTheService(sprintf('plugin:%s', $named)),
         unknown: static fn(string $why): WhoBroughtTheService => new WhoBroughtTheService(sprintf('unknown:%s', $why)),
+        overridden: static fn(string $named): WhoBroughtTheService => new WhoBroughtTheService(sprintf('overridden:%s', $named)),
+        orphaned: static fn(string $named): WhoBroughtTheService => new WhoBroughtTheService(sprintf('orphaned:%s', $named)),
     )->said;
 }
 

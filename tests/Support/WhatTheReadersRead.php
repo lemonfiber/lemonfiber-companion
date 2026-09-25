@@ -268,7 +268,7 @@ final readonly class WhatTheReadersRead
 
             [$key, $given] = WhatAReaderNames::theCallLeadsTo($reach, $bindings, $readers, $following['answers']);
 
-            if (array_key_exists($key, $readers)) {
+            if (array_key_exists($key, $readers) && ! WhereAShapeHoldsItself::isEnteredAgain($given)) {
                 $contexts[WhatAReaderNames::signature($key, $given)] = ['key' => $key, 'bindings' => $given];
             }
         }

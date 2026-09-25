@@ -18,6 +18,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Kernel\Api\WhatItHoldsNow;
+use Modules\Kernel\Api\WhatItReplaced;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
@@ -592,4 +593,25 @@ it('F7-R3 — every setting is drawn with who set it, each arm in its own words'
         ->toContain(__('config.came_from_operator'))
         ->toContain(__('config.came_from_plugin', ['named' => 'plex']))
         ->toContain(__('config.came_from_unknown', ['why' => 'no baseline was recorded']));
+});
+
+it('an override says what it replaced and where that came from, and a value left by a removed plugin names it', function (): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to(Settings::of(
+        Setting::called('PORT', WhatASettingHolds::shown('32400'), WhoPutItThere::overridden('plex', WhatItReplaced::held('8096', WhoPutItThere::operator()))),
+        Setting::called('THEME', WhatASettingHolds::shown('dark'), WhoPutItThere::overridden('skins', WhatItReplaced::nothingSet(WhoPutItThere::bundled()))),
+        Setting::called('TOKEN', WhatASettingHolds::withheld('set, not shown'), WhoPutItThere::overridden('plex', WhatItReplaced::withheld(WhoPutItThere::plugin('arr')))),
+        Setting::called('CLAIM', WhatASettingHolds::shown('claim-x'), WhoPutItThere::orphaned('plex')),
+    )));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)
+        ->toContain(__('config.came_from_overridden', ['named' => 'plex']))
+        ->toContain(__('config.before.held', ['value' => '8096']))
+        ->toContain(__('config.came_from_operator'))
+        ->toContain(__('config.came_from_overridden', ['named' => 'skins']))
+        ->toContain(__('config.before.nothing_set'))
+        ->toContain(__('config.came_from_bundled'))
+        ->toContain(__('config.before.withheld'))
+        ->toContain(__('config.came_from_plugin', ['named' => 'arr']))
+        ->toContain(__('config.came_from_orphaned', ['named' => 'plex']));
 });

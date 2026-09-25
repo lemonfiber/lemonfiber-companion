@@ -14,6 +14,14 @@ return [
     'came_from_operator' => 'Hier ingesteld',
     'came_from_plugin' => 'Ingesteld door de plug-in :named',
     'came_from_unknown' => 'Niemand kon zeggen waar dit vandaan komt — :why',
+    'came_from_overridden' => 'Ingesteld door de plug-in :named, over wat er eerder stond',
+    'came_from_orphaned' => 'Ingesteld door de plug-in :named, die niet meer is geïnstalleerd',
+    // Wat de wijziging van een plug-in verving, onder de regel die de plug-in noemt.
+    'before' => [
+        'held' => 'Eerder stond hier :value',
+        'nothing_set' => 'Eerder was niets ingesteld en gold de standaard van de stack',
+        'withheld' => 'Eerder stond hier een geheim, dat niet wordt getoond',
+    ],
 
     'what_this_is_set_to' => 'Waarop deze machine is ingesteld',
 

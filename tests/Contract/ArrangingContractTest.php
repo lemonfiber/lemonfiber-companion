@@ -494,6 +494,8 @@ it('reads all four attributions, and hands each arm what it was given', function
         operator: static fn(): WhatOneRowSaid => new WhatOneRowSaid('operator'),
         plugin: static fn(string $named): WhatOneRowSaid => new WhatOneRowSaid(sprintf('plugin:%s', $named)),
         unknown: static fn(string $why): WhatOneRowSaid => new WhatOneRowSaid(sprintf('unknown:%s', $why)),
+        overridden: static fn(string $named): WhatOneRowSaid => new WhatOneRowSaid(sprintf('overridden:%s', $named)),
+        orphaned: static fn(string $named): WhatOneRowSaid => new WhatOneRowSaid(sprintf('orphaned:%s', $named)),
     )->said;
 
     // Read off the wire rather than built here, so the arm proven is the one

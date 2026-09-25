@@ -694,6 +694,8 @@ function whoPutTheCheckThere(Finding $finding): string
         operator: static fn(): WhoBroughtTheCheck => new WhoBroughtTheCheck('operator'),
         plugin: static fn(string $named): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('plugin:%s', $named)),
         unknown: static fn(string $why): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('unknown:%s', $why)),
+        overridden: static fn(string $named): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('overridden:%s', $named)),
+        orphaned: static fn(string $named): WhoBroughtTheCheck => new WhoBroughtTheCheck(sprintf('orphaned:%s', $named)),
     )->said;
 }
 

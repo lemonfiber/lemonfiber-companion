@@ -6,9 +6,11 @@ namespace Modules\Sdk\Internal;
 
 use function array_key_exists;
 use function is_array;
+use function is_bool;
 use function is_string;
 
 use Modules\Kernel\Api\AnOriginIsUnnamed;
+use Modules\Kernel\Api\WhatItReplaced;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\WhoSetIt;
 use Modules\Sdk\Api\OriginIsUnreadable;
@@ -46,6 +48,19 @@ final readonly class Attributions
             throw OriginIsUnreadable::missing(WireField::Origin);
         }
 
+        return self::attributed($attributed);
+    }
+
+    /**
+     * One origin table, on the arm its word names.
+     *
+     * Its own method because an origin can hold another: what an override
+     * replaced carries where that value came from, in the same shape.
+     *
+     * @param array<mixed> $attributed
+     */
+    private static function attributed(array $attributed): WhoPutItThere
+    {
         $word = self::text($attributed, WireField::Origin);
 
         // Converted at the boundary and once, which is what every adapter here
@@ -62,10 +77,49 @@ final readonly class Attributions
                 WhoSetIt::Operator => WhoPutItThere::operator(),
                 WhoSetIt::Plugin => WhoPutItThere::plugin(self::text($attributed, WireField::Named)),
                 WhoSetIt::Unknown => WhoPutItThere::unknown(self::text($attributed, WireField::Why)),
+                WhoSetIt::Overridden => WhoPutItThere::overridden(self::text($attributed, WireField::Named), self::replaced($attributed)),
+                WhoSetIt::Orphaned => WhoPutItThere::orphaned(self::text($attributed, WireField::Named)),
             };
         } catch (AnOriginIsUnnamed $why) {
             throw OriginIsUnreadable::namingNobody($why);
         }
+    }
+
+    /**
+     * What an override replaced: a value, nothing set, or a withheld credential, with where it came from.
+     *
+     * Withheld wins over a value the stack sent beside it, since a credential
+     * is never shown whatever else arrived.
+     *
+     * @param array<mixed> $attributed
+     */
+    private static function replaced(array $attributed): WhatItReplaced
+    {
+        if (! array_key_exists(WireField::Replaced->value, $attributed) || ! is_array($attributed[WireField::Replaced->value])) {
+            throw OriginIsUnreadable::missing(WireField::Replaced);
+        }
+
+        $replaced = $attributed[WireField::Replaced->value];
+
+        if (! array_key_exists(WireField::From->value, $replaced) || ! is_array($replaced[WireField::From->value])) {
+            throw OriginIsUnreadable::missing(WireField::From);
+        }
+
+        $from = self::attributed($replaced[WireField::From->value]);
+
+        if (! array_key_exists(WireField::Withheld->value, $replaced) || ! is_bool($replaced[WireField::Withheld->value])) {
+            throw OriginIsUnreadable::missing(WireField::Withheld);
+        }
+
+        if ($replaced[WireField::Withheld->value]) {
+            return WhatItReplaced::withheld($from);
+        }
+
+        if (! array_key_exists(WireField::Value->value, $replaced) || $replaced[WireField::Value->value] === null) {
+            return WhatItReplaced::nothingSet($from);
+        }
+
+        return WhatItReplaced::held(self::text($replaced, WireField::Value), $from);
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Tree;
 use Tests\Support\WhatTheReadersRead;
+use Tests\Support\WhereAShapeHoldsItself;
 
 // What the wire carries that this app does not read, and why.
 //
@@ -830,4 +831,13 @@ it('N1-R17 — every row says why, and says how much it covers', function (): vo
 
     expect($thin)->toBe([], sprintf("These rows do not say enough to act on:\n  %s\n", implode("\n  ", $thin)))
         ->and($covers)->not->toBe([], 'no row was read, so this rule read nothing');
+});
+
+it('follows a shape that holds itself once around, and stops at the second time', function (): void {
+    expect(WhereAShapeHoldsItself::repeatsItsTail('ConfigEnvelope.settings[].origin'))->toBeFalse()
+        ->and(WhereAShapeHoldsItself::repeatsItsTail('ConfigEnvelope.settings[].origin.replaced.from'))->toBeFalse()
+        ->and(WhereAShapeHoldsItself::repeatsItsTail('ConfigEnvelope.settings[].origin.replaced.from.replaced.from'))->toBeTrue()
+        ->and(WhereAShapeHoldsItself::repeatsItsTail('A.b.b'))->toBeTrue()
+        ->and(WhereAShapeHoldsItself::isEnteredAgain(['within' => '', 'paths' => ['$row' => ['A.x', 'A.x.y.x.y']], 'holds' => [], 'wires' => []]))->toBeTrue()
+        ->and(WhereAShapeHoldsItself::isEnteredAgain(['within' => '', 'paths' => ['$row' => ['A.x.y']], 'holds' => [], 'wires' => []]))->toBeFalse();
 });

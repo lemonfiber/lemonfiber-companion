@@ -416,6 +416,18 @@ enum WireField: string
      */
     case Why = 'why';
 
+    /**
+     * What a plugin's change replaced, on the `overridden` arm of an origin.
+     *
+     * Read into {@see \Modules\Kernel\Api\WhatItReplaced} with its own
+     * origin, so no screen calls a replaced value the stack's own when the
+     * operator or another plugin set it.
+     */
+    case Replaced = 'replaced';
+
+    /** Whether a replaced value is withheld because the setting holds a credential. */
+    case Withheld = 'withheld';
+
     /** Every long-running command a machine has, hosted or not. */
     case Commands = 'commands';
 
