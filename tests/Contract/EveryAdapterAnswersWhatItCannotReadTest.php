@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
@@ -12,12 +13,13 @@ use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
 use Modules\Kernel\Api\Reading;
-use Modules\Kernel\Api\Release;
+use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\Repairs;
 use Modules\Kernel\Api\RequestId;
@@ -29,25 +31,29 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Undoing;
-use Modules\Kernel\Api\WhatAReleaseDelivers;
+use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
+use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
+use Modules\Sdk\Api\Storekeepers;
 use Modules\Sdk\Api\Supervisors;
+use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upkeepers;
 use Saloon\Http\Faking\MockClient;
@@ -103,14 +109,16 @@ function aConfirmationToSpoilTheAnswerTo(): Confirmed
     return Confirmed::against($repair, $offer, Reading::live($offer));
 }
 
-/** An update the operator agreed to take. */
+/** An update a reading offered, moving one service. */
 function anUpdateToSpoilTheAnswerTo(): TakingAnUpdate
 {
-    return TakingAnUpdate::agreed(
-        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
+    return TakingAnUpdate::offeredBy(Upkeep::reported(
+        AgainstThePins::UpdatesAvailable,
+        Releases::none(),
         Services::these(ServiceId::called('sonarr')),
         Services::none(),
-    );
+        HowServicesTookIt::none(),
+    ));
 }
 
 /**
@@ -132,6 +140,7 @@ function everyAdapterCallThatReads(): array
             => new Adjustments($clients)->agreedTo($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
+        'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
         'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients)->keptRunningOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
@@ -142,6 +151,7 @@ function everyAdapterCallThatReads(): array
             => new Menders($clients, $entropy)->whatWasDoneAbout($stack, $session, Job::named('a-job')),
         'Menders::whatBecameOf' => static fn(): object
             => new Menders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Quartermasters::rationedOn' => static fn(): object => new Quartermasters($clients)->rationedOn($stack, $session),
         'Questions::about' => static fn(): object => new Questions($clients)->about($stack, $session),
         'Recorders::recordedOn' => static fn(): object => new Recorders($clients)->recordedOn($stack, $session),
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
@@ -152,12 +162,14 @@ function everyAdapterCallThatReads(): array
         'Shelves::theShelfOf' => static fn(): object
             => new Shelves($clients)->theShelfOf($stack, $session, Whose::member('robin')),
         'Stalls::stoppedOn' => static fn(): object => new Stalls($clients)->stoppedOn($stack, $session),
+        'Storekeepers::storedOn' => static fn(): object => new Storekeepers($clients)->storedOn($stack, $session),
         'Supervisors::running' => static fn(): object => new Supervisors($clients, $entropy)->running($stack, $session),
         'Supervisors::told' => static fn(): object => new Supervisors($clients, $entropy)->told(
             $stack,
             $session,
             AgreedTo::theService(WhatToDoWithIt::Stop, ServiceId::called('sonarr')),
         ),
+        'Surveyors::measuredOn' => static fn(): object => new Surveyors($clients)->measuredOn($stack, $session),
         'TheirOwn::toHandOver' => static fn(): object => new TheirOwn($clients)->toHandOver($stack, $session),
         'TheirOwn::whatTheyAsked' => static fn(): object => new TheirOwn($clients)->whatTheyAsked($stack, $session),
         'Upkeepers::standing' => static fn(): object => new Upkeepers($clients)->standing($stack, $session),
@@ -227,6 +239,16 @@ function spoiledAt(mixed $held, array $at): mixed
 }
 
 /**
+ * What an envelope carries as `data`, or nothing where it carries none.
+ *
+ * @param array<mixed> $envelope
+ */
+function theDataIn(array $envelope): mixed
+{
+    return array_key_exists('data', $envelope) ? $envelope['data'] : null;
+}
+
+/**
  * One envelope's worth of body, with its `data` spoiled at a path.
  *
  * A path of `null` spoils `data` itself.
@@ -237,7 +259,7 @@ function spoiledAt(mixed $held, array $at): mixed
  */
 function anEnvelopeSpoiledAt(array $envelope, ?array $at): array
 {
-    $envelope['data'] = $at === null ? 'spoiled' : spoiledAt($envelope['data'] ?? null, $at);
+    $envelope['data'] = $at === null ? 'spoiled' : spoiledAt(theDataIn($envelope), $at);
 
     return $envelope;
 }
@@ -314,7 +336,7 @@ function everySpoilingOf(string $which, Closure $ask): array
             $endpoint = theAnswerACallIsGiven($which, $asked->getRequest()->resolveEndpoint());
 
             foreach (theEnvelopesAPathSends($endpoint) as $envelope) {
-                foreach (everyPlaceToSpoil($envelope['data'] ?? null) as $at) {
+                foreach (everyPlaceToSpoil(theDataIn($envelope)) as $at) {
                     $paths[] = $at;
                 }
             }
