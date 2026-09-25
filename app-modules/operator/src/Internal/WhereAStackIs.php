@@ -149,6 +149,15 @@ final readonly class WhereAStackIs
         return WhatItKeepsOfItself::of($this->stack);
     }
 
+    /**
+     * Where who gets in is: the credentials it holds, which app to watch on,
+     * and the household's front door.
+     */
+    public function whoGetsIn(): WhoGetsIn
+    {
+        return WhoGetsIn::of($this->stack);
+    }
+
     /** Where one item got to on this machine. */
     public function traceOf(WhatToFollow $item): string
     {

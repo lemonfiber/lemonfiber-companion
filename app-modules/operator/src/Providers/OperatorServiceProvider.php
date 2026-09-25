@@ -16,6 +16,7 @@ use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
+use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
@@ -29,8 +30,10 @@ use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\WhatYouAreToldAbout;
+use Modules\Operator\Internal\Screens\WhereTheHouseholdComesIn;
 use Modules\Operator\Internal\Screens\WhereThisComesFrom;
 use Modules\Operator\Internal\Screens\WhereThisGotTo;
+use Modules\Operator\Internal\Screens\WhichAppToWatchOn;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -223,6 +226,13 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // Which version of lemonfiber runs, apart from the services' updates.
             Router::native(AStacksScreen::Itself->value, WhatIsRunningHere::class);
+
+            // Who gets in: what it holds to let services in, which app the
+            // household watches on, and where they come in. Three screens,
+            // because each is its own reading and its own question.
+            Router::native(AStacksScreen::Credentials->value, WhatItHoldsToLetThemIn::class);
+            Router::native(AStacksScreen::Clients->value, WhichAppToWatchOn::class);
+            Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);

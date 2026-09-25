@@ -210,6 +210,86 @@ return [
         'none' => 'This machine explains no words',
     ],
 
+    // The credentials the machine holds to let services in. No line here
+    // offers to set, change or show a value.
+    'credentials' => [
+        'road_in' => 'What it holds to let services in',
+        'heading' => 'Credentials',
+        'state' => [
+            'absent' => 'Missing: something here needs it and it was never supplied',
+            'active' => 'Working',
+            // Never drawn as broken: it has not been proven, which is different.
+            'stale' => 'Not proven since it was last written',
+            'invalid' => 'Refused the last time it was used',
+            // Mid-change, and the old value still works.
+            'rotating' => 'Being replaced; the current one still works',
+            'superseded' => 'Replaced; the old one is waiting to be destroyed',
+        ],
+        'origin' => [
+            'operator' => 'You supplied it, from an account elsewhere',
+            'service' => 'The service made it for itself',
+            'lemonfiber' => 'lemonfiber made it',
+        ],
+        'used_by' => 'Used by',
+        'used_by_nothing' => 'Nothing uses it',
+        'none' => 'This machine holds no credentials',
+        'protection' => [
+            'heading' => 'How they are kept',
+            'against' => 'This protects against:',
+            'not_against' => 'This does not protect against:',
+            'nothing_listed' => 'Nothing listed',
+        ],
+        'at_the_machine' => 'A credential is set or replaced at the machine, not from here.',
+    ],
+
+    // Which app to watch on, device by device.
+    'clients' => [
+        'road_in' => 'Which app to watch on',
+        'heading' => 'What to watch on',
+        'support' => [
+            'good' => 'Well served',
+            'workable' => 'Works, with something to know first',
+            'poor' => 'Poorly served',
+            // An answer, not the absence of one.
+            'fallback' => 'Works anywhere, nothing to install',
+        ],
+        'instead' => 'Instead: :instead',
+        'straining' => 'Playback may struggle here with the :preset preset',
+        'no_devices' => 'No devices are listed',
+        'trouble' => 'When it does not work',
+        'no_causes' => 'Nothing is listed behind this',
+        'no_trouble' => 'Nothing is listed for when it does not work',
+    ],
+
+    // Where the household comes in, and what else they can reach.
+    'front_door' => [
+        'road_in' => 'Where the household comes in',
+        'standing' => [
+            'established' => 'The front door is open',
+            'library-only' => 'The library is the front door; there is nothing here to ask for',
+            'unreachable' => 'The front door is not answering',
+            'stranded' => 'The front door is answering, and no other device can be told where it is',
+            'none' => 'Nothing here is open to the household',
+        ],
+        'chosen' => [
+            // Never drawn as anybody's decision.
+            'derived' => 'Worked out from what this stack runs; nobody chose it',
+            'named' => 'You chose it: :named',
+            'refused' => 'You chose :named, and it was refused: :because',
+        ],
+        'facing' => [
+            'asking' => 'Where asking for something begins',
+            'watching' => 'The library, where what arrived is watched',
+            'shelf' => 'One kind of media, reached from the library',
+            'operators' => 'An index of every service, including ones the household should not see',
+            'carriage' => 'How the others are reached',
+            'unstated' => 'Open to the household, and nothing says what it is to them',
+        ],
+        'no_address' => 'This machine did not say where it is reached',
+        'beside' => 'What else they can reach',
+        'nothing_beside' => 'Nothing else is open to the household',
+    ],
+
     // How full the machine is, and where the room went.
     'room' => [
         'road_in' => 'How full this machine is',

@@ -129,6 +129,25 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'to attempt it — and `N3-R16` is answered only by there being no player to implement '
             . 'anything in.',
     ],
+    [
+        'requirement' => 'N9-R7',
+        'asks' => 'to tell an invitation that lapsed unaccepted from one that was declined and from one never sent',
+        // Unnamed: the distinction could land on the invitation an action
+        // answers with, or on the household reading that lists who is in, and
+        // naming either would make a guess about where it arrives a condition
+        // for noticing that it has.
+        'envelope' => null,
+        // `declined` is spent on this wire already, on a household request and
+        // on a repair, so a row watching it would fire today. `lapsed` is free,
+        // and it is the half of the distinction nothing carries at all.
+        'field' => 'lapsed',
+        'shape' => null,
+        'raised' => 'An invitation\'s `standing` is `made`, `waiting`, `joined` or `reset`, and none of those '
+            . 'says that it ran out unaccepted or that the person turned it down. `waiting` past its '
+            . '`hours` is the nearest, and reading it as lapsed would be this app working out a state '
+            . 'the core has not stated, which `N2-R14` refuses. The invitation is not offered here yet '
+            . 'either, so `N9-R5` and `N9-R6` wait on the action; this one waits on the contract as well.',
+    ],
 ];
 
 /**
