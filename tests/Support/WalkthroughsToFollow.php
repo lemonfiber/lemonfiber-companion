@@ -48,11 +48,9 @@ final readonly class WalkthroughsToFollow
                 ALineItSaid::withDetail(WalkthroughStep::Importing, 'Importing…', 'copied to /data/media/movies'),
                 ALineItSaid::withoutDetail(WalkthroughStep::Available, 'Available in Jellyfin'),
             ),
-            WhatCouldBeWalkedInstead::of(),
-            WhatComesNext::of(WhatToDoNext::MoreContent, WhatToDoNext::Household, WhatToDoNext::ClientApps),
             inBackground: false,
             alreadyHere: false,
-        )->linked(HowTheImportLinked::Copied);
+        )->handingOnTo(WhatComesNext::of(WhatToDoNext::MoreContent, WhatToDoNext::Household, WhatToDoNext::ClientApps))->linked(HowTheImportLinked::Copied);
     }
 
     /**
@@ -105,11 +103,9 @@ final readonly class WalkthroughsToFollow
             TheLinesItSaid::of(
                 ALineItSaid::withDetail(WalkthroughStep::Searching, 'Searching indexers…', '3 indexers, 0 results'),
             ),
-            WhatCouldBeWalkedInstead::of('Big Buck Bunny', 'Sintel'),
-            WhatComesNext::of(),
             inBackground: false,
             alreadyHere: false,
-        )->stoppedAt(WhereItStopped::at(
+        )->offering(WhatCouldBeWalkedInstead::of('Big Buck Bunny', 'Sintel'))->stoppedAt(WhereItStopped::at(
             WalkthroughStep::Searching,
             WhyTheWalkthroughStopped::NothingMatched,
             'Try one of the suggestions, which are well seeded.',
@@ -155,8 +151,6 @@ final readonly class WalkthroughsToFollow
             TheLinesItSaid::of(
                 ALineItSaid::withDetail(WalkthroughStep::Choosing, 'Checking it is not already here…', 'It is already in the library'),
             ),
-            WhatCouldBeWalkedInstead::of(),
-            WhatComesNext::of(),
             inBackground: true,
             alreadyHere: true,
         )->linked(HowTheImportLinked::Hardlinked);

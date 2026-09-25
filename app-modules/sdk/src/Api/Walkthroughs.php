@@ -80,11 +80,11 @@ final readonly class Walkthroughs
             self::text($data, WalkthroughField::Proves),
             self::item($data),
             self::lines($data),
-            WhatCouldBeWalkedInstead::of(...self::texts($data, WalkthroughField::Suggestions)),
-            self::handover($data),
             inBackground: self::flag($data, WalkthroughField::InBackground),
             alreadyHere: self::flag($data, WalkthroughField::AlreadyHere),
-        );
+        )
+            ->offering(WhatCouldBeWalkedInstead::of(...self::texts($data, WalkthroughField::Suggestions)))
+            ->handingOnTo(self::handover($data));
         $link = self::link($data);
         $walk = $link instanceof HowTheImportLinked ? $walk->linked($link) : $walk;
         $stopped = self::stopped($data);

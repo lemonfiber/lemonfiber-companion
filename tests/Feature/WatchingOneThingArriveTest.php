@@ -20,8 +20,6 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\TheLinesItSaid;
 use Modules\Kernel\Api\WalkthroughStep;
-use Modules\Kernel\Api\WhatComesNext;
-use Modules\Kernel\Api\WhatCouldBeWalkedInstead;
 use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Kernel\Api\WhatTheServicesWereSaying;
 use Modules\Kernel\Api\WhatToDoNext;
@@ -354,8 +352,6 @@ it('says already here without a name where it never named what it found', functi
         'That it works.',
         WhatWasWalked::nothingChosen(),
         TheLinesItSaid::of(),
-        WhatCouldBeWalkedInstead::of(),
-        WhatComesNext::of(),
         inBackground: false,
         alreadyHere: true,
     );
@@ -372,8 +368,6 @@ it('names no item where it never chose one and nothing was already here', functi
         'That it works.',
         WhatWasWalked::nothingChosen(),
         TheLinesItSaid::of(),
-        WhatCouldBeWalkedInstead::of(),
-        WhatComesNext::of(),
         inBackground: false,
         alreadyHere: false,
     );
@@ -413,8 +407,6 @@ it('says the services said nothing where a stop carries no logs', function (): v
         'That it works.',
         WhatWasWalked::nothingChosen(),
         TheLinesItSaid::of(ALineItSaid::withoutDetail(WalkthroughStep::Downloading, 'Downloading…')),
-        WhatCouldBeWalkedInstead::of(),
-        WhatComesNext::of(),
         inBackground: false,
         alreadyHere: false,
     )->stoppedAt(WhereItStopped::at(WalkthroughStep::Downloading, WhyTheWalkthroughStopped::Stalled, 'Look at the download client.', WhatTheServicesWereSaying::of()));

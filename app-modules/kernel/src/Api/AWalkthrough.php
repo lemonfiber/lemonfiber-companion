@@ -37,11 +37,11 @@ final readonly class AWalkthrough
     ) {}
 
     /**
-     * A walkthrough as the stack reported it, before anything about an import or a stop.
+     * A walkthrough as the stack reported it, before any suggestions, handover, import or stop.
      *
-     * What it set out to prove is required and refused blank. A handover
-     * naming nothing is where it hands the operator on to nowhere, which is
-     * also what a walk that did not work hands over.
+     * What it set out to prove is required and refused blank. It suggests
+     * nothing and hands the operator on to nowhere until told otherwise, which
+     * is also what a walk that did not work hands over.
      */
     public static function reported(
         WhichWalk $shape,
@@ -49,8 +49,6 @@ final readonly class AWalkthrough
         string $proves,
         WhatWasWalked $item,
         TheLinesItSaid $lines,
-        WhatCouldBeWalkedInstead $suggestions,
-        WhatComesNext $handover,
         bool $inBackground,
         bool $alreadyHere,
     ): self {
@@ -58,7 +56,19 @@ final readonly class AWalkthrough
             throw TheWalkthroughSaysNothing::about('proves');
         }
 
-        return new self($shape, $state, $proves, $item, $lines, $suggestions, $handover, $inBackground, $alreadyHere);
+        return new self($shape, $state, $proves, $item, $lines, WhatCouldBeWalkedInstead::of(), WhatComesNext::of(), $inBackground, $alreadyHere);
+    }
+
+    /** The same walkthrough, suggesting these instead. */
+    public function offering(WhatCouldBeWalkedInstead $suggestions): self
+    {
+        return new self($this->shape, $this->state, $this->proves, $this->item, $this->lines, $suggestions, $this->handover, $this->inBackground, $this->alreadyHere, $this->link, $this->stopped);
+    }
+
+    /** The same walkthrough, handing the operator on to these, in order. */
+    public function handingOnTo(WhatComesNext $handover): self
+    {
+        return new self($this->shape, $this->state, $this->proves, $this->item, $this->lines, $this->suggestions, $handover, $this->inBackground, $this->alreadyHere, $this->link, $this->stopped);
     }
 
     /** The same walkthrough, having imported the file this way. */

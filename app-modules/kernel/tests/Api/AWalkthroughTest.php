@@ -41,8 +41,6 @@ function aBareWalk(string $proves = 'That it works.', ?WhatWasWalked $item = nul
         $proves,
         $item ?? WhatWasWalked::nothingChosen(),
         TheLinesItSaid::of(),
-        WhatCouldBeWalkedInstead::of(),
-        WhatComesNext::of(),
         inBackground: false,
         alreadyHere: false,
     );
@@ -83,11 +81,9 @@ it('carries everything it was reported with, and what it was then told', functio
         'That it can be seen.',
         WhatWasWalked::called('Sintel'),
         $lines,
-        $suggestions,
-        $handover,
         inBackground: true,
         alreadyHere: true,
-    );
+    )->offering($suggestions)->handingOnTo($handover);
     $walk = $reported->linked(HowTheImportLinked::Hardlinked)->stoppedAt($stopped);
     $otherWay = $reported->stoppedAt($stopped)->linked(HowTheImportLinked::Copied);
 
@@ -106,10 +102,25 @@ it('carries everything it was reported with, and what it was then told', functio
         ->toBe([WhichWalk::LibraryOnly, WhereTheWalkthroughIs::Abandoned, 'That it can be seen.', $lines, $suggestions, $handover, true, true]);
 });
 
+it('keeps the import and the stop when told its suggestions and handover afterwards', function (): void {
+    $suggestions = WhatCouldBeWalkedInstead::of('Sintel');
+    $handover = WhatComesNext::of(WhatToDoNext::ClientApps);
+    $stopped = WhereItStopped::at(WalkthroughStep::Searching, WhyTheWalkthroughStopped::NothingMatched, 'Try another.', WhatTheServicesWereSaying::of());
+
+    $walk = aBareWalk()->linked(HowTheImportLinked::Copied)->stoppedAt($stopped)->handingOnTo($handover)->offering($suggestions);
+
+    expect(theOptionalPartsOf($walk))->toBe(['item' => '(none)', 'link' => 'copied', 'stopped' => 'Try another.'])
+        ->and($walk->suggestions())->toBe($suggestions)
+        ->and($walk->handover())->toBe($handover)
+        ->and([$walk->shape(), $walk->state(), $walk->proves(), $walk->wentOnInTheBackground(), $walk->wasAlreadyHere()])
+        ->toBe([WhichWalk::Pipeline, WhereTheWalkthroughIs::Searching, 'That it works.', false, false]);
+});
+
 it('carries nothing for what the stack did not say', function (): void {
     $walk = aBareWalk();
 
     expect(theOptionalPartsOf($walk))->toBe(['item' => '(none)', 'link' => '(none)', 'stopped' => '(none)'])
+        ->and($walk->suggestions()->count())->toBe(0)
         ->and($walk->handover()->count())->toBe(0)
         ->and($walk->wentOnInTheBackground())->toBeFalse()
         ->and($walk->wasAlreadyHere())->toBeFalse();

@@ -11,8 +11,6 @@ use Modules\Kernel\Api\AWalkthrough;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheLinesItSaid;
-use Modules\Kernel\Api\WhatComesNext;
-use Modules\Kernel\Api\WhatCouldBeWalkedInstead;
 use Modules\Kernel\Api\WhatWasWalked;
 use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhichWalk;
@@ -43,8 +41,6 @@ it('says each of its four states through its own arm', function (): void {
         'That it works.',
         WhatWasWalked::nothingChosen(),
         TheLinesItSaid::of(),
-        WhatCouldBeWalkedInstead::of(),
-        WhatComesNext::of(),
         inBackground: false,
         alreadyHere: false,
     );
