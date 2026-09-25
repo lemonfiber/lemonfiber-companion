@@ -13,6 +13,8 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N14-R1` | How lemonfiber was installed is shown, and where it cannot be told that is said | `HowLemonfiberWasInstalled` has a case for every way the contract names, `Untellable` among them, and the screen draws the case's own sentence. The owning tool is drawn where the stack names one |
 | `N14-R2` | Where lemonfiber cannot replace itself, no control is offered that would not work, and the command that would is shown | The screen offers no control that updates anything. `HowItWouldBeUpdated` is the command to run at the machine, the stack's reason there is none, or neither, and one fold draws at most one of them |
+| `N14-R3` | A withdrawn release is never offered and never counted as an update | An update is offered off the pins, and `Upkeep` offers nothing onto the pins a withdrawn release carries. The update screen keeps the withdrawn release in the history, marked as withdrawn, rather than dropping it |
+| `N14-R4` | The changelog tells user-facing releases from those that are not | Every release in the history the update screen draws says whether the household would notice it, off the release's own `user_facing` |
 | `N14-R5` | An update says what it carries and what happens after it is applied, before it is agreed to | `WhatAnUpdateWouldBring` requires both sentences, and the screen draws them above the command |
 | `N14-R6` | No update is applied that was not asked for, or on a schedule of the app's own | The only call the screen makes is the `self-update` reading. It holds no clock |
 | `N14-R7` | A version that could not be read is told apart from being current | `WhereThisCopyStands::CheckFailed` is its own case, drawn with the stack's reason, and a reading this app cannot read is an obstacle, drawn as one |
@@ -20,8 +22,3 @@ requirement is right and this page is a defect.
 
 Where a newer version is out, the screen draws it with what its release notes
 say it changed.
-
-## Asked for, and not drawn yet
-
-`N14-R3` and `N14-R4` are about the changelog of the stack's releases, which
-the `update` envelope carries and the update screen reads.
