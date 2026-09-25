@@ -57,8 +57,11 @@ so both are recorded as unread in `WhatTheContractCarriesThatNothingReadsTest`
 rather than drawn: a rehearsal label on a plain reading would describe
 something that never happened.
 
+`N10-R10` is what keeps running when nobody is signed in: the `hosting`
+envelope carries it, a screen of its own draws it, and
+[what a machine says](what-a-machine-says.md) keeps it.
+
 ## Asked for, and not drawn yet
 
 `N10-R9` is a rehearsed alert, which only a call that changes the setting
 produces, and this app makes none.
-`N10-R10` is what keeps running unattended, which the `hosting` envelope carries and a screen of its own reads.
