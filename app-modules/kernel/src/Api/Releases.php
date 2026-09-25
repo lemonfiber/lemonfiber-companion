@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function array_filter;
 use function array_values;
 
 use ArrayIterator;
@@ -19,9 +18,7 @@ use Traversable;
  *
  * A type rather than an array, which is `D1`: an array has no name, no
  * invariants and nowhere to put the rules, so what is in it ends up living in
- * whoever last wrote a `foreach`. The rule that belongs here is the withdrawal one —
- * a withdrawn release is not an update — and putting it on the collection is
- * what stops each screen from remembering it.
+ * whoever last wrote a `foreach`.
  *
  * @implements IteratorAggregate<int, Release>
  */
@@ -48,29 +45,9 @@ final readonly class Releases implements IteratorAggregate
         return new self([]);
     }
 
-    /**
-     * Only the ones worth offering as an update.
-     *
-     * The refusal, made once. A screen that filtered for itself would be
-     * a second place to forget, and forgetting means offering somebody a
-     * release that was taken back.
-     */
-    public function worthOffering(): self
-    {
-        return new self(array_values(array_filter(
-            $this->releases,
-            static fn(Release $release): bool => $release->isWorthOffering(),
-        )));
-    }
-
     public function count(): int
     {
         return count($this->releases);
-    }
-
-    public function isEmpty(): bool
-    {
-        return $this->releases === [];
     }
 
     /** @return Traversable<int, Release> */

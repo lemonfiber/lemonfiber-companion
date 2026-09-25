@@ -5,51 +5,42 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * An update the operator said yes to, against what it will change.
+ * An update the stack offered, against what it will change.
  *
  * {@see Confirmed}'s argument applied to an update, and the same argument
- * {@see AgreedTo} makes for a verb: the way this gets broken is never
- * deliberate — a screen draws the pending release, the button is right there,
- * and a tap handler calls the thing that applies it.
+ * {@see AgreedTo} makes for a verb: {@see KeepingCurrent::take()} takes one of
+ * these, and the only way to make one is from a reading that offered an update.
  *
- * So {@see KeepingCurrent::take()} takes one of these, and the only way to make
- * one names the release and the services together. Rendering an upkeep reading
- * produces no `TakingAnUpdate` and cannot be made to.
+ * **An update is the stack's, not a release's.** The stack moves each service
+ * onto the version its own build pins, so what is agreed to is the set of
+ * services that would move. No release is named here, because none is chosen:
+ * the release history explains where the pins came from and is not a menu.
  *
  * **The services are carried rather than looked up later.** The
- * confirmation to name what it would change, which is only worth anything if
- * what was named is what gets done. An update applied against a list re-read
- * after the yes would be an update to whatever the stack had by then, confirmed
- * against a screen that is no longer true.
- *
- * **A {@see Release} is a release the stack listed as waiting, and nothing
- * else.** That is what makes this parameter safe to take by type: the only
- * other version a reading carries is the one the machine is standing on, and
- * {@see VersionInUse} is what keeps it from arriving here. It refuses an
- * update the stack did not report as pending, and a screen scanning its own
- * list for the version a template sent is a screen that has to remember to.
+ * confirmation names what it would change, which is only worth anything if
+ * what was named is what gets done.
  */
 final readonly class TakingAnUpdate
 {
     private function __construct(
-        private Release $release,
         private Services $changing,
         private Services $cannotBePutBack,
     ) {}
 
     /**
-     * What the operator was shown and agreed to.
+     * The update a reading offered.
      *
-     * The services travel as a {@see Services} rather than an array, which is
-     * `D1`: what is in a list of names has to live somewhere other than in
-     * whoever last wrote a `foreach`.
+     * Refuses a reading with nothing to offer by throwing {@see NothingToTake},
+     * so an update the stack did not report as available cannot be agreed to
+     * by any caller.
      */
-    public static function agreed(
-        Release $release,
-        Services $changing,
-        Services $cannotBePutBack,
-    ): self {
-        return new self($release, $changing, $cannotBePutBack);
+    public static function offeredBy(Upkeep $upkeep): self
+    {
+        if (! $upkeep->hasSomethingToOffer()) {
+            throw NothingToTake::from($upkeep->againstThePins());
+        }
+
+        return new self($upkeep->changing(), $upkeep->cannotBePutBack());
     }
 
     /**
@@ -69,11 +60,6 @@ final readonly class TakingAnUpdate
     public function asked(): string
     {
         return 'update';
-    }
-
-    public function release(): Release
-    {
-        return $this->release;
     }
 
     /**
@@ -111,17 +97,5 @@ final readonly class TakingAnUpdate
     public function cannotBeWhollyUndone(): bool
     {
         return ! $this->cannotBePutBack->isEmpty();
-    }
-
-    /**
-     * Whether this update leaves the stack alone.
-     *
-     * A release that changes no service is a changelog entry rather than an
-     * evening, and a screen can say so instead of asking somebody to confirm
-     * nothing.
-     */
-    public function changesNothing(): bool
-    {
-        return $this->changing->isEmpty();
     }
 }

@@ -4,29 +4,23 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use Modules\Kernel\Api\VersionInUse;
+use Modules\Kernel\Api\Release;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 
 /**
- * Turning what a reading says about the version in use into the word a line draws.
+ * Turning what a reading says about the release in use into what a screen draws.
  *
  * {@see \Modules\Kernel\Api\Upkeep::inUse()} answers in two closure arms rather
- * than with a nullable, which is `C2`'s cure and right: a screen handed a null
- * would print an empty version where one belongs, and an operator would read
- * that as *it is running nothing*. Both arms have to hand back an object, and
- * what the screen wants out of them is a string — so there is a method here for
- * each arm, and the arm with no version to read is the one that still has
- * something to say.
- *
- * Named for {@see VersionInUse} rather than for a release, because the two are
- * not the same type and the whole point of that is that this folding cannot
- * reach the one an update is agreed about.
+ * than with a nullable, which is `C2`'s cure: a screen handed a null would print
+ * an empty version where one belongs, and an operator would read that as *it is
+ * running nothing*. Both arms hand back an object, so there is a method here
+ * for each, and the arm with no release to read still has something to say.
  */
 final readonly class HowTheVersionInUseReads
 {
-    public function of(VersionInUse $inUse): WhatTheStackIsOn
+    public function of(Release $inUse): WhatTheStackIsOn
     {
-        return new WhatTheStackIsOn($inUse->version());
+        return new WhatTheStackIsOn($inUse->version(), new HowAReleaseReads()->of($inUse));
     }
 
     /** The stack has not said what it is on, which is not the same as nothing. */

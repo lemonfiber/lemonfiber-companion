@@ -41,14 +41,14 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N2-R15` | The app holds no opinion about which of two version strings is later | `HowCurrent` |
+| `N2-R15` | The app holds no opinion about which of two version strings is later | `AgainstThePins`, the `update` envelope's top-level `state`: the stack compares each service with its pin and says whether any would move |
 | `N2-R16` | What the decision needs, and nothing else | `Release` — a version string is an identifier rather than an ordering |
 | `N2-R17` | The confirmation names the services an update would change | `KeepingCurrent` |
 | `N2-R18` | Four endings rather than a boolean | `HowItEnded` |
 | `N2-R19` | Undoing is not offered where the stack named neither way | `HowAServiceTookIt` |
-| `N2-R20` | Applying one is not offered where the stack reported none | `HowCurrent` |
+| `N2-R20` | Applying one is not offered where the stack reported none | `TakingAnUpdate::offeredBy()`, which refuses a reading whose `AgainstThePins` is not `updates-available`, where every change was refused, or where the release carrying the pins was withdrawn |
 | `N2-R22` | A change that cannot be undone is said before it is agreed to, naming the services it is true of | `TakingAnUpdate::cannotBePutBack()`, read from the wire by `Changes::permanentIn()` and drawn between the list and the buttons — an operator who has read what moves tonight and not yet agreed. Named per service rather than over the whole run: an update can move four services and be undoable for three, and a warning covering all four is refused as easily as it is believed |
-| `E5-R6` | The changelog is shown in the stack-update flow, not only on a release page | `WhatAReleaseDelivers`, carried on `Release` and drawn on the row the *take this one* control sits on. The grouped notes for the running version are not drawn, and `WhatTheContractCarriesThatNothingReadsTest` records that as owed rather than unasked |
+| `E5-R6` | The changelog is shown in the stack-update flow, not only on a release page | `WhatAReleaseDelivers`, carried on `Release` and drawn for the release in use — whose build carries the pins an update moves onto — and on each row of the release history. The grouped notes for the running version are not drawn, and `WhatTheContractCarriesThatNothingReadsTest` records that as owed rather than unasked |
 | `E5-R10` | A release with no user-facing change is stated as such rather than shown as an empty one | `WhatAReleaseDelivers::saidNothing()`, a separate arm — a row the stack said nothing about says so rather than drawing a blank where a sentence belongs |
 
 ## What has stopped coming in

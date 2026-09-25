@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Services;
+use Modules\Kernel\Api\Release;
+use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
-use Modules\Kernel\Api\VersionInUse;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Updates\Api\Queries\NotArrivedFirst;
-use Modules\Updates\Api\Queries\WorthNoticing;
 
 /**
  * Folding what a stack says about being up to date into the fields a screen draws.
@@ -30,67 +29,47 @@ final readonly class HowUpkeepReads
      */
     public function signedOut(): WhatTheUpkeepTurnedOutToBe
     {
-        return new WhatTheUpkeepTurnedOutToBe(
-            went: HowTheReadingWent::theSessionEnded(),
-            howSaid: '',
-            running: '',
-            runningWasWithdrawn: false,
-            waiting: [],
-            changing: Services::none(),
-            cannotBePutBack: Services::none(),
-            applied: [],
-            didNotArrive: 0,
-            anythingUnanswered: false,
-            canTakeOne: false,
-            anyWorthNoticing: false,
-        );
+        return $this->nothingRead(HowTheReadingWent::theSessionEnded());
     }
 
     /** Where the stack said it stands. */
     public function standing(Upkeep $upkeep): WhatTheUpkeepTurnedOutToBe
     {
-        $waiting = [];
+        $history = [];
 
-        foreach ($upkeep->waiting() as $release) {
-            $waiting[] = new HowAReleaseReads()->of($release);
+        foreach ($upkeep->history() as $release) {
+            $history[] = new HowAReleaseReads()->of($release);
         }
 
         $applied = [];
 
         // Ordered before folding, so the rows reach the template in the order
         // they are read in. `NotArrivedFirst` puts every service that is not
-        // where the operator wanted it above the ones that are, and ranks the
-        // three ways of not arriving against each other not at all — which of
-        // a network, a service and a machine matters most is not a judgement
-        // this app is in a position to make.
+        // where the operator wanted it above the ones that are.
         foreach (new NotArrivedFirst()->over($upkeep->howItWent()) as $took) {
             $applied[] = new HowATakenUpdateReads()->of($took);
         }
 
+        $on = $upkeep->inUse(
+            named: static fn(Release $inUse): WhatTheStackIsOn => new HowTheVersionInUseReads()->of($inUse),
+            unstated: static fn(): WhatTheStackIsOn => new HowTheVersionInUseReads()->notNamed(),
+        );
+
         return new WhatTheUpkeepTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
-            howSaid: $upkeep->how()->saidOnTheScreen(),
-            running: $upkeep->inUse(
-                named: static fn(VersionInUse $inUse): WhatTheStackIsOn
-                    => new HowTheVersionInUseReads()->of($inUse),
-                unstated: static fn(): WhatTheStackIsOn => new HowTheVersionInUseReads()->notNamed(),
-            )->version,
+            pinsSaid: $upkeep->againstThePins()->saidOnTheScreen(),
+            running: $on->version,
             runningWasWithdrawn: $upkeep->runningAWithdrawnRelease(),
-            waiting: $waiting,
-            changing: $upkeep->changing(),
-            cannotBePutBack: $upkeep->cannotBePutBack(),
+            inUse: $on->notes,
+            history: $history,
+            // Asked of the reading rather than worked out from the history.
+            // Releases are listed whether or not a service would move, so a
+            // screen counting them would offer an update to a stack that is
+            // on every pin.
+            offer: $upkeep->hasSomethingToOffer() ? TakingAnUpdate::offeredBy($upkeep) : null,
             applied: $applied,
             didNotArrive: $upkeep->howItWent()->thatDidNotArrive()->count(),
             anythingUnanswered: $upkeep->howItWent()->anythingUnanswered(),
-            // Asked of the reading rather than worked out from the
-            // list below. A stack that says it is current is not asked further,
-            // and a screen counting rows would offer an update to one that
-            // listed releases while reporting itself up to date.
-            canTakeOne: $upkeep->hasSomethingToOffer(),
-            // The distinction is asked rather than counted: a screen
-            // deciding whether tonight is worth an evening should not have to
-            // build a list to find out that it is empty.
-            anyWorthNoticing: ! new WorthNoticing()->over($upkeep->waiting())->isEmpty(),
         );
     }
 
@@ -105,19 +84,23 @@ final readonly class HowUpkeepReads
      */
     public function met(Obstacle $why): WhatTheUpkeepTurnedOutToBe
     {
+        return $this->nothingRead(HowTheReadingWent::somethingStopped($why));
+    }
+
+    /** A reading that did not happen, which says nothing about the stack. */
+    private function nothingRead(HowTheReadingWent $went): WhatTheUpkeepTurnedOutToBe
+    {
         return new WhatTheUpkeepTurnedOutToBe(
-            went: HowTheReadingWent::somethingStopped($why),
-            howSaid: '',
+            went: $went,
+            pinsSaid: '',
             running: '',
             runningWasWithdrawn: false,
-            waiting: [],
-            changing: Services::none(),
-            cannotBePutBack: Services::none(),
+            inUse: null,
+            history: [],
+            offer: null,
             applied: [],
             didNotArrive: 0,
             anythingUnanswered: false,
-            canTakeOne: false,
-            anyWorthNoticing: false,
         );
     }
 }

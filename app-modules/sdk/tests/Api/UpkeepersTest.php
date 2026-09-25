@@ -7,16 +7,17 @@ namespace Modules\Sdk\Tests\Api;
 use function afterEach;
 use function expect;
 use function is_array;
-use function is_string;
 use function it;
 use function json_encode;
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Release;
+use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
@@ -25,7 +26,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
-use Modules\Kernel\Api\WhatAReleaseDelivers;
+use Modules\Kernel\Api\Upkeep;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\WireField;
@@ -91,17 +92,25 @@ function whatTheAdapterMade(MockResponse $answer): string
     )->said;
 }
 
+/** The update a reading offered, moving two services. */
+function theUpdateTheAdapterIsHanded(): TakingAnUpdate
+{
+    return TakingAnUpdate::offeredBy(Upkeep::reported(
+        AgainstThePins::UpdatesAvailable,
+        Releases::none(),
+        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+        Services::none(),
+        HowServicesTookIt::none(),
+    ));
+}
+
 /** The same for the verb, which answers a different type. */
 function whatTakingItMade(MockResponse $answer): Underway
 {
     return theUpkeepAdapterAnswering($answer)->take(
         theStackWhoseUpkeepTheAdapterAsksAfter(),
         Session::of('a-session-not-a-secret'),
-        TakingAnUpdate::agreed(
-            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
-            Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
-            Services::none(),
-        ),
+        theUpdateTheAdapterIsHanded(),
     );
 }
 
@@ -190,6 +199,7 @@ it('N2-R14 — a payload this side cannot read is an obstacle, not an exception'
         'not an envelope at all',
         (string) json_encode(anEnvelopeOfTheWrongKind()),
         (string) json_encode(anUpdateNobodyCanRead()),
+        (string) json_encode(anUpdateWhoseChangelogNobodyCanRead()),
     ];
 
     foreach ($unreadable as $said) {
@@ -197,25 +207,22 @@ it('N2-R14 — a payload this side cannot read is an obstacle, not an exception'
     }
 });
 
-it('N2-R17 — sends the services that were agreed to, by name', function (): void {
-    // The other half of the confirmation. The question has to name the services
-    // it would change, and a request that named none of them — or the
-    // wrong ones — would have the operator agree to one evening and the stack
-    // carry out another.
+it('confirms the update and names no services the action would refuse', function (): void {
+    // Unconfirmed, the stack's `update` action only says what would change, so
+    // a yes that did not say `confirm` would start nothing. The action narrows
+    // to one `service` and refuses a `services` list, and confirmed with
+    // neither it moves every service it did not refuse — the ones the
+    // confirmation named.
     MockClient::destroyGlobal();
     $mock = MockClient::global([aTakingWasStarted()]);
 
     new Upkeepers(new PinnedClients())->take(
         theStackWhoseUpkeepTheAdapterAsksAfter(),
         Session::of('a-session-not-a-secret'),
-        TakingAnUpdate::agreed(
-            Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
-            Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
-            Services::none(),
-        ),
+        theUpdateTheAdapterIsHanded(),
     );
 
-    expect(whatWasSentAgreeing($mock))->toBe(['jellyfin', 'sonarr']);
+    expect(whatWasSentAgreeing($mock))->toBe([WireField::Confirm->value => true]);
 });
 
 it('N2-R17 — carries the agreement through to the job the stack started', function (): void {
@@ -248,9 +255,9 @@ it('N2-R14 — an acknowledgement this side cannot read is an obstacle too', fun
 });
 
 /**
- * The services a taking actually named on the wire.
+ * The body a taking actually put on the wire.
  *
- * @return list<string>
+ * @return array<mixed>
  */
 function whatWasSentAgreeing(MockClient $mock): array
 {
@@ -261,14 +268,8 @@ function whatWasSentAgreeing(MockClient $mock): array
     }
 
     $body = $sent->body()?->all();
-    $named = is_array($body) ? ($body[WireField::Services->value] ?? []) : [];
-    $said = [];
 
-    foreach (is_array($named) ? $named : [] as $service) {
-        $said[] = is_string($service) ? $service : '';
-    }
-
-    return $said;
+    return is_array($body) ? $body : [];
 }
 
 /**
@@ -289,6 +290,21 @@ function anEnvelopeOfTheWrongKind(): array
 function anUpdateNobodyCanRead(): array
 {
     return ['api_version' => 1, 'kind' => 'update', 'data' => ['state' => 'nearly']];
+}
+
+/**
+ * An `update` envelope whose pins are readable and whose changelog is not.
+ *
+ * The shared reader's refusal, which the adapter has to catch beside its own.
+ *
+ * @return array<string, mixed>
+ */
+function anUpdateWhoseChangelogNobodyCanRead(): array
+{
+    return ['api_version' => 1, 'kind' => 'update', 'data' => [
+        'state' => 'current',
+        'changelog' => ['state' => 'current', 'releases' => 'two', 'requirements' => []],
+    ]];
 }
 
 /** One answer carried out of an `either()` arm, which hands back objects. */

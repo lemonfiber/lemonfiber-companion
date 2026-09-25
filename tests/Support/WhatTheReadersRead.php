@@ -27,11 +27,13 @@ use function substr;
  * one of them. Twenty-nine names do that across ninety-nine of the two hundred
  * and twenty-three paths the contract declares here.
  *
- * The last of those four is the whole argument. `update.changelog.state` is the
- * field {@see WhatTheContractAccepts} exists because a reader misread — the
- * top-level `state` taken for the triple the contract puts under `changelog` —
- * and a register meant to catch exactly that could not see it, because a case
- * named for the `status` envelope's `state` had already answered for it.
+ * The last of those four is the whole argument. `update.changelog.state` and
+ * the `update` envelope's top-level `state` share a name and answer different
+ * questions — whether the release record matches the running build, and
+ * whether any service would move — and the screen once read the first for the
+ * second. A register keyed on names could not say which of the two a reader
+ * reaches for, because a case named for the `status` envelope's `state` had
+ * already answered for both.
  *
  * So the question here is *does anything read this path*, and the path is
  * recovered the way a reader builds it: the payload is seated at the envelope

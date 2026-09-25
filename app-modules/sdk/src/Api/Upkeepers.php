@@ -51,7 +51,7 @@ final readonly class Upkeepers implements KeepingCurrent
             return WhatIsCurrent::stands(Standings::in($envelope));
         } catch (RequestFailed $why) {
             return WhatIsCurrent::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable) {
             return WhatIsCurrent::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -61,7 +61,13 @@ final readonly class Upkeepers implements KeepingCurrent
         $client = $this->clients->client($stack, $session);
 
         try {
-            $envelope = $client->act(Api::action($agreed->asked()), $this->about($agreed));
+            // `confirm` and nothing else. Unconfirmed, the stack's `update`
+            // action only says what would change; confirmed, it moves every
+            // service it listed and did not refuse, which is the list
+            // `TakingAnUpdate::changing()` holds and the confirmation named.
+            // The action narrows to one `service` and takes no list, so none
+            // is sent: one would narrow the run, and a list is refused.
+            $envelope = $client->act(Api::action($agreed->asked()), [WireField::Confirm->value => true]);
 
             return Underway::as(Handles::in($envelope));
         } catch (RequestFailed $why) {
@@ -69,25 +75,5 @@ final readonly class Upkeepers implements KeepingCurrent
         } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
-    }
-
-    /**
-     * What the operator agreed to, as the action's arguments.
-     *
-     * The services are iterated for rather than handed over as a list, because
-     * a value object's insides are not an adapter's to reach into — which is
-     * the whole reason they travel as a collection.
-     *
-     * @return array<string, mixed>
-     */
-    private function about(TakingAnUpdate $agreed): array
-    {
-        $services = [];
-
-        foreach ($agreed->changing() as $service) {
-            $services[] = $service->named();
-        }
-
-        return [WireField::Services->value => $services];
     }
 }

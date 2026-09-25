@@ -16,13 +16,13 @@ use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\Problem;
 use Modules\Kernel\Api\Reach;
 use Modules\Kernel\Api\Release;
+use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
-use Modules\Kernel\Api\VersionInUse;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -352,29 +352,16 @@ it('N2-R4 — a repair cannot hand over one of its three clauses alone', functio
     ));
 });
 
-it('N2-R20 — nothing a stack is standing on can be handed to the apply path', function (): void {
+it('N2-R20 — the apply path takes a reading, and no release', function (): void {
     // The requirement's first clause: an update the stack did not report as
-    // pending is never applied. A reading carries two versions — the one the
-    // machine is on and the ones the changelog lists — and while they were one
-    // type the first could be handed to `TakingAnUpdate::agreed(, Services::none())`, which is
-    // the whole of applying one. Nothing refused it. What stood between an
-    // operator and *take the version you are already on* was
-    // `HowCurrentThisStackIs::agreementFor()` scanning the list it had drawn,
-    // which is a `MUST NOT` kept by a screen remembering.
+    // available is never applied. The stack moves services onto its own build's
+    // pins, so no release is chosen, and a `Release` reaching the apply path
+    // would be a release history read as a menu of offers — which is what the
+    // screen once did with every release the stack had ever shipped.
     //
-    // So this is asked of what these types **answer with** rather than of what
-    // they name. Narrowing a `Release` into a {@see VersionInUse} is how one is
-    // built and has to stay spellable; handing one back out is the door, and
-    // every way back out is a way to the apply path. That is the distinction
-    // {@see ApiSurface::answeredBy()} exists for, and the same one the repair
-    // case above turns on.
-    //
-    // `Upkeep` is a subject beside it because the flaw returns as easily from
-    // the reading as from the value: a `runningRelease()` added for a template
-    // that wanted "just the version" would hand back exactly what was taken
-    // away. The one route to a `Release` is `Upkeep::waiting()`, which has
-    // already applied the withdrawal filter — a `Releases` is not a `Release` and
-    // nothing here confuses the two.
+    // So the only way in is a reading: `TakingAnUpdate::offeredBy()` takes an
+    // `Upkeep` and refuses one that offered nothing. Asked of the named
+    // constructors' parameters, because those are the doors.
     $applyPath = [];
 
     foreach (ApiSurface::publicMethodsOf(ApiSurface::reflect(TakingAnUpdate::class)) as $method) {
@@ -387,39 +374,21 @@ it('N2-R20 — nothing a stack is standing on can be handed to the apply path', 
         }
     }
 
-    // The floor, and it is a type rather than a count on purpose: a number here
-    // would be a number somebody edits when the signature moves, and what is
-    // worth pinning is not how many arguments an agreement takes but that a
-    // `Release` is still the currency of applying one. The day it is not, this
-    // rule is watching a door that moved, and says so rather than passing.
-    expect(in_array(Release::class, $applyPath, strict: true))->toBeTrue(
-        'the apply path no longer takes a Release, so this rule is watching a door that moved',
+    // The floor, and it is a type rather than a count on purpose: what is
+    // worth pinning is that a reading is still the currency of applying one.
+    // The day it is not, this rule is watching a door that moved.
+    expect(in_array(Upkeep::class, $applyPath, strict: true))->toBeTrue(
+        'the apply path no longer takes a reading, so this rule is watching a door that moved',
     );
 
-    $found = [];
+    $releases = array_values(array_intersect($applyPath, [Release::class, Releases::class]));
 
-    foreach ([VersionInUse::class, Upkeep::class] as $subject) {
-        $answers = ApiSurface::answeredBy(ApiSurface::reflect($subject));
-
-        // Assert the reading before what it says. A subject answering nothing
-        // would make this pass about nothing, which is the state every rule
-        // here exists to refuse in everything else.
-        expect($answers)->not->toBe([], sprintf('%s answers nothing, so this rule proved nothing', $subject));
-
-        foreach ($answers as [$where, $named]) {
-            if (in_array(Release::class, $named, strict: true)) {
-                $found[] = $where;
-            }
-        }
-    }
-
-    expect(array_values(array_unique($found)))->toBe([], sprintf(
-        "A reading hands out the release a stack is standing on:\n  %s\n\n"
-        . 'N2-R20 refuses to apply an update the stack did not report as pending, and a '
-        . '`Release` is what an update is agreed about. The version in use is a '
-        . "`VersionInUse` so that offering it is not a sentence anybody can write.\n"
-        . 'If a screen needs the version, it needs the string — `VersionInUse::version()` '
-        . 'is that, and it is all of it (N2-R16, N2-R20).',
-        implode("\n  ", $found),
+    expect($releases)->toBe([], sprintf(
+        "The apply path takes a release:\n  %s\n\n"
+        . 'An update moves the services onto the versions the stack\'s build pins; the release '
+        . 'history says where those pins came from and is not a list of offers. Agreeing to an '
+        . 'update is agreeing to what a reading offered, so `TakingAnUpdate` is built from an '
+        . '`Upkeep` and nothing else (N2-R20).',
+        implode("\n  ", $releases),
     ));
 });

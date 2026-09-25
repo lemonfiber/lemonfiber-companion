@@ -8,11 +8,12 @@ use function expect;
 use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
-use Modules\Kernel\Api\HowCurrent;
+use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowToUndoIt;
+use Modules\Kernel\Api\Release;
 use Modules\Kernel\Api\Upkeep;
-use Modules\Kernel\Api\VersionInUse;
+use Modules\Sdk\Api\ChangelogIsUnreadable;
 use Modules\Sdk\Api\Standings;
 use Modules\Sdk\Api\UpkeepIsUnreadable;
 
@@ -33,10 +34,12 @@ use Tests\Support\WhatTheContractAccepts;
  * reading can fail, and the refusal each produces.
  *
  * **One rule is under all of it: this side refuses rather than invents.** Every
- * case below has a reassuring direction to default in — nothing waiting, nothing running, nothing changing,
- * nothing applied — and each of those is an answer somebody would stop worrying
- * on. A reader that filled one in would be inventing the stack's half of the
- * conversation.
+ * case below has a reassuring direction to default in — nothing waiting, nothing
+ * running, nothing changing, nothing applied — and each of those is an answer
+ * somebody would stop worrying on.
+ *
+ * The release records' own refusals are {@see \Modules\Sdk\Internal\Changelogs}'s,
+ * and asserted in its suite; this one asserts that they reach the adapter.
  *
  * @param array<mixed> $data
  *
@@ -50,10 +53,12 @@ function anUpkeepSaying(array $data): Envelope
 /**
  * What a stack sends, with whatever this case is about changed.
  *
- * The changelog is a separate argument because most cases are about it: the
- * triple a household is shown and the releases that get filtered out both live
- * under it, and the payload carries a second `state` at the top that means
- * something else entirely.
+ * The changelog is a separate argument because it carries a `state` of its own
+ * beside the top-level one, and the two answer different questions: the
+ * top-level one says whether any service would move, and the changelog's says
+ * whether the release record matches the running build. The defaults below
+ * disagree on purpose — no update available, notes still pending — which is
+ * the realistic reading a stack sends after it was just updated.
  *
  * **Every field the contract requires is here, including the four no reader
  * touches.** A fixture short of one is a sample of a payload no stack sends,
@@ -70,7 +75,7 @@ function anUpkeepSaying(array $data): Envelope
 function whatAStackSaysAboutItsUpkeep(array $changelog = [], array $differently = []): array
 {
     return [
-        'state' => 'partial',
+        'state' => 'current',
         'applied' => [],
         'changes' => [],
         'confirmed' => false,
@@ -99,11 +104,7 @@ function aReleaseSaying(array $differently = []): array
 
 /**
  * The release a stack says it is running, which is a wider shape than a listed
- * one.
- *
- * The contract puts the notes somebody would read on the release in use and not
- * on the ones waiting, so the two are not interchangeable even though this
- * reader asks both the same three questions.
+ * one: the contract puts the grouped notes on the release in use only.
  *
  * @param  array<mixed>  $differently
  * @return array<mixed>
@@ -135,7 +136,7 @@ final readonly class WhatTheStackTurnedOutToBeOn
 function whatItIsOn(Upkeep $upkeep): string
 {
     return $upkeep->inUse(
-        named: static fn(VersionInUse $inUse): WhatTheStackTurnedOutToBeOn
+        named: static fn(Release $inUse): WhatTheStackTurnedOutToBeOn
             => new WhatTheStackTurnedOutToBeOn($inUse->version()),
         unstated: static fn(): WhatTheStackTurnedOutToBeOn
             => new WhatTheStackTurnedOutToBeOn('unstated'),
@@ -152,13 +153,16 @@ function theUpkeepIn(array $data): Upkeep
     return Standings::in(anUpkeepSaying($data));
 }
 
-it('N2-R15 — reads the triple off the changelog rather than off the payload', function (): void {
-    // The payload carries two fields called `state`. The top-level one says how
-    // the last applied update finished — `partial` here — and the triple this
-    // requirement is about is under `changelog`. Both are words, so nothing but
-    // the contract tells them apart, and a reader on the wrong one refuses
-    // every stack that has an update waiting.
-    expect(theUpkeepIn(whatAStackSaysAboutItsUpkeep())->how())->toBe(HowCurrent::Pending);
+it('reads whether an update is available off the pins, not off the changelog', function (): void {
+    // The payload carries two fields called `state`. The changelog's `pending`
+    // says the running build's release has no notes yet; the top-level
+    // `current` says no service would move. Read the other way round, this
+    // stack would be offered an update it has not got.
+    $justUpdated = theUpkeepIn(whatAStackSaysAboutItsUpkeep());
+    $behind = theUpkeepIn(whatAStackSaysAboutItsUpkeep(['state' => 'current'], ['state' => 'updates-available']));
+
+    expect($justUpdated->againstThePins())->toBe(AgainstThePins::Current)
+        ->and($behind->againstThePins())->toBe(AgainstThePins::UpdatesAvailable);
 });
 
 it('N2-R15 — reads the release in use off the changelog', function (): void {
@@ -173,26 +177,24 @@ it('N2-R15 — a stack that named no release in use is not a stack running nothi
     // Absent rather than empty. Not having looked and running nothing are
     // different answers, and a screen handed a blank version would show the
     // second when the stack said the first.
-    expect(whatItIsOn(theUpkeepIn(whatAStackSaysAboutItsUpkeep())))->toBe('unstated');
+    expect(whatItIsOn(theUpkeepIn(whatAStackSaysAboutItsUpkeep())))->toBe('unstated')
+        ->and(whatItIsOn(theUpkeepIn(whatAStackSaysAboutItsUpkeep(['running' => null]))))->toBe('unstated');
 });
 
-it('N2-R16 — reads a release as withdrawn from the field being there at all', function (): void {
-    // The wire says *when* it was taken back. A date this side cannot parse is
-    // still a stack saying the release was withdrawn, and treating it as
-    // standing would be the unsafe reading of an unreadable field.
+it('reads the releases the changelog lists as history, withdrawn ones included', function (): void {
     $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep([
-        'releases' => [aReleaseSaying(['withdrawn' => 'not a date anybody can read'])],
+        'releases' => [aReleaseSaying(), aReleaseSaying(['version' => '4.0.17', 'withdrawn' => '2026-09-01'])],
     ]));
 
-    expect($upkeep->waiting()->isEmpty())->toBeTrue();
-});
+    $versions = [];
 
-it('N2-R16 — a release the stack has not taken back still stands', function (): void {
-    $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep([
-        'releases' => [aReleaseSaying(['withdrawn' => null])],
-    ]));
+    foreach ($upkeep->history() as $release) {
+        $versions[] = $release->version();
+    }
 
-    expect($upkeep->waiting()->count())->toBe(1);
+    expect($versions)->toBe(['4.1.0', '4.0.17'])
+        // Listed releases are not an update: the pins said `current`.
+        ->and($upkeep->hasSomethingToOffer())->toBeFalse();
 });
 
 it('N2-R18 — reads what became of each service the last update touched', function (): void {
@@ -305,120 +307,51 @@ it('refuses a payload with nothing in it', function (): void {
         ->toThrow(UpkeepIsUnreadable::class);
 });
 
-it('refuses a release whose version is nothing but space', function (): void {
-    // Blank as well as absent. A blank one would otherwise be refused by the
-    // value's own constructor, which throws a different kind — one the adapter
-    // does not catch, so it would reach the operator as a crash rather than as
-    // an obstacle.
+it('refuses a reading with no changelog, as a changelog it cannot read', function (): void {
+    expect(fn(): object => theUpkeepIn(['state' => 'current', 'applied' => [], 'changes' => []]))
+        ->toThrow(ChangelogIsUnreadable::class, 'changelog');
+});
+
+it('refuses a release the changelog lists and it cannot read', function (): void {
     expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep([
         'releases' => [aReleaseSaying(['version' => '   '])],
-    ])))->toThrow(UpkeepIsUnreadable::class, 'Release 1');
-});
-
-it('refuses a reading with no changelog', function (): void {
-    expect(fn(): object => theUpkeepIn(['state' => 'partial', 'applied' => [], 'changes' => []]))
-        ->toThrow(UpkeepIsUnreadable::class, 'changelog');
-});
-
-it('refuses a changelog that is not a shape', function (): void {
-    expect(fn(): object => theUpkeepIn([
-        'state' => 'partial',
-        'applied' => [],
-        'changes' => [],
-        'changelog' => 'nothing to report',
-    ]))->toThrow(UpkeepIsUnreadable::class, 'changelog');
-});
-
-it('refuses a changelog that never said where the stack stands', function (): void {
-    // Built without the field rather than built and then unset, so the shape
-    // this case is about is the one the reader is handed.
-    expect(fn(): object => theUpkeepIn([
-        'state' => 'partial',
-        'applied' => [],
-        'changes' => [],
-        'changelog' => ['releases' => []],
-    ]))->toThrow(UpkeepIsUnreadable::class, 'state');
-});
-
-it('refuses a standing that is not a word', function (): void {
-    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(['state' => 3])))
-        ->toThrow(UpkeepIsUnreadable::class, 'state');
-});
-
-it('refuses a standing this app has no case for', function (): void {
-    // A word this side does not know is not a state it can show, and rendering
-    // the word itself would put lemonfiber's vocabulary on a screen in place of
-    // a sentence somebody wrote.
-    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(['state' => 'nearly'])))
-        ->toThrow(UpkeepIsUnreadable::class, 'nearly');
-});
-
-it('refuses a changelog with no releases', function (): void {
-    expect(fn(): object => theUpkeepIn([
-        'state' => 'partial',
-        'applied' => [],
-        'changes' => [],
-        'changelog' => ['state' => 'pending'],
-    ]))->toThrow(UpkeepIsUnreadable::class, 'releases');
-});
-
-it('refuses releases that are not a list', function (): void {
-    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(['releases' => 'two'])))
-        ->toThrow(UpkeepIsUnreadable::class, 'releases');
-});
-
-it('names a release by where it sat rather than by a name it has not got', function (): void {
-    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep([
-        'releases' => [aReleaseSaying(), 'a string where a release belongs'],
-    ])))->toThrow(UpkeepIsUnreadable::class, 'Release 2');
-});
-
-it('refuses a release with no version to call it by', function (): void {
-    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep([
-        'releases' => [['user_facing' => true]],
-    ])))
-        ->toThrow(UpkeepIsUnreadable::class, 'Release 1');
-});
-
-it('refuses a version that is not a word', function (): void {
-    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep([
-        'releases' => [aReleaseSaying(['version' => 410])],
-    ])))->toThrow(UpkeepIsUnreadable::class, 'Release 1');
-});
-
-it('refuses a release that never said whether anybody would notice', function (): void {
-    // Refusing rather than inventing, at its sharpest. The reassuring default is
-    // *nobody will notice*, which is the answer that quietly turns a decision
-    // into a chore — so the absent case is the stack's to explain rather than
-    // this side's to fill in.
-    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep([
-        'releases' => [['version' => '4.1.0']],
-    ])))
-        ->toThrow(UpkeepIsUnreadable::class, 'Release 1');
-});
-
-it('refuses a would-be-noticed that is not a yes or a no', function (): void {
-    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep([
-        'releases' => [aReleaseSaying(['user_facing' => 'yes'])],
-    ])))->toThrow(UpkeepIsUnreadable::class, 'Release 1');
+    ])))->toThrow(ChangelogIsUnreadable::class, 'Release 1');
 });
 
 it('refuses a running release it cannot read', function (): void {
     expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep([
         'running' => aReleaseSaying(['user_facing' => 'yes']),
-    ])))->toThrow(UpkeepIsUnreadable::class, 'Release 1');
+    ])))->toThrow(ChangelogIsUnreadable::class, 'running release');
 });
 
-it('reads a running field that is not a shape as no release named', function (): void {
-    // Not a refusal. The contract allows null here, and a stack that has not
-    // determined what it is on is the ordinary case rather than a payload gone
-    // wrong.
-    expect(whatItIsOn(theUpkeepIn(whatAStackSaysAboutItsUpkeep(['running' => null]))))->toBe('unstated');
+it('refuses a reading that never said where the services stand', function (): void {
+    // Built without the field rather than built and then unset, so the shape
+    // this case is about is the one the reader is handed. The changelog's
+    // `state` is there and is not an answer to this.
+    expect(fn(): object => theUpkeepIn([
+        'applied' => [],
+        'changes' => [],
+        'changelog' => ['state' => 'pending', 'releases' => []],
+    ]))->toThrow(UpkeepIsUnreadable::class, 'state');
+});
+
+it('refuses a standing that is not a word', function (): void {
+    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['state' => 3])))
+        ->toThrow(UpkeepIsUnreadable::class, 'state');
+});
+
+it('refuses a standing this app has no case for', function (): void {
+    // `pending` is a word of the changelog's, and not one the pins are
+    // described in. Read here, it is a stack speaking a vocabulary this side
+    // does not know, and rendering the word itself would put lemonfiber's
+    // vocabulary on a screen in place of a sentence somebody wrote.
+    expect(fn(): object => theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['state' => 'pending'])))
+        ->toThrow(UpkeepIsUnreadable::class, 'pending');
 });
 
 it('refuses a reading with nothing about what an update would change', function (): void {
     expect(fn(): object => theUpkeepIn([
-        'state' => 'partial',
+        'state' => 'current',
         'applied' => [],
         'changelog' => ['state' => 'pending', 'releases' => []],
     ]))->toThrow(UpkeepIsUnreadable::class, 'changes');
@@ -494,18 +427,15 @@ it('counts a refused change when it names where a later one sat', function (): v
 it('stands in for a stack with payloads the contract would accept', function (): void {
     // The payload every case here is built from, held to the generated types
     // rather than to the reader that reads it. A fixture is written by whoever
-    // wrote the reader, so the two agree about a field that is not there and
-    // every assertion above passes against a machine nobody has run them
-    // against — which is the defect that had this reader looking for the triple
-    // a household is shown at the top of the payload instead of under
-    // `changelog`.
+    // wrote the reader, so the two can agree about a field that is not there
+    // and every assertion above pass against a machine nobody has run them
+    // against.
     //
-    // The two releases are separate entries because they are separate shapes.
-    // The contract puts the notes somebody would read on the release in use and
-    // not on the ones waiting, so one fixture serving both would be short of
-    // half of one of them and nothing here would say so.
+    // The two releases are separate entries because they are separate shapes:
+    // the contract puts the grouped notes on the release in use only.
     $payloads = [
         'the reading' => whatAStackSaysAboutItsUpkeep(),
+        'an update available' => whatAStackSaysAboutItsUpkeep(differently: ['state' => 'updates-available']),
         'a release the changelog lists' => whatAStackSaysAboutItsUpkeep(['releases' => [aReleaseSaying()]]),
         'the release in use' => whatAStackSaysAboutItsUpkeep(['running' => aReleaseInUseSaying()]),
     ];
