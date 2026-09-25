@@ -15,6 +15,7 @@ use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasDecided;
 use Tests\Support\Tree;
 
@@ -82,8 +83,8 @@ const DOORS_THE_APP_OPENS = [
 
     // The verbs below, and nothing else can reach it: the path is composed by
     // `Api::action()` from a name the kernel spells — a case of a closed set,
-    // or the one agreement to take an update — which this app cannot add a
-    // name to at a call site.
+    // the one agreement to take an update, or the one request to walk
+    // something through — which this app cannot add a name to at a call site.
     'act' => 'asks for one of the verbs the list below explains, by a name the rule below holds it to',
 
     // The one door that does nothing to anybody's machine: it hands back the
@@ -175,6 +176,12 @@ const VERBS_THE_APP_ASKS_FOR = [
     // the listing the operator was shown, and nothing else, because the yes
     // quotes that listing by name.
     'restore' => 'says what putting one copy back would do, and puts it back only against that listing',
+
+    // The one verb that fetches something. It names at most a title, and
+    // with none the stack chooses something likely to work; the stack
+    // refuses to grab outside the tunnel and never re-fetches what is
+    // already here, so what it can do is what an operator asked to watch.
+    'walkthrough' => 'fetches one thing while the operator watches, narrated end to end, on a stack already set up',
 ];
 
 /**
@@ -443,6 +450,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
+        WhatToWalk::called('')->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
 

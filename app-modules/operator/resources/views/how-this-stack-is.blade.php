@@ -175,6 +175,11 @@
          this cannot live under the verdict above. --}}
     <x-operator::quiet-action label="{{ __('health.what_stopped') }}" :goes="$this->goes()->stuck()" />
 
+    {{-- Watching one thing arrive, narrated end to end. Beside what stopped
+         coming in, because both are about content reaching the house, and
+         this is where somebody who wants to see the whole road once looks. --}}
+    <x-operator::quiet-action label="{{ __('health.walkthrough.road_in') }}" :goes="$this->goes()->walkthrough()" />
+
     {{-- What is running here that this machine never declared. The
          requirement asks for these to be reachable, and this is where from
          — beside what the stack runs rather than inside it, because a

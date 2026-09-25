@@ -140,6 +140,12 @@ final readonly class WhereAStackIs
         return AStacksScreen::Elsewhere->forTheStack($this->stack);
     }
 
+    /** Where one thing is fetched while the operator watches, and the record of it is kept. */
+    public function walkthrough(): string
+    {
+        return AStacksScreen::Walkthrough->forTheStack($this->stack);
+    }
+
     /**
      * Where what this machine keeps about itself is: what it changed, what it
      * runs, what it sends and what it wakes somebody for.
