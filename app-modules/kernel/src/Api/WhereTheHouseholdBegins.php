@@ -16,7 +16,8 @@ use function trim;
  */
 final readonly class WhereTheHouseholdBegins
 {
-    private function __construct(private string $service, private ?WhatItFaces $facing, private AnAddressToHand $address) {}
+    /** @param array{string, WhatItFaces, AnAddressToHand}|null $at the service, its facing and its address, or nothing at all */
+    private function __construct(private ?array $at) {}
 
     /** The service they begin at, by the name it shows itself under; a blank one is refused. */
     public static function at(string $service, WhatItFaces $facing, AnAddressToHand $address): self
@@ -25,13 +26,13 @@ final readonly class WhereTheHouseholdBegins
             throw TheDoorSaysNothing::about('service');
         }
 
-        return new self($service, $facing, $address);
+        return new self([$service, $facing, $address]);
     }
 
     /** Nothing here is somewhere they could begin. */
     public static function nowhere(): self
     {
-        return new self('', null, AnAddressToHand::none());
+        return new self(null);
     }
 
     /**
@@ -47,8 +48,8 @@ final readonly class WhereTheHouseholdBegins
      */
     public function either(Closure $at, Closure $nowhere): object
     {
-        return $this->facing instanceof WhatItFaces
-            ? $at($this->service, $this->facing, $this->address)
-            : $nowhere();
+        return $this->at === null
+            ? $nowhere()
+            : $at(...$this->at);
     }
 }
