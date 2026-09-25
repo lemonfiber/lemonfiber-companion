@@ -58,6 +58,7 @@ final readonly class HowAServiceReads
                 WhatToDoWithIt::cases(),
                 static fn(WhatToDoWithIt $verb): bool => $daemon->runs()->mayTake($verb),
             )),
+            runsFor: new HowWhatWasLeftOutReads()->forms($daemon->whatBroughtItIn()),
         );
     }
 

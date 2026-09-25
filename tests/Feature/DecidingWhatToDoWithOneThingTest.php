@@ -3,28 +3,43 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AServiceLeftOut;
+use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\WhatItWouldNeed;
+use Modules\Kernel\Api\WhatLeansOnIt;
+use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
+use Tests\Support\WhatANeedSays;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // One thing this machine runs, and the verbs about it.
 //
@@ -58,6 +73,7 @@ function theThingScreen(
     string $named = 'sonarr',
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?AStackThatRehearses $rehearsing = null,
 ): WhatToDoWithThis {
     $stack = theMachineTheseVerbsReach();
     $keychain ??= AKeychainInMemory::working();
@@ -66,7 +82,8 @@ function theThingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatToDoWithThis($supervising, $keychain, StacksInMemory::holding($stack));
+    $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none())));
+    $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, StacksInMemory::holding($stack));
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
     return $screen;
@@ -460,4 +477,106 @@ it('renders its own view', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
 
     expect($screen->render()->name())->toBe('operator::what-to-do-with-this');
+});
+
+/** Starting `library` on a machine with no torrent credentials. */
+function aRehearsalOfStartingTheLibrary(): WhatStartingItWouldComeTo
+{
+    return WhatStartingItWouldComeTo::rehearsed(
+        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+        TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
+        AFootprint::estimated(700, Services::these(ServiceId::called('sonarr'))),
+    );
+}
+
+it('a form says what starting it would bring up and leave out, as a rehearsal, before its verbs', function (): void {
+    $rehearsing = AStackThatRehearses::with(aRehearsalOfStartingTheLibrary());
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library', rehearsing: $rehearsing);
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $rehearsed = array_search(__('health.rehearsal.heading'), $drawn, strict: true);
+    $firstVerb = array_search(__(WhatToDoWithIt::cases()[0]->saidOnTheScreen()), $drawn, strict: true);
+
+    expect($drawn)->toContain(__('health.rehearsal.nothing_started'))
+        ->toContain(__('health.rehearsal.would_start', ['name' => 'jellyfin']))
+        ->toContain(__('health.rehearsal.would_start', ['name' => 'sonarr']))
+        ->toContain(__('health.rehearsal.left_out', ['name' => 'qBittorrent', 'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent)]))
+        ->toContain(__('health.rehearsal.estimate', ['mib' => 700]))
+        ->toContain(__('health.rehearsal.unestimated', ['services' => 'sonarr']))
+        ->and(is_int($rehearsed) && is_int($firstVerb) && $rehearsed < $firstVerb)->toBeTrue()
+        ->and($rehearsing->asked())->toHaveCount(1)
+        ->and($rehearsing->asked()[0]->named())->toBe('library');
+});
+
+it('a rehearsal that brings nothing up, leaves nothing out and takes nothing says so', function (): void {
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library');
+
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)
+        ->toContain(__('health.rehearsal.would_start_nothing'))
+        ->toContain(__('health.rehearsal.nothing_left_out'))
+        ->toContain(__('health.rehearsal.estimate', ['mib' => 0]));
+    expect($drawn)->not->toContain(__('health.rehearsal.unestimated', ['services' => '']));
+});
+
+it('a service is not rehearsed, because a rehearsal is of a form', function (): void {
+    $rehearsing = AStackThatRehearses::with(aRehearsalOfStartingTheLibrary());
+    WhatTheDeviceWouldDraw::by(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), rehearsing: $rehearsing));
+
+    expect($rehearsing->asked())->toBe([]);
+});
+
+it('a rehearsal is asked for once a frame, however often the template reads it', function (): void {
+    $rehearsing = AStackThatRehearses::with(aRehearsalOfStartingTheLibrary());
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library', rehearsing: $rehearsing);
+    $screen->rehearsal();
+    $screen->rehearsal();
+
+    expect($rehearsing->asked())->toHaveCount(1);
+});
+
+it('a rehearsal that could not be had says what stood in the way, and lets go of a refused session', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $unanswered = theThingScreen(
+        AStackThatSupervises::with(WhatAMachineRuns::twoThings()),
+        'library',
+        rehearsing: AStackThatRehearses::met(Obstacle::StackDidNotAnswer),
+    );
+    theThingScreen(
+        AStackThatSupervises::with(WhatAMachineRuns::twoThings()),
+        'library',
+        $keychain,
+        rehearsing: AStackThatRehearses::met(Obstacle::CredentialWasRefused),
+    )->rehearsal();
+
+    expect($unanswered->rehearsal()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($unanswered->rehearsal()->wouldStart)->toBe([])
+        ->and($unanswered->rehearsal()->leftOut)->toBe([])
+        ->and($unanswered->rehearsal()->estimatedMib)->toBeNull()
+        ->and($unanswered->rehearsal()->unestimated)->toBe([])
+        ->and(WhatTheDeviceWouldDraw::by($unanswered)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
+});
+
+it('a rehearsal on a device holding no session for the stack says so', function (): void {
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library', signedIn: false);
+
+    expect($screen->rehearsal()->went->isSignedIn)->toBeFalse()
+        ->and($screen->rehearsal()->wouldStart)->toBe([])
+        ->and($screen->rehearsal()->leftOut)->toBe([])
+        ->and($screen->rehearsal()->estimatedMib)->toBeNull()
+        ->and($screen->rehearsal()->unestimated)->toBe([]);
+});
+
+it('says what a service that ended exited with', function (): void {
+    $ended = Daemons::of(
+        HowTheStackIsRunning::Degraded,
+        Forms::these(Form::called('library')),
+        WhatAMachineRuns::whatTheVerbsCost(),
+        Daemon::thatExited('Sonarr', ServiceId::called('sonarr'), HowAServiceRuns::Stopped, HowMuchItMatters::Important, WhatLeansOnIt::nothing(), 137),
+    );
+    $screen = theThingScreen(AStackThatSupervises::with($ended));
+
+    expect($screen->thing()->service?->exited)->toBe('137')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.it_exited', ['code' => '137']));
 });

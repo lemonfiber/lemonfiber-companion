@@ -190,7 +190,7 @@ final readonly class Offers
      */
     private static function repairs(array $data): Repairs
     {
-        $rows = self::rows($data, RepairField::Offered);
+        $rows = self::rows($data, WireField::Offered);
         $repairs = [];
         $position = 0;
 

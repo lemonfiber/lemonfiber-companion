@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Stacks\Api;
 
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatToFollow;
 
+use function rawurlencode;
 use function str_contains;
 use function str_replace;
 
@@ -147,6 +150,23 @@ enum AStacksScreen: string
     /** How full this machine is, and where the room went. */
     case Room = '/stacks/{stack}/room';
 
+    /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
+    case Itself = '/stacks/{stack}/itself';
+
+    /** What lemonfiber's words mean. */
+    case Words = '/stacks/{stack}/words';
+
+    /**
+     * What one of lemonfiber's words means, opened where another screen drew it.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service and
+     * {@see self::Doing} with a service or a form; here it is a word.
+     */
+    case WordAbout = '/stacks/{stack}/words/{service}';
+
+    /** Where one item got to, followed through the services by the name it is known by. */
+    case Trace = '/stacks/{stack}/trace/{service}';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
@@ -211,6 +231,37 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $form->named()], $this->value);
+    }
+
+    /**
+     * This screen's path, for one of lemonfiber's words on one machine.
+     *
+     * A third filling of the segment, typed for the reason
+     * {@see self::forTheStacksForm()} gives. Encoded, because a word can hold
+     * a space or a slash, which a path segment cannot; the router decodes it.
+     */
+    public function forTheStacksWord(StackId $stack, AWordInUse $word): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($word->said())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one item to follow on one machine.
+     *
+     * Encoded for {@see self::forTheStacksWord()}'s reason: a title can hold
+     * a space or a slash.
+     */
+    public function forTheStacksItem(StackId $stack, WhatToFollow $item): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($item->term())], $this->value);
     }
 
     /**

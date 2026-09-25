@@ -147,10 +147,10 @@ final readonly class WhatIsTold
      */
     private static function wanted(array $row, int $position): bool
     {
-        if (! array_key_exists(AlertsField::Wanted->value, $row) || ! is_bool($row[AlertsField::Wanted->value])) {
-            throw AlertsAreUnreadable::said(AlertsField::Wanted, $position);
+        if (! array_key_exists(WireField::Wanted->value, $row) || ! is_bool($row[WireField::Wanted->value])) {
+            throw AlertsAreUnreadable::said(WireField::Wanted, $position);
         }
 
-        return $row[AlertsField::Wanted->value];
+        return $row[WireField::Wanted->value];
     }
 }

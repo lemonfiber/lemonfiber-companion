@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
+use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Modules\Kernel\Api\HowTheUpdateIsGoing;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -37,9 +41,8 @@ final readonly class Upkeepers implements KeepingCurrent
         try {
             // Naming what this is about, because the endpoint serves two things
             // and a request that says neither is answered in prose rather than
-            // with an envelope. This surface asks about the services; where
-            // this copy of lemonfiber stands is a different reading, a
-            // different kind, and nothing an operator's phone is for.
+            // with an envelope. This asks about the services; where the running
+            // copy of lemonfiber stands is {@see Inspectors}' reading.
             $envelope = $client->read(
                 Api::UPDATE_ENDPOINT,
                 [WireField::What->value => UpdateField::TheStack->value],
@@ -75,6 +78,39 @@ final readonly class Upkeepers implements KeepingCurrent
             return Underway::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable) {
             return Underway::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing
+    {
+        try {
+            return $this->outcome($stack, $session, $job);
+        } catch (RequestFailed $why) {
+            return HowTheUpdateIsGoing::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable) {
+            return HowTheUpdateIsGoing::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
+    /**
+     * What the stack says about the job, with only `NoSuchJob` caught.
+     *
+     * A name lemonfiber does not recognise is the stack answering that it has
+     * no outcome for that update, which is one of the states the reading
+     * returns rather than a failure to reach the machine; {@see Menders} draws
+     * the same line for the same reason.
+     */
+    private function outcome(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing
+    {
+        try {
+            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+                stillRunning: static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::stillRunning(),
+                finished: static fn(Envelope $envelope): HowTheUpdateIsGoing
+                    => HowTheUpdateIsGoing::done(Standings::in($envelope)),
+                ended: static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::ended(),
+            );
+        } catch (NoSuchJob) {
+            return HowTheUpdateIsGoing::ended();
         }
     }
 }

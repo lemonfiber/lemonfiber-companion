@@ -257,7 +257,7 @@ final readonly class Stoppages
      */
     private static function stage(array $row, int $position): Stage
     {
-        $said = self::text($row, StuckField::Stage, $position);
+        $said = self::text($row, WireField::Stage, $position);
 
         return Stage::tryFrom($said) ?? throw StuckIsUnreadable::stage($said, $position);
     }

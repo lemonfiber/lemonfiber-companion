@@ -75,16 +75,14 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 62 envelopes and this app follows 20.
-Forty are never referenced anywhere in `app-modules` or `bridge`, and two
-more — `Admission` and `Pull` — are referenced without being followed. They
-resolve to the features below — each one an action available from another
+**The measurement.** The SDK ships 62 envelopes and this app follows 25.
+Of the rest, 35 are never named by the code in `app-modules` or `bridge`, tests
+aside, and 2 more — `Admission` and `Pull` — are named without being followed.
+They resolve to the features below — each one an action available from another
 surface and not offered here, or offered only in part.
-
-```
-ls vendor/lemonfiber/sdk-php/src/Generated/*Envelope.php | wc -l   # 62
-Tests\Support\WhatTheReadersRead::envelopes()                      # 20
-```
+`tests/Feature/EveryActionTheStackOffersTest.php` classifies every kind the SDK
+ships as offered, excused by a requirement, or not yet offered, and holds these
+counts to what those lists come to.
 
 `A2` is not in the list: first-run setup is the one exception `N1-R2` allows
 for, and `N1-R4` states it and why — a phone cannot perform the act that makes a
@@ -103,29 +101,32 @@ reaches that action another way. So those four are *partly* built, and the
 question they ask is narrower than the rest: not whether this app does the
 thing, but whether it reads everything the wire now says about it.
 
-**Eight more are partly built, the other way round:** the envelope is read and
+**Eleven more are partly built, the other way round:** the envelope is read and
 drawn, and it answers some of the feature's requirements rather than all of
-them. `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B8` is whether
+them. `B1` is a stack running some of its forms, and what starting a form would come to (`N18-R1`, `N18-R3` to `N18-R9`); `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B8` is whether
 the stack comes back after a restart and what did not (`N16-R5`, `N16-R6`,
-`N16-R13`); `D5` is how full the machine is, where the room went and each download with where it stands (`N12-R1` to `N12-R3`, `N12-R6`, `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E4`
+`N16-R13`); `D9` is where one item got to, followed through the services (`N8-R4` to `N8-R6`, `N8-R8`, `N8-R9`); `D5` is how full the machine is, where the room went and each download with where it stands (`N12-R1` to `N12-R3`, `N12-R6`, `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E2` is which version runs, how it was installed and what moving it would take (`N14-R1` to `N14-R8`); `E4`
 is the record of what was changed and how far back it goes (`N11-R1` to
 `N11-R3`, `N11-R9`, `N11-R10`); `E3` is the list of copies, with an empty one told apart from one that could not be read (`N6-R9`); `G8` is what leaves the machine, ours and
 theirs apart (`N10-R1` to `N10-R3`, `N10-R12`). Each is kept on
 [what leaves a machine](what-leaves-a-machine.md),
 [what a machine keeps](what-a-machine-keeps.md),
 [how full a machine is](how-full-a-machine-is.md),
+[what is running here](what-is-running-here.md),
+[where an item got to](where-an-item-got-to.md),
+[running part of it](running-part-of-it.md),
 [what a machine says](what-a-machine-says.md) or
 [what was done here](what-was-done-here.md), and the rest of each feature is
 still a decision nobody has made.
 
-That leaves **twenty-four** with nothing documented at all.
+That leaves **twenty-one** with nothing documented at all.
 
 | Feature | What it is |
 |---|---|
 | `A5` | Migration from an existing stack |
 | `A6` | Clean uninstall — **partly built**, see above |
 | `A7` | Credential management & rotation |
-| `B1` | Forms & partial stacks |
+| `B1` | Forms & partial stacks — **partly built**, see above |
 | `B10` | Hosting long-running commands |
 | `B2` | Lifecycle control — **partly built**, see above |
 | `B5` | Notifications & alerting — **partly built**, see above |
@@ -139,8 +140,8 @@ That leaves **twenty-four** with nothing documented at all.
 | `D5` | Disk space management — **partly built**, see above |
 | `D6` | Household identity & invitations |
 | `D7` | Request approval & quotas — **partly built**, see above |
-| `D9` | "Where is my show?" pipeline trace |
-| `E2` | Self-update |
+| `D9` | "Where is my show?" pipeline trace — **partly built**, see above |
+| `E2` | Self-update — **partly built**, see above |
 | `E3` | Backup & restore — **partly built**, see above |
 | `E4` | Rollback — **partly built**, see above |
 | `F4` | The capability vocabulary |
@@ -159,9 +160,9 @@ That leaves **twenty-four** with nothing documented at all.
 | `H8` | Playback statistics |
 | `K1` | Metrics & dashboards |
 
-**Why no rule caught this.** `WhatTheContractCarriesThatNothingReadsTest` is the
-register for unread fields, and it is a good rule — every path on an envelope
-this app reads is either followed to a reader or listed with a reason. It walks
-`WhatTheReadersRead::envelopes()`, so an envelope nothing touches contributes no
-paths and can never be flagged. It watches fields arriving on doors already
-opened; nothing watched the doors never opened at all.
+**What each rule watches.** `WhatTheContractCarriesThatNothingReadsTest` holds
+every path on an envelope this app reads to a reader or a listed reason; it
+walks `WhatTheReadersRead::envelopes()`, so it sees only envelopes a reader
+opens. `EveryActionTheStackOffersTest` holds the envelopes themselves: each one
+the SDK ships is offered, excused or not yet offered, and the counts above are
+its measurement.

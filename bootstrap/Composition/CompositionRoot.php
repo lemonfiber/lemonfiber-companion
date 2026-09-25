@@ -35,6 +35,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\KeepingCurrent;
@@ -47,15 +48,18 @@ use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Provenance;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
+use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\SelfChecking;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Telling;
+use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
@@ -66,7 +70,10 @@ use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doors;
+use Modules\Sdk\Api\Explainers;
+use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Heralds;
+use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
@@ -75,6 +82,7 @@ use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
+use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -315,6 +323,13 @@ final class CompositionRoot extends ServiceProvider
         // How full the machine is, read beside the rest and bound for the
         // same reason.
         $this->app->bind(Measuring::class, Surveyors::class);
+
+        // The running copy of lemonfiber, read beside the rest and bound for
+        // the same reason.
+        $this->app->bind(SelfChecking::class, Inspectors::class);
+        $this->app->bind(Explaining::class, Explainers::class);
+        $this->app->bind(Rehearsing::class, Rehearsers::class);
+        $this->app->bind(Tracing::class, Followers::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

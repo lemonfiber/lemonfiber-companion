@@ -116,6 +116,24 @@ enum WireField: string implements NamesAWireField
     case Services = 'services';
 
     /**
+     * Forms, in the two senses the wire uses the word: the forms a stack
+     * declares, listed on the `forms` envelope and named by an action, and
+     * the forms lemonfiber writes one of its words in, on each word of the
+     * `glossary`.
+     */
+    case Forms = 'forms';
+
+    /**
+     * The services the forms asked for left out, each with what it would
+     * need: of the forms running, on the `status` envelope, and of the forms
+     * named, on the `preview` envelope.
+     */
+    case Filtered = 'filtered';
+
+    /** What a service left out would have needed to be started. */
+    case Needs = 'needs';
+
+    /**
      * Which of the two things an update reading is about — and, on a listing's
      * limits, the thing the stack cannot act on.
      *
@@ -214,4 +232,42 @@ enum WireField: string implements NamesAWireField
 
     /** What throttling the upload costs, where an upload limit is in force. */
     case Ratio = 'ratio';
+
+    /**
+     * What is running: the version of the running copy of lemonfiber on the
+     * `self-update` envelope, and the release in use inside an `update`
+     * changelog, which is absent where the stack has not determined one.
+     */
+    case Running = 'running';
+
+    /**
+     * What is on offer: the repairs a stack says it would carry out, and the
+     * newest version of lemonfiber released.
+     */
+    case Offered = 'offered';
+
+    /**
+     * What to type: how a long-running command is typed in a terminal, which
+     * is what hosting installs, and exactly what to type to update lemonfiber.
+     */
+    case Command = 'command';
+
+    /**
+     * What to do instead: where putting a change back stops short, and why
+     * there is nothing exact to type to update lemonfiber.
+     */
+    case Instead = 'instead';
+
+    /**
+     * A stage in the pipeline: how far a stalled item got before it stopped,
+     * and each stage a traced item reached.
+     */
+    case Stage = 'stage';
+
+    /**
+     * Two meanings under one word, each in its own envelope: whether an event
+     * set apart is heard about, whatever the preset says, and how many parts
+     * of a traced series were asked for.
+     */
+    case Wanted = 'wanted';
 }

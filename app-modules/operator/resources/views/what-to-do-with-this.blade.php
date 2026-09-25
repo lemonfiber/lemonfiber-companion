@@ -70,6 +70,44 @@
         {{-- What a form is, said once, because the verbs below reach every
              service in it and that is more than the word suggests. --}}
         <native:text>{{ __('health.a_whole_form') }}</native:text>
+
+        {{-- What starting it would come to, before the verbs that start it,
+             and labelled as a rehearsal: nothing below has started. A service
+             left out says what it would need, so a service filtered on
+             purpose never reads as one that failed. --}}
+        <x-operator::emphasis>{{ __('health.rehearsal.heading') }}</x-operator::emphasis>
+        <x-operator::note>{{ __('health.rehearsal.nothing_started') }}</x-operator::note>
+
+        @if (! $this->rehearsal()->went->cameBack())
+            <x-operator::what-stopped-the-reading
+                :went="$this->rehearsal()->went"
+                :sign-in-goes-to="$this->goes()->signIn()"
+            />
+        @else
+            @forelse ($this->rehearsal()->wouldStart as $service)
+                <x-operator::note>{{ __('health.rehearsal.would_start', ['name' => $service]) }}</x-operator::note>
+            @empty
+                <x-operator::note>{{ __('health.rehearsal.would_start_nothing') }}</x-operator::note>
+            @endforelse
+
+            @forelse ($this->rehearsal()->leftOut as $left)
+                <x-operator::note>
+                    {{ __('health.rehearsal.left_out', ['name' => $left->name, 'needs' => __($left->needsSaid)]) }}
+                </x-operator::note>
+            @empty
+                <x-operator::note>{{ __('health.rehearsal.nothing_left_out') }}</x-operator::note>
+            @endforelse
+
+            {{-- The stack's estimate, said as one, and the services it could
+                 not estimate, so a short sum reads as short. --}}
+            <x-operator::note>{{ __('health.rehearsal.estimate', ['mib' => $this->rehearsal()->estimatedMib]) }}</x-operator::note>
+
+            @if ($this->rehearsal()->unestimated !== [])
+                <x-operator::note>
+                    {{ __('health.rehearsal.unestimated', ['services' => implode(', ', $this->rehearsal()->unestimated)]) }}
+                </x-operator::note>
+            @endif
+        @endif
     @else
         <native:text>{{ __($this->thing()->service->runsSaid) }}</native:text>
         <x-operator::note>{{ __($this->thing()->service->mattersSaid) }}</x-operator::note>

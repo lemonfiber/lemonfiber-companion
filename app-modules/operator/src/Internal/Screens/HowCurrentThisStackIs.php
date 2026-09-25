@@ -17,8 +17,8 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TakingAnUpdate;
-use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
@@ -54,6 +54,7 @@ use function view;
 #[Concealed]
 final class HowCurrentThisStackIs extends NativeComponent
 {
+    use FollowsTheUpdateItTook;
     use LetsGoOfARefusedSession;
 
     /**
@@ -109,6 +110,7 @@ final class HowCurrentThisStackIs extends NativeComponent
     public function again(): void
     {
         $this->answered = null;
+        $this->lastUpdated = null;
     }
 
     /**
@@ -132,7 +134,13 @@ final class HowCurrentThisStackIs extends NativeComponent
         $this->asking = $offer;
     }
 
-    /** Take the update that was agreed to. */
+    /**
+     * Take the update that was agreed to, and forget what was read.
+     *
+     * Forgetting rather than re-reading here, so the next accessor asks — the
+     * listing after an update is taken is a different listing, and a screen
+     * that kept the old one would show an evening that has already happened.
+     */
     public function agree(): void
     {
         $taking = $this->asking;
@@ -143,7 +151,8 @@ final class HowCurrentThisStackIs extends NativeComponent
 
         $this->asking = null;
 
-        $this->send($taking);
+        $this->answered = null;
+        $this->takeIt($taking);
     }
 
     /** Leave it. */
@@ -196,28 +205,6 @@ final class HowCurrentThisStackIs extends NativeComponent
     public function answer(): WhatTheUpkeepTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
-    }
-
-    /**
-     * Send what was agreed to, and forget what was read.
-     *
-     * Forgetting rather than re-reading here, so the next accessor asks — the
-     * listing after an update is taken is a different listing, and a screen
-     * that kept the old one would show an evening that has already happened.
-     */
-    private function send(TakingAnUpdate $taking): void
-    {
-        $stack = $this->stack();
-
-        $this->storage->resume($stack->id())->either(
-            held: function (Session $session) use ($stack, $taking): Underway {
-                $underway = $this->keeping->take($stack, $session, $taking);
-                $this->answered = null;
-
-                return $underway;
-            },
-            notHeld: static fn(): Underway => Underway::met(Obstacle::CredentialWasRefused),
-        );
     }
 
     /**

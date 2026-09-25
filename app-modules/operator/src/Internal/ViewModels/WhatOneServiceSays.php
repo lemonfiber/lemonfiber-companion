@@ -45,6 +45,7 @@ final readonly class WhatOneServiceSays
      * @param list<string> $leaning     the services that will not work without it
      * @param string       $exited      what it exited with, or empty where it did not
      * @param list<WhatToDoWithIt> $verbs what this state can take, worst-case none
+     * @param list<string> $runsFor     every form it is running for, none where no form holding it is up
      */
     public function __construct(
         public ServiceId $id,
@@ -57,6 +58,7 @@ final readonly class WhatOneServiceSays
         public array $leaning,
         public string $exited,
         public array $verbs,
+        public array $runsFor,
     ) {}
 
     /**

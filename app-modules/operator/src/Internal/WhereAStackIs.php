@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AStacksScreen;
 
 /**
@@ -146,6 +147,12 @@ final readonly class WhereAStackIs
     public function ofItself(): WhatItKeepsOfItself
     {
         return WhatItKeepsOfItself::of($this->stack);
+    }
+
+    /** Where one item got to on this machine. */
+    public function traceOf(WhatToFollow $item): string
+    {
+        return AStacksScreen::Trace->forTheStacksItem($this->stack, $item);
     }
 
     /** What one of this machine's services has been saying. */

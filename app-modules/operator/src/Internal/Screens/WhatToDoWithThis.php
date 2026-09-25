@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
@@ -22,14 +23,17 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
 use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 use Modules\Operator\Internal\ViewModels\WhatOneThingIs;
+use Modules\Operator\Internal\ViewModels\WhatStartingItWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -91,8 +95,12 @@ final class WhatToDoWithThis extends NativeComponent
     /** What the operator has been asked about, where a verb is waiting on a yes. */
     public ?AgreedTo $asking = null;
 
+    /** What starting this form would come to, once the frame has asked. Public for {@see HowCurrentThisStackIs::$answered}'s reason. */
+    public ?WhatStartingItWouldShow $rehearsed = null;
+
     public function __construct(
         private readonly Supervising $supervising,
+        private readonly Rehearsing $rehearsing,
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
     ) {}
@@ -136,6 +144,18 @@ final class WhatToDoWithThis extends NativeComponent
         $named = $this->param('service');
 
         return new HowOneThingReads()->of($this->answer(), is_string($named) ? trim($named) : '');
+    }
+
+    /**
+     * What starting this form would come to, as the stack rehearses it.
+     *
+     * Asked only where the template draws a form, and once a frame. Shown
+     * before the verbs, so what a start would bring up and leave out is on
+     * the screen before anybody starts it; nothing is started by asking.
+     */
+    public function rehearsal(): WhatStartingItWouldShow
+    {
+        return $this->rehearsed ??= $this->rehearse(Form::called($this->thing()->named));
     }
 
     /**
@@ -322,6 +342,24 @@ final class WhatToDoWithThis extends NativeComponent
 
                 return AsText::of($why->said());
             },
+        );
+    }
+
+    /** Ask the stack to rehearse starting that form, or say what stood in the way. */
+    private function rehearse(Form $form): WhatStartingItWouldShow
+    {
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatStartingItWouldShow => $this->rehearsing->whatStarting($stack, $session, $form)->either(
+                found: static fn(WhatStartingItWouldComeTo $rehearsal): WhatStartingItWouldShow => new HowARehearsalReads()->of($rehearsal),
+                met: function (Obstacle $why) use ($stack): WhatStartingItWouldShow {
+                    $this->letGoOfTheSession($why, $stack);
+
+                    return new HowARehearsalReads()->met($why);
+                },
+            ),
+            notHeld: static fn(): WhatStartingItWouldShow => new HowARehearsalReads()->signedOut(),
         );
     }
 }

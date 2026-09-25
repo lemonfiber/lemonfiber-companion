@@ -99,6 +99,8 @@ function whatAStackRunningNothingSends(): array
                 'stopping_after_downloads' => ['bound' => 'open-ended', 'until' => 'downloads'],
                 'switching' => ['bound' => 'bounded', 'seconds' => 60],
             ],
+            'active_forms' => [],
+            'filtered' => [],
             'forms' => [],
             'services' => [],
             'undeclared' => [],

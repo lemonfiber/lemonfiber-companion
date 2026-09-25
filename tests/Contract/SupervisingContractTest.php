@@ -133,6 +133,14 @@ function whatAStackRunningSends(): array
         'data' => [
             'condition' => 'degraded',
             'disturbs' => howLongEachVerbTakesIt(),
+            'active_forms' => ['library', 'hunt'],
+            'filtered' => [[
+                'id' => 'qbittorrent',
+                'name' => 'qBittorrent',
+                'profile' => 'torrent',
+                'needs' => 'torrent',
+                'forms' => ['hunt'],
+            ]],
             // The forms this reading was asked about. `/api/status` asks about
             // none, so a stack sends none here however many it declares — which
             // is the trap: read as the stack's forms, it draws no form at all.
@@ -145,6 +153,8 @@ function whatAStackRunningSends(): array
                     // A profile, and not a form: `media` is what `library`
                     // and `full` include, and no verb takes it.
                     'profile' => 'media',
+                    // Two forms ask for it, and it runs once for both.
+                    'forms' => ['library', 'hunt'],
                     'state' => 'healthy',
                     'criticality' => 'core',
                     'depends_on' => [],
@@ -154,6 +164,7 @@ function whatAStackRunningSends(): array
                     'name' => 'Sonarr',
                     'describes' => 'Fetches the series somebody is following',
                     'profile' => 'tv',
+                    'forms' => ['hunt'],
                     'state' => 'failed',
                     'criticality' => 'important',
                     'depends_on' => ['jellyfin'],
@@ -479,12 +490,15 @@ it('an answer this app cannot read is a stack that did not answer', function ():
             'data' => [
                 'condition' => 'active',
                 'disturbs' => howLongEachVerbTakesIt(),
+                'active_forms' => [],
+                'filtered' => [],
                 'forms' => [],
                 'services' => [[
                     'id' => 'jellyfin',
                     'name' => 'Jellyfin',
                     'describes' => 'The library everybody watches from',
                     'profile' => 'media',
+                    'forms' => [],
                     'criticality' => 'core',
                     'depends_on' => [],
                 ]],

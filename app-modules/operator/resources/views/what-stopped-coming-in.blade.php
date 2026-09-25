@@ -32,9 +32,14 @@
                  vocabulary nobody else does. --}}
             <native:text>{{ __('health.at_stage', ['stage' => $item->stage]) }}</native:text>
             <native:text>{{ __($item->stageSaid) }}</native:text>
+            <x-operator::gloss :gloss="$this->gloss($item->stage)" />
             <x-operator::note>
                 {{ __('health.stuck_in', ['service' => $item->service]) }}
             </x-operator::note>
+
+            {{-- Where it got to, followed through every service rather than
+                 the one it stopped in. --}}
+            <x-operator::quiet-action label="{{ __('health.trace.road_in', ['item' => $item->title]) }}" :goes="$this->traceOf($item->title)" />
 
             @unless ($item->stillMoving)
                 {{-- The two ends of the pipeline, where nothing is going to

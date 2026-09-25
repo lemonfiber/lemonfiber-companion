@@ -10,6 +10,8 @@ use Modules\Dx\Adapters\TheInstalledPackage;
 
 use function preg_match;
 use function preg_match_all;
+use function preg_quote;
+use function sprintf;
 use function str_starts_with;
 
 /**
@@ -54,6 +56,12 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
     /** A reading type named outright in a docblock. */
     private const string A_NAMED_TYPE = '~Generated\\\\(\w+Envelope)~';
 
+    /** A clause of a docblock about a request that names none, or nothing. */
+    private const string A_CLAUSE_NAMING_NONE = '~[^.;]*\\bnaming (?:none|nothing)\\b[^.;]*~';
+
+    /** One sentence of a docblock that quotes a word, the word going in at `%s`. */
+    private const string A_SENTENCE_QUOTING = '~[^.]*`%s`[^.]*~';
+
     /** A word in backticks, which is how the SDK writes a kind in prose. */
     private const string A_QUOTED_WORD = '~`([a-z][a-z_-]*)`~';
 
@@ -67,29 +75,45 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
      * real request to either.
      *
      * Longest rather than first, so a path that is a prefix of another cannot
-     * shadow it — nothing in today's contract is, and the day one is, the wrong
-     * answer would be a screen rendering the wrong shape rather than an error.
+     * shadow it.
+     *
+     * `$asked` is the values the request's query carries. An endpoint that
+     * answers with more than one envelope says in its docblock which request
+     * gets which: a sentence quoting a value names that value's envelope, and a
+     * clause about naming none or nothing names the envelope for a request
+     * carrying no value. The first value with such a sentence decides; a
+     * request with no values takes the clause about naming none where one
+     * names an envelope; anything else gets the envelope the docblock names
+     * first.
      */
-    public static function at(string $path): string
+    public static function at(string $path, string ...$asked): string
     {
         $longest = '';
-        $answers = '';
+        $said = '';
 
-        foreach (self::everyOneNamed() as $endpoint => $envelope) {
+        foreach (self::everyOneDeclared() as $endpoint => $docblock) {
             if (str_starts_with($path, $endpoint) && mb_strlen($endpoint) > mb_strlen($longest)) {
                 $longest = $endpoint;
-                $answers = $envelope;
+                $said = $docblock;
             }
         }
 
-        return $answers;
+        foreach ($asked as $value) {
+            $envelope = self::namedIn(self::theSentenceQuoting($said, $value));
+
+            if ($envelope !== '') {
+                return $envelope;
+            }
+        }
+
+        return $asked === [] ? self::theEnvelopeForNoValue($said) : self::namedIn($said);
     }
 
     /**
-     * Every endpoint whose docblock says what it answers with.
+     * Every endpoint whose docblock says what it answers with, for a request carrying no value.
      *
      * Endpoints that say nothing are left out rather than guessed at. Three are
-     * in that position today and they are not one situation: `/api/events` is a
+     * in that position and they are not one situation: `/api/events` is a
      * stream and not an envelope at all, and `/api/actions` and `/api/jobs`
      * both answer with a name for work that `Client::repair()` documents and
      * `Api` does not. A guess made here would be indistinguishable from a
@@ -99,19 +123,61 @@ final readonly class WhichEnvelopeAnEndpointAnswersWith
      */
     public static function everyOneNamed(): array
     {
-        preg_match_all(self::AN_ENDPOINT, self::whatApiDeclares(), $found, PREG_SET_ORDER);
-
         $answers = [];
 
-        foreach ($found as $one) {
-            $envelope = self::namedIn($one[1]);
-
-            if ($envelope !== '') {
-                $answers[$one[2]] = $envelope;
-            }
+        foreach (self::everyOneDeclared() as $endpoint => $docblock) {
+            $answers[$endpoint] = self::theEnvelopeForNoValue($docblock);
         }
 
         return $answers;
+    }
+
+    /**
+     * Every endpoint whose docblock names an envelope, with that docblock.
+     *
+     * @return array<string, string> path => docblock
+     */
+    private static function everyOneDeclared(): array
+    {
+        preg_match_all(self::AN_ENDPOINT, self::whatApiDeclares(), $found, PREG_SET_ORDER);
+
+        $declared = [];
+
+        foreach ($found as $one) {
+            if (self::namedIn($one[1]) !== '') {
+                $declared[$one[2]] = $one[1];
+            }
+        }
+
+        return $declared;
+    }
+
+    /**
+     * The envelope a request carrying no value gets: the one the clause about naming none names, or the first named.
+     */
+    private static function theEnvelopeForNoValue(string $docblock): string
+    {
+        $forNone = self::namedIn(self::theClauseNamingNone($docblock));
+
+        return $forNone === '' ? self::namedIn($docblock) : $forNone;
+    }
+
+    /**
+     * The clause of a docblock about a request that names none, or nothing where there is no such clause.
+     */
+    private static function theClauseNamingNone(string $docblock): string
+    {
+        return preg_match(self::A_CLAUSE_NAMING_NONE, $docblock, $clause) === 1 ? $clause[0] : '';
+    }
+
+    /**
+     * The first sentence of a docblock that quotes a value, or nothing where none does.
+     */
+    private static function theSentenceQuoting(string $docblock, string $value): string
+    {
+        return preg_match(sprintf(self::A_SENTENCE_QUOTING, preg_quote($value, '~')), $docblock, $sentence) === 1
+            ? $sentence[0]
+            : '';
     }
 
     /**

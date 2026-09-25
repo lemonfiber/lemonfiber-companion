@@ -30,7 +30,4 @@ enum AlertsField: string implements NamesAWireField
      * before this app ever sees a payload.
      */
     case Kind = 'kind';
-
-    /** Whether an event set apart is heard about, whatever the preset says. */
-    case Wanted = 'wanted';
 }

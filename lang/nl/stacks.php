@@ -125,6 +125,45 @@ return [
         'nothing_set_apart' => 'Niets is apart gezet; elke gebeurtenis volgt de voorinstelling',
         'changed_at_the_machine' => 'Aan te passen op de machine, niet hier',
     ],
+    'itself' => [
+        'road_in' => 'Welke lemonfiber dit is',
+        'running' => 'lemonfiber :version',
+        'installed' => [
+            'homebrew' => 'Geïnstalleerd met Homebrew',
+            'scoop' => 'Geïnstalleerd met Scoop',
+            'winget' => 'Geïnstalleerd met winget',
+            'cargo' => 'Geïnstalleerd met cargo',
+            'distribution' => 'Geïnstalleerd door de pakketbeheerder van het systeem',
+            'installer' => 'Geïnstalleerd met de installer van lemonfiber',
+            'elsewhere' => 'Op een andere manier geïnstalleerd',
+            'untellable' => 'Hoe hij geïnstalleerd is kon niet bepaald worden',
+        ],
+        'owner' => 'Wordt bijgewerkt door :owner',
+        'standing' => [
+            'current' => 'Dit is de nieuwste versie',
+            'update-available' => 'Er is een nieuwere versie',
+            'managed-externally' => 'Een ander programma werkt deze kopie bij',
+            'check-failed' => 'Of er een nieuwere versie is kon niet gecontroleerd worden',
+        ],
+        'offered' => 'Nieuwste: :version',
+        'run_at_the_machine' => 'Om bij te werken, voer dit uit op de machine:',
+        'not_the_services' => 'Dit is lemonfiber zelf. De services worden bijgewerkt vanaf hun eigen scherm.',
+    ],
+
+    // Wat de woorden van lemonfiber betekenen, zoals de woordenlijst van de stack ze uitlegt.
+    'words' => [
+        'road_in' => 'Wat de woorden van lemonfiber betekenen',
+        'heading' => 'Wat de woorden van lemonfiber betekenen',
+        'search_label' => 'Zoek een woord',
+        'search_placeholder' => 'Een woord, of hoe een andere app het noemt',
+        'also_called' => 'Ook wel: :names',
+        'in_place' => ':word: :short',
+        'more' => 'Meer over ‘:word’',
+        'less' => 'Minder over ‘:word’',
+        'nothing_matched' => 'Geen woord, en niets waarmee een woord ook wordt aangeduid, past daarbij',
+        'none' => 'Deze machine legt geen woorden uit',
+    ],
+
     'room' => [
         'road_in' => 'Hoe vol deze machine is',
         'level' => [

@@ -28,9 +28,6 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param ?WhatOneReleaseSays            $inUse      what the release in use changed, where the stack named it
      * @param list<WhatOneReleaseSays>       $history    every release the stack's record holds, newest first
      * @param ?TakingAnUpdate                $offer      the update to take, where the stack offered one
-     * @param list<WhatOneServiceTookItSays> $applied    what became of each service the last update touched
-     * @param int                            $didNotArrive how many of those are not where the operator wanted them
-     * @param bool                           $anythingUnanswered whether the stack cannot say what some are doing
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -40,8 +37,5 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public ?WhatOneReleaseSays $inUse,
         public array $history,
         public ?TakingAnUpdate $offer,
-        public array $applied,
-        public int $didNotArrive,
-        public bool $anythingUnanswered,
     ) {}
 }

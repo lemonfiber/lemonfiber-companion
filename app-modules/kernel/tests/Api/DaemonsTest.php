@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
@@ -11,7 +12,9 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\WhatItTakesAway;
+use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatLeansOnIt;
 
 /** What a stack reports its verbs cost, as this suite's stacks report them. */
@@ -126,4 +129,18 @@ it('reads by position, whatever keys the variadic arrived with', function (): vo
     );
 
     expect(array_keys(iterator_to_array($daemons, preserve_keys: true)))->toBe([0, 1]);
+});
+
+it('says no form is running and nothing was left out until it is told what was asked', function (): void {
+    $daemons = Daemons::none(whatTheseVerbsCost());
+    $asked = $daemons->asked(
+        Forms::these(Form::called('hunt')),
+        TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('hunt')))),
+    );
+
+    expect($daemons->active()->count())->toBe(0)
+        ->and($daemons->leftOut())->toHaveCount(0)
+        ->and($asked->active()->count())->toBe(1)
+        ->and($asked->leftOut())->toHaveCount(1)
+        ->and([$asked->running(), $asked->count(), $asked->disturbs()])->toBe([$daemons->running(), $daemons->count(), $daemons->disturbs()]);
 });

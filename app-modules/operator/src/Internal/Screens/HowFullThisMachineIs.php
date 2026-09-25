@@ -10,6 +10,7 @@ use function is_string;
 
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -20,6 +21,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheRoomReads;
+use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheRoomTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -47,6 +49,7 @@ use function view;
 final class HowFullThisMachineIs extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use ShowsWhatItsWordsMean;
 
     /**
      * What came back, once the frame has asked.
@@ -63,6 +66,7 @@ final class HowFullThisMachineIs extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
         private readonly Clock $clock,
+        private readonly Explaining $explaining,
     ) {}
 
     /**
@@ -107,6 +111,12 @@ final class HowFullThisMachineIs extends NativeComponent
     public function answer(): TheRoomTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /** Where this screen's words are explained from. */
+    protected function explaining(): Explaining
+    {
+        return $this->explaining;
     }
 
     /** Resume the session, ask the machine, and flatten what came back. */

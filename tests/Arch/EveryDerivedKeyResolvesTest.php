@@ -15,10 +15,12 @@ use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItWasRead;
+use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -39,6 +41,8 @@ use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
+use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -46,6 +50,7 @@ use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
@@ -269,6 +274,26 @@ function everyDerivedKey(): array
         WhetherItHoldsASecret::class => aPairPerCase(
             WhetherItHoldsASecret::cases(),
             static fn(WhetherItHoldsASecret $secret): array => [$secret->saidOnTheScreen()],
+        ),
+        WhatItWouldNeed::class => aPairPerCase(
+            WhatItWouldNeed::cases(),
+            static fn(WhatItWouldNeed $case): array => [$case->saidOnTheScreen()],
+        ),
+        HowSureTheTraceIs::class => aPairPerCase(
+            HowSureTheTraceIs::cases(),
+            static fn(HowSureTheTraceIs $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatHappenedToIt::class => aPairPerCase(
+            WhatHappenedToIt::cases(),
+            static fn(WhatHappenedToIt $case): array => [$case->saidOnTheScreen()],
+        ),
+        HowLemonfiberWasInstalled::class => aPairPerCase(
+            HowLemonfiberWasInstalled::cases(),
+            static fn(HowLemonfiberWasInstalled $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereThisCopyStands::class => aPairPerCase(
+            WhereThisCopyStands::cases(),
+            static fn(WhereThisCopyStands $case): array => [$case->saidOnTheScreen()],
         ),
         WhereTheRoomStands::class => aPairPerCase(
             WhereTheRoomStands::cases(),

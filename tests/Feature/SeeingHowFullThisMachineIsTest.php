@@ -8,6 +8,7 @@ use Modules\Kernel\Api\ALineOfTheAccount;
 use Modules\Kernel\Api\AnAmountOfRoom;
 use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AVolume;
+use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowFreshAReadingIs;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheAccount;
 use Modules\Kernel\Api\TheDownloadsOnDisk;
+use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\TheVolumes;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
@@ -39,6 +41,7 @@ use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\AVolumeAsShown;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatMeasuresItsRoom;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
@@ -91,6 +94,7 @@ function theRoomScreen(
     AStackThatMeasuresItsRoom $measuring,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?AStackThatExplainsItsWords $explaining = null,
 ): HowFullThisMachineIs {
     $stack = theStackWhoseRoomIsRead();
     $keychain ??= AKeychainInMemory::working();
@@ -99,7 +103,7 @@ function theRoomScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowFullThisMachineIs($measuring, $keychain, StacksInMemory::holding($stack), FrozenClock::at(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT)));
+    $screen = new HowFullThisMachineIs($measuring, $keychain, StacksInMemory::holding($stack), FrozenClock::at(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -312,4 +316,33 @@ it('the way here and the way back are routes', function (): void {
 
 it('renders its own view', function (): void {
     expect(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()))->render()->name())->toBe('operator::how-full-this-machine-is');
+});
+
+it('explains the ratio where it is drawn, once asked for however many downloads draw it, with the longer meaning a tap away', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
+        AWord::explained('ratio', 'How much you have shared against what you took', 'Private trackers ask for at least one to one.'),
+    ));
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), explaining: $explaining);
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'ratio', 'short' => 'How much you have shared against what you took']))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.words.more', ['word' => 'ratio']))
+        ->and($explaining->askings())->toBe(1);
+});
+
+it('draws a word the glossary does not carry as it came, and offers nothing for it', function (): void {
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), explaining: AStackThatExplainsItsWords::met(Obstacle::StackDidNotAnswer));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.room.ratio', ['ratio' => '1.25']))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('health.ask_again')]);
+});
+
+it('lets the session go where the stack refuses it the glossary', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), $keychain, explaining: AStackThatExplainsItsWords::met(Obstacle::CredentialWasRefused));
+
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('stacks.room.ratio', ['ratio' => '1.25']))
+        ->and($keychain->isHolding(theStackWhoseRoomIsRead()->id()))->toBeFalse();
 });

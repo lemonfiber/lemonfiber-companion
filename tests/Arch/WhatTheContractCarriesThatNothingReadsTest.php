@@ -247,6 +247,34 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'an answer. Saying it before the choice is made is a screen `N18` has not reached.',
     ],
     [
+        'path' => 'PreviewEnvelope.dropped',
+        'because' => 'The profiles a start would leave out, each with what it would need. `filtered` '
+            . 'says the same service by service, which is what an operator knows the stack by, and it '
+            . 'is what the rehearsal reads.',
+    ],
+    [
+        'path' => 'PreviewEnvelope.filtered[].profile',
+        'because' => 'Which profile a service left out belongs to. The service is named, with what it '
+            . 'would need; its profile is the stack\'s grouping of it and nothing an operator starts.',
+    ],
+    [
+        'path' => 'StatusEnvelope.filtered[].profile',
+        'because' => 'Which profile a service the running forms left out belongs to, for the reason '
+            . 'the same field on the rehearsal is not read.',
+    ],
+    [
+        'path' => 'PreviewEnvelope.forms',
+        'because' => 'The forms the rehearsal was asked about, repeated back. The screen asked about one '
+            . 'form and draws the rehearsal under that form\'s own name, so the echo says nothing the '
+            . 'screen does not already hold.',
+    ],
+    [
+        'path' => 'PreviewEnvelope.profiles',
+        'because' => 'The profiles a start would bring up. `N18-R4` asks for what would start and what '
+            . 'would be left out, with the reason for each; the services are what would start, and a '
+            . 'profile is the stack\'s grouping of them rather than something an operator starts.',
+    ],
+    [
         'path' => 'HouseholdEnvelope.findings',
         'because' => 'Plain sentences about the listing itself, beside the members. `N2-R3` has a finding '
             . 'carry a code, a meaning and a remedy, and those arrive on the `doctor` envelope; a bare '
@@ -497,6 +525,28 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'What became of a repair is read from its outcome, which says what happened rather '
             . 'than whether anything did. A boolean beside it is a second answer to one question, and '
             . '`N2-R4` has the app state what a repair did in the words the core produced.',
+    ],
+    [
+        'path' => 'SelfUpdateEnvelope.asked',
+        'because' => 'The version an operator asked to move to. This app asks about the running copy and names '
+            . 'no version, since it moves nothing (`N14-R6`), so every reading it asks for leaves this empty.',
+    ],
+    [
+        'path' => 'SelfUpdateEnvelope.at',
+        'because' => 'Where the running binary is on the machine, which tells apart several copies on one search '
+            . 'path. That is a question asked at the machine, where the command is run; the screen names the '
+            . 'version running and how it was installed (`N14-R1`), and a path adds nothing a phone can act on.',
+    ],
+    [
+        'path' => 'SelfUpdateEnvelope.configuration',
+        'because' => 'Whether a named version can read this machine\'s configuration. It is filled only where a '
+            . 'version was asked for, and this app asks for none.',
+    ],
+    [
+        'path' => 'SelfUpdateEnvelope.replaceable',
+        'because' => 'Whether the process answering can write where the binary sits. That describes the account '
+            . 'the stack runs as, not the one an operator types the command in, so it cannot say whether the '
+            . 'command shown will work for them; the command itself, or why there is none, is what `N14-R2` asks for.',
     ],
     [
         'path' => 'SpaceEnvelope.agreement',

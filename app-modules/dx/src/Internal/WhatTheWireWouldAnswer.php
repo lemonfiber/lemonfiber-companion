@@ -171,6 +171,7 @@ final readonly class WhatTheWireWouldAnswer
             '*' => static fn(PendingRequest $asked): MockResponse => self::to(
                 $asked->getRequest()->resolveEndpoint(),
                 $status,
+                ...self::theValuesIn($asked->query()->all()),
             ),
         ]);
     }
@@ -185,9 +186,28 @@ final readonly class WhatTheWireWouldAnswer
      * path and not of the `log` kind: one `log` envelope is a perfectly good
      * single document, and it is `/api/logs` that sends many.
      */
-    public static function to(string $endpoint, int $status): MockResponse
+    public static function to(string $endpoint, int $status, string ...$asked): MockResponse
     {
-        return new MockResponse(self::whatThatPathSends($endpoint), $status);
+        return new MockResponse(self::whatThatPathSends($endpoint, ...$asked), $status);
+    }
+
+    /**
+     * The text values a request's query carries, which is what picks between envelopes one endpoint answers with.
+     *
+     * @param array<array-key, mixed> $query
+     * @return list<string>
+     */
+    private static function theValuesIn(array $query): array
+    {
+        $values = [];
+
+        foreach ($query as $value) {
+            if (is_string($value)) {
+                $values[] = $value;
+            }
+        }
+
+        return $values;
     }
 
     /**
@@ -199,7 +219,7 @@ final readonly class WhatTheWireWouldAnswer
      *
      * @return array<string, mixed>|string
      */
-    private static function whatThatPathSends(string $endpoint): array|string
+    private static function whatThatPathSends(string $endpoint, string ...$asked): array|string
     {
         // The four paths whose body is not one envelope built from the
         // contract's declaration, and then everything else. `match` rather than
@@ -210,7 +230,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
-            default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint)),
+            default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint, ...$asked)),
         };
     }
 
@@ -220,9 +240,9 @@ final readonly class WhatTheWireWouldAnswer
      * Three endpoints declare nothing, and two of them are the work pair above;
      * this is what answers for the third and for any the SDK grows tomorrow.
      */
-    private static function whateverTheContractSaysAbout(string $endpoint): string
+    private static function whateverTheContractSaysAbout(string $endpoint, string ...$asked): string
     {
-        $envelope = WhichEnvelopeAnEndpointAnswersWith::at($endpoint);
+        $envelope = WhichEnvelopeAnEndpointAnswersWith::at($endpoint, ...$asked);
 
         return $envelope === '' ? self::A_NAME_FOR_WORK : $envelope;
     }

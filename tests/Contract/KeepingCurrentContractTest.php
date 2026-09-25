@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceTookIt;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
@@ -533,34 +534,71 @@ it('N2-R19 — the contract still names a way back on every service', function (
         ->and($shape)->not->toContain('reversal?:');
 });
 
-it('N2-R18 — reports each service of an applied update apart from the others', function (): void {
-    // The rule the fake could not be wrong about alone: what makes it worth
-    // asserting across both is that the adapter has to read four endings off
-    // the wire and keep them four. A `not-started` flattened into a failure
-    // sends an operator to the machine when the answer is in the service's own
-    // log, and the wire carries the difference either way.
-    foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
-        $said = [];
+/**
+ * Both ways of asking after an update taken, each set up to say the same.
+ *
+ * @return array<string, Closure(): KeepingCurrent>
+ */
+function everyWayOfFollowingAnUpdate(MockResponse $answered, HowTheUpdateIsGoing $became): array
+{
+    return [
+        'the fake' => static fn(): KeepingCurrent => AStackThatKeepsCurrent::whichTook(theSameStanding(), $became),
+        'the adapter' => static function () use ($answered): KeepingCurrent {
+            MockClient::destroyGlobal();
+            MockClient::global([$answered]);
 
-        foreach (whatTheUpdateCameTo($build()) as $service) {
-            $said[] = sprintf(
-                '%s:%s:%s',
-                $service->service()->named(),
-                $service->ending()->value,
-                $service->undo()->value,
-            );
-        }
+            return new Upkeepers(new PinnedClients());
+        },
+    ];
+}
 
-        expect($said)->toBe([
-            'jellyfin:updated:rollback',
-            'sonarr:not-started:restore',
-        ], $which);
+/** What asking after the update produced, as a word, or the report's rows for a finished one. */
+function whatTheTakingSaid(KeepingCurrent $keeping): string
+{
+    return $keeping
+        ->whatBecameOf(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith(), Job::named(AStackThatKeepsCurrent::THE_JOB))
+        ->either(
+            stillRunning: static fn(): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay('still running'),
+            done: static function (Upkeep $report): WhatTheUpkeepTurnedOutToSay {
+                $said = [];
+
+                foreach ($report->howItWent() as $service) {
+                    $said[] = sprintf('%s:%s:%s', $service->service()->named(), $service->ending()->value, $service->undo()->value);
+                }
+
+                return new WhatTheUpkeepTurnedOutToSay(implode(' ', $said));
+            },
+            ended: static fn(): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay('ended'),
+            met: static fn(Obstacle $why): WhatTheUpkeepTurnedOutToSay => new WhatTheUpkeepTurnedOutToSay($why->name),
+        )->said;
+}
+
+/** The report a finished update answers its handle with. */
+function aFinishedUpdate(): MockResponse
+{
+    return MockResponse::make((string) json_encode(whatAStackWithUpdatesSends()));
+}
+
+it('N2-R18 — a finished update reports each service apart from the others', function (): void {
+    // The rule the fake could not be wrong about alone: the adapter has to read
+    // four endings off the wire and keep them four. A `not-started` flattened
+    // into a failure sends an operator to the machine when the answer is in the
+    // service's own log.
+    foreach (everyWayOfFollowingAnUpdate(aFinishedUpdate(), HowTheUpdateIsGoing::done(theSameStanding())) as $which => $build) {
+        expect(whatTheTakingSaid($build()))->toBe('jellyfin:updated:rollback sonarr:not-started:restore', $which);
     }
 });
 
 it('N2-R18 — leads with the services that are not where the operator wanted them', function (): void {
-    foreach (everyWayOfKeepingCurrent(anUpkeepAnswer()) as $which => $build) {
-        $went = whatTheUpdateCameTo($build());
+    foreach (everyWayOfFollowingAnUpdate(aFinishedUpdate(), HowTheUpdateIsGoing::done(theSameStanding())) as $which => $build) {
+        $went = $build()
+            ->whatBecameOf(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith(), Job::named(AStackThatKeepsCurrent::THE_JOB))
+            ->either(
+                stillRunning: static fn(): HowServicesTookIt => HowServicesTookIt::none(),
+                done: static fn(Upkeep $report): HowServicesTookIt => $report->howItWent(),
+                ended: static fn(): HowServicesTookIt => HowServicesTookIt::none(),
+                met: static fn(): HowServicesTookIt => HowServicesTookIt::none(),
+            );
         $wrong = [];
 
         foreach ($went->thatDidNotArrive() as $service) {
@@ -569,32 +607,56 @@ it('N2-R18 — leads with the services that are not where the operator wanted th
 
         expect($wrong)->toBe(['sonarr'], $which)
             ->and($went->count())->toBe(2, $which)
-            ->and($went->isEmpty())->toBeFalse($which)
             // `not-started` is a service that would not come back up, which the
-            // stack knows. Unanswered is the one it does not, and a screen that
-            // read them as one would offer a remedy for a situation it is
-            // guessing at.
+            // stack knows. Unanswered is the one it does not.
             ->and($went->anythingUnanswered())->toBeFalse($which);
     }
 });
 
-/**
- * What became of each service, whichever implementation answered.
- *
- * Named for the update rather than for the services, because the root suites
- * share one namespace (`G10`) and `NotifierContractTest` already spends the
- * shorter name on what became of a notification.
- */
-function whatTheUpdateCameTo(KeepingCurrent $keeping): HowServicesTookIt
-{
-    return $keeping->standing(aStackWithUpdates(), theSessionTheStackIsAskedAboutItsUpkeepWith())->either(
-        stands: static fn(Upkeep $upkeep): HowServicesTookIt => $upkeep->howItWent(),
-        // Nothing was applied, because nothing was read. Which obstacle it was
-        // is what the rule about obstacles asserts; here it only has to not be
-        // a list.
-        met: static fn(): HowServicesTookIt => HowServicesTookIt::none(),
-    );
-}
+it('N2-R18 — an update still running is its own answer', function (): void {
+    $running = MockResponse::make((string) json_encode([
+        'api_version' => 1,
+        'kind' => 'job',
+        'data' => ['action' => 'update', 'job' => AStackThatKeepsCurrent::THE_JOB],
+    ]), 202);
+
+    foreach (everyWayOfFollowingAnUpdate($running, HowTheUpdateIsGoing::stillRunning()) as $which => $build) {
+        expect(whatTheTakingSaid($build()))->toBe('still running', $which);
+    }
+});
+
+it('an update the stack no longer has a job for is ended, not unreachable and not running', function (): void {
+    // Folded into running, the screen asks after a handle nothing will ever
+    // answer for; folded into unreachable, an operator is sent to look at a
+    // machine that said clearly that it has no outcome to give.
+    $forgotten = MockResponse::make('{"error":"no such job"}', 404);
+
+    foreach (everyWayOfFollowingAnUpdate($forgotten, HowTheUpdateIsGoing::ended()) as $which => $build) {
+        expect(whatTheTakingSaid($build()))->toBe('ended', $which);
+    }
+});
+
+it('N1-R10 — asking after an update tells a refused session from a stack that is not answering', function (): void {
+    $table = [
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        foreach (everyWayOfFollowingAnUpdate($answered, HowTheUpdateIsGoing::met($why)) as $which => $build) {
+            expect(whatTheTakingSaid($build()))->toBe($why->name, $which);
+        }
+    }
+});
+
+it('asking after an update names the handle the take answered', function (): void {
+    $keeping = AStackThatKeepsCurrent::whichTook(theSameStanding(), HowTheUpdateIsGoing::stillRunning());
+    whatTheTakingSaid($keeping);
+
+    expect($keeping->followed())->toHaveCount(1)
+        ->and($keeping->followed()[0]->shown())->toBe(AStackThatKeepsCurrent::THE_JOB);
+});
 
 /** The `update` envelope's declared payload shape, as text. */
 function thePayloadShapeOfTheUpdateEnvelope(): string

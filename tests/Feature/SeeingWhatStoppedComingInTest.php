@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\Nonce;
@@ -16,12 +17,15 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
+use Modules\Kernel\Api\TheGlossary;
+use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatStalled;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -69,6 +73,7 @@ function theStalledScreen(
     ?AKeychainInMemory $keychain = null,
     ?string $named = null,
     bool $signedIn = true,
+    ?AStackThatExplainsItsWords $explaining = null,
 ): WhatStoppedComingIn {
     $stack = theStackWhoseStallIsRead();
     $keychain ??= AKeychainInMemory::working();
@@ -77,7 +82,7 @@ function theStalledScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatStoppedComingIn($stalling, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatStoppedComingIn($stalling, $keychain, StacksInMemory::holding($stack), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()));
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -282,4 +287,41 @@ it('N3-R13 — a credential the stack refused signs this device out and lets the
         ->and($screen->howMany())->toBe(0)
         ->and($screen->answer()->shownSaid)->toBe('')
         ->and($keychain->isHolding(theStackWhoseStallIsRead()->id()))->toBeFalse();
+});
+
+it('explains a stage in place by any name the glossary gives it, and leaves one it does not carry as it came', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
+        AWord::explained('search', 'Looking through the indexers for a release', '', 'searching'),
+    ));
+    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()), explaining: $explaining))->said();
+
+    expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']))
+        ->and(array_filter($drawn, static fn(string $line): bool => str_starts_with($line, 'search:')))->toHaveCount(1)
+        ->and($explaining->askings())->toBe(1);
+});
+
+it('explains a stage in place by the form lemonfiber writes it in', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
+        AWord::explained('search', 'Looking through the indexers for a release', '')->writtenAs(
+            WhatElseItIsCalled::formsOf('searching', 'searched'),
+        ),
+    ));
+    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()), explaining: $explaining))->said();
+
+    expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']));
+});
+
+it('asks for no glossary where nothing stopped', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of());
+    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(Stalled::of(HowMuchIsShown::AllOfIt, WhatIsUnsupported::none())), explaining: $explaining))->said();
+
+    expect($drawn)->not->toBeEmpty()
+        ->and($explaining->askings())->toBe(0);
+});
+
+it('offers each stalled item\'s trace, reached by its title', function (): void {
+    $screen = theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.trace.road_in', ['item' => 'A film nobody has seen']))
+        ->and(NativeRouter::resolve($screen->traceOf('A film nobody has seen')))->toHaveKey('params.service', 'A film nobody has seen');
 });

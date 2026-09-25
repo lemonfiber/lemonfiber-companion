@@ -18,7 +18,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatIsRunning;
-use Modules\Sdk\Api\Fields\FormsField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -129,7 +128,7 @@ final readonly class Supervisors implements Supervising
      */
     private function about(AgreedTo $agreed): array
     {
-        $field = $agreed->isAboutAForm() ? FormsField::Forms : WireField::Services;
+        $field = $agreed->isAboutAForm() ? WireField::Forms : WireField::Services;
 
         return [$field->value => [$agreed->named()]];
     }

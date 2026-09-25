@@ -139,51 +139,71 @@
         <native:text>{{ __('updates.no_history') }}</native:text>
     @endforelse
 
-    {{-- What became of the last update, per service. Below what is
-         waiting because it is the older question, and on the same screen
-         because an operator deciding whether tonight is the night needs to
-         know that last night went half way. --}}
+    {{-- What became of the update taken here, per service, below what is
+         waiting. Drawn off the update's own report, never off the reading
+         above: a plain reading does not carry how each service took an
+         update, so a section drawn off it would always say none was
+         taken. --}}
     <x-operator::emphasis>{{ __('updates.last_update') }}</x-operator::emphasis>
 
-    @if ($this->answer()->didNotArrive > 0)
-        <x-operator::emphasis>
-            {{ trans_choice('updates.did_not_arrive', $this->answer()->didNotArrive) }}
-        </x-operator::emphasis>
-    @endif
-
-    @if ($this->answer()->anythingUnanswered)
-        {{-- Apart from the line above, and not a louder version of it. A
-             service that would not come back up is something to fix; one
-             that started and never answered is something the stack does
-             not know about, and sends somebody to a different place. --}}
-        <native:text>{{ __('updates.unanswered') }}</native:text>
-    @endif
-
-    @forelse ($this->answer()->applied as $took)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $took->service }}</x-operator::emphasis>
-
-            {{-- Which of the four, on the row. Flattened into
-                 *failed*, the three ways of not arriving send an operator
-                 to look in the wrong place. --}}
-            <x-operator::note>{{ __($took->endingSaid) }}</x-operator::note>
-
-            @unless ($took->arrived)
-                {{-- Which way back, named. A rollback and a restore
-                     are not one offer, and the app says the one the stack
-                     named rather than the word they have in common. --}}
-                <x-operator::note>{{ __($took->undoSaid) }}</x-operator::note>
-
-                @if ($took->undoCarriesTheDataWithIt)
-                    {{-- The difference worth knowing before agreeing: a
-                         restore undoes more than the update did. --}}
-                    <x-operator::note>{{ __('updates.undo_carries_data') }}</x-operator::note>
-                @endif
-            @endunless
-        </x-operator::entry>
-    @empty
+    @if (! $this->lastUpdate()->went->cameBack())
+        <x-operator::what-stopped-the-reading
+            :went="$this->lastUpdate()->went"
+            :sign-in-goes-to="$this->goes()->signIn()"
+        />
+    @elseif ($this->lastUpdate()->isWorking)
+        <native:text>{{ __('updates.still_updating') }}</native:text>
+        <x-operator::note>
+            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
+        </x-operator::note>
+    @elseif ($this->lastUpdate()->hasEnded)
+        {{-- Not a failure: it may well have worked, and the reading above
+             is where to look. --}}
+        <native:text>{{ __('updates.no_outcome') }}</native:text>
+        <x-operator::note>{{ __('updates.no_outcome_action') }}</x-operator::note>
+    @elseif (! $this->lastUpdate()->wasTaken)
         <native:text>{{ __('updates.nothing_applied') }}</native:text>
-    @endforelse
+    @else
+        @if ($this->lastUpdate()->didNotArrive > 0)
+            <x-operator::emphasis>
+                {{ trans_choice('updates.did_not_arrive', $this->lastUpdate()->didNotArrive) }}
+            </x-operator::emphasis>
+        @endif
+
+        @if ($this->lastUpdate()->anythingUnanswered)
+            {{-- Apart from the line above, and not a louder version of it. A
+                 service that would not come back up is something to fix; one
+                 that started and never answered is something the stack does
+                 not know about, and sends somebody to a different place. --}}
+            <native:text>{{ __('updates.unanswered') }}</native:text>
+        @endif
+
+        @forelse ($this->lastUpdate()->applied as $took)
+            <x-operator::entry>
+                <x-operator::emphasis>{{ $took->service }}</x-operator::emphasis>
+
+                {{-- Which of the four, on the row. Flattened into
+                     *failed*, the three ways of not arriving send an operator
+                     to look in the wrong place. --}}
+                <x-operator::note>{{ __($took->endingSaid) }}</x-operator::note>
+
+                @unless ($took->arrived)
+                    {{-- Which way back, named. A rollback and a restore
+                         are not one offer, and the app says the one the stack
+                         named rather than the word they have in common. --}}
+                    <x-operator::note>{{ __($took->undoSaid) }}</x-operator::note>
+
+                    @if ($took->undoCarriesTheDataWithIt)
+                        {{-- The difference worth knowing before agreeing: a
+                             restore undoes more than the update did. --}}
+                        <x-operator::note>{{ __('updates.undo_carries_data') }}</x-operator::note>
+                    @endif
+                @endunless
+            </x-operator::entry>
+        @empty
+            <native:text>{{ __('updates.touched_nothing') }}</native:text>
+        @endforelse
+    @endif
 
     {{-- A screen an operator cannot ask again is a screen that relies
          on being left and returned to, which is the one thing the requirement

@@ -56,7 +56,7 @@ requirement is right and this page is a defect.
 | `N2-R15` | Where this machine stands on being up to date | `HowCurrentThisStackIs` |
 | `N2-R16` | Installed and available are asked rather than counted | the reading answers it; a screen deciding whether tonight is worth an evening should not have to work it out |
 | `N2-R17` | An offer to update the services asks first | `HowCurrentThisStackIs` |
-| `N2-R18` | Four endings stay four on the row — a single *failed* is refused | the pressure to flatten lives exactly here |
+| `N2-R18` | Four endings stay four on the row — a single *failed* is refused — and they are the report of the update taken here, followed until it finishes, since a plain reading never carries them | `FollowsTheUpdateItTook` |
 | `N2-R19` | A rollback and a restore are two offers, because the difference is what an operator decides on | two sentences, not one |
 | `N2-R20` | Asked of the reading rather than worked out from the list below | a stack that says it is current is not asked again |
 

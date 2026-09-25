@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Stacks\Api\AStacksScreen;
@@ -27,6 +28,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
+use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 /** The machine whose services this screen is about. */
@@ -290,4 +292,44 @@ it('renders its own view', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
 
     expect($screen->render()->name())->toBe('operator::what-this-stack-runs');
+});
+
+it('says which forms are running, and every form each service runs for', function (): void {
+    $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::partOfItOnPurpose()));
+    $answer = $screen->answer();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($answer->active)->toBe(['library', 'hunt'])
+        ->and($answer->services[0]->runsFor)->toBe(['library', 'hunt'])
+        ->and($answer->services[1]->runsFor)->toBe(['hunt'])
+        ->and($drawn)->toContain(__('health.forms_running', ['forms' => 'library, hunt']))
+        ->and($drawn)->toContain(__('health.runs_for', ['forms' => 'library, hunt']))
+        ->and($drawn)->toContain(__('health.runs_for', ['forms' => 'hunt']));
+});
+
+it('draws a service the forms left out as left out with why, and not as a service that is absent', function (): void {
+    $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::partOfItOnPurpose()));
+    $answer = $screen->answer();
+    $named = [];
+
+    foreach ($answer->services as $service) {
+        $named[] = $service->id->named();
+    }
+
+    expect($named)->toBe(['jellyfin', 'sonarr'])
+        ->and($answer->leftOut)->toHaveCount(1)
+        ->and([$answer->leftOut[0]->name, $answer->leftOut[0]->askedBy])->toBe(['qBittorrent', ['hunt']])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.left_out', [
+            'name' => 'qBittorrent',
+            'forms' => 'hunt',
+            'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent),
+        ]));
+});
+
+it('says so where no form is running, nothing was left out, and a service no running form asked for', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())))->said();
+
+    expect($drawn)->toContain(__('health.no_form_running'))
+        ->and($drawn)->toContain(__('health.nothing_left_out'))
+        ->and($drawn)->toContain(__('health.runs_for_no_form'));
 });

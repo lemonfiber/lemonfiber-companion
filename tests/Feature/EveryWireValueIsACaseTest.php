@@ -14,7 +14,9 @@ use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
 use Modules\Kernel\Api\HowItWasReached;
+use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -31,12 +33,15 @@ use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
+use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhoSettledIt;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
@@ -140,6 +145,18 @@ function theGeneratedBandwidthEnvelope(): string
 function theGeneratedSpaceEnvelope(): string
 {
     return theGeneratedEnvelope('SpaceEnvelope');
+}
+
+/** The generated `trace` envelope, as text. */
+function theGeneratedTraceEnvelope(): string
+{
+    return theGeneratedEnvelope('TraceEnvelope');
+}
+
+/** The generated `self-update` envelope, as text. */
+function theGeneratedSelfUpdateEnvelope(): string
+{
+    return theGeneratedEnvelope('SelfUpdateEnvelope');
 }
 
 /**
@@ -605,6 +622,41 @@ it('N1-R13 — every kind of reading a volume can have has a case', function ():
     expect(valuesOf(HowAVolumeWasRead::cases()))->toBe($words);
 });
 
+it('everything a profile left out of a start can need has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('PreviewEnvelope'), 'needs');
+
+    expect($words)->not->toBe([], 'no needs union was found in the generated envelope');
+    expect(valuesOf(WhatItWouldNeed::cases()))->toBe($words);
+});
+
+it('every way a trace can be sure of its item has a case', function (): void {
+    $words = unionIn(theGeneratedTraceEnvelope(), 'confidence');
+
+    expect($words)->not->toBe([], 'no confidence union was found in the generated envelope');
+    expect(valuesOf(HowSureTheTraceIs::cases()))->toBe($words);
+});
+
+it('everything a traced item\'s history can record has a case', function (): void {
+    $words = unionIn(theGeneratedTraceEnvelope(), 'outcome');
+
+    expect($words)->not->toBe([], 'no outcome union was found in the generated envelope');
+    expect(valuesOf(WhatHappenedToIt::cases()))->toBe($words);
+});
+
+it('N1-R13 — every way lemonfiber can have been installed has a case', function (): void {
+    $words = unionIn(theGeneratedSelfUpdateEnvelope(), 'installed');
+
+    expect($words)->not->toBe([], 'no installed union was found in the generated envelope');
+    expect(valuesOf(HowLemonfiberWasInstalled::cases()))->toBe($words);
+});
+
+it('N1-R13 — everywhere a copy of lemonfiber can stand has a case', function (): void {
+    $words = unionIn(theGeneratedSelfUpdateEnvelope(), 'standing');
+
+    expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
+    expect(valuesOf(WhereThisCopyStands::cases()))->toBe($words);
+});
+
 it('N1-R13 — every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
@@ -723,6 +775,11 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhereTheRoomStands::class => 'level',
     WhatAVolumeHolds::class => 'role',
     WhatGettingItBackCosts::class => 'reclaim',
+    HowLemonfiberWasInstalled::class => 'installed',
+    HowSureTheTraceIs::class => 'confidence',
+    WhatItWouldNeed::class => 'needs',
+    WhatHappenedToIt::class => 'outcome',
+    WhereThisCopyStands::class => 'standing',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

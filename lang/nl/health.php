@@ -94,6 +94,43 @@ return [
     // niet het woord, en ze ruilen geen van zijn woorden in voor een woord
     // van deze app — `grab` is van lemonfiber, dus de zinnen zeggen wat een
     // grab deed in plaats van het anders te noemen.
+    // Waar één item is gebleven. `:stage` en `:item` zijn de woorden van de
+    // stack, ingevoegd zoals ze kwamen.
+    'trace' => [
+        'road_in' => 'Waar is “:item” gebleven?',
+        'nothing_named' => 'Typ een titel om hem door de diensten te volgen',
+        'nothing_asked_for' => 'Niets waar op gelet wordt heet “:item”: niemand heeft erom gevraagd',
+        'following' => '“:item” volgen',
+        'confidence' => [
+            'certain' => 'Gekoppeld op wat de diensten er samen als kenmerk van hebben',
+            'uncertain' => 'Gekoppeld op een gok aan de hand van de naam: dit is misschien niet het item dat je bedoelde',
+        ],
+        'outcome' => [
+            'grabbed' => 'Naar de downloadclient gestuurd',
+            'download-failed' => 'De downloadclient heeft het niet gered',
+            'imported' => 'In de bibliotheek gezet',
+            'removed' => 'Het bestand is verwijderd',
+        ],
+        'furthest' => 'Het verst: :stage',
+        'stopped' => 'Waarom het stopte: :why',
+        'series_here' => ':have van de :wanted gevraagde afleveringen zijn er',
+        'nobody_asked_for' => '{1} Eén aflevering waar niemand om vroeg telt niet mee|[2,*] :count afleveringen waar niemand om vroeg tellen niet mee',
+        'season' => 'Seizoen :season: :have van :wanted aanwezig',
+        'episode' => 'Aflevering :number, “:title”: :stage',
+        'season_all_here' => 'Elke gevraagde aflevering is er',
+        'no_seasons' => 'Er is geen seizoen van geteld',
+        'the_way' => 'De weg die het aflegde',
+        'recorded_at' => ':service, :at',
+        'recorded_untimed' => ':service, zonder tijd',
+        'no_stages' => 'Het heeft nog geen fase bereikt',
+        'tried' => 'Wat er is geprobeerd',
+        'nothing_tried' => 'Er is nog niets geprobeerd',
+        'disagree' => 'Waar de diensten het oneens zijn',
+        'agree' => 'De diensten zijn het erover eens',
+        'search_label' => 'Iets anders volgen',
+        'search_placeholder' => 'Een titel',
+        'follow' => 'Volgen',
+    ],
     'at_stage' => 'Fase: :stage',
     'stage' => [
         'not-monitored' => 'Hier wordt niet op gelet',
@@ -215,4 +252,25 @@ return [
         'downloads' => 'Totdat alles wat nog binnenkomt klaar is',
     ],
     'for_at_most' => 'Maximaal :seconds seconden',
+    'forms_running' => 'Draait voor :forms',
+    'no_form_running' => 'Er draait geen form.',
+    'runs_for' => 'Voor :forms',
+    'runs_for_no_form' => 'Geen draaiende form vroeg erom',
+    'left_out_heading' => 'Bewust overgeslagen',
+    'left_out' => ':name, gevraagd door :forms: :needs',
+    'nothing_left_out' => 'De draaiende forms sloegen niets over.',
+    'rehearsal' => [
+        'heading' => 'Wat starten zou doen',
+        'nothing_started' => 'Er is niets gestart. Dit is wat de stack zegt dat starten zou doen.',
+        'would_start' => ':name zou starten',
+        'would_start_nothing' => 'Er zou geen dienst starten.',
+        'left_out' => ':name zou worden overgeslagen: :needs',
+        'estimate' => 'De stack schat ongeveer :mib MiB geheugen. Dat is een schatting, geen meting.',
+        'unestimated' => ':services geven geen schatting op, dus het echte getal is hoger.',
+        'nothing_left_out' => 'Er zou niets worden overgeslagen.',
+        'needs' => [
+            'usenet' => 'daarvoor zijn Usenet-gegevens nodig, en die heeft deze stack niet',
+            'torrent' => 'daarvoor zijn torrentgegevens nodig, en die heeft deze stack niet',
+        ],
+    ],
 ];

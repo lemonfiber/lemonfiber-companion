@@ -23,9 +23,6 @@ enum StuckField: string implements NamesAWireField
     /** The rows of a listing, where the envelope does not name them otherwise. */
     case Items = 'items';
 
-    /** How far a stalled item got before it stopped. */
-    case Stage = 'stage';
-
     /** The limits a reading carried: what the stack found and cannot act on. */
     case Unsupported = 'unsupported';
 }

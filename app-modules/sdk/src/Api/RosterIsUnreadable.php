@@ -54,6 +54,15 @@ final class RosterIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /** One service the forms left out is not what the contract says it is. */
+    public static function leftOut(int $position): self
+    {
+        return new self(sprintf(
+            'Entry %d of the status envelope\'s `filtered` is not readable. A service left out is filtered on purpose, and one read wrongly is drawn as a service that failed.',
+            $position,
+        ));
+    }
+
     public static function said(NamesAWireField $field, int $position): self
     {
         return new self(sprintf(

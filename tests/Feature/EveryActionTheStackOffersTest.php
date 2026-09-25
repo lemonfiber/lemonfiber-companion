@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Generated\Kind;
+use Tests\Support\Tree;
 use Tests\Support\WhatTheReadersRead;
 
 /**
@@ -33,9 +34,9 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Alerts', 'Archives', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Forms', 'Held', 'History', 'Hosting', 'Household',
-    'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'Space', 'Status', 'Stored', 'Stuck',
-    'Update',
+    'Alerts', 'Archives', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Forms', 'Glossary', 'Held', 'History',
+    'Hosting', 'Household', 'Job', 'Log', 'Outbound', 'Preview', 'Provenance', 'Repair', 'SelfUpdate', 'Space',
+    'Status', 'Stored', 'Stuck', 'Trace', 'Update',
 ];
 
 /**
@@ -69,16 +70,10 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Adoption', 'Backup',
-    'Beside', 'Bundle', 'Catalogue', 'Clients',
-    'Credentials', 'Dashboard', 'FrontDoor',
-    'Glossary', 'Import',
-    'Invitation', 'Lifecycle', 'Migration', 'Music',
-    'Plugins', 'Preview', 'Pull', 'Quality', 'Removal',
-    'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate',
-    'Start', 'Step', 'StopSeeding',
-    'Substitution', 'Trace', 'Undo', 'Uninstall', 'Upgrade',
-    'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
+    'Admission', 'Adoption', 'Backup', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Credentials', 'Dashboard',
+    'FrontDoor', 'Import', 'Invitation', 'Lifecycle', 'Migration', 'Music', 'Plugins', 'Pull', 'Quality', 'Removal',
+    'Replacement', 'Reset', 'Restore', 'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall',
+    'Upgrade', 'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {
@@ -223,4 +218,51 @@ it('N1-R2 — every excuse names a requirement', function (): void {
         . 'it here as `N1-R35 — the reason` (N1-R2).',
         implode("\n  ", $unexplained),
     ));
+});
+
+/**
+ * The kinds offered nowhere here that this app's code names, tests aside.
+ *
+ * Naming one is not reading it: `dx` names `AdmissionEnvelope` to build what a
+ * stand-in stack answers, and follows none of its fields.
+ *
+ * @return list<string>
+ */
+function theUnofferedKindsTheCodeNames(): array
+{
+    $source = '';
+
+    foreach ([...Tree::filesUnder(Tree::at('app-modules'), '.php'), ...Tree::filesUnder(Tree::at('bridge/src'), '.php')] as $file) {
+        if (! str_contains($file, '/tests/')) {
+            $source .= (string) file_get_contents($file);
+        }
+    }
+
+    $named = [];
+
+    foreach ([...NOT_YET, ...array_keys(ELSEWHERE)] as $kind) {
+        if (preg_match(sprintf('/\b%sEnvelope\b/', $kind), $source) === 1) {
+            $named[] = $kind;
+        }
+    }
+
+    sort($named);
+
+    return $named;
+}
+
+it('states on the parity page the counts these lists come to', function (): void {
+    // The page says how far this app is from parity, and the three lists above
+    // are what that is measured from. A page that says a number these lists do
+    // not come to reads as current and is not.
+    $page = (string) preg_replace('/\s+/', ' ', (string) file_get_contents(Tree::at('.docs/requirements/what-a-screen-owes.md')));
+    $named = theUnofferedKindsTheCodeNames();
+    $names = array_map(static fn(string $kind): string => sprintf('`%s`', $kind), $named);
+    $last = array_pop($names);
+    $listed = $names === [] ? (string) $last : sprintf('%s and %s', implode(', ', $names), $last);
+
+    expect($page)
+        ->toContain(sprintf('The SDK ships %d envelopes and this app follows %d.', count(Kind::cases()), count(OFFERED)))
+        ->toContain(sprintf('Of the rest, %d are never named by the code in `app-modules` or `bridge`', count(NOT_YET) + count(ELSEWHERE) - count($named)))
+        ->toContain(sprintf('and %d more — %s — are named without being followed.', count($named), $listed));
 });

@@ -8,7 +8,7 @@ use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\Fields\ErrorField;
-use Modules\Sdk\Api\Fields\FormsField;
+use Modules\Sdk\Api\Fields\GlossaryField;
 use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Api\Fields\HistoryField;
 use Modules\Sdk\Api\Fields\HostingField;
@@ -16,12 +16,15 @@ use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\Fields\JobField;
 use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\OutboundField;
+use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\RepairField;
+use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
+use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
@@ -47,8 +50,8 @@ function everyFieldNamedOnTheWire(): array
         ...BandwidthField::cases(),
         ...ConfigField::cases(),
         ...DoctorField::cases(),
-        ...FormsField::cases(),
         ...ErrorField::cases(),
+        ...GlossaryField::cases(),
         ...HeldField::cases(),
         ...HistoryField::cases(),
         ...HostingField::cases(),
@@ -56,12 +59,15 @@ function everyFieldNamedOnTheWire(): array
         ...JobField::cases(),
         ...LogField::cases(),
         ...OutboundField::cases(),
+        ...PreviewField::cases(),
         ...ProvenanceField::cases(),
         ...RepairField::cases(),
+        ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
         ...StatusField::cases(),
         ...StoredField::cases(),
         ...StuckField::cases(),
+        ...TraceField::cases(),
         ...UpdateField::cases(),
     ];
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bootstrap\Composition\NativePHP;
 
 use Closure;
+use Illuminate\Routing\Route as IlluminateRoute;
 use Illuminate\Support\Facades\Route;
 
 use function is_array;
@@ -96,10 +97,14 @@ final readonly class ScreenRoutes
     {
         $answer = $this->answer(...);
 
-        Route::macro('native', function (string $uri, string $screen) use ($answer): mixed {
-            NativeRouter::register($uri, $screen);
+        Route::macro('native', function (string $uri, string $screen) use ($answer): IlluminateRoute {
+            // The route the router serves and the one the native router
+            // matches are one object, so a constraint put on what this returns
+            // reaches both, as it does with NativePHP's own macro.
+            $route = Route::get($uri, static fn(): mixed => $answer($screen));
+            NativeRouter::register($route, $screen);
 
-            return Route::get($uri, static fn(): mixed => $answer($screen));
+            return $route;
         });
     }
 

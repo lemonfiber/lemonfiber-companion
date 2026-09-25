@@ -75,6 +75,7 @@
 
             @if ($download->ratioSaid !== '')
                 <x-operator::note>{{ __($download->ratioSaid, ['ratio' => $download->ratio]) }}</x-operator::note>
+                <x-operator::gloss :gloss="$this->gloss('ratio')" />
             @endif
 
             @if ($download->consequence !== '')
