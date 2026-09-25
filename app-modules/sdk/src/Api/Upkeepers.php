@@ -89,7 +89,7 @@ final readonly class Upkeepers implements KeepingCurrent
             return $this->outcome($stack, $session, $job);
         } catch (RequestFailed $why) {
             return HowTheUpdateIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|UpkeepIsUnreadable|ChangelogIsUnreadable|ServiceIsUnnamed) {
             return HowTheUpdateIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }

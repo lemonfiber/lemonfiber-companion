@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
@@ -33,13 +34,17 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\Explainers;
+use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Heralds;
+use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
@@ -47,6 +52,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
+use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -141,7 +147,11 @@ function everyAdapterCallThatReads(): array
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
+        'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
+        'Followers::tracedOn' => static fn(): object
+            => new Followers($clients)->tracedOn($stack, $session, WhatToFollow::called('sonarr')),
         'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
+        'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
         'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients)->keptRunningOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
@@ -154,6 +164,8 @@ function everyAdapterCallThatReads(): array
         'Quartermasters::rationedOn' => static fn(): object => new Quartermasters($clients)->rationedOn($stack, $session),
         'Questions::about' => static fn(): object => new Questions($clients)->about($stack, $session),
         'Recorders::recordedOn' => static fn(): object => new Recorders($clients)->recordedOn($stack, $session),
+        'Rehearsers::whatStarting' => static fn(): object
+            => new Rehearsers($clients)->whatStarting($stack, $session, Form::called('media')),
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
         'Requests::decided' => static fn(): object
             => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::numbered(1))),
@@ -175,19 +187,26 @@ function everyAdapterCallThatReads(): array
         'Upkeepers::standing' => static fn(): object => new Upkeepers($clients)->standing($stack, $session),
         'Upkeepers::take' => static fn(): object
             => new Upkeepers($clients)->take($stack, $session, anUpdateToSpoilTheAnswerTo()),
+        'Upkeepers::whatBecameOf' => static fn(): object
+            => new Upkeepers($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
     ];
 }
 
 /**
  * The path whose answer a call is given, where it is not the one it asked.
  *
- * A change to a setting is answered by the stand-in as work, which is right
- * for a stack standing in and would leave nothing here for the reader to
- * refuse. The stack answers it with the listing, reviewed.
+ * The stand-in answers a change to a setting as work, which leaves nothing
+ * here for the reader to refuse, so the change is given the listing, reviewed.
+ * The stand-in answers every job as a repair's, which an update's reader
+ * refuses as the wrong kind, so an update's job is given the update's reading.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
-    return str_starts_with($which, 'Adjustments::') ? Api::CONFIG_ENDPOINT : $asked;
+    return match (true) {
+        str_starts_with($which, 'Adjustments::') => Api::CONFIG_ENDPOINT,
+        $which === 'Upkeepers::whatBecameOf' => Api::UPDATE_ENDPOINT,
+        default => $asked,
+    };
 }
 
 /**
@@ -245,7 +264,11 @@ function spoiledAt(mixed $held, array $at): mixed
  */
 function theDataIn(array $envelope): mixed
 {
-    return array_key_exists('data', $envelope) ? $envelope['data'] : null;
+    if (! array_key_exists('data', $envelope)) {
+        return null;
+    }
+
+    return $envelope['data'];
 }
 
 /**
@@ -265,16 +288,27 @@ function anEnvelopeSpoiledAt(array $envelope, ?array $at): array
 }
 
 /**
+ * The text values a request asked with, which pick between the envelopes one path answers with.
+ *
+ * @return list<string>
+ */
+function whatARequestAsked(PendingRequest $asked): array
+{
+    return array_values(array_filter($asked->query()->all(), is_string(...)));
+}
+
+/**
  * The body a path sends, as the stand-in would send it.
  *
  * A list of envelopes for the scrollback, which is one document a line, and a
- * single envelope for every other path.
+ * single envelope for every other path. What the request asked picks between
+ * the envelopes one path answers with, as it does for the stand-in.
  *
  * @return list<array<mixed>>
  */
-function theEnvelopesAPathSends(string $endpoint): array
+function theEnvelopesAPathSends(string $endpoint, string ...$asked): array
 {
-    $body = WhatTheWireWouldAnswer::to($endpoint, 200)->body()->all();
+    $body = WhatTheWireWouldAnswer::to($endpoint, 200, ...$asked)->body()->all();
 
     if (is_array($body)) {
         return [$body];
@@ -303,7 +337,7 @@ function answerEverythingSpoiledAt(string $which, ?array $at): void
             $endpoint = theAnswerACallIsGiven($which, $asked->getRequest()->resolveEndpoint());
             $envelopes = array_map(
                 static fn(array $envelope): array => anEnvelopeSpoiledAt($envelope, $at),
-                theEnvelopesAPathSends($endpoint),
+                theEnvelopesAPathSends($endpoint, ...whatARequestAsked($asked)),
             );
 
             return $endpoint === Api::LOGS_ENDPOINT
@@ -335,13 +369,13 @@ function everySpoilingOf(string $which, Closure $ask): array
         '*' => static function (PendingRequest $asked) use ($which, &$paths): MockResponse {
             $endpoint = theAnswerACallIsGiven($which, $asked->getRequest()->resolveEndpoint());
 
-            foreach (theEnvelopesAPathSends($endpoint) as $envelope) {
+            foreach (theEnvelopesAPathSends($endpoint, ...whatARequestAsked($asked)) as $envelope) {
                 foreach (everyPlaceToSpoil(theDataIn($envelope)) as $at) {
                     $paths[] = $at;
                 }
             }
 
-            return WhatTheWireWouldAnswer::to($endpoint, 200);
+            return WhatTheWireWouldAnswer::to($endpoint, 200, ...whatARequestAsked($asked));
         },
     ]);
 

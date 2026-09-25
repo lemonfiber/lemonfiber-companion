@@ -57,12 +57,10 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * — *every action that changes a stack* — rather than every request that
  * happens to be a `POST`.
  *
- * **A {@see JobHasNoName} is not caught**, and the asymmetry is deliberate. It means
- * a stack acknowledged an action and named it with nothing — the one state
- * there is no answer for, since the action *was* delivered and so must not
- * be sent again, and there is no handle to ask after it by. Swallowing it into
- * an obstacle would present *the machine is not answering* for a machine that
- * answered, and would lose the only evidence that the exchange is broken.
+ * **A {@see JobHasNoName} is an obstacle**, as every answer this class cannot
+ * read is. It means a stack acknowledged an action and named it with nothing,
+ * which leaves no handle to ask after it by. The screen draws that as the
+ * stack not answering, where an exception would draw it as a crash.
  */
 final readonly class Menders implements Mending
 {
