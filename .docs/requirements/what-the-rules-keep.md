@@ -67,38 +67,27 @@ requirement is right and this page is a defect.
 | `N3-R11` | Parental limits are rendered from the core's answer, with no second copy held here | Answered by absence: this app renders no limits. `tests/Arch/NothingPlaysMediaHereTest.php` names it in the refusal it prints, so whoever adds the first one is told where the answer lives — but nothing here would go red if a second copy appeared beside it |
 | `N3-R12` | While the stack is unreachable, asking for something new is declined rather than queued | `tests/Arch/AnActionIsNeverHeldTest.php`, and `tests/Feature/WhatAMemberIsNeverShownTest.php` |
 
-**`N3-R8` was withdrawn, and this repository still keeps it.** The row said the
-app plays no media and hands off to a household client;
-`tests/Arch/NothingPlaysMediaHereTest.php` reads the platform sources for a
-player and refuses one. The spec has since reversed it — the app plays, because
-sending somebody to a second application they must also install is a household
-product stopping short of the thing the household wanted — and what the row
-protected is now `N3-R14` and `N3-R16`: not *no player*, but a player holding no
-second copy of a library, an age limit or an entitlement, and none of the asking
-logic.
+**No player is built here, and `tests/Arch/NothingPlaysMediaHereTest.php`
+refuses one.** It reads the platform sources under `bridge/resources` for every
+Android and iOS media player and fails on any. That is stricter than `N3-R14`
+and `N3-R16` ask — they forbid a player holding a second copy of a library, an
+age limit or an entitlement, or implementing any of the asking — and it is the
+only form of them that can be enforced while the contract names nothing to
+play.
 
-The test is left standing rather than deleted, and it now cites the rows that
-replaced the withdrawn one. The choice is a trap either way. Deleting it would
-drop the guard during exactly the window when somebody might add a player
-carelessly — the erosion its own argument describes. Leaving it citing a row
-that no longer exists would let it refuse the next feature on an authority it
-had lost.
+`HeldEnvelope.holdings[]` carries `id`, `medium`, `title` and `year`. It carries
+no location a holding can be streamed from, and no authorisation for the member
+to stream it. A player added now could only work by composing an address out of
+a stack's address and an id, and by presenting a credential this app does not
+hold for that member: the second copy of the library and of the entitlement
+that `N3-R14` refuses. The media server applies an account's age limit and
+library access to whoever a stream is authorised as, so a stream opened with
+the stack's own credential is one no limit applies to.
 
-**It is stricter than `N3-R14` and `N3-R16` ask, and that is deliberate for as
-long as it lasts.** Those two forbid a player that holds a second copy of a
-library, an age limit or an entitlement, or that implements any of the asking;
-this refuses a player at all. The reason the stronger form is the right one
-today is that a narrower one would be unenforceable: nothing on the wire says
-where to play a holding — `HeldEnvelope.holdings[]` carries an identifier and
-no location — so a player added now could only work by composing an address out
-of a stack's address and an id, which is the second copy `N3-R14` refuses and
-is also the thing that breaks the day a library is reached from somewhere other
-than the same network.
-
-So the over-enforcement and the gap have one lifetime. The gap is recorded in
-`tests/Arch/WhatTheContractDoesNotCarryTest.php`, which goes red the day a
-location is carried. That is the day this is re-aimed at what actually
-survived, and the day this paragraph is deleted rather than edited.
+The gap is the `stream_from` row in
+`tests/Arch/WhatTheContractDoesNotCarryTest.php`, which goes red when the
+contract carries a location. That row names this rule as the one to replace
+with rules holding the player to `N3-R14` and `N3-R16`.
 
 ## What cannot be switched off
 
@@ -123,9 +112,9 @@ here is not a thing this repository does.
 
 | Requirement | What it asks | What holds it open |
 |---|---|---|
-| `N3-R14` | What a member may watch is the core's answer, and the player holds no second copy of a library, an age limit or an entitlement | Not built: there is no player here yet. The shelf it would play from is `WhatYouCanWatch`, read from `/api/held` |
-| `N3-R15` | Where the media server cannot be reached, playback is declined with the reason rather than queued or shown as buffering | Not built, with the player |
-| `N3-R16` | The player implements no request, approval or allowance logic of its own | Not built, with the player. What it will be held to is what `N3-R2` already holds the rest of this surface to |
+| `N3-R14` | What a member may watch is the core's answer, and the player holds no second copy of a library, an age limit or an entitlement | Waiting on the contract. `HeldEnvelope.holdings[]` names no location to stream a holding from and no authorisation for the member to stream it, and both are the core's to issue: a location per holding, and the member's authorisation for it saying when it stops standing. `tests/Arch/WhatTheContractDoesNotCarryTest.php` watches for `stream_from`, and `tests/Arch/NothingPlaysMediaHereTest.php` refuses a player until then. The shelf it would play from is `WhatYouCanWatch`, read from `/api/held` |
+| `N3-R15` | Where the media server cannot be reached, playback is declined with the reason rather than queued or shown as buffering | Waiting on the contract, with `N3-R14`: playback cannot be declined for a reason by an app that has nothing to attempt it with |
+| `N3-R16` | The player implements no request, approval or allowance logic of its own | Waiting on the contract, with `N3-R14`. What the player is held to is what `N3-R2` holds the rest of this surface to |
 | `N1-R5` | Reconfiguration is offered in full once connected | The settings are not a list this side can know — `ConfigEnvelope` carries what the stack has, so a screen offering the settings it knows about offers a subset the day the stack adds one, silently. `tests/Feature/EveryActionTheStackOffersTest.php` says so rather than gating on a guess |
 
 ## What another repository answers

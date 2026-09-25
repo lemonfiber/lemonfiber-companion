@@ -124,10 +124,21 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'that breaks first: the route to a library is a local wire today and will not always be '
             . 'one, and an app that built the address is an app that built the wrong one the day it '
             . 'is reached from somewhere else. So the location belongs to whoever already knows both '
-            . 'the library and the route, which is the core. Until it is carried, `N3-R15` cannot be '
+            . 'the library and the route, which is the core. A location is half of it. The other half '
+            . 'is the member\'s authorisation to stream that holding: the media server applies an '
+            . 'account\'s age limit and library access to whoever the stream is authorised as, so a '
+            . 'stream opened with the stack\'s own credential is one no limit applies to, and this app '
+            . 'holds no credential of the member\'s for the media server at all. What closes this row '
+            . 'is a location per holding and the member\'s authorisation for it, issued by the core '
+            . 'for the member who asked and saying when it stops standing — one address the core '
+            . 'signed, or an address and a grant beside it. Until both are carried, `N3-R15` cannot be '
             . 'answered at all — playback cannot be declined for a reason by an app that has no way '
             . 'to attempt it — and `N3-R16` is answered only by there being no player to implement '
-            . 'anything in.',
+            . 'anything in. `NothingPlaysMediaHereTest` refuses every player for as long as this row '
+            . 'stands, and is the rule to replace with ones holding the player to `N3-R14` and '
+            . '`N3-R16` when it goes. `HouseholdEnvelope.members[].requests[].media` is the other '
+            . 'handle on this wire, and its row in `WhatTheContractCarriesThatNothingReadsTest` is '
+            . 'read beside this one.',
     ],
     [
         'requirement' => 'N9-R7',

@@ -94,10 +94,9 @@ final readonly class WhatASurfaceIsNeverShown
                 }
                 PHP, 'N1-R41 — nothing holds a collection of actions', 'HoldsUndelivered'),
 
-            // Filed under the row that replaced the withdrawn one. The fixture
-            // is unchanged: what the rule reads for is still every player,
-            // which is stronger than the surviving rows ask and is held while
-            // nothing on the wire says where to play a holding.
+            // What the rule reads for is every player, which is stronger than
+            // the row it is filed under asks, and is held while nothing on the
+            // wire says where to play a holding.
             Fixture::suite('N3-R14', 'bridge/resources/android/PlaysMedia.kt', <<<'KOTLIN'
                 package app.lemonfiber.native
 
