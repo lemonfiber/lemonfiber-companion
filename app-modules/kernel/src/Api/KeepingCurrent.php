@@ -40,4 +40,12 @@ interface KeepingCurrent
      * hands back something to follow it by.
      */
     public function take(Stack $stack, Session $session, TakingAnUpdate $agreed): Underway;
+
+    /**
+     * What became of an update taken, by the handle taking it answered.
+     *
+     * Answers {@see HowTheUpdateIsGoing}, whose finished arm is the update's
+     * own report: the one answer that says how each service took it.
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing;
 }

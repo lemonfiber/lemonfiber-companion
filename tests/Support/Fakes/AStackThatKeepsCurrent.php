@@ -7,6 +7,7 @@ namespace Tests\Support\Fakes;
 use Closure;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\HowTheUpdateIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
@@ -38,20 +39,33 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
     /** @var list<TakingAnUpdate> */
     private array $taken = [];
 
+    /** @var list<Job> */
+    private array $followed = [];
+
     /**
-     * @param Closure(): WhatIsCurrent $answer
-     * @param Closure(): Underway      $taking
+     * @param Closure(): WhatIsCurrent       $answer
+     * @param Closure(): Underway            $taking
+     * @param Closure(): HowTheUpdateIsGoing $becoming
      */
     private function __construct(
         private readonly Closure $answer,
         private readonly Closure $taking,
+        private readonly Closure $becoming,
     ) {}
 
+    /** A stack whose update, once taken, is still running whenever it is asked after. */
     public static function with(Upkeep $upkeep): self
+    {
+        return self::whichTook($upkeep, HowTheUpdateIsGoing::stillRunning());
+    }
+
+    /** A stack that reads as `$upkeep` and, asked after the update it took, says `$became`. */
+    public static function whichTook(Upkeep $upkeep, HowTheUpdateIsGoing $became): self
     {
         return new self(
             static fn(): WhatIsCurrent => WhatIsCurrent::stands($upkeep),
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+            static fn(): HowTheUpdateIsGoing => $became,
         );
     }
 
@@ -72,6 +86,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
         return new self(
             static fn(): WhatIsCurrent => WhatIsCurrent::met($why),
             static fn(): Underway => Underway::met($why),
+            static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::met($why),
         );
     }
 
@@ -88,6 +103,7 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
         return new self(
             static fn(): WhatIsCurrent => WhatIsCurrent::stands($upkeep),
             static fn(): Underway => Underway::met($why),
+            static fn(): HowTheUpdateIsGoing => HowTheUpdateIsGoing::met($why),
         );
     }
 
@@ -106,6 +122,13 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
         return ($this->taking)();
     }
 
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheUpdateIsGoing
+    {
+        $this->followed[] = $job;
+
+        return ($this->becoming)();
+    }
+
     /** How many times the stack was read, which is the whole of asking once. */
     public function askings(): int
     {
@@ -121,5 +144,11 @@ final class AStackThatKeepsCurrent implements KeepingCurrent
     public function taken(): array
     {
         return $this->taken;
+    }
+
+    /** @return list<Job> every handle the update was asked after by, in order */
+    public function followed(): array
+    {
+        return $this->followed;
     }
 }

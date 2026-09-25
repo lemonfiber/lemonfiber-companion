@@ -11,7 +11,6 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheStackIsOn;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
-use Modules\Updates\Api\Queries\NotArrivedFirst;
 
 /**
  * Folding what a stack says about being up to date into the fields a screen draws.
@@ -41,15 +40,6 @@ final readonly class HowUpkeepReads
             $history[] = new HowAReleaseReads()->of($release);
         }
 
-        $applied = [];
-
-        // Ordered before folding, so the rows reach the template in the order
-        // they are read in. `NotArrivedFirst` puts every service that is not
-        // where the operator wanted it above the ones that are.
-        foreach (new NotArrivedFirst()->over($upkeep->howItWent()) as $took) {
-            $applied[] = new HowATakenUpdateReads()->of($took);
-        }
-
         $on = $upkeep->inUse(
             named: static fn(Release $inUse): WhatTheStackIsOn => new HowTheVersionInUseReads()->of($inUse),
             unstated: static fn(): WhatTheStackIsOn => new HowTheVersionInUseReads()->notNamed(),
@@ -67,9 +57,6 @@ final readonly class HowUpkeepReads
             // screen counting them would offer an update to a stack that is
             // on every pin.
             offer: $upkeep->hasSomethingToOffer() ? TakingAnUpdate::offeredBy($upkeep) : null,
-            applied: $applied,
-            didNotArrive: $upkeep->howItWent()->thatDidNotArrive()->count(),
-            anythingUnanswered: $upkeep->howItWent()->anythingUnanswered(),
         );
     }
 
@@ -98,9 +85,6 @@ final readonly class HowUpkeepReads
             inUse: null,
             history: [],
             offer: null,
-            applied: [],
-            didNotArrive: 0,
-            anythingUnanswered: false,
         );
     }
 }

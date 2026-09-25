@@ -133,22 +133,68 @@ it('N1-R27 — the reading finds a poll however the attributes were grouped', fu
 });
 
 /**
- * Whether the class in that file publishes the accessor a template reads.
+ * The screens a file that polls stands for.
+ *
+ * A screen's own file stands for itself. A trait carrying `#[Poll]` stands
+ * for every screen that uses it, since each of those is what re-reads and
+ * each must say how often; a trait no screen uses stands for nothing, and is
+ * then reported as silent.
  *
  * Matched by file rather than by name, so a screen renamed is a screen this
- * still follows — and a file with no class behind it answers *no*, which is the
- * safe way round: something polling that this cannot identify is exactly what
- * wants a human to look.
+ * still follows — and a file with no class behind it answers *nothing*, which
+ * is the safe way round: something polling that this cannot identify is
+ * exactly what wants a human to look.
+ *
+ * @return list<ReflectionClass<object>>
  */
-function whateverPollsHereOffersACadence(string $path): bool
+function theScreensThatPollThrough(string $path): array
 {
+    $screens = [];
+
     foreach (Screens::all() as $screen) {
-        if ($screen->getFileName() === $path) {
-            return $screen->hasMethod(THE_CADENCE_ACCESSOR);
+        $traits = array_map(static fn(ReflectionClass $trait): string|false => $trait->getFileName(), $screen->getTraits());
+
+        if ($screen->getFileName() === $path || in_array($path, $traits, strict: true)) {
+            $screens[] = $screen;
         }
     }
 
-    return false;
+    return $screens;
+}
+
+/**
+ * What a screen that polls fails to say about how often, or nothing where it says it.
+ *
+ * @param ReflectionClass<object> $screen
+ */
+function whatAScreenThatPollsLeavesUnsaid(ReflectionClass $screen): string
+{
+    $path = (string) $screen->getFileName();
+
+    // Asked of the class rather than of its file, because a screen may hold
+    // the accessor in a trait — two screens about one reading share the
+    // cadence exactly so they cannot state different ones — and a file
+    // search would call that silence. It is also the stricter question: a
+    // file mentioning `cadence()` in a docblock satisfied the search, and
+    // a docblock is where every screen carrying `#[Poll]` explains itself.
+    if (! $screen->hasMethod(THE_CADENCE_ACCESSOR)) {
+        return sprintf('%s — polls and offers no cadence to render', basename($path));
+    }
+
+    // The accessor is only worth having if a template calls it, so the
+    // view the screen renders is read too. A screen holding a sentence
+    // nothing shows is the same silence one indirection along.
+    if (preg_match("/view\\('([a-z]+)::([a-z-]+)'\\)/", (string) file_get_contents($path), $named) !== 1) {
+        return sprintf('%s — polls and renders no view this rule can find', basename($path));
+    }
+
+    $view = Tree::at(sprintf('app-modules/%s/resources/views/%s.blade.php', $named[1], $named[2]));
+
+    if (! is_file($view) || ! str_contains((string) file_get_contents($view), sprintf('%s()', THE_CADENCE_ACCESSOR))) {
+        return sprintf('%s — polls, and %s never says how often', basename($path), basename($view));
+    }
+
+    return '';
 }
 
 it('N1-R27 — every screen that refreshes says how often', function (): void {
@@ -158,33 +204,20 @@ it('N1-R27 — every screen that refreshes says how often', function (): void {
     foreach (everyFileThatPolls() as $path) {
         $polling++;
 
-        $source = (string) file_get_contents($path);
+        $screens = theScreensThatPollThrough($path);
 
-        // Asked of the class rather than of its file, because a screen may hold
-        // the accessor in a trait — two screens about one reading share the
-        // cadence exactly so they cannot state different ones — and a file
-        // search would call that silence. It is also the stricter question: a
-        // file mentioning `cadence()` in a docblock satisfied the search, and
-        // a docblock is where every screen carrying `#[Poll]` explains itself.
-        if (! whateverPollsHereOffersACadence($path)) {
-            $silent[] = sprintf('%s — polls and offers no cadence to render', basename($path));
+        if ($screens === []) {
+            $silent[] = sprintf('%s — polls and no screen this rule can find stands behind it', basename($path));
 
             continue;
         }
 
-        // The accessor is only worth having if a template calls it, so the
-        // view the screen renders is read too. A screen holding a sentence
-        // nothing shows is the same silence one indirection along.
-        if (preg_match("/view\('([a-z]+)::([a-z-]+)'\)/", $source, $named) !== 1) {
-            $silent[] = sprintf('%s — polls and renders no view this rule can find', basename($path));
+        foreach ($screens as $screen) {
+            $said = whatAScreenThatPollsLeavesUnsaid($screen);
 
-            continue;
-        }
-
-        $view = Tree::at(sprintf('app-modules/%s/resources/views/%s.blade.php', $named[1], $named[2]));
-
-        if (! is_file($view) || ! str_contains((string) file_get_contents($view), sprintf('%s()', THE_CADENCE_ACCESSOR))) {
-            $silent[] = sprintf('%s — polls, and %s never says how often', basename($path), basename($view));
+            if ($said !== '') {
+                $silent[] = $said;
+            }
         }
     }
 
