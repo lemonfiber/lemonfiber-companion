@@ -25,8 +25,7 @@ final readonly class WhatPuttingItBackWouldDo
         private ACopy $copy,
         private string $agreement,
         private ScopeOfACopy $scope,
-        private string $takenBy,
-        private string $takenAt,
+        private WhatWroteACopy $written,
         private WhatACopyHolds $contents,
         private bool $older,
         private WhereTheDataGoes $data,
@@ -35,27 +34,23 @@ final readonly class WhatPuttingItBackWouldDo
     /**
      * The stack's listing of one copy.
      *
-     * The agreement, the version that wrote it and when are each required:
-     * a listing that cannot be named cannot be agreed to, and a copy that
-     * will not say what wrote it is one nobody can judge.
+     * The agreement is required: a listing that cannot be named cannot be
+     * agreed to.
      */
     public static function listed(
         ACopy $copy,
         string $agreement,
         ScopeOfACopy $scope,
-        string $takenBy,
-        string $takenAt,
+        WhatWroteACopy $written,
         WhatACopyHolds $contents,
         bool $older,
         WhereTheDataGoes $data,
     ): self {
-        foreach (['agreement' => $agreement, 'product_version' => $takenBy, 'created_at' => $takenAt] as $field => $said) {
-            if (trim($said) === '') {
-                throw KeepingSaysNothing::about($field);
-            }
+        if (trim($agreement) === '') {
+            throw KeepingSaysNothing::about('agreement');
         }
 
-        return new self($copy, $agreement, $scope, $takenBy, $takenAt, $contents, $older, $data);
+        return new self($copy, $agreement, $scope, $written, $contents, $older, $data);
     }
 
     /** Which copy this is about. */
@@ -79,13 +74,13 @@ final readonly class WhatPuttingItBackWouldDo
     /** The version of lemonfiber that wrote it. */
     public function takenBy(): string
     {
-        return $this->takenBy;
+        return $this->written->version();
     }
 
     /** When it was taken, as the stack stamped it. */
     public function takenAt(): string
     {
-        return $this->takenAt;
+        return $this->written->at();
     }
 
     /** What it holds, which is what putting it back would overwrite. */

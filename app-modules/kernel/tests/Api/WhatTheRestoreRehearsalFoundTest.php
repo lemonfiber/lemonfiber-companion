@@ -13,6 +13,7 @@ use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatTheRestoreRehearsalFound;
+use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 
 use function sprintf;
@@ -37,8 +38,7 @@ it('takes the listing arm for a listing and the obstacle arm for an obstacle', f
         ACopy::named('lemonfiber-20260924-0300-full'),
         'restore-0f3a',
         ScopeOfACopy::theWholeStack(),
-        '0.9.0',
-        '2026-09-24T03:00:00Z',
+        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
         WhatACopyHolds::these(),
         older: false,
         data: WhereTheDataGoes::whereItWas(),

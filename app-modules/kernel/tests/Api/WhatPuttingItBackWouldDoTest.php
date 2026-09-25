@@ -14,6 +14,7 @@ use Modules\Kernel\Api\KeepingSaysNothing;
 use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Tests\Support\WhatAScopeSays;
 
@@ -24,8 +25,7 @@ function aListingSaying(string $agreement, string $takenBy, string $takenAt, boo
         ACopy::named('lemonfiber-20260924-0300-full'),
         $agreement,
         ScopeOfACopy::theWholeStack(),
-        $takenBy,
-        $takenAt,
+        WhatWroteACopy::of($takenBy, $takenAt),
         WhatACopyHolds::these('lemonfiber configuration'),
         older: $older,
         data: WhereTheDataGoes::elsewhere(ARelocation::from('/srv/old', '/srv/new')),

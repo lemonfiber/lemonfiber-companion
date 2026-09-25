@@ -22,6 +22,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Restorers;
@@ -60,8 +61,7 @@ function aListingWhoseDataGoes(WhereTheDataGoes $data): WhatPuttingItBackWouldDo
         ACopy::named('lemonfiber-20260924-0300-full'),
         'restore-the-whole-stack-0.9.0',
         ScopeOfACopy::theWholeStack(),
-        '0.9.0',
-        '2026-09-24T03:00:00Z',
+        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
         WhatACopyHolds::these(),
         older: false,
         data: $data,

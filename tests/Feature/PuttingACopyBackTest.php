@@ -19,6 +19,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
@@ -88,8 +89,7 @@ function aListingOfTheCopy(WhereTheDataGoes $data, bool $older = false, ?ScopeOf
         ACopy::named('lemonfiber-20260924-0300-full'),
         'restore-the-whole-stack-0.9.0',
         $scope ?? ScopeOfACopy::theWholeStack(),
-        '0.9.0',
-        '2026-09-24T03:00:00Z',
+        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
         WhatACopyHolds::these('lemonfiber configuration', 'service configuration'),
         older: $older,
         data: $data,
@@ -237,7 +237,7 @@ it('lists one service, and the trees of an existing setup, as what would be put 
 ]);
 
 it('says a copy that lists nothing inside it does', function (): void {
-    $listing = WhatPuttingItBackWouldDo::listed(ACopy::named('lemonfiber-20260924-0300-full'), 'restore-0.9.0', ScopeOfACopy::theWholeStack(), '0.9.0', '2026-09-24T03:00:00Z', WhatACopyHolds::these(), older: false, data: WhereTheDataGoes::whereItWas());
+    $listing = WhatPuttingItBackWouldDo::listed(ACopy::named('lemonfiber-20260924-0300-full'), 'restore-0.9.0', ScopeOfACopy::theWholeStack(), WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'), WhatACopyHolds::these(), older: false, data: WhereTheDataGoes::whereItWas());
     $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing($listing, HowPuttingItBackIsGoing::stillRunning()));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.put_back.holds_nothing'));

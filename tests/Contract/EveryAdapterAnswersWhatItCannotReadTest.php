@@ -61,6 +61,7 @@ use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
+use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
@@ -205,8 +206,7 @@ function aListingToSpoilTheAnswerTo(): WhatPuttingItBackWouldDo
         ACopy::named('lemonfiber-20260924-0300-full'),
         'an-agreement',
         ScopeOfACopy::theWholeStack(),
-        '0.9.0',
-        '2026-09-24T03:00:00Z',
+        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
         WhatACopyHolds::these(),
         older: false,
         data: WhereTheDataGoes::whereItWas(),

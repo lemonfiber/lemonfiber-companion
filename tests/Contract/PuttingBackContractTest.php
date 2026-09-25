@@ -20,6 +20,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Restorers;
@@ -107,8 +108,7 @@ function theSameListing(): WhatPuttingItBackWouldDo
         theCopyPutBack(),
         'restore-one-service-sonarr-0.9.0',
         ScopeOfACopy::oneService(ServiceId::called('sonarr')),
-        '0.9.0',
-        '2026-09-24T03:00:00Z',
+        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
         WhatACopyHolds::these('sonarr configuration'),
         older: false,
         data: WhereTheDataGoes::elsewhere(ARelocation::from('/srv/old', '/srv/new')),

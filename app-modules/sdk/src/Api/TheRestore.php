@@ -17,6 +17,7 @@ use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Internal\Scopes;
@@ -46,8 +47,10 @@ final readonly class TheRestore
             $copy,
             self::text($would, WireField::Agreement),
             Scopes::in($manifest),
-            self::text($manifest, RestoreField::ProductVersion),
-            self::text($manifest, RestoreField::CreatedAt),
+            WhatWroteACopy::of(
+                self::text($manifest, RestoreField::ProductVersion),
+                self::text($manifest, RestoreField::CreatedAt),
+            ),
             self::contents($manifest),
             older: self::flag($would, RestoreField::Downgrade),
             data: self::whereItGoes($would, RestoreField::Relocation),
