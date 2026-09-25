@@ -154,8 +154,9 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         'raised' => 'An invitation\'s `standing` is `made`, `waiting`, `joined` or `reset`, and none of those '
             . 'says that it ran out unaccepted or that the person turned it down. `waiting` past its '
             . '`hours` is the nearest, and reading it as lapsed would be this app working out a state '
-            . 'the core has not stated, which `N2-R14` refuses. The invitation is not offered here '
-            . 'either, so `N9-R5` and `N9-R6` wait on the action; this one waits on the contract as well.',
+            . 'the core has not stated, which `N2-R14` refuses. The invitation screen draws the standing '
+            . 'the stack gives and the hours it stands, and invitations taken back on the way past with '
+            . 'the answer they arrived on, and says nothing of a decline, which the contract does not carry.',
     ],
 ];
 

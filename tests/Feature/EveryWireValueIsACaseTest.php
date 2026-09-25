@@ -34,6 +34,7 @@ use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatHappenedToIt;
 use Modules\Kernel\Api\WhatItFaces;
@@ -43,10 +44,12 @@ use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
+use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereThisCopyStands;
+use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
 use Tests\Support\ApiSurface;
@@ -705,6 +708,29 @@ it('every way a front door can have come to be has a case', function (): void {
     expect(valuesOf(HowTheDoorWasChosen::cases()))->toBe($words);
 });
 
+it('everything an invitation can find where it was going has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('InvitationEnvelope'), 'standing');
+
+    expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
+    expect(valuesOf(WhereTheInvitationStands::cases()))->toBe($words);
+});
+
+it('everything the request service can have been told has a case, on the invitation and on what it granted', function (): void {
+    $linked = unionIn(theGeneratedEnvelope('InvitationEnvelope'), 'linked');
+    $requesting = unionIn(theGeneratedEnvelope('InvitationEnvelope'), 'requesting');
+
+    expect($linked)->not->toBe([], 'no linked union was found in the generated envelope');
+    expect(valuesOf(WhetherTheyCanAsk::cases()))->toBe($linked)
+        ->and($requesting)->toBe($linked);
+});
+
+it('everything that can become of unrated material has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('InvitationEnvelope'), 'unrated');
+
+    expect($words)->not->toBe([], 'no unrated union was found in the generated envelope');
+    expect(valuesOf(WhatBecomesOfUnrated::cases()))->toBe($words);
+});
+
 it('N1-R13 — every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
@@ -834,6 +860,9 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhereTheFrontDoorStands::class => 'standing',
     WhatItFaces::class => 'facing',
     HowTheDoorWasChosen::class => 'chosen',
+    WhereTheInvitationStands::class => 'standing',
+    WhetherTheyCanAsk::class => 'linked',
+    WhatBecomesOfUnrated::class => 'unrated',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

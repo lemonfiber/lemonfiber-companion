@@ -7,11 +7,14 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function count;
 use function is_array;
+use function is_bool;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\HouseholdEnvelope;
+use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\Wanted;
 use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Internal\WhatWasAskedFor;
@@ -121,6 +124,61 @@ final readonly class Households
         return count($members) === 1 ? $wanted : Requested::none();
     }
 
+
+    /**
+     * Everybody the media server holds an account for, and whether each has taken it up.
+     *
+     * The same payload read for its people rather than its requests. Only the
+     * name and `claimed` are read: what a member may watch and ask for stays
+     * the core's, for the reasons the unread rows give.
+     *
+     * @param Envelope<mixed> $envelope the `household` envelope, as the client returned it
+     */
+    public static function whoIsIn(Envelope $envelope): TheMembers
+    {
+        $data = self::payload(Wire::checked($envelope));
+
+        if (! is_array($data)) {
+            throw HouseholdIsUnreadable::missing(WireField::Data);
+        }
+
+        // Nobody listed is not nobody in, where the stack could not read the
+        // media server: the same guard the requests are read behind.
+        if (self::couldNotBeRead($data)) {
+            throw HouseholdIsUnreadable::unread();
+        }
+
+        $members = [];
+        $position = 0;
+
+        foreach (self::rows($data, HouseholdField::Members) as $row) {
+            $members[] = self::member($row, $position);
+            $position++;
+        }
+
+        return TheMembers::of(...$members);
+    }
+
+    /**
+     * One member, by name, joined or still invited, or a row refused by its position.
+     *
+     * A member with no name, or no word on whether they have taken the account
+     * up, is refused rather than dropped, for the reason every row here is.
+     */
+    private static function member(mixed $row, int $position): AMember
+    {
+        if (! is_array($row)
+            || ! array_key_exists(WireField::Name->value, $row)
+            || ! is_string($row[WireField::Name->value])
+            || ! array_key_exists(HouseholdField::Claimed->value, $row)
+            || ! is_bool($row[HouseholdField::Claimed->value])) {
+            throw HouseholdIsUnreadable::member($position);
+        }
+
+        return $row[HouseholdField::Claimed->value]
+            ? AMember::joined($row[WireField::Name->value])
+            : AMember::stillInvited($row[WireField::Name->value]);
+    }
 
     /**
      * Whether the stack said it could not read the household.

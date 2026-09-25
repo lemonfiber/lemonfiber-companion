@@ -60,6 +60,13 @@ const WHAT_A_COMPONENT_IS = [
     // a space.
     'divider' => false,
 
+    // A line of things side by side, and one square of a code another phone
+    // scans. Both are furniture: the row says nothing the order does not, and
+    // a reader announcing each square of a code would read out hundreds of
+    // boxes where the line beneath the code says what it is.
+    'row' => false,
+    'rect' => false,
+
     // A row that is the tap target for everything inside it. A control, and
     // one with no label of its own — what it says is whatever is inside it,
     // so `F5` reaches it through `a11y-label` and nothing else.

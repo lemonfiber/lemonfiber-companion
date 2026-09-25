@@ -1,0 +1,26 @@
+{
+    "name": "modules/codes",
+    "description": "Codes another device can scan off this one's screen.",
+    "license": "LicenseRef-Hippocratic-3.0",
+    "type": "library",
+    "require": {
+        "php": "^8.5",
+        "bacon/bacon-qr-code": "^3.0",
+        "modules/kernel": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Codes\\": "src/",
+            "Modules\\Codes\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "lemonfiber": {
+            "floors": {
+                "coverage": 100,
+                "mutation": 100
+            },
+            "kind": "adapter"
+        }
+    }
+}

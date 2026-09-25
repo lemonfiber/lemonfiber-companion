@@ -15,6 +15,7 @@ use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Api\Fields\HistoryField;
 use Modules\Sdk\Api\Fields\HostingField;
 use Modules\Sdk\Api\Fields\HouseholdField;
+use Modules\Sdk\Api\Fields\InvitationField;
 use Modules\Sdk\Api\Fields\JobField;
 use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\OutboundField;
@@ -57,6 +58,7 @@ function everyFieldNamedOnTheWire(): array
         ...GlossaryField::cases(),
         ...HeldField::cases(),
         ...FrontDoorField::cases(),
+        ...InvitationField::cases(),
         ...HistoryField::cases(),
         ...HostingField::cases(),
         ...HouseholdField::cases(),

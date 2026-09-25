@@ -42,4 +42,16 @@ interface Sharing
      * can honestly claim.
      */
     public function hand(Assembled $assembled): Handed;
+
+    /**
+     * Put an invitation in front of the operator to pass on, or say why it could not be.
+     *
+     * The same sheet and the same answer as a report. It takes an
+     * {@see AnInvitationToPassOn}, whose text is the stack's address and its
+     * caution under a covering sentence, so nothing but an address the stack
+     * gave can be handed over this way, and nobody is sent anything by this
+     * app: who receives it is the operator's choice in an app this one does
+     * not know about.
+     */
+    public function passOn(AnInvitationToPassOn $invitation): Handed;
 }

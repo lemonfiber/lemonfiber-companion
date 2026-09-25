@@ -50,4 +50,7 @@ enum HouseholdField: string implements NamesAWireField
 
     /** What one member has asked their stack for. */
     case Requests = 'requests';
+
+    /** Whether somebody has set a password on their account, rather than an invitation nobody took up. */
+    case Claimed = 'claimed';
 }

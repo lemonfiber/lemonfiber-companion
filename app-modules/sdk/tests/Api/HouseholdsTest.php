@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use function array_diff_key;
 use function expect;
+use function implode;
 use function it;
 use function iterator_to_array;
 use function json_encode;
@@ -607,4 +609,48 @@ it('stands in for a household the contract would accept, with a state left out',
 
     expect(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', ['kind' => 'household', 'data' => $data]))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});
+
+/**
+ * Everybody a household reading found, each as `name:joined` or `name:invited`.
+ *
+ * @param Envelope<mixed> $envelope
+ */
+function whoWasFoundIn(Envelope $envelope): string
+{
+    $found = [];
+
+    foreach (Households::whoIsIn($envelope) as $member) {
+        $found[] = sprintf('%s:%s', $member->name(), $member->hasJoined() ? 'joined' : 'invited');
+    }
+
+    return implode(',', $found);
+}
+
+it('reads everybody in the house, joined or still invited, in the stack\'s order', function (): void {
+    $data = aHouseholdOf([aMember('Robin', []), [...aMember('Sam', []), 'claimed' => false]]);
+
+    expect(whoWasFoundIn(householdSaying($data)))->toBe('Robin:joined,Sam:invited')
+        ->and(whoWasFoundIn(householdSaying(aHouseholdOf([]))))->toBe('');
+});
+
+it('refuses to say who is in where the stack could not read the household, or the payload is not one', function (): void {
+    expect(fn(): string => whoWasFoundIn(householdSaying([...aHouseholdOf([]), 'available' => false])))->toThrow(HouseholdIsUnreadable::class, 'could not read the household')
+        ->and(fn(): string => whoWasFoundIn(new Envelope(1, 'household', 'a house')))->toThrow(HouseholdIsUnreadable::class, 'no `data`')
+        ->and(fn(): string => whoWasFoundIn(householdSaying(['available' => true])))->toThrow(HouseholdIsUnreadable::class, 'no `members`');
+});
+
+it('refuses a member it cannot tell by name, or cannot tell joined from invited, and says which', function (): void {
+    $table = [
+        'not a member',
+        ['claimed' => true],
+        [...aMember('Robin', []), 'name' => 3],
+        array_diff_key(aMember('Robin', []), ['claimed' => true]),
+        [...aMember('Robin', []), 'claimed' => 'yes'],
+    ];
+
+    foreach ($table as $row) {
+        expect(fn(): string => whoWasFoundIn(householdSaying(aHouseholdOf([aMember('Sam', []), $row]))))
+            ->toThrow(HouseholdIsUnreadable::class, 'Member 1 in the household envelope is not a member');
+    }
 });
