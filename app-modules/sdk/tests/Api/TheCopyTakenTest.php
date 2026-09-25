@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use function array_diff_key;
 use function expect;
 use function it;
 use function iterator_to_array;
@@ -85,6 +86,7 @@ it('refuses a report missing a part of it, naming which, rather than reading it 
     expect(fn(): ACopyTaken => aCopyTakenReading($data))->toThrow(BackupIsUnreadable::class, $named);
 })->with([
     'no payload' => ['nothing', '`data`'],
+    'removed copies left out' => [array_diff_key(aBackupReportSaying(), ['pruned' => true]), '`pruned`'],
     'no removed copies' => [aBackupReportSaying(['pruned' => null]), '`pruned`'],
     'removed copies that are a word' => [aBackupReportSaying(['pruned' => 'none']), '`pruned`'],
     'removed copies that are not a list' => [aBackupReportSaying(['pruned' => ['first' => 'lemonfiber-20260901-0300-sonarr']]), '`pruned`'],

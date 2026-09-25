@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use function array_diff_key;
 use function expect;
 use function it;
 use function iterator_to_array;
@@ -136,6 +137,7 @@ it('refuses a listing missing a part of it, naming which', function (mixed $data
     'no version' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['product_version' => 9])])], '`product_version`'],
     'no date' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['created_at' => null])])], '`created_at`'],
     'no word on the version gap' => [['would' => aRestoreListingSaying(['downgrade' => 'no'])], '`downgrade`'],
+    'contents left out' => [['would' => aRestoreListingSaying(['manifest' => array_diff_key(aManifestSaying(), ['members' => true])])], '`members`'],
     'no contents' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['members' => null])])], '`members`'],
     'contents that are a word' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['members' => 'all'])])], '`members`'],
     'contents that are not a list' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['members' => ['first' => ['label' => 'x']]])])], '`members`'],
