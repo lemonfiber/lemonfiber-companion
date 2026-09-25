@@ -58,6 +58,7 @@ use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Telling;
+use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
@@ -69,6 +70,7 @@ use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
+use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
@@ -324,6 +326,7 @@ final class CompositionRoot extends ServiceProvider
         // the same reason.
         $this->app->bind(SelfChecking::class, Inspectors::class);
         $this->app->bind(Explaining::class, Explainers::class);
+        $this->app->bind(Tracing::class, Followers::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

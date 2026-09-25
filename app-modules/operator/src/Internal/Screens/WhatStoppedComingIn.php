@@ -20,6 +20,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
+use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAStallReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
@@ -160,6 +161,12 @@ final class WhatStoppedComingIn extends NativeComponent
     public function answer(): WhatStoppedTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /** Where one stalled item got to, followed through every service. */
+    public function traceOf(string $title): string
+    {
+        return $this->goes()->traceOf(WhatToFollow::called($title));
     }
 
     /** Where this screen's words are explained from. */

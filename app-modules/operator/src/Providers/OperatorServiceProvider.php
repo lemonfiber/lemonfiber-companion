@@ -30,6 +30,7 @@ use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\WhatYouAreToldAbout;
 use Modules\Operator\Internal\Screens\WhereThisComesFrom;
+use Modules\Operator\Internal\Screens\WhereThisGotTo;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -225,7 +226,13 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);
-            Router::native(AStacksScreen::WordAbout->value, WhatTheWordsMean::class);
+            // A word can hold a slash, which the builder encodes and the
+            // router decodes before matching, so the segment takes the rest.
+            Router::native(AStacksScreen::WordAbout->value, WhatTheWordsMean::class)->where('service', '.+');
+
+            // Where one item got to, from whatever named it. A title can hold
+            // a slash, so the segment takes the rest, as a word's does.
+            Router::native(AStacksScreen::Trace->value, WhereThisGotTo::class)->where('service', '.+');
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

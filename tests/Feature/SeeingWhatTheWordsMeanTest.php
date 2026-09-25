@@ -222,3 +222,11 @@ it('the way to one word is a route to this screen', function (): void {
 
     expect(NativeRouter::resolve($screen->goes()->ofItself()->wordAbout(AWordInUse::named('pin'))))->not->toBeNull();
 });
+
+it('carries a word with a space or a slash to the screen as it was drawn', function (): void {
+    $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
+
+    foreach (['port forwarding', 'AC/DC', 'Dune: Part Two'] as $word) {
+        expect(NativeRouter::resolve($screen->goes()->ofItself()->wordAbout(AWordInUse::named($word))))->toHaveKey('params.service', $word);
+    }
+});

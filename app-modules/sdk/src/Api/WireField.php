@@ -239,4 +239,17 @@ enum WireField: string implements NamesAWireField
      * there is nothing exact to type to update lemonfiber.
      */
     case Instead = 'instead';
+
+    /**
+     * A stage in the pipeline: how far a stalled item got before it stopped,
+     * and each stage a traced item reached.
+     */
+    case Stage = 'stage';
+
+    /**
+     * Two meanings under one word, each in its own envelope: whether an event
+     * set apart is heard about, whatever the preset says, and how many parts
+     * of a traced series were asked for.
+     */
+    case Wanted = 'wanted';
 }

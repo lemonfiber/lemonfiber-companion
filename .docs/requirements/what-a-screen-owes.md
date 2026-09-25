@@ -75,15 +75,15 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 62 envelopes and this app follows 22.
-Thirty-eight are never referenced anywhere in `app-modules` or `bridge`, and two
+**The measurement.** The SDK ships 62 envelopes and this app follows 23.
+Thirty-seven are never referenced anywhere in `app-modules` or `bridge`, and two
 more — `Admission` and `Pull` — are referenced without being followed. They
 resolve to the features below — each one an action available from another
 surface and not offered here, or offered only in part.
 
 ```
 ls vendor/lemonfiber/sdk-php/src/Generated/*Envelope.php | wc -l   # 62
-Tests\Support\WhatTheReadersRead::envelopes()                      # 22
+Tests\Support\WhatTheReadersRead::envelopes()                      # 23
 ```
 
 `A2` is not in the list: first-run setup is the one exception `N1-R2` allows
@@ -103,11 +103,11 @@ reaches that action another way. So those four are *partly* built, and the
 question they ask is narrower than the rest: not whether this app does the
 thing, but whether it reads everything the wire now says about it.
 
-**Nine more are partly built, the other way round:** the envelope is read and
+**Ten more are partly built, the other way round:** the envelope is read and
 drawn, and it answers some of the feature's requirements rather than all of
 them. `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B8` is whether
 the stack comes back after a restart and what did not (`N16-R5`, `N16-R6`,
-`N16-R13`); `D5` is how full the machine is, where the room went and each download with where it stands (`N12-R1` to `N12-R3`, `N12-R6`, `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E2` is which version runs, how it was installed and what moving it would take (`N14-R1`, `N14-R2`, `N14-R5` to `N14-R8`); `E4`
+`N16-R13`); `D9` is where one item got to, followed through the services (`N8-R4` to `N8-R6`, `N8-R8`, `N8-R9`); `D5` is how full the machine is, where the room went and each download with where it stands (`N12-R1` to `N12-R3`, `N12-R6`, `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E2` is which version runs, how it was installed and what moving it would take (`N14-R1`, `N14-R2`, `N14-R5` to `N14-R8`); `E4`
 is the record of what was changed and how far back it goes (`N11-R1` to
 `N11-R3`, `N11-R9`, `N11-R10`); `E3` is the list of copies, with an empty one told apart from one that could not be read (`N6-R9`); `G8` is what leaves the machine, ours and
 theirs apart (`N10-R1` to `N10-R3`, `N10-R12`). Each is kept on
@@ -115,11 +115,12 @@ theirs apart (`N10-R1` to `N10-R3`, `N10-R12`). Each is kept on
 [what a machine keeps](what-a-machine-keeps.md),
 [how full a machine is](how-full-a-machine-is.md),
 [what is running here](what-is-running-here.md),
+[where an item got to](where-an-item-got-to.md),
 [what a machine says](what-a-machine-says.md) or
 [what was done here](what-was-done-here.md), and the rest of each feature is
 still a decision nobody has made.
 
-That leaves **twenty-three** with nothing documented at all.
+That leaves **twenty-two** with nothing documented at all.
 
 | Feature | What it is |
 |---|---|
@@ -140,7 +141,7 @@ That leaves **twenty-three** with nothing documented at all.
 | `D5` | Disk space management — **partly built**, see above |
 | `D6` | Household identity & invitations |
 | `D7` | Request approval & quotas — **partly built**, see above |
-| `D9` | "Where is my show?" pipeline trace |
+| `D9` | "Where is my show?" pipeline trace — **partly built**, see above |
 | `E2` | Self-update — **partly built**, see above |
 | `E3` | Backup & restore — **partly built**, see above |
 | `E4` | Rollback — **partly built**, see above |

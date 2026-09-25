@@ -37,6 +37,10 @@
                 {{ __('health.stuck_in', ['service' => $item->service]) }}
             </x-operator::note>
 
+            {{-- Where it got to, followed through every service rather than
+                 the one it stopped in. --}}
+            <x-operator::quiet-action label="{{ __('health.trace.road_in', ['item' => $item->title]) }}" :goes="$this->traceOf($item->title)" />
+
             @unless ($item->stillMoving)
                 {{-- The two ends of the pipeline, where nothing is going to
                      move it by itself. Said on the row rather than by

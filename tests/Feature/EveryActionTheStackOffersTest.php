@@ -35,7 +35,7 @@ use Tests\Support\WhatTheReadersRead;
 const OFFERED = [
     'Alerts', 'Archives', 'Bandwidth', 'Config', 'Doctor', 'Error', 'Forms', 'Glossary', 'Held', 'History',
     'Hosting', 'Household', 'Job', 'Log', 'Outbound', 'Provenance', 'Repair', 'SelfUpdate', 'Space', 'Status',
-    'Stored', 'Stuck', 'Update',
+    'Stored', 'Stuck', 'Trace', 'Update',
 ];
 
 /**
@@ -71,8 +71,8 @@ const ELSEWHERE = [
 const NOT_YET = [
     'Admission', 'Adoption', 'Backup', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Credentials', 'Dashboard',
     'FrontDoor', 'Import', 'Invitation', 'Lifecycle', 'Migration', 'Music', 'Plugins', 'Preview', 'Pull', 'Quality',
-    'Removal', 'Replacement', 'Reset', 'Restore', 'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Trace',
-    'Undo', 'Uninstall', 'Upgrade', 'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
+    'Removal', 'Replacement', 'Reset', 'Restore', 'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo',
+    'Uninstall', 'Upgrade', 'Version', 'Walkthrough', 'Watch', 'Wiring', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {

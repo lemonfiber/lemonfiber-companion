@@ -20,6 +20,7 @@ use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -40,6 +41,7 @@ use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
+use Modules\Kernel\Api\WhatHappenedToIt;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -271,6 +273,14 @@ function everyDerivedKey(): array
         WhetherItHoldsASecret::class => aPairPerCase(
             WhetherItHoldsASecret::cases(),
             static fn(WhetherItHoldsASecret $secret): array => [$secret->saidOnTheScreen()],
+        ),
+        HowSureTheTraceIs::class => aPairPerCase(
+            HowSureTheTraceIs::cases(),
+            static fn(HowSureTheTraceIs $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatHappenedToIt::class => aPairPerCase(
+            WhatHappenedToIt::cases(),
+            static fn(WhatHappenedToIt $case): array => [$case->saidOnTheScreen()],
         ),
         HowLemonfiberWasInstalled::class => aPairPerCase(
             HowLemonfiberWasInstalled::cases(),

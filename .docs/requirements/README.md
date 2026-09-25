@@ -67,6 +67,7 @@ lookup stops being wrong.
 | [what-a-machine-says.md](what-a-machine-says.md) | The values read back: verdicts, services, repairs, releases, requests |
 | [what-leaves-a-machine.md](what-leaves-a-machine.md) | What a machine does unwatched: what it sends, how it shares the line, and what it wakes somebody for |
 | [how-full-a-machine-is.md](how-full-a-machine-is.md) | How full a machine is, where the room went, and each download with where it stands |
+| [where-an-item-got-to.md](where-an-item-got-to.md) | One item followed through the services: how sure, how far, what was tried, and what of a series is here |
 | [what-the-words-mean.md](what-the-words-mean.md) | lemonfiber's words, each with its glosses and what else it is called |
 | [what-is-running-here.md](what-is-running-here.md) | Which version of lemonfiber runs, how it was installed, and what moving it would take |
 | [what-a-machine-keeps.md](what-a-machine-keeps.md) | What the stack keeps on its machine, where and why, and the copies the machine holds |

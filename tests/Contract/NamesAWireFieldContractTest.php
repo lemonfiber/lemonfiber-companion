@@ -24,6 +24,7 @@ use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
+use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
@@ -66,6 +67,7 @@ function everyFieldNamedOnTheWire(): array
         ...StatusField::cases(),
         ...StoredField::cases(),
         ...StuckField::cases(),
+        ...TraceField::cases(),
         ...UpdateField::cases(),
     ];
 }

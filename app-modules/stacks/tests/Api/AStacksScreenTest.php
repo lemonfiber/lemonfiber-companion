@@ -11,6 +11,7 @@ use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -105,4 +106,13 @@ it('refuses a case that needs more than a machine, and one that needs less', fun
         StackId::rememberedAs(A_MACHINE),
         AWordInUse::named('ratio'),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Health->forTheStacksItem(
+        StackId::rememberedAs(A_MACHINE),
+        WhatToFollow::called('Dune'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
+it('puts an item to follow where a service would go, encoded', function (): void {
+    expect(AStacksScreen::Trace->forTheStacksItem(StackId::rememberedAs(A_MACHINE), WhatToFollow::called('AC/DC Live')))
+        ->toBe(sprintf('/stacks/%s/trace/AC%%2FDC%%20Live', A_MACHINE));
 });
