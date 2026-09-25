@@ -23,8 +23,10 @@ use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
+use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -304,6 +306,8 @@ it('tells a session the stack refused from a stack that could not be heard', fun
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make()->throw(static fn(PendingRequest $asked): FatalRequestException
+            => new FatalRequestException(new RuntimeException('Connection refused'), $asked)), Obstacle::StackDidNotAnswer],
     ];
 
     foreach ($table as [$answered, $why]) {
