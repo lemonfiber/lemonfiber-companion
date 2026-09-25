@@ -6,7 +6,7 @@
          this because somebody in the house asked them to does not have to
          count rows. --}}
     <x-operator::emphasis>
-        {{ trans_choice('health.stuck_count', $this->howMany()) }}
+        {{ trans_choice($this->answer()->countSaid, $this->howMany()) }}
     </x-operator::emphasis>
 
     {{-- Whether this is the whole of what the stack holds. Rendered in both
@@ -14,6 +14,24 @@
          silent when a list is whole teaches an operator to read silence,
          and silence is also what a screen that forgot the flag produces. --}}
     <x-operator::note>{{ __($this->answer()->shownSaid) }}</x-operator::note>
+
+    {{-- What the stack could not look into, before the rows. An empty listing
+         from a queue it could not reach is not good news, so this is its own
+         answer rather than a footnote under one. --}}
+    @unless ($this->answer()->unreached === [])
+        <x-operator::emphasis>{{ __('health.could_not_reach') }}</x-operator::emphasis>
+        <native:text>{{ __('health.could_not_reach_explained') }}</native:text>
+    @endunless
+
+    @forelse ($this->answer()->unreached as $limit)
+        <x-operator::entry>
+            <x-operator::emphasis>{{ $limit->what }}</x-operator::emphasis>
+            <native:text>{{ $limit->because }}</native:text>
+        </x-operator::entry>
+    @empty
+        {{-- The stack reached everything it manages, which the plain count
+             above already says. --}}
+    @endforelse
 
     @forelse ($this->answer()->stalled as $item)
         <x-operator::entry>
@@ -53,8 +71,10 @@
         {{-- Not the same screen as a stack that could not be asked. Nothing
              stuck is the answer the operator wants, and saying so is what
              tells it apart from the obstacle branch above. --}}
-        <x-operator::emphasis>{{ __('health.nothing_stopped') }}</x-operator::emphasis>
-        <native:text>{{ __('health.nothing_stopped_action') }}</native:text>
+        @if ($this->answer()->unreached === [])
+            <x-operator::emphasis>{{ __('health.nothing_stopped') }}</x-operator::emphasis>
+            <native:text>{{ __('health.nothing_stopped_action') }}</native:text>
+        @endif
     @endforelse
 
     {{-- A screen an operator cannot ask again is a screen that relies

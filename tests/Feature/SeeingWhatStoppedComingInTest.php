@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\TheGlossary;
+use Modules\Kernel\Api\Unsupported;
 use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\Whose;
@@ -324,4 +325,73 @@ it('offers each stalled item\'s trace, reached by its title', function (): void 
 
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.trace.road_in', ['item' => 'A film nobody has seen']))
         ->and(NativeRouter::resolve($screen->traceOf('A film nobody has seen')))->toHaveKey('params.service', 'A film nobody has seen');
+});
+
+/** A queue the stack's repairs could not look into, with nothing it could see stuck. */
+function aQueueItCouldNotReach(Stuck ...$stalled): Stalled
+{
+    return Stalled::of(
+        HowMuchIsShown::AllOfIt,
+        WhatIsUnsupported::these(Unsupported::of('The download client', 'It refused the credentials lemonfiber holds for it')),
+        ...$stalled,
+    );
+}
+
+it('draws what the repairs could not reach as its own answer, and never as nothing stopped', function (): void {
+    foreach (['en', 'nl'] as $locale) {
+        app()->setLocale($locale);
+
+        $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(aQueueItCouldNotReach())))->said();
+
+        expect($drawn)->toContain(__('health.could_not_reach'))
+            ->and($drawn)->toContain(__('health.could_not_reach_explained'))
+            ->and($drawn)->toContain('The download client')
+            ->and($drawn)->toContain('It refused the credentials lemonfiber holds for it')
+            ->and($drawn)->toContain(trans_choice('health.stuck_count_where_it_looked', 0))
+            ->and($drawn)->not->toContain(trans_choice('health.stuck_count', 0))
+            ->and($drawn)->not->toContain(__('health.nothing_stopped'))
+            ->and($drawn)->not->toContain(__('health.nothing_stopped_action'));
+    }
+});
+
+it('draws what it could not reach before the rows it could', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(
+        aQueueItCouldNotReach(Stuck::at('A film nobody has seen', 'radarr', Stage::Searching)),
+    )))->said();
+
+    expect(array_values(array_intersect($drawn, ['A film nobody has seen', 'The download client'])))
+        ->toBe(['The download client', 'A film nobody has seen'])
+        ->and($drawn)->toContain(trans_choice('health.stuck_count_where_it_looked', 1));
+});
+
+it('says nothing about reach where the stack reached everything', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::withNothingStuck()))->said();
+
+    expect($drawn)->toContain(trans_choice('health.stuck_count', 0))
+        ->and($drawn)->toContain(__('health.nothing_stopped'))
+        ->and($drawn)->toContain(__('health.nothing_stopped_action'))
+        ->and($drawn)->not->toContain(__('health.could_not_reach'));
+});
+
+it('draws a queue it could not ask as the obstacle, and never as nothing stopped', function (Obstacle $met): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::met($met)))->said();
+
+    expect($drawn)->toContain(__($met->said()))
+        ->and($drawn)->not->toContain(trans_choice('health.stuck_count', 0))
+        ->and($drawn)->not->toContain(__('health.nothing_stopped'))
+        ->and($drawn)->not->toContain(__('health.nothing_stopped_action'));
+})->with([
+    'no network' => [Obstacle::DeviceHasNoNetwork],
+    'a stack that did not answer' => [Obstacle::StackDidNotAnswer],
+]);
+
+it('offers asking again and following an item, and nothing that acts on the queue or sets it up', function (): void {
+    $screen = theStalledScreen(AStackThatStalled::with(aQueueItCouldNotReach(
+        Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
+    )));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([
+        __('health.trace.road_in', ['item' => 'A film nobody has seen']),
+        __('health.ask_again'),
+    ]);
 });
