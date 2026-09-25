@@ -59,6 +59,8 @@ declare(strict_types=1);
  * this gate would stop judging in silence.
  */
 
+use SebastianBergmann\CodeCoverage\CodeCoverage;
+use SebastianBergmann\CodeCoverage\Data\ProcessedCodeCoverageData;
 use Tests\Support\MeasuredTree;
 use Tests\Support\OurCode;
 use Tests\Support\Tree;
@@ -546,29 +548,173 @@ function whatTheChangeReaches(string $root, string $since): ?array
         return null;
     }
 
-    $reach = [];
+    $sorted = sortTheChange($root, $since, array_values(array_filter(explode("\n", $said), static fn(string $line): bool => $line !== '')));
+    $covered = $sorted === null ? null : whatTheTestsReach($root, $sorted['tests']);
 
-    foreach (array_filter(explode("\n", $said), static fn(string $line): bool => $line !== '') as $path) {
+    if ($sorted === null || $covered === null) {
+        return null;
+    }
+
+    $reach = [...$sorted['reach'], ...$covered];
+
+    fwrite(STDERR, sprintf("The change reaches: %s\n", $reach === [] ? 'no path that is mutated' : implode(', ', $reach)));
+
+    return $reach;
+}
+
+/**
+ * The paths a change reaches by itself, and the tests it changed, or null
+ * where a changed path decides how the gate runs.
+ *
+ * @param  list<string>  $paths
+ * @return array{reach: list<string>, tests: list<string>}|null
+ */
+function sortTheChange(string $root, string $since, array $paths): ?array
+{
+    $reach = [];
+    $tests = [];
+
+    foreach ($paths as $path) {
         if (decidesHowTheGateRuns($root, $since, $path)) {
             fwrite(STDERR, sprintf("%s decides how the gate runs, so every path is mutated.\n", $path));
 
             return null;
         }
 
-        if (preg_match('#^(app-modules/[^/]+|bridge)/tests/#u', $path, $found) === 1) {
-            $reach[] = sprintf('%s/src', $found[1]);
+        $reach = [...$reach, ...whatAPathReaches($path)];
 
-            continue;
-        }
-
-        if (str_ends_with($path, '.php')) {
-            $reach[] = $path;
+        if (isATest($path)) {
+            $tests[] = $path;
         }
     }
 
-    fwrite(STDERR, sprintf("The change reaches: %s\n", $reach === [] ? 'no path that is mutated' : implode(', ', $reach)));
+    return ['reach' => $reach, 'tests' => $tests];
+}
 
-    return $reach;
+/**
+ * What one changed path reaches without the coverage map: a source file
+ * itself, and a module's test its module's code.
+ *
+ * @return list<string>
+ */
+function whatAPathReaches(string $path): array
+{
+    if (preg_match('#^(app-modules/[^/]+|bridge)/tests/#u', $path, $found) === 1) {
+        return [sprintf('%s/src', $found[1])];
+    }
+
+    return str_ends_with($path, '.php') && ! isATest($path) ? [$path] : [];
+}
+
+function isATest(string $path): bool
+{
+    return preg_match('#(^|/)tests/.+\.php$#u', $path) === 1;
+}
+
+/**
+ * Every file the changed tests execute, read from the coverage map the `tests`
+ * job wrote, or null for every path.
+ *
+ * A test edited to assert less changes no line of the code it judges, so the
+ * code it judged is reached through the map rather than through the diff: its
+ * mutants are run again, against the test as it now reads. A test the change
+ * deleted is not in the map, and neither is a map that was not handed over, so
+ * both mutate every path rather than guess at what was judged.
+ *
+ * @param  list<string>  $tests
+ * @return list<string>|null
+ */
+function whatTheTestsReach(string $root, array $tests): ?array
+{
+    $map = getenv('MUTATION_SHARED_COVERAGE');
+    $gone = array_values(array_filter($tests, static fn(string $test): bool => ! is_file(sprintf('%s/%s', $root, $test))));
+    $unanswerable = match (true) {
+        ! is_string($map) || ! is_readable($map) => 'No coverage map says what the changed tests execute',
+        $gone !== [] => sprintf('%s was deleted', implode(', ', $gone)),
+        default => null,
+    };
+
+    if ($tests === []) {
+        return [];
+    }
+
+    if ($unanswerable !== null) {
+        fwrite(STDERR, sprintf("%s, so every path is mutated.\n", $unanswerable));
+
+        return null;
+    }
+
+    $data = coverageIn($map);
+
+    return filesRunBy($data, testsOf($data, $tests), $root);
+}
+
+/** The coverage a map holds, in either shape the coverage library writes. */
+function coverageIn(string $map): ProcessedCodeCoverageData
+{
+    /** @var array{basePath: string, codeCoverage: ProcessedCodeCoverageData}|CodeCoverage $loaded */
+    $loaded = require $map;
+
+    return is_array($loaded) ? $loaded['codeCoverage'] : $loaded->getData();
+}
+
+/**
+ * The indexes of the map's tests that the given test files hold.
+ *
+ * Pest names each test file's class after its path, so the two are matched as
+ * the letters and digits both are spelt with.
+ *
+ * @param  list<string>  $tests
+ * @return array<int, int>
+ */
+function testsOf(ProcessedCodeCoverageData $data, array $tests): array
+{
+    $wanted = array_flip(array_map(static fn(string $test): string => testKey(mb_substr($test, 0, -4)), $tests));
+    $indexes = [];
+
+    foreach ($data->testIds() as $index => $id) {
+        if (array_key_exists(testKey(preg_replace('#^P\\\\#u', '', explode('::', $id, 2)[0]) ?? $id), $wanted)) {
+            $indexes[$index] = $index;
+        }
+    }
+
+    return $indexes;
+}
+
+/**
+ * Every file at least one of the given tests executed a line of.
+ *
+ * @param  array<int, int>  $indexes
+ * @return list<string>
+ */
+function filesRunBy(ProcessedCodeCoverageData $data, array $indexes, string $root): array
+{
+    $reached = [];
+
+    foreach ($data->lineCoverage() as $file => $lines) {
+        if (anyLineRunBy($lines, $indexes)) {
+            $reached[] = str_starts_with($file, sprintf('%s/', $root)) ? mb_substr($file, mb_strlen($root) + 1) : $file;
+        }
+    }
+
+    return $reached;
+}
+
+/**
+ * Whether any of a file's lines was executed by one of the given tests.
+ *
+ * @param  array<int, array<int, int>|null>  $lines
+ * @param  array<int, int>  $indexes
+ */
+function anyLineRunBy(array $lines, array $indexes): bool
+{
+    return array_any($lines, fn(?array $hits): bool => array_intersect_key($hits ?? [], $indexes) !== []);
+}
+
+/** A test file's path, or its class, as the letters and digits both are spelt with. */
+function testKey(string $name): string
+{
+    return mb_strtolower(preg_replace('#[^A-Za-z0-9]#u', '', $name) ?? $name);
 }
 
 /**
@@ -579,7 +725,7 @@ function whatTheChangeReaches(string $root, string $since): ?array
  */
 function decidesHowTheGateRuns(string $root, string $since, string $path): bool
 {
-    if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) !== 1) {
+    if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|tests/Support/.*|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) !== 1) {
         return false;
     }
 

@@ -57,14 +57,14 @@ env:
 # mutation waits for the tests, because mutating code whose tests already fail
 # tells you nothing and costs the most of anything here.
 #
-# A pull request mutates what its change reaches; `main` mutates everything.
-# `scripts/mutation.php --changed-since` says what a change reaches, and a
-# change to how the gate runs — a manifest, `phpunit.xml`, this file —
-# mutates everything on the pull request too. What a change can reach without
-# touching it, such as a test under `tests/` edited to assert less, is what
-# the run on `main` answers. That run takes every push that changed code, and
-# a newer push cancels the one before it, so the tip of `main` is the commit
-# held to every mutant.
+# A pull request mutates what its change reaches, and `main` mutates what was
+# reached since its last commit that passed. `scripts/mutation.php
+# --changed-since` says what a change reaches: a changed source file, the
+# module a changed module test belongs to, and every file a changed test
+# executes, read from the coverage map `tests` wrote — so a test edited to
+# assert less has the code it judged mutated against it again. A change to
+# how the gate runs — a manifest, `phpunit.xml`, `tests/Support`, this file —
+# and a deleted test mutate everything.
 
 jobs:
   # Which of the following are worth running at all. A documentation change
@@ -444,25 +444,37 @@ jobs:
   # autoloader. The alternative is a second copy of "what is measured" written
   # out here in a file nothing compares against the first.
   #
-  # It runs beside `tests` rather than after it: the listing reads the tree,
-  # not the test results, so waiting for them only put its install on the
-  # critical path. It runs on exactly the events and changes `tests` does, so
-  # the two skip together; `mutation` below is what waits for the tests.
+  # It runs after `tests` and only once they pass, so it skips wherever
+  # `tests` skips or fails, and a shard never starts over tests already red.
   #
   # On a pull request it lists only the shards the change reaches, and reads
   # that from git against the base commit, which is fetched for it. On `main`
-  # it lists every shard. On a merge group it lists none: each pull request's
-  # own run judged the mutants its change reaches, the queue's run of `tests`
-  # is what catches two changes that break together, and the run on `main`
-  # mutates every path.
+  # it lists the shards reached since the last commit on `main` whose run of
+  # this workflow passed, so a merge is mutated once more as it landed, beside
+  # the changes merged with it; a push a newer one cancelled is carried into
+  # the newer one's reach rather than dropped; and a merge that reaches no code
+  # mutates nothing. Where no such commit is found, every shard runs. On a
+  # merge group it lists none: each pull request's own run judged the mutants
+  # its change reaches, the queue's run of `tests` is what catches two changes
+  # that break together, and the run on `main` mutates what they reach
+  # together.
+  #
+  # A changed test reaches the code it executes, read from the coverage map
+  # `tests` wrote, so the listing waits for `tests` — which the shards wait for
+  # anyway. A test edited to assert less changes no line of what it judged,
+  # and without the map that code would never be mutated against it again.
   mutation-scope:
     name: what to mutate
-    needs: scope
-    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
+    needs: [scope, tests]
+    if: ${{ !cancelled() && needs.tests.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
     outputs:
       shards: ${{ steps.list.outputs.shards }}
+      base: ${{ steps.base.outputs.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -471,18 +483,37 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - name: The commit the pull request is measured against
-        if: github.event_name == 'pull_request'
+      - id: base
+        name: The commit the change is measured against
         env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-        run: git fetch --no-tags --depth=1 origin "${BASE}"
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PULL_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          case "${EVENT}" in
+            pull_request) BASE="${PULL_BASE}" ;;
+            push) BASE="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty' || true)" ;;
+            *) BASE="" ;;
+          esac
+          if [ -n "${BASE}" ] && git fetch --no-tags --depth=1 origin "${BASE}"; then
+            echo "sha=${BASE}" >> "$GITHUB_OUTPUT"
+          else
+            echo "No usable base commit, so every shard runs."
+          fi
+      # The coverage map `tests` wrote, which says what a changed test executes.
+      - if: github.event_name != 'merge_group'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: coverage-report
+          path: coverage
       - id: list
         env:
-          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          BASE: ${{ steps.base.outputs.sha }}
           EVENT: ${{ github.event_name }}
+          MUTATION_SHARED_COVERAGE: ${{ github.workspace }}/coverage/mutation.php
         run: |
           if [ "$EVENT" = merge_group ]; then
-            echo "A merge group mutates nothing: every pull request in it was mutated on its own run, and main mutates every path."
+            echo "A merge group mutates nothing: every pull request in it was mutated on its own run, and main mutates what they reach together."
             echo "shards=[]" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -521,10 +552,10 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - name: The commit the pull request is measured against
-        if: github.event_name == 'pull_request'
+      - name: The commit the change is measured against
+        if: needs.mutation-scope.outputs.base != ''
         env:
-          BASE: ${{ github.event.pull_request.base.sha }}
+          BASE: ${{ needs.mutation-scope.outputs.base }}
         run: git fetch --no-tags --depth=1 origin "${BASE}"
       # The coverage map `tests` wrote on this commit, so the shard does not run
       # the whole suite again to make its own.
@@ -535,7 +566,7 @@ jobs:
       # The same `--changed-since` as the listing, so this cuts the shards the
       # matrix was built from.
       - env:
-          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          BASE: ${{ needs.mutation-scope.outputs.base }}
           SHARD: ${{ matrix.shard.id }}
           MUTATION_SHARED_COVERAGE: ${{ github.workspace }}/coverage/mutation.php
         run: |
