@@ -27,8 +27,10 @@ declare(strict_types=1);
  * lines of shipped PHP the coverage floor holds and this file walked straight
  * past — silently, because the run still passed, over less.
  *
- * **Two arguments, both for CI.** `--list` prints the shards as a JSON array,
- * which is what a workflow matrix reads; `--shard=<id>` runs one of them. A
+ * **Three arguments, all for CI.** `--list` prints the shards as a JSON array,
+ * which is what a workflow matrix reads; `--shard=<id>` runs one of them; and
+ * `--shard=<id> --proof` prints what that shard's verdict depends on instead,
+ * so a runner can skip a shard whose proof already passed. A
  * shard is a run of files cut to about the same weight — the measured cost of
  * mutating their lines of code — out of every tree at one floor, so one large
  * tree is spread over several runners and several small ones share one. It is
@@ -94,6 +96,40 @@ const SECONDS_PER_LINE_ELSEWHERE = 0.20;
 // for a runner rather than finishing sooner.
 const SECONDS_PER_SHARD = 600;
 
+// What every shard's verdict reads beyond its own files, the tests that judge
+// them and the files those tests run: what the vendor tree is and how it is
+// patched, how the suite boots, and what a screen renders that no coverage
+// map records — templates, translations, routes and configuration.
+const WHAT_EVERY_VERDICT_READS = [
+    'composer.lock',
+    'phpunit.xml',
+    'tests/Pest.php',
+    'tests/TestCase.php',
+    'tests/Support',
+    'scripts/mutation.php',
+    'scripts/patch_pest_mutate.php',
+    'scripts/patch_pest_mutate_shared_coverage.php',
+    'bootstrap',
+    'config',
+    'lang',
+    'resources',
+    'routes',
+    'bridge/composer.json',
+    ':(glob)app-modules/*/composer.json',
+    ':(glob)app-modules/*/resources/**',
+    ':(glob)app-modules/*/config/**',
+    ':(glob)app-modules/*/routes/**',
+    ':(glob)app-modules/*/lang/**',
+];
+
+// Every test, for a shard a group judges: which of a group's tests judge which
+// held line is not in the map, so every one of them is read.
+const EVERY_TEST = [
+    'tests',
+    'bridge/tests',
+    ':(glob)app-modules/*/tests/**',
+];
+
 $root = dirname(__DIR__);
 
 // The same derivation the suite uses, reached the only way a script can reach
@@ -106,6 +142,7 @@ $given = array_slice($argv ?? [], 1);
 
 $asked = argument($given, '--shard=');
 $listing = in_array('--list', $given, strict: true);
+$proving = in_array('--proof', $given, strict: true);
 $since = argument($given, '--changed-since=');
 
 $trees = MeasuredTree::all();
@@ -158,7 +195,7 @@ foreach ($trees as $tree) {
     // because a tree that was never mutated and a tree with nothing left to
     // kill print the same way — which is nothing at all.
     if ($floor === 0) {
-        if (! $listing) {
+        if (! $listing && ! $proving) {
             fwrite(STDOUT, sprintf(
                 "  %s: mutation floor is 0 — %s\n",
                 $tree->path,
@@ -172,7 +209,7 @@ foreach ($trees as $tree) {
     // Nothing to mutate yet. Said out loud rather than skipped in silence,
     // because "no mutants" and "every mutant killed" print the same way.
     if ($tree->sourceFiles() === []) {
-        if (! $listing) {
+        if (! $listing && ! $proving) {
             fwrite(STDOUT, sprintf("  %s: no code yet, nothing to mutate\n", $tree->path));
         }
 
@@ -235,6 +272,14 @@ if ($asked !== null) {
             SAID, $asked, count($shards)));
 
         exit(1);
+    }
+
+    // What the shard's verdict depends on, instead of the verdict: a shard whose
+    // proof already passed on this branch or on `main` is not run again.
+    if ($proving) {
+        fwrite(STDOUT, sprintf("%s\n", proofOf($root, $shards[$asked])));
+
+        exit(0);
     }
 
     exit(runShard($root, $shards[$asked]));
@@ -520,19 +565,22 @@ function runHeld(string $root, array $run): int
  * - A changed PHP file under a measured tree is mutated.
  * - A change to a module's own tests, or the bridge's, mutates that module's
  *   whole tree, because those tests are what judge its mutants.
+ * - A changed test anywhere mutates every file its tests execute, read from
+ *   the coverage map the tests job wrote; a deleted test, or no map to read,
+ *   mutates everything.
  * - A change to what decides how the gate runs — a manifest, `phpunit.xml`,
- *   the Pest bootstrap, the application's bootstrap and config, this script
- *   and the workflow that runs it — mutates everything. A change to that
- *   workflow which only moves the revisions its actions are pinned at is not
- *   one: it mutates nothing by itself.
- * - Anything else — documentation, templates, the shared test suites and
- *   their support, translations, the lock, other workflows — mutates nothing
- *   by itself.
+ *   the Pest bootstrap, `tests/Support`, the application's bootstrap and
+ *   config, this script and the workflow that runs it — mutates everything. A
+ *   change to that workflow which only moves the revisions its actions are
+ *   pinned at is not one: it mutates nothing by itself.
+ * - Anything else — documentation, templates, translations, the lock, other
+ *   workflows — mutates nothing by itself.
  *
- * A change can still reach a mutant in a file it did not touch: a test under
- * `tests/` edited to assert less, a template that decides what a screen test
- * sees, or a dependency the lock moved. Those are what the run on `main`
- * answers, where every path is mutated.
+ * A change can still reach a mutant in a file it did not touch: a template
+ * that decides what a screen test sees, or a dependency the lock moved. The
+ * run on `main` mutates what was reached since its last commit that passed,
+ * and a shard's proof ({@see proofOf()}) covers those files, so a shard whose
+ * proof they moved is run again rather than skipped.
  *
  * Where git cannot say what changed, every path is mutated.
  *
@@ -693,7 +741,7 @@ function filesRunBy(ProcessedCodeCoverageData $data, array $indexes, string $roo
 
     foreach ($data->lineCoverage() as $file => $lines) {
         if (anyLineRunBy($lines, $indexes)) {
-            $reached[] = str_starts_with($file, sprintf('%s/', $root)) ? mb_substr($file, mb_strlen($root) + 1) : $file;
+            $reached[] = relativeTo($root, $file);
         }
     }
 
@@ -1029,4 +1077,125 @@ function isMeasured(string $root, string $path, array $measured): bool
     }
 
     return false;
+}
+
+/**
+ * What a shard's verdict depends on, as one digest, or empty where that cannot
+ * be told.
+ *
+ * A mutant is killed or not by the tests that run its line, against every line
+ * those tests run, under the vendor tree and the files no coverage map records.
+ * The digest is taken over the git blob of each of those files, so two commits
+ * whose files agree prove the same thing, and a rebase over changes nothing in
+ * it reached does not ask the shard again. Without the coverage map the tests
+ * job wrote, what judges the shard cannot be told, so nothing is claimed.
+ *
+ * @param array{label: string, floor: int, files: list<string>, held: list<array{floor: int, path: string, group: string}>} $shard
+ */
+function proofOf(string $root, array $shard): string
+{
+    $map = getenv('MUTATION_SHARED_COVERAGE');
+
+    if (! is_string($map) || ! is_readable($map)) {
+        return '';
+    }
+
+    $judging = $shard['held'] === [] ? whatJudges($root, coverageIn($map), $shard['files']) : EVERY_TEST;
+    $read = blobsOf($root, [...$shard['files'], ...array_column($shard['held'], 'path'), ...$judging, ...WHAT_EVERY_VERDICT_READS]);
+
+    return $read === '' ? '' : hash('sha256', sprintf("%d\n%s", $shard['floor'], $read));
+}
+
+/**
+ * The git blob of every tracked file under these paths, one per line, in path
+ * order.
+ *
+ * @param  list<string>  $paths
+ */
+function blobsOf(string $root, array $paths): string
+{
+    $specs = implode(' ', array_map(escapeshellarg(...), array_values(array_unique($paths))));
+    $read = shell_exec(sprintf('git -C %s ls-files -s -- %s', escapeshellarg($root), $specs));
+
+    return is_string($read) ? $read : '';
+}
+
+/**
+ * The test files that run a line of these files, and every file those tests
+ * run.
+ *
+ * @param  list<string>  $files
+ * @return list<string>
+ */
+function whatJudges(string $root, ProcessedCodeCoverageData $data, array $files): array
+{
+    $indexes = testsRunning($data, $files, $root);
+
+    return [...testFilesOf($root, $data, $indexes), ...filesRunBy($data, $indexes, $root)];
+}
+
+/**
+ * The indexes of every test that runs a line of these files.
+ *
+ * @param  list<string>  $files
+ * @return array<int, int>
+ */
+function testsRunning(ProcessedCodeCoverageData $data, array $files, string $root): array
+{
+    $wanted = array_flip($files);
+    $indexes = [];
+
+    foreach ($data->lineCoverage() as $file => $lines) {
+        if (array_key_exists(relativeTo($root, $file), $wanted)) {
+            $indexes += testsOnAnyOf($lines);
+        }
+    }
+
+    return $indexes;
+}
+
+/**
+ * The indexes of every test that ran any of these lines.
+ *
+ * @param  array<int, array<int, int>|null>  $lines
+ * @return array<int, int>
+ */
+function testsOnAnyOf(array $lines): array
+{
+    $indexes = [];
+
+    foreach ($lines as $hits) {
+        foreach (array_keys($hits ?? []) as $index) {
+            $indexes[$index] = $index;
+        }
+    }
+
+    return $indexes;
+}
+
+/**
+ * The files that hold the given tests, matched by name as {@see testsOf()}
+ * matches them.
+ *
+ * @param  array<int, int>  $indexes
+ * @return list<string>
+ */
+function testFilesOf(string $root, ProcessedCodeCoverageData $data, array $indexes): array
+{
+    $classes = array_flip(array_map(
+        static fn(string $id): string => testKey(preg_replace('#^P\\\\#u', '', explode('::', $id, 2)[0]) ?? $id),
+        array_values(array_intersect_key($data->testIds(), $indexes)),
+    ));
+    $listed = shell_exec(sprintf("git -C %s ls-files -- '*Test.php'", escapeshellarg($root)));
+
+    return array_values(array_filter(
+        explode("\n", is_string($listed) ? $listed : ''),
+        static fn(string $path): bool => $path !== '' && array_key_exists(testKey(mb_substr($path, 0, -4)), $classes),
+    ));
+}
+
+/** A path from the coverage map, relative to the repository. */
+function relativeTo(string $root, string $file): string
+{
+    return str_starts_with($file, sprintf('%s/', $root)) ? mb_substr($file, mb_strlen($root) + 1) : $file;
 }

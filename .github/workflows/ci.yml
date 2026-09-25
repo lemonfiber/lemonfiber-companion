@@ -565,12 +565,52 @@ jobs:
           path: coverage
       # The same `--changed-since` as the listing, so this cuts the shards the
       # matrix was built from.
-      - env:
+      # What this shard's verdict depends on: its files, the tests that run
+      # them, every file those tests run, and what no coverage map records —
+      # see `proofOf()` in scripts/mutation.php. A shard whose proof passed
+      # before, on this branch or on `main`, is not run again: a rebase over
+      # changes that reach none of it proves nothing new. Empty where it
+      # cannot be told, and then the shard always runs.
+      - id: proof
+        env:
+          BASE: ${{ needs.mutation-scope.outputs.base }}
+          SHARD: ${{ matrix.shard.id }}
+          MUTATION_SHARED_COVERAGE: ${{ github.workspace }}/coverage/mutation.php
+        run: |
+          key=$(php scripts/mutation.php --shard="${SHARD}" --proof ${BASE:+--changed-since="${BASE}"})
+          echo "key=${key}" >> "$GITHUB_OUTPUT"
+      - id: proved
+        if: steps.proof.outputs.key != ''
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .mutation-proved
+          key: mutation-proved-${{ steps.proof.outputs.key }}
+          lookup-only: true
+      - if: steps.proved.outputs.cache-hit == 'true'
+        env:
+          KEY: ${{ steps.proof.outputs.key }}
+        run: |
+          echo "Proved already: every file this shard's verdict depends on is as it was when proof ${KEY} passed." | tee -a "$GITHUB_STEP_SUMMARY"
+      - if: steps.proved.outputs.cache-hit != 'true'
+        env:
           BASE: ${{ needs.mutation-scope.outputs.base }}
           SHARD: ${{ matrix.shard.id }}
           MUTATION_SHARED_COVERAGE: ${{ github.workspace }}/coverage/mutation.php
         run: |
           MUTATION_SUITE_SECONDS="$(cat coverage/suite-seconds)" composer test:mutation -- --shard="${SHARD}" ${BASE:+--changed-since="${BASE}"}
+      # Recorded only once the shard has passed, so a proof names a verdict
+      # that held.
+      - if: steps.proof.outputs.key != '' && steps.proved.outputs.cache-hit != 'true'
+        env:
+          KEY: ${{ steps.proof.outputs.key }}
+        run: |
+          mkdir -p .mutation-proved
+          printf '%s\n' "${KEY}" > .mutation-proved/key
+      - if: steps.proof.outputs.key != '' && steps.proved.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .mutation-proved
+          key: mutation-proved-${{ steps.proof.outputs.key }}
 
   # The check branch protection actually names.
   #
