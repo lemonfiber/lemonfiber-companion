@@ -61,6 +61,7 @@ use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
+use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
@@ -77,6 +78,7 @@ use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
@@ -106,6 +108,7 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Tree;
+use Tests\Support\WalkthroughsToFollow;
 
 // A malformed answer reaches a screen as an obstacle, whichever adapter read it,
 // and so do a stack that could not be asked at all and a machine that is not the
@@ -247,6 +250,10 @@ function everyAdapterCallThatReads(): array
             => new Graders($clients)->choose($stack, $session, APresetToChoose::named('lossless', 'music')),
         'Graders::confirm' => static fn(): object
             => new Graders($clients)->confirm($stack, $session, aHeldChoiceToSpoilTheAnswerTo()),
+        'Guides::walk' => static fn(): object
+            => new Guides($clients)->walk($stack, $session, WhatToWalk::called('Sintel')),
+        'Guides::whatBecameOf' => static fn(): object
+            => new Guides($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
         'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
         'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),
@@ -364,6 +371,22 @@ function theStandInsAnswerTo(string $endpoint, string ...$asked): MockResponse
     }
 
     return WhatTheWireWouldAnswer::withTheEnvelope(substr($endpoint, strlen(AN_ENVELOPE_BY_NAME)), 200);
+}
+
+/**
+ * The envelopes one call is sent, as the stand-in would send them.
+ *
+ * The stand-in answers every job as a repair's, and no path answers with a
+ * walkthrough, so a walkthrough's job is sent the record a finished walk
+ * answers with.
+ *
+ * @return list<array<mixed>>
+ */
+function theEnvelopesACallIsSent(string $which, string $endpoint, string ...$asked): array
+{
+    return $which === 'Guides::whatBecameOf'
+        ? [WalkthroughsToFollow::whatAStackSaysOfTheWalkThatWorked()]
+        : theEnvelopesAPathSends(theAnswerACallIsGiven($which, $endpoint), ...$asked);
 }
 
 /**
@@ -508,7 +531,7 @@ function answerEverythingSpoiledAt(string $which, ?array $at): void
             $endpoint = theAnswerACallIsGiven($which, $asked->getRequest()->resolveEndpoint());
             $envelopes = array_map(
                 static fn(array $envelope): array => anEnvelopeSpoiledAt($envelope, $at),
-                theEnvelopesAPathSends($endpoint, ...whatARequestAsked($asked)),
+                theEnvelopesACallIsSent($which, $asked->getRequest()->resolveEndpoint(), ...whatARequestAsked($asked)),
             );
 
             return $endpoint === Api::LOGS_ENDPOINT
@@ -539,14 +562,17 @@ function everySpoilingOf(string $which, Closure $ask): array
     MockClient::global([
         '*' => static function (PendingRequest $asked) use ($which, &$paths): MockResponse {
             $endpoint = theAnswerACallIsGiven($which, $asked->getRequest()->resolveEndpoint());
+            $sent = theEnvelopesACallIsSent($which, $asked->getRequest()->resolveEndpoint(), ...whatARequestAsked($asked));
 
-            foreach (theEnvelopesAPathSends($endpoint, ...whatARequestAsked($asked)) as $envelope) {
+            foreach ($sent as $envelope) {
                 foreach (everyPlaceToSpoil(theDataIn($envelope)) as $at) {
                     $paths[] = $at;
                 }
             }
 
-            return theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked));
+            return $which === 'Guides::whatBecameOf'
+                ? MockResponse::make($sent[0])
+                : theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked));
         },
     ]);
 
