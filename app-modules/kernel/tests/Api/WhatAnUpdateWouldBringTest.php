@@ -18,5 +18,5 @@ it('keeps what an update carries and what it leaves behind', function (): void {
 
 it('refuses either sentence blank, naming which', function (): void {
     expect(fn(): WhatAnUpdateWouldBring => WhatAnUpdateWouldBring::said(' ', 'Settings are kept'))->toThrow(ItselfSaysNothing::class, '`carries`')
-        ->and(fn(): WhatAnUpdateWouldBring => WhatAnUpdateWouldBring::said('The program', ''))->toThrow(ItselfSaysNothing::class, '`afterwards`');
+        ->and(fn(): WhatAnUpdateWouldBring => WhatAnUpdateWouldBring::said('The program', "\t"))->toThrow(ItselfSaysNothing::class, '`afterwards`');
 });

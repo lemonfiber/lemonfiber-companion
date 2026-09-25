@@ -36,5 +36,5 @@ it('keeps a command, a reason there is none, and neither apart', function (): vo
 
 it('refuses a blank command or a blank reason, naming which', function (): void {
     expect(fn(): HowItWouldBeUpdated => HowItWouldBeUpdated::byRunning(' '))->toThrow(ItselfSaysNothing::class, '`command`')
-        ->and(fn(): HowItWouldBeUpdated => HowItWouldBeUpdated::insteadBecause(''))->toThrow(ItselfSaysNothing::class, '`instead`');
+        ->and(fn(): HowItWouldBeUpdated => HowItWouldBeUpdated::insteadBecause('  '))->toThrow(ItselfSaysNothing::class, '`instead`');
 });

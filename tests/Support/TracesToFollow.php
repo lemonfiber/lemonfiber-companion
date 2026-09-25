@@ -30,11 +30,11 @@ use Modules\Kernel\Api\WhereTheServicesDisagree;
  */
 final readonly class TracesToFollow
 {
-    /** A series stopped in the download client, uncertain, one season short. */
-    public static function aSeriesStuckDownloading(): WhereItGotTo
+    /** A series stopped in the download client, uncertain unless said otherwise, one season short. */
+    public static function aSeriesStuckDownloading(HowSureTheTraceIs $sure = HowSureTheTraceIs::Uncertain): WhereItGotTo
     {
         return WhereItGotTo::followed('Severance', WhatTheTraceFound::traced(
-            HowSureTheTraceIs::Uncertain,
+            $sure,
             HowFarItGot::reached(
                 Stage::Downloading,
                 TheStagesItReached::of(

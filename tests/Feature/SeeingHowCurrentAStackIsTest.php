@@ -502,6 +502,7 @@ it('N2-R18 — an update just taken is running, and the screen says how often it
     $screen->agree();
 
     expect($screen->lastUpdate()->isWorking)->toBeTrue()
+        ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
         ->and($keeping->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())
         ->toContain(__('updates.still_updating'))
@@ -557,7 +558,7 @@ it('N2-R18 — an update the stack has no outcome for is said to be that, not a 
     $screen = aScreenThatTookTheUpdate($keeping);
 
     expect($screen->lastUpdate()->hasEnded)->toBeTrue()
-        ->and($screen->lastUpdate()->applied)->toBe([])
+        ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.no_outcome'));
 });
 

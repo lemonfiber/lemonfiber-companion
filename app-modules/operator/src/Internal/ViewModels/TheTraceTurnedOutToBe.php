@@ -17,7 +17,7 @@ final readonly class TheTraceTurnedOutToBe
      * @param bool                 $followed      whether a monitored item matched it
      * @param string               $sureSaid      the catalogue key for how sure the trace is
      * @param bool                 $isUncertain   whether it may not be the item asked for
-     * @param AStageAsShown|null   $furthest      the furthest stage, with no service or time
+     * @param AStageNamedAsShown|null $furthest   the furthest stage
      * @param string               $stall         why it stopped, or empty
      * @param list<AStageAsShown>  $stages        the stages it passed through
      * @param list<AMomentAsShown> $history       what was tried, oldest first
@@ -30,7 +30,7 @@ final readonly class TheTraceTurnedOutToBe
         public bool $followed,
         public string $sureSaid,
         public bool $isUncertain,
-        public ?AStageAsShown $furthest,
+        public ?AStageNamedAsShown $furthest,
         public string $stall,
         public array $stages,
         public array $history,

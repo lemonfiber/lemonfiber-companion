@@ -19,6 +19,7 @@ use Modules\Operator\Internal\ViewModels\AnEpisodeAsShown;
 use Modules\Operator\Internal\ViewModels\ASeasonAsShown;
 use Modules\Operator\Internal\ViewModels\ASeriesAsShown;
 use Modules\Operator\Internal\ViewModels\AStageAsShown;
+use Modules\Operator\Internal\ViewModels\AStageNamedAsShown;
 use Modules\Operator\Internal\ViewModels\HowMuchIsHereAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
@@ -84,7 +85,7 @@ final readonly class HowATraceReads
             followed: true,
             sureSaid: $found->sure()->saidOnTheScreen(),
             isUncertain: $found->sure() === HowSureTheTraceIs::Uncertain,
-            furthest: self::reached($found->got()->furthest(), '', ''),
+            furthest: new AStageNamedAsShown($found->got()->furthest()->value, $found->got()->furthest()->saidOnTheScreen()),
             stall: $found->got()->stall(),
             stages: $stages,
             history: $history,

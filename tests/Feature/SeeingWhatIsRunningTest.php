@@ -137,7 +137,10 @@ it('a stack that could not be asked is not a copy that is up to date', function 
     expect($answer->went->cameBack())->toBeFalse()
         ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
-        ->and([$answer->running, $answer->standsSaid, $answer->command, $answer->instead])->toBe(['', '', '', '']);
+        ->and([
+            $answer->running, $answer->installedSaid, $answer->owner, $answer->standsSaid, $answer->offered,
+            $answer->changed, $answer->untold, $answer->command, $answer->instead, $answer->carries, $answer->afterwards,
+        ])->toBe(['', '', '', '', '', '', '', '', '', '', '']);
 });
 
 it('a session that has ended is not a copy that is up to date', function (): void {

@@ -16,7 +16,7 @@ use function trim;
  */
 final readonly class HowItWouldBeUpdated
 {
-    private function __construct(private string $command, private string $instead) {}
+    private function __construct(private ?string $command, private ?string $instead) {}
 
     /** Exactly what to type. */
     public static function byRunning(string $command): self
@@ -25,7 +25,7 @@ final readonly class HowItWouldBeUpdated
             throw ItselfSaysNothing::about('command');
         }
 
-        return new self($command, '');
+        return new self($command, null);
     }
 
     /** Why there is nothing exact to type. */
@@ -35,13 +35,13 @@ final readonly class HowItWouldBeUpdated
             throw ItselfSaysNothing::about('instead');
         }
 
-        return new self('', $why);
+        return new self(null, $why);
     }
 
     /** The stack said neither. */
     public static function notSaid(): self
     {
-        return new self('', '');
+        return new self(null, null);
     }
 
     /**
@@ -59,10 +59,10 @@ final readonly class HowItWouldBeUpdated
      */
     public function either(Closure $byRunning, Closure $instead, Closure $notSaid): object
     {
-        if ($this->command !== '') {
+        if ($this->command !== null) {
             return $byRunning($this->command);
         }
 
-        return $this->instead !== '' ? $instead($this->instead) : $notSaid();
+        return $this->instead !== null ? $instead($this->instead) : $notSaid();
     }
 }

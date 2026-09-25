@@ -39,10 +39,6 @@ final readonly class TheGlossary implements Countable, IteratorAggregate
     /** The words whose names hold what somebody is looking for, or every word where nothing is. */
     public function matching(LookingFor $looking): self
     {
-        if (! $looking->isSearching()) {
-            return $this;
-        }
-
         return new self(array_values(array_filter(
             $this->words,
             static fn(AWord $word): bool => $word->answers($looking),

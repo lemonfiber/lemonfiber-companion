@@ -91,6 +91,7 @@ it('offers the longer gloss only where there is one, and opens and closes it', f
     $screen->toggle('0');
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain('A service runs the version it is pinned to until an update moves the pin.');
+    expect($screen->open)->toBe('');
 });
 
 it('opening a word with no more to say, or a place that is not drawn, opens nothing', function (): void {
@@ -144,7 +145,8 @@ it('a glossary that could not be read is not an empty one', function (): void {
 
     expect($answer->went->cameBack())->toBeFalse()
         ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($answer->words)->toBe([]);
+        ->and($answer->words)->toBe([])
+        ->and($answer->isSearching)->toBeFalse();
 });
 
 it('a session that has ended asks nothing', function (): void {
@@ -152,6 +154,8 @@ it('a session that has ended asks nothing', function (): void {
     $answer = theWordsScreen($explaining, signedIn: false)->answer();
 
     expect($answer->went->isSignedIn)->toBeFalse()
+        ->and($answer->words)->toBe([])
+        ->and($answer->isSearching)->toBeFalse()
         ->and($explaining->askings())->toBe(0);
 });
 
@@ -229,4 +233,12 @@ it('carries a word with a space or a slash to the screen as it was drawn', funct
     foreach (['port forwarding', 'AC/DC', 'Dune: Part Two'] as $word) {
         expect(NativeRouter::resolve($screen->goes()->ofItself()->wordAbout(AWordInUse::named($word))))->toHaveKey('params.service', $word);
     }
+});
+
+it('hands what is typed to the search box', function (): void {
+    $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
+    $screen->looking = 'seed';
+
+    expect($screen->render()->getData())->toHaveKey('looking')
+        ->and($screen->render()->getData()['looking'])->toBe('seed');
 });

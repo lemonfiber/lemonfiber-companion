@@ -98,11 +98,11 @@ it('refuses a payload that is not a table', function (): void {
 it('refuses a field that is missing or not what the contract says, naming it', function (string $field, mixed $said): void {
     $data = $said === 'absent' ? array_diff_key(aTracedSeries(), [$field => true]) : [...aTracedSeries(), $field => $said];
 
-    expect(fn(): string => theTraceRead($data))->toThrow(TraceIsUnreadable::class, sprintf('`%s`', $field));
+    expect(fn(): string => theTraceRead($data))->toThrow(TraceIsUnreadable::class, sprintf('no readable `%s`', $field));
 })->with([
     ['item', 'absent'], ['item', ' '], ['matched', 'yes'], ['confidence', 7],
     ['furthest', 'absent'], ['stages', 'absent'], ['stages', ['a' => []]], ['history', 'none'],
-    ['findings', [7]], ['stall', ' '], ['coverage', 'all of it'],
+    ['findings', [7]], ['stall', ' '], ['coverage', 'all of it'], ['confidence', ' '],
 ]);
 
 it('refuses a word it has no case for, naming the field and every word it reads', function (string $field, string $said, string $accepts): void {

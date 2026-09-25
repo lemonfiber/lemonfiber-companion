@@ -133,7 +133,30 @@ it('tells nobody asking for it apart from a trace that could not be read', funct
     expect($nobody)->toContain(__('health.trace.nothing_asked_for', ['item' => 'Severance']))
         ->and($unread->went->cameBack())->toBeFalse()
         ->and($unread->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
-        ->and($unread->item)->toBe('Severance');
+        ->and($unread->item)->toBe('Severance')
+        ->and([$unread->followed, $unread->isUncertain, $unread->sureSaid, $unread->stall, $unread->furthest])->toBe([false, false, '', '', null])
+        ->and([$unread->stages, $unread->history, $unread->disagreements])->toBe([[], [], []]);
+});
+
+it('a trace the stack is sure of is not drawn as uncertain', function (): void {
+    $sure = theTraceScreen(AStackThatTraces::with(TracesToFollow::aSeriesStuckDownloading(HowSureTheTraceIs::Certain)))->answer();
+    $unsure = theTraceScreen(AStackThatTraces::with(TracesToFollow::aSeriesStuckDownloading()))->answer();
+
+    expect($sure->isUncertain)->toBeFalse()
+        ->and($sure->sureSaid)->toBe(HowSureTheTraceIs::Certain->saidOnTheScreen())
+        ->and($unsure->isUncertain)->toBeTrue();
+});
+
+it('follows what was typed with the spaces around it left off, and hands what is typed to the box', function (): void {
+    $tracing = AStackThatTraces::with(TracesToFollow::aSeriesStuckDownloading());
+    $screen = theTraceScreen($tracing);
+    $screen->looking = '  Dune  ';
+    expect($screen->render()->getData())->toHaveKey('looking')
+        ->and($screen->render()->getData()['looking'])->toBe('  Dune  ');
+    $screen->follow();
+    $screen->answer();
+
+    expect($tracing->followed())->toBe('Dune');
 });
 
 it('follows what was typed instead, once asked to, and ignores a blank', function (): void {

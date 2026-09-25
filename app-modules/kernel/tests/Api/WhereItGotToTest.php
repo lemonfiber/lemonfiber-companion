@@ -99,7 +99,7 @@ it('refuses counts and sentences that cannot be', function (callable $build, str
     expect($build)->toThrow(TheTraceSaysNothing::class, sprintf('`%s`', $field));
 })->with([
     'a blank time on a stage' => [static fn(): AStageItReached => AStageItReached::recorded(Stage::Grabbed, ServiceId::called('sonarr'), ' '), 'at'],
-    'no time on a moment' => [static fn(): AMomentInItsHistory => AMomentInItsHistory::recorded(WhatHappenedToIt::Grabbed, ''), 'at'],
+    'no time on a moment' => [static fn(): AMomentInItsHistory => AMomentInItsHistory::recorded(WhatHappenedToIt::Grabbed, ' '), 'at'],
     'a negative episode' => [static fn(): AnEpisodeNotHereYet => AnEpisodeNotHereYet::numbered(1, -1, 'Pilot', Stage::Searching), 'number'],
     'a negative season of an episode' => [static fn(): AnEpisodeNotHereYet => AnEpisodeNotHereYet::numbered(-1, 1, 'Pilot', Stage::Searching), 'number'],
     'an untitled episode' => [static fn(): AnEpisodeNotHereYet => AnEpisodeNotHereYet::numbered(1, 1, ' ', Stage::Searching), 'title'],
