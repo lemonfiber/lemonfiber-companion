@@ -42,8 +42,11 @@ use function view;
  * only after that has answered. A list that could not be read is drawn as its
  * own sentence, never as an empty list.
  *
- * **It reads and changes nothing.** Taking a copy and putting one back are
- * done at the machine. It asks once, when the frame is built.
+ * **It reads and changes nothing.** Taking a copy and putting one back each
+ * open a screen of their own, {@see TakingACopyHere} and
+ * {@see PuttingACopyBack}, which say what they would do before anything is
+ * agreed to. Putting back is offered only for a copy the stack listed. It
+ * asks once, when the frame is built.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */

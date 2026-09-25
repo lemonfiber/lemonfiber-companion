@@ -150,7 +150,9 @@ it('N6-R9 — no copy taken and a list that could not be read are different sent
         ->and($unreadDrawn)->toContain(__('stacks.keeps.copies_unread'))
         ->and($unreadDrawn)->toContain(__(Obstacle::StackDidNotAnswer->said()))
         ->and($unreadDrawn)->toContain(__(Obstacle::StackDidNotAnswer->remedy()))
-        ->and(WhatTheDeviceWouldDraw::by($unread)->offers())->toBe([__('health.ask_again')])
+        // Nothing to put back where nothing was listed: only taking a copy
+        // and asking again are offered.
+        ->and(WhatTheDeviceWouldDraw::by($unread)->offers())->toBe([__('stacks.keeps.take_a_copy'), __('health.ask_again')])
         ->and($unreadDrawn)->not->toContain(__('stacks.keeps.no_copies'))
         // What the stack keeps is still shown: the copies failing is theirs alone.
         ->and($unread->answer()->went->cameBack())->toBeTrue()
@@ -174,10 +176,21 @@ it('says so where the stack keeps nothing, names nowhere, and has nothing beside
         ->and($drawn)->toContain(__('stacks.keeps.nothing_beside'));
 });
 
-it('N6-R11 — offers asking again and nothing else, least of all a first run', function (): void {
+it('offers putting back each copy listed, taking a copy and asking again, and never a first run', function (): void {
     $offers = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()))->offers();
 
-    expect($offers)->toBe([__('health.ask_again')]);
+    expect($offers)->toBe([
+        __('stacks.keeps.put_back'),
+        __('stacks.keeps.put_back'),
+        __('stacks.keeps.take_a_copy'),
+        __('health.ask_again'),
+    ]);
+});
+
+it('offers nothing to put back where no copy has been taken', function (): void {
+    $offers = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::with(TheCopies::named())))->offers();
+
+    expect($offers)->toBe([__('stacks.keeps.take_a_copy'), __('health.ask_again')]);
 });
 
 it('a stack that could not be asked is not a machine keeping nothing, and its copies are not asked', function (): void {
