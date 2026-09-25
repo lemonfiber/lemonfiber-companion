@@ -19,13 +19,6 @@ on:
   push:
     branches: [main]
   pull_request:
-  # `alerts / alerts` is a required check, so it has to report on the queue's
-  # branch too — and it can, without changing anything below. The shared gate
-  # asks about `github.ref` wherever there is no pull request, which on a merge
-  # group is the queue's own branch, and `analyze` has just uploaded an analysis
-  # under exactly that ref. The two agree by construction, which is the property
-  # that job's own comment is about.
-  merge_group:
   schedule:
     - cron: "0 6 * * 2"
 permissions:

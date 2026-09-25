@@ -23,19 +23,6 @@ name: sdk-drift
 
 on:
   pull_request:
-  # The queue asks it again, of the batch, and this is the one required check
-  # here whose answer changes without anything in the pull request changing: the
-  # client moves and the lock stands still. So the merge group is exactly where
-  # it is worth asking a second time — what it reports there is whether the tree
-  # about to *become* `main` is behind, which is the question `Q-R68` asks and
-  # the moment it matters most.
-  #
-  # A batch that fails it is a batch that would have landed a stale lock, and it
-  # is refused rather than merged. That is not a deadlock: `sdk-bump` opens the
-  # pull request that takes the client, and that one carries the current lock,
-  # so it passes this same check in this same queue and clears the way for the
-  # rest.
-  merge_group:
   workflow_dispatch:
   schedule:
     # Weekly, as the floor rather than the notice: a pull request is what usually
