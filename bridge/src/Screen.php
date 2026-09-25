@@ -70,6 +70,17 @@ final readonly class Screen
     }
 
     /**
+     * Whether the app is in front of somebody right now.
+     *
+     * Answered from the same lifecycle observer the protection is decided by.
+     * Off a handset nobody is looking, and that answer holds nothing open.
+     */
+    public function isInFront(): bool
+    {
+        return $this->asked(Call::IsInFront, 'inFront');
+    }
+
+    /**
      * Whether the device can authenticate anybody at all.
      *
      * False where no screen lock is configured, and false off a handset — which

@@ -16,10 +16,12 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
@@ -62,6 +64,9 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         AStackThatWasAsked::met(Obstacle::DeviceHasNoNetwork),
         $keychain,
         StacksInMemory::holding($stack),
+        AStackThatSpeaksUp::holdingOpen(),
+        FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
+        ACaptureInMemory::inFront(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

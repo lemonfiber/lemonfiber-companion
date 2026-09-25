@@ -145,3 +145,30 @@ it('does not send a payload it could not encode, and says so as nothing said', f
     expect(new Screen()->authenticate("\xB1"))->toBeFalse()
         ->and($bridge->calls)->toBe([]);
 });
+
+it('reads whether the app is in front out of the answer', function (): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.IsInFront', ['inFront' => true]);
+
+    expect(new Screen()->isInFront())->toBeTrue();
+
+    $bridge->assertCalled('Lemonfiber.IsInFront');
+});
+
+it('reads an app that went away out of the answer', function (): void {
+    FakeBridge::enable()->respondTo('Lemonfiber.IsInFront', ['inFront' => false]);
+
+    expect(new Screen()->isInFront())->toBeFalse();
+});
+
+it('reads an app nobody can see where the bridge answers without saying', function (): void {
+    // A development machine with no device answers an error with no `inFront`
+    // in it. Nobody is looking at a screen that is not there, and that answer
+    // is the one that holds no subscription open.
+    FakeBridge::enable()->respondTo('Lemonfiber.IsInFront', [
+        'status' => 'error',
+        'code' => 'NO_DEVICE',
+        'message' => 'No device connected.',
+    ]);
+
+    expect(new Screen()->isInFront())->toBeFalse();
+});
