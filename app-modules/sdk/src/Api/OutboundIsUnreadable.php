@@ -9,6 +9,7 @@ use function implode;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Sdk\Api\Fields\OutboundField;
 
 use function sprintf;
 
@@ -27,7 +28,7 @@ use function sprintf;
  */
 final class OutboundIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The outbound envelope has no `%s`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',
@@ -35,7 +36,7 @@ final class OutboundIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function row(WireField $list, int $position): self
+    public static function row(NamesAWireField $list, int $position): self
     {
         return new self(sprintf(
             'Entry %d of `%s` in the outbound envelope is not a connection. It is refused rather than dropped: a list one row short says this machine does not make a connection it does.',
@@ -44,7 +45,7 @@ final class OutboundIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function said(WireField $list, WireField $field, int $position): self
+    public static function said(NamesAWireField $list, NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Entry %d of `%s` in the outbound envelope has no readable `%s`. An entry in a list of what leaves a machine that will not say it reads as complete to the person checking.',
@@ -66,7 +67,7 @@ final class OutboundIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'Entry %d of `%s` in the outbound envelope cannot say where its service came from. %s',
             $position,
-            WireField::Theirs->value,
+            OutboundField::Theirs->value,
             $why->getMessage(),
         ), previous: $why);
     }

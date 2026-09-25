@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Repairs;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -63,7 +64,7 @@ final readonly class Offers
             throw OfferIsUnreadable::missing(WireField::Data);
         }
 
-        return Offer::of(self::text($data, WireField::Agreement), self::repairs($data));
+        return Offer::of(self::text($data, RepairField::Agreement), self::repairs($data));
     }
 
     /**
@@ -87,7 +88,7 @@ final readonly class Offers
             throw OfferIsUnreadable::missing(WireField::Data);
         }
 
-        $rows = self::rows($data, WireField::Mended);
+        $rows = self::rows($data, RepairField::Mended);
         $mended = [];
         $position = 0;
 
@@ -120,7 +121,7 @@ final readonly class Offers
      */
     private static function outcome(array $row, int $position): Mended
     {
-        $about = self::under($row, WireField::Repair);
+        $about = self::under($row, RepairField::Repair);
 
         if (! is_array($about)) {
             throw OfferIsUnreadable::outcome($position);
@@ -174,7 +175,7 @@ final readonly class Offers
      */
     private static function left(array $outcome): LeftBehind
     {
-        $said = self::under($outcome, WireField::Leaving);
+        $said = self::under($outcome, RepairField::Leaving);
 
         return is_string($said) && trim($said) !== '' ? LeftBehind::of($said) : LeftBehind::nothing();
     }
@@ -189,7 +190,7 @@ final readonly class Offers
      */
     private static function repairs(array $data): Repairs
     {
-        $rows = self::rows($data, WireField::Offered);
+        $rows = self::rows($data, RepairField::Offered);
         $repairs = [];
         $position = 0;
 
@@ -214,7 +215,7 @@ final readonly class Offers
     {
         return Repair::offered(
             Check::of(self::said($row, WireField::Check, $position)),
-            self::said($row, WireField::Does, $position),
+            self::said($row, RepairField::Does, $position),
             Effects::of(...self::effects($row, $position)),
             self::undoing($row, $position),
         );
@@ -238,11 +239,11 @@ final readonly class Offers
         // fourth is missing its consequences would have reported as an answer
         // from an unreadable version of lemonfiber, and the position — the one
         // thing that makes it findable — would have been dropped.
-        if (! array_key_exists(WireField::Effects->value, $row)) {
+        if (! array_key_exists(RepairField::Effects->value, $row)) {
             throw OfferIsUnreadable::repair($position);
         }
 
-        $effects = $row[WireField::Effects->value];
+        $effects = $row[RepairField::Effects->value];
 
         if (! is_array($effects)) {
             throw OfferIsUnreadable::repair($position);
@@ -274,11 +275,11 @@ final readonly class Offers
      */
     private static function undoing(array $row, int $position): Undoing
     {
-        if (! array_key_exists(WireField::Reversible->value, $row)) {
+        if (! array_key_exists(RepairField::Reversible->value, $row)) {
             throw OfferIsUnreadable::repair($position);
         }
 
-        $said = $row[WireField::Reversible->value];
+        $said = $row[RepairField::Reversible->value];
 
         if (! is_bool($said)) {
             throw OfferIsUnreadable::repair($position);
@@ -301,7 +302,7 @@ final readonly class Offers
      *
      * @param array<mixed> $row
      */
-    private static function under(array $row, WireField $field): mixed
+    private static function under(array $row, NamesAWireField $field): mixed
     {
         // A guard rather than a ternary: rector rewrites
         // `array_key_exists(...) ? $row[...] : null` to `??`, which `C9` then
@@ -319,7 +320,7 @@ final readonly class Offers
      * @param  array<mixed> $data
      * @return array<mixed>
      */
-    private static function rows(array $data, WireField $field): array
+    private static function rows(array $data, NamesAWireField $field): array
     {
         if (! array_key_exists($field->value, $data)) {
             throw OfferIsUnreadable::missing($field);
@@ -344,7 +345,7 @@ final readonly class Offers
      *
      * @param array<mixed> $data
      */
-    private static function text(array $data, WireField $field): string
+    private static function text(array $data, NamesAWireField $field): string
     {
         if (! array_key_exists($field->value, $data)) {
             throw OfferIsUnreadable::missing($field);
@@ -377,7 +378,7 @@ final readonly class Offers
      *
      * @param array<mixed> $row
      */
-    private static function said(array $row, WireField $field, int $position): string
+    private static function said(array $row, NamesAWireField $field, int $position): string
     {
         if (! array_key_exists($field->value, $row)) {
             throw OfferIsUnreadable::repair($position);

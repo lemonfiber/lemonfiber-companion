@@ -13,6 +13,8 @@ use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\UpkeepIsUnreadable;
 use Modules\Sdk\Api\WireField;
 
@@ -40,14 +42,14 @@ final readonly class Endings
      */
     public static function in(array $data): HowServicesTookIt
     {
-        if (! array_key_exists(WireField::Applied->value, $data)) {
-            throw UpkeepIsUnreadable::missing(WireField::Applied);
+        if (! array_key_exists(UpdateField::Applied->value, $data)) {
+            throw UpkeepIsUnreadable::missing(UpdateField::Applied);
         }
 
-        $listed = $data[WireField::Applied->value];
+        $listed = $data[UpdateField::Applied->value];
 
         if (! is_array($listed)) {
-            throw UpkeepIsUnreadable::missing(WireField::Applied);
+            throw UpkeepIsUnreadable::missing(UpdateField::Applied);
         }
 
         $services = [];
@@ -74,7 +76,7 @@ final readonly class Endings
     {
         return HowAServiceTookIt::of(
             ServiceId::called(self::word($said, WireField::Service, $position)),
-            HowItEnded::tryFrom(self::word($said, WireField::Ending, $position))
+            HowItEnded::tryFrom(self::word($said, UpdateField::Ending, $position))
                 ?? throw UpkeepIsUnreadable::applied($position),
             HowToUndoIt::tryFrom(self::word($said, WireField::Reversal, $position))
                 ?? throw UpkeepIsUnreadable::applied($position),
@@ -86,7 +88,7 @@ final readonly class Endings
      *
      * @param array<mixed> $said
      */
-    private static function word(array $said, WireField $field, int $position): string
+    private static function word(array $said, NamesAWireField $field, int $position): string
     {
         if (! array_key_exists($field->value, $said)) {
             throw UpkeepIsUnreadable::applied($position);

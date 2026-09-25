@@ -38,6 +38,7 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\KeepingCurrent;
+use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
@@ -80,6 +81,7 @@ use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
 use Modules\Sdk\Api\Storekeepers;
 use Modules\Sdk\Api\Supervisors;
+use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Vault\Api\PlatformKeychain;
@@ -309,6 +311,10 @@ final class CompositionRoot extends ServiceProvider
         // and bound for the same reason.
         $this->app->bind(Storing::class, Storekeepers::class);
         $this->app->bind(Copying::class, Copyists::class);
+
+        // How full the machine is, read beside the rest and bound for the
+        // same reason.
+        $this->app->bind(Measuring::class, Surveyors::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

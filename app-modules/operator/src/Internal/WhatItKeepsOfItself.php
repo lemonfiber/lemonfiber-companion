@@ -66,4 +66,10 @@ final readonly class WhatItKeepsOfItself
     {
         return AStacksScreen::Keeps->forTheStack($this->stack);
     }
+
+    /** How full this machine is, and where the room went. */
+    public function room(): string
+    {
+        return AStacksScreen::Room->forTheStack($this->stack);
+    }
 }

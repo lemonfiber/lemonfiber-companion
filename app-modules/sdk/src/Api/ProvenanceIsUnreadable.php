@@ -23,7 +23,7 @@ use function sprintf;
  */
 final class ProvenanceIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The provenance envelope has no `%s`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',
@@ -39,7 +39,7 @@ final class ProvenanceIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function said(WireField $field, int $position): self
+    public static function said(NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Service %d in the provenance envelope has no readable `%s`. An origin that will not say what it is reads as complete to somebody deciding what to trust.',

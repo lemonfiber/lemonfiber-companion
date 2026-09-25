@@ -168,6 +168,66 @@ return [
         'changed_at_the_machine' => 'Changed at the machine, not from here',
     ],
 
+    // How full the machine is, and where the room went.
+    'room' => [
+        'road_in' => 'How full this machine is',
+        // Where the machine, or one volume, stands.
+        'level' => [
+            'unknown' => 'How full it is could not be read',
+            'ample' => 'Plenty of room',
+            'advisory' => 'Less room than is comfortable',
+            'warning' => 'Going to fill with what is on its way',
+            'critical' => 'Nearly full',
+            'exhausted' => 'Full',
+        ],
+        'halted' => 'New downloads are stopped so the services can still write',
+        'holds' => [
+            'data' => 'Where the media and downloads live',
+            'services' => 'Where the services keep their settings and databases',
+        ],
+        'free' => ':figure :unit free',
+        // Never drawn as nought: an unplugged drive is not a full one.
+        'free_unread' => 'What is free could not be read',
+        'limit' => 'Of :figure :unit',
+        'committed' => ':figure :unit on its way',
+        'projected' => ':figure :unit free once that has landed',
+        'as_of' => 'As last read :ago',
+        'no_volumes' => 'The stack names no volume it watches',
+        'account' => 'Where the room went',
+        'about' => [
+            'tree' => ':tree',
+            'landing' => 'Downloads still being written',
+            'seeding' => 'Downloads still being seeded',
+            'orphaned' => 'Downloads no service took in',
+            'extracted' => 'Archives already unpacked',
+            'services' => 'The services\' own settings and databases',
+            'unmanaged' => 'What you said to leave alone',
+        ],
+        'occupies' => 'Takes :figure :unit',
+        'unshared' => 'Would take :figure :unit if nothing were shared',
+        'reclaim' => [
+            'by_losing_content' => 'Getting this back means losing something you chose to keep',
+            'in_progress' => 'Nothing to get back: it is being written now',
+            'at_the_cost_of_ratio' => 'Can be got back, at the cost of your standing with the trackers',
+            'the_easy_win' => 'Can be got back, and costs nothing',
+            'already_have_it' => 'Can be got back: the unpacked copy is the one in use',
+            'marginally' => 'A little could be got back, and rarely worth it',
+            'you_said_not' => 'Not to be got back, because you said so',
+        ],
+        'nothing_accounted' => 'Nothing is taking room',
+        'downloads' => 'Finished downloads on this machine',
+        'takes' => 'Takes :figure :unit',
+        'standing' => [
+            'never_imported' => 'Never taken into a library',
+            'seeding' => 'Still being seeded',
+            'left_alone' => 'You asked for this to be left alone',
+        ],
+        'ratio' => 'Ratio :ratio',
+        'no_ratio' => 'No ratio: nothing was downloaded to divide by',
+        'no_downloads' => 'No finished downloads are on this machine',
+        'at_the_machine' => 'Removing anything is done at the machine, not from here',
+    ],
+
     // What the machine keeps, where, and why, and the copies it holds.
     'keeps' => [
         'road_in' => 'What this machine keeps',

@@ -12,8 +12,9 @@ use function is_string;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\WhatItTakesAway;
+use Modules\Sdk\Api\Fields\StatusField;
+use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\RosterIsUnreadable;
-use Modules\Sdk\Api\WireField;
 
 /**
  * What each verb takes away, read off a listing of what is running.
@@ -38,20 +39,20 @@ final readonly class Costs
      */
     public static function in(array $data): Disturbances
     {
-        if (! array_key_exists(WireField::Disturbs->value, $data)) {
-            throw RosterIsUnreadable::missing(WireField::Disturbs);
+        if (! array_key_exists(StatusField::Disturbs->value, $data)) {
+            throw RosterIsUnreadable::missing(StatusField::Disturbs);
         }
 
-        $said = $data[WireField::Disturbs->value];
+        $said = $data[StatusField::Disturbs->value];
 
         if (! is_array($said)) {
-            throw RosterIsUnreadable::missing(WireField::Disturbs);
+            throw RosterIsUnreadable::missing(StatusField::Disturbs);
         }
 
         return Disturbances::of(
-            self::takenAway($said, WireField::Starting),
-            self::takenAway($said, WireField::Stopping),
-            self::takenAway($said, WireField::Restarting),
+            self::takenAway($said, StatusField::Starting),
+            self::takenAway($said, StatusField::Stopping),
+            self::takenAway($said, StatusField::Restarting),
         );
     }
 
@@ -64,7 +65,7 @@ final readonly class Costs
      *
      * @param array<mixed> $said
      */
-    private static function takenAway(array $said, WireField $verb): WhatItTakesAway
+    private static function takenAway(array $said, NamesAWireField $verb): WhatItTakesAway
     {
         if (! array_key_exists($verb->value, $said)) {
             throw RosterIsUnreadable::missing($verb);
@@ -72,11 +73,11 @@ final readonly class Costs
 
         $one = $said[$verb->value];
 
-        if (! is_array($one) || ! array_key_exists(WireField::Bound->value, $one)) {
-            throw RosterIsUnreadable::missing(WireField::Bound);
+        if (! is_array($one) || ! array_key_exists(StatusField::Bound->value, $one)) {
+            throw RosterIsUnreadable::missing(StatusField::Bound);
         }
 
-        return $one[WireField::Bound->value] === WireField::Bounded->value
+        return $one[StatusField::Bound->value] === StatusField::Bounded->value
             ? WhatItTakesAway::atMost(self::forHowLong($one, $verb))
             : WhatItTakesAway::until(self::waitingFor($one, $verb));
     }
@@ -86,13 +87,13 @@ final readonly class Costs
      *
      * @param array<mixed> $one
      */
-    private static function forHowLong(array $one, WireField $verb): int
+    private static function forHowLong(array $one, NamesAWireField $verb): int
     {
-        if (! array_key_exists(WireField::Seconds->value, $one)) {
+        if (! array_key_exists(StatusField::Seconds->value, $one)) {
             throw RosterIsUnreadable::missing($verb);
         }
 
-        $seconds = $one[WireField::Seconds->value];
+        $seconds = $one[StatusField::Seconds->value];
 
         return is_int($seconds) ? $seconds : throw RosterIsUnreadable::missing($verb);
     }
@@ -102,13 +103,13 @@ final readonly class Costs
      *
      * @param array<mixed> $one
      */
-    private static function waitingFor(array $one, WireField $verb): Awaiting
+    private static function waitingFor(array $one, NamesAWireField $verb): Awaiting
     {
-        if (! array_key_exists(WireField::Until->value, $one)) {
+        if (! array_key_exists(StatusField::Until->value, $one)) {
             throw RosterIsUnreadable::missing($verb);
         }
 
-        $until = $one[WireField::Until->value];
+        $until = $one[StatusField::Until->value];
 
         if (! is_string($until)) {
             throw RosterIsUnreadable::missing($verb);

@@ -28,7 +28,7 @@ use function sprintf;
  */
 final class HistoryIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The history envelope has no `%s`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',
@@ -44,7 +44,7 @@ final class HistoryIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function said(WireField $field, int $position): self
+    public static function said(NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Change %d in the history envelope has no readable `%s`. A record row that admits something was done and will not say what is worse than no row.',

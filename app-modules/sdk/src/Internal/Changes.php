@@ -11,6 +11,8 @@ use function is_string;
 
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
+use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\UpkeepIsUnreadable;
 use Modules\Sdk\Api\WireField;
 
@@ -135,7 +137,7 @@ final readonly class Changes
      */
     private static function permanent(array $said, int $position): bool
     {
-        return self::yesOrNo($said, WireField::Irreversible, $position);
+        return self::yesOrNo($said, UpdateField::Irreversible, $position);
     }
 
     /**
@@ -143,7 +145,7 @@ final readonly class Changes
      *
      * @param array<mixed> $said
      */
-    private static function yesOrNo(array $said, WireField $field, int $position): bool
+    private static function yesOrNo(array $said, NamesAWireField $field, int $position): bool
     {
         if (! array_key_exists($field->value, $said)) {
             throw UpkeepIsUnreadable::change($position);

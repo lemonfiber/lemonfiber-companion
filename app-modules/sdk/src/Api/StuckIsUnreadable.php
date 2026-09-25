@@ -30,7 +30,7 @@ use function sprintf;
  */
 final class StuckIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The stuck envelope has no `%s`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',
@@ -46,7 +46,7 @@ final class StuckIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function said(WireField $field, int $position): self
+    public static function said(NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Item %d in the stuck envelope has no readable `%s`. A row missing it is a row an operator cannot act on, and showing it anyway asks somebody to chase a blank.',

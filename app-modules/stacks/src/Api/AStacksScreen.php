@@ -144,6 +144,9 @@ enum AStacksScreen: string
     /** What this machine keeps, where, and why, and the copies it holds. */
     case Keeps = '/stacks/{stack}/keeps';
 
+    /** How full this machine is, and where the room went. */
+    case Room = '/stacks/{stack}/room';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 

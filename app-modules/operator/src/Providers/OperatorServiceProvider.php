@@ -8,6 +8,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
+use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
@@ -212,6 +213,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // What it keeps on the machine and the copies it holds: two
             // readings on one screen.
             Router::native(AStacksScreen::Keeps->value, WhatThisMachineKeepsHere::class);
+
+            // How full it is. Its own screen, because a warning that the disk
+            // is filling arrives on its own.
+            Router::native(AStacksScreen::Room->value, HowFullThisMachineIs::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

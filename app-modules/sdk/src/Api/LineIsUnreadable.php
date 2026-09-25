@@ -28,7 +28,7 @@ use function sprintf;
  */
 final class LineIsUnreadable extends InvalidArgumentException
 {
-    public static function said(WireField $field, int $position): self
+    public static function said(NamesAWireField $field, int $position): self
     {
         return new self(sprintf(
             'Line %d of the log window has no readable `%s`. A window with a row this app cannot read is refused rather than shown one line short, because the missing line is the one an operator went looking for.',

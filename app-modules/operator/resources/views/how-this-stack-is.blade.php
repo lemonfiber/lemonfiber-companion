@@ -221,6 +221,9 @@
 
     {{-- What it keeps on the machine, and the copies it holds. --}}
     <x-operator::quiet-action label="{{ __('stacks.keeps.road_in') }}" :goes="$this->goes()->ofItself()->keeps()" />
+
+    {{-- How full it is, and where the room went. --}}
+    <x-operator::quiet-action label="{{ __('stacks.room.road_in') }}" :goes="$this->goes()->ofItself()->room()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

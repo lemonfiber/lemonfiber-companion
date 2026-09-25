@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\HouseholdEnvelope;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\Wanted;
+use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Internal\WhatWasAskedFor;
 use Modules\Sdk\Internal\Wire;
 
@@ -68,7 +69,7 @@ final readonly class Households
             throw HouseholdIsUnreadable::unread();
         }
 
-        return self::wanted(self::rows($data, WireField::Members));
+        return self::wanted(self::rows($data, HouseholdField::Members));
     }
 
     /**
@@ -114,7 +115,7 @@ final readonly class Households
             throw HouseholdIsUnreadable::unread();
         }
 
-        $members = self::rows($data, WireField::Members);
+        $members = self::rows($data, HouseholdField::Members);
         $wanted = self::wanted($members);
 
         return count($members) === 1 ? $wanted : Requested::none();
@@ -230,11 +231,11 @@ final readonly class Households
      */
     private static function requestsOf(array $member, int $at): array
     {
-        if (! array_key_exists(WireField::Requests->value, $member)) {
+        if (! array_key_exists(HouseholdField::Requests->value, $member)) {
             throw HouseholdIsUnreadable::member($at);
         }
 
-        $rows = $member[WireField::Requests->value];
+        $rows = $member[HouseholdField::Requests->value];
 
         if (! is_array($rows)) {
             throw HouseholdIsUnreadable::member($at);
@@ -252,7 +253,7 @@ final readonly class Households
      * @param  array<mixed> $data
      * @return array<mixed>
      */
-    private static function rows(array $data, WireField $field): array
+    private static function rows(array $data, NamesAWireField $field): array
     {
         if (! array_key_exists($field->value, $data)) {
             throw HouseholdIsUnreadable::missing($field);
@@ -268,7 +269,7 @@ final readonly class Households
     }
 
     /** @param array<mixed> $data */
-    private static function text(array $data, WireField $field): string
+    private static function text(array $data, NamesAWireField $field): string
     {
         if (! array_key_exists($field->value, $data)) {
             throw HouseholdIsUnreadable::missing($field);

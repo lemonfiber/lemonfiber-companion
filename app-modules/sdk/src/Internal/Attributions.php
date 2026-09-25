@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AnOriginIsUnnamed;
 use Modules\Kernel\Api\WhatItReplaced;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\WhoSetIt;
+use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\OriginIsUnreadable;
 use Modules\Sdk\Api\WireField;
 
@@ -127,7 +128,7 @@ final readonly class Attributions
      *
      * @param array<mixed> $attributed
      */
-    private static function text(array $attributed, WireField $field): string
+    private static function text(array $attributed, NamesAWireField $field): string
     {
         if (! array_key_exists($field->value, $attributed)) {
             throw OriginIsUnreadable::missing($field);

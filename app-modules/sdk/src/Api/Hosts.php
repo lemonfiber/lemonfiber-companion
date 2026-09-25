@@ -14,6 +14,7 @@ use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\Unattended;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatRunsUnattended;
+use Modules\Sdk\Api\Fields\HostingField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -84,14 +85,14 @@ final readonly class Hosts
      */
     private static function keeper(array $data): WhatKeepsItRunning
     {
-        if (! array_key_exists(WireField::Manager->value, $data)) {
-            throw HostingIsUnreadable::missing(WireField::Manager);
+        if (! array_key_exists(HostingField::Manager->value, $data)) {
+            throw HostingIsUnreadable::missing(HostingField::Manager);
         }
 
-        $said = $data[WireField::Manager->value];
+        $said = $data[HostingField::Manager->value];
 
         if (! is_string($said)) {
-            throw HostingIsUnreadable::missing(WireField::Manager);
+            throw HostingIsUnreadable::missing(HostingField::Manager);
         }
 
         return WhatKeepsItRunning::tryFrom($said) ?? throw HostingIsUnreadable::manager($said);
@@ -107,11 +108,11 @@ final readonly class Hosts
      */
     private static function instruction(array $data): string
     {
-        if (! array_key_exists(WireField::Instruction->value, $data)) {
+        if (! array_key_exists(HostingField::Instruction->value, $data)) {
             throw HostingIsUnreadable::withNothingToDoInstead();
         }
 
-        $said = $data[WireField::Instruction->value];
+        $said = $data[HostingField::Instruction->value];
 
         if (! is_string($said) || trim($said) === '') {
             throw HostingIsUnreadable::withNothingToDoInstead();
@@ -158,8 +159,8 @@ final readonly class Hosts
     {
         $standing = self::standing($row, $position);
         $name = self::text($row, WireField::Name, $position);
-        $command = self::text($row, WireField::Command, $position);
-        $guarantees = self::text($row, WireField::Guarantees, $position);
+        $command = self::text($row, HostingField::Command, $position);
+        $guarantees = self::text($row, HostingField::Guarantees, $position);
 
         if ($standing !== HowItIsHosted::Orphaned) {
             return Unattended::called($name, $command, $guarantees, $standing);
@@ -169,7 +170,7 @@ final readonly class Hosts
             $name,
             $command,
             $guarantees,
-            self::text($row, WireField::Missing, $position),
+            self::text($row, HostingField::Missing, $position),
         );
     }
 
@@ -185,14 +186,14 @@ final readonly class Hosts
      */
     private static function rows(array $data): array
     {
-        if (! array_key_exists(WireField::Commands->value, $data)) {
-            throw HostingIsUnreadable::missing(WireField::Commands);
+        if (! array_key_exists(HostingField::Commands->value, $data)) {
+            throw HostingIsUnreadable::missing(HostingField::Commands);
         }
 
-        $rows = $data[WireField::Commands->value];
+        $rows = $data[HostingField::Commands->value];
 
         if (! is_array($rows)) {
-            throw HostingIsUnreadable::missing(WireField::Commands);
+            throw HostingIsUnreadable::missing(HostingField::Commands);
         }
 
         return $rows;
@@ -221,7 +222,7 @@ final readonly class Hosts
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, WireField $field, int $position): string
+    private static function text(array $row, NamesAWireField $field, int $position): string
     {
         // A guard rather than `?? null` on the subscript, which `C9` refuses: a
         // row that carries the key and a row that does not are the same refusal

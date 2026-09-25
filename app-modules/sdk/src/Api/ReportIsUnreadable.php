@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Sdk\Api\Fields\DoctorField;
 
 use function sprintf;
 
@@ -31,7 +32,7 @@ use function sprintf;
  */
 final class ReportIsUnreadable extends InvalidArgumentException
 {
-    public static function missing(WireField $field): self
+    public static function missing(NamesAWireField $field): self
     {
         return new self(sprintf(
             'The doctor envelope has no `%s`, or it is not text. Every report the contract describes carries one, so this answer did not come from a lemonfiber of a version this app can read.',
@@ -49,7 +50,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
      * as an answer from an unreadable version of lemonfiber, and the position,
      * the one thing that makes it findable, was dropped on the way.
      */
-    public static function inFinding(int $position, WireField $field): self
+    public static function inFinding(int $position, NamesAWireField $field): self
     {
         return new self(sprintf(
             'Finding %d has no `%s`, or it is not what the contract says it is. A report with a row this app cannot read is refused rather than shown one row short.',
@@ -84,7 +85,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function overall(string $said): self
     {
-        return self::word(WireField::Overall->value, $said, array_map(
+        return self::word(DoctorField::Overall->value, $said, array_map(
             static fn(Overall $overall): string => $overall->value,
             Overall::cases(),
         ));
@@ -100,7 +101,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function outcome(string $said): self
     {
-        return self::word(WireField::Outcome->under(WireField::Verdict), $said, array_map(
+        return self::word(WireField::Outcome->under(DoctorField::Verdict), $said, array_map(
             static fn(Conclusion $conclusion): string => $conclusion->value,
             Conclusion::cases(),
         ));
@@ -108,7 +109,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function severity(string $said): self
     {
-        return self::word(WireField::Severity->under(WireField::Verdict), $said, array_map(
+        return self::word(WireField::Severity->under(DoctorField::Verdict), $said, array_map(
             static fn(Severity $severity): string => $severity->value,
             Severity::cases(),
         ));
@@ -116,7 +117,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function standing(string $said): self
     {
-        return self::word(WireField::State->under(WireField::Verdict), $said, array_map(
+        return self::word(WireField::State->under(DoctorField::Verdict), $said, array_map(
             static fn(Standing $standing): string => $standing->value,
             Standing::cases(),
         ));

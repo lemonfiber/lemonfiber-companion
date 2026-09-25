@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\Unsupported;
 use Modules\Kernel\Api\WhatIsUnsupported;
+use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -84,14 +85,14 @@ final readonly class Stoppages
      */
     private static function howMuchIsShown(array $data): HowMuchIsShown
     {
-        if (! array_key_exists(WireField::Incomplete->value, $data)) {
-            throw StuckIsUnreadable::missing(WireField::Incomplete);
+        if (! array_key_exists(StuckField::Incomplete->value, $data)) {
+            throw StuckIsUnreadable::missing(StuckField::Incomplete);
         }
 
-        $incomplete = $data[WireField::Incomplete->value];
+        $incomplete = $data[StuckField::Incomplete->value];
 
         if (! is_bool($incomplete)) {
-            throw StuckIsUnreadable::missing(WireField::Incomplete);
+            throw StuckIsUnreadable::missing(StuckField::Incomplete);
         }
 
         return $incomplete ? HowMuchIsShown::SomeOfIt : HowMuchIsShown::AllOfIt;
@@ -116,21 +117,21 @@ final readonly class Stoppages
      */
     private static function whatItCannotActOn(array $data): WhatIsUnsupported
     {
-        if (! array_key_exists(WireField::Unsupported->value, $data)) {
+        if (! array_key_exists(StuckField::Unsupported->value, $data)) {
             return WhatIsUnsupported::none();
         }
 
-        $rows = $data[WireField::Unsupported->value];
+        $rows = $data[StuckField::Unsupported->value];
 
         if (! is_array($rows)) {
-            throw StuckIsUnreadable::missing(WireField::Unsupported);
+            throw StuckIsUnreadable::missing(StuckField::Unsupported);
         }
 
         $limits = [];
 
         foreach ($rows as $row) {
             if (! is_array($row)) {
-                throw StuckIsUnreadable::missing(WireField::Unsupported);
+                throw StuckIsUnreadable::missing(StuckField::Unsupported);
             }
 
             $limits[] = Unsupported::of(
@@ -147,7 +148,7 @@ final readonly class Stoppages
      *
      * @param array<mixed> $row
      */
-    private static function said(array $row, WireField $field): string
+    private static function said(array $row, NamesAWireField $field): string
     {
         if (! array_key_exists($field->value, $row)) {
             throw StuckIsUnreadable::missing($field);
@@ -202,14 +203,14 @@ final readonly class Stoppages
      */
     private static function rows(array $data): array
     {
-        if (! array_key_exists(WireField::Items->value, $data)) {
-            throw StuckIsUnreadable::missing(WireField::Items);
+        if (! array_key_exists(StuckField::Items->value, $data)) {
+            throw StuckIsUnreadable::missing(StuckField::Items);
         }
 
-        $rows = $data[WireField::Items->value];
+        $rows = $data[StuckField::Items->value];
 
         if (! is_array($rows)) {
-            throw StuckIsUnreadable::missing(WireField::Items);
+            throw StuckIsUnreadable::missing(StuckField::Items);
         }
 
         return $rows;
@@ -225,7 +226,7 @@ final readonly class Stoppages
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, WireField $field, int $position): string
+    private static function text(array $row, NamesAWireField $field, int $position): string
     {
         // A guard rather than `?? null` on the subscript, which `C9` refuses:
         // a row that carries the key and a row that does not are the same
@@ -256,7 +257,7 @@ final readonly class Stoppages
      */
     private static function stage(array $row, int $position): Stage
     {
-        $said = self::text($row, WireField::Stage, $position);
+        $said = self::text($row, StuckField::Stage, $position);
 
         return Stage::tryFrom($said) ?? throw StuckIsUnreadable::stage($said, $position);
     }

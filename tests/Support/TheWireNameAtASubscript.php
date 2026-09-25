@@ -16,9 +16,9 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 
+use function preg_match;
 use function preg_match_all;
 use function sprintf;
-use function str_ends_with;
 
 /**
  * Which field of the wire a piece of a reader is reaching for.
@@ -131,34 +131,45 @@ final readonly class TheWireNameAtASubscript
 
         $name = $expr->name;
 
-        return str_ends_with($expr->class->toString(), 'WireField') && $name instanceof Identifier
-            ? self::theVocabulary()[$name->toString()] ?? null
+        $class = $expr->class->getLast();
+
+        return $name instanceof Identifier
+            ? self::theVocabulary()[sprintf('%s::%s', $class, $name->toString())] ?? null
             : null;
     }
 
     /**
-     * Every case of the wire vocabulary, by the name a reader writes for it.
+     * Every case of every wire vocabulary, by the name a reader writes for it.
      *
-     * Read off the enum's own source rather than off the enum, because what is
-     * wanted is the mapping from the case written at a subscript to the name
-     * that goes out — and `WireField::cases()` answers with values this would
-     * then have no way to tie back to the identifier in the source.
+     * Read off the enums' own source rather than off the enums, because what
+     * is wanted is the mapping from the case written at a subscript to the name
+     * that goes out — and `cases()` answers with values this would then have no
+     * way to tie back to the identifier in the source. Keyed by the enum's short
+     * name and the case, `SpaceField::Volumes`, because that is what a reader
+     * writes.
      *
      * @return array<string, string>
      */
     private static function theVocabulary(): array
     {
-        preg_match_all(
-            "/case (\\w+) = '([^']+)';/",
-            (string) file_get_contents(Tree::at(sprintf('%s/Api/WireField.php', EveryReaderOfTheWire::WHERE))),
-            $found,
-            PREG_SET_ORDER,
-        );
-
+        $files = [
+            Tree::at(sprintf('%s/Api/WireField.php', EveryReaderOfTheWire::WHERE)),
+            ...Tree::filesUnder(Tree::at(sprintf('%s/Api/Fields', EveryReaderOfTheWire::WHERE)), '.php'),
+        ];
         $vocabulary = [];
 
-        foreach ($found as $case) {
-            $vocabulary[$case[1]] = $case[2];
+        foreach ($files as $file) {
+            $said = (string) file_get_contents($file);
+
+            if (preg_match('/^enum (\\w+): string/m', $said, $enum) !== 1) {
+                continue;
+            }
+
+            preg_match_all("/case (\\w+) = '([^']+)';/", $said, $found, PREG_SET_ORDER);
+
+            foreach ($found as $case) {
+                $vocabulary[sprintf('%s::%s', $enum[1], $case[1])] = $case[2];
+            }
         }
 
         return $vocabulary;

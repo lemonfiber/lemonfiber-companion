@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\WhoPutItThere;
+use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Internal\Attributions;
 use Modules\Sdk\Internal\Wire;
 
@@ -83,8 +84,8 @@ final readonly class Dials
     public static function reviewIn(Envelope $envelope): WhereTheChangeStands
     {
         $data = ConfigEnvelope::in(Wire::checked($envelope))->data;
-        $review = self::table($data, WireField::Review);
-        $change = self::proposed(self::table($review, WireField::Change));
+        $review = self::table($data, ConfigField::Review);
+        $change = self::proposed(self::table($review, ConfigField::Change));
         $stance = self::stance($review);
 
         // Read off the stance rather than off the presence of a refusal. A
@@ -92,7 +93,7 @@ final readonly class Dials
         // and taking the sentence would show an operator a reason a change did
         // not happen underneath the word saying it did.
         return $stance === Stance::Blocked
-            ? WhereTheChangeStands::blocked($change, self::text($review, WireField::Refusal))
+            ? WhereTheChangeStands::blocked($change, self::text($review, ConfigField::Refusal))
             : WhereTheChangeStands::at($change, $stance);
     }
 
@@ -104,8 +105,8 @@ final readonly class Dials
     private static function proposed(array $change): ProposedChange
     {
         return ProposedChange::of(
-            self::text($change, WireField::Key),
-            self::text($change, WireField::To),
+            self::text($change, ConfigField::Key),
+            self::text($change, ConfigField::To),
             self::heldNow($change),
             self::cost($change),
         );
@@ -152,7 +153,7 @@ final readonly class Dials
      * @param array<mixed> $held
      * @return array<mixed>
      */
-    private static function table(array $held, WireField $field): array
+    private static function table(array $held, NamesAWireField $field): array
     {
         if (! array_key_exists($field->value, $held)) {
             throw SettingIsUnreadable::missing($field);
@@ -185,10 +186,10 @@ final readonly class Dials
      */
     private static function stance(array $review): Stance
     {
-        $said = Stance::tryFrom(self::text($review, WireField::Stance));
+        $said = Stance::tryFrom(self::text($review, ConfigField::Stance));
 
         if ($said === null) {
-            throw SettingIsUnreadable::missing(WireField::Stance);
+            throw SettingIsUnreadable::missing(ConfigField::Stance);
         }
 
         return $said;
@@ -228,11 +229,11 @@ final readonly class Dials
      */
     private static function listing(array $data): array
     {
-        if (! array_key_exists(WireField::Settings->value, $data)) {
-            throw SettingIsUnreadable::missing(WireField::Settings);
+        if (! array_key_exists(ConfigField::Settings->value, $data)) {
+            throw SettingIsUnreadable::missing(ConfigField::Settings);
         }
 
-        $listed = $data[WireField::Settings->value];
+        $listed = $data[ConfigField::Settings->value];
 
         if (! is_array($listed)) {
             throw SettingIsUnreadable::notAList();
@@ -272,7 +273,7 @@ final readonly class Dials
     private static function one(array $row): Setting
     {
         return Setting::called(
-            self::text($row, WireField::Key),
+            self::text($row, ConfigField::Key),
             self::holds($row),
             self::from($row),
         );
@@ -334,7 +335,7 @@ final readonly class Dials
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, WireField $field): string
+    private static function text(array $row, NamesAWireField $field): string
     {
         if (! array_key_exists($field->value, $row)) {
             throw SettingIsUnreadable::missing($field);

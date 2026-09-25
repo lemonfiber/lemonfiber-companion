@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Kernel\Api\WhenItCameOut;
+use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -130,14 +131,14 @@ final readonly class Holdings
      */
     private static function shelf(array $data): Shelf
     {
-        if (! array_key_exists(WireField::Holdings->value, $data)) {
-            throw ShelfIsUnreadable::missing(WireField::Holdings);
+        if (! array_key_exists(HeldField::Holdings->value, $data)) {
+            throw ShelfIsUnreadable::missing(HeldField::Holdings);
         }
 
-        $listed = $data[WireField::Holdings->value];
+        $listed = $data[HeldField::Holdings->value];
 
         if (! is_array($listed)) {
-            throw ShelfIsUnreadable::missing(WireField::Holdings);
+            throw ShelfIsUnreadable::missing(HeldField::Holdings);
         }
 
         $holdings = [];
@@ -196,11 +197,11 @@ final readonly class Holdings
      */
     private static function medium(array $said, int $position): Medium
     {
-        if (! array_key_exists(WireField::Medium->value, $said)) {
+        if (! array_key_exists(HeldField::Medium->value, $said)) {
             throw ShelfIsUnreadable::holding($position);
         }
 
-        $medium = $said[WireField::Medium->value];
+        $medium = $said[HeldField::Medium->value];
 
         if (! is_string($medium)) {
             throw ShelfIsUnreadable::holding($position);
@@ -221,11 +222,11 @@ final readonly class Holdings
      */
     private static function year(array $said, int $position): WhenItCameOut
     {
-        if (! array_key_exists(WireField::Year->value, $said)) {
+        if (! array_key_exists(HeldField::Year->value, $said)) {
             return WhenItCameOut::unstated();
         }
 
-        $year = $said[WireField::Year->value];
+        $year = $said[HeldField::Year->value];
 
         if ($year === null) {
             return WhenItCameOut::unstated();

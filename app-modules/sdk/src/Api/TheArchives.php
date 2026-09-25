@@ -11,6 +11,7 @@ use function is_string;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\ArchivesEnvelope;
 use Modules\Kernel\Api\TheCopies;
+use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -33,11 +34,11 @@ final readonly class TheArchives
     {
         $data = self::payload(Wire::checked($envelope));
 
-        if (! is_array($data) || ! array_key_exists(WireField::Archives->value, $data) || ! is_array($data[WireField::Archives->value])) {
-            throw ArchivesAreUnreadable::missing(WireField::Archives);
+        if (! is_array($data) || ! array_key_exists(ArchivesField::Archives->value, $data) || ! is_array($data[ArchivesField::Archives->value])) {
+            throw ArchivesAreUnreadable::missing(ArchivesField::Archives);
         }
 
-        return TheCopies::named(...self::names($data[WireField::Archives->value]));
+        return TheCopies::named(...self::names($data[ArchivesField::Archives->value]));
     }
 
     /**
