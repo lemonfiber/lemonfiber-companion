@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Http;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
@@ -15,7 +16,6 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Exceptions\NoMockResponseFoundException;
-use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -65,13 +65,14 @@ it('G3 — a stack read with no mock in front of it never reaches a socket', fun
             ->client(aStackNobodyIsListeningOn(), Session::of('a-session-not-a-secret'))
             ->read('/api/status');
     } catch (
-        NoMockResponseFoundException|FatalRequestException|ApiVersionMismatch|RequestFailed|UnreadableResponse $why
+        NoMockResponseFoundException|Unreachable|ApiVersionMismatch|RequestFailed|UnreadableResponse $why
     ) {
         // Every one this can honestly be, named rather than caught as a
         // `Throwable` — which `C6` refuses, and rightly: a misspelled method
         // would otherwise be reported as though the network had been reached.
-        // The three from the SDK are what `read()` declares; they cannot happen
-        // here, and naming them is what lets the two that can be told apart.
+        // The four from the SDK are what `read()` declares. `Unreachable` is
+        // what a real attempt at a port nothing listens on comes back as, and
+        // naming it beside the mock's refusal is what tells the two apart.
         $said = $why::class;
     }
 

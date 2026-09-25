@@ -59,6 +59,8 @@ declare(strict_types=1);
  * this gate would stop judging in silence.
  */
 
+use SebastianBergmann\CodeCoverage\CodeCoverage;
+use SebastianBergmann\CodeCoverage\Data\ProcessedCodeCoverageData;
 use Tests\Support\MeasuredTree;
 use Tests\Support\OurCode;
 use Tests\Support\Tree;
@@ -66,26 +68,31 @@ use Tests\Support\Tree;
 // What a line of code costs to mutate on a runner, in seconds, by where it is;
 // the longest matching path wins. A line in a screen or a presenter costs more
 // than one in a value object, because the tests that judge its mutants render
-// the screen. The figures are CI mutation seconds over lines mutated.
+// the screen. The figures are CI mutation seconds over lines of code mutated,
+// fitted to every shard of CI run 36163604500, which mutated every tree. An
+// adapter under `sdk/src` costs the most: every one of its mutants runs the
+// contract suites that spoil each field of each answer it reads.
 //
 // A path with no entry costs SECONDS_PER_LINE_ELSEWHERE. These numbers decide
 // only which runner a file goes to, never whether its mutants are run.
 const SECONDS_PER_LINE = [
-    'app-modules/household/src' => 0.51,
-    'app-modules/kernel/src' => 0.20,
-    'app-modules/operator/src' => 0.09,
-    'app-modules/operator/src/Internal/Presenters' => 0.43,
-    'app-modules/operator/src/Internal/Screens' => 0.36,
-    'app-modules/sdk/src' => 0.14,
-    'bridge/src' => 0.26,
+    'app-modules/household/src' => 0.82,
+    'app-modules/kernel/src' => 0.42,
+    'app-modules/operator/src' => 0.13,
+    'app-modules/operator/src/Internal/Presenters' => 0.62,
+    'app-modules/operator/src/Internal/Screens' => 0.55,
+    'app-modules/sdk/src' => 1.20,
+    'bridge/src' => 0.44,
 ];
 
 const SECONDS_PER_LINE_ELSEWHERE = 0.20;
 
 // The mutation time one shard is cut to. Every shard also pays a checkout, an
-// install and one run of the suite before its first mutant, so a smaller share
-// buys a shorter slowest runner with more of those.
-const SECONDS_PER_SHARD = 210;
+// install and the canary before its first mutant, since it reads the coverage
+// map the tests job wrote rather than running the suite again; and the
+// organisation's runners are shared, so a shard cut smaller than this waits
+// for a runner rather than finishing sooner.
+const SECONDS_PER_SHARD = 600;
 
 $root = dirname(__DIR__);
 
@@ -515,7 +522,9 @@ function runHeld(string $root, array $run): int
  *   whole tree, because those tests are what judge its mutants.
  * - A change to what decides how the gate runs — a manifest, `phpunit.xml`,
  *   the Pest bootstrap, the application's bootstrap and config, this script
- *   and the workflow that runs it — mutates everything.
+ *   and the workflow that runs it — mutates everything. A change to that
+ *   workflow which only moves the revisions its actions are pinned at is not
+ *   one: it mutates nothing by itself.
  * - Anything else — documentation, templates, the shared test suites and
  *   their support, translations, the lock, other workflows — mutates nothing
  *   by itself.
@@ -539,29 +548,227 @@ function whatTheChangeReaches(string $root, string $since): ?array
         return null;
     }
 
-    $reach = [];
+    $sorted = sortTheChange($root, $since, array_values(array_filter(explode("\n", $said), static fn(string $line): bool => $line !== '')));
+    $covered = $sorted === null ? null : whatTheTestsReach($root, $sorted['tests']);
 
-    foreach (array_filter(explode("\n", $said), static fn(string $line): bool => $line !== '') as $path) {
-        if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) === 1) {
+    if ($sorted === null || $covered === null) {
+        return null;
+    }
+
+    $reach = [...$sorted['reach'], ...$covered];
+
+    fwrite(STDERR, sprintf("The change reaches: %s\n", $reach === [] ? 'no path that is mutated' : implode(', ', $reach)));
+
+    return $reach;
+}
+
+/**
+ * The paths a change reaches by itself, and the tests it changed, or null
+ * where a changed path decides how the gate runs.
+ *
+ * @param  list<string>  $paths
+ * @return array{reach: list<string>, tests: list<string>}|null
+ */
+function sortTheChange(string $root, string $since, array $paths): ?array
+{
+    $reach = [];
+    $tests = [];
+
+    foreach ($paths as $path) {
+        if (decidesHowTheGateRuns($root, $since, $path)) {
             fwrite(STDERR, sprintf("%s decides how the gate runs, so every path is mutated.\n", $path));
 
             return null;
         }
 
-        if (preg_match('#^(app-modules/[^/]+|bridge)/tests/#u', $path, $found) === 1) {
-            $reach[] = sprintf('%s/src', $found[1]);
+        $reach = [...$reach, ...whatAPathReaches($path)];
 
-            continue;
-        }
-
-        if (str_ends_with($path, '.php')) {
-            $reach[] = $path;
+        if (isATest($path)) {
+            $tests[] = $path;
         }
     }
 
-    fwrite(STDERR, sprintf("The change reaches: %s\n", $reach === [] ? 'no path that is mutated' : implode(', ', $reach)));
+    return ['reach' => $reach, 'tests' => $tests];
+}
 
-    return $reach;
+/**
+ * What one changed path reaches without the coverage map: a source file
+ * itself, and a module's test its module's code.
+ *
+ * @return list<string>
+ */
+function whatAPathReaches(string $path): array
+{
+    if (preg_match('#^(app-modules/[^/]+|bridge)/tests/#u', $path, $found) === 1) {
+        return [sprintf('%s/src', $found[1])];
+    }
+
+    return str_ends_with($path, '.php') && ! isATest($path) ? [$path] : [];
+}
+
+function isATest(string $path): bool
+{
+    return preg_match('#(^|/)tests/.+\.php$#u', $path) === 1;
+}
+
+/**
+ * Every file the changed tests execute, read from the coverage map the `tests`
+ * job wrote, or null for every path.
+ *
+ * A test edited to assert less changes no line of the code it judges, so the
+ * code it judged is reached through the map rather than through the diff: its
+ * mutants are run again, against the test as it now reads. A test the change
+ * deleted is not in the map, and neither is a map that was not handed over, so
+ * both mutate every path rather than guess at what was judged.
+ *
+ * @param  list<string>  $tests
+ * @return list<string>|null
+ */
+function whatTheTestsReach(string $root, array $tests): ?array
+{
+    $map = getenv('MUTATION_SHARED_COVERAGE');
+    $gone = array_values(array_filter($tests, static fn(string $test): bool => ! is_file(sprintf('%s/%s', $root, $test))));
+    $unanswerable = match (true) {
+        ! is_string($map) || ! is_readable($map) => 'No coverage map says what the changed tests execute',
+        $gone !== [] => sprintf('%s was deleted', implode(', ', $gone)),
+        default => null,
+    };
+
+    if ($tests === []) {
+        return [];
+    }
+
+    if ($unanswerable !== null) {
+        fwrite(STDERR, sprintf("%s, so every path is mutated.\n", $unanswerable));
+
+        return null;
+    }
+
+    $data = coverageIn($map);
+
+    return filesRunBy($data, testsOf($data, $tests), $root);
+}
+
+/** The coverage a map holds, in either shape the coverage library writes. */
+function coverageIn(string $map): ProcessedCodeCoverageData
+{
+    /** @var array{basePath: string, codeCoverage: ProcessedCodeCoverageData}|CodeCoverage $loaded */
+    $loaded = require $map;
+
+    return is_array($loaded) ? $loaded['codeCoverage'] : $loaded->getData();
+}
+
+/**
+ * The indexes of the map's tests that the given test files hold.
+ *
+ * Pest names each test file's class after its path, so the two are matched as
+ * the letters and digits both are spelt with.
+ *
+ * @param  list<string>  $tests
+ * @return array<int, int>
+ */
+function testsOf(ProcessedCodeCoverageData $data, array $tests): array
+{
+    $wanted = array_flip(array_map(static fn(string $test): string => testKey(mb_substr($test, 0, -4)), $tests));
+    $indexes = [];
+
+    foreach ($data->testIds() as $index => $id) {
+        if (array_key_exists(testKey(preg_replace('#^P\\\\#u', '', explode('::', $id, 2)[0]) ?? $id), $wanted)) {
+            $indexes[$index] = $index;
+        }
+    }
+
+    return $indexes;
+}
+
+/**
+ * Every file at least one of the given tests executed a line of.
+ *
+ * @param  array<int, int>  $indexes
+ * @return list<string>
+ */
+function filesRunBy(ProcessedCodeCoverageData $data, array $indexes, string $root): array
+{
+    $reached = [];
+
+    foreach ($data->lineCoverage() as $file => $lines) {
+        if (anyLineRunBy($lines, $indexes)) {
+            $reached[] = str_starts_with($file, sprintf('%s/', $root)) ? mb_substr($file, mb_strlen($root) + 1) : $file;
+        }
+    }
+
+    return $reached;
+}
+
+/**
+ * Whether any of a file's lines was executed by one of the given tests.
+ *
+ * @param  array<int, array<int, int>|null>  $lines
+ * @param  array<int, int>  $indexes
+ */
+function anyLineRunBy(array $lines, array $indexes): bool
+{
+    return array_any($lines, fn(?array $hits): bool => array_intersect_key($hits ?? [], $indexes) !== []);
+}
+
+/** A test file's path, or its class, as the letters and digits both are spelt with. */
+function testKey(string $name): string
+{
+    return mb_strtolower(preg_replace('#[^A-Za-z0-9]#u', '', $name) ?? $name);
+}
+
+/**
+ * Whether a changed path decides how the gate runs, which mutates every path.
+ *
+ * The workflow that runs this is one such path, unless all its change did was
+ * move the revisions its actions are pinned at.
+ */
+function decidesHowTheGateRuns(string $root, string $since, string $path): bool
+{
+    if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|tests/Support/.*|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) !== 1) {
+        return false;
+    }
+
+    if ($path === '.github/workflows/ci.yml' && onlyPinsMoved($root, $since, $path)) {
+        fwrite(STDERR, sprintf("%s moved only the revisions its actions are pinned at, so it reaches nothing that is mutated.\n", $path));
+
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Whether every line a change touched in a workflow is an action's pin.
+ *
+ * A pin names the revision a step runs — `uses: owner/repo@<sha> # <tag>` —
+ * and moving it changes which revision of that action runs, not how this gate
+ * cuts, runs or judges its mutants. Any other line, or a diff git cannot give,
+ * is a change to how the gate runs.
+ */
+function onlyPinsMoved(string $root, string $since, string $path): bool
+{
+    $said = shell_exec(sprintf('git -C %s diff --unified=0 %s HEAD -- %s 2>/dev/null', escapeshellarg($root), escapeshellarg($since), escapeshellarg($path)));
+
+    if (! is_string($said)) {
+        return false;
+    }
+
+    $touched = 0;
+
+    foreach (explode("\n", $said) as $line) {
+        if (preg_match('#^(\+\+\+|---) #u', $line) === 1 || preg_match('#^[+-]#u', $line) !== 1) {
+            continue;
+        }
+
+        if (preg_match('#^[+-]\s*(-\s+)?uses:\s*\S+@[0-9a-f]{40}(\s+\#.*)?$#u', $line) !== 1) {
+            return false;
+        }
+
+        $touched++;
+    }
+
+    return $touched > 0;
 }
 
 /**
@@ -625,7 +832,8 @@ function mutate(string $root, int $floor, array $paths, ?string $group, array $l
     $absolute = static fn(string $path): string => sprintf('%s/%s', $root, $path);
 
     $command = sprintf(
-        '%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s%s%s',
+        '%s%s/vendor/bin/pest --mutate --parallel --covered-only --ignore-min-score-on-zero-mutations --exclude-testsuite=Guards,Floors --min=%d --path=%s%s%s',
+        $group === null ? theSharedCoverage() : '',
         escapeshellarg($root),
         $floor,
         escapeshellarg(implode(',', array_map($absolute, $paths))),
@@ -636,6 +844,31 @@ function mutate(string $root, int $floor, array $paths, ?string $group, array $l
     passthru($command, $status);
 
     return $status;
+}
+
+/**
+ * The coverage map a run against the whole suite takes from the tests job, as
+ * the environment the mutation plugin reads, or nothing where none was given.
+ *
+ * CI names the map the `tests` job wrote and how long that run took, in
+ * `MUTATION_SHARED_COVERAGE` and `MUTATION_SUITE_SECONDS`, so a shard opens on
+ * the canary rather than on the whole suite a second time: see
+ * scripts/patch_pest_mutate_shared_coverage.php. A run a group judges is never
+ * given it, because that run's own opening run is the group and nothing else.
+ */
+function theSharedCoverage(): string
+{
+    $map = getenv('MUTATION_SHARED_COVERAGE');
+
+    if (! is_string($map) || $map === '') {
+        return '';
+    }
+
+    return sprintf(
+        'LEMONFIBER_MUTATION_COVERAGE=%s LEMONFIBER_MUTATION_SUITE_SECONDS=%s ',
+        escapeshellarg($map),
+        escapeshellarg((string) getenv('MUTATION_SUITE_SECONDS')),
+    );
 }
 
 /**
