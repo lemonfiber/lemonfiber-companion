@@ -13,6 +13,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\GlossaryEnvelope;
 use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\TheGlossary;
+use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Sdk\Api\Fields\GlossaryField;
 use Modules\Sdk\Internal\Wire;
 
@@ -21,7 +22,8 @@ use function trim;
 /**
  * Reads the `glossary` envelope into every word lemonfiber explains.
  *
- * Every word and short gloss is required, and every other name must be one.
+ * Every word and short gloss is required, and every other name and every
+ * form must be one.
  * Anything else is refused with {@see GlossaryIsUnreadable}, never defaulted;
  * the longer gloss is optional and arrives as `null` or absent where there is
  * none.
@@ -83,8 +85,8 @@ final readonly class TheWordsExplained
             self::text($row, GlossaryField::Word, $position),
             self::text($row, GlossaryField::Short, $position),
             self::deep($row, $position),
-            ...self::alsoCalled($row, $position),
-        );
+            ...self::names($row, GlossaryField::AlsoCalled, $position),
+        )->writtenAs(WhatElseItIsCalled::formsOf(...self::names($row, WireField::Forms, $position)));
     }
 
     /**
@@ -102,28 +104,29 @@ final readonly class TheWordsExplained
     }
 
     /**
-     * What else the word is called, every name required to be one.
+     * What else the word is called, or the forms it is written in: a list,
+     * every entry required to be a name.
      *
      * @param array<array-key, mixed> $row
      * @return list<string>
      */
-    private static function alsoCalled(array $row, int $position): array
+    private static function names(array $row, NamesAWireField $field, int $position): array
     {
-        if (! array_key_exists(GlossaryField::AlsoCalled->value, $row)) {
-            throw GlossaryIsUnreadable::word($position, GlossaryField::AlsoCalled);
+        if (! array_key_exists($field->value, $row)) {
+            throw GlossaryIsUnreadable::word($position, $field);
         }
 
-        $names = $row[GlossaryField::AlsoCalled->value];
+        $names = $row[$field->value];
 
         if (! is_array($names) || ! array_is_list($names)) {
-            throw GlossaryIsUnreadable::word($position, GlossaryField::AlsoCalled);
+            throw GlossaryIsUnreadable::word($position, $field);
         }
 
         $read = [];
 
         foreach ($names as $name) {
             if (! is_string($name) || trim($name) === '') {
-                throw GlossaryIsUnreadable::word($position, GlossaryField::AlsoCalled);
+                throw GlossaryIsUnreadable::word($position, $field);
             }
 
             $read[] = $name;

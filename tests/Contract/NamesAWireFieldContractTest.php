@@ -8,7 +8,6 @@ use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\Fields\ErrorField;
-use Modules\Sdk\Api\Fields\FormsField;
 use Modules\Sdk\Api\Fields\GlossaryField;
 use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Api\Fields\HistoryField;
@@ -50,7 +49,6 @@ function everyFieldNamedOnTheWire(): array
         ...BandwidthField::cases(),
         ...ConfigField::cases(),
         ...DoctorField::cases(),
-        ...FormsField::cases(),
         ...ErrorField::cases(),
         ...GlossaryField::cases(),
         ...HeldField::cases(),

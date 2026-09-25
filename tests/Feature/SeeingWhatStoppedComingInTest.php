@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
 use Modules\Kernel\Api\TheGlossary;
+use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
@@ -297,6 +298,17 @@ it('explains a stage in place by any name the glossary gives it, and leaves one 
     expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']))
         ->and(array_filter($drawn, static fn(string $line): bool => str_starts_with($line, 'search:')))->toHaveCount(1)
         ->and($explaining->askings())->toBe(1);
+});
+
+it('explains a stage in place by the form lemonfiber writes it in', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
+        AWord::explained('search', 'Looking through the indexers for a release', '')->writtenAs(
+            WhatElseItIsCalled::formsOf('searching', 'searched'),
+        ),
+    ));
+    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()), explaining: $explaining))->said();
+
+    expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']));
 });
 
 it('asks for no glossary where nothing stopped', function (): void {

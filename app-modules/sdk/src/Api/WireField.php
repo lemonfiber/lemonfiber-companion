@@ -116,6 +116,14 @@ enum WireField: string implements NamesAWireField
     case Services = 'services';
 
     /**
+     * Forms, in the two senses the wire uses the word: the forms a stack
+     * declares, listed on the `forms` envelope and named by an action, and
+     * the forms lemonfiber writes one of its words in, on each word of the
+     * `glossary`.
+     */
+    case Forms = 'forms';
+
+    /**
      * Which of the two things an update reading is about — and, on a listing's
      * limits, the thing the stack cannot act on.
      *

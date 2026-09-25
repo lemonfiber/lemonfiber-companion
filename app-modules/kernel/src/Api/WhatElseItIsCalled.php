@@ -21,7 +21,8 @@ use Traversable;
 use function trim;
 
 /**
- * What else a word is called, in the order the glossary lists the names.
+ * What else a word is called, or the forms lemonfiber writes it in, in the
+ * order the glossary lists them.
  *
  * @implements IteratorAggregate<int, string>
  */
@@ -38,13 +39,13 @@ final readonly class WhatElseItIsCalled implements Countable, IteratorAggregate
      */
     public static function of(string ...$names): self
     {
-        foreach ($names as $name) {
-            if (trim($name) === '') {
-                throw WordsSayNothing::about('also_called');
-            }
-        }
+        return self::listed('also_called', ...$names);
+    }
 
-        return new self(array_values($names));
+    /** The forms lemonfiber writes the word in, such as `grabbed` for `grab`; a blank one is refused. */
+    public static function formsOf(string ...$forms): self
+    {
+        return self::listed('forms', ...$forms);
     }
 
     /**
@@ -72,5 +73,16 @@ final readonly class WhatElseItIsCalled implements Countable, IteratorAggregate
     public function count(): int
     {
         return count($this->names);
+    }
+
+    private static function listed(string $field, string ...$names): self
+    {
+        foreach ($names as $name) {
+            if (trim($name) === '') {
+                throw WordsSayNothing::about($field);
+            }
+        }
+
+        return new self(array_values($names));
     }
 }

@@ -9,7 +9,9 @@ use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\AWord;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\LookingFor;
+use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Kernel\Api\WordsSayNothing;
 
 use function sprintf;
@@ -48,4 +50,25 @@ it('answers a search by its name or any other name, whatever the case, and not b
         ->and($word->answers(LookingFor::text('shar')))->toBeTrue()
         ->and($word->answers(LookingFor::text('download')))->toBeFalse()
         ->and($word->answers(LookingFor::text('pieces')))->toBeFalse();
+});
+
+it('is found by every form it is written in, and keeps everything else it says', function (): void {
+    $word = AWord::explained('grab', 'Taking a release from an indexer', 'Sent to the download client', 'snatch')->writtenAs(WhatElseItIsCalled::formsOf('grabbed', 'grabbing'));
+
+    expect($word->explains(AWordInUse::named('Grabbed')))->toBeTrue()
+        ->and($word->explains(AWordInUse::named('grabbing')))->toBeTrue()
+        ->and($word->explains(AWordInUse::named('snatch')))->toBeTrue()
+        ->and($word->explains(AWordInUse::named('grabber')))->toBeFalse()
+        ->and($word->answers(LookingFor::text('bbing')))->toBeTrue()
+        ->and([$word->word(), $word->short(), $word->deep(), iterator_to_array($word->alsoCalled(), preserve_keys: false)])
+        ->toBe(['grab', 'Taking a release from an indexer', 'Sent to the download client', ['snatch']]);
+});
+
+it('is found by no form until it is given some', function (): void {
+    expect(AWord::explained('grab', 'Taking a release', '')->explains(AWordInUse::named('grabbed')))->toBeFalse();
+});
+
+it('refuses a blank form, naming the forms', function (): void {
+    expect(fn(): AWord => AWord::explained('grab', 'Taking a release', '')->writtenAs(WhatElseItIsCalled::formsOf('grabbed', ' ')))
+        ->toThrow(WordsSayNothing::class, 'forms');
 });

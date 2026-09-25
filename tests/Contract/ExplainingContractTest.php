@@ -65,8 +65,9 @@ function whatAStackSaysItsWordsMean(string $seedingMeans = 'Sharing a finished d
                     'short' => 'The version a service is held at',
                     'deep' => 'A service runs the version it is pinned to until an update moves the pin.',
                     'also_called' => [],
+                    'forms' => ['pinned'],
                 ],
-                ['word' => 'seeding', 'short' => $seedingMeans, 'also_called' => ['sharing', 'uploading']],
+                ['word' => 'seeding', 'short' => $seedingMeans, 'also_called' => ['sharing', 'uploading'], 'forms' => []],
             ],
         ],
     ];

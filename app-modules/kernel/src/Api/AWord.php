@@ -22,6 +22,7 @@ final readonly class AWord
         private string $short,
         private string $deep,
         private WhatElseItIsCalled $alsoCalled,
+        private WhatElseItIsCalled $forms,
     ) {}
 
     /**
@@ -42,7 +43,19 @@ final readonly class AWord
             throw WordsSayNothing::about('deep');
         }
 
-        return new self($word, $short, $deep, WhatElseItIsCalled::of(...$alsoCalled));
+        return new self($word, $short, $deep, WhatElseItIsCalled::of(...$alsoCalled), WhatElseItIsCalled::formsOf());
+    }
+
+    /**
+     * The same word, found as well by the forms lemonfiber writes it in.
+     *
+     * A stage the stack sends as `grabbed` is explained by the entry for
+     * `grab`. The forms are not drawn: they are the word, not another name
+     * for it.
+     */
+    public function writtenAs(WhatElseItIsCalled $forms): self
+    {
+        return new self($this->word, $this->short, $this->deep, $this->alsoCalled, $forms);
     }
 
     /** The word itself. */
@@ -72,7 +85,7 @@ final readonly class AWord
     /** Whether this is the word a screen drew, by its own name or another it goes by. */
     public function explains(AWordInUse $word): bool
     {
-        return $word->is(AWordInUse::named($this->word)) || $this->alsoCalled->include($word);
+        return $word->is(AWordInUse::named($this->word)) || $this->alsoCalled->include($word) || $this->forms->include($word);
     }
 
     /**
@@ -83,6 +96,6 @@ final readonly class AWord
      */
     public function answers(LookingFor $looking): bool
     {
-        return mb_stripos($this->word, $looking->typed()) !== false || $this->alsoCalled->answer($looking);
+        return mb_stripos($this->word, $looking->typed()) !== false || $this->alsoCalled->answer($looking) || $this->forms->answer($looking);
     }
 }

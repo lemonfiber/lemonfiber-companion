@@ -10,6 +10,7 @@ use function implode;
 use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Sdk\Api\GlossaryIsUnreadable;
 use Modules\Sdk\Api\TheWordsExplained;
@@ -35,7 +36,7 @@ function glossarySaying(mixed $data): Envelope
  */
 function aWordInFull(): array
 {
-    return ['word' => 'seeding', 'short' => 'Sharing a finished download', 'deep' => 'Uploading pieces to peers', 'also_called' => ['sharing']];
+    return ['word' => 'seed', 'short' => 'Sharing a finished download', 'deep' => 'Uploading pieces to peers', 'also_called' => ['sharing'], 'forms' => ['seeding', 'seeded']];
 }
 
 /**
@@ -59,13 +60,13 @@ it('stands in for a stack with a payload the contract would accept', function ()
 });
 
 it('reads every word in order, with both glosses and every other name', function (): void {
-    expect(theGlossaryRead([aWordInFull(), ['word' => 'pin', 'short' => 'Held at', 'also_called' => ['lock', 'hold']]]))
-        ->toBe('seeding|Sharing a finished download|Uploading pieces to peers|sharing / pin|Held at||lock,hold');
+    expect(theGlossaryRead([aWordInFull(), ['word' => 'pin', 'short' => 'Held at', 'also_called' => ['lock', 'hold'], 'forms' => []]]))
+        ->toBe('seed|Sharing a finished download|Uploading pieces to peers|sharing / pin|Held at||lock,hold');
 });
 
 it('reads a longer gloss that is null or absent as none', function (): void {
-    expect(theGlossaryRead([[...aWordInFull(), 'deep' => null]]))->toBe('seeding|Sharing a finished download||sharing')
-        ->and(theGlossaryRead([array_diff_key(aWordInFull(), ['deep' => true])]))->toBe('seeding|Sharing a finished download||sharing');
+    expect(theGlossaryRead([[...aWordInFull(), 'deep' => null]]))->toBe('seed|Sharing a finished download||sharing')
+        ->and(theGlossaryRead([array_diff_key(aWordInFull(), ['deep' => true])]))->toBe('seed|Sharing a finished download||sharing');
 });
 
 it('reads an empty glossary as one with no words', function (): void {
@@ -95,4 +96,15 @@ it('refuses a word that is not one, naming its position and the field', function
     [[...aWordInFull(), 'also_called' => ['a' => 'sharing']], 'also_called'],
     [[...aWordInFull(), 'also_called' => ['sharing', ' ']], 'also_called'],
     [[...aWordInFull(), 'also_called' => [7]], 'also_called'],
+    [array_diff_key(aWordInFull(), ['forms' => true]), 'forms'],
+    [[...aWordInFull(), 'forms' => 'seeding'], 'forms'],
+    [[...aWordInFull(), 'forms' => ['seeding', '']], 'forms'],
 ]);
+
+it('finds a word by every form lemonfiber writes it in, and not by one it does not', function (): void {
+    $glossary = TheWordsExplained::in(glossarySaying(['words' => [aWordInFull()]]));
+
+    expect($glossary->explaining(AWordInUse::named('seeding')))->toHaveCount(1)
+        ->and($glossary->explaining(AWordInUse::named('Seeded')))->toHaveCount(1)
+        ->and($glossary->explaining(AWordInUse::named('seeder')))->toHaveCount(0);
+});
