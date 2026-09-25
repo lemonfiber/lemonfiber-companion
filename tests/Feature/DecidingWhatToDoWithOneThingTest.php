@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AProfileLeftOut;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowOften;
@@ -11,20 +12,26 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheProfilesLeftOut;
+use Modules\Kernel\Api\WhatItWouldNeed;
+use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // One thing this machine runs, and the verbs about it.
 //
@@ -58,6 +65,7 @@ function theThingScreen(
     string $named = 'sonarr',
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?AStackThatRehearses $rehearsing = null,
 ): WhatToDoWithThis {
     $stack = theMachineTheseVerbsReach();
     $keychain ??= AKeychainInMemory::working();
@@ -66,7 +74,8 @@ function theThingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatToDoWithThis($supervising, $keychain, StacksInMemory::holding($stack));
+    $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheProfilesLeftOut::of()));
+    $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, StacksInMemory::holding($stack));
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
     return $screen;
@@ -460,4 +469,87 @@ it('renders its own view', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
 
     expect($screen->render()->name())->toBe('operator::what-to-do-with-this');
+});
+
+/** What a profile left out would need, as the catalogue says it. */
+function theNeedAsSaid(WhatItWouldNeed $needs): string
+{
+    $said = __($needs->saidOnTheScreen());
+
+    return is_string($said) ? $said : $needs->saidOnTheScreen();
+}
+
+/** Starting `library` on a machine with no torrent credentials. */
+function aRehearsalOfStartingTheLibrary(): WhatStartingItWouldComeTo
+{
+    return WhatStartingItWouldComeTo::rehearsed(
+        Services::these(ServiceId::called('jellyfin'), ServiceId::called('sonarr')),
+        TheProfilesLeftOut::of(AProfileLeftOut::needing('torrent', WhatItWouldNeed::Torrent)),
+    );
+}
+
+it('a form says what starting it would bring up and leave out, as a rehearsal, before its verbs', function (): void {
+    $rehearsing = AStackThatRehearses::with(aRehearsalOfStartingTheLibrary());
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library', rehearsing: $rehearsing);
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $rehearsed = array_search(__('health.rehearsal.heading'), $drawn, strict: true);
+    $firstVerb = array_search(__(WhatToDoWithIt::cases()[0]->saidOnTheScreen()), $drawn, strict: true);
+
+    expect($drawn)->toContain(__('health.rehearsal.nothing_started'))
+        ->toContain(__('health.rehearsal.would_start', ['name' => 'jellyfin']))
+        ->toContain(__('health.rehearsal.would_start', ['name' => 'sonarr']))
+        ->toContain(__('health.rehearsal.left_out', ['profile' => 'torrent', 'needs' => theNeedAsSaid(WhatItWouldNeed::Torrent)]))
+        ->and(is_int($rehearsed) && is_int($firstVerb) && $rehearsed < $firstVerb)->toBeTrue()
+        ->and($rehearsing->asked())->toHaveCount(1)
+        ->and($rehearsing->asked()[0]->named())->toBe('library');
+});
+
+it('a rehearsal that brings nothing up and leaves nothing out says both', function (): void {
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library');
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())
+        ->toContain(__('health.rehearsal.would_start_nothing'))
+        ->toContain(__('health.rehearsal.nothing_left_out'));
+});
+
+it('a service is not rehearsed, because a rehearsal is of a form', function (): void {
+    $rehearsing = AStackThatRehearses::with(aRehearsalOfStartingTheLibrary());
+    WhatTheDeviceWouldDraw::by(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), rehearsing: $rehearsing));
+
+    expect($rehearsing->asked())->toBe([]);
+});
+
+it('a rehearsal is asked for once a frame, however often the template reads it', function (): void {
+    $rehearsing = AStackThatRehearses::with(aRehearsalOfStartingTheLibrary());
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library', rehearsing: $rehearsing);
+    $screen->rehearsal();
+    $screen->rehearsal();
+
+    expect($rehearsing->asked())->toHaveCount(1);
+});
+
+it('a rehearsal that could not be had says what stood in the way, and lets go of a refused session', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $unanswered = theThingScreen(
+        AStackThatSupervises::with(WhatAMachineRuns::twoThings()),
+        'library',
+        rehearsing: AStackThatRehearses::met(Obstacle::StackDidNotAnswer),
+    );
+    theThingScreen(
+        AStackThatSupervises::with(WhatAMachineRuns::twoThings()),
+        'library',
+        $keychain,
+        rehearsing: AStackThatRehearses::met(Obstacle::CredentialWasRefused),
+    )->rehearsal();
+
+    expect($unanswered->rehearsal()->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($unanswered->rehearsal()->wouldStart)->toBe([])
+        ->and(WhatTheDeviceWouldDraw::by($unanswered)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
+});
+
+it('a rehearsal on a device holding no session for the stack says so', function (): void {
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library', signedIn: false);
+
+    expect($screen->rehearsal()->went->isSignedIn)->toBeFalse();
 });

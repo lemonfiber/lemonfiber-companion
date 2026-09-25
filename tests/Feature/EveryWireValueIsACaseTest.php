@@ -34,6 +34,7 @@ use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhereADownloadStands;
@@ -621,6 +622,13 @@ it('N1-R13 — every kind of reading a volume can have has a case', function ():
     expect(valuesOf(HowAVolumeWasRead::cases()))->toBe($words);
 });
 
+it('everything a profile left out of a start can need has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('PreviewEnvelope'), 'needs');
+
+    expect($words)->not->toBe([], 'no needs union was found in the generated envelope');
+    expect(valuesOf(WhatItWouldNeed::cases()))->toBe($words);
+});
+
 it('every way a trace can be sure of its item has a case', function (): void {
     $words = unionIn(theGeneratedTraceEnvelope(), 'confidence');
 
@@ -769,6 +777,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhatGettingItBackCosts::class => 'reclaim',
     HowLemonfiberWasInstalled::class => 'installed',
     HowSureTheTraceIs::class => 'confidence',
+    WhatItWouldNeed::class => 'needs',
     WhatHappenedToIt::class => 'outcome',
     WhereThisCopyStands::class => 'standing',
 

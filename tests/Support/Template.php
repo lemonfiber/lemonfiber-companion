@@ -186,7 +186,10 @@ final readonly class Template
     public function proseNodes(): array
     {
         $withoutTags = preg_replace('/<[^>]*>/s', "\n", $this->source);
-        $withoutDirectives = preg_replace('/@[a-z]+(\s*\([^)]*\))?/i', "\n", (string) $withoutTags);
+        // A directive's arguments may call a method, so one level of nested
+        // parentheses is balanced: `@forelse ($this->rehearsal()->wouldStart as $s)`
+        // would otherwise leave `->wouldStart as $s)` behind to be read as prose.
+        $withoutDirectives = preg_replace('/@[a-z]+(\s*\((?:[^()]|\([^()]*\))*\))?/i', "\n", (string) $withoutTags);
         $withoutEchoes = preg_replace('/\{\{.*?\}\}|\{!!.*?!!\}/s', "\n", (string) $withoutDirectives);
         $withoutComments = preg_replace('/\{\{--.*?--\}\}/s', "\n", (string) $withoutEchoes);
 

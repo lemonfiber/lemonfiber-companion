@@ -42,6 +42,7 @@ use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -273,6 +274,10 @@ function everyDerivedKey(): array
         WhetherItHoldsASecret::class => aPairPerCase(
             WhetherItHoldsASecret::cases(),
             static fn(WhetherItHoldsASecret $secret): array => [$secret->saidOnTheScreen()],
+        ),
+        WhatItWouldNeed::class => aPairPerCase(
+            WhatItWouldNeed::cases(),
+            static fn(WhatItWouldNeed $case): array => [$case->saidOnTheScreen()],
         ),
         HowSureTheTraceIs::class => aPairPerCase(
             HowSureTheTraceIs::cases(),

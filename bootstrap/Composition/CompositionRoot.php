@@ -48,6 +48,7 @@ use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Provenance;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
+use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\SecureStorage;
@@ -81,6 +82,7 @@ use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
+use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -326,6 +328,7 @@ final class CompositionRoot extends ServiceProvider
         // the same reason.
         $this->app->bind(SelfChecking::class, Inspectors::class);
         $this->app->bind(Explaining::class, Explainers::class);
+        $this->app->bind(Rehearsing::class, Rehearsers::class);
         $this->app->bind(Tracing::class, Followers::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);

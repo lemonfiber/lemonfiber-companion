@@ -252,4 +252,16 @@ return [
         'downloads' => 'Totdat alles wat nog binnenkomt klaar is',
     ],
     'for_at_most' => 'Maximaal :seconds seconden',
+    'rehearsal' => [
+        'heading' => 'Wat starten zou doen',
+        'nothing_started' => 'Er is niets gestart. Dit is wat de stack zegt dat starten zou doen.',
+        'would_start' => ':name zou starten',
+        'would_start_nothing' => 'Er zou geen dienst starten.',
+        'left_out' => ':profile zou worden overgeslagen: :needs',
+        'nothing_left_out' => 'Er zou niets worden overgeslagen.',
+        'needs' => [
+            'usenet' => 'daarvoor zijn Usenet-gegevens nodig, en die heeft deze stack niet',
+            'torrent' => 'daarvoor zijn torrentgegevens nodig, en die heeft deze stack niet',
+        ],
+    ],
 ];

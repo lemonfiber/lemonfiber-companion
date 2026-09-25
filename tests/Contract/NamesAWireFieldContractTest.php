@@ -16,6 +16,7 @@ use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\Fields\JobField;
 use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\OutboundField;
+use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
@@ -58,6 +59,7 @@ function everyFieldNamedOnTheWire(): array
         ...JobField::cases(),
         ...LogField::cases(),
         ...OutboundField::cases(),
+        ...PreviewField::cases(),
         ...ProvenanceField::cases(),
         ...RepairField::cases(),
         ...SelfUpdateField::cases(),

@@ -256,4 +256,16 @@ return [
         'downloads' => 'Until everything still coming down has finished',
     ],
     'for_at_most' => 'For up to :seconds seconds',
+    'rehearsal' => [
+        'heading' => 'What starting it would do',
+        'nothing_started' => 'Nothing has started. This is what the stack says starting it would do.',
+        'would_start' => ':name would start',
+        'would_start_nothing' => 'No service would start.',
+        'left_out' => ':profile would be left out: :needs',
+        'nothing_left_out' => 'Nothing would be left out.',
+        'needs' => [
+            'usenet' => 'it needs Usenet credentials, which this stack does not have',
+            'torrent' => 'it needs torrent credentials, which this stack does not have',
+        ],
+    ],
 ];

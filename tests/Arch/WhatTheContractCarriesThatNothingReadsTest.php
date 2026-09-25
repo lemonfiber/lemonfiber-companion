@@ -247,6 +247,18 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'an answer. Saying it before the choice is made is a screen `N18` has not reached.',
     ],
     [
+        'path' => 'PreviewEnvelope.forms',
+        'because' => 'The forms the rehearsal was asked about, repeated back. The screen asked about one '
+            . 'form and draws the rehearsal under that form\'s own name, so the echo says nothing the '
+            . 'screen does not already hold.',
+    ],
+    [
+        'path' => 'PreviewEnvelope.profiles',
+        'because' => 'The profiles a start would bring up. `N18-R4` asks for what would start and what '
+            . 'would be left out, with the reason for each; the services are what would start, and a '
+            . 'profile is the stack\'s grouping of them rather than something an operator starts.',
+    ],
+    [
         'path' => 'HouseholdEnvelope.findings',
         'because' => 'Plain sentences about the listing itself, beside the members. `N2-R3` has a finding '
             . 'carry a code, a meaning and a remedy, and those arrive on the `doctor` envelope; a bare '
