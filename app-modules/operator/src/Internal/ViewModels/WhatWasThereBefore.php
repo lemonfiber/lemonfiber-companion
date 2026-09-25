@@ -14,12 +14,12 @@ final readonly class WhatWasThereBefore
 {
     /**
      * @param string                  $said  the catalogue key for the line: a value, nothing set, or withheld
-     * @param string                  $value the value it replaced, or empty where there is none to show
+     * @param ?string                 $value the value it replaced, or null where there is none to show
      * @param WhereARowSaysItCameFrom $from  where the replaced value came from
      */
     public function __construct(
         public string $said,
-        public string $value,
+        public ?string $value,
         public WhereARowSaysItCameFrom $from,
     ) {}
 }

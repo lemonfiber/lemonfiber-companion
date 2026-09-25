@@ -41,8 +41,8 @@ final readonly class HowAnOriginReads
 
         return $replaced->whichever(
             held: static fn(string $value): WhatWasThereBefore => new WhatWasThereBefore('config.before.held', $value, $from),
-            nothingSet: static fn(): WhatWasThereBefore => new WhatWasThereBefore('config.before.nothing_set', '', $from),
-            withheld: static fn(): WhatWasThereBefore => new WhatWasThereBefore('config.before.withheld', '', $from),
+            nothingSet: static fn(): WhatWasThereBefore => new WhatWasThereBefore('config.before.nothing_set', null, $from),
+            withheld: static fn(): WhatWasThereBefore => new WhatWasThereBefore('config.before.withheld', null, $from),
         );
     }
 }

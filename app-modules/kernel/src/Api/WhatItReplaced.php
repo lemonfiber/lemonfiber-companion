@@ -24,7 +24,7 @@ final readonly class WhatItReplaced
 {
     private function __construct(
         private WhoPutItThere $from,
-        private string $value,
+        private ?string $value,
         private bool $withheld,
     ) {}
 
@@ -41,13 +41,13 @@ final readonly class WhatItReplaced
     /** Nothing was set, so the stack's default was in force. */
     public static function nothingSet(WhoPutItThere $from): self
     {
-        return new self($from, '', withheld: false);
+        return new self($from, null, withheld: false);
     }
 
     /** A credential, which is never shown. */
     public static function withheld(WhoPutItThere $from): self
     {
-        return new self($from, '', withheld: true);
+        return new self($from, null, withheld: true);
     }
 
     /** Where the replaced value came from. */
@@ -71,7 +71,7 @@ final readonly class WhatItReplaced
     {
         return match (true) {
             $this->withheld => $withheld(),
-            $this->value === '' => $nothingSet(),
+            $this->value === null => $nothingSet(),
             default => $held($this->value),
         };
     }
