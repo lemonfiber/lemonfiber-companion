@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Credential;
@@ -15,10 +16,8 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedDoors;
-use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
-use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -184,8 +183,8 @@ it('N1-R10 — tells a refused password from a door that has stopped listening',
         [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
         [MockResponse::make('{"error":"wait"}', 429), Obstacle::TooManyAttempts],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
-        [MockResponse::make()->throw(static fn(PendingRequest $asked): FatalRequestException
-            => new FatalRequestException(new RuntimeException('Connection refused'), $asked)), Obstacle::StackDidNotAnswer],
+        [MockResponse::make()->throw(static fn(): Unreachable
+            => Unreachable::whenAsking('/api/session', 'Connection refused')), Obstacle::StackDidNotAnswer],
     ];
 
     foreach ($table as [$answered, $why]) {

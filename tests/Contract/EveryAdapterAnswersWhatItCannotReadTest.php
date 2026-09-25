@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Contract\Api;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
@@ -65,7 +66,6 @@ use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upkeepers;
-use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -409,17 +409,20 @@ function theObstacleIn(object $outcome): ?Obstacle
 }
 
 /**
- * Answer every request as the transport does when nothing picks up.
+ * Answer every request as the SDK does when nothing picks up.
  *
  * The connection is refused before any answer exists, which is what a stack
- * that is off, asleep or out of reach looks like from the device.
+ * that is off, asleep or out of reach looks like from the device. Raised as the
+ * SDK raises it rather than as the transport's failure beneath it: a transport
+ * failure at a pinned address is followed by the SDK asking the address what
+ * certificate it presents, and that is a connection this suite may not open.
  */
 function answerNothingAtAll(): void
 {
     MockClient::destroyGlobal();
     MockClient::global([
-        '*' => MockResponse::make()->throw(static fn(PendingRequest $asked): FatalRequestException
-            => new FatalRequestException(new RuntimeException('Connection refused'), $asked)),
+        '*' => MockResponse::make()->throw(static fn(PendingRequest $asked): Unreachable
+            => Unreachable::whenAsking($asked->getRequest()->resolveEndpoint(), 'Connection refused')),
     ]);
 }
 
