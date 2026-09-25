@@ -63,11 +63,12 @@ trait HearsHowTheStackIs
     #[Poll(HowOften::WHILE_LISTENING_MS)]
     public function listen(): void
     {
-        $now = $this->clock->now();
+        $with = $this->listensWith();
+        $now = $with->clock->now();
         $held = $this->heardSoFar();
 
-        if (! $this->capture->isInFront()) {
-            $this->heard = $held->after($this->hearing->letGo(), $now)->wentAway();
+        if (! $with->capture->isInFront()) {
+            $this->heard = $held->after($with->hearing->letGo(), $now)->wentAway();
 
             return;
         }
@@ -80,7 +81,7 @@ trait HearsHowTheStackIs
         $held = $held->after($this->heardFrom($stack), $now);
 
         if ($held->hasGoneQuiet($now)) {
-            $held = $held->after($this->hearing->letGo(), $now);
+            $held = $held->after($with->hearing->letGo(), $now);
         }
 
         $this->heard = $held->stoppedBy(
@@ -102,7 +103,7 @@ trait HearsHowTheStackIs
     /** The summary as the template draws it. */
     public function summary(): WhatTheOneLineSays
     {
-        return new HowTheOneLineReads()->of($this->heardSoFar(), $this->clock->now());
+        return new HowTheOneLineReads()->of($this->heardSoFar(), $this->listensWith()->clock->now());
     }
 
     /**
@@ -126,12 +127,16 @@ trait HearsHowTheStackIs
      */
     public function stop(): void
     {
-        $this->heard = $this->heardSoFar()->after($this->hearing->letGo(), $this->clock->now())->wentAway();
+        $with = $this->listensWith();
+        $this->heard = $this->heardSoFar()->after($with->hearing->letGo(), $with->clock->now())->wentAway();
 
         parent::stop();
     }
 
     abstract public function stack(): Stack;
+
+    /** The ports this screen listens with, handed over by the screen that holds them. */
+    abstract private function listensWith(): WhatItListensWith;
 
     private function heardSoFar(): WhatWasHeardSoFar
     {
@@ -147,7 +152,7 @@ trait HearsHowTheStackIs
     private function heardFrom(Stack $stack): WhatWasHeard
     {
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatWasHeard => $this->hearing->howItIs($stack, $session),
+            held: fn(Session $session): WhatWasHeard => $this->listensWith()->hearing->howItIs($stack, $session),
             notHeld: static fn(): WhatWasHeard => WhatWasHeard::closed(),
         );
     }
