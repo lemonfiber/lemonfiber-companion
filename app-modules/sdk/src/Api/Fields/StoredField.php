@@ -22,7 +22,4 @@ enum StoredField: string implements NamesAWireField
 
     /** Each thing a stack keeps on its machine. */
     case Kept = 'kept';
-
-    /** What is on the machine that is not the stack's to keep or remove. */
-    case Beside = 'beside';
 }

@@ -141,14 +141,14 @@ final readonly class WhatIsStored
 
         $position = 0;
 
-        foreach (self::rows($data, StoredField::Beside) as $row) {
+        foreach (self::rows($data, WireField::Beside) as $row) {
             if (! is_array($row)) {
-                throw StoredIsUnreadable::row(StoredField::Beside, $position);
+                throw StoredIsUnreadable::row(WireField::Beside, $position);
             }
 
             $found[] = SomethingBeside::named(
-                self::text($row, StoredField::Beside, WireField::What, $position),
-                self::text($row, StoredField::Beside, WireField::Why, $position),
+                self::text($row, WireField::Beside, WireField::What, $position),
+                self::text($row, WireField::Beside, WireField::Why, $position),
             );
             $position++;
         }

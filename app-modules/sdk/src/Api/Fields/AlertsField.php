@@ -17,9 +17,6 @@ enum AlertsField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The alert preset in force for events with no exception of their own. */
-    case Preset = 'preset';
-
     /** The events set apart from an alert preset. */
     case Exceptions = 'exceptions';
 
