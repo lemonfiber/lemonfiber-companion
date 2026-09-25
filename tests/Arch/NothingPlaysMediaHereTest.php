@@ -4,38 +4,29 @@ declare(strict_types=1);
 
 use Tests\Support\Tree;
 
-// No player here holds a second copy of what the core already decides.
+// No player is built here, and this refuses one.
 //
-// **This rule outlived the row it was written for.** That row said the app
-// plays no media and hands off to a household client, and it has been
-// withdrawn: the app plays, because sending somebody to a second application
-// they must also install is a household product stopping short of the thing
-// the household wanted. What replaced it is narrower — not *no player*, but a
-// player holding no second copy of a library, an age limit or an entitlement,
-// and none of the asking logic. The cases below name which rows those are.
+// The player the app is meant to have renders what the core says a member may
+// watch and holds no second copy of it: no library, no age limit, no
+// entitlement, and none of the asking. The cases below name those rows.
 //
-// What it reads for is still every media player, which is **stronger than
-// either of those asks** and is held deliberately, for as long as no player can
-// be built. Nothing on the wire says where to play a holding — `holdings[]`
-// carries an identifier and no location — so a player added today could only
-// work by composing an address out of a stack's address and an id, which is
-// precisely the second copy of the library that survived. The over-enforcement
-// and the gap have the same lifetime: when the contract carries a location,
-// this is re-aimed at what the surviving rows actually forbid, and the
-// requirements register beside it says so.
+// What this reads for is every media player, which is **stronger than those
+// rows ask**, and it is the only form of them that can be enforced while the
+// contract names nothing to play. `holdings[]` carries an identifier, a medium,
+// a title and a year: no location a holding can be streamed from, and no
+// authorisation for the member to stream it. A player added now could only work
+// by composing an address out of a stack's address and an id, and by presenting
+// a credential this app does not hold for that member — the second copy of the
+// library and of the entitlement those rows refuse. The register of what the
+// contract does not carry holds that gap, and its row names this rule as the
+// one to replace when the gap closes.
 //
 // A requirement kept by *not* doing something, which is the kind that erodes.
-// Nobody decides to turn the companion into a player. What happens is that a
-// member taps a title, there is nowhere to send them yet, and playing it right
-// there is four lines on each platform — `ExoPlayer.Builder(context).build()`,
-// `AVPlayer(url:)` — and looks like the app finally doing something useful.
-//
-// The reason it is refused is not tidiness. A player is a second surface for
-// everything the household client already solves: transcoding decisions,
-// resume points, subtitles, parental limits, what counts as watched. Two of
-// those disagreeing is a member told they may watch something the client then
-// refuses, or a resume point that moves backwards. The member's half is the same
-// argument about limits, and this is it about playback.
+// Nobody decides to build the player early. What happens is that a member taps
+// a title, and playing it right there is four lines on each platform —
+// `ExoPlayer.Builder(context).build()`, `AVPlayer(url:)` — pointed at an
+// address somebody assembled, which looks like the app finally doing something
+// useful and is the app deciding which media server the household runs.
 //
 // Read over the platform sources rather than over the PHP, because that is
 // where it enters: playing media is a platform capability and the PHP side can
@@ -108,11 +99,12 @@ it('N3-R14 — no platform source reaches for a media player', function (): void
 
     expect($found)->toBe([], sprintf(
         "These play media on the device:\n  %s\n\n"
-        . 'A player may exist here one day and cannot yet: nothing on the wire says '
-        . 'where to play a holding, so one added now could only work by composing an '
-        . "address, which is the second copy of the library N3-R14 refuses.\n"
-        . 'Until the contract carries a location, hand off to the client that already '
-        . 'knows the transcoding, the resume points, the subtitles and what a member is '
+        . 'No player can be built: nothing on the wire says where a holding is '
+        . 'streamed from or authorises the member to stream it, so one added now could '
+        . 'only work by composing an address and presenting a credential this app does '
+        . "not hold for them, which is the second copy of the library N3-R14 refuses.\n"
+        . 'The gap is the stream_from row in WhatTheContractDoesNotCarryTest; until it '
+        . 'closes, a member watches in the client that already knows what they are '
         . 'allowed to watch (N3-R14, N3-R16, N3-R11).',
         implode("\n  ", $found),
     ));
