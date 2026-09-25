@@ -340,7 +340,7 @@ final class HowThisStackIs extends NativeComponent
     }
 
     /** The ports the one line is listened for with, which only this screen holds. */
-    private function listensWith(): WhatItListensWith
+    protected function listensWith(): WhatItListensWith
     {
         return new WhatItListensWith($this->hearing, $this->clock, $this->capture);
     }

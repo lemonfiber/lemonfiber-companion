@@ -136,7 +136,7 @@ trait HearsHowTheStackIs
     abstract public function stack(): Stack;
 
     /** The ports this screen listens with, handed over by the screen that holds them. */
-    abstract private function listensWith(): WhatItListensWith;
+    abstract protected function listensWith(): WhatItListensWith;
 
     private function heardSoFar(): WhatWasHeardSoFar
     {
