@@ -49,7 +49,6 @@ function aServiceThatIsRunning(): Daemon
     return Daemon::called(
         'Sonarr',
         ServiceId::called('sonarr'),
-        Form::called('downloads'),
         HowAServiceRuns::Running,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),

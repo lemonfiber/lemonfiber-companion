@@ -13,7 +13,6 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\StatusEnvelope;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
-use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
@@ -41,9 +40,14 @@ use function trim;
  * with the machine the first time lemonfiber changed how it weighs a degraded
  * service, and the phone would be the one that was wrong.
  *
- * **The forms arrive whether or not anything in them is running.** A form with
- * everything stopped is exactly the form an operator opens the app to start, so
- * taking the list from the rows would hide the one form worth acting on.
+ * **The forms are handed in rather than read here.** This envelope's `forms`
+ * are the forms the reading was asked about, and the whole-stack reading asks
+ * about none — so on this answer the field is empty however many forms the
+ * stack declares. Nor are they taken from the rows: each row's `profile` is the
+ * one compose profile the service belongs to, which is not a form, and a list
+ * built from the rows would also hide a form with everything in it stopped —
+ * the one an operator opens the app to start. {@see Repertoires} reads the
+ * forms off the one answer that lists them.
  *
  * **A service that ended is built by a different constructor.** The wire may
  * carry `exit` and may not, and {@see Daemon::thatExited()} is what `C2` leaves
@@ -56,8 +60,9 @@ final readonly class Rosters
      * What the stack is running, in the order it listed it.
      *
      * @param Envelope<mixed> $envelope the `status` envelope, as the client returned it
+     * @param Forms           $forms    every form the stack declares, as {@see Repertoires} read them
      */
-    public static function in(Envelope $envelope): Daemons
+    public static function in(Envelope $envelope, Forms $forms): Daemons
     {
         $data = self::payload(Wire::checked($envelope));
 
@@ -67,7 +72,7 @@ final readonly class Rosters
 
         return Daemons::of(
             self::condition($data),
-            self::forms($data),
+            $forms,
             Costs::in($data),
             ...self::services($data),
         );
@@ -146,28 +151,6 @@ final readonly class Rosters
     }
 
     /**
-     * Every form the stack has, in the order it listed them.
-     *
-     * @param array<mixed> $data
-     */
-    private static function forms(array $data): Forms
-    {
-        $forms = [];
-        $position = 0;
-
-        foreach (self::listed($data, WireField::Forms) as $said) {
-            if (! is_string($said) || trim($said) === '') {
-                throw RosterIsUnreadable::form($position);
-            }
-
-            $forms[] = Form::called($said);
-            $position++;
-        }
-
-        return $forms === [] ? Forms::none() : Forms::these(...$forms);
-    }
-
-    /**
      * Every service, refusing any row this app cannot show.
      *
      * @param  array<mixed> $data
@@ -224,7 +207,6 @@ final readonly class Rosters
     {
         $name = self::text($row, WireField::Name, $position);
         $id = ServiceId::called(self::text($row, WireField::Id, $position));
-        $profile = Form::called(self::text($row, WireField::Profile, $position));
         $runs = self::runs($row, $position);
         $matters = self::matters($row, $position);
         $leaning = self::leaning($row, $position);
@@ -232,10 +214,10 @@ final readonly class Rosters
         $code = self::howItEnded($row, $position);
 
         if ($code === null) {
-            return Daemon::called($name, $id, $profile, $runs, $matters, $leaning);
+            return Daemon::called($name, $id, $runs, $matters, $leaning);
         }
 
-        return Daemon::thatExited($name, $id, $profile, $runs, $matters, $leaning, $code);
+        return Daemon::thatExited($name, $id, $runs, $matters, $leaning, $code);
     }
 
     /**

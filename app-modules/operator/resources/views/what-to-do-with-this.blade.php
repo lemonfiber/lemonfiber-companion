@@ -72,9 +72,6 @@
         <native:text>{{ __('health.a_whole_form') }}</native:text>
     @else
         <native:text>{{ __($this->thing()->service->runsSaid) }}</native:text>
-        <x-operator::note>
-            {{ __('health.in_form', ['form' => $this->thing()->service->form]) }}
-        </x-operator::note>
         <x-operator::note>{{ __($this->thing()->service->mattersSaid) }}</x-operator::note>
 
         @if ($this->thing()->service->exited !== '')

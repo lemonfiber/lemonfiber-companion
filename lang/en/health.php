@@ -188,12 +188,11 @@ return [
     // The supervising screen. The verbs above are the buttons; these are the
     // sentences around them — what a row says about itself, and what a stop is stated to
     // disturb before anybody agrees to it.
-    'in_form' => 'Part of :form',
     'it_exited' => 'It ended with :code',
     'host_runs_it' => 'This machine runs it, not the stack',
     'read_its_logs' => 'Read what it has been saying',
     'nothing_is_running' => 'Nothing is running on this machine',
-    'no_forms_at_all' => 'Nothing has been set up on this machine yet',
+    'no_forms_at_all' => 'This stack declares no forms',
     'by_form' => 'Or a whole form at once',
 
     // The second granularity, on the screen about one of them. A route

@@ -37,7 +37,6 @@ final readonly class WhatOneServiceSays
     /**
      * @param ServiceId    $id          what a verb is asked for by, and what its logs are read for
      * @param string       $name        what the operator recognises it as
-     * @param string       $form        which form it belongs to
      * @param string       $runsSaid    the key for how it is running
      * @param string       $mattersSaid the key for how much it matters
      * @param bool         $isSettling  whether it becomes something else by itself
@@ -50,7 +49,6 @@ final readonly class WhatOneServiceSays
     public function __construct(
         public ServiceId $id,
         public string $name,
-        public string $form,
         public string $runsSaid,
         public string $mattersSaid,
         public bool $isSettling,

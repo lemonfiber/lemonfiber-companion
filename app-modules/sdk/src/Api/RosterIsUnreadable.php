@@ -62,14 +62,6 @@ final class RosterIsUnreadable extends InvalidArgumentException
         ));
     }
 
-    public static function form(int $position): self
-    {
-        return new self(sprintf(
-            'Form %d in the status envelope is not a name. The forms are what a whole-form verb is asked for by, so one that cannot be read is one nobody can act on.',
-            $position,
-        ));
-    }
-
     public static function leaning(int $position): self
     {
         return new self(sprintf(

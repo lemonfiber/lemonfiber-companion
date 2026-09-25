@@ -30,7 +30,6 @@ function oneItRuns(string $name, HowAServiceRuns $runs = HowAServiceRuns::Health
     return Daemon::called(
         $name,
         ServiceId::called($name),
-        Form::called('media'),
         $runs,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),

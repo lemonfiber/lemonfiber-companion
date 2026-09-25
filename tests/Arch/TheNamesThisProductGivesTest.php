@@ -48,7 +48,7 @@ use Tests\Support\Catalogue;
  * operator will meet it again.
  */
 const THE_NAMES_THIS_PRODUCT_GIVES = [
-    'form' => 'names a group in a compose file and an argument to the verbs that act on one',
+    'form' => 'names a combination of profiles a stack declares, and an argument to the verbs that act on one',
     'stack' => 'names the machine in every command, every path and every page of the documentation',
 ];
 

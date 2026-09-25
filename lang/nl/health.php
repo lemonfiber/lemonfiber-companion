@@ -184,12 +184,11 @@ return [
     // The supervising screen. The verbs above are the buttons; these are the
     // sentences around them — what a row says about itself, and what a stop is stated to
     // disturb before anybody agrees to it.
-    'in_form' => 'Onderdeel van :form',
     'it_exited' => 'Gestopt met :code',
     'host_runs_it' => 'Deze machine draait hem, niet de stack',
     'read_its_logs' => 'Lees wat hij gezegd heeft',
     'nothing_is_running' => 'Er draait niets op deze machine',
-    'no_forms_at_all' => 'Er is nog niets ingericht op deze machine',
+    'no_forms_at_all' => 'Deze stack declareert geen forms',
     'by_form' => 'Of een hele form tegelijk',
 
     // The second granularity, on the screen about one of them. A route

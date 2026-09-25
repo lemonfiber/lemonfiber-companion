@@ -32,9 +32,9 @@ use Traversable;
  *
  * **The forms are carried beside the services**, because what is asked for is start,
  * stop and restart *by form* as well as by service, and a form with no service
- * running in it still exists — a stack whose whole media form is stopped has a
- * form an operator wants to start, and deriving the list from the rows would
- * lose exactly that one.
+ * running in it still exists — a stack whose `library` form is wholly stopped
+ * has a form an operator wants to start, and deriving the list from the rows
+ * would lose exactly that one.
  *
  * Empty is a legitimate value: a stack that runs nothing is `Inactive`, which
  * is a state rather than a missing list.

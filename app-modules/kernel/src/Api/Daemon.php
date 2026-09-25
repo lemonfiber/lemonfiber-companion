@@ -41,7 +41,6 @@ final readonly class Daemon
     private function __construct(
         private ServiceId $id,
         private string $name,
-        private Form $profile,
         private HowAServiceRuns $runs,
         private HowMuchItMatters $matters,
         private WhatLeansOnIt $leaning,
@@ -58,7 +57,6 @@ final readonly class Daemon
     public static function called(
         string $name,
         ServiceId $id,
-        Form $profile,
         HowAServiceRuns $runs,
         HowMuchItMatters $matters,
         WhatLeansOnIt $leaning,
@@ -69,7 +67,7 @@ final readonly class Daemon
             throw ServiceIsUnnamed::whereOneWasExpected();
         }
 
-        return new self($id, $shown, $profile, $runs, $matters, $leaning);
+        return new self($id, $shown, $runs, $matters, $leaning);
     }
 
     /**
@@ -85,15 +83,14 @@ final readonly class Daemon
     public static function thatExited(
         string $name,
         ServiceId $id,
-        Form $profile,
         HowAServiceRuns $runs,
         HowMuchItMatters $matters,
         WhatLeansOnIt $leaning,
         int $code,
     ): self {
-        $was = self::called($name, $id, $profile, $runs, $matters, $leaning);
+        $was = self::called($name, $id, $runs, $matters, $leaning);
 
-        return new self($was->id, $was->name, $was->profile, $was->runs, $was->matters, $was->leaning, $code);
+        return new self($was->id, $was->name, $was->runs, $was->matters, $was->leaning, $code);
     }
 
     /** What an action is asked for by, and what its scrollback is read for. */
@@ -106,12 +103,6 @@ final readonly class Daemon
     public function name(): string
     {
         return $this->name;
-    }
-
-    /** Which form it belongs to, for reading a stack by form. */
-    public function profile(): Form
-    {
-        return $this->profile;
     }
 
     /** Where it stands right now. */

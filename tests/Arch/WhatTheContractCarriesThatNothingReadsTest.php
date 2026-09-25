@@ -227,6 +227,25 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'is one of four sentences this app has written and not a page of the core\'s.',
     ],
     [
+        'path' => 'FormsEnvelope.forms[].name',
+        'because' => 'What a form is called, in the stack\'s words. The `id` is what `up`, `down` and '
+            . '`restart` are told, and a control here shows the id so that its label and its request '
+            . 'cannot disagree. The stack\'s own name beside it would read better, and no requirement in '
+            . '`N2` asks for it — raise it before reading it, which is `N1-R17`.',
+    ],
+    [
+        'path' => 'FormsEnvelope.forms[].description',
+        'because' => 'What a form is for, in one line of the stack\'s. `N18-R4` has what a form would '
+            . 'start shown before it is started, and that is the `preview` reading rather than this '
+            . 'line; nothing asks for the line on its own.',
+    ],
+    [
+        'path' => 'FormsEnvelope.forms[].composable',
+        'because' => 'Whether a form can run alongside another. This app starts one form per tap, and a '
+            . 'combination the stack cannot compose is refused by the stack in its own words, which is '
+            . 'an answer. Saying it before the choice is made is a screen `N18` has not reached.',
+    ],
+    [
         'path' => 'HouseholdEnvelope.findings',
         'because' => 'Plain sentences about the listing itself, beside the members. `N2-R3` has a finding '
             . 'carry a code, a meaning and a remedy, and those arrive on the `doctor` envelope; a bare '
@@ -294,6 +313,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'and reading it to decide would put a second answer beside the one the call site is holding.',
     ],
     [
+        'path' => 'StatusEnvelope.forms',
+        'because' => 'The forms this reading was asked about, which is not the forms the stack declares. '
+            . '`/api/status` asks about none, so on the one reading of it this app makes the field is '
+            . 'always empty — read as the stack\'s forms, it drew no form control against a real stack. '
+            . 'The forms are read from `FormsEnvelope.forms`, the one answer that lists them.',
+    ],
+    [
         'path' => 'StatusEnvelope.disturbs.stopping_after_downloads',
         'because' => 'What stopping after the downloads finish would take away. `N2-R7` offers start, stop '
             . 'and restart, so this app has no verb this bound belongs to — and `N2-R8` states the bound on '
@@ -302,6 +328,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     [
         'path' => 'StatusEnvelope.disturbs.switching',
         'because' => 'The same, for switching. A verb this surface does not offer.',
+    ],
+    [
+        'path' => 'StatusEnvelope.services[].profile',
+        'because' => 'The compose profile a service belongs to. Profiles are how the stack assembles a '
+            . 'form, and `B1` keeps them from the operator: they are not selectable (`B1-R8`), and the '
+            . 'one place `N18` shows them is a form\'s preview before it is started (`N18-R4`), which '
+            . 'is the `preview` reading rather than this field.',
     ],
     [
         'path' => 'StatusEnvelope.services[].describes',

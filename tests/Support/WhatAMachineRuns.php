@@ -52,31 +52,33 @@ final readonly class WhatAMachineRuns
         return Daemon::called(
             ucfirst($id),
             ServiceId::called($id),
-            Form::called('downloads'),
             $runs,
             HowMuchItMatters::Important,
             $leaning ?? WhatLeansOnIt::nothing(),
         );
     }
 
-    /** Two services in one form, one of them leaned on by the other. */
+    /**
+     * Two services, one of them leaned on by the other, on a stack declaring
+     * two forms.
+     */
     public static function twoThings(): Daemons
     {
         return Daemons::of(
             HowTheStackIsRunning::Active,
-            Forms::these(Form::called('downloads'), Form::called('media')),
+            Forms::these(Form::called('library'), Form::called('full')),
             self::whatTheVerbsCost(),
             self::aService('sonarr', leaning: WhatLeansOnIt::these(ServiceId::called('jellyfin'))),
             self::aService('jellyfin'),
         );
     }
 
-    /** One service in one form, however that one is running. */
+    /** One service, on a stack declaring one form, however that one is running. */
     public static function oneThing(string $id, HowAServiceRuns $runs, HowTheStackIsRunning $overall): Daemons
     {
         return Daemons::of(
             $overall,
-            Forms::these(Form::called('downloads')),
+            Forms::these(Form::called('library')),
             self::whatTheVerbsCost(),
             self::aService($id, $runs),
         );

@@ -27,6 +27,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 /** The machine whose services this screen is about. */
 function theStackWhoseServicesAreRead(): Stack
@@ -62,7 +63,7 @@ function theServicesScreen(
     return $screen;
 }
 
-it('N2-R7 — shows every service, how it runs, and which form it is in', function (): void {
+it('N2-R7 — shows every service, and how it runs', function (): void {
     $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
     $answer = $screen->answer();
 
@@ -78,7 +79,6 @@ it('N2-R7 — shows every service, how it runs, and which form it is in', functi
         // it* under a machine where nothing went wrong.
         ->and($answer->went->remedy)->toBe('')
         ->and($answer->services[0]->id->named())->toBe('sonarr')
-        ->and($answer->services[0]->form)->toBe('downloads')
         ->and($answer->services[0]->runsSaid)->toBe(HowAServiceRuns::Running->saidOnTheScreen());
 });
 
@@ -101,19 +101,42 @@ it('N2-R7 — carries the forms whether or not anything in them is running', fun
     // screen to start, and a listing assembled from the rows would not have it.
     $running = Daemons::of(
         HowTheStackIsRunning::Partial,
-        Forms::these(Form::called('downloads'), Form::called('media')),
+        Forms::these(Form::called('library'), Form::called('full')),
         WhatAMachineRuns::whatTheVerbsCost(),
         WhatAMachineRuns::aService(),
     );
 
     expect(theServicesScreen(AStackThatSupervises::with($running))->answer()->forms)
-        ->toBe(['downloads', 'media']);
+        ->toBe(['library', 'full']);
+});
+
+it('N2-R7 — draws a control for each form the stack declares', function (): void {
+    // The stack declares `library` and `full`, and a control is drawn for
+    // each, so the form an operator opens this screen to start is on it.
+    $drawn = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())))->said();
+
+    expect($drawn)->toContain(__('health.open_form', ['name' => 'library']))
+        ->and($drawn)->toContain(__('health.open_form', ['name' => 'full']))
+        ->and($drawn)->not->toContain(__('health.no_forms_at_all'));
+});
+
+it('a stack that declares no forms says that, rather than that nothing is set up', function (): void {
+    $none = Daemons::of(
+        HowTheStackIsRunning::Active,
+        Forms::none(),
+        WhatAMachineRuns::whatTheVerbsCost(),
+        WhatAMachineRuns::aService(),
+    );
+
+    $drawn = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with($none)))->said();
+
+    expect($drawn)->toContain('This stack declares no forms');
 });
 
 it('N1-R27 — looks again only while something is settling', function (): void {
     $settling = Daemons::of(
         HowTheStackIsRunning::Partial,
-        Forms::these(Form::called('downloads')),
+        Forms::these(Form::called('library')),
         WhatAMachineRuns::whatTheVerbsCost(),
         WhatAMachineRuns::aService('sonarr', HowAServiceRuns::Starting),
     );

@@ -41,7 +41,6 @@ final readonly class HowAServiceReads
         return new WhatOneServiceSays(
             id: $daemon->id(),
             name: $daemon->name(),
-            form: $daemon->profile()->named(),
             runsSaid: $daemon->runs()->saidOnTheScreen(),
             mattersSaid: $daemon->matters()->saidOnTheScreen(),
             isSettling: $daemon->runs()->isSettling(),

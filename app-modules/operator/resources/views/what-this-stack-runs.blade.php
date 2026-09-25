@@ -41,8 +41,9 @@
     @endforelse
 
     {{-- The other granularity. The forms come from the stack's own list
-         rather than from the rows, so the form an operator opened this
-         screen to start — the one with nothing running in it — is here. --}}
+         of the forms it declares rather than from the rows — a row's
+         profile is not a form — so the form an operator opened this screen
+         to start, the one with nothing running in it, is here. --}}
     <x-operator::emphasis>{{ __('health.by_form') }}</x-operator::emphasis>
 
     @forelse ($this->answer()->forms as $form)
@@ -59,9 +60,9 @@
             <native:divider />
         @endunless
     @empty
-        {{-- A stack with no forms at all is a machine nothing has been set
-             up on, which is not the same as one whose forms are all
-             stopped — and it is not something *ask again* fixes. --}}
+        {{-- A stack that declares no forms at all, which is not the same as
+             one whose forms are all stopped — and it is not something *ask
+             again* fixes. --}}
         <native:text>{{ __('health.no_forms_at_all') }}</native:text>
     @endforelse
 
