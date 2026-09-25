@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Report;
@@ -23,8 +24,11 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 
 // "Stuck downloads, provider health, disk pressure and VPN verification
@@ -84,6 +88,9 @@ function theScreenTheFourAreReachedFrom(): HowThisStackIs
         AStackThatWasAsked::saying(aRunTouchingEachOfTheFour()),
         $keychain,
         StacksInMemory::holding($stack),
+        AStackThatSpeaksUp::holdingOpen(),
+        FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
+        ACaptureInMemory::inFront(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

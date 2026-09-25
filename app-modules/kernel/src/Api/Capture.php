@@ -52,4 +52,14 @@ interface Capture
 
     /** Whether the window is protected from capture right now. */
     public function isProtected(): bool;
+
+    /**
+     * Whether the app is in front of somebody right now.
+     *
+     * Asked of the same observer the protection is decided by, because the
+     * question is the same one: the platform said the app went away, and has
+     * not said it came back. A screen holding a subscription asks it on every
+     * wake, and lets go of the subscription while the answer is no.
+     */
+    public function isInFront(): bool;
 }

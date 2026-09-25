@@ -37,16 +37,40 @@ enum HowOften: string
     /**
      * While a stack is carrying out a repair the operator agreed to.
      *
-     * The only content in this app that changes on its own. Five seconds
-     * because a repair takes seconds to minutes and an operator is watching
+     * Five seconds because a repair takes seconds to minutes and an operator is watching
      * the screen while it runs — long enough not to hammer a machine on a home
      * network, short enough that *it finished* arrives while they are still
      * looking.
      */
     case WhileWorkRuns = 'while_work_runs';
 
+    /**
+     * While a screen holds a subscription to what a stack says about itself.
+     *
+     * Taking what has arrived sends nothing to the stack, so this is how often
+     * the screen looks at what it already holds, and how soon a silence past
+     * the contract's bound is noticed. Two seconds because the core gathers
+     * every second: a change is on the screen within two of it happening, and
+     * the screen is drawn half as often as the core speaks.
+     */
+    case WhileListening = 'while_listening';
+
+    /**
+     * After a subscription broke or could not be opened, before it is opened again.
+     *
+     * Ten seconds because opening is a call to a machine that has just failed
+     * to answer, and one a stack that is restarting is not ready for sooner.
+     */
+    case AfterABreak = 'after_a_break';
+
     /** The interval, in the milliseconds `#[Poll]` counts. */
     public const int WHILE_WORK_RUNS_MS = 5_000;
+
+    /** The interval a screen holding a subscription looks at what arrived, in milliseconds. */
+    public const int WHILE_LISTENING_MS = 2_000;
+
+    /** The wait before a broken subscription is opened again, in milliseconds. */
+    public const int AFTER_A_BREAK_MS = 10_000;
 
     /** A thousand of them to the second, which is the only unit an operator reads. */
     private const int A_SECOND = 1_000;
@@ -56,6 +80,8 @@ enum HowOften: string
     {
         return match ($this) {
             self::WhileWorkRuns => self::WHILE_WORK_RUNS_MS,
+            self::WhileListening => self::WHILE_LISTENING_MS,
+            self::AfterABreak => self::AFTER_A_BREAK_MS,
         };
     }
 

@@ -141,4 +141,16 @@ public object LemonfiberFunctions {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> =
             mapOf("protected" to rule.mustProtect)
     }
+
+    /**
+     * `Lemonfiber.IsInFront` — whether the app is in front of somebody right now.
+     *
+     * The rule's own record of the last pause or resume, for the reason
+     * [IsProtected] reads the rule: this call arrives from the bridge thread and
+     * the rule is what the lifecycle callbacks wrote.
+     */
+    public class IsInFront(private val activity: FragmentActivity) : BridgeFunction {
+        override fun execute(parameters: Map<String, Any>): Map<String, Any> =
+            mapOf("inFront" to rule.foreground)
+    }
 }

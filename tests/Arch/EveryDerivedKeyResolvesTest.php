@@ -15,6 +15,7 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowLongAgo;
@@ -180,6 +181,10 @@ function everyDerivedKey(): array
         Overall::class => aPairPerCase(
             Overall::cases(),
             static fn(Overall $overall): array => [$overall->saidOnTheScreen()],
+        ),
+        HowItStands::class => aPairPerCase(
+            HowItStands::cases(),
+            static fn(HowItStands $standing): array => [$standing->saidOnTheScreen()],
         ),
         Category::class => aPairPerCase(
             Category::cases(),

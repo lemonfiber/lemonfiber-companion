@@ -32,6 +32,8 @@ enum Call: string
     /** Whether the window is protected from capture right now. */
     case IsProtected = 'Lemonfiber.IsProtected';
 
+    case IsInFront = 'Lemonfiber.IsInFront';
+
     /**
      * Ask the device who this is.
      *

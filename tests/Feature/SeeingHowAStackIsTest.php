@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
@@ -36,8 +37,11 @@ use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -117,20 +121,18 @@ function theHealthScreen(
     $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack));
+    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
 }
 
-it('N1-R2 — shows what the checks found, and what it amounts to', function (): void {
-    // Both halves, because the top one is not derived from the bottom: a screen
-    // working the word out from the findings would be a second opinion about a
-    // judgement the engine already made.
+it('N1-R2 — shows what the checks found', function (): void {
+    // What it amounts to is the core's one line, which this screen holds from
+    // the event stream rather than working out from the findings.
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
-    expect($screen->answer()->overall)->toBe(Overall::Degraded->saidOnTheScreen())
-        ->and($screen->howMany())->toBe(1)
+    expect($screen->howMany())->toBe(1)
         // Neither of the obstacle's two keys, because nothing was met. The
         // template branches on these being empty, so a word here would put a
         // refusal above a report that arrived.
@@ -285,7 +287,7 @@ it('N1-R44 — asking again notices a session that has ended underneath them', f
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
 
-    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack));
+    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue();
@@ -317,7 +319,6 @@ it('N1-R10 — says what the operator met where the stack did not answer', funct
 
         expect($screen->answer()->went->met)->toBe(sprintf('connection.%s', $why->value), $why->value)
             ->and($screen->answer()->went->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
-            ->and($screen->answer()->overall)->toBe('', $why->value)
             // Nothing ran, so nothing is marked and no legend is owed.
             ->and($screen->answer()->marksAnOrigin)->toBeFalse($why->value)
             // Still signed in. An obstacle is the stack not answering, not this
@@ -338,13 +339,12 @@ it('N1-R44 — a session that has ended sends them to sign in rather than to an 
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
     $stack = theStackBeingLookedAt();
 
-    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), StacksInMemory::holding($stack));
+    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->answer()->went->remedy)->toBe('')
-        ->and($screen->answer()->overall)->toBe('')
         ->and($screen->answer()->marksAnOrigin)->toBeFalse()
         ->and($asking->askings())->toBe(0);
 });
@@ -888,8 +888,7 @@ it('N3-R13 — a credential the stack refused signs this device out', function (
         ->and($screen->answer()->went->met)->toBe('')
         ->and($screen->answer()->went->remedy)->toBe('')
         // And nothing already loaded: that half is named separately.
-        ->and($screen->howMany())->toBe(0)
-        ->and($screen->answer()->overall)->toBe('');
+        ->and($screen->howMany())->toBe(0);
 });
 
 it('N3-R13 — and the session is let go of, not merely hidden', function (): void {
@@ -990,7 +989,7 @@ it('N1-R2 — the findings reach the glass, not only the view model', function (
 
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($drawn->said())->toContain(__(Overall::Degraded->saidOnTheScreen()))
+    expect($drawn->said())->toContain(__('health.summary.waiting'))
         ->and($drawn->said())->toContain($screen->findings()[0]->title);
 });
 

@@ -154,4 +154,14 @@ enum LemonfiberFunctions {
             BridgeResponse.success(data: ["protected": rule.mustProtect])
         }
     }
+
+    /// `Lemonfiber.IsInFront`: whether the app is in front of somebody right now.
+    ///
+    /// The rule's own record of the last resign or become-active, which is
+    /// what the observers installed at launch wrote.
+    class IsInFront: BridgeFunction {
+        func execute(parameters: [String: Any]) throws -> [String: Any] {
+            BridgeResponse.success(data: ["inFront": rule.foreground])
+        }
+    }
 }

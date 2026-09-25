@@ -13,6 +13,7 @@ use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItWasReached;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowMuchItMatters;
@@ -118,6 +119,21 @@ function theGeneratedHeldEnvelope(): string
 function theGeneratedLogEnvelope(): string
 {
     return theGeneratedEnvelope('LogEnvelope');
+}
+
+/**
+ * The health summary inside the generated `dashboard` envelope, as text.
+ *
+ * Cut out of the envelope because the dashboard names `standing` twice, once
+ * for the front door and once for the summary, and two unions under one name
+ * are no union at all to the reading above.
+ */
+function theGeneratedHealthSummary(): string
+{
+    $dashboard = theGeneratedEnvelope('DashboardEnvelope');
+    $from = (int) strpos($dashboard, 'health: array{');
+
+    return substr($dashboard, $from, (int) strpos($dashboard, 'household:', $from) - $from);
 }
 
 /** The generated envelope that carries what a stack is set to, as text. */
@@ -412,6 +428,13 @@ it('N1-R13 — every repair outcome the contract describes has a case', function
 
     expect($outcomes)->not->toBe([], 'no repair outcome was found in the generated envelope');
     expect(valuesOf(WhatBecameOfIt::cases()))->toBe($outcomes);
+});
+
+it('every word the health summary may stand at has a case', function (): void {
+    $standings = unionIn(theGeneratedHealthSummary(), 'standing');
+
+    expect($standings)->not->toBe([], 'no standing union was found in the generated health summary');
+    expect(valuesOf(HowItStands::cases()))->toBe($standings);
 });
 
 it('N1-R13 — every overall the contract describes has a case', function (): void {
@@ -821,6 +844,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     Category::class => 'category',
     Conclusion::class => 'outcome',
     Overall::class => 'overall',
+    HowItStands::class => 'standing',
     Severity::class => 'severity',
     WhoSettledIt::class => 'whose',
     HowItWasReached::class => 'how',

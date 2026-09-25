@@ -65,6 +65,11 @@ const DOORS_THE_APP_OPENS = [
     // answer is one document a line rather than one envelope.
     'logs' => 'reads the tail of one service, bounded and named',
 
+    // The event stream, which is where the core publishes the health summary
+    // and nowhere else. It reads and changes nothing, and a screen holds it
+    // only while somebody can see it.
+    'eventSource' => 'listens to the stack\'s event stream for the health summary, changing nothing',
+
     // The one thing this app can ask a stack to change,
     // and it takes a `Repair` the stack itself offered rather than an endpoint
     // and a body. A caller cannot spell an arbitrary change through it.

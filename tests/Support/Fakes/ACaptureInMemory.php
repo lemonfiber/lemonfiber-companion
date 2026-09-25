@@ -58,9 +58,20 @@ final class ACaptureInMemory implements Capture
         return $this->concealed || ! $this->foreground;
     }
 
+    public function isInFront(): bool
+    {
+        return $this->foreground;
+    }
+
     /** The app moves out of the foreground, which protects the window on its own. */
     public function backgrounded(): void
     {
         $this->foreground = false;
+    }
+
+    /** The app is in front of somebody again. */
+    public function cameBack(): void
+    {
+        $this->foreground = true;
     }
 }

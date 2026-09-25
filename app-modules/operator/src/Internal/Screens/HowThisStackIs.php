@@ -12,10 +12,13 @@ use Modules\Health\Api\Queries\InCategory;
 use Modules\Health\Api\Queries\TheCauseBeforeItsSymptoms;
 use Modules\Health\Api\Queries\WorstFirst;
 use Modules\Kernel\Api\Asking;
+use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Category;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
+use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\SecureStorage;
@@ -24,6 +27,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
 use Modules\Operator\Internal\Presenters\HowAFindingReads;
@@ -45,19 +49,25 @@ use function view;
  * away from the machine can see whether their stack is doing what it should,
  * and until this screen existed the app could get in and had nothing to show.
  *
- * **It asks once, when the frame is built, and holds what came back.** One read
- * says the reading is one act per frame: a home network and a machine that may be
- * asleep are the wrong things to talk to four times a second, and `F4` says
- * a frame is not where a socket is opened. The answer is a value on this
- * screen, so every accessor below reads what one asking produced rather than
- * asking again.
+ * **The one line is the core's, held rather than read.** The health summary
+ * every surface says is computed once by the core and published on its event
+ * stream, so this screen holds a subscription to it through
+ * {@see HearsHowTheStackIs}, and draws what arrives as it arrives. That is the
+ * line an operator reads first, and it is the same line the terminal and the
+ * browser say.
  *
- * **Asking again is the operator's to decide**, which is what {@see again()}
- * is and why there is no timer beside it. Somebody who has just gone and
- * restarted a service wants to know whether it took, and a screen that could
- * only be re-asked by leaving it and coming back teaches them to distrust what
- * it says. The cadence rule is about the app not talking to a machine unprompted; a tap
- * is a prompt.
+ * **The findings are asked for once, when the frame is built, and held.** One
+ * read says the reading is one act per frame: a home network and a machine
+ * that may be asleep are the wrong things to talk to four times a second, and
+ * `F4` says a frame is not where a socket is opened. The answer is a value on
+ * this screen, so every accessor below reads what one asking produced rather
+ * than asking again.
+ *
+ * **Asking for the findings again is the operator's to decide**, which is what
+ * {@see again()} is. Somebody who has just gone and restarted a service wants to
+ * know whether it took, and a screen that could only be re-asked by leaving it
+ * and coming back teaches them to distrust what it says. The cadence rule is
+ * about the app not talking to a machine unprompted; a tap is a prompt.
  *
  * **It reads the session back rather than being handed one.** A screen given a
  * session is a screen that has to be navigated to with one, which is a session
@@ -76,6 +86,7 @@ use function view;
 #[Concealed]
 final class HowThisStackIs extends NativeComponent
 {
+    use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;
 
     /**
@@ -121,6 +132,9 @@ final class HowThisStackIs extends NativeComponent
         private readonly Asking $asking,
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
+        private readonly Hearing $hearing,
+        private readonly Clock $clock,
+        private readonly Capture $capture,
     ) {}
 
     /**
@@ -316,7 +330,7 @@ final class HowThisStackIs extends NativeComponent
      * {@see WhatThisStackRuns::answer()}'s shape and its argument: a method per
      * field is a method this class spends on saying nothing, and at twenty the
      * next fact the template needs costs one it does not have. The template
-     * reads `->met` and `->overall` off what one asking produced, which is also
+     * reads `->went` and `->findings` off what one asking produced, which is also
      * the only thing that could be true of them together.
      */
     public function answer(): WhatTheStackTurnedOutToBe

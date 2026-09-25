@@ -13,3 +13,7 @@ request to a stack can be made.
 A reader passes each envelope through `Modules\Sdk\Internal\Wire`, which refuses a
 wire version this application does not read. An adapter answers with a kernel
 outcome type.
+
+One adapter keeps something between calls: `Listeners`, for `Hearing`, holds a
+stack's event stream open for the one screen it belongs to, and reads it without
+waiting for what has not arrived.

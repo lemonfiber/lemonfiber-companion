@@ -209,6 +209,46 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'and nothing here asks for one, so no answer this app receives carries it.',
     ],
     [
+        'path' => 'DashboardEnvelope.alerts',
+        'because' => 'Alerts as they start and resolve, each with its remedies. What a stack will wake somebody for is read from `AlertsEnvelope`, and every condition standing now reaches this app as an affected item of the health summary, with its remedies. A feed of onsets and resolutions is a log, and no companion requirement asks for one.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.door',
+        'because' => 'How the household reaches the stack. Read from `FrontDoorEnvelope` for the front door\'s own screen; the same answer inside the front page would be a second reading of it on a screen that does not draw it.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.household',
+        'because' => 'The household\'s members and what they asked for. Read from `HouseholdEnvelope` for what the house asked; the same answer inside the front page would be a second reading of it on a screen that does not draw it.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.queue',
+        'because' => 'How deep each service\'s queue is and how many items are stuck in it. What stopped coming in is read from `StuckEnvelope`, and a queue that matters to the operator reaches the health summary as an affected item.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.services',
+        'because' => 'Every service and the state it is in. Read from `StatusEnvelope` for what runs here, from the same gather that feeds this envelope.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.storage',
+        'because' => 'Free space, how long until it runs out, and whether imports link or copy. Read from `SpaceEnvelope` for how full the machine is.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.stuck',
+        'because' => 'The stalled items. Read from `StuckEnvelope` for what stopped coming in.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.telemetry',
+        'because' => 'Whether the core\'s own view of the stack is live, degraded or disconnected. The summary\'s word is already `unknown` where the core cannot tell, and whether this app\'s own reading is current is decided by the stream\'s heartbeat, which is about the connection this app holds rather than about the core\'s.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.transfers',
+        'because' => 'Downloads in flight, with their speed and time left. No companion requirement asks for them, and a figure that moves every second is one this app would draw two seconds late at best.',
+    ],
+    [
+        'path' => 'DashboardEnvelope.vpn',
+        'because' => 'The tunnel\'s exit and whether traffic leaves through it. VPN verification reaches this app as findings in the doctor report, and a failed one as an affected item of the health summary.',
+    ],
+    [
         'path' => 'DoctorEnvelope.findings[].said',
         'because' => 'A summary line beside the meaning. `N2-R3` has a finding carry its code, its meaning '
             . 'and its remedy, and a second sentence saying roughly the meaning again is the core being '
