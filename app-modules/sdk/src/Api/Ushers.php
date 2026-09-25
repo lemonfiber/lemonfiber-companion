@@ -10,6 +10,7 @@ use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
@@ -75,7 +76,7 @@ final readonly class Ushers implements Inviting
             return WhatWasFoundOfTheMembers::found(Households::whoIsIn($envelope));
         } catch (RequestFailed $why) {
             return WhatWasFoundOfTheMembers::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|InvitationSaysNothing) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|InvitationSaysNothing) {
             return WhatWasFoundOfTheMembers::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -89,7 +90,7 @@ final readonly class Ushers implements Inviting
             ));
         } catch (RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|UnreadableResponse) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
             return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -104,7 +105,7 @@ final readonly class Ushers implements Inviting
             ));
         } catch (RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|UnreadableResponse) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
             return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -119,7 +120,7 @@ final readonly class Ushers implements Inviting
             ));
         } catch (RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|UnreadableResponse) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
             return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -130,7 +131,7 @@ final readonly class Ushers implements Inviting
             return $this->outcome($stack, $session, $job);
         } catch (RequestFailed $why) {
             return $this->refusal($why);
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|InvitationIsUnreadable|InvitationSaysNothing) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|InvitationIsUnreadable|InvitationSaysNothing) {
             return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
         }
     }

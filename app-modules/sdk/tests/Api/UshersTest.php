@@ -38,6 +38,7 @@ use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Ushers;
 use RuntimeException;
+use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -118,6 +119,13 @@ function whereItGot(WhatBecameOfTheInvitation $became): string
 function theHandleJ1(): array
 {
     return ['api_version' => 1, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'invite']];
+}
+
+/** A connection refused before any answer exists, as a stack that is off or out of reach meets the device. */
+function nothingAnswering(): MockResponse
+{
+    return MockResponse::make()->throw(static fn(PendingRequest $asked): FatalRequestException
+        => new FatalRequestException(new RuntimeException('Connection refused'), $asked));
 }
 
 /** A stack taking the work on under the name `j-1`. */
@@ -269,6 +277,7 @@ it('hands on the stack\'s own sentence where it refuses the asking or the naming
         [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'invite']]), 202), 'met:StackDidNotAnswer'],
         [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'invitation', 'data' => []]), 202), 'met:StackDidNotAnswer'],
         [MockResponse::make((string) json_encode(['api_version' => 99, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'invite']]), 202), 'met:StackDidNotAnswer'],
+        [nothingAnswering(), 'met:StackDidNotAnswer'],
     ];
 
     foreach ($table as [$answer, $expected]) {
@@ -346,4 +355,18 @@ it('reads who is in off the household the operator\'s requests are read from, an
     }
 
     expect(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', $household))->toBe([]);
+});
+
+it('answers work it cannot ask after, and a household it cannot read, as a stack that did not answer', function (): void {
+    $stack = theStackSomebodyIsAskedInTo();
+    $session = Session::of('a-session-not-a-secret');
+
+    $followed = whereItGot(theUshersAnswering(nothingAnswering())->whatBecameOf($stack, $session, Job::named('j-1')));
+    $read = theUshersAnswering(nothingAnswering())->whoIsIn($stack, $session)->either(
+        found: static fn(TheMembers $members): WhereTheUshersGot => new WhereTheUshersGot(sprintf('found:%d', $members->count())),
+        met: static fn(Obstacle $why): WhereTheUshersGot => new WhereTheUshersGot(sprintf('met:%s', $why->name)),
+    )->said;
+
+    expect($followed)->toBe('met:StackDidNotAnswer')
+        ->and($read)->toBe('met:StackDidNotAnswer');
 });
