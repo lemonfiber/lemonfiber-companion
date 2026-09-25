@@ -7,6 +7,8 @@ use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
+use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
@@ -37,6 +39,7 @@ use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\Repair;
 use Modules\Kernel\Api\Repairs;
 use Modules\Kernel\Api\RequestId;
+use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
@@ -51,11 +54,14 @@ use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
+use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
+use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\Whose;
@@ -64,6 +70,7 @@ use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
+use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
@@ -81,6 +88,7 @@ use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -190,6 +198,21 @@ function aHeldChoiceToSpoilTheAnswerTo(): AHeldChoice
     ));
 }
 
+/** A listing of a copy, to put back against. */
+function aListingToSpoilTheAnswerTo(): WhatPuttingItBackWouldDo
+{
+    return WhatPuttingItBackWouldDo::listed(
+        ACopy::named('lemonfiber-20260924-0300-full'),
+        'an-agreement',
+        ScopeOfACopy::theWholeStack(),
+        '0.9.0',
+        '2026-09-24T03:00:00Z',
+        WhatACopyHolds::these(),
+        older: false,
+        data: WhereTheDataGoes::whereItWas(),
+    );
+}
+
 /**
  * Every adapter call that reads an answer, by what it asks.
  *
@@ -210,6 +233,10 @@ function everyAdapterCallThatReads(): array
         'Advisers::advisedBy' => static fn(): object => new Advisers($clients)->advisedBy($stack, $session),
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
+        'Copiers::take' => static fn(): object
+            => new Copiers($clients, $entropy)->take($stack, $session, ACopyAsked::ofTheWholeStack()),
+        'Copiers::whatBecameOf' => static fn(): object
+            => new Copiers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
@@ -239,6 +266,12 @@ function everyAdapterCallThatReads(): array
         'Recorders::recordedOn' => static fn(): object => new Recorders($clients)->recordedOn($stack, $session),
         'Rehearsers::whatStarting' => static fn(): object
             => new Rehearsers($clients)->whatStarting($stack, $session, Form::called('media')),
+        'Restorers::rehearse' => static fn(): object
+            => new Restorers($clients, $entropy)->rehearse($stack, $session, ACopy::named('lemonfiber-20260924-0300-full')),
+        'Restorers::putBack' => static fn(): object
+            => new Restorers($clients, $entropy)->putBack($stack, $session, aListingToSpoilTheAnswerTo()),
+        'Restorers::whatBecameOf' => static fn(): object
+            => new Restorers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
         'Requests::decided' => static fn(): object
             => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::numbered(1))),
@@ -286,8 +319,9 @@ const THE_WORK_AN_INVITATION_BECOMES = 'the work an invitation becomes';
  * Where an answer is built from an envelope's declaration rather than asked of a path.
  *
  * The stand-in answers every action as work, and no path it serves answers
- * with the `music` or `upgrade` envelope, so a call answered with one of those
- * is given the envelope itself, built by the stand-in from the contract.
+ * with the `music`, `upgrade`, `backup` or `restore` envelope, so a call
+ * answered with one of those is given the envelope itself, built by the
+ * stand-in from the contract.
  */
 const AN_ENVELOPE_BY_NAME = 'envelope:';
 
@@ -303,7 +337,8 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * An invitation's job finishes as an invitation, which no path of the stand-in
  * answers with, so it is given {@see THE_WORK_AN_INVITATION_BECOMES}.
  * A quality choice is given the quality reading, and a choice for music and an
- * upgrade the envelopes each is answered with.
+ * upgrade the envelopes each is answered with. So are a finished copy, the
+ * listing a restore answers without a yes, and a finished restore.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -315,6 +350,8 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Graders::confirm' => Api::QUALITY_ENDPOINT,
         $which === 'Graders::choose' => sprintf('%sMusicEnvelope', AN_ENVELOPE_BY_NAME),
         str_starts_with($which, 'Upgraders::') => sprintf('%sUpgradeEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Copiers::whatBecameOf' => sprintf('%sBackupEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }
