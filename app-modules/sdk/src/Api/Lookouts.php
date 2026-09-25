@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -44,7 +45,7 @@ final readonly class Lookouts implements Outgoing
             // Inside the same `try` as the request, for the argument
             // {@see Recorders::recordedOn()} makes.
             return WhatWasFoundLeaving::leaving(WhatLeaves::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundLeaving::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OutboundIsUnreadable) {
             return WhatWasFoundLeaving::met(Obstacle::StackDidNotAnswer);

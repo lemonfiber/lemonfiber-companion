@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -34,7 +35,7 @@ final readonly class Rehearsers implements Rehearsing
             // Inside the same `try` as the request, for the argument
             // {@see Recorders::recordedOn()} makes.
             return WhatTheRehearsalFound::found(Rehearsals::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheRehearsalFound::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RehearsalIsUnreadable) {
             return WhatTheRehearsalFound::met(Obstacle::StackDidNotAnswer);

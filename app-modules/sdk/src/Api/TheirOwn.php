@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -60,7 +61,7 @@ final readonly class TheirOwn implements Owing
             // same thing to the person reading the screen as one that never
             // arrived.
             return WhatTheyAreOwed::told(Tellings::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheyAreOwed::refused(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|SentenceSaysNothing) {
             // {@see SentenceSaysNothing} is in this list rather than guarded
@@ -105,7 +106,7 @@ final readonly class TheirOwn implements Owing
             // is the same thing to the person reading the screen as one that
             // never arrived.
             return WhatTheyAsked::told(Households::theirOwnIn($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheyAsked::refused(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt) {
             // {@see SentenceSaysNothing} is not in this list, and its absence is

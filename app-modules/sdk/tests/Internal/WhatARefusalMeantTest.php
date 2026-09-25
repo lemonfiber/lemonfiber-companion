@@ -7,9 +7,12 @@ namespace Modules\Sdk\Tests\Internal;
 use function expect;
 use function it;
 
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+
+use function str_repeat;
 
 // What the operator met, given what the far end refused with.
 //
@@ -51,4 +54,16 @@ it('reads everything else as a stack that did not answer', function (): void {
         expect($obstacle)->toBe(Obstacle::StackDidNotAnswer, (string) $status)
             ->and($obstacle->meansWeAreSignedOut())->toBeFalse();
     }
+});
+
+it('reads a peer presenting a certificate the pairing did not name as not the paired stack', function (): void {
+    // Something answered, and it is not the machine paired with. It is never
+    // silence, and it signs nobody out: the session belongs to the paired
+    // machine, which has not been heard from.
+    $obstacle = WhatARefusalMeant::obstacle(
+        CertificateWasRefused::whenAsking('/api/status', str_repeat('b', 64), str_repeat('a', 64)),
+    );
+
+    expect($obstacle)->toBe(Obstacle::StackIsNotTheOnePaired)
+        ->and($obstacle->meansWeAreSignedOut())->toBeFalse();
 });

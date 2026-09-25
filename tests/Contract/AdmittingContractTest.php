@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Admitting;
@@ -185,6 +186,8 @@ it('N1-R10 — tells a refused password from a door that has stopped listening',
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
         [MockResponse::make()->throw(static fn(): Unreachable
             => Unreachable::whenAsking('/api/session', 'Connection refused')), Obstacle::StackDidNotAnswer],
+        [MockResponse::make()->throw(static fn(): CertificateWasRefused
+            => CertificateWasRefused::whenAsking('/api/session', str_repeat('c', 64), str_repeat('b', 64))), Obstacle::StackIsNotTheOnePaired],
     ];
 
     foreach ($table as [$answered, $why]) {

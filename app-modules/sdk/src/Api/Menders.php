@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
@@ -73,7 +74,7 @@ final readonly class Menders implements Mending
 
         try {
             return Underway::as(Handles::in($client->repair(Asking::offer())));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
@@ -98,7 +99,7 @@ final readonly class Menders implements Mending
             return Underway::as(Handles::in(
                 $client->repair($asked, IdempotencyKey::from($this->entropy->nonce())->sent()),
             ));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
@@ -109,7 +110,7 @@ final readonly class Menders implements Mending
     {
         try {
             return $this->outcome($stack, $session, $job);
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheRepairIsGoing::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|EffectSaysNothing) {
             return HowTheRepairIsGoing::met(Obstacle::StackDidNotAnswer);
@@ -120,7 +121,7 @@ final readonly class Menders implements Mending
     {
         try {
             return $this->standing($stack, $session, $job);
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheOfferIsGoing::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|OfferHasNoName|EffectSaysNothing) {
             return HowTheOfferIsGoing::met(Obstacle::StackDidNotAnswer);

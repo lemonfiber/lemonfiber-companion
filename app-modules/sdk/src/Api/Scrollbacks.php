@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\ConfigurationProblem;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
@@ -64,7 +65,7 @@ final readonly class Scrollbacks implements Saying
             // this side could not read is the same thing to an operator as one
             // that never arrived.
             return WhatWasSaid::this(Lines::in($window));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasSaid::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ConfigurationProblem|LineIsUnreadable) {
             return WhatWasSaid::met(Obstacle::StackDidNotAnswer);
