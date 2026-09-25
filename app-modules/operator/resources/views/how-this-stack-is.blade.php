@@ -178,7 +178,7 @@
     {{-- Watching one thing arrive, narrated end to end. Beside what stopped
          coming in, because both are about content reaching the house, and
          this is where somebody who wants to see the whole road once looks. --}}
-    <x-operator::quiet-action label="{{ __('health.walkthrough.road_in') }}" :goes="$this->goes()->walkthrough()" />
+    <x-operator::quiet-action label="{{ __('health.walkthrough.road_in') }}" :goes="$this->goes()->ofItself()->walkthrough()" />
 
     {{-- What is running here that this machine never declared. The
          requirement asks for these to be reachable, and this is where from

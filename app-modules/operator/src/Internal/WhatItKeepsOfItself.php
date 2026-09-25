@@ -16,10 +16,11 @@ use Modules\Stacks\Api\AStacksScreen;
  * wake somebody for, how it shares the line, what else already stands on it
  * and how good the media it fetches should be — screens answering one kind of
  * question, which is what the machine does and keeps on its own account while
- * nobody is looking. Apart from {@see WhereAStackIs} because that is where the
- * questions change subject, and because that class had reached the
- * twenty-method ceiling `H3` refuses: one accessor there hands out this, and
- * the next screen of this kind costs it nothing.
+ * nobody is looking — and the record it keeps of walking one thing through.
+ * Apart from {@see WhereAStackIs} because that is where the questions change
+ * subject, and because that class had reached the twenty-method ceiling `H3`
+ * refuses: one accessor there hands out this, and the next screen of this kind
+ * costs it nothing.
  *
  * `Internal`, for {@see WhereAStackIs}' reason.
  */
@@ -120,5 +121,11 @@ final readonly class WhatItKeepsOfItself
     public function wordAbout(AWordInUse $word): string
     {
         return AStacksScreen::WordAbout->forTheStacksWord($this->stack, $word);
+    }
+
+    /** Where one thing is fetched while the operator watches, and the record of it is kept. */
+    public function walkthrough(): string
+    {
+        return AStacksScreen::Walkthrough->forTheStack($this->stack);
     }
 }

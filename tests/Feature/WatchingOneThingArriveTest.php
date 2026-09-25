@@ -559,6 +559,6 @@ it('starts and follows nothing on a phone whose session ended', function (): voi
 it('is where it says it is', function (): void {
     $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()));
 
-    expect(NativeRouter::resolve($screen->goes()->walkthrough()))->toHaveKey('params.stack', theStackAWalkRunsOn()->id()->stored())
-        ->and($screen->goes()->walkthrough())->toBe(sprintf('/stacks/%s/walkthrough', theStackAWalkRunsOn()->id()->stored()));
+    expect(NativeRouter::resolve($screen->goes()->ofItself()->walkthrough()))->toHaveKey('params.stack', theStackAWalkRunsOn()->id()->stored())
+        ->and($screen->goes()->ofItself()->walkthrough())->toBe(sprintf('/stacks/%s/walkthrough', theStackAWalkRunsOn()->id()->stored()));
 });
