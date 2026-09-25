@@ -273,6 +273,13 @@ it('an answer carrying no review at all is refused rather than read as no change
     expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer');
 });
 
+it('an answer whose data is not a table is refused', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'config', 'data' => 'a review'])]);
+
+    expect(howAChangeReadsAsText(new Adjustments(new PinnedClients())))->toBe('refused:no_answer');
+});
+
 it('a blocked change carries the reason and an applied one carries none', function (): void {
     $blocked = WhereTheChangeStands::blocked(
         ProposedChange::of('LIBRARY_PATH', '/nowhere', WhatItHoldsNow::shown('/data/media'), Cost::Consequential),

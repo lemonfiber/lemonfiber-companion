@@ -10,7 +10,14 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Asking;
+use Modules\Kernel\Api\CheckGaveNoReason;
+use Modules\Kernel\Api\CheckIsUnnamed;
+use Modules\Kernel\Api\CheckSaidNothing;
+use Modules\Kernel\Api\CodeIsBlank;
+use Modules\Kernel\Api\FindingHasNoTitle;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\RemedySaysNothing;
+use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatCameBack;
@@ -76,7 +83,10 @@ final readonly class Questions implements Asking
             return WhatCameBack::report(Reports::in($envelope));
         } catch (RequestFailed $why) {
             return WhatCameBack::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|ReportIsUnreadable) {
+        } catch (
+            ApiVersionMismatch|UnreadableResponse|UnexpectedKind|ReportIsUnreadable
+            |CheckIsUnnamed|ServiceIsUnnamed|FindingHasNoTitle|CodeIsBlank|CheckSaidNothing|RemedySaysNothing|CheckGaveNoReason
+        ) {
             return WhatCameBack::met(Obstacle::StackDidNotAnswer);
         }
     }

@@ -12,13 +12,16 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Repair as Asking;
 use Modules\Kernel\Api\Confirmed;
+use Modules\Kernel\Api\EffectSaysNothing;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheOfferIsGoing;
 use Modules\Kernel\Api\HowTheRepairIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\OfferHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
@@ -54,12 +57,10 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * — *every action that changes a stack* — rather than every request that
  * happens to be a `POST`.
  *
- * **A {@see \Modules\Kernel\Api\JobHasNoName} is not caught**, and the asymmetry is deliberate. It means
- * a stack acknowledged an action and named it with nothing — the one state
- * there is no answer for, since the action *was* delivered and so must not
- * be sent again, and there is no handle to ask after it by. Swallowing it into
- * an obstacle would present *the machine is not answering* for a machine that
- * answered, and would lose the only evidence that the exchange is broken.
+ * **A {@see JobHasNoName} is an obstacle**, as every answer this class cannot
+ * read is. It means a stack acknowledged an action and named it with nothing,
+ * which leaves no handle to ask after it by. The screen draws that as the
+ * stack not answering, where an exception would draw it as a crash.
  */
 final readonly class Menders implements Mending
 {
@@ -73,7 +74,7 @@ final readonly class Menders implements Mending
             return Underway::as(Handles::in($client->repair(Asking::offer())));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -98,7 +99,7 @@ final readonly class Menders implements Mending
             ));
         } catch (RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|OfferIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -109,7 +110,7 @@ final readonly class Menders implements Mending
             return $this->outcome($stack, $session, $job);
         } catch (RequestFailed $why) {
             return HowTheRepairIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|EffectSaysNothing) {
             return HowTheRepairIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -120,7 +121,7 @@ final readonly class Menders implements Mending
             return $this->standing($stack, $session, $job);
         } catch (RequestFailed $why) {
             return HowTheOfferIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|OfferIsUnreadable|OfferHasNoName|EffectSaysNothing) {
             return HowTheOfferIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }

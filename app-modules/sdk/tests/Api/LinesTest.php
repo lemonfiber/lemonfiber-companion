@@ -41,6 +41,17 @@ function aWindowOnVersion(int $version, string $service, int $bound, array $rows
 }
 
 /**
+ * A window of one line whose `data` is whatever the case under test is about.
+ *
+ * Beside {@see aWindowOf()}, whose rows are tables, for the one case where the
+ * row itself is not one.
+ */
+function aWindowOfOneLine(mixed $data): LogWindow
+{
+    return LogWindow::of(Logs::ofService('gluetun', 10), [new Envelope(1, 'log', $data)]);
+}
+
+/**
  * A log window holding whatever the case under test is about.
  *
  * Built by hand rather than fetched, for {@see stuckSaying()}'s reason: what is
@@ -119,6 +130,11 @@ it('refuses a line with no readable text at all', function (): void {
     expect(fn(): Scrollback => Lines::in(aWindowOf('gluetun', 10, [
         ['service' => 'gluetun', 'stream' => 'stdout'],
     ])))->toThrow(LineIsUnreadable::class, '`line`');
+});
+
+it('refuses a line that is not a table', function (): void {
+    expect(fn(): Scrollback => Lines::in(aWindowOfOneLine('gluetun said this')))
+        ->toThrow(LineIsUnreadable::class, '`line`');
 });
 
 it('refuses a line whose text is not text', function (): void {

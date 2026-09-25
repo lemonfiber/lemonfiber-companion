@@ -95,6 +95,35 @@ function theSameReport(): Report
  */
 function whatADegradedStackSends(): array
 {
+    return aDegradedStackWhoseVerdictIs(theWarningADegradedStackSends());
+}
+
+/**
+ * The warning a degraded stack's one finding carries.
+ *
+ * @return array<string, mixed>
+ */
+function theWarningADegradedStackSends(): array
+{
+    return [
+        'outcome' => 'warn',
+        'code' => 'DISK-1',
+        'severity' => 'warning',
+        'state' => 'guided',
+        'summary' => 'Nearly full',
+        'meaning' => 'New downloads will start failing soon',
+        'remedies' => [['action' => 'Make room, or add a disk']],
+    ];
+}
+
+/**
+ * A degraded stack's answer, its one finding carrying the verdict given.
+ *
+ * @param array<string, mixed> $verdict
+ * @return array<string, mixed>
+ */
+function aDegradedStackWhoseVerdictIs(array $verdict): array
+{
     return [
         'api_version' => 1,
         'kind' => 'doctor',
@@ -109,15 +138,7 @@ function whatADegradedStackSends(): array
                 // spelling for a verdict's tag — a fixture that invented a
                 // shape no stack sends is a test that passes against an
                 // adapter which could not read a real answer.
-                'verdict' => [
-                    'outcome' => 'warn',
-                    'code' => 'DISK-1',
-                    'severity' => 'warning',
-                    'state' => 'guided',
-                    'summary' => 'Nearly full',
-                    'meaning' => 'New downloads will start failing soon',
-                    'remedies' => [['action' => 'Make room, or add a disk']],
-                ],
+                'verdict' => $verdict,
             ]],
         ],
     ];
@@ -176,6 +197,29 @@ function whatItSaid(Asking $asking): string
         met: static fn(Obstacle $why): WhatTheStackTurnedOutToSay => new WhatTheStackTurnedOutToSay($why->value),
     )->said;
 }
+
+it('an adapter answers a verdict it cannot build with an obstacle', function (): void {
+    $warned = theWarningADegradedStackSends();
+
+    $spoiled = [
+        'a blank code' => [...$warned, 'code' => ''],
+        'a blank meaning' => [...$warned, 'meaning' => ' '],
+        'a blank remedy' => [...$warned, 'remedies' => [['action' => '']]],
+        'an unverified check with a blank reason' => ['outcome' => 'unverified', 'reason' => ''],
+        'a remedy for an unverified check that says nothing' => [
+            'outcome' => 'unverified',
+            'reason' => 'The check needs a disk it could not find',
+            'remedy' => ['action' => ''],
+        ],
+    ];
+
+    foreach ($spoiled as $which => $verdict) {
+        MockClient::destroyGlobal();
+        MockClient::global([MockResponse::make((string) json_encode(aDegradedStackWhoseVerdictIs($verdict)))]);
+
+        expect(whatItSaid(new Questions(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value, $which);
+    }
+});
 
 it('comes away with what the checks found, and what it amounts to', function (): void {
     // Both halves, because a screen needs both and the top one is not derived:

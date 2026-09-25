@@ -11,6 +11,7 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
+use Modules\Kernel\Api\RequestHasNobodyBehindIt;
 use Modules\Kernel\Api\SentenceSaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -105,7 +106,7 @@ final readonly class TheirOwn implements Owing
             return WhatTheyAsked::told(Households::theirOwnIn($envelope));
         } catch (RequestFailed $why) {
             return WhatTheyAsked::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable) {
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt) {
             // {@see SentenceSaysNothing} is not in this list, and its absence is
             // the difference between the two readings: no sentence is read here,
             // so there is no blank one to meet. A request row this app cannot
