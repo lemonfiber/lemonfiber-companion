@@ -597,7 +597,8 @@ function whatTheChangeReaches(string $root, string $since): ?array
     }
 
     $sorted = sortTheChange($root, $since, array_values(array_filter(explode("\n", $said), static fn(string $line): bool => $line !== '')));
-    $covered = $sorted === null ? null : whatTheTestsReach($root, $sorted['tests']);
+    $tests = $sorted === null ? null : withTheirUsers($root, $sorted['tests']);
+    $covered = $tests === null ? null : whatTheTestsReach($root, $tests);
 
     if ($sorted === null || $covered === null) {
         return null;
@@ -657,6 +658,80 @@ function whatAPathReaches(string $path): array
 function isATest(string $path): bool
 {
     return preg_match('#(^|/)tests/.+\.php$#u', $path) === 1;
+}
+
+/**
+ * The changed tests, with every changed file of shared test support replaced
+ * by the tests that use it, or null for every path.
+ *
+ * A fake or a helper under `tests/Support` changes what the tests that use it
+ * assert, and nothing else: those tests reach the code they execute like any
+ * changed test. The support files this script reads to know what is measured
+ * are not among these; they decide how the gate runs.
+ *
+ * @param  list<string>  $tests
+ * @return list<string>|null
+ */
+function withTheirUsers(string $root, array $tests): ?array
+{
+    $support = array_values(array_filter($tests, static fn(string $test): bool => str_starts_with($test, 'tests/Support/')));
+    $users = $support === [] ? [] : testsUsing($root, $support);
+
+    return $users === null ? null : [...array_values(array_diff($tests, $support)), ...$users];
+}
+
+/**
+ * Every test file that names these support files, directly or through other
+ * support that does, or null where something other than a test names one.
+ *
+ * A name used from the Pest bootstrap, the base test case or a helper file
+ * outside `tests/Support` reaches every test, so it mutates every path.
+ *
+ * @param  list<string>  $support
+ * @return list<string>|null
+ */
+function testsUsing(string $root, array $support): ?array
+{
+    $pending = array_map(static fn(string $path): string => pathinfo($path, PATHINFO_FILENAME), $support);
+    $seen = $pending;
+    $users = [];
+
+    while ($pending !== []) {
+        $found = usersOf($root, array_pop($pending));
+
+        if ($found['other'] !== []) {
+            fwrite(STDERR, sprintf("%s names changed test support and is not a test, so every path is mutated.\n", $found['other'][0]));
+
+            return null;
+        }
+
+        $new = array_values(array_diff($found['support'], $seen));
+        $seen = [...$seen, ...$new];
+        $pending = [...$pending, ...$new];
+        $users = [...$users, ...$found['tests']];
+    }
+
+    return array_values(array_unique($users));
+}
+
+/**
+ * The files under the test trees that name a class, sorted into other test
+ * support, tests, and anything else.
+ *
+ * @return array{support: list<string>, tests: list<string>, other: list<string>}
+ */
+function usersOf(string $root, string $name): array
+{
+    $said = shell_exec(sprintf('git -C %s grep -l -w -F -e %s -- tests bridge/tests %s', escapeshellarg($root), escapeshellarg($name), escapeshellarg(':(glob)app-modules/*/tests/**')));
+    $files = array_values(array_filter(explode("\n", is_string($said) ? $said : ''), static fn(string $file): bool => $file !== ''));
+    $support = array_values(array_filter($files, static fn(string $file): bool => str_starts_with($file, 'tests/Support/')));
+    $tests = array_values(array_filter($files, static fn(string $file): bool => ! str_starts_with($file, 'tests/Support/') && str_ends_with($file, 'Test.php')));
+
+    return [
+        'support' => array_map(static fn(string $file): string => pathinfo($file, PATHINFO_FILENAME), $support),
+        'tests' => $tests,
+        'other' => array_values(array_diff($files, $support, $tests)),
+    ];
 }
 
 /**
@@ -773,7 +848,7 @@ function testKey(string $name): string
  */
 function decidesHowTheGateRuns(string $root, string $since, string $path): bool
 {
-    if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|tests/Support/.*|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) !== 1) {
+    if (preg_match('#^(composer\.json|phpunit\.xml|tests/(Pest|TestCase)\.php|tests/Support/(MeasuredTree|OurCode|Tree|Kind|Module|Imports)\.php|bootstrap/[^/]+|config/.*|scripts/mutation\.php|\.github/workflows/ci\.yml|app-modules/[^/]+/composer\.json|bridge/composer\.json)$#u', $path) !== 1) {
         return false;
     }
 
