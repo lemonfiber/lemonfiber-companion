@@ -38,14 +38,17 @@ use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Api\Adjustments;
+use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
+use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
@@ -144,15 +147,18 @@ function everyAdapterCallThatReads(): array
             => new Adjustments($clients)->wouldBe($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
         'Adjustments::agreedTo' => static fn(): object
             => new Adjustments($clients)->agreedTo($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
+        'Advisers::advisedBy' => static fn(): object => new Advisers($clients)->advisedBy($stack, $session),
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
+        'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
         'Followers::tracedOn' => static fn(): object
             => new Followers($clients)->tracedOn($stack, $session, WhatToFollow::called('sonarr')),
         'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
         'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
         'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients)->keptRunningOn($stack, $session),
+        'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
         'Menders::agreeTo' => static fn(): object
