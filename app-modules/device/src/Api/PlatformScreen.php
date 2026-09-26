@@ -40,4 +40,9 @@ final readonly class PlatformScreen implements Capture
     {
         return $this->window->isProtected();
     }
+
+    public function isInFront(): bool
+    {
+        return $this->window->isInFront();
+    }
 }

@@ -56,7 +56,8 @@ function everyWindow(): array
             FakeBridge::enable()
                 ->respondTo('Lemonfiber.Conceal', fn(): array => $handset->conceal())
                 ->respondTo('Lemonfiber.Reveal', fn(): array => $handset->reveal())
-                ->respondTo('Lemonfiber.IsProtected', fn(): array => $handset->answer());
+                ->respondTo('Lemonfiber.IsProtected', fn(): array => $handset->answer())
+                ->respondTo('Lemonfiber.IsInFront', fn(): array => $handset->whereItIs());
 
             return [new PlatformScreen(new Screen()), $handset->backgrounded(...)];
         },
@@ -134,5 +135,33 @@ it('is idempotent, because a screen may conceal more than once', function (): vo
         $window->conceal();
 
         expect($window->reveal())->toBeFalse($which);
+    }
+});
+
+it('is in front of somebody until the app goes away, and then is not', function (): void {
+    // What a screen holding a subscription asks on every wake. An
+    // implementation that answered yes always would hold a connection open
+    // all night in somebody's pocket, and one that answered no always would
+    // never open one.
+    foreach (everyWindow() as $which => $make) {
+        [$window, $away] = $make();
+
+        expect($window->isInFront())->toBeTrue($which);
+
+        $away();
+
+        expect($window->isInFront())->toBeFalse($which);
+    }
+});
+
+it('answers where the app is whatever the window is showing', function (): void {
+    // Protection and presence are two questions of one observer, and a guarded
+    // screen is still in front of whoever is holding the phone.
+    foreach (everyWindow() as $which => $make) {
+        [$window] = $make();
+
+        $window->conceal();
+
+        expect($window->isInFront())->toBeTrue($which);
     }
 });

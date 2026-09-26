@@ -2,7 +2,61 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    <x-operator::emphasis>{{ __($this->answer()->overall) }}</x-operator::emphasis>
+    {{-- The one line, as the core computed it for every surface and sent
+         on its event stream. A line that is not current reads as unknown and
+         says when it was last heard, so a stack nobody can vouch for right
+         now is never drawn as healthy. --}}
+    <x-operator::emphasis>{{ __($this->summary()->said) }}</x-operator::emphasis>
+
+    @if ($this->summary()->ago->said !== '')
+        <x-operator::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->summary()->ago->said, $this->summary()->ago->count)]) }}</x-operator::note>
+    @endif
+
+    @if ($this->summary()->met !== '')
+        <native:text>{{ __($this->summary()->met) }}</native:text>
+        <x-operator::note>{{ __($this->summary()->remedy) }}</x-operator::note>
+    @endif
+
+    {{-- The worst thing, named in the core's words, so the line says what is
+         wrong rather than only grading it. --}}
+    @if ($this->summary()->worst !== '')
+        <native:text>{{ $this->summary()->worst }}</native:text>
+    @endif
+
+    {{-- How many, counted by cause, and the way into what it counts. Offered
+         only where it counts something: a line with nothing to expand to is
+         a control that leads nowhere. --}}
+    @if ($this->summary()->counted !== '')
+        <x-operator::quiet-action label="{{ trans_choice($this->summary()->counted, $this->summary()->howMany) }}" tap="expand()" />
+    @endif
+
+    @if ($this->expanded)
+        @forelse ($this->summary()->affected as $item)
+            <x-operator::entry>
+                <x-operator::note>{{ __($item->severity) }} · {{ $item->check }}</x-operator::note>
+                <x-operator::emphasis>{{ $item->summary }}</x-operator::emphasis>
+                <native:text>{{ $item->meaning }}</native:text>
+
+                @forelse ($item->remedies as $remedy)
+                    <native:text>{{ $remedy }}</native:text>
+                @empty
+                    <native:text>{{ __('health.nothing_to_try') }}</native:text>
+                @endforelse
+
+                @forelse ($item->downstream as $also)
+                    <x-operator::note>{{ __('health.summary.also', ['what' => $also]) }}</x-operator::note>
+                @empty
+                    {{-- Deliberately nothing. An item that took nothing else
+                         down with it has nothing to add, and a sentence
+                         saying so would be one more line to read past. --}}
+                @endforelse
+            </x-operator::entry>
+        @empty
+            <native:text>{{ __('health.no_findings') }}</native:text>
+        @endforelse
+    @endif
+
+    <x-operator::note>{{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}</x-operator::note>
 
     {{-- The families this run has something to say about, so that a
          stuck queue or a provider gone quiet is one tap away rather than

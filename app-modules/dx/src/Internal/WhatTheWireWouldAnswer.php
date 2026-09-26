@@ -13,6 +13,8 @@ use function is_array;
 use function is_string;
 use function json_encode;
 
+use const JSON_THROW_ON_ERROR;
+
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Dx\Api\AStandInStack;
@@ -20,6 +22,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 
+use function sprintf;
 use function str_starts_with;
 
 /**
@@ -154,6 +157,9 @@ final readonly class WhatTheWireWouldAnswer
      */
     private const int A_FEW_LINES = 3;
 
+    /** The kind of the one event a stand-in stream carries. */
+    private const string WHAT_THE_STREAM_CARRIES = 'dashboard';
+
     /**
      * A mock for every request this app can make.
      *
@@ -221,7 +227,7 @@ final readonly class WhatTheWireWouldAnswer
      */
     private static function whatThatPathSends(string $endpoint, string ...$asked): array|string
     {
-        // The four paths whose body is not one envelope built from the
+        // The five paths whose body is not one envelope built from the
         // contract's declaration, and then everything else. `match` rather than
         // four early returns, because what this is doing is naming a path
         // rather than deciding anything (`H8`, `C5`).
@@ -229,6 +235,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
+            $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysOneThing(),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
             default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint, ...$asked)),
         };
@@ -359,5 +366,26 @@ final readonly class WhatTheWireWouldAnswer
         }
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * An event stream that says one dashboard and ends.
+     *
+     * A stand-in answers a request and is done, so its stream is one event long:
+     * the dashboard the contract declares, framed the way the core frames an
+     * event, with the envelope's kind as the event's name. A screen holding the
+     * stream reads the summary out of it, finds the stream ended, and opens it
+     * again on its stated cadence, which is the path a stack that restarted
+     * takes too.
+     */
+    private static function aStreamThatSaysOneThing(): string
+    {
+        $envelope = self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(self::WHAT_THE_STREAM_CARRIES));
+
+        return sprintf(
+            "event: %s\ndata: %s\n\n",
+            self::WHAT_THE_STREAM_CARRIES,
+            json_encode($envelope, JSON_THROW_ON_ERROR),
+        );
     }
 }

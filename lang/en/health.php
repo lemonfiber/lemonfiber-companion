@@ -48,6 +48,24 @@ return [
         'degraded' => 'Some services need attention',
         'healthy' => 'Everything is running',
     ],
+    'standing' => [
+        'healthy' => 'Everything is fine.',
+        'stopped' => 'Not running, because it was stopped. That is not a fault.',
+        'unconfigured' => 'Not set up yet.',
+        'advisory' => 'Everything is working, with notes.',
+        'degraded' => 'Working, but not as it should.',
+        'broken' => 'Something is broken.',
+        'critical' => 'Urgent: something needs attention now.',
+        'unknown' => 'How this stack is cannot be told right now.',
+    ],
+    'summary' => [
+        'waiting' => 'Waiting to hear from this stack.',
+        'as_of' => 'Last heard :ago. Nothing said since is known.',
+        'notes' => '{1} One note|[2,*] :count notes',
+        'wanting' => '{1} One thing needs attention|[2,*] :count things need attention',
+        'reported' => '{1} One thing reported|[2,*] :count things reported',
+        'also' => 'Also because of this: :what',
+    ],
     'because_of' => 'Because of: :title',
     'ago' => [
         'minutes' => '{0} moments ago|{1} a minute ago|[2,*] :count minutes ago',
@@ -187,6 +205,8 @@ return [
     'no_moment' => 'No time given',
     'every' => [
         'while_work_runs' => 'Looking again every :count seconds while this runs.',
+        'while_listening' => 'Listening to this stack, and looking at what it said every :count seconds.',
+        'after_a_break' => 'This stack could not be heard. Listening again every :count seconds.',
     ],
 
     // What is running, and how much each one matters. The state is

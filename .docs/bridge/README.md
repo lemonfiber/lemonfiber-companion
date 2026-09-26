@@ -27,7 +27,7 @@ defect.
 
 Ours: the sixteen capability functions — telling somebody nine, keeping a
 secret three, reading a code one, whether there is a link one, handing
-something over two — and the five for capture protection and the app lock.
+something over two — and the six for capture protection and the app lock.
 [the-wire.md](the-wire.md) names each of them; `bridge/nativephp.json` declares
 them, and a build fails where one has no handler.
 

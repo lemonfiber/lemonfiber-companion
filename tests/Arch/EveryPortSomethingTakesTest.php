@@ -35,10 +35,6 @@ use Tests\Support\Tree;
  * @var array<string, string> port => why nothing takes it
  */
 const NOTHING_TAKES_IT_YET = [
-    'Capture' => 'N4-R9 is not reached through this binding at all: the native half installs a '
-        . 'lifecycle observer as the app starts and protects a backgrounded app whether or not '
-        . 'anything here resolves. The port is what a screen would take the day one needs to ask '
-        . 'about the window rather than be protected from it.',
     'Notifier' => 'N2-R19 — the adapter is written and local-only, and the screen that will raise '
         . 'a notification is not. Bound now so the decision that it is `PlatformNotifier` and never '
         . 'a push relay is recorded where every other binding is.',
@@ -55,7 +51,7 @@ const NOTHING_TAKES_IT_YET = [
  * number that may not rise, which is the whole of what makes the list mean
  * anything.
  */
-const HOW_MANY_MAY_WAIT = 3;
+const HOW_MANY_MAY_WAIT = 2;
 
 /**
  * Every port the composition root binds, by its short name.

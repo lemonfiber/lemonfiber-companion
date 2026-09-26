@@ -64,6 +64,7 @@ use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
+use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
@@ -196,6 +197,7 @@ function everyAdapterCallThatReads(): array
         'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),
         'Keepers::handOver' => static fn(): object
             => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
+        'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
@@ -362,8 +364,9 @@ function whatARequestAsked(PendingRequest $asked): array
 /**
  * The body a path sends, as the stand-in would send it.
  *
- * A list of envelopes for the scrollback, which is one document a line, and a
- * single envelope for every other path. What the request asked picks between
+ * A list of envelopes for the scrollback, which is one document a line, the
+ * envelope one event carries for the stream, and a single envelope for every
+ * other path. What the request asked picks between
  * the envelopes one path answers with, as it does for the stand-in.
  *
  * @return list<array<mixed>>
@@ -390,14 +393,26 @@ function theEnvelopesAPathSends(string $endpoint, string ...$asked): array
         return [$body];
     }
 
+    $text = is_string($body) ? $body : '';
+
+    if ($endpoint === Api::EVENTS_ENDPOINT) {
+        $text = anEventsData($text);
+    }
+
     $lines = [];
 
-    foreach (explode("\n", trim(is_string($body) ? $body : '')) as $line) {
+    foreach (explode("\n", trim($text)) as $line) {
         $read = json_decode($line, associative: true, flags: JSON_THROW_ON_ERROR);
         $lines[] = is_array($read) ? $read : [];
     }
 
     return $lines;
+}
+
+/** What one event on the stream carries, which is the envelope after `data: `. */
+function anEventsData(string $stream): string
+{
+    return preg_match('/^data: (.*)$/m', $stream, $data) === 1 ? $data[1] : '';
 }
 
 /**
@@ -416,12 +431,14 @@ function answerEverythingSpoiledAt(string $which, ?array $at): void
                 theEnvelopesAPathSends($endpoint, ...whatARequestAsked($asked)),
             );
 
-            return $endpoint === Api::LOGS_ENDPOINT
-                ? MockResponse::make(implode("\n", array_map(
+            return match ($endpoint) {
+                Api::LOGS_ENDPOINT => MockResponse::make(implode("\n", array_map(
                     static fn(array $envelope): string => (string) json_encode($envelope),
                     $envelopes,
-                )))
-                : MockResponse::make($envelopes[0]);
+                ))),
+                Api::EVENTS_ENDPOINT => MockResponse::make(sprintf("event: dashboard\ndata: %s\n\n", (string) json_encode($envelopes[0]))),
+                default => MockResponse::make($envelopes[0]),
+            };
         },
     ]);
 }
@@ -623,6 +640,20 @@ it('answers a machine that is not the one paired as exactly that', function (str
     }
 });
 
+/**
+ * The public calls of a reading adapter that ask the stack nothing, each with
+ * why, so the list above holds only calls that can meet a stack and the rule
+ * below still accounts for every public method.
+ *
+ * @return array<string, string>
+ */
+function adapterCallsThatAskNothing(): array
+{
+    return [
+        'Listeners::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
+    ];
+}
+
 it('asks every adapter call that reads a stack', function (): void {
     // The list above is written out, because each call needs its own
     // arguments. This holds it to the adapters: every public method of a class
@@ -645,7 +676,7 @@ it('asks every adapter call that reads a stack', function (): void {
         }
     }
 
-    $asked = array_keys(everyAdapterCallThatReads());
+    $asked = [...array_keys(everyAdapterCallThatReads()), ...array_keys(adapterCallsThatAskNothing())];
     sort($expected);
     sort($asked);
 

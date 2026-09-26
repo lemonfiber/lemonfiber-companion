@@ -46,6 +46,24 @@ return [
         'degraded' => 'Sommige services hebben aandacht nodig',
         'healthy' => 'Alles draait',
     ],
+    'standing' => [
+        'healthy' => 'Alles is in orde.',
+        'stopped' => 'Draait niet, omdat hij is gestopt. Dat is geen fout.',
+        'unconfigured' => 'Nog niet ingericht.',
+        'advisory' => 'Alles werkt, met opmerkingen.',
+        'degraded' => 'Werkt, maar niet zoals het hoort.',
+        'broken' => 'Er is iets kapot.',
+        'critical' => 'Dringend: er moet nu iets gebeuren.',
+        'unknown' => 'Hoe het met deze stack gaat, is nu niet te zeggen.',
+    ],
+    'summary' => [
+        'waiting' => 'Wacht op bericht van deze stack.',
+        'as_of' => 'Laatst gehoord :ago. Wat sindsdien is gezegd, is niet bekend.',
+        'notes' => '{1} Eén opmerking|[2,*] :count opmerkingen',
+        'wanting' => '{1} Eén ding heeft aandacht nodig|[2,*] :count dingen hebben aandacht nodig',
+        'reported' => '{1} Eén ding gemeld|[2,*] :count dingen gemeld',
+        'also' => 'Ook hierdoor: :what',
+    ],
     'because_of' => 'Vanwege: :title',
     'ago' => [
         'minutes' => '{0} zojuist|{1} een minuut geleden|[2,*] :count minuten geleden',
@@ -183,6 +201,8 @@ return [
     'no_moment' => 'Geen tijd opgegeven',
     'every' => [
         'while_work_runs' => 'Kijkt elke :count seconden opnieuw zolang dit loopt.',
+        'while_listening' => 'Luistert naar deze stack, en kijkt elke :count seconden naar wat hij zei.',
+        'after_a_break' => 'Deze stack was niet te horen. Luistert elke :count seconden opnieuw.',
     ],
 
     // Wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar

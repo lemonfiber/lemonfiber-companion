@@ -39,6 +39,7 @@ use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
+use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
@@ -84,6 +85,7 @@ use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
+use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\PinnedClients;
@@ -214,6 +216,15 @@ final class CompositionRoot extends ServiceProvider
         // narrow, which is a branch nothing can reach. Both classes live in
         // `modules/sdk`, so no boundary is crossed by using the real type.
         $this->app->bind(Asking::class, Questions::class);
+
+        // Holding a stack's event stream open, for the health summary the core
+        // publishes there and nowhere else.
+        //
+        // Bound rather than a singleton, and here it is the whole point: one
+        // holds one connection for one screen, so each screen is handed its
+        // own, and a screen letting go of its connection lets go of nobody
+        // else's.
+        $this->app->bind(Hearing::class, Listeners::class);
 
         // Handing a diagnostic report to the operator, which is the only way
         // one leaves this device. The app assembles and does not transmit, and

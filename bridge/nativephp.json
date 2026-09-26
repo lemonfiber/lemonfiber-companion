@@ -20,6 +20,12 @@
             "description": "Whether the window is protected from capture right now"
         },
         {
+            "name": "Lemonfiber.IsInFront",
+            "android": "app.lemonfiber.native.LemonfiberFunctions.IsInFront",
+            "ios": "LemonfiberFunctions.IsInFront",
+            "description": "Whether the app is in front of somebody right now"
+        },
+        {
             "name": "Lemonfiber.Authenticate",
             "android": "app.lemonfiber.native.LemonfiberAuth.Authenticate",
             "ios": "LemonfiberAuth.Authenticate",

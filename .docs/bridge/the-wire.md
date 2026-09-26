@@ -18,8 +18,10 @@ Lemonfiber.Handover.Url
 ```
 
 Capture protection and the app lock keep flat names — `Lemonfiber.Conceal`,
-`Lemonfiber.Reveal`, `Lemonfiber.IsProtected`, `Lemonfiber.Authenticate`,
-`Lemonfiber.CanAuthenticate`. Renaming a working function to match a pattern is
+`Lemonfiber.Reveal`, `Lemonfiber.IsProtected`, `Lemonfiber.IsInFront`,
+`Lemonfiber.Authenticate`, `Lemonfiber.CanAuthenticate`. `IsInFront` answers
+from the lifecycle observer capture protection installs, which is why it sits
+with them. Renaming a working function to match a pattern is
 a change with no reader on the other end of it.
 
 **Our own names.** The shape that comes back is the thing worth owning: a
