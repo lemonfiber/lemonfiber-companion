@@ -51,7 +51,7 @@ final readonly class TheCopyTaken
             TheCopies::named(...self::pruned($data)),
             self::pace($data),
             WhetherItHoldsASecret::said(self::flag($data, BackupField::Sensitive)),
-            WhetherItWasRehearsed::said(self::flag($data, BackupField::Rehearsed)),
+            WhetherItWasRehearsed::said(self::flag($data, WireField::Rehearsed)),
         );
     }
 

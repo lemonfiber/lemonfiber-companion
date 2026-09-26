@@ -375,8 +375,8 @@ enum WireField: string implements NamesAWireField
 
     /**
      * Whether an act was only described rather than carried out: a hosting
-     * run, in which case nothing it lists happened, and an invitation, in
-     * which case no account was made.
+     * run, in which case nothing it lists happened, an invitation, in which
+     * case no account was made, and a copy, in which case nothing was written.
      */
     case Rehearsed = 'rehearsed';
 

@@ -7,6 +7,7 @@ namespace Modules\Sdk\Api;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
@@ -56,9 +57,9 @@ final readonly class Copiers implements TakingCopies
             );
 
             return Underway::as(Handles::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
         }
     }
@@ -67,9 +68,9 @@ final readonly class Copiers implements TakingCopies
     {
         try {
             return $this->outcome($stack, $session, $job);
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheCopyIsGoing::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BackupIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|BackupIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
             return HowTheCopyIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }

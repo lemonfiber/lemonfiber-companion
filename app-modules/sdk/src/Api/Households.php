@@ -151,7 +151,7 @@ final readonly class Households
         $members = [];
         $position = 0;
 
-        foreach (self::rows($data, HouseholdField::Members) as $row) {
+        foreach (self::rows($data, WireField::Members) as $row) {
             $members[] = self::member($row, $position);
             $position++;
         }

@@ -32,9 +32,6 @@ enum BackupField: string implements NamesAWireField
     /** Whether the copy is inside that. */
     case Brisk = 'brisk';
 
-    /** Whether the copy was run to find out what would happen, writing nothing. */
-    case Rehearsed = 'rehearsed';
-
     /** Whether the copy holds credentials. */
     case Sensitive = 'sensitive';
 }
