@@ -117,21 +117,21 @@ final readonly class Stoppages
      */
     private static function whatItCannotActOn(array $data): WhatIsUnsupported
     {
-        if (! array_key_exists(StuckField::Unsupported->value, $data)) {
+        if (! array_key_exists(WireField::Unsupported->value, $data)) {
             return WhatIsUnsupported::none();
         }
 
-        $rows = $data[StuckField::Unsupported->value];
+        $rows = $data[WireField::Unsupported->value];
 
         if (! is_array($rows)) {
-            throw StuckIsUnreadable::missing(StuckField::Unsupported);
+            throw StuckIsUnreadable::missing(WireField::Unsupported);
         }
 
         $limits = [];
 
         foreach ($rows as $row) {
             if (! is_array($row)) {
-                throw StuckIsUnreadable::missing(StuckField::Unsupported);
+                throw StuckIsUnreadable::missing(WireField::Unsupported);
             }
 
             $limits[] = Unsupported::of(

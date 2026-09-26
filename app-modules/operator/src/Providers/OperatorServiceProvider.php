@@ -16,6 +16,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
+use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
@@ -235,6 +236,10 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Clients->value, WhichAppToWatchOn::class);
             Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);
             Router::native(AStacksScreen::Invite->value, AskingSomebodyIn::class);
+
+            // What is already on the machine, before anything is moved in. Its
+            // own screen, because the survey is read before any mode is chosen.
+            Router::native(AStacksScreen::AlreadyHere->value, WhatIsAlreadyOnThisMachine::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);

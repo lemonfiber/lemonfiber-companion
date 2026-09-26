@@ -23,9 +23,6 @@ enum DoctorField: string implements NamesAWireField
     /** What a whole run came to, in the run's own judgement. */
     case Overall = 'overall';
 
-    /** The single thing to do about an unverified check. Singular on the wire. */
-    case Remedy = 'remedy';
-
     /** How a single check turned out, as a tagged union. */
     case Verdict = 'verdict';
 

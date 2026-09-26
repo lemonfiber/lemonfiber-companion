@@ -645,6 +645,35 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'before it runs; no `N2` requirement asks the app to, and the downloads screen is where an '
             . 'operator reads what is in flight.',
     ],
+    [
+        'path' => 'MigrationEnvelope.linking.links',
+        'because' => 'Whether imports can be hardlinks across the existing layout. It is false whenever '
+            . '`linking` is sent at all, because a layout that links is not reported, so the presence of '
+            . '`linking` already carries the whole answer and this flag could only repeat it.',
+    ],
+    [
+        'path' => 'MigrationEnvelope.linking.forced',
+        'because' => 'Whether lemonfiber would carry the remedy out itself. It is always false: the '
+            . 'layout and the library in it are the operator\'s. `N7-R13` draws the remedy as words with '
+            . 'no act beside them, which is what this flag being false asks, so reading it would change '
+            . 'nothing drawn.',
+    ],
+    [
+        'path' => 'MigrationEnvelope.carrying[].existing',
+        'because' => 'The version of a service standing here now. Read with `ours` and `verdict` when '
+            . 'adopting is offered as an act, which is where `N7-R4` asks for what adopting would come '
+            . 'to. The survey reads the service, what adopting it means, whether a copy is wanted '
+            . 'first and whether adopting is refused, and draws none of them until then.',
+    ],
+    [
+        'path' => 'MigrationEnvelope.carrying[].ours',
+        'because' => 'The version lemonfiber pins for that service. Read with `existing`, for its reason.',
+    ],
+    [
+        'path' => 'MigrationEnvelope.carrying[].verdict',
+        'because' => 'Which of the two versions is the later, in one word. Read with `existing`, for its '
+            . 'reason.',
+    ],
 ];
 
 /**

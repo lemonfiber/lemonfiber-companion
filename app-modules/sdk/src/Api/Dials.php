@@ -104,7 +104,7 @@ final readonly class Dials
     {
         return ProposedChange::of(
             self::text($change, ConfigField::Key),
-            self::text($change, ConfigField::To),
+            self::text($change, WireField::To),
             self::heldNow($change),
             self::cost($change),
         );

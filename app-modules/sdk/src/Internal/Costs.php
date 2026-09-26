@@ -15,6 +15,7 @@ use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\RosterIsUnreadable;
+use Modules\Sdk\Api\WireField;
 
 /**
  * What each verb takes away, read off a listing of what is running.
@@ -39,14 +40,14 @@ final readonly class Costs
      */
     public static function in(array $data): Disturbances
     {
-        if (! array_key_exists(StatusField::Disturbs->value, $data)) {
-            throw RosterIsUnreadable::missing(StatusField::Disturbs);
+        if (! array_key_exists(WireField::Disturbs->value, $data)) {
+            throw RosterIsUnreadable::missing(WireField::Disturbs);
         }
 
-        $said = $data[StatusField::Disturbs->value];
+        $said = $data[WireField::Disturbs->value];
 
         if (! is_array($said)) {
-            throw RosterIsUnreadable::missing(StatusField::Disturbs);
+            throw RosterIsUnreadable::missing(WireField::Disturbs);
         }
 
         return Disturbances::of(

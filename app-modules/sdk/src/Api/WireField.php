@@ -351,4 +351,27 @@ enum WireField: string implements NamesAWireField
      * which case no account was made.
      */
     case Rehearsed = 'rehearsed';
+
+    /**
+     * Whether something disturbs what is running: what each verb takes away,
+     * on a reading of what is running, and whether a mode of moving in stops
+     * or alters what is already here.
+     */
+    case Disturbs = 'disturbs';
+
+    /**
+     * What would put something right, in one sentence: the single thing to do
+     * about an unverified check, and what would fix a layout that cannot hold
+     * a hardlink.
+     */
+    case Remedy = 'remedy';
+
+    /**
+     * What was found and cannot be acted on: the limits a reading of what is
+     * stuck carried, and what a survey found and cannot take over.
+     */
+    case Unsupported = 'unsupported';
+
+    /** Where something would go: what a setting would hold, and the port a service would take instead. */
+    case To = 'to';
 }
