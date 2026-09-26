@@ -34,6 +34,7 @@ final readonly class HowHostingReads
             keptBySaid: '',
             instead: '',
             missing: 0,
+            handsOver: false,
         );
     }
 
@@ -59,6 +60,7 @@ final readonly class HowHostingReads
             keptBySaid: $running->whatKeepsThem()->saidOnTheScreen(),
             instead: $this->whatToDoInstead($running),
             missing: $running->didNotComeBack()->count(),
+            handsOver: $running->whatKeepsThem()->configuresAnything(),
         );
     }
 
@@ -77,6 +79,7 @@ final readonly class HowHostingReads
             keptBySaid: '',
             instead: '',
             missing: 0,
+            handsOver: false,
         );
     }
 

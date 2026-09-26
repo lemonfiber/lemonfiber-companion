@@ -311,4 +311,16 @@ enum WireField: string implements NamesAWireField
      * for, on what strains playback, and on an address handed to the household.
      */
     case Caution = 'caution';
+
+    /**
+     * How the running copy got onto the machine, on a `self-update`; and
+     * whether a hosting run installed a command rather than took it back.
+     */
+    case Installed = 'installed';
+
+    /**
+     * What the version on offer says it changed, on a `self-update`; and what
+     * one install or removal did to the machine, on a `hosting`.
+     */
+    case Changed = 'changed';
 }

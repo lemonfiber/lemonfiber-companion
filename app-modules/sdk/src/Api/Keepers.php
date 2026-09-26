@@ -11,7 +11,11 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Hosting;
+use Modules\Kernel\Api\HostingAgreed;
+use Modules\Kernel\Api\HowTheHandoverWent;
+use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -42,10 +46,24 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * instead — the reading a platform gave, not a failure to reach it. Folding it
  * in here would send an operator to check their network about a laptop that was
  * never going to run a launch agent.
+ *
+ * **Handing a command over answers now, with the same envelope.** The stack
+ * carries an install or a removal out on the spot and answers with the
+ * `hosting` envelope, read after the act and carrying what it changed — so
+ * {@see Handovers} reads it rather than a name for work.
+ *
+ * **A refusal the stack put into words is carried in those words.** A guard
+ * asked to guard no forms, or a manager that would not take a definition, is
+ * the machine answering and saying why; reading it as a stack that did not
+ * answer would send an operator to check their network. A refused session and
+ * a refused account stay the obstacles {@see WhatARefusalMeant} names.
+ *
+ * **The key that names an attempt is minted at the moment of sending**, for
+ * {@see Supervisors}' reason, and nothing here keeps it.
  */
 final readonly class Keepers implements Hosting
 {
-    public function __construct(private Clients $clients) {}
+    public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function keptRunningOn(Stack $stack, Session $session): WhatKeepsRunning
     {
@@ -65,5 +83,45 @@ final readonly class Keepers implements Hosting
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
             return WhatKeepsRunning::met(Obstacle::StackDidNotAnswer);
         }
+    }
+
+    public function handOver(Stack $stack, Session $session, HostingAgreed $agreed): HowTheHandoverWent
+    {
+        $client = $this->clients->client($stack, $session);
+
+        try {
+            $envelope = $client->act(
+                Api::action($agreed->doing()->asked()),
+                // Spelled here rather than through a field enum: `kept` is a
+                // word this app sends and never reads back, and the enums
+                // under `Fields` hold the words a reader reaches for.
+                ['kept' => $agreed->named()],
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            );
+
+            return HowTheHandoverWent::did(Handovers::in($envelope));
+        } catch (RequestFailed $why) {
+            return $this->refusedWith($why);
+        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
+            return HowTheHandoverWent::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
+    /**
+     * The stack's own words for why it would not, or the obstacle the refusal was.
+     *
+     * A refused session and a refused account are read first, because the
+     * words beside them are about a credential rather than about the command.
+     */
+    private function refusedWith(RequestFailed $why): HowTheHandoverWent
+    {
+        $met = WhatARefusalMeant::obstacle($why);
+        $said = $why->said();
+
+        if ($met !== Obstacle::StackDidNotAnswer || $said === null) {
+            return HowTheHandoverWent::met($met);
+        }
+
+        return HowTheHandoverWent::refused($said);
     }
 }

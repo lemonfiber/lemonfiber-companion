@@ -6,6 +6,8 @@ namespace Tests\Support\Fakes;
 
 use Closure;
 use Modules\Kernel\Api\Hosting;
+use Modules\Kernel\Api\HostingAgreed;
+use Modules\Kernel\Api\HowTheHandoverWent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -35,19 +37,53 @@ final class AStackThatHosts implements Hosting
     /** Whether the session it was handed carried anything — for a test to ask. */
     private bool $carried = false;
 
-    /** @param Closure(): WhatKeepsRunning $answer */
-    private function __construct(private readonly Closure $answer) {}
+    /**
+     * Every handing over it was told about, in order, which is how a screen that sends without a yes is caught.
+     *
+     * @var list<HostingAgreed>
+     */
+    private array $told = [];
 
-    /** A machine keeping these running. */
-    public static function with(WhatRunsUnattended $running): self
+    /**
+     * @param Closure(): WhatKeepsRunning $answer
+     */
+    private function __construct(
+        private readonly Closure $answer,
+        private readonly HowTheHandoverWent $handingOver,
+    ) {}
+
+    /**
+     * A machine keeping these running, answering a handing over as a test says.
+     *
+     * A machine that was not told what a handing over answers says it did not
+     * answer, which is a value the port can give rather than a crash in a test
+     * that never meant to hand anything over.
+     */
+    public static function with(WhatRunsUnattended $running, ?HowTheHandoverWent $handingOver = null): self
     {
-        return new self(static fn(): WhatKeepsRunning => WhatKeepsRunning::keeps($running));
+        return new self(
+            static fn(): WhatKeepsRunning => WhatKeepsRunning::keeps($running),
+            $handingOver ?? HowTheHandoverWent::met(Obstacle::StackDidNotAnswer),
+        );
     }
 
-    /** A stack the operator could not reach, for the reason given. */
+    /** A stack the operator could not reach, for the reason given, whatever they ask it. */
     public static function met(Obstacle $why): self
     {
-        return new self(static fn(): WhatKeepsRunning => WhatKeepsRunning::met($why));
+        return new self(
+            static fn(): WhatKeepsRunning => WhatKeepsRunning::met($why),
+            HowTheHandoverWent::met($why),
+        );
+    }
+
+    /**
+     * Every handing over it was told about, in order.
+     *
+     * @return list<HostingAgreed>
+     */
+    public function told(): array
+    {
+        return $this->told;
     }
 
     /** The stack it was last asked about, or nothing where it never was. */
@@ -80,5 +116,14 @@ final class AStackThatHosts implements Hosting
         $this->carried = $session->forTheHeader() !== '';
 
         return ($this->answer)();
+    }
+
+    public function handOver(Stack $stack, Session $session, HostingAgreed $agreed): HowTheHandoverWent
+    {
+        $this->askedAbout = $stack;
+        $this->carried = $session->forTheHeader() !== '';
+        $this->told[] = $agreed;
+
+        return $this->handingOver;
     }
 }

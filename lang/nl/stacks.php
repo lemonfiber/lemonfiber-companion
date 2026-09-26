@@ -47,6 +47,50 @@ return [
         'unsupported' => 'Deze machine heeft geen servicebeheer dat lemonfiber instelt',
     ],
 
+    // Eén commando aan deze machine geven om draaiend te houden, of het
+    // terugnemen. Elke knop noemt zijn commando, zodat twee regels nooit
+    // dezelfde woorden dragen.
+    'handing_over' => [
+        'install' => ':name draaiend houden op deze machine',
+        'remove' => ':name niet langer draaiend houden',
+    ],
+    'handing_over_asked' => [
+        'install' => ':name draaiend houden op deze machine?',
+        'remove' => ':name niet langer draaiend houden?',
+    ],
+    'handing_over_means' => [
+        'install' => 'Het servicebeheer van de machine wordt gevraagd het te draaien. De stack zegt daarna of het gestart is en waar het wegschrijft wat het zegt.',
+        'remove' => 'Het draait dan alleen zolang een terminal het vasthoudt, en elk bestand dat de installatie maakte wordt teruggenomen.',
+    ],
+
+    // Wat ervan kwam, zoals de stack het zei. De kop noemt wat gevraagd werd en
+    // zegt nooit dat het lukte: of het commando draait, zegt de stand.
+    'handed_over' => [
+        'heading' => [
+            'install' => 'Gevraagd :name draaiend te houden',
+            'remove' => 'Gevraagd :name niet langer draaiend te houden',
+            'did_not' => ':name is niet overgedragen',
+        ],
+        'rehearsed' => 'Een repetitie: er is niets aan deze machine veranderd.',
+        'stands' => 'Hoe het er nu voor staat: :standing',
+        'started' => 'Het is gestart.',
+        'not_started' => 'Het is niet gestart.',
+        'writes_to' => 'Wat het zegt wordt weggeschreven naar :output',
+        'writes_unsaid' => 'De stack zei niet waar wordt weggeschreven wat het zegt.',
+        'touched' => [
+            'install' => 'Geschreven: :file',
+            'remove' => 'Teruggenomen: :file',
+        ],
+        'would_touch' => [
+            'install' => 'Zou worden geschreven: :file',
+            'remove' => 'Zou worden teruggenomen: :file',
+        ],
+        'touched_nothing' => [
+            'install' => 'Er is geen bestand geschreven.',
+            'remove' => 'Er was niets om terug te nemen.',
+        ],
+    ],
+
     // Hoe ver een wijziging van de stack terug te draaien is.
     'reversal' => [
         'whole' => 'Kan helemaal worden teruggedraaid',

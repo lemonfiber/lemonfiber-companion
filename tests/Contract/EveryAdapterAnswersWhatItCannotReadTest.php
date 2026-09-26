@@ -15,6 +15,8 @@ use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\HandingOver;
+use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
@@ -166,7 +168,9 @@ function everyAdapterCallThatReads(): array
             => new Followers($clients)->tracedOn($stack, $session, WhatToFollow::called('sonarr')),
         'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
         'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
-        'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients)->keptRunningOn($stack, $session),
+        'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),
+        'Keepers::handOver' => static fn(): object
+            => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
@@ -214,12 +218,15 @@ function everyAdapterCallThatReads(): array
  * here for the reader to refuse, so the change is given the listing, reviewed.
  * The stand-in answers every job as a repair's, which an update's reader
  * refuses as the wrong kind, so an update's job is given the update's reading.
+ * The stand-in answers handing a command over as work too, where the stack
+ * answers it with the `hosting` envelope, so that act is given the reading.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
     return match (true) {
         str_starts_with($which, 'Adjustments::') => Api::CONFIG_ENDPOINT,
         $which === 'Upkeepers::whatBecameOf' => Api::UPDATE_ENDPOINT,
+        $which === 'Keepers::handOver' => Api::HOSTING_ENDPOINT,
         default => $asked,
     };
 }

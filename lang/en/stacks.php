@@ -48,6 +48,49 @@ return [
         'unsupported' => 'This machine has no service manager lemonfiber sets up',
     ],
 
+    // Handing one command to this machine to keep running, or taking it back.
+    // Each control names its command, so two rows never carry the same words.
+    'handing_over' => [
+        'install' => 'Keep :name running on this machine',
+        'remove' => 'Stop keeping :name running',
+    ],
+    'handing_over_asked' => [
+        'install' => 'Keep :name running on this machine?',
+        'remove' => 'Stop keeping :name running?',
+    ],
+    'handing_over_means' => [
+        'install' => 'The machine\'s service manager is asked to run it. The stack then says whether it started and where it writes what it says.',
+        'remove' => 'It will run only while a terminal holds it, and every file the install made is taken back.',
+    ],
+
+    // What came of it, as the stack said it. The heading names what was asked
+    // for and never says it worked: whether the command runs is the standing.
+    'handed_over' => [
+        'heading' => [
+            'install' => 'Asked to keep :name running',
+            'remove' => 'Asked to stop keeping :name running',
+            'did_not' => ':name was not handed over',
+        ],
+        'rehearsed' => 'A rehearsal: nothing on this machine was changed.',
+        'stands' => 'Where it stands now: :standing',
+        'started' => 'It was started.',
+        'not_started' => 'It was not started.',
+        'writes_to' => 'What it says is written to :output',
+        'writes_unsaid' => 'The stack did not say where what it says is written.',
+        'touched' => [
+            'install' => 'Written: :file',
+            'remove' => 'Taken back: :file',
+        ],
+        'would_touch' => [
+            'install' => 'Would be written: :file',
+            'remove' => 'Would be taken back: :file',
+        ],
+        'touched_nothing' => [
+            'install' => 'No file was written.',
+            'remove' => 'Nothing was there to take back.',
+        ],
+    ],
+
     // How far one change the stack made could be put back. `none` is a word of
     // its own rather than a blank: a change that cannot be undone says so.
     'reversal' => [

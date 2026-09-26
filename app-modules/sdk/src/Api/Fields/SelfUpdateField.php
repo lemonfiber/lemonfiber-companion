@@ -20,14 +20,8 @@ enum SelfUpdateField: string implements NamesAWireField
     /** What the update endpoint is asked about when the question is the running copy. */
     case ThisCopy = 'self';
 
-    /** How the running copy got onto the machine. */
-    case Installed = 'installed';
-
     /** The tool that owns the running copy. */
     case Owner = 'owner';
-
-    /** What the version on offer says it changed, as its release page words it. */
-    case Changed = 'changed';
 
     /** What updating leaves alone, and what it needs afterwards. */
     case Afterwards = 'afterwards';

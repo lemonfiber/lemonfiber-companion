@@ -58,7 +58,7 @@ requirement is right and this page is a defect.
 | `N2-R9` | Stuck downloads are reachable, and *stuck* on its own is not something anybody can act on | `Stage` |
 | `N2-R10` | A log read is bounded, and a bound is only a bound if something holds it | `HowManyLines` |
 | `N16-R10` | Where self-healing could not reach what it manages, that is its own answer and is never rendered as nothing needing attention | `WhatIsUnsupported`, carried on `Stalled` beside the listing rather than anywhere a screen could draw the queue without it. `Unsupported` holds both halves and refuses a blank either side, so a limit cannot reach a screen as a fault with no reason. An absent field reads as `none()` — a stack that reached everything says nothing — while a malformed one is refused, because a limit shown with half its sentence is one nobody can act on |
-| `N16-R12` | The app does not act on a wedged item, change a strike count or a grace window, or turn the stack's own autostart on or off | `WhatStoppedComingIn` and `WhatKeepsRunningHere` offer one control each, asking again. Nothing on either screen writes, and the port each reads through has no verb that could |
+| `N16-R12` | The app does not act on a wedged item, change a strike count or a grace window, or turn the stack's own autostart on or off | `WhatStoppedComingIn` offers one control, asking again, and the port it reads through has no verb that could write. `WhatKeepsRunningHere` also hands a long-running command over or takes it back, which the requirement names as not autostart; nothing on it writes a setting |
 
 `N16-R8`, `N16-R9` and `N16-R11` wait on the contract rather than on this app.
 They ask for why an item was classified as wedged and how many strikes it
@@ -79,12 +79,19 @@ envelope carries and `WhatKeepsRunningHere` draws.
 | `N10-R10` | A standing the service manager declined to confirm is not drawn as one it confirmed | `HowItIsHosted::InstalledUnverified`. It answers none of the three questions, so a screen cannot draw it from a boolean and has to have a sentence for it — which is what `EveryDerivedKeyResolvesTest` then requires of both locales |
 | `N10-R10` | What did not come back is named | `WhatRunsUnattended::didNotComeBack()`, answering `WhatDidNotComeBack` — a type of its own rather than a filtered array (`D1`), because *everything this machine hosts* and *everything that did not start* are different lists for different moments. What counts is `HowItIsHosted`'s, so the walk does not judge |
 | `N10-R10` | For an orphan, what is missing is the program rather than the service | `Unattended::orphaned()`, which carries the missing path and sets the standing itself — a row naming a missing program while claiming to be running cannot be built. `Unattended::missing()` hands it over in two arms, so a screen cannot print a blank where a path belongs |
-| `N23-R4` | Where the platform has no service manager lemonfiber configures, the stack's instruction is shown and no install is offered | `WhatRunsUnattended::unsupported()`, which takes the instruction and refuses a blank one through `InstructionSaysNothing`. It is a named constructor rather than a nullable parameter, so an unsupported machine with no instruction and an instruction attached to a machine that has a manager are both unspellable. `WhatKeepsItRunning::configuresAnything()` is the same line drawn about the machine, and `WhatKeepsRunningHere` offers asking again and nothing else |
+| `N23-R4` | Where the platform has no service manager lemonfiber configures, the stack's instruction is shown and no install is offered | `WhatRunsUnattended::unsupported()`, which takes the instruction and refuses a blank one through `InstructionSaysNothing`. It is a named constructor rather than a nullable parameter, so an unsupported machine with no instruction and an instruction attached to a machine that has a manager are both unspellable. `WhatKeepsItRunning::configuresAnything()` is the same line drawn about the machine, and `WhatKeepsRunningTurnedOutToBe::$handsOver` is false there, so the screen draws neither install nor removal and `wouldInstall()` asks nothing |
+| `N23-R1` | Hosting a named long-running command and removing one are each offered as an act of their own, and nothing else hosts a command | `Hosting::handOver()`, which takes a `HostingAgreed` naming one act and one command. `WhatKeepsRunningHere` builds it only from a command the listing carries, holds it as a question, and sends it only from `agree()`; no other screen or port reaches `hosting-install` or `hosting-remove`. `Keepers` sends the command's name as `kept` under a fresh idempotency key |
+| `N23-R2` | After an install, whether the command was started and where its words are written are said, and the standing the stack returned is reported rather than the install having succeeded | `WhatTheHandoverDid`, read by `Handovers` from `hosting.changed` and from the acted-on command's own row: `started`, `output` and `standing`, each required or refused, and `output` absent or null read as the stack not saying. The screen's heading names what was asked for; whether it runs is the standing line under it |
+| `N23-R3` | Every file an install or a removal wrote or took back is shown with its result | `TheFilesTouched`, from `changed.touched`, drawn one line a file as *written* or *taken back* by which act it was, and as *would be* on a rehearsal. An empty list is its own sentence, so removing what was never hosted reads as nothing to take back rather than as a failure |
+| `N23-R5` | A rehearsed install or removal is labelled as a rehearsal | `WhatTheHandoverDid::wasRehearsed()`, from `changed.rehearsed`, which `Handovers` requires rather than defaulting to false. The screen says it first, above everything the rehearsal lists |
 
-`N23-R1` to `N23-R3` and `N23-R5` are not built. They ask for hosting a command
-and removing one as acts of their own, for what an install started and wrote,
-and for a rehearsed one labelled as such. This app reads `hosting` and sends
-neither `hosting-install` nor `hosting-remove`.
+The guard on the data location is started against forms, and the stack refuses
+to install it against none. Nothing this app reads says which command takes
+forms: the `hosting` envelope lists each command's name, standing and
+guarantee, and says nothing of what installing it needs. So the app sends the
+command's name alone, and an install of the guard reaches the operator as the
+stack's own refusal, in its words, through `HowTheHandoverWent::refused()`.
+`N1-R17` is why it is not guessed from the command's name.
 
 `N16-R5` to `N16-R7` are not answered here. They are about the stack's own
 autostart (`B8`) — whether it is configured, and what a restart did and did not

@@ -97,4 +97,43 @@ final class HostingIsUnreadable extends InvalidArgumentException
     {
         return new self('The hosting envelope says this platform has no service manager and says nothing about what to do instead. That is the one arm where the sentence is the answer, and without it the screen draws the same empty box it draws for off.');
     }
+
+    /**
+     * An install or a removal was answered without a readable account of what it did.
+     *
+     * The field is named for {@see self::missing()}'s reason. An act answered
+     * with no account of itself is refused rather than shown as done: *did it
+     * happen* is the question an operator asked it.
+     */
+    public static function changed(NamesAWireField $field): self
+    {
+        return new self(sprintf(
+            'The hosting envelope answering an install or a removal has no readable `%s` in what it changed. An act with no account of itself cannot be shown as having happened.',
+            $field->value,
+        ));
+    }
+
+    /** What a run changed names a command the listing beside it does not carry. */
+    public static function unlisted(string $name): self
+    {
+        return new self(sprintf(
+            'The hosting envelope says it acted on `%s`, and no command it lists carries that name. Where that command now stands is the answer an install owes, and there is none to read.',
+            $name,
+        ));
+    }
+
+    /** A removal said it started the command it took back. */
+    public static function startedByRemoving(): self
+    {
+        return new self('The hosting envelope says a removal started the command it took back. Only installing starts anything, and a removal that claims to is not one to report either way.');
+    }
+
+    /** Where an installed command writes its words is there and is not a path. */
+    public static function output(string $name): self
+    {
+        return new self(sprintf(
+            'The hosting envelope says where `%s` writes its words with something that is not a path. Absent is the stack not saying, and this is neither that nor an answer.',
+            $name,
+        ));
+    }
 }

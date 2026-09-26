@@ -17,11 +17,15 @@ namespace Modules\Kernel\Api;
  * a caller pair the two up wrongly. This signature makes that mistake
  * unspellable.
  *
- * **It reads and does not act.** There is no install and no take-it-back here,
- * and that is the requirement rather than an omission: what is configured is
- * the core's, and a phone that could turn *come back after a restart* on and
- * off would be a second place the answer is decided. The port has one method
- * because it has one question.
+ * **Reading and handing over are one port**, for {@see Supervising}'s reason:
+ * an operator reads the listing, picks a command, and asks for it to be kept
+ * running or taken back — and a port that only read would leave whoever built
+ * the acting half free to reach a client of their own.
+ *
+ * **Handing over takes a {@see HostingAgreed}, which rendering cannot
+ * produce.** Installing is an act of its own and never the side effect of
+ * another, so the only way to one is a value built from what the operator
+ * agreed to.
  */
 interface Hosting
 {
@@ -39,4 +43,14 @@ interface Hosting
      * never going to run a launch agent has been sent to fix the wrong thing.
      */
     public function keptRunningOn(Stack $stack, Session $session): WhatKeepsRunning;
+
+    /**
+     * Hand one command to the machine or take it back, or come away with a reason.
+     *
+     * Answers {@see HowTheHandoverWent} rather than raising, for the reason
+     * {@see keptRunningOn()} does; and a stack that answered and refused is
+     * told apart from one that never answered, because only the first has
+     * said why.
+     */
+    public function handOver(Stack $stack, Session $session, HostingAgreed $agreed): HowTheHandoverWent;
 }
