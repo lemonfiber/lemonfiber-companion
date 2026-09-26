@@ -100,7 +100,7 @@ final readonly class Keepers implements Hosting
             );
 
             return HowTheHandoverWent::did(Handovers::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusedWith($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
             return HowTheHandoverWent::met(Obstacle::StackDidNotAnswer);
@@ -110,13 +110,14 @@ final readonly class Keepers implements Hosting
     /**
      * The stack's own words for why it would not, or the obstacle the refusal was.
      *
-     * A refused session and a refused account are read first, because the
-     * words beside them are about a credential rather than about the command.
+     * A machine that is not the one paired, a refused session and a refused
+     * account are read first, because any words beside them are about the
+     * connection rather than about the command.
      */
-    private function refusedWith(RequestFailed $why): HowTheHandoverWent
+    private function refusedWith(CertificateWasRefused|RequestFailed $why): HowTheHandoverWent
     {
         $met = WhatARefusalMeant::obstacle($why);
-        $said = $why->said();
+        $said = $why instanceof RequestFailed ? $why->said() : null;
 
         if ($met !== Obstacle::StackDidNotAnswer || $said === null) {
             return HowTheHandoverWent::met($met);
