@@ -3,14 +3,18 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
+use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
+use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatWasDecided;
@@ -152,6 +156,12 @@ const VERBS_THE_APP_ASKS_FOR = [
     'invite' => 'says what an invitation would grant and when it lapses, and makes the account only when that same request is agreed to',
 
     'reissue' => 'takes a member\'s password off so they choose the next one, naming the person and never a password',
+
+    // A support bundle, described and then written. Described, it writes
+    // nothing; written, it is a file on the stack's own machine, holding
+    // what the description listed. A setting is shown as it is only where
+    // the operator named it and agreed to it on its own.
+    'support' => 'describes a support bundle, and writes the one described on a second yes',
 ];
 
 /**
@@ -418,6 +428,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToChange $change): string => $change->asked(), WhatToChange::cases()),
         ...array_map(static fn(AskingThemIn $asking): string => $asking->asked(), AskingThemIn::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
+        ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
 

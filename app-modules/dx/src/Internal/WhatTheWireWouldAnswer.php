@@ -192,6 +192,25 @@ final readonly class WhatTheWireWouldAnswer
     }
 
     /**
+     * One envelope, wrapped the way the wire wraps one.
+     *
+     * The version comes off `Api::VERSION` rather than being written here, so a
+     * stand-in can never answer with a version the client it is answering would
+     * refuse — which would turn every screen into the mismatch message and read
+     * exactly like a stack running the wrong release.
+     *
+     * @return array<string, mixed>
+     */
+    public static function oneEnvelope(string $envelope): array
+    {
+        return [
+            'api_version' => Api::VERSION,
+            'kind' => WhatTheContractDeclares::kindOf($envelope),
+            'data' => WhatAStackWouldSay::inside($envelope),
+        ];
+    }
+
+    /**
      * The text values a request's query carries, which is what picks between envelopes one endpoint answers with.
      *
      * @param array<array-key, mixed> $query
@@ -245,25 +264,6 @@ final readonly class WhatTheWireWouldAnswer
         $envelope = WhichEnvelopeAnEndpointAnswersWith::at($endpoint, ...$asked);
 
         return $envelope === '' ? self::A_NAME_FOR_WORK : $envelope;
-    }
-
-    /**
-     * One envelope, wrapped the way the wire wraps one.
-     *
-     * The version comes off `Api::VERSION` rather than being written here, so a
-     * stand-in can never answer with a version the client it is answering would
-     * refuse — which would turn every screen into the mismatch message and read
-     * exactly like a stack running the wrong release.
-     *
-     * @return array<string, mixed>
-     */
-    private static function oneEnvelope(string $envelope): array
-    {
-        return [
-            'api_version' => Api::VERSION,
-            'kind' => WhatTheContractDeclares::kindOf($envelope),
-            'data' => WhatAStackWouldSay::inside($envelope),
-        ];
     }
 
     /**

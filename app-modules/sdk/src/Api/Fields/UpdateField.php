@@ -17,9 +17,6 @@ enum UpdateField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The services, as opposed to this copy of lemonfiber. */
-    case TheStack = 'stack';
-
     /**
      * Whether one of those changes cannot be put back.
      *
@@ -55,8 +52,9 @@ enum UpdateField: string implements NamesAWireField
     case Ending = 'ending';
 
     /**
-     * The operator's yes, on an action that only describes itself without one:
-     * the update, and an invitation.
+     * The operator's yes, on the actions that hold back without one: an update,
+     * which only describes itself, an invitation, and a support bundle
+     * revealing a setting.
      *
      * Here rather than in `WireField`, which holds the words read out of more
      * than one envelope. This one is sent and never read, and a word is named

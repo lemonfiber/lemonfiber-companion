@@ -147,6 +147,9 @@ enum AStacksScreen: string
     /** What this machine keeps, where, and why, and the copies it holds. */
     case Keeps = '/stacks/{stack}/keeps';
 
+    /** Asking for help: a support bundle, described before it is written. */
+    case Help = '/stacks/{stack}/help';
+
     /** How full this machine is, and where the room went. */
     case Room = '/stacks/{stack}/room';
 

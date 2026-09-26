@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatIsCurrent;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhichUpdate;
 
 /**
  * The stack's own upkeep, asked through the SDK.
@@ -49,7 +50,7 @@ final readonly class Upkeepers implements KeepingCurrent
             // copy of lemonfiber stands is {@see Inspectors}' reading.
             $envelope = $client->read(
                 Api::UPDATE_ENDPOINT,
-                [WireField::What->value => UpdateField::TheStack->value],
+                [WireField::What->value => WhichUpdate::TheStack->value],
             );
 
             // Inside the same `try` as the request, deliberately — the argument
