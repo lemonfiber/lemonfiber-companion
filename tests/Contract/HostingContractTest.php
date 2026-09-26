@@ -612,6 +612,10 @@ it('an account of an act this app cannot read is a stack that did not answer', f
         'no standing' => whatAHandoverSends([], [], 'row.standing'),
         'no name on the row' => whatAHandoverSends([], [], 'row.name'),
         'no name' => whatAHandoverSends(['name' => ' ']),
+        // The row carries the same blank, so the listing cannot be what refuses it.
+        'a blank name the listing also carries' => whatAHandoverSends(['name' => ' '], ['name' => ' ']),
+        'an empty name the listing also carries' => whatAHandoverSends(['name' => ''], ['name' => '']),
+        'a name that is not text' => whatAHandoverSends(['name' => 7], ['name' => 7]),
         'a name nothing lists' => whatAHandoverSends(['name' => 'boot']),
         'a direction that is not yes or no' => whatAHandoverSends(['installed' => 'yes']),
         'a start that is not yes or no' => whatAHandoverSends(['started' => 1]),

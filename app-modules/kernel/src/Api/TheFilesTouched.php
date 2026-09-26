@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function array_values;
-
 use ArrayIterator;
 
 use function count;
@@ -36,14 +34,14 @@ final readonly class TheFilesTouched implements Countable, IteratorAggregate
     /**
      * These files, less the space around each, in the order given.
      *
-     * Not habit on the reindex: a variadic collected from named arguments has
-     * string keys, and everything below reads this by position.
+     * Collected into a fresh list, so files that arrived keyed by name are
+     * still read by position.
      */
     public static function these(string ...$files): self
     {
         $named = [];
 
-        foreach (array_values($files) as $file) {
+        foreach ($files as $file) {
             $shown = trim($file);
 
             if ($shown === '') {

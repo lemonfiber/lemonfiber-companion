@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Kernel\Api\WhatTheHandoverDid;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
+use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatHosts;
@@ -464,6 +465,38 @@ it('a rehearsal is labelled as one, and its files are what would have happened',
         ->and($removal?->touchedSaid)->toBe('stacks.handed_over.would_touch.remove');
 });
 
+/**
+ * Every field an act that did not happen should have left empty, where it did not.
+ *
+ * An act that never happened has no standing, no start, nowhere it writes, no
+ * files and no rehearsal; a line drawn for any of them would report something
+ * that did not occur.
+ *
+ * @return list<string>
+ */
+function whatAnActThatDidNotHappenStillSays(?WhatTheHandoverShows $shown): array
+{
+    $said = [
+        'rehearsed' => $shown?->rehearsed === true ? 'yes' : '',
+        'startedSaid' => $shown?->startedSaid,
+        'standingSaid' => $shown?->standingSaid,
+        'writesToSaid' => $shown?->writesToSaid,
+        'writesTo' => $shown?->writesTo,
+        'touched' => $shown?->touched === [] ? '' : 'files',
+        'touchedSaid' => $shown?->touchedSaid,
+        'touchedNothingSaid' => $shown?->touchedNothingSaid,
+    ];
+    $left = [];
+
+    foreach ($said as $field => $value) {
+        if ($value !== '') {
+            $left[] = $field;
+        }
+    }
+
+    return $left;
+}
+
 it('a refusal is shown in the stack\'s own words, as something that did not happen', function (): void {
     $went = HowTheHandoverWent::refused('The guard was not told what to guard');
     $shown = theHostingScreenHavingAgreed(AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), $went))->handedOver;
@@ -472,9 +505,7 @@ it('a refusal is shown in the stack\'s own words, as something that did not happ
         ->and($shown?->name)->toBe('watch')
         ->and($shown?->refused)->toBe('The guard was not told what to guard')
         ->and($shown?->metSaid)->toBe('')
-        ->and($shown?->standingSaid)->toBe('')
-        ->and($shown?->touchedNothingSaid)->toBe('')
-        ->and($shown?->rehearsed)->toBeFalse();
+        ->and(whatAnActThatDidNotHappenStillSays($shown))->toBe([]);
 });
 
 it('an act that never got an answer says what was met, and a refused credential lets the session go', function (): void {
@@ -488,6 +519,7 @@ it('an act that never got an answer says what was met, and a refused credential 
     expect($screen->handedOver?->headingSaid)->toBe('stacks.handed_over.heading.did_not')
         ->and($screen->handedOver?->metSaid)->toBe(Obstacle::CredentialWasRefused->said())
         ->and($screen->handedOver?->refused)->toBe('')
+        ->and(whatAnActThatDidNotHappenStillSays($screen->handedOver))->toBe([])
         ->and($keychain->isHolding(theStackWhoseHostingIsRead()->id()))->toBeFalse();
 });
 
@@ -503,7 +535,8 @@ it('an act on a device that no longer holds a session sends nothing and says it 
     expect($stack->told())->toBe([])
         ->and($screen->handedOver?->headingSaid)->toBe('stacks.handed_over.heading.did_not')
         ->and($screen->handedOver?->refused)->toBe('')
-        ->and($screen->handedOver?->metSaid)->toBe('');
+        ->and($screen->handedOver?->metSaid)->toBe('')
+        ->and(whatAnActThatDidNotHappenStillSays($screen->handedOver))->toBe([]);
 });
 
 it('asking about another act puts the last outcome away', function (): void {
