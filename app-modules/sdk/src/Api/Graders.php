@@ -7,6 +7,7 @@ namespace Modules\Sdk\Api;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -54,7 +55,7 @@ final readonly class Graders implements ChoosingQuality
             // Inside the same `try` as the request, for the argument
             // {@see Recorders::recordedOn()} makes.
             return WhatWasFoundOfTheQuality::found(WhatIsChosen::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheQuality::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing) {
             return WhatWasFoundOfTheQuality::met(Obstacle::StackDidNotAnswer);
@@ -89,7 +90,7 @@ final readonly class Graders implements ChoosingQuality
             // reason: on a write, *did it happen* is the question, and an
             // answer this side could not read does not say.
             return $this->cameTo($envelope);
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheChoiceCameTo::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing) {
             return WhatTheChoiceCameTo::met(Obstacle::StackDidNotAnswer);
