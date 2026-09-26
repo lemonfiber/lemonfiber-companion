@@ -43,6 +43,7 @@ use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatHappenedToIt;
 use Modules\Kernel\Api\WhatItFaces;
@@ -53,6 +54,7 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
+use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
@@ -61,6 +63,7 @@ use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhetherItIsHeard;
+use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
@@ -317,6 +320,18 @@ function everyDerivedKey(): array
         WhereTheFrontDoorStands::class => aPairPerCase(
             WhereTheFrontDoorStands::cases(),
             static fn(WhereTheFrontDoorStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereTheInvitationStands::class => aPairPerCase(
+            WhereTheInvitationStands::cases(),
+            static fn(WhereTheInvitationStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhetherTheyCanAsk::class => aPairPerCase(
+            WhetherTheyCanAsk::cases(),
+            static fn(WhetherTheyCanAsk $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatBecomesOfUnrated::class => aPairPerCase(
+            WhatBecomesOfUnrated::cases(),
+            static fn(WhatBecomesOfUnrated $case): array => [$case->saidOnTheScreen()],
         ),
         WhatItFaces::class => aPairPerCase(
             WhatItFaces::cases(),

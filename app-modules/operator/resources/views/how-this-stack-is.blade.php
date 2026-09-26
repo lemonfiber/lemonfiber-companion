@@ -229,10 +229,11 @@
     <x-operator::quiet-action label="{{ __('stacks.itself.road_in') }}" :goes="$this->goes()->ofItself()->itself()" />
 
     {{-- Who gets in: what it holds to let services in, which app to watch
-         on, and where the household comes in. --}}
+         on, where the household comes in, and asking somebody in. --}}
     <x-operator::quiet-action label="{{ __('stacks.credentials.road_in') }}" :goes="$this->goes()->whoGetsIn()->credentials()" />
     <x-operator::quiet-action label="{{ __('stacks.clients.road_in') }}" :goes="$this->goes()->whoGetsIn()->clients()" />
     <x-operator::quiet-action label="{{ __('stacks.front_door.road_in') }}" :goes="$this->goes()->whoGetsIn()->frontDoor()" />
+    <x-operator::quiet-action label="{{ __('stacks.invitation.road_in') }}" :goes="$this->goes()->whoGetsIn()->invite()" />
 
     {{-- What lemonfiber's words mean. --}}
     <x-operator::quiet-action label="{{ __('stacks.words.road_in') }}" :goes="$this->goes()->ofItself()->words()" />

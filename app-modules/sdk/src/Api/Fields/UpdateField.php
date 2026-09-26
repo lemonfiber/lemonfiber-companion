@@ -51,15 +51,16 @@ enum UpdateField: string implements NamesAWireField
     /** Whether somebody in the house would notice this release. */
     case UserFacing = 'user_facing';
 
-    /** When a release was taken back. Absent on one that still stands. */
-    case Withdrawn = 'withdrawn';
-
-    /** What became of each service the last applied update touched. */
-    case Applied = 'applied';
-
     /** How one service's share of an applied update finished. */
     case Ending = 'ending';
 
-    /** The operator's yes, on the update action that only describes itself without one. */
+    /**
+     * The operator's yes, on an action that only describes itself without one:
+     * the update, and an invitation.
+     *
+     * Here rather than in `WireField`, which holds the words read out of more
+     * than one envelope. This one is sent and never read, and a word is named
+     * once, so it stays with the first action that sent it.
+     */
     case Confirm = 'confirm';
 }

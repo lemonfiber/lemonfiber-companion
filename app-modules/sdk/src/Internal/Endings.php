@@ -42,14 +42,14 @@ final readonly class Endings
      */
     public static function in(array $data): HowServicesTookIt
     {
-        if (! array_key_exists(UpdateField::Applied->value, $data)) {
-            throw UpkeepIsUnreadable::missing(UpdateField::Applied);
+        if (! array_key_exists(WireField::Applied->value, $data)) {
+            throw UpkeepIsUnreadable::missing(WireField::Applied);
         }
 
-        $listed = $data[UpdateField::Applied->value];
+        $listed = $data[WireField::Applied->value];
 
         if (! is_array($listed)) {
-            throw UpkeepIsUnreadable::missing(UpdateField::Applied);
+            throw UpkeepIsUnreadable::missing(WireField::Applied);
         }
 
         $services = [];

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3fc5cb82c30854b4d74598bc5fa49715",
+    "content-hash": "409fa3f83e1071582d87f687eb70a1d8",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3355,6 +3355,44 @@
                 "LicenseRef-Hippocratic-3.0"
             ],
             "description": "Snapshots: what was taken, when, and what it would restore.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "modules/codes",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/codes",
+                "reference": "f8077a7fcfc4a8be0f6d6f3b955bcc5fc6807443"
+            },
+            "require": {
+                "bacon/bacon-qr-code": "^3.0",
+                "modules/kernel": "dev-main",
+                "php": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 100
+                    },
+                    "kind": "adapter"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Codes\\": "src/",
+                    "Modules\\Codes\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "Codes another device can scan off this one's screen.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -14609,6 +14647,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "modules/backups": 20,
+        "modules/codes": 20,
         "modules/connection": 20,
         "modules/design": 20,
         "modules/device": 20,

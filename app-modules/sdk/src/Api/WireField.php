@@ -323,4 +323,32 @@ enum WireField: string implements NamesAWireField
      * one install or removal did to the machine, on a `hosting`.
      */
     case Changed = 'changed';
+
+    /**
+     * Where somebody is sent: a service beside the front door, or the one
+     * address an invitation hands over. Either way the machine's own text.
+     */
+    case Address = 'address';
+
+    /** A volume's own size or its quota, and how far up the ratings an invited member may watch. */
+    case Limit = 'limit';
+
+    /**
+     * What was taken back: a release that no longer stands, or the invitations
+     * nobody claimed in time.
+     */
+    case Withdrawn = 'withdrawn';
+
+    /**
+     * What an action wrote: what became of each service an update touched, and
+     * what an invitation wrote on the account.
+     */
+    case Applied = 'applied';
+
+    /**
+     * Whether an act was only described rather than carried out: a hosting
+     * run, in which case nothing it lists happened, and an invitation, in
+     * which case no account was made.
+     */
+    case Rehearsed = 'rehearsed';
 }

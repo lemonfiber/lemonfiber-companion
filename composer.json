@@ -19,11 +19,13 @@
         "ext-filter": "*",
         "ext-mbstring": "*",
         "ext-sodium": "*",
+        "bacon/bacon-qr-code": "^3.0",
         "internachi/modular": "^3.0",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "lemonfiber/bridge": "^0.1",
         "modules/backups": "dev-main",
+        "modules/codes": "dev-main",
         "modules/connection": "dev-main",
         "modules/design": "dev-main",
         "modules/device": "dev-main",
@@ -183,6 +185,6 @@
         "test:guards": "Plant a violation of every rule in a throwaway copy of the tree and require each rule to report it (R2). The checkout is only read, so this can run beside anything else, and a copy left by a killed run is removed by the next one.",
         "test:mutation": "Mutation testing at the floor declared for each tree phpunit.xml measures, in the manifest nearest it. Trees sharing a floor share a run, because a floor of 100 admits no offsetting between them; a tree whose floor differs gets its own.",
         "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud and the Floors suite read (Q-R64, G9), and the coverage map every mutation shard reads instead of running the suite again, which Pest's own map is copied to (`LEMONFIBER_KEEP_COVERAGE`) because `--coverage` overrides any `--coverage-php`. The pcov flags are load-bearing: left alone, pcov instruments the longest common prefix of the phpunit source includes, which is `app` \u2014 and that reaches `app-modules` only because the match is on the string rather than the path. `bridge/src` falls outside it, so every line of the plugin's PHP read as never executed while its tests passed. Pointing the directory at the repository root fixes that, and excluding vendor makes the run faster than it was before. It runs in parallel, as `test` does, with the same two suites left out for the same reasons; the clover report it writes is the same, statement for statement, as one written by a single process.",
-        "validate:modules": "Validate every manifest this repository owns \u2014 every package the root declares as a path repository, which is the twelve modules and the bridge. Not --check-version: a path package the root pins by version has to declare one, and composer's advice to leave it out is about publishing to Packagist, which none of these do."
+        "validate:modules": "Validate every manifest this repository owns \u2014 every package the root declares as a path repository, which is the fourteen modules and the bridge. Not --check-version: a path package the root pins by version has to declare one, and composer's advice to leave it out is about publishing to Packagist, which none of these do."
     }
 }

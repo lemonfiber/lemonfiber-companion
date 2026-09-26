@@ -10,8 +10,8 @@ use Modules\Stacks\Api\AStacksScreen;
 /**
  * Where the screens are that answer who gets in to one machine.
  *
- * What it holds to let services in, which app the household watches on, and
- * where the household comes in. Apart from {@see WhereAStackIs} for
+ * What it holds to let services in, which app the household watches on,
+ * where the household comes in, and asking somebody in. Apart from {@see WhereAStackIs} for
  * {@see WhatItKeepsOfItself}'s reason: one accessor there hands out this, and
  * the next screen of this kind costs it nothing.
  *
@@ -43,5 +43,11 @@ final readonly class WhoGetsIn
     public function frontDoor(): string
     {
         return AStacksScreen::FrontDoor->forTheStack($this->stack);
+    }
+
+    /** Where somebody is asked in. */
+    public function invite(): string
+    {
+        return AStacksScreen::Invite->forTheStack($this->stack);
     }
 }

@@ -56,7 +56,7 @@ app-modules/
   design/               EDGE components and theme tokens
   connection/ stacks/ health/ backups/ updates/     capability
   operator/ household/                              surface
-  sdk/ device/ vault/                               adapter
+  sdk/ device/ vault/ codes/                        adapter
   dx/                                               stand-in
 ```
 
@@ -167,7 +167,7 @@ tree, under `extra.lemonfiber.floors.mutation`: a module's own for
 `bootstrap/Composition`. A manifest declaring `0` is taking a position rather
 than being skipped, and `scripts/mutation.php` says which positions those are
 and why — a component holds state and an adapter forwards a call, so mutating
-either measures the fake. Four of the fifteen declare it. Templates are not in
+either measures the fake. Four of the sixteen declare it. Templates are not in
 the picture at all: the run mutates the trees `phpunit.xml` measures, and a
 Blade file is not in one.
 

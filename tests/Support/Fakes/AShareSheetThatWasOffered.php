@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\Handed;
 use Modules\Kernel\Api\Sharing;
@@ -25,6 +26,9 @@ final class AShareSheetThatWasOffered implements Sharing
     /** What it was handed, or nothing where it never was. */
     private ?Assembled $handed = null;
 
+    /** The invitation it was handed to pass on, or nothing where it never was. */
+    private ?AnInvitationToPassOn $passed = null;
+
     private function __construct(private readonly ?WhyNothingWasShared $refusing) {}
 
     /** A sheet that opens. */
@@ -45,6 +49,20 @@ final class AShareSheetThatWasOffered implements Sharing
         return $this->handed;
     }
 
+    /** The invitation it was handed to pass on, for a test to read every word of. */
+    public function passed(): ?AnInvitationToPassOn
+    {
+        return $this->passed;
+    }
+
+    public function passOn(AnInvitationToPassOn $invitation): Handed
+    {
+        // Recorded on both arms, for the reason `hand()` records a report.
+        $this->passed = $invitation;
+
+        return $this->answered();
+    }
+
     public function hand(Assembled $assembled): Handed
     {
         // Recorded even where the sheet refuses, which is what lets a test ask
@@ -52,6 +70,12 @@ final class AShareSheetThatWasOffered implements Sharing
         // both arms rather than only the happy one.
         $this->handed = $assembled;
 
+        return $this->answered();
+    }
+
+    /** What this sheet answers, whatever it was handed. */
+    private function answered(): Handed
+    {
         return $this->refusing instanceof WhyNothingWasShared
             ? Handed::refused($this->refusing)
             : Handed::over();

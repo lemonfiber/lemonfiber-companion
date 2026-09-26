@@ -17,6 +17,7 @@ use Lemonfiber\Native\Link as TheLink;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
+use Modules\Codes\Api\QrCodes;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
@@ -35,10 +36,12 @@ use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\DeviceAuth;
+use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
+use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Mending;
@@ -98,6 +101,7 @@ use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upkeepers;
+use Modules\Sdk\Api\Ushers;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformVerdicts;
@@ -339,6 +343,12 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Safekeeping::class, Keyholders::class);
         $this->app->bind(Advising::class, Advisers::class);
         $this->app->bind(Welcoming::class, Doorkeepers::class);
+
+        // Asking somebody in goes through the same door as every other action,
+        // and the address it answers with is drawn as a code by an encoder
+        // that reaches nothing: it is handed the address and draws squares.
+        $this->app->bind(Inviting::class, Ushers::class);
+        $this->app->bind(Encoding::class, QrCodes::class);
 
         $this->app->bind(Explaining::class, Explainers::class);
         $this->app->bind(Rehearsing::class, Rehearsers::class);

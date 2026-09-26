@@ -17,9 +17,6 @@ enum FrontDoorField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Where a service is reached, as the machine said at the moment of asking. */
-    case Address = 'address';
-
     /** The whole address, as it would be typed or followed. */
     case Url = 'url';
 

@@ -202,10 +202,10 @@ final readonly class Changelogs
      */
     private static function withdrawn(array $said): bool
     {
-        if (! array_key_exists(UpdateField::Withdrawn->value, $said)) {
+        if (! array_key_exists(WireField::Withdrawn->value, $said)) {
             return false;
         }
 
-        return $said[UpdateField::Withdrawn->value] !== null;
+        return $said[WireField::Withdrawn->value] !== null;
     }
 }

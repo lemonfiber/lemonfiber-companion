@@ -71,7 +71,8 @@ lookup stops being wrong.
 | [what-the-words-mean.md](what-the-words-mean.md) | lemonfiber's words, each with its glosses and what else it is called |
 | [running-part-of-it.md](running-part-of-it.md) | A stack running some of its forms on purpose, and what starting a form would come to |
 | [what-is-running-here.md](what-is-running-here.md) | Which version of lemonfiber runs, how it was installed, and what moving it would take |
-| [who-gets-in.md](who-gets-in.md) | The credentials a machine holds and what uses each, which app to watch on, and where the household comes in |
+| [who-gets-in.md](who-gets-in.md) | The credentials a machine holds and what uses each, which app to watch on, where the household comes in, and what an invitation grants before it is sent |
+| [asking-somebody-in.md](asking-somebody-in.md) | Inviting somebody, handing the invitation over, and letting somebody choose a new password |
 | [what-a-machine-keeps.md](what-a-machine-keeps.md) | What the stack keeps on its machine, where and why, and the copies the machine holds |
 | [what-was-done-here.md](what-was-done-here.md) | What a machine has changed about itself, how far back that record goes, and where every service it runs comes from |
 | [what-this-device-keeps-to-itself.md](what-this-device-keeps-to-itself.md) | Permissions, notifications, the lock, and what never leaves |

@@ -319,11 +319,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'this payload (`N2-R11`) is about requests awaiting a decision rather than somebody\'s quota.',
     ],
     [
-        'path' => 'HouseholdEnvelope.members[].claimed',
-        'because' => 'Whether a member has taken up their invitation. The same block: it is a fact about a '
-            . 'person rather than about a request, and `N2-R11` surfaces the requests.',
-    ],
-    [
         'path' => 'HouseholdEnvelope.members[].last_seen',
         'because' => 'When a member was last about. The same block, and the same distinction — `N2-R13` has '
             . 'a *reading* carry its age, which is how old this app\'s answer is rather than how long ago '

@@ -5,10 +5,16 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
+use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AnAddressToHand;
+use Modules\Kernel\Api\AnInvitation;
+use Modules\Kernel\Api\AnInvitationAgreed;
+use Modules\Kernel\Api\AnInvitationAskedFor;
+use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Decided;
@@ -31,16 +37,21 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
+use Modules\Kernel\Api\WhereTheInvitationStands;
+use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
@@ -69,6 +80,7 @@ use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upkeepers;
+use Modules\Sdk\Api\Ushers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -141,6 +153,19 @@ function anUpdateToSpoilTheAnswerTo(): TakingAnUpdate
     ));
 }
 
+/** An invitation agreed to against its rehearsal. */
+function anInvitationToSpoilTheAnswerTo(): AnInvitationAgreed
+{
+    $asked = AnInvitationAskedFor::for('anna', TheLibraries::of('Films'));
+
+    return AnInvitationAgreed::after($asked, AnInvitation::rehearsed(
+        AnInvitationToHand::to('anna', AnAddressToHand::at('http://loft.local:8096', ''), 72),
+        WhereTheInvitationStands::Made,
+        WhetherTheyCanAsk::NotTried,
+        WhoWasTakenBack::of(),
+    ));
+}
+
 /**
  * Every adapter call that reads an answer, by what it asks.
  *
@@ -208,8 +233,20 @@ function everyAdapterCallThatReads(): array
             => new Upkeepers($clients)->take($stack, $session, anUpdateToSpoilTheAnswerTo()),
         'Upkeepers::whatBecameOf' => static fn(): object
             => new Upkeepers($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Ushers::whoIsIn' => static fn(): object => new Ushers($clients, $entropy)->whoIsIn($stack, $session),
+        'Ushers::wouldInvite' => static fn(): object
+            => new Ushers($clients, $entropy)->wouldInvite($stack, $session, AnInvitationAskedFor::for('anna', TheLibraries::of())),
+        'Ushers::invite' => static fn(): object
+            => new Ushers($clients, $entropy)->invite($stack, $session, anInvitationToSpoilTheAnswerTo()),
+        'Ushers::takeThePasswordOff' => static fn(): object
+            => new Ushers($clients, $entropy)->takeThePasswordOff($stack, $session, SomebodyInTheHousehold::called('anna')),
+        'Ushers::whatBecameOf' => static fn(): object
+            => new Ushers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
     ];
 }
+
+/** Where the call following an invitation's work is answered, which no path of the stand-in names. */
+const THE_WORK_AN_INVITATION_BECOMES = 'the work an invitation becomes';
 
 /**
  * The path whose answer a call is given, where it is not the one it asked.
@@ -220,6 +257,8 @@ function everyAdapterCallThatReads(): array
  * refuses as the wrong kind, so an update's job is given the update's reading.
  * The stand-in answers handing a command over as work too, where the stack
  * answers it with the `hosting` envelope, so that act is given the reading.
+ * An invitation's job finishes as an invitation, which no path of the stand-in
+ * answers with, so it is given {@see THE_WORK_AN_INVITATION_BECOMES}.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -227,6 +266,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         str_starts_with($which, 'Adjustments::') => Api::CONFIG_ENDPOINT,
         $which === 'Upkeepers::whatBecameOf' => Api::UPDATE_ENDPOINT,
         $which === 'Keepers::handOver' => Api::HOSTING_ENDPOINT,
+        $which === 'Ushers::whatBecameOf' => THE_WORK_AN_INVITATION_BECOMES,
         default => $asked,
     };
 }
@@ -330,6 +370,20 @@ function whatARequestAsked(PendingRequest $asked): array
  */
 function theEnvelopesAPathSends(string $endpoint, string ...$asked): array
 {
+    // Work an invitation was asked for finishes as an invitation. The stand-in
+    // answers every job with the envelope a repair finishes as, which is right
+    // for the calls that follow a repair and says nothing of the one that
+    // follows an invitation, so that one is answered with its own.
+    //
+    // `invitation` is stood in for and not judged: its data is the contract's own sample of the envelope, read out of the declaration by the stand-in.
+    if ($endpoint === THE_WORK_AN_INVITATION_BECOMES) {
+        return [[
+            'api_version' => Api::VERSION,
+            'kind' => 'invitation',
+            'data' => WhatAStackWouldSay::inside('InvitationEnvelope'),
+        ]];
+    }
+
     $body = WhatTheWireWouldAnswer::to($endpoint, 200, ...$asked)->body()->all();
 
     if (is_array($body)) {

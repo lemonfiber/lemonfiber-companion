@@ -6,6 +6,7 @@ namespace Modules\Device\Api;
 
 use Lemonfiber\Native\Handover;
 use Lemonfiber\Native\WhyNothingWasHandedOver;
+use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\Handed;
 use Modules\Kernel\Api\Sharing;
@@ -41,7 +42,18 @@ final readonly class PlatformShare implements Sharing
 
     public function hand(Assembled $assembled): Handed
     {
-        return $this->sheet->offer($assembled->named(), $assembled->text())->either(
+        return $this->offering($assembled->named(), $assembled->text());
+    }
+
+    public function passOn(AnInvitationToPassOn $invitation): Handed
+    {
+        return $this->offering($invitation->named(), $invitation->text());
+    }
+
+    /** The sheet, offered a title and a text, and what it answered in this application's terms. */
+    private function offering(string $title, string $text): Handed
+    {
+        return $this->sheet->offer($title, $text)->either(
             offered: static fn(): Handed => Handed::over(),
             refused: static fn(WhyNothingWasHandedOver $why): Handed => Handed::refused(self::meaning($why)),
         );

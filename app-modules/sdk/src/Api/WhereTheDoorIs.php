@@ -196,23 +196,23 @@ final readonly class WhereTheDoorIs
      */
     private static function address(array $table): AnAddressToHand
     {
-        if (! array_key_exists(FrontDoorField::Address->value, $table) || $table[FrontDoorField::Address->value] === null) {
+        if (! array_key_exists(WireField::Address->value, $table) || $table[WireField::Address->value] === null) {
             return AnAddressToHand::none();
         }
 
-        $address = $table[FrontDoorField::Address->value];
+        $address = $table[WireField::Address->value];
 
         if (! is_array($address)) {
-            throw FrontDoorIsUnreadable::missing(FrontDoorField::Address);
+            throw FrontDoorIsUnreadable::missing(WireField::Address);
         }
 
         $caution = '';
 
         if (array_key_exists(WireField::Caution->value, $address) && $address[WireField::Caution->value] !== null) {
-            $caution = self::under($address, FrontDoorField::Address, WireField::Caution);
+            $caution = self::under($address, WireField::Address, WireField::Caution);
         }
 
-        return AnAddressToHand::at(self::under($address, FrontDoorField::Address, FrontDoorField::Url), $caution);
+        return AnAddressToHand::at(self::under($address, WireField::Address, FrontDoorField::Url), $caution);
     }
 
     /**

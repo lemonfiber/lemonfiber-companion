@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AskingThemIn;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
@@ -147,6 +148,10 @@ const VERBS_THE_APP_ASKS_FOR = [
     // listed as waiting — so what reaches the wire is an update somebody was
     // shown and said yes to.
     'update' => 'takes a release the stack listed as waiting, against the services the operator was told it would change',
+
+    'invite' => 'says what an invitation would grant and when it lapses, and makes the account only when that same request is agreed to',
+
+    'reissue' => 'takes a member\'s password off so they choose the next one, naming the person and never a password',
 ];
 
 /**
@@ -411,6 +416,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoWithIt $doing): string => $doing->asked(), WhatToDoWithIt::cases()),
         ...array_map(static fn(WhatWasDecided $decided): string => $decided->asked(), WhatWasDecided::cases()),
         ...array_map(static fn(WhatToChange $change): string => $change->asked(), WhatToChange::cases()),
+        ...array_map(static fn(AskingThemIn $asking): string => $asking->asked(), AskingThemIn::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));

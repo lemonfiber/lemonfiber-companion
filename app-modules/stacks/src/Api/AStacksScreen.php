@@ -162,6 +162,9 @@ enum AStacksScreen: string
     /** Where the household comes in, and what else they can reach. */
     case FrontDoor = '/stacks/{stack}/front-door';
 
+    /** Asking somebody in: what an invitation would grant, sending it, and handing it over. */
+    case Invite = '/stacks/{stack}/invite';
+
     /** What lemonfiber's words mean. */
     case Words = '/stacks/{stack}/words';
 

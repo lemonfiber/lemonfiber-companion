@@ -121,7 +121,7 @@ final readonly class WhereTheRoomIs
             $found[] = AVolume::measured(
                 WhatAVolumeHolds::tryFrom($holds) ?? throw SpaceIsUnreadable::word(self::path($where, SpaceField::Role), $holds, ...array_map(static fn(WhatAVolumeHolds $case): string => $case->value, WhatAVolumeHolds::cases())),
                 self::point($row, $where),
-                HowMuchRoomAVolumeHas::counted(self::amount($row, $where, SpaceField::Free), self::amount($row, $where, SpaceField::Limit), self::count($row, self::path($where, SpaceField::Committed), SpaceField::Committed), self::amount($row, $where, SpaceField::Projected)),
+                HowMuchRoomAVolumeHas::counted(self::amount($row, $where, SpaceField::Free), self::amount($row, $where, WireField::Limit), self::count($row, self::path($where, SpaceField::Committed), SpaceField::Committed), self::amount($row, $where, SpaceField::Projected)),
                 self::level($row, self::path($where, SpaceField::Level)),
                 self::reading($row, $where),
             );

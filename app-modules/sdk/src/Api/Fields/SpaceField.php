@@ -35,9 +35,6 @@ enum SpaceField: string implements NamesAWireField
     /** Bytes free on a volume. */
     case Free = 'free';
 
-    /** A volume's own size, or its quota. */
-    case Limit = 'limit';
-
     /** Bytes already on their way to landing on a volume. */
     case Committed = 'committed';
 

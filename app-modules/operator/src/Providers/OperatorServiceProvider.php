@@ -7,6 +7,7 @@ namespace Modules\Operator\Providers;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
@@ -228,11 +229,12 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Itself->value, WhatIsRunningHere::class);
 
             // Who gets in: what it holds to let services in, which app the
-            // household watches on, and where they come in. Three screens,
-            // because each is its own reading and its own question.
+            // household watches on, where they come in, and asking somebody
+            // in. Four screens, because each is its own question.
             Router::native(AStacksScreen::Credentials->value, WhatItHoldsToLetThemIn::class);
             Router::native(AStacksScreen::Clients->value, WhichAppToWatchOn::class);
             Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);
+            Router::native(AStacksScreen::Invite->value, AskingSomebodyIn::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);
