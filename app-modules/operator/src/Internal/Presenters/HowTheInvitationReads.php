@@ -35,9 +35,9 @@ final readonly class HowTheInvitationReads
     }
 
     /** What was typed is not something to ask with, and nothing was sent. */
-    public function notAskable(string $why, string $name): TheInvitationTurnedOutToBe
+    public function notAskable(string $why): TheInvitationTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), $name, notAskable: $why);
+        return $this->without(HowTheReadingWent::itCameBack(), '', notAskable: $why);
     }
 
     /** This device no longer holds a session for the stack. */

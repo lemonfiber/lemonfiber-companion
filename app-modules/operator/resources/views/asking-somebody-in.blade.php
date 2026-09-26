@@ -147,7 +147,7 @@
         <x-operator::entry>
             <x-operator::emphasis>{{ $member->name }}</x-operator::emphasis>
             <x-operator::note>{{ __($member->standingSaid) }}</x-operator::note>
-            @if ($this->takingItOff && $this->member === $member->name)
+            @if ($this->member === $member->name)
                 <native:text>{{ __('stacks.invitation.taking_it_off_means', ['name' => $member->name]) }}</native:text>
                 <x-operator::action label="{{ __('stacks.invitation.take_it_off', ['name' => $member->name]) }}" tap="takeThePasswordOff()" />
                 <x-operator::quiet-action label="{{ __('stacks.invitation.never_mind') }}" tap="neverMind()" />

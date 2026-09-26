@@ -29,6 +29,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
+use Modules\Operator\Internal\ViewModels\AMemberAsShown;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -118,7 +119,7 @@ function annaTypedInto(AskingSomebodyIn $screen): AskingSomebodyIn
 {
     $screen->name = ' anna ';
     $screen->libraries = 'Films, , Kids';
-    $screen->age = '12';
+    $screen->age = ' 12 ';
     $screen->unratedIs('held-back');
 
     return $screen;
@@ -169,6 +170,14 @@ it('asks for the rehearsal with what was typed, and says it is working while it 
     expect($inviting->asked())->toBe(['would'])
         ->and($asked?->name())->toBe('anna')
         ->and(iterator_to_array($asked?->libraries() ?? TheLibraries::of(), preserve_keys: true))->toBe(['Films', 'Kids'])
+        ->and($asked?->age(
+            upTo: static fn(int $age): WhatTheScreenSent => new WhatTheScreenSent((string) $age),
+            none: static fn(): WhatTheScreenSent => new WhatTheScreenSent('none'),
+        )->said)->toBe('12')
+        ->and($asked?->unrated(
+            chosen: static fn(WhatBecomesOfUnrated $unrated): WhatTheScreenSent => new WhatTheScreenSent($unrated->value),
+            unsaid: static fn(): WhatTheScreenSent => new WhatTheScreenSent('unsaid'),
+        )->said)->toBe(WhatBecomesOfUnrated::HeldBack->value)
         ->and($drawn)->toContain(__('stacks.invitation.working'))
         ->and($drawn)->toContain(__(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => HowOften::WhileWorkRuns->seconds()]));
 });
@@ -405,6 +414,64 @@ it('starts again keeping what was typed, and drops what the stack said', functio
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.invitation.what_would_it_grant'));
 });
 
+it('drops what was handed over and a password about to be taken off when starting again', function (): void {
+    $carriedOut = WhatBecameOfTheInvitation::answered(annasInvitation(rehearsed: false));
+    $inviting = AStackThatInvites::answering($carriedOut, $carriedOut)
+        ->holding(TheMembers::of(AMember::joined('anna')));
+    $screen = theInvitationScreen($inviting);
+    $screen->name = 'anna';
+    $screen->offer();
+    $screen->passOn();
+    $screen->wouldTakeThePasswordOff('anna');
+    $screen->startAgain();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $screen->takeThePasswordOff();
+    $screen->offer();
+    $handedOverAgain = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->offers())->not->toContain(__('stacks.invitation.take_it_off', ['name' => 'anna']))
+        ->and($handedOverAgain->offers())->toContain(__('stacks.invitation.pass_on'))
+        ->and($handedOverAgain->said())->not->toContain(__('stacks.invitation.passed_on'))
+        ->and($screen->passedOn)->toBe('')
+        ->and($inviting->asked())->toBe(['would', 'would']);
+});
+
+it('sends nothing once another name is asked about, even before the stack has answered it', function (): void {
+    $inviting = AStackThatInvites::answering(...[
+        ...theWorkThenIts(annasInvitation(rehearsed: true)),
+        WhatBecameOfTheInvitation::underway(Job::named('j-2')),
+    ]);
+    $screen = annaRehearsedOn($inviting);
+    $screen->name = 'bob';
+    $screen->offer();
+    $screen->send();
+
+    expect($inviting->asked())->toBe(['would', 'after:j-1', 'would']);
+});
+
+it('sends nothing where what was asked, or what was offered, is no longer held', function (): void {
+    $inviting = AStackThatInvites::answering(...theWorkThenIts(annasInvitation(rehearsed: true)), ...theWorkThenIts(annasInvitation(rehearsed: true)));
+    $forgotTheAsking = annaRehearsedOn($inviting);
+    $forgotTheAsking->asked = null;
+    $forgotTheAsking->send();
+    $forgotTheOffer = annaRehearsedOn($inviting);
+    $forgotTheOffer->invitation = null;
+    $forgotTheOffer->send();
+
+    expect($inviting->asked())->toBe(['would', 'after:j-1', 'would', 'after:j-1']);
+});
+
+it('lets go of the one picked when a name the reading did not list is picked after them', function (): void {
+    $inviting = AStackThatInvites::answering()->holding(TheMembers::of(AMember::joined('anna')));
+    $screen = theInvitationScreen($inviting);
+    $screen->wouldTakeThePasswordOff('anna');
+    $screen->wouldTakeThePasswordOff('somebody not listed');
+    $screen->takeThePasswordOff();
+
+    expect($screen->member)->toBe('')
+        ->and($inviting->asked())->toBe([]);
+});
+
 it('lets unrated material be held back, let through, or left to the stack', function (): void {
     $screen = theInvitationScreen(AStackThatInvites::answering());
 
@@ -434,6 +501,10 @@ it('opens on who is in: joined, or an invitation still out, and asks once a fram
         ->and($drawn->said())->toContain(__('stacks.invitation.member.still_invited'))
         ->and($drawn->offers())->toContain(__('stacks.invitation.would_take_it_off', ['name' => 'anna']))
         ->and($drawn->offers())->toContain(__('stacks.invitation.would_take_it_off', ['name' => 'bob']))
+        ->and(array_map(static fn(AMemberAsShown $member): array => [$member->name, $member->standingSaid], $screen->answer()->members))->toBe([
+            ['anna', 'stacks.invitation.member.joined'],
+            ['bob', 'stacks.invitation.member.still_invited'],
+        ])
         ->and($inviting->readings())->toBe(1);
 });
 
@@ -465,7 +536,7 @@ it('takes a password off only once asked twice, for somebody listed, naming them
     $screen = theInvitationScreen($inviting);
     $screen->takeThePasswordOff();
     $screen->wouldTakeThePasswordOff('somebody not listed');
-    $notListed = [$screen->takingItOff, $screen->member];
+    $notListed = $screen->member;
     $screen->takeThePasswordOff();
     $screen->wouldTakeThePasswordOff('anna');
     $asking = WhatTheDeviceWouldDraw::by($screen);
@@ -473,7 +544,7 @@ it('takes a password off only once asked twice, for somebody listed, naming them
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($notListed)->toBe([false, ''])
+    expect($notListed)->toBe('')
         ->and($asking->said())->toContain(__('stacks.invitation.taking_it_off_means', ['name' => 'anna']))
         ->and($asking->offers())->toContain(__('stacks.invitation.take_it_off', ['name' => 'anna']))
         ->and($asking->offers())->not->toContain(__('stacks.invitation.would_take_it_off', ['name' => 'anna']))
@@ -492,7 +563,7 @@ it('leaves a password where it is when the operator says never mind', function (
     $screen->takeThePasswordOff();
 
     expect($inviting->asked())->toBe([])
-        ->and([$screen->takingItOff, $screen->member])->toBe([false, ''])
+        ->and($screen->member)->toBe('')
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.invitation.would_take_it_off', ['name' => 'anna']));
 });
 

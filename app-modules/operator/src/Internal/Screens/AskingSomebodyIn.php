@@ -97,11 +97,8 @@ final class AskingSomebodyIn extends NativeComponent
     /** What becomes of unrated material, as one of {@see WhatBecomesOfUnrated}'s words, or empty to leave it to the stack. */
     public string $unrated = '';
 
-    /** Whose password is about to be taken off, once the operator has picked them. */
+    /** Whose password the operator has asked to take off and not yet said yes to, or empty. */
     public string $member = '';
-
-    /** Whether the operator has asked to take that password off and not yet said yes. */
-    public bool $takingItOff = false;
 
     /** What the last invitation was asked with, which is what a yes sends. */
     public ?AnInvitationAskedFor $asked = null;
@@ -162,9 +159,7 @@ final class AskingSomebodyIn extends NativeComponent
         $this->asked = null;
         $this->invitation = null;
         $this->following = null;
-        $this->about = '';
         $this->passedOn = '';
-        $this->takingItOff = false;
         $this->member = '';
         $this->going = null;
     }
@@ -200,7 +195,7 @@ final class AskingSomebodyIn extends NativeComponent
                     return $this->inviting->wouldInvite($stack, $session, $asked);
                 },
             ),
-            notAskable: static fn(string $why): TheInvitationTurnedOutToBe => new HowTheInvitationReads()->notAskable($why, ''),
+            notAskable: static fn(string $why): TheInvitationTurnedOutToBe => new HowTheInvitationReads()->notAskable($why),
         );
     }
 
@@ -222,7 +217,6 @@ final class AskingSomebodyIn extends NativeComponent
 
         $agreed = AnInvitationAgreed::after($asked, $offered);
         $this->invitation = null;
-        $this->passedOn = '';
 
         $this->going = $this->put(
             $asked->name(),
@@ -243,7 +237,6 @@ final class AskingSomebodyIn extends NativeComponent
         foreach ($this->answer()->members as $member) {
             if ($member->name === $name) {
                 $this->member = $name;
-                $this->takingItOff = true;
 
                 return;
             }
@@ -255,14 +248,13 @@ final class AskingSomebodyIn extends NativeComponent
     /** Leave their password where it is. */
     public function neverMind(): void
     {
-        $this->takingItOff = false;
         $this->member = '';
     }
 
     /** Take the named member's password off, so they choose the next one at the media server. */
     public function takeThePasswordOff(): void
     {
-        if (! $this->takingItOff || $this->member === '') {
+        if ($this->member === '') {
             return;
         }
 
