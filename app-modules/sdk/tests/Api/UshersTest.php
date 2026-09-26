@@ -13,6 +13,7 @@ use function it;
 use function json_encode;
 
 use Lemonfiber\Sdk\Contract\Api;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
@@ -38,7 +39,6 @@ use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Ushers;
 use RuntimeException;
-use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -121,11 +121,18 @@ function theHandleJ1(): array
     return ['api_version' => 1, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'invite']];
 }
 
-/** A connection refused before any answer exists, as a stack that is off or out of reach meets the device. */
+/**
+ * A connection refused before any answer exists, as a stack that is off or out of reach meets the device.
+ *
+ * Raised as the SDK raises it rather than as the transport's failure beneath
+ * it: a transport failure at a pinned address is followed by the SDK asking
+ * the address what certificate it presents, which is a connection a test may
+ * not open.
+ */
 function nothingAnswering(): MockResponse
 {
-    return MockResponse::make()->throw(static fn(PendingRequest $asked): FatalRequestException
-        => new FatalRequestException(new RuntimeException('Connection refused'), $asked));
+    return MockResponse::make()->throw(static fn(PendingRequest $asked): Unreachable
+        => Unreachable::whenAsking($asked->getRequest()->resolveEndpoint(), 'Connection refused'));
 }
 
 /** A stack taking the work on under the name `j-1`. */
