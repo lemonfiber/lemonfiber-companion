@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\Obstacle;
@@ -56,7 +57,7 @@ final readonly class Upgraders implements UpgradingTheLibrary
             return WhatTheUpgradeCameTo::said(WhatAnUpgradeComesTo::in($envelope));
         } catch (RequestFailed $why) {
             return WhatTheUpgradeCameTo::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|QualityIsUnreadable|QualitySaysNothing) {
             return WhatTheUpgradeCameTo::met(Obstacle::StackDidNotAnswer);
         }
     }
