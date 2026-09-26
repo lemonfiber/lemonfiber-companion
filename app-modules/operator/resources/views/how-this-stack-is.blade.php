@@ -182,6 +182,10 @@
          and the screen it leads to offers no verb against one. --}}
     <x-operator::quiet-action label="{{ __('health.what_else_is_running') }}" :goes="$this->goes()->elsewhere()" />
 
+    {{-- What is already here that lemonfiber could move in beside or take
+         over: the survey, offered before any mode. --}}
+    <x-operator::quiet-action label="{{ __('stacks.already_here.road_in') }}" :goes="$this->goes()->ofItself()->alreadyHere()" />
+
     {{-- What survives a restart. Beside what is running rather than inside it,
          because the two answer different questions about the same machine: that
          screen says what is running now, and this one says what would still be

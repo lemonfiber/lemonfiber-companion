@@ -349,14 +349,14 @@ final readonly class Reports
      */
     private static function remedy(array $verdict, int $position): Remedies
     {
-        if (! array_key_exists(DoctorField::Remedy->value, $verdict)) {
+        if (! array_key_exists(WireField::Remedy->value, $verdict)) {
             return Remedies::none();
         }
 
-        $offered = $verdict[DoctorField::Remedy->value];
+        $offered = $verdict[WireField::Remedy->value];
 
         if (! is_array($offered)) {
-            throw ReportIsUnreadable::inFinding($position, DoctorField::Remedy);
+            throw ReportIsUnreadable::inFinding($position, WireField::Remedy);
         }
 
         return Remedies::of(Remedy::of(self::saidIn($offered, WireField::Action, $position)));

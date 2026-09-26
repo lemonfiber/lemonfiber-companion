@@ -165,6 +165,9 @@ enum AStacksScreen: string
     /** Asking somebody in: what an invitation would grant, sending it, and handing it over. */
     case Invite = '/stacks/{stack}/invite';
 
+    /** What is already on this machine that is not lemonfiber's, and what may be done about it. */
+    case AlreadyHere = '/stacks/{stack}/already-here';
+
     /** What lemonfiber's words mean. */
     case Words = '/stacks/{stack}/words';
 

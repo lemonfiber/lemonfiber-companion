@@ -158,6 +158,22 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'the stack gives and the hours it stands, and invitations taken back on the way past with '
             . 'the answer they arrived on, and says nothing of a decline, which the contract does not carry.',
     ],
+    [
+        'requirement' => 'N7-R11',
+        'asks' => 'to show where each service the survey found keeps its configuration and its library',
+        // Named, and watched as a whole payload: the answer could arrive as a
+        // field on a service or as a list beside the projects, and either
+        // changes the shape recorded here.
+        'envelope' => 'MigrationEnvelope',
+        'field' => null,
+        'shape' => 'array{beside: list<array{from: int, service: string, to: int}>, carrying: list<array{backup_first: bool, because: string, existing: string, ours: string, refused: bool, service: string, verdict: string}>, conflicts: list<array{held_by: string, port: int, wanted_by: string}>, linking?: array{because: string, cost: string, filesystems: list<string>, forced: bool, links: bool, remedy: string}|null, modes: list<array{disturbs: bool, mode: string, preselected: bool, what: string}>, not_carried: list<array{because: string, what: string}>, read: bool, standing: list<array{project: string, services: list<array{adoptable: bool, ports: list<int>, running: bool, service: string}>}>, unsupported: list<array{because: string, what: string}>}',
+        'raised' => '`A5-R2` has the survey name each service\'s configuration source and library '
+            . 'location, and a service here carries `service`, `ports`, `running` and `adoptable` and '
+            . 'neither of those. The only place a library appears is the filesystems a layout that '
+            . 'cannot link names, which is about a hardlink rather than a service. The app does not '
+            . 'guess either from a service\'s name or its ports; the survey draws what it carries and '
+            . 'says nothing about where a service keeps its settings.',
+    ],
 ];
 
 /**

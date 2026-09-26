@@ -72,6 +72,7 @@ use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
@@ -213,6 +214,7 @@ function everyAdapterCallThatReads(): array
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
         'Requests::decided' => static fn(): object
             => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::numbered(1))),
+        'Scouts::surveyedOn' => static fn(): object => new Scouts($clients)->surveyedOn($stack, $session),
         'Scrollbacks::saidBy' => static fn(): object
             => new Scrollbacks($clients)->saidBy($stack, $session, ServiceId::called('sonarr'), HowManyLines::of(3)),
         'Shelves::theShelfOf' => static fn(): object

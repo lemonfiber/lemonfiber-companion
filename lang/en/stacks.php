@@ -401,6 +401,40 @@ return [
         'never_mind' => 'Leave it as it is',
     ],
 
+    // What is already on the machine, before anything is moved in.
+    'already_here' => [
+        'road_in' => 'What is already on this machine',
+        'found' => 'What lemonfiber found already running here',
+        // Never the same screen as a machine with nothing on it.
+        'could_not_look' => 'lemonfiber could not look at what is running here, so this is not an empty machine',
+        'nothing_found' => 'Nothing else is set up on this machine',
+        'project' => 'Project :project',
+        'running' => 'Running',
+        'stopped' => 'Present, and stopped',
+        'adoptable' => 'lemonfiber could take it over as it stands',
+        'not_adoptable' => 'lemonfiber cannot take it over as it stands',
+        'ports' => 'Publishes :ports',
+        'no_ports' => 'Publishes no port',
+        'no_services' => 'It has no services',
+        'conflicts' => 'Ports already taken',
+        'no_conflicts' => 'No port lemonfiber wants is taken',
+        'conflict' => 'Port :port is held by :held_by, and lemonfiber\'s :wanted_by wants it',
+        'beside' => 'Where each service would be reached, beside what is here',
+        'moved' => ':service would be on port :to instead of :from',
+        'none_moved' => 'No service would move to another port',
+        'cannot_take' => 'What cannot be taken over',
+        'unsupported' => ':what: :because',
+        'nothing_unsupported' => 'Nothing found is out of lemonfiber\'s reach',
+        'cannot_link' => 'This layout cannot hold a hardlink',
+        'filesystems' => 'The filesystems it is about: :filesystems',
+        'remedy_is_yours' => 'Nothing here does this for you: it is yours to do, on your own disks',
+        'modes' => 'What may be done about it',
+        'no_modes' => 'This machine offered nothing to do about it',
+        'disturbs' => 'Stops or alters what is already running',
+        'disturbs_nothing' => 'Leaves what is already running as it is',
+        'preselected' => 'Offered already chosen',
+    ],
+
     // How full the machine is, and where the room went.
     'room' => [
         'road_in' => 'How full this machine is',

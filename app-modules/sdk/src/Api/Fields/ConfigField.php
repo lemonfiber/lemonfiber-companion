@@ -32,9 +32,6 @@ enum ConfigField: string implements NamesAWireField
     /** Where a proposed change stands. */
     case Stance = 'stance';
 
-    /** What a setting would hold. */
-    case To = 'to';
-
     /**
      * Why nothing was written, where the reason is not that nobody said yes.
      *

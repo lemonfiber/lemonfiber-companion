@@ -45,6 +45,7 @@ use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Mending;
+use Modules\Kernel\Api\MovingIn;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Outgoing;
@@ -93,6 +94,7 @@ use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
@@ -349,6 +351,10 @@ final class CompositionRoot extends ServiceProvider
         // that reaches nothing: it is handed the address and draws squares.
         $this->app->bind(Inviting::class, Ushers::class);
         $this->app->bind(Encoding::class, QrCodes::class);
+
+        // What is already on the machine, before anything is moved in, read
+        // beside the rest and bound for the same reason.
+        $this->app->bind(MovingIn::class, Scouts::class);
 
         $this->app->bind(Explaining::class, Explainers::class);
         $this->app->bind(Rehearsing::class, Rehearsers::class);

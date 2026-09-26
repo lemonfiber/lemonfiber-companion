@@ -38,9 +38,6 @@ enum StatusField: string implements NamesAWireField
     /** What a service that has ended exited with. Absent while it runs. */
     case Exit = 'exit';
 
-    /** What each verb takes away, on a reading of what is running. */
-    case Disturbs = 'disturbs';
-
     /** Which of a disturbance's two shapes this one is. */
     case Bound = 'bound';
 
