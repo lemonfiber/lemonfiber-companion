@@ -36,16 +36,6 @@ enum HostingField: string implements NamesAWireField
     case Guarantees = 'guarantees';
 
     /**
-     * The program a service definition names, where nothing is there any more.
-     *
-     * Read only on the `orphaned` arm. On every other standing the wire carries
-     * nothing here and there is nothing to carry — a row that is running has no
-     * missing program, and reading one would be asking the stack a question
-     * about a state it is not in.
-     */
-    case Missing = 'missing';
-
-    /**
      * Where a hosted run writes what it would have said on a terminal.
      *
      * Read for the command an install acted on, because that is where

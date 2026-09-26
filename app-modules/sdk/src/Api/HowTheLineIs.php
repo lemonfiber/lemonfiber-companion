@@ -179,7 +179,7 @@ final readonly class HowTheLineIs
             self::count($capacity, BandwidthField::Up, BandwidthField::Capacity),
             HowTheLineWasMeasured::tryFrom($source)
                 ?? throw BandwidthIsUnreadable::word(BandwidthField::Source->under(BandwidthField::Capacity), $source, ...array_map(static fn(HowTheLineWasMeasured $case): string => $case->value, HowTheLineWasMeasured::cases())),
-            Instant::atEpochSeconds(self::count($capacity, BandwidthField::Taken, BandwidthField::Capacity)),
+            Instant::atEpochSeconds(self::count($capacity, WireField::Taken, BandwidthField::Capacity)),
             WhetherItGoesThroughTheTunnel::said(throughTunnel: self::flag($capacity, BandwidthField::ThroughTunnel, BandwidthField::Capacity)),
         );
     }
