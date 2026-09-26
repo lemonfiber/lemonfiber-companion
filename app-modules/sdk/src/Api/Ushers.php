@@ -7,6 +7,7 @@ namespace Modules\Sdk\Api;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
@@ -74,7 +75,7 @@ final readonly class Ushers implements Inviting
             // Inside the same `try` as the request, for the argument
             // {@see Recorders::recordedOn()} makes.
             return WhatWasFoundOfTheMembers::found(Households::whoIsIn($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheMembers::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|InvitationSaysNothing) {
             return WhatWasFoundOfTheMembers::met(Obstacle::StackDidNotAnswer);
@@ -88,7 +89,7 @@ final readonly class Ushers implements Inviting
                 Api::action(AskingThemIn::Invite->asked()),
                 WhatAnInvitationAsksWith::offering($asked)->said,
             ));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
             return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
@@ -103,7 +104,7 @@ final readonly class Ushers implements Inviting
                 WhatAnInvitationAsksWith::agreeing($agreed->asked())->said,
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
             return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
@@ -118,7 +119,7 @@ final readonly class Ushers implements Inviting
                 [WireField::Name->value => $who->name()],
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             ));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse) {
             return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
@@ -129,7 +130,7 @@ final readonly class Ushers implements Inviting
     {
         try {
             return $this->outcome($stack, $session, $job);
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|InvitationIsUnreadable|InvitationSaysNothing) {
             return WhatBecameOfTheInvitation::met(Obstacle::StackDidNotAnswer);
@@ -174,13 +175,17 @@ final readonly class Ushers implements Inviting
     /**
      * What a request the stack turned down means: its own sentence, or an obstacle.
      *
-     * A refused session and an account that may not ask are obstacles with
-     * remedies of their own. Anything else turned down in the asking or the
-     * naming, with a sentence, is the stack's refusal, and that sentence is
-     * the answer.
+     * A machine that is not the one paired, a refused session and an account
+     * that may not ask are obstacles with remedies of their own. Anything else
+     * turned down in the asking or the naming, with a sentence, is the stack's
+     * refusal, and that sentence is the answer.
      */
-    private function refusal(RequestFailed $why): WhatBecameOfTheInvitation
+    private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheInvitation
     {
+        if ($why instanceof CertificateWasRefused) {
+            return WhatBecameOfTheInvitation::met(WhatARefusalMeant::obstacle($why));
+        }
+
         $obstacle = WhatARefusalMeant::obstacle($why);
         $said = $why->said();
 
