@@ -46,9 +46,6 @@ enum BandwidthField: string implements NamesAWireField
     /** Where a figure for the line came from: declared or observed. */
     case Source = 'source';
 
-    /** When the line was measured, in seconds since the epoch. */
-    case Taken = 'taken';
-
     /** Whether the path the line was measured over goes through the tunnel. */
     case ThroughTunnel = 'through_tunnel';
 

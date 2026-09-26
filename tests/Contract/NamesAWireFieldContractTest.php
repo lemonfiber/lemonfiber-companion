@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Api\Fields\BandwidthField;
+use Modules\Sdk\Api\Fields\BundleField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\CredentialsField;
@@ -51,6 +52,7 @@ function everyFieldNamedOnTheWire(): array
         ...AlertsField::cases(),
         ...ArchivesField::cases(),
         ...BandwidthField::cases(),
+        ...BundleField::cases(),
         ...ClientsField::cases(),
         ...ConfigField::cases(),
         ...CredentialsField::cases(),

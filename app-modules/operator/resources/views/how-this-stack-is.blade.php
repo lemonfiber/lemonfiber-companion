@@ -222,6 +222,10 @@
     {{-- What it keeps on the machine, and the copies it holds. --}}
     <x-operator::quiet-action label="{{ __('stacks.keeps.road_in') }}" :goes="$this->goes()->ofItself()->keeps()" />
 
+    {{-- Asking somebody else for help: a support bundle, described before it
+         is written and read here before it is handed to anyone. --}}
+    <x-operator::quiet-action label="{{ __('stacks.help.road_in') }}" :goes="$this->goes()->ofItself()->help()" />
+
     {{-- How full it is, and where the room went. --}}
     <x-operator::quiet-action label="{{ __('stacks.room.road_in') }}" :goes="$this->goes()->ofItself()->room()" />
 

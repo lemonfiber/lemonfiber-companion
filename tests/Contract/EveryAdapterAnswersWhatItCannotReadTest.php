@@ -7,6 +7,7 @@ use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
+use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
@@ -37,6 +38,7 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -45,6 +47,7 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
@@ -56,6 +59,7 @@ use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
+use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
@@ -186,6 +190,13 @@ function everyAdapterCallThatReads(): array
         'Advisers::advisedBy' => static fn(): object => new Advisers($clients)->advisedBy($stack, $session),
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
+        'Bundlers::ask' => static fn(): object => new Bundlers($clients, $entropy)->ask(
+            $stack,
+            $session,
+            ABundleAsked::described(HowManyLines::of(200), WhatFilenamesShow::Replaced, SettingsToReveal::none()),
+        ),
+        'Bundlers::whatBecameOf' => static fn(): object
+            => new Bundlers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
@@ -269,6 +280,24 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Ushers::whatBecameOf' => THE_WORK_AN_INVITATION_BECOMES,
         default => $asked,
     };
+}
+
+/**
+ * The envelope a call is given where no path the stand-in serves carries it.
+ *
+ * A finished support bundle arrives only through the job that gathered it,
+ * and the stand-in answers every job as a repair's, so it is built from the
+ * contract's own declaration.
+ *
+ * @return list<array<mixed>>
+ */
+function theEnvelopesACallIsSent(string $which, PendingRequest $asked): array
+{
+    if ($which === 'Bundlers::whatBecameOf') {
+        return [WhatTheWireWouldAnswer::oneEnvelope('BundleEnvelope')];
+    }
+
+    return theEnvelopesAPathSends(theAnswerACallIsGiven($which, $asked->getRequest()->resolveEndpoint()), ...whatARequestAsked($asked));
 }
 
 /**
@@ -413,7 +442,7 @@ function answerEverythingSpoiledAt(string $which, ?array $at): void
             $endpoint = theAnswerACallIsGiven($which, $asked->getRequest()->resolveEndpoint());
             $envelopes = array_map(
                 static fn(array $envelope): array => anEnvelopeSpoiledAt($envelope, $at),
-                theEnvelopesAPathSends($endpoint, ...whatARequestAsked($asked)),
+                theEnvelopesACallIsSent($which, $asked),
             );
 
             return $endpoint === Api::LOGS_ENDPOINT
@@ -443,15 +472,17 @@ function everySpoilingOf(string $which, Closure $ask): array
     MockClient::destroyGlobal();
     MockClient::global([
         '*' => static function (PendingRequest $asked) use ($which, &$paths): MockResponse {
-            $endpoint = theAnswerACallIsGiven($which, $asked->getRequest()->resolveEndpoint());
+            $envelopes = theEnvelopesACallIsSent($which, $asked);
 
-            foreach (theEnvelopesAPathSends($endpoint, ...whatARequestAsked($asked)) as $envelope) {
+            foreach ($envelopes as $envelope) {
                 foreach (everyPlaceToSpoil(theDataIn($envelope)) as $at) {
                     $paths[] = $at;
                 }
             }
 
-            return WhatTheWireWouldAnswer::to($endpoint, 200, ...whatARequestAsked($asked));
+            return $asked->getRequest()->resolveEndpoint() === Api::LOGS_ENDPOINT
+                ? WhatTheWireWouldAnswer::to(Api::LOGS_ENDPOINT, 200)
+                : MockResponse::make($envelopes[0]);
         },
     ]);
 
