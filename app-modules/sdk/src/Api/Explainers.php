@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\Obstacle;
@@ -38,7 +39,7 @@ final readonly class Explainers implements Explaining
             return WhatWasFoundOfTheWords::found(TheWordsExplained::in($envelope));
         } catch (RequestFailed $why) {
             return WhatWasFoundOfTheWords::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable) {
             return WhatWasFoundOfTheWords::met(Obstacle::StackDidNotAnswer);
         }
     }

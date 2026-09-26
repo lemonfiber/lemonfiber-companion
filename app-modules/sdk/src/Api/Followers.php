@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -39,7 +40,7 @@ final readonly class Followers implements Tracing
             return WhatWasFoundOfTheTrace::found(Traces::in($envelope));
         } catch (RequestFailed $why) {
             return WhatWasFoundOfTheTrace::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|TraceIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|TraceIsUnreadable) {
             return WhatWasFoundOfTheTrace::met(Obstacle::StackDidNotAnswer);
         }
     }

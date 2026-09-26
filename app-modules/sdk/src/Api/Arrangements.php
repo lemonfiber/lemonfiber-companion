@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\HowItIsSet;
@@ -42,7 +43,7 @@ final readonly class Arrangements implements Arranging
             return HowItIsSet::told(Dials::in($envelope));
         } catch (RequestFailed $why) {
             return HowItIsSet::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed) {
             // {@see SettingIsUnnamed} is here rather than guarded against
             // above, so the kernel type keeps deciding what a nameless setting
             // means and this decides what an unreadable answer looks like to

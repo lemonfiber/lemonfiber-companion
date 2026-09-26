@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Obstacle;
@@ -35,7 +36,7 @@ final readonly class Rehearsers implements Rehearsing
             return WhatTheRehearsalFound::found(Rehearsals::in($envelope));
         } catch (RequestFailed $why) {
             return WhatTheRehearsalFound::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|RehearsalIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RehearsalIsUnreadable) {
             return WhatTheRehearsalFound::met(Obstacle::StackDidNotAnswer);
         }
     }

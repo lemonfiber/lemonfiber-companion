@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Obstacle;
@@ -53,7 +54,7 @@ final readonly class Recorders implements History
             return WhatWasRecorded::record(Records::in($envelope));
         } catch (RequestFailed $why) {
             return WhatWasRecorded::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HistoryIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HistoryIsUnreadable) {
             return WhatWasRecorded::met(Obstacle::StackDidNotAnswer);
         }
     }

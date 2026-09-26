@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -38,7 +39,7 @@ final readonly class Doorkeepers implements Welcoming
             return WhatWasFoundOfTheFrontDoor::found(WhereTheDoorIs::in($envelope));
         } catch (RequestFailed $why) {
             return WhatWasFoundOfTheFrontDoor::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|FrontDoorIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|FrontDoorIsUnreadable) {
             return WhatWasFoundOfTheFrontDoor::met(Obstacle::StackDidNotAnswer);
         }
     }

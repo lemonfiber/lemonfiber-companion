@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Obstacle;
@@ -43,7 +44,7 @@ final readonly class Copyists implements Copying
             return WhatCopiesWereFound::copies(TheArchives::in($envelope));
         } catch (RequestFailed $why) {
             return WhatCopiesWereFound::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|ArchivesAreUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ArchivesAreUnreadable) {
             return WhatCopiesWereFound::met(Obstacle::StackDidNotAnswer);
         }
     }

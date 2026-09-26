@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Provenance;
@@ -46,7 +47,7 @@ final readonly class Archivists implements Provenance
             return WhatTheOriginsWere::origins(Origins::in($envelope));
         } catch (RequestFailed $why) {
             return WhatTheOriginsWere::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|ProvenanceIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ProvenanceIsUnreadable) {
             return WhatTheOriginsWere::met(Obstacle::StackDidNotAnswer);
         }
     }

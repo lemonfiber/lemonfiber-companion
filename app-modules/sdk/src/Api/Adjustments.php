@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Obstacle;
@@ -74,7 +75,7 @@ final readonly class Adjustments implements Adjusting
             return WhatTheStackMadeOfIt::said(Dials::reviewIn($envelope));
         } catch (RequestFailed $why) {
             return WhatTheStackMadeOfIt::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed) {
             return WhatTheStackMadeOfIt::refused(Obstacle::StackDidNotAnswer);
         }
     }

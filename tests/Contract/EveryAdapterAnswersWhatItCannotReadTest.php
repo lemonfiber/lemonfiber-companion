@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Contract\Api;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
@@ -71,7 +72,8 @@ use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Tree;
 
-// A malformed answer reaches a screen as an obstacle, whichever adapter read it.
+// A malformed answer reaches a screen as an obstacle, whichever adapter read it,
+// and so does a stack that could not be asked at all.
 //
 // Each adapter is asked once for every way its answer can be spoiled: `data`
 // that is not a table, each text in it left blank, and each table or list in
@@ -79,10 +81,14 @@ use Tests\Support\Tree;
 // sends, which is built from the contract, so a field the contract adds is
 // spoiled here without anyone listing it.
 //
-// Nothing here asserts which obstacle comes back, or that the spoiled answer
-// was refused at all: a blank the stack is allowed to send is read as one. What
-// is asserted is that nothing escapes the adapter as an exception, which a
+// For a spoiled answer, nothing here asserts which obstacle comes back, or that
+// it was refused at all: a blank the stack is allowed to send is read as one.
+// What is asserted is that nothing escapes the adapter as an exception, which a
 // screen would draw as a crash rather than as the sentence an obstacle carries.
+//
+// Each adapter is also asked once with the connection refused before any
+// answer exists, and that one has a single right answer: the obstacle for a
+// stack that did not answer.
 
 afterEach(function (): void {
     MockClient::destroyGlobal();
@@ -393,7 +399,49 @@ function everySpoilingOf(string $which, Closure $ask): array
 /** Whether an outcome carries an obstacle rather than what was read. */
 function carriesAnObstacle(object $outcome): bool
 {
-    return array_any(get_mangled_object_vars($outcome), static fn(mixed $held): bool => $held instanceof Obstacle);
+    return theObstacleIn($outcome) instanceof Obstacle;
+}
+
+/** The obstacle an outcome carries, or nothing where it carries what was read. */
+function theObstacleIn(object $outcome): ?Obstacle
+{
+    return array_find(get_mangled_object_vars($outcome), static fn(mixed $held): bool => $held instanceof Obstacle);
+}
+
+/**
+ * Answer every request as the SDK does when nothing picks up.
+ *
+ * The connection is refused before any answer exists, which is what a stack
+ * that is off, asleep or out of reach looks like from the device. Raised as the
+ * SDK raises it rather than as the transport's failure beneath it: a transport
+ * failure at a pinned address is followed by the SDK asking the address what
+ * certificate it presents, and that is a connection this suite may not open.
+ */
+function answerNothingAtAll(): void
+{
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => MockResponse::make()->throw(static fn(PendingRequest $asked): Unreachable
+            => Unreachable::whenAsking($asked->getRequest()->resolveEndpoint(), 'Connection refused')),
+    ]);
+}
+
+/**
+ * What one call answered where nothing answered it, as a word a failure can name.
+ *
+ * @param Closure(): object $ask
+ */
+function whatACallAnsweredToNothing(Closure $ask): string
+{
+    answerNothingAtAll();
+
+    try {
+        $met = theObstacleIn($ask());
+
+        return $met instanceof Obstacle ? $met->value : 'what was read';
+    } catch (LogicException|RuntimeException|TypeError $escaped) {
+        return sprintf('%s, escaped as an exception', $escaped::class);
+    }
 }
 
 /**
@@ -437,6 +485,19 @@ it('turns every spoiled answer into an outcome rather than an exception', functi
         . 'adapter already catches.',
         $which,
         implode("\n  ", $escaped),
+    ));
+})->with(static function (): Generator {
+    foreach (everyAdapterCallThatReads() as $which => $ask) {
+        yield $which => [$which, $ask];
+    }
+});
+
+it('answers a stack that could not be asked as one that did not answer', function (string $which, Closure $ask): void {
+    expect(whatACallAnsweredToNothing($ask))->toBe(Obstacle::StackDidNotAnswer->value, sprintf(
+        '%s did not answer a stack nothing answered for with the obstacle for one. An adapter '
+        . 'catches what the SDK raises when nothing answers and answers with that obstacle, '
+        . 'beside every other failure it answers the same way.',
+        $which,
     ));
 })->with(static function (): Generator {
     foreach (everyAdapterCallThatReads() as $which => $ask) {

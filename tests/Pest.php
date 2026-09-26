@@ -40,8 +40,9 @@ pest()->extend(TestCase::class)->in('Feature', 'Templates', 'Contract', sprintf(
  * **Over every suite, read from `phpunit.xml`.** Four were named here and there
  * are eight, and the four left out included `app-modules/*\/tests` — which is
  * where every adapter that speaks to a stack is tested. An unmocked read there
- * raised Saloon's `FatalRequestException` rather than its `NoMockResponse`,
- * which is the difference between being stopped and having dialled (`R4`).
+ * raised a refused connection, which the SDK raises as `Unreachable`, rather
+ * than Saloon's `NoMockResponse`: the difference between having dialled and
+ * being stopped (`R4`).
  *
  * Saloon's half is the one that reaches every suite. `preventStrayRequests()`
  * resolves a factory out of the container, so it can only be arranged where the
