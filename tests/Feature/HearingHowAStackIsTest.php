@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
+use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
@@ -16,6 +17,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Report;
@@ -38,6 +40,7 @@ use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // The one line on the screen the app opens a machine on, held from the core's
@@ -107,6 +110,7 @@ final readonly class AScreenListening
         public FrozenClock $clock,
         public ACaptureInMemory $window,
         public AKeychainInMemory $keychain,
+        public StandingsInMemory $standings,
     ) {}
 
     /** The screen wakes at a moment, as its poll would wake it. */
@@ -131,6 +135,7 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
 
     $clock = FrozenClock::at(secondsAfterOpening(0));
     $window ??= ACaptureInMemory::inFront();
+    $standings = StandingsInMemory::working();
 
     $screen = new HowThisStackIs(
         AStackThatWasAsked::saying(aRunWithOneFinding()),
@@ -139,10 +144,11 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
         $stream,
         $clock,
         $window,
+        $standings,
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
-    return new AScreenListening($screen, $stream, $clock, $window, $keychain);
+    return new AScreenListening($screen, $stream, $clock, $window, $keychain, $standings);
 }
 
 /**
@@ -323,4 +329,75 @@ it('draws when a line that is not current was heard, and what stopped the stream
         ->and($drawn)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 2)]))
         ->and($drawn)->toContain(__(Obstacle::StackDidNotAnswer->said()))
         ->and($drawn)->toContain(__(HowOften::AfterABreak->saidOnTheScreen(), ['count' => 10]));
+});
+
+/** What the list would read back for the stack being listened to, flattened to one string. */
+function whatTheListHolds(StandingsInMemory $standings): string
+{
+    return $standings->lastKnownOf(theStackBeingListenedTo()->id())->either(
+        waiting: static fn(): Code => Code::of('nothing-held'),
+        holding: static fn(Reading $reading): Code => $reading->either(
+            live: static fn(): Code => Code::of('live'),
+            retained: static fn(object $standing, Instant $at): Code => Code::of(sprintf(
+                '%s|%d',
+                $standing instanceof HowItStands ? $standing->value : 'not-a-word',
+                $at->epochSeconds() - secondsAfterOpening(0)->epochSeconds(),
+            )),
+        ),
+    )->shown();
+}
+
+it('keeps each word it hears for the list, with when it was heard', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(
+        WhatWasHeard::said(aSummaryOfAFillingDisk()),
+        WhatWasHeard::nothing(),
+        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '')),
+    ));
+
+    $listening->wakesAt(0);
+
+    expect(whatTheListHolds($listening->standings))->toBe('broken|0');
+
+    $listening->wakesAt(2);
+
+    expect(whatTheListHolds($listening->standings))->toBe('broken|0');
+
+    $listening->wakesAt(4);
+
+    expect(whatTheListHolds($listening->standings))->toBe('healthy|4');
+});
+
+it('keeps nothing for the list where nothing was said', function (): void {
+    $quiet = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::nothing(), WhatWasHeard::aSignOfLife()));
+    $quiet->wakesAt(0)->wakesAt(2);
+
+    $refused = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::met(Obstacle::StackDidNotAnswer)));
+    $refused->wakesAt(0);
+
+    $ended = aScreenListeningTo(AStackThatSpeaksUp::thenEnding());
+    $ended->wakesAt(0);
+
+    expect(whatTheListHolds($quiet->standings))->toBe('nothing-held')
+        ->and(whatTheListHolds($refused->standings))->toBe('nothing-held')
+        ->and(whatTheListHolds($ended->standings))->toBe('nothing-held');
+});
+
+it('draws the summary it heard where the device would not keep the word', function (): void {
+    $stack = theStackBeingListenedTo();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+
+    $screen = new HowThisStackIs(
+        AStackThatWasAsked::saying(aRunWithOneFinding()),
+        $keychain,
+        StacksInMemory::holding($stack),
+        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())),
+        FrozenClock::at(secondsAfterOpening(0)),
+        ACaptureInMemory::inFront(),
+        StandingsInMemory::refusing(),
+    );
+    $screen->setParams(['stack' => $stack->id()->stored()]);
+    $screen->listen();
+
+    expect($screen->summary()->said)->toBe(HowItStands::Broken->saidOnTheScreen());
 });

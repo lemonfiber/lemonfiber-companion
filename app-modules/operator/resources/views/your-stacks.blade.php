@@ -4,8 +4,8 @@
     @if ($this->howItOpened()->isLocked)
         {{-- The device's own authentication on a cold start, asked
              before anything reads retained state or touches a network. Nothing
-             below is drawn — not the machine names, not a verdict, not the
-             diagnostics control — because all of it is what the lock is for. --}}
+             below is drawn — not the machine names, not how they stand, not
+             the diagnostics control — because all of it is what the lock is for. --}}
         <x-operator::heading>{{ __('device.unlock_reason') }}</x-operator::heading>
 
         {{-- A button rather than an automatic retry. An operator who
@@ -15,11 +15,11 @@
     @else
     {{-- What stood between this launch and the machine, shown rather
          than discarded. Producing the answer is half of the requirement; a
-         screen that decided "no network" and then drew the machine names and a
-         stale verdict as though nothing were wrong leaves somebody tapping a
+         screen that decided "no network" and then drew the machine names and
+         their last words as though nothing were wrong leaves somebody tapping a
          stack their phone cannot reach.
 
-         Above the list and not instead of it. The verdicts below are retained,
+         Above the list and not instead of it. The words below are retained,
          which is exactly what they are for — a device with no signal is when
          the last thing a stack said is worth most — and the diagnostics control
          at the bottom is the one thing that still works when nothing else does.
@@ -55,25 +55,26 @@
             :press-opacity="0.6"
         >
             <x-operator::emphasis>{{ $stack->name()->shown() }}</x-operator::emphasis>
-            {{-- The verdict, which is what the app opens on. `N2` calls
-                 the ordering its whole design — is anything wrong, then what,
-                 then may I fix it from here — and a first screen that leads
-                 with the names their owner gave their machines answers a
-                 question nobody opened the app to ask.
+            {{-- How the stack stands, which is what the app opens on: the
+                 core's one line, in the sentence the stack's own screen says
+                 it in. A stack whose line was never heard says it cannot be
+                 told, never nothing.
 
-                 N1-R9, N2-R13: it is held rather than asked, so it carries when
-                 it was read and is never drawn as though it were current. The
-                 age comes out of the same fold as the word, so a row cannot
-                 have one without the other. --}}
-            @if ($this->lastKnownOf($stack)->isKnown)
-                {{-- Said plainly, with the machine's name carrying the row's one
-                     emphasis. Two strong lines in a row is a row with no first
-                     line, and what tells three machines apart at a glance is
-                     which one this is. --}}
-                <native:text>{{ __($this->lastKnownOf($stack)->said) }}</native:text>
+                 It is held rather than asked, so it carries when it was heard
+                 and is never drawn as though it were current. The age comes
+                 out of the same fold as the word, so a row cannot have one
+                 without the other.
+
+                 Said plainly, with the machine's name carrying the row's one
+                 emphasis. Two strong lines in a row is a row with no first
+                 line, and what tells three machines apart at a glance is which
+                 one this is. --}}
+            <native:text>{{ __($this->lastKnownOf($stack)->said) }}</native:text>
+
+            @if ($this->lastKnownOf($stack)->ago->said !== '')
                 <x-operator::note>
-                    {{ __('health.stale', [
-                        'ago' => trans_choice($this->lastKnownOf($stack)->agoSaid, $this->lastKnownOf($stack)->agoCount),
+                    {{ __('health.summary.as_of', [
+                        'ago' => trans_choice($this->lastKnownOf($stack)->ago->said, $this->lastKnownOf($stack)->ago->count),
                     ]) }}
                 </x-operator::note>
             @endif

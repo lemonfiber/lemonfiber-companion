@@ -5,10 +5,10 @@ declare(strict_types=1);
 use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -25,7 +25,7 @@ use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\Fakes\VerdictsInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // The chrome, asked of a rendered frame rather than of a template's text.
@@ -67,6 +67,7 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         AStackThatSpeaksUp::holdingOpen(),
         FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
         ACaptureInMemory::inFront(),
+        StandingsInMemory::working(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -90,20 +91,20 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         ->and($drawn->offers())->toBe([__('health.ask_again')]);
 });
 
-it('N2-R1 — the verdict a frame opens on is drawn, with its age', function (): void {
+it('the word a frame opens on is drawn, with its age', function (): void {
     $stack = theMachineOnTheFrame();
     $stacks = StacksInMemory::holding($stack);
-    $verdicts = VerdictsInMemory::working()->lastSeen(
+    $standings = StandingsInMemory::working()->lastHeard(
         $stack->id(),
-        Overall::Broken,
-        Instant::atEpochSeconds(WHEN_THE_CHROME_WAS_DRAWN - 7_200),
+        HowItStands::Broken,
+        Instant::atEpochSeconds(WHEN_THE_CHROME_WAS_DRAWN - 10),
     );
 
     $screen = new YourStacks(
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        $verdicts,
+        $standings,
         FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CHROME_WAS_DRAWN)),
         new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
     );
@@ -118,7 +119,8 @@ it('N2-R1 — the verdict a frame opens on is drawn, with its age', function ():
     // frame *says* and the way into it is what the frame *offers* — and a
     // reader hears the second, which is why it is asserted by the name `F5`
     // gave it rather than by the row's own words.
-    expect($drawn->said())->toContain(__(Overall::Broken->saidOnTheScreen()))
+    expect($drawn->said())->toContain(__(HowItStands::Broken->saidOnTheScreen()))
+        ->and($drawn->said())->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]))
         ->and($drawn->said())->toContain($stack->name()->shown())
         ->and($drawn->offers())->toContain(__('connection.open_stack', ['stack' => $stack->name()->shown()]));
 });

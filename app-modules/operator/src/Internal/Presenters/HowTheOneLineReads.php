@@ -28,6 +28,12 @@ use Modules\Operator\Internal\ViewModels\WhyNothingWasSaid;
  * anybody. Things needing attention where the word is degraded, broken or
  * critical. Things reported anywhere else, because a stack that is stopped or
  * still starting can carry findings without any of them being a demand.
+ *
+ * **The list says the same line from what was kept.** It holds no stream, so
+ * it has the word a stack's screen last heard and when, and nothing else. That
+ * word is said for as long as a stream could have stayed silent and still been
+ * vouched for, and past that it reads as unknown, as the stack's own screen
+ * would; either way it says when it was heard.
  */
 final readonly class HowTheOneLineReads
 {
@@ -47,6 +53,41 @@ final readonly class HowTheOneLineReads
                 => $this->said($summary, $summary->standing(), AgoAsShown::live(), $why, $heard->isListening()),
             asOf: fn(TheHealthSummary $summary, Instant $at): WhatTheOneLineSays
                 => $this->said($summary, HowItStands::Unknown, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $why, $heard->isListening()),
+        );
+    }
+
+    /** What the list says for a stack whose one line was heard at `$at`, and kept. */
+    public function kept(HowItStands $standing, Instant $at, Instant $now): WhatTheOneLineSays
+    {
+        $shown = WhatWasHeardSoFar::isStillCurrent($at, $now) ? $standing : HowItStands::Unknown;
+
+        return $this->aloneOnTheList($shown, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now));
+    }
+
+    /**
+     * What the list says for a stack whose one line has never been heard.
+     *
+     * Unknown, in its own sentence: the list cannot say how the stack is, and
+     * a row saying nothing would read as nothing being wrong.
+     */
+    public function neverHeard(): WhatTheOneLineSays
+    {
+        return $this->aloneOnTheList(HowItStands::Unknown, AgoAsShown::live());
+    }
+
+    /** A word with no count, no worst thing and no stream, which is all the list has. */
+    private function aloneOnTheList(HowItStands $shown, AgoAsShown $ago): WhatTheOneLineSays
+    {
+        return new WhatTheOneLineSays(
+            said: $shown->saidOnTheScreen(),
+            counted: '',
+            howMany: 0,
+            worst: '',
+            ago: $ago,
+            met: '',
+            remedy: '',
+            listening: false,
+            affected: [],
         );
     }
 

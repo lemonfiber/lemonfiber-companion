@@ -1,0 +1,223 @@
+<?php
+
+declare(strict_types=1);
+
+use Modules\Connection\Api\Opening;
+use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowLongAgo;
+use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\YourStacks;
+use Tests\Support\Fakes\ACaptureInMemory;
+use Tests\Support\Fakes\ADeviceOnANetwork;
+use Tests\Support\Fakes\ADeviceThatKnowsYou;
+use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
+use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
+
+// The app opens on how each stack stands, and says when that was heard.
+//
+// The word is the core's one line, which the stack's own screen hears on the
+// event stream and keeps. The list holds no stream: it reads back what was
+// kept, so every word on it is a retained reading, said in the sentence the
+// stack's screen says it in and carrying when it was heard.
+
+/** The moment every case below is read at, so an age is a thing a test states. */
+const NOW = 1_770_000_000;
+
+/** Named for this file: the root suites share one namespace (`G10`). */
+function aStackToOpenOn(string $called = 'The loft', string $seed = 'a'): Stack
+{
+    return Stack::of(
+        StackId::of(Nonce::of(str_repeat($seed, Nonce::SHORTEST))),
+        StackName::of($called),
+        Address::of('https://192.168.1.42'),
+        Fingerprint::of(str_repeat($seed, Fingerprint::CHARACTERS)),
+    );
+}
+
+/** The launch screen, over stacks and words a test states. */
+function theOpeningScreen(Stack $stack, ?StandingsInMemory $standings = null): YourStacks
+{
+    $stacks = StacksInMemory::holding($stack);
+
+    return new YourStacks(
+        $stacks,
+        AKeychainInMemory::working(),
+        AShareSheetThatWasOffered::working(),
+        $standings ?? StandingsInMemory::working(),
+        FrozenClock::at(Instant::atEpochSeconds(NOW)),
+        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+    );
+}
+
+/** What a stack's row says, as the word's key and the age's key and count. */
+function whatTheRowSays(Stack $stack, StandingsInMemory $standings): string
+{
+    $said = theOpeningScreen($stack, $standings)->lastKnownOf($stack);
+
+    return sprintf('%s|%s|%d', $said->said, $said->ago->said, $said->ago->count);
+}
+
+it('opens on the word the stack\'s screen last heard, and says when it was heard', function (): void {
+    $stack = aStackToOpenOn();
+    $standings = StandingsInMemory::working()
+        ->lastHeard($stack->id(), HowItStands::Degraded, Instant::atEpochSeconds(NOW - 10));
+
+    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $standings))->said();
+
+    expect(whatTheRowSays($stack, $standings))->toBe('health.standing.degraded|health.ago.minutes|0')
+        ->and($drawn)->toContain(__(HowItStands::Degraded->saidOnTheScreen()))
+        ->and($drawn)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]));
+});
+
+it('says a stack whose one line was never heard cannot be told, and never that it is fine', function (): void {
+    $stack = aStackToOpenOn();
+
+    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack))->said();
+
+    expect(whatTheRowSays($stack, StandingsInMemory::working()))->toBe('health.standing.unknown||0')
+        ->and($drawn)->toContain(__(HowItStands::Unknown->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__(HowItStands::Healthy->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]));
+});
+
+it('reads a word heard longer ago than a stream may be silent as unknown, with when it was heard', function (): void {
+    // Thirty seconds is twice the heartbeat, the longest the stack's own screen
+    // takes a summary as current with nothing heard. The list vouches for the
+    // word exactly as long, and past that says what that screen would say.
+    $stack = aStackToOpenOn();
+    $heardAt = static fn(int $ago): StandingsInMemory => StandingsInMemory::working()
+        ->lastHeard($stack->id(), HowItStands::Healthy, Instant::atEpochSeconds(NOW - $ago));
+
+    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $heardAt(7_200)))->said();
+
+    expect(whatTheRowSays($stack, $heardAt(30)))->toBe('health.standing.healthy|health.ago.minutes|0')
+        ->and(whatTheRowSays($stack, $heardAt(31)))->toBe('health.standing.unknown|health.ago.minutes|0')
+        ->and(whatTheRowSays($stack, $heardAt(7_200)))->toBe('health.standing.unknown|health.ago.hours|2')
+        ->and($drawn)->toContain(__(HowItStands::Unknown->saidOnTheScreen()))
+        ->and($drawn)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.hours', 2)]))
+        ->and($drawn)->not->toContain(__(HowItStands::Healthy->saidOnTheScreen()));
+});
+
+it('says the age in whichever unit it fills', function (): void {
+    // Three bands, and the boundaries are the point: one second under an hour
+    // is still minutes, and one second over is an hour. A band chosen by `>=`
+    // that should be `>` moves every reading on the screen by one unit, which
+    // nothing but a case at the boundary can catch.
+    $stack = aStackToOpenOn();
+
+    $said = static function (int $ago) use ($stack): string {
+        $shown = theOpeningScreen($stack, StandingsInMemory::working()
+            ->lastHeard($stack->id(), HowItStands::Healthy, Instant::atEpochSeconds(NOW - $ago)))
+            ->lastKnownOf($stack);
+
+        return sprintf('%s|%d', $shown->ago->said, $shown->ago->count);
+    };
+
+    expect($said(0))->toBe('health.ago.minutes|0')
+        ->and($said(59))->toBe('health.ago.minutes|0')
+        ->and($said(60))->toBe('health.ago.minutes|1')
+        ->and($said(3_599))->toBe('health.ago.minutes|59')
+        ->and($said(3_600))->toBe('health.ago.hours|1')
+        ->and($said(86_399))->toBe('health.ago.hours|23')
+        ->and($said(86_400))->toBe('health.ago.days|1')
+        ->and($said(864_000))->toBe('health.ago.days|10');
+});
+
+it('says a word heard in the future was heard moments ago', function (): void {
+    // A device whose clock moved backwards, or a stack whose clock is ahead.
+    // This app knows the word is not old and does not know enough to say
+    // anything else; the raw subtraction would put *in three hours* on the
+    // screen, and nought seconds is what the count says.
+    $stack = aStackToOpenOn();
+    $standings = StandingsInMemory::working()
+        ->lastHeard($stack->id(), HowItStands::Healthy, Instant::atEpochSeconds(NOW + 10_800));
+
+    expect(whatTheRowSays($stack, $standings))->toBe('health.standing.healthy|health.ago.minutes|0');
+});
+
+it('L1 — every band names a line, and it counts on the number beside it', function (): void {
+    // `trans_choice` is what the template calls, because *a minute ago* and
+    // *two minutes ago* are not the same sentence in either language this app
+    // speaks. A line written without the plural forms renders the same words
+    // for one and for many, which reads as a bug in the clock.
+    foreach (HowLongAgo::cases() as $unit) {
+        expect(trans_choice($unit->saidOnTheScreen(), 1))
+            ->not->toBe($unit->saidOnTheScreen(), $unit->name)
+            ->and(trans_choice($unit->saidOnTheScreen(), 2))
+            ->not->toBe(trans_choice($unit->saidOnTheScreen(), 1), $unit->name);
+    }
+});
+
+it('keeps one stack\'s word apart from another\'s', function (): void {
+    $loft = aStackToOpenOn('The loft', 'a');
+    $shed = aStackToOpenOn('The shed', 'b');
+
+    $standings = StandingsInMemory::working()
+        ->lastHeard($loft->id(), HowItStands::Broken, Instant::atEpochSeconds(NOW - 5))
+        ->lastHeard($shed->id(), HowItStands::Stopped, Instant::atEpochSeconds(NOW - 5));
+
+    $stacks = StacksInMemory::holding($loft, $shed);
+    $screen = new YourStacks(
+        $stacks,
+        AKeychainInMemory::working(),
+        AShareSheetThatWasOffered::working(),
+        $standings,
+        FrozenClock::at(Instant::atEpochSeconds(NOW)),
+        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+    );
+
+    expect($screen->lastKnownOf($loft)->said)->toBe(HowItStands::Broken->saidOnTheScreen())
+        ->and($screen->lastKnownOf($shed)->said)->toBe(HowItStands::Stopped->saidOnTheScreen());
+});
+
+it('reads a held value that is not a word, or one with no moment, as never heard', function (): void {
+    // The port answers `Reading`, whose retained arm is typed `object` — it
+    // carries whatever was put in it, which for a store is whatever the last
+    // build wrote. A live reading has no moment to say an age with.
+    $stack = aStackToOpenOn();
+    $somethingElse = StandingsInMemory::working()->lastHeardAsSomethingElse($stack->id(), Instant::atEpochSeconds(NOW - 5));
+    $live = StandingsInMemory::working()->heardLive($stack->id(), HowItStands::Healthy);
+
+    expect(whatTheRowSays($stack, $somethingElse))->toBe('health.standing.unknown||0')
+        ->and(whatTheRowSays($stack, $live))->toBe('health.standing.unknown||0');
+});
+
+it('says on the list the word the stack\'s own screen just heard', function (): void {
+    $stack = aStackToOpenOn();
+    $standings = StandingsInMemory::working();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+
+    $heard = new HowThisStackIs(
+        AStackThatWasAsked::met(Obstacle::StackDidNotAnswer),
+        $keychain,
+        StacksInMemory::holding($stack),
+        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note'))),
+        FrozenClock::at(Instant::atEpochSeconds(NOW - 3)),
+        ACaptureInMemory::inFront(),
+        $standings,
+    );
+    $heard->setParams(['stack' => $stack->id()->stored()]);
+    $heard->listen();
+
+    expect(whatTheRowSays($stack, $standings))->toBe('health.standing.advisory|health.ago.minutes|0')
+        ->and(theOpeningScreen($stack, $standings)->lastKnownOf($stack)->said)->toBe($heard->summary()->said);
+});

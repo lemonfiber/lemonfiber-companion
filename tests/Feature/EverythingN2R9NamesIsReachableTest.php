@@ -30,6 +30,7 @@ use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
 
 // "Stuck downloads, provider health, disk pressure and VPN verification
 // MUST each be reachable."
@@ -91,6 +92,7 @@ function theScreenTheFourAreReachedFrom(): HowThisStackIs
         AStackThatSpeaksUp::holdingOpen(),
         FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
         ACaptureInMemory::inFront(),
+        StandingsInMemory::working(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

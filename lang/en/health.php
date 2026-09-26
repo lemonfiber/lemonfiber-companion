@@ -42,12 +42,6 @@ return [
         'permanent' => 'This cannot be undone',
         'possible' => 'This can be undone afterwards',
     ],
-    'overall' => [
-        'broken' => 'Something is broken',
-        'unknown' => 'Health could not be determined',
-        'degraded' => 'Some services need attention',
-        'healthy' => 'Everything is running',
-    ],
     'standing' => [
         'healthy' => 'Everything is fine.',
         'stopped' => 'Not running, because it was stopped. That is not a fault.',
@@ -72,7 +66,6 @@ return [
         'hours' => '{1} an hour ago|[2,*] :count hours ago',
         'days' => '{1} a day ago|[2,*] :count days ago',
     ],
-    'stale' => 'Last checked :ago',
     'family_and_count' => ':family (:count)',
     'no_findings' => 'Nothing needs attention.',
     'repair_refused' => 'The stack refused that repair: :reason',

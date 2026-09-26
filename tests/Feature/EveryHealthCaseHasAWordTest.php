@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
-use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Undoing;
 use Tests\Support\Catalogue;
 
@@ -20,8 +20,8 @@ use Tests\Support\Catalogue;
 // Written over `cases()` rather than over a list of keys, so a case added to
 // any of them fails here until somebody writes what it says, in both languages.
 //
-// `Overall` made it three, which is where the earlier note here said to stop
-// writing them out and drive it from a table instead.
+// Driven from a table rather than written out once per enum, because a table
+// is the one place a new group is added.
 
 /**
  * What a case is called in the catalogue.
@@ -41,10 +41,10 @@ function keyedBy(array $cases): array
  * Named once because both rules below ask the same question of the same enums,
  * and a second list is the one that stops being updated.
  *
- * `Overall` earns its row from the opening: the app opens on the verdict, and
- * `Unknown` has to arrive as a sentence of its own. Left out of the catalogue
- * it renders as `health.overall.unknown`, which a person reads as this app
- * having broken rather than as the stack having declined to say.
+ * `HowItStands` earns its row from the opening: the app opens on how each
+ * stack stands, and `Unknown` has to arrive as a sentence of its own. Left out
+ * of the catalogue it renders as `health.standing.unknown`, which a person
+ * reads as this app having broken rather than as the stack being unknown.
  *
  * `Undoing` earns its row from a repair's clauses, and is the reason that clause is an enum
  * rather than the wire's boolean: "whether it can be undone" has to reach the
@@ -62,7 +62,7 @@ function groups(): array
     return [
         'category' => keyedBy(Category::cases()),
         'conclusion' => keyedBy(Conclusion::cases()),
-        'overall' => keyedBy(Overall::cases()),
+        'standing' => keyedBy(HowItStands::cases()),
         'undoing' => keyedBy(Undoing::cases()),
     ];
 }

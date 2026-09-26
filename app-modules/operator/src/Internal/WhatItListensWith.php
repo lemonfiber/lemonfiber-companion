@@ -7,9 +7,10 @@ namespace Modules\Operator\Internal;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\Standings;
 
 /**
- * The three ports a screen holding the stream reaches for, handed to it together.
+ * The ports a screen holding the stream reaches for, handed to it together.
  *
  * {@see HearsHowTheStackIs} is where they are used, and a screen is where they
  * arrive, so the screen hands them over in one value rather than the trait
@@ -21,5 +22,6 @@ final readonly class WhatItListensWith
         public Hearing $hearing,
         public Clock $clock,
         public Capture $capture,
+        public Standings $standings,
     ) {}
 }

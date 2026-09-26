@@ -9,10 +9,10 @@ use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Launch;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Shape;
@@ -20,15 +20,15 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
-use Modules\Kernel\Api\Verdicts;
+use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\AScreenWithoutAStack;
-use Modules\Operator\Internal\Presenters\HowAStacksAgeReads;
 use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
-use Modules\Operator\Internal\ViewModels\HowAStackLastWas;
+use Modules\Operator\Internal\Presenters\HowTheOneLineReads;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
+use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhereTappingLeads;
@@ -123,7 +123,7 @@ final class YourStacks extends NativeComponent
         private readonly Stacks $stacks,
         private readonly SecureStorage $storage,
         private readonly Sharing $sharing,
-        private readonly Verdicts $verdicts,
+        private readonly Standings $standings,
         private readonly Clock $clock,
         private readonly Opening $opening,
     ) {}
@@ -269,47 +269,47 @@ final class YourStacks extends NativeComponent
     }
 
     /**
-     * What this stack last came to, with when it was read.
+     * What this stack's one line last said, with when it was heard.
      *
-     * The app opens on the overall verdict. The ordering `N2` calls
-     * its whole design is *is anything wrong*, then *what*, then *may I fix it
-     * from here*, and until this existed the first screen answered none of
-     * them: a list of machines and the names their owner gave them, with the
-     * verdict two taps and a network round trip away behind whichever stack
-     * they guessed at first.
+     * The app opens on how each stack stands. The ordering `N2` calls its
+     * whole design is *is anything wrong*, then *what*, then *may I fix it from
+     * here*, and a list of machines and the names their owner gave them
+     * answers none of it.
+     *
+     * **The core's one line, so every surface says the same word.** The stack's
+     * own screen hears it on the event stream and keeps each word it hears in
+     * {@see Standings}, and this row says that word in the sentence that
+     * screen uses for it.
      *
      * **Held, never asked.** This screen opens the app and opening the app is
-     * not a reason to talk to four machines — a screen is not a
-     * poller and `F4` says a frame is not where a socket is opened. So the word
-     * comes out of the store, which makes every one of them a retained reading
-     * and is exactly why a session permits it: it may open a screen, and it
-     * carries when it was read.
+     * not a reason to talk to four machines — a screen is not a poller and `F4`
+     * says a frame is not where a socket is opened. So the word comes out of
+     * the store, which makes every one of them a retained reading: it may open
+     * a screen, and it carries when it was heard.
      *
      * The age cannot be dropped on the way here. `Reading::either()` hands the
-     * verdict and the moment to the same arm, so a row showing a word without
-     * an age would have to have been given the age and thrown it away.
+     * word and the moment to the same arm, so a row showing a word without an
+     * age would have to have been given the age and thrown it away.
      */
-    public function lastKnownOf(Stack $stack): HowAStackLastWas
+    public function lastKnownOf(Stack $stack): WhatTheOneLineSays
     {
         // Read once here rather than inside the fold, so every row on one frame
-        // is aged against the same moment. Two rows a second apart in wall time
-        // would otherwise be aged against two different *nows*, which is a
-        // difference nobody can see and a test cannot pin.
+        // is aged against the same moment.
         $now = $this->clock->now();
 
-        return $this->verdicts->lastKnownOf($stack->id())->either(
-            waiting: static fn(): HowAStackLastWas => new HowAStacksAgeReads()->notYetKnown(),
-            holding: static fn(Reading $reading): HowAStackLastWas => $reading->either(
+        return $this->standings->lastKnownOf($stack->id())->either(
+            waiting: static fn(): WhatTheOneLineSays => new HowTheOneLineReads()->neverHeard(),
+            holding: static fn(Reading $reading): WhatTheOneLineSays => $reading->either(
                 // A live reading cannot arrive here: everything this port
                 // answers came out of a store. Answered rather than refused
-                // because the arm is the type's, not this screen's — and the
-                // honest answer for a word read just now is the word with no
-                // age, which is what `notYetKnown` renders as no verdict.
-                live: static fn(): HowAStackLastWas => new HowAStacksAgeReads()->notYetKnown(),
-                retained: static fn(object $overall, Instant $at): HowAStackLastWas
-                    => $overall instanceof Overall
-                        ? new HowAStacksAgeReads()->read($overall, $at, $now)
-                        : new HowAStacksAgeReads()->notYetKnown(),
+                // because the arm is the type's, not this screen's, and read
+                // as never heard because a word with no moment has no age to
+                // be said with.
+                live: static fn(): WhatTheOneLineSays => new HowTheOneLineReads()->neverHeard(),
+                retained: static fn(object $standing, Instant $at): WhatTheOneLineSays
+                    => $standing instanceof HowItStands
+                        ? new HowTheOneLineReads()->kept($standing, $at, $now)
+                        : new HowTheOneLineReads()->neverHeard(),
             ),
         );
     }
@@ -497,7 +497,7 @@ final class YourStacks extends NativeComponent
      *
      * Producing the answer is only half of it, which is why the
      * template branches on `->met` before it draws anything else. A launch that
-     * decided *no network* and then drew the machine names and a stale verdict
+     * decided *no network* and then drew the machine names and their last words
      * would leave somebody tapping a stack their phone cannot reach, and the
      * distinction the type refuses to collapse would be discarded by the one
      * surface that was supposed to show it. `->remedy` is stated beside it

@@ -31,7 +31,6 @@ use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\RateUnit;
 use Modules\Kernel\Api\Severity;
@@ -185,10 +184,6 @@ function everyDerivedKey(): array
         HowLongAgo::class => aPairPerCase(
             HowLongAgo::cases(),
             static fn(HowLongAgo $unit): array => [$unit->saidOnTheScreen()],
-        ),
-        Overall::class => aPairPerCase(
-            Overall::cases(),
-            static fn(Overall $overall): array => [$overall->saidOnTheScreen()],
         ),
         HowItStands::class => aPairPerCase(
             HowItStands::cases(),
@@ -526,11 +521,6 @@ it('a case value is the catalogue stem, so the two cannot drift apart', function
     foreach (Conclusion::cases() as $conclusion) {
         expect($conclusion->saidOnTheScreen())
             ->toBe(sprintf('health.conclusion.%s', $conclusion->value), $conclusion->name);
-    }
-
-    foreach (Overall::cases() as $overall) {
-        expect($overall->saidOnTheScreen())
-            ->toBe(sprintf('health.overall.%s', $overall->value), $overall->name);
     }
 
     foreach (Category::cases() as $category) {

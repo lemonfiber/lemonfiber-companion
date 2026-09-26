@@ -65,13 +65,13 @@ use Modules\Kernel\Api\SelfChecking;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
+use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\UpgradingTheLibrary;
-use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
@@ -118,7 +118,7 @@ use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
-use Modules\Vault\Api\PlatformVerdicts;
+use Modules\Vault\Api\PlatformStandings;
 
 /**
  * The composition root.
@@ -260,16 +260,16 @@ final class CompositionRoot extends ServiceProvider
             static fn(): Stacks => new PlatformStacks(new PlatformStore()),
         );
 
-        // The last word each stack came to, in the same store and bound the
-        // same way. A third port rather than a method on either of the two
+        // The word each stack's one line last said, in the same store and bound
+        // the same way. A third port rather than a method on either of the two
         // above, because what it holds has obligations neither of theirs does:
         // it is the only retained value this app *shows*, so carrying its age
         // applies to it and to nothing else here — which is why it answers `Showing` and
         // they answer collections. Folding it into `Stacks` would put a value
         // that must carry its age behind a port whose other answers must not.
         $this->app->bind(
-            Verdicts::class,
-            static fn(): Verdicts => new PlatformVerdicts(new PlatformStore()),
+            Standings::class,
+            static fn(): Standings => new PlatformStandings(new PlatformStore()),
         );
 
         // Whether this device is on a network at all, which is the one question

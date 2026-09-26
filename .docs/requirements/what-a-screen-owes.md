@@ -53,7 +53,7 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N1-R1` | Parity across surfaces, rather than parity by everybody remembering | the catalogues, and the rules over them |
 | `N1-R2` | **Every action available from another surface is offered here**, unless a requirement says otherwise and why | **Not kept.** See *What is not built* below |
-| `N2-R1` | The app opens on the overall verdict | `HowThisStackIs` |
+| `N2-R1` | The app opens on the overall verdict, and says `unknown` as its own answer | `YourStacks`, whose every row says how that stack stands in the one line's own sentence, `HowTheOneLineReads`. A stack never heard reads unknown |
 | `N2-R2` | Worst first, ordered here rather than trusted to arrive that way | `WorstFirst`, reached by `HowThisStackIs` |
 | `N2-R3` | A finding carries its code, its meaning and its remedy, in the core's own words | `HowAFindingReads` |
 | `G4-R3` | The cause is reported rather than each symptom independently | narrow, sort, then group — grouping last |

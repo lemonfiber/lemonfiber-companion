@@ -176,9 +176,7 @@ it('L7 — no line waits for a screen that has already arrived', function (): vo
     // Here the cost is worse than a dead line. Every entry is a promise that a
     // screen is coming; an entry whose screen arrived is a promise nobody can
     // tell from one still outstanding, so the list stops being readable as the
-    // thing it is. `health.stale` was the first to arrive — written for a
-    // report that says when it was taken, and read by the launch screen the day
-    // it started opening on a held verdict.
+    // thing it is.
     $said = everythingTheAppSays();
     $reachable = everyKeyADerivationCouldBuild($said);
 

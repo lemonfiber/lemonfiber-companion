@@ -13,7 +13,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * they read as what they are.
  *
  * **When is a catalogue key and a count**, the shape
- * {@see HowAStackLastWas} uses for an age: the template hands both to
+ * {@see \Modules\Operator\Internal\Presenters\AgoAsShown} carries for an age: the template hands both to
  * `trans_choice`, so *a minute ago* and *two minutes ago* are the catalogue's
  * sentences rather than this file's. An unreadable clock is its own key with a
  * count of nothing, so it is a sentence too, and never a date.

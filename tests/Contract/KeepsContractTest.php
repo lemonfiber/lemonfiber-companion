@@ -24,7 +24,7 @@ use Tests\Support\Fakes\AStoreOnAHandset;
 // runs against.
 //
 // It matters here more than it reads. Every test of `PlatformKeychain`,
-// `PlatformStacks` and `PlatformVerdicts` hands its subject an
+// `PlatformStacks` and `PlatformStandings` hands its subject an
 // `APlatformStore` and never touches a keychain, so a fake easier to satisfy
 // than the platform is a fake that makes all three green about a device that
 // does not exist. Two answers had already come apart that way: the fake

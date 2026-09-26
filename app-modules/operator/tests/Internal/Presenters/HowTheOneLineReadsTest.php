@@ -11,6 +11,7 @@ use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remedies;
@@ -19,6 +20,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Presenters\HowTheOneLineReads;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
 
@@ -175,4 +177,42 @@ it('says what stopped a subscription beside what it last heard', function (): vo
         ->and($line->met)->toBe('connection.no_network')
         ->and($line->remedy)->toBe('connection.no_network_action')
         ->and($line->ago->count)->toBe(2);
+});
+
+it('says a kept word with when it was heard, and nothing it did not keep', function (): void {
+    $line = new HowTheOneLineReads()->kept(HowItStands::Critical, minutesIn(0), Instant::atEpochSeconds(1_790_000_030));
+
+    expect($line)->toEqual(new WhatTheOneLineSays(
+        said: 'health.standing.critical',
+        counted: '',
+        howMany: 0,
+        worst: '',
+        ago: AgoAsShown::from(HowLongAgo::Minutes, minutesIn(0), Instant::atEpochSeconds(1_790_000_030)),
+        met: '',
+        remedy: '',
+        listening: false,
+        affected: [],
+    ));
+});
+
+it('reads a kept word as unknown once a stream could no longer have vouched for it', function (): void {
+    $line = new HowTheOneLineReads()->kept(HowItStands::Healthy, minutesIn(0), minutesIn(90));
+
+    expect($line->said)->toBe('health.standing.unknown')
+        ->and($line->ago->said)->toBe('health.ago.hours')
+        ->and($line->ago->count)->toBe(1);
+});
+
+it('says a stack never heard cannot be told, with no age', function (): void {
+    expect(new HowTheOneLineReads()->neverHeard())->toEqual(new WhatTheOneLineSays(
+        said: 'health.standing.unknown',
+        counted: '',
+        howMany: 0,
+        worst: '',
+        ago: AgoAsShown::live(),
+        met: '',
+        remedy: '',
+        listening: false,
+        affected: [],
+    ));
 });

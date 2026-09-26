@@ -17,7 +17,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\Fakes\VerdictsInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What the lock is for, and what it hides.
@@ -54,7 +54,7 @@ function theScreenOnADeviceThat(ADeviceThatKnowsYou $device, Stack ...$paired): 
         $stacks,
         AKeychainInMemory::working(),
         AShareSheetThatWasOffered::working(),
-        VerdictsInMemory::working(),
+        StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_LAUNCHED)),
         new Opening($device, $stacks, ADeviceOnANetwork::connected()),
     );

@@ -6,9 +6,11 @@ namespace Modules\Operator\Internal;
 
 use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Operator\Internal\Presenters\HowTheOneLineReads;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
@@ -33,6 +35,11 @@ use Native\Mobile\Edge\NativeComponent;
  * the wake that notices, and opened again on {@see HowOften::AfterABreak}'s
  * cadence. {@see WhatWasHeardSoFar} decides both; this carries out what it
  * decides.
+ *
+ * **Every word it hears is kept for the list.** The list of stacks says each
+ * stack's one line and holds no stream, so the word, and when it was heard,
+ * goes into {@see \Modules\Kernel\Api\Standings} as it arrives, and the list
+ * reads it from there.
  *
  * @phpstan-require-extends NativeComponent
  */
@@ -78,7 +85,7 @@ trait HearsHowTheStackIs
         }
 
         $stack = $this->stack();
-        $held = $held->after($this->heardFrom($stack), $now);
+        $held = $held->after($this->heardFrom($stack, $now), $now);
 
         if ($held->hasGoneQuiet($now)) {
             $held = $held->after($with->hearing->letGo(), $now);
@@ -149,11 +156,39 @@ trait HearsHowTheStackIs
      * Without one there is nothing to listen with, which reads as a subscription
      * that closed: the screen waits out a break and looks for a session again.
      */
-    private function heardFrom(Stack $stack): WhatWasHeard
+    private function heardFrom(Stack $stack, Instant $now): WhatWasHeard
     {
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatWasHeard => $this->listensWith()->hearing->howItIs($stack, $session),
+            held: fn(Session $session): WhatWasHeard => $this->kept(
+                $this->listensWith()->hearing->howItIs($stack, $session),
+                $stack,
+                $now,
+            ),
             notHeld: static fn(): WhatWasHeard => WhatWasHeard::closed(),
+        );
+    }
+
+    /**
+     * Keep the word a summary said, with when it was heard, and hand back what was heard.
+     *
+     * What the store answers is not looked at: a word that could not be kept
+     * costs the list that row's word, and this screen is showing the summary
+     * either way.
+     */
+    private function kept(WhatWasHeard $heard, Stack $stack, Instant $now): WhatWasHeard
+    {
+        $standings = $this->listensWith()->standings;
+
+        return $heard->either(
+            nothing: static fn(): WhatWasHeard => $heard,
+            alive: static fn(): WhatWasHeard => $heard,
+            said: static function (TheHealthSummary $summary) use ($standings, $heard, $stack, $now): WhatWasHeard {
+                $standings->remember($stack->id(), $summary->standing(), $now);
+
+                return $heard;
+            },
+            closed: static fn(): WhatWasHeard => $heard,
+            met: static fn(): WhatWasHeard => $heard,
         );
     }
 }

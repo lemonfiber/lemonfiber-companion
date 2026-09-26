@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Standings;
 use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
@@ -136,6 +137,7 @@ final class HowThisStackIs extends NativeComponent
         private readonly Hearing $hearing,
         private readonly Clock $clock,
         private readonly Capture $capture,
+        private readonly Standings $standings,
     ) {}
 
     /**
@@ -342,7 +344,7 @@ final class HowThisStackIs extends NativeComponent
     /** The ports the one line is listened for with, which only this screen holds. */
     protected function listensWith(): WhatItListensWith
     {
-        return new WhatItListensWith($this->hearing, $this->clock, $this->capture);
+        return new WhatItListensWith($this->hearing, $this->clock, $this->capture, $this->standings);
     }
 
     /**

@@ -40,12 +40,6 @@ return [
         'permanent' => 'Dit kan niet ongedaan worden gemaakt',
         'possible' => 'Dit kan daarna ongedaan worden gemaakt',
     ],
-    'overall' => [
-        'broken' => 'Er is iets kapot',
-        'unknown' => 'De gezondheid kon niet worden vastgesteld',
-        'degraded' => 'Sommige services hebben aandacht nodig',
-        'healthy' => 'Alles draait',
-    ],
     'standing' => [
         'healthy' => 'Alles is in orde.',
         'stopped' => 'Draait niet, omdat hij is gestopt. Dat is geen fout.',
@@ -70,7 +64,6 @@ return [
         'hours' => '{1} een uur geleden|[2,*] :count uur geleden',
         'days' => '{1} een dag geleden|[2,*] :count dagen geleden',
     ],
-    'stale' => 'Laatst gecontroleerd :ago',
     'family_and_count' => ':family (:count)',
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',

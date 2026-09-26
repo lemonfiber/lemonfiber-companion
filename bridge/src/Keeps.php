@@ -20,7 +20,7 @@ namespace Lemonfiber\Native;
  * one thing.
  *
  * **It exists because three adapters share one store and one of them has to be
- * replaceable.** `PlatformKeychain`, `PlatformStacks` and `PlatformVerdicts`
+ * replaceable.** `PlatformKeychain`, `PlatformStacks` and `PlatformStandings`
  * all write here, and a development build runs every one of them over a store
  * that touches no device — so the real key separation, the real JSON and the
  * real re-pairing rule are what a laptop exercises. Substituting below this,

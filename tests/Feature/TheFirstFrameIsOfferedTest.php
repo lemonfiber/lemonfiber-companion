@@ -26,7 +26,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
-use Tests\Support\Fakes\VerdictsInMemory;
+use Tests\Support\Fakes\StandingsInMemory;
 
 /** A stack this device is already paired with. */
 function aPairedStack(string $called, string $seed = 'a'): Stack
@@ -66,7 +66,7 @@ function theLaunchScreen(
     Stacks $stacks,
     ?AKeychainInMemory $keychain = null,
     ?AShareSheetThatWasOffered $sharing = null,
-    ?VerdictsInMemory $verdicts = null,
+    ?StandingsInMemory $standings = null,
     ?FrozenClock $clock = null,
     ?Opening $opening = null,
 ): YourStacks {
@@ -74,7 +74,7 @@ function theLaunchScreen(
         $stacks,
         $keychain ?? AKeychainInMemory::working(),
         $sharing ?? AShareSheetThatWasOffered::working(),
-        $verdicts ?? VerdictsInMemory::working(),
+        $standings ?? StandingsInMemory::working(),
         $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
         $opening ?? new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
     );
@@ -412,7 +412,7 @@ it('draws the frame the surface registered, by name', function (): void {
 
 it('N4-R19 — a device that will not open holds the whole screen shut', function (): void {
     // Not a banner above the list. Everything below the lock is what the lock
-    // is for: the machine names, the verdicts, and the control that assembles a
+    // is for: the machine names, how each stands, and the control that assembles a
     // diagnostic report about somebody's house.
     $stacks = StacksInMemory::holding(aPairedStack('The loft'));
     $screen = theLaunchScreen(
@@ -496,7 +496,7 @@ it('N1-R37 — a launch with no network says so, and says what to do', function 
 });
 
 it('N1-R37 — the stacks are still shown to a device with no network', function (): void {
-    // Deliberate, and the opposite of the lock above. A retained verdict is
+    // Deliberate, and the opposite of the lock above. A retained word is
     // worth most when the device cannot ask for a new one, and the diagnostics
     // control at the foot of this screen is the one thing that still works when
     // nothing else does, which is why it is here. Drawing the
