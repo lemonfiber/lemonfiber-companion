@@ -51,7 +51,7 @@ it('keeps the kinds in the stack\'s order, and says whether it was carried out',
     $movies = aKindToUpgrade();
     $tv = aKindToUpgrade(kind: 'tv');
     $described = TheUpgrade::described(...['a' => $movies, 'b' => $tv]);
-    $carriedOut = TheUpgrade::carriedOut($movies);
+    $carriedOut = TheUpgrade::carriedOut(...['only' => $movies]);
 
     expect([iterator_to_array($described, preserve_keys: true), $described->wasCarriedOut()])->toBe([[$movies, $tv], false])
         ->and($described)->toHaveCount(2)

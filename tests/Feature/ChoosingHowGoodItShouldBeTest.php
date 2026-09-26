@@ -174,7 +174,7 @@ it('says no format is chosen for music where none is', function (): void {
     $screen = theQualityScreen(AStackThatChoosesQuality::with(theQualityThatBecame(WhatBecameOfTheChoice::Shown, music: WhatMusicIsSetTo::unset())));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('quality.music.unset'))
-        ->and($screen->answer()->music->format)->toBe('');
+        ->and(get_object_vars($screen->answer()->music))->toBe(['scope' => '', 'format' => '', 'means' => '', 'targets' => '', 'sizePerHour' => '', 'note' => '']);
 });
 
 it('says a stack with no preset in force reports none', function (): void {
@@ -418,7 +418,7 @@ it('asks nothing about an upgrade once the session has ended', function (): void
     $screen->describe();
 
     expect($upgrades->descriptions())->toBe(0)
-        ->and($screen->upgrading?->went->isSignedIn)->toBeFalse();
+        ->and([$screen->upgrading?->went->isSignedIn, $screen->upgrading?->headingSaid, $screen->upgrading?->kinds])->toBe([false, '', []]);
 });
 
 it('says what stood in the way of a choice rather than that it was not made', function (): void {

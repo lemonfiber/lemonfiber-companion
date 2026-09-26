@@ -18,7 +18,10 @@ namespace Modules\Kernel\Api;
  */
 final readonly class AnUpgradeDescribed
 {
-    private function __construct() {}
+    private function __construct()
+    {
+        // Nothing to hold: being built at all, by `by()`, is the whole proof.
+    }
 
     /** The upgrade the stack described; one already carried out is refused. */
     public static function by(TheUpgrade $described): self
