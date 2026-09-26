@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\ThePiecesOfABundle;
 use Modules\Kernel\Api\TheTermsOfABundle;
@@ -245,6 +246,8 @@ it('describes the bundle chosen without writing it, and says it is being gathere
         ['writes' => false, 'lines' => 200, 'filenames' => 'shown', 'revealing' => []],
     ])
         ->and($screen->answer()->isWorking)->toBeTrue()
+        ->and($screen->answer()->isWritten)->toBeFalse()
+        ->and($screen->answer()->bundle)->toBeNull()
         ->and($screen->handle)->toBe(AStackThatBundles::THE_JOB)
         ->and($drawn)->toContain(__('stacks.help.gathering'))
         ->and($drawn)->toContain(__('health.every.while_work_runs', ['count' => 5]))
@@ -489,4 +492,11 @@ it('is reached from the machine it is about, and goes back to it', function (): 
         ->and($screen->goes()->ofItself()->help())->toBe(sprintf('/stacks/%s/help', theStackHelpIsAskedAbout()->id()->stored()))
         ->and($screen->render()->name())->toBe('operator::asking-for-help-here')
         ->and($screen->cadence()->seconds())->toBe(5);
+});
+
+it('refuses a route parameter that is not text', function (): void {
+    $screen = theHelpScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::stillRunning()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
