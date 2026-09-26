@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_keys;
 use function expect;
 use function it;
 use function iterator_to_array;
@@ -47,6 +48,12 @@ it('walks the affected items in the order the core put them in', function (): vo
     }
 
     expect($checks)->toBe(['queue.stalled', 'disk.space']);
+});
+
+it('walks the affected items by position, whatever they were handed over keyed by', function (): void {
+    $keyed = ['first' => anItemCalled('queue.stalled'), 'second' => anItemCalled('disk.space')];
+
+    expect(array_keys(iterator_to_array(TheHealthSummary::of(HowItStands::Broken, 2, '', ...$keyed), preserve_keys: true)))->toBe([0, 1]);
 });
 
 it('holds nothing to walk and nothing named where nothing is wrong', function (): void {
