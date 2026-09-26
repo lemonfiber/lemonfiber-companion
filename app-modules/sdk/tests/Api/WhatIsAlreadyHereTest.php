@@ -141,7 +141,7 @@ function theSurveyRead(TheSurvey $survey): string
 {
     $lines = [var_export($survey->looked(), return: true), ...everyServiceRead($survey)];
 
-    foreach ($survey->carrying() as $one) {
+    foreach ($survey->choices()->carrying() as $one) {
         $lines[] = sprintf('%s|%s|%s', $one->service(), var_export($one->wantsACopyFirst(), return: true), var_export($one->isRefused(), return: true));
     }
 

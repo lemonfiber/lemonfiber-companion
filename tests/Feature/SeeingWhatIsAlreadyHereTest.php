@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Unsupported;
 use Modules\Kernel\Api\WhatAdoptingWouldDo;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatLinkingCosts;
+use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
@@ -74,11 +75,9 @@ function aSurveyOfAMachineInUse(): TheSurvey
         ),
         conflicts: ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media')),
         unsupported: WhatIsUnsupported::these(Unsupported::of('media/tautulli', 'lemonfiber does not run it')),
-        modes: theModesOnOffer(),
         beside: ThePortsMoved::of(APortMoved::of('sonarr', 8989, 8990)),
         linking: WhatLinkingCosts::cannotLink('Downloads and the library are on two filesystems', 'Every import is a second copy', 'Keep both under one mount', 'ext4', 'nfs'),
-        carrying: WhatAdoptingWouldDo::of(),
-        notCarried: WhatIsUnsupported::none(),
+        choices: WhatMayBeDone::offered(theModesOnOffer(), WhatAdoptingWouldDo::of(), WhatIsUnsupported::none()),
     );
 }
 
@@ -90,11 +89,9 @@ function aSurveyThatFoundNoProject(bool $looked): TheSurvey
         standing: WhatStandsHere::of(),
         conflicts: ThePortsHeld::of(),
         unsupported: WhatIsUnsupported::none(),
-        modes: theModesOnOffer(),
         beside: ThePortsMoved::of(),
         linking: WhatLinkingCosts::nothing(),
-        carrying: WhatAdoptingWouldDo::of(),
-        notCarried: WhatIsUnsupported::none(),
+        choices: WhatMayBeDone::offered(theModesOnOffer(), WhatAdoptingWouldDo::of(), WhatIsUnsupported::none()),
     );
 }
 
@@ -179,11 +176,9 @@ it('never draws replacement as chosen, even where the stack marked it', function
         standing: WhatStandsHere::of(),
         conflicts: ThePortsHeld::of(),
         unsupported: WhatIsUnsupported::none(),
-        modes: TheModes::of(AMode::offered('replace', 'Stops the old one', disturbs: true, preselected: true)),
         beside: ThePortsMoved::of(),
         linking: WhatLinkingCosts::nothing(),
-        carrying: WhatAdoptingWouldDo::of(),
-        notCarried: WhatIsUnsupported::none(),
+        choices: WhatMayBeDone::offered(TheModes::of(AMode::offered('replace', 'Stops the old one', disturbs: true, preselected: true)), WhatAdoptingWouldDo::of(), WhatIsUnsupported::none()),
     );
     $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::with($survey));
 
@@ -249,11 +244,9 @@ it('says so where a project has no services or the stack offers no mode', functi
         standing: WhatStandsHere::of(AProjectStanding::named('empty')),
         conflicts: ThePortsHeld::of(),
         unsupported: WhatIsUnsupported::none(),
-        modes: TheModes::of(),
         beside: ThePortsMoved::of(),
         linking: WhatLinkingCosts::nothing(),
-        carrying: WhatAdoptingWouldDo::of(),
-        notCarried: WhatIsUnsupported::none(),
+        choices: WhatMayBeDone::offered(TheModes::of(), WhatAdoptingWouldDo::of(), WhatIsUnsupported::none()),
     );
     $drawn = WhatTheDeviceWouldDraw::by(theSurveyScreen(AStackWithSomethingAlreadyOnIt::with($survey)))->said();
 

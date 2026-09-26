@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatAdoptingOneWouldDo;
 use Modules\Kernel\Api\WhatAdoptingWouldDo;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatLinkingCosts;
+use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Scouts;
@@ -67,14 +68,12 @@ function theSameSurvey(): TheSurvey
         ),
         conflicts: ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media')),
         unsupported: WhatIsUnsupported::these(Unsupported::of('media/tautulli', 'lemonfiber does not run it')),
-        modes: TheModes::of(
-            AMode::offered('adopt', 'Manages what is here', disturbs: false, preselected: true),
-            AMode::offered('replace', 'Stops the old one', disturbs: true, preselected: false),
-        ),
         beside: ThePortsMoved::of(APortMoved::of('sonarr', 8989, 8990)),
         linking: WhatLinkingCosts::cannotLink('Downloads and the library are on two filesystems', 'Every import is a second copy', 'Keep both under one mount', 'ext4', 'nfs'),
-        carrying: WhatAdoptingWouldDo::of(WhatAdoptingOneWouldDo::said('sonarr', 'Its database is opened by a newer version', backupFirst: true, refused: false)),
-        notCarried: WhatIsUnsupported::these(Unsupported::of('Custom scripts', 'They run outside any service')),
+        choices: WhatMayBeDone::offered(TheModes::of(
+            AMode::offered('adopt', 'Manages what is here', disturbs: false, preselected: true),
+            AMode::offered('replace', 'Stops the old one', disturbs: true, preselected: false),
+        ), WhatAdoptingWouldDo::of(WhatAdoptingOneWouldDo::said('sonarr', 'Its database is opened by a newer version', backupFirst: true, refused: false)), WhatIsUnsupported::these(Unsupported::of('Custom scripts', 'They run outside any service'))),
     );
 }
 
@@ -220,15 +219,15 @@ function whatMayBeDoneAboutIt(TheSurvey $survey): array
 {
     $lines = [];
 
-    foreach ($survey->modes() as $mode) {
+    foreach ($survey->choices()->modes() as $mode) {
         $lines[] = sprintf('mode %s|%s|%s|%s', $mode->mode(), $mode->what(), oneWordFor($mode->disturbs(), 'disturbs', 'leaves it'), oneWordFor($mode->isPreselected(), 'chosen', 'not chosen'));
     }
 
-    foreach ($survey->carrying() as $one) {
+    foreach ($survey->choices()->carrying() as $one) {
         $lines[] = sprintf('carrying %s|%s|%s|%s', $one->service(), $one->because(), oneWordFor($one->wantsACopyFirst(), 'copy first', 'no copy'), oneWordFor($one->isRefused(), 'refused', 'taken'));
     }
 
-    foreach ($survey->notCarried() as $limit) {
+    foreach ($survey->choices()->notCarried() as $limit) {
         $lines[] = sprintf('not carried %s|%s', $limit->what(), $limit->because());
     }
 

@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatAdoptingOneWouldDo;
 use Modules\Kernel\Api\WhatAdoptingWouldDo;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatLinkingCosts;
+use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
 
@@ -54,11 +55,9 @@ function aSurveyThatFoundNothing(bool $looked): TheSurvey
         standing: WhatStandsHere::of(),
         conflicts: ThePortsHeld::of(),
         unsupported: WhatIsUnsupported::none(),
-        modes: TheModes::of(),
         beside: ThePortsMoved::of(),
         linking: WhatLinkingCosts::nothing(),
-        carrying: WhatAdoptingWouldDo::of(),
-        notCarried: WhatIsUnsupported::none(),
+        choices: WhatMayBeDone::offered(TheModes::of(), WhatAdoptingWouldDo::of(), WhatIsUnsupported::none()),
     );
 }
 
@@ -66,15 +65,17 @@ it('keeps everything it was reported with, and whether it looked', function (): 
     $standing = WhatStandsHere::of();
     $conflicts = ThePortsHeld::of();
     $unsupported = WhatIsUnsupported::none();
-    $modes = TheModes::of();
     $beside = ThePortsMoved::of();
     $linking = WhatLinkingCosts::nothing();
+    $modes = TheModes::of();
     $carrying = WhatAdoptingWouldDo::of();
     $notCarried = WhatIsUnsupported::none();
-    $survey = TheSurvey::reported(looked: true, standing: $standing, conflicts: $conflicts, unsupported: $unsupported, modes: $modes, beside: $beside, linking: $linking, carrying: $carrying, notCarried: $notCarried);
+    $choices = WhatMayBeDone::offered($modes, $carrying, $notCarried);
+    $survey = TheSurvey::reported(looked: true, standing: $standing, conflicts: $conflicts, unsupported: $unsupported, beside: $beside, linking: $linking, choices: $choices);
 
-    expect([$survey->looked(), $survey->standing(), $survey->conflicts(), $survey->unsupported(), $survey->modes(), $survey->beside(), $survey->linking(), $survey->carrying(), $survey->notCarried()])
-        ->toBe([true, $standing, $conflicts, $unsupported, $modes, $beside, $linking, $carrying, $notCarried])
+    expect([$survey->looked(), $survey->standing(), $survey->conflicts(), $survey->unsupported(), $survey->beside(), $survey->linking(), $survey->choices()])
+        ->toBe([true, $standing, $conflicts, $unsupported, $beside, $linking, $choices])
+        ->and([$choices->modes(), $choices->carrying(), $choices->notCarried()])->toBe([$modes, $carrying, $notCarried])
         ->and(aSurveyThatFoundNothing(looked: false)->looked())->toBeFalse();
 });
 

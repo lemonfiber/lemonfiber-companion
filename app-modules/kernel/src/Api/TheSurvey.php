@@ -10,10 +10,6 @@ namespace Modules\Kernel\Api;
  * **Whether it looked is its own fact.** An engine that could not be asked
  * finds nothing, and so does an empty machine; the first is carried as not
  * having looked, so the two are never one answer.
- *
- * What adopting each service would come to and what no mode carries are read
- * here with the rest, because they belong to the choice between the modes
- * rather than to the look.
  */
 final readonly class TheSurvey
 {
@@ -22,26 +18,22 @@ final readonly class TheSurvey
         private WhatStandsHere $standing,
         private ThePortsHeld $conflicts,
         private WhatIsUnsupported $unsupported,
-        private TheModes $modes,
         private ThePortsMoved $beside,
         private WhatLinkingCosts $linking,
-        private WhatAdoptingWouldDo $carrying,
-        private WhatIsUnsupported $notCarried,
+        private WhatMayBeDone $choices,
     ) {}
 
-    /** What the stack said it found, and whether it could look at all. */
+    /** What the stack said it found, whether it could look at all, and what may be done about it. */
     public static function reported(
         bool $looked,
         WhatStandsHere $standing,
         ThePortsHeld $conflicts,
         WhatIsUnsupported $unsupported,
-        TheModes $modes,
         ThePortsMoved $beside,
         WhatLinkingCosts $linking,
-        WhatAdoptingWouldDo $carrying,
-        WhatIsUnsupported $notCarried,
+        WhatMayBeDone $choices,
     ): self {
-        return new self($looked, $standing, $conflicts, $unsupported, $modes, $beside, $linking, $carrying, $notCarried);
+        return new self($looked, $standing, $conflicts, $unsupported, $beside, $linking, $choices);
     }
 
     /** Whether the engine answered, which is what tells an empty machine from an unread one. */
@@ -68,12 +60,6 @@ final readonly class TheSurvey
         return $this->unsupported;
     }
 
-    /** What may be done about what was found, in the stack's order. */
-    public function modes(): TheModes
-    {
-        return $this->modes;
-    }
-
     /** Where each service would listen to run beside what is here. */
     public function beside(): ThePortsMoved
     {
@@ -86,15 +72,9 @@ final readonly class TheSurvey
         return $this->linking;
     }
 
-    /** What adopting each recognised service would come to. */
-    public function carrying(): WhatAdoptingWouldDo
+    /** The modes, what adopting each service would come to, and what no mode carries. */
+    public function choices(): WhatMayBeDone
     {
-        return $this->carrying;
-    }
-
-    /** What no mode carries across, whichever runs. */
-    public function notCarried(): WhatIsUnsupported
-    {
-        return $this->notCarried;
+        return $this->choices;
     }
 }

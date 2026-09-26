@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatAdoptingOneWouldDo;
 use Modules\Kernel\Api\WhatAdoptingWouldDo;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatLinkingCosts;
+use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Internal\Required;
@@ -64,11 +65,13 @@ final readonly class WhatIsAlreadyHere
             standing: WhatStandsHere::of(...self::projects($data)),
             conflicts: ThePortsHeld::of(...self::conflicts($data)),
             unsupported: WhatIsUnsupported::these(...self::limits($data, WireField::Unsupported)),
-            modes: TheModes::of(...self::modes($data)),
             beside: ThePortsMoved::of(...self::moved($data)),
             linking: self::linking($data),
-            carrying: WhatAdoptingWouldDo::of(...self::carrying($data)),
-            notCarried: WhatIsUnsupported::these(...self::limits($data, MigrationField::NotCarried)),
+            choices: WhatMayBeDone::offered(
+                TheModes::of(...self::modes($data)),
+                WhatAdoptingWouldDo::of(...self::carrying($data)),
+                WhatIsUnsupported::these(...self::limits($data, MigrationField::NotCarried)),
+            ),
         );
     }
 

@@ -46,7 +46,7 @@ final readonly class HowTheSurveyReads
 
         $modes = [];
 
-        foreach ($survey->modes() as $mode) {
+        foreach ($survey->choices()->modes() as $mode) {
             $modes[] = $this->mode($mode);
         }
 
