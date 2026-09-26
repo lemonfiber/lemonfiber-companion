@@ -7,6 +7,7 @@ namespace Modules\Sdk\Api;
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
@@ -38,8 +39,8 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * work stopped on a problem — a credential redaction missed, a setting shown
  * without the yes — asking after it is answered with the refusal, and its
  * sentence is carried as {@see HowTheBundleIsGoing::refused()}. Only a refused
- * session, an account that may not ask, and an answer with no sentence in it
- * are obstacles.
+ * session, an account that may not ask, an answer with no sentence in it, and
+ * a machine that is not the one paired are obstacles.
  */
 final readonly class Bundlers implements AskingForHelp
 {
@@ -57,7 +58,7 @@ final readonly class Bundlers implements AskingForHelp
             );
 
             return Underway::as(Handles::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
         } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
@@ -68,7 +69,7 @@ final readonly class Bundlers implements AskingForHelp
     {
         try {
             return $this->outcome($stack, $session, $job);
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
         } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BundleIsUnreadable) {
             return HowTheBundleIsGoing::met(Obstacle::StackDidNotAnswer);
@@ -105,14 +106,15 @@ final readonly class Bundlers implements AskingForHelp
     /**
      * What a refusal of the bundle comes to.
      *
-     * A session refused, or an account that may not ask, is what the operator
-     * met; so is an answer carrying no sentence, which is no refusal the stack
-     * made. Anything else carries the stack's own words.
+     * A session refused, an account that may not ask, or a machine that is not
+     * the one paired is what the operator met; so is an answer carrying no
+     * sentence, which is no refusal the stack made. Anything else carries the
+     * stack's own words.
      */
-    private function refusal(RequestFailed $why): HowTheBundleIsGoing
+    private function refusal(CertificateWasRefused|RequestFailed $why): HowTheBundleIsGoing
     {
         $met = WhatARefusalMeant::obstacle($why);
-        $said = $why->said();
+        $said = $why instanceof RequestFailed ? $why->said() : null;
 
         return $met !== Obstacle::StackDidNotAnswer || $said === null
             ? HowTheBundleIsGoing::met($met)
