@@ -55,8 +55,9 @@ enum UpdateField: string implements NamesAWireField
     case Ending = 'ending';
 
     /**
-     * The operator's yes, on an action that only describes itself without one:
-     * the update, and an invitation.
+     * The operator's yes, on the actions that only describe themselves or hold
+     * back without one: the update, an invitation, confirming a held quality
+     * choice, and upgrading what is already in the library.
      *
      * Here rather than in `WireField`, which holds the words read out of more
      * than one envelope. This one is sent and never read, and a word is named

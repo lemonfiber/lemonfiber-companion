@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatToChange;
+use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatWasDecided;
 use Tests\Support\Tree;
@@ -152,6 +153,16 @@ const VERBS_THE_APP_ASKS_FOR = [
     'invite' => 'says what an invitation would grant and when it lapses, and makes the account only when that same request is agreed to',
 
     'reissue' => 'takes a member\'s password off so they choose the next one, naming the person and never a password',
+    // Unconfirmed it records the choice, or holds one this machine would
+    // transcode in software; confirmed it records a held one. The yes is only
+    // ever sent with a choice the stack held, which is the one thing
+    // `AHeldChoice` can be built from.
+    'quality-set' => 'chooses a quality preset, and confirms one the stack held because this machine would transcode it',
+
+    // Unconfirmed it only says what it would come to; confirmed it asks each
+    // service to search again. The yes is only ever sent after a description,
+    // which is the one thing `AnUpgradeDescribed` can be built from.
+    'quality-upgrade' => 'upgrades what is already in the library, having first said what that comes to kind by kind',
 ];
 
 /**
@@ -417,6 +428,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatWasDecided $decided): string => $decided->asked(), WhatWasDecided::cases()),
         ...array_map(static fn(WhatToChange $change): string => $change->asked(), WhatToChange::cases()),
         ...array_map(static fn(AskingThemIn $asking): string => $asking->asked(), AskingThemIn::cases()),
+        ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));

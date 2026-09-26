@@ -24,5 +24,5 @@ router hands it back as it was drawn.
 
 ## Asked for, and not drawn yet
 
-`N8-R1`, `N8-R2`, `N8-R3` and `N8-R7` are about quality choices, dispositions
-and watches, each a reading of its own.
+`N8-R7` is about watches, a reading of its own. `N8-R1` to `N8-R3` are about
+quality choices, kept on [choosing how good](choosing-how-good.md).

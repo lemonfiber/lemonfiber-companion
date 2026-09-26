@@ -10,11 +10,14 @@ use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
+use Modules\Kernel\Api\AnUpgradeDescribed;
+use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Decided;
@@ -43,8 +46,13 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheLibraries;
+use Modules\Kernel\Api\ThePresetsInForce;
+use Modules\Kernel\Api\TheQualityChosen;
+use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatBecameOfTheChoice;
+use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
@@ -60,6 +68,7 @@ use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
+use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
@@ -80,6 +89,7 @@ use Modules\Sdk\Api\Storekeepers;
 use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\TheirOwn;
+use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
 use Saloon\Http\Faking\MockClient;
@@ -167,6 +177,19 @@ function anInvitationToSpoilTheAnswerTo(): AnInvitationAgreed
     ));
 }
 
+/** A choice the stack held, for confirming against a spoiled answer. */
+function aHeldChoiceToSpoilTheAnswerTo(): AHeldChoice
+{
+    $asked = APresetToChoose::named('maximum', 'movies');
+
+    return AHeldChoice::of($asked, TheQualityChosen::reported(
+        ThePresetsInForce::of(),
+        WhatMusicIsSetTo::unset(),
+        WhatBecameOfTheChoice::Held,
+        customised: false,
+    ));
+}
+
 /**
  * Every adapter call that reads an answer, by what it asks.
  *
@@ -192,6 +215,11 @@ function everyAdapterCallThatReads(): array
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
         'Followers::tracedOn' => static fn(): object
             => new Followers($clients)->tracedOn($stack, $session, WhatToFollow::called('sonarr')),
+        'Graders::inForceOn' => static fn(): object => new Graders($clients)->inForceOn($stack, $session),
+        'Graders::choose' => static fn(): object
+            => new Graders($clients)->choose($stack, $session, APresetToChoose::named('lossless', 'music')),
+        'Graders::confirm' => static fn(): object
+            => new Graders($clients)->confirm($stack, $session, aHeldChoiceToSpoilTheAnswerTo()),
         'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
         'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
         'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),
@@ -230,6 +258,10 @@ function everyAdapterCallThatReads(): array
         'Surveyors::measuredOn' => static fn(): object => new Surveyors($clients)->measuredOn($stack, $session),
         'TheirOwn::toHandOver' => static fn(): object => new TheirOwn($clients)->toHandOver($stack, $session),
         'TheirOwn::whatTheyAsked' => static fn(): object => new TheirOwn($clients)->whatTheyAsked($stack, $session),
+        'Upgraders::whatItWouldComeTo' => static fn(): object
+            => new Upgraders($clients)->whatItWouldComeTo($stack, $session),
+        'Upgraders::upgrade' => static fn(): object
+            => new Upgraders($clients)->upgrade($stack, $session, AnUpgradeDescribed::by(TheUpgrade::described())),
         'Upkeepers::standing' => static fn(): object => new Upkeepers($clients)->standing($stack, $session),
         'Upkeepers::take' => static fn(): object
             => new Upkeepers($clients)->take($stack, $session, anUpdateToSpoilTheAnswerTo()),
@@ -251,6 +283,15 @@ function everyAdapterCallThatReads(): array
 const THE_WORK_AN_INVITATION_BECOMES = 'the work an invitation becomes';
 
 /**
+ * Where an answer is built from an envelope's declaration rather than asked of a path.
+ *
+ * The stand-in answers every action as work, and no path it serves answers
+ * with the `music` or `upgrade` envelope, so a call answered with one of those
+ * is given the envelope itself, built by the stand-in from the contract.
+ */
+const AN_ENVELOPE_BY_NAME = 'envelope:';
+
+/**
  * The path whose answer a call is given, where it is not the one it asked.
  *
  * The stand-in answers a change to a setting as work, which leaves nothing
@@ -261,6 +302,8 @@ const THE_WORK_AN_INVITATION_BECOMES = 'the work an invitation becomes';
  * answers it with the `hosting` envelope, so that act is given the reading.
  * An invitation's job finishes as an invitation, which no path of the stand-in
  * answers with, so it is given {@see THE_WORK_AN_INVITATION_BECOMES}.
+ * A quality choice is given the quality reading, and a choice for music and an
+ * upgrade the envelopes each is answered with.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -269,8 +312,21 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Upkeepers::whatBecameOf' => Api::UPDATE_ENDPOINT,
         $which === 'Keepers::handOver' => Api::HOSTING_ENDPOINT,
         $which === 'Ushers::whatBecameOf' => THE_WORK_AN_INVITATION_BECOMES,
+        $which === 'Graders::confirm' => Api::QUALITY_ENDPOINT,
+        $which === 'Graders::choose' => sprintf('%sMusicEnvelope', AN_ENVELOPE_BY_NAME),
+        str_starts_with($which, 'Upgraders::') => sprintf('%sUpgradeEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
+}
+
+/** What the stand-in would answer a path with, or an envelope named in its place. */
+function theStandInsAnswerTo(string $endpoint, string ...$asked): MockResponse
+{
+    if (! str_starts_with($endpoint, AN_ENVELOPE_BY_NAME)) {
+        return WhatTheWireWouldAnswer::to($endpoint, 200, ...$asked);
+    }
+
+    return WhatTheWireWouldAnswer::withTheEnvelope(substr($endpoint, strlen(AN_ENVELOPE_BY_NAME)), 200);
 }
 
 /**
@@ -386,7 +442,7 @@ function theEnvelopesAPathSends(string $endpoint, string ...$asked): array
         ]];
     }
 
-    $body = WhatTheWireWouldAnswer::to($endpoint, 200, ...$asked)->body()->all();
+    $body = theStandInsAnswerTo($endpoint, ...$asked)->body()->all();
 
     if (is_array($body)) {
         return [$body];
@@ -453,7 +509,7 @@ function everySpoilingOf(string $which, Closure $ask): array
                 }
             }
 
-            return WhatTheWireWouldAnswer::to($endpoint, 200, ...whatARequestAsked($asked));
+            return theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked));
         },
     ]);
 

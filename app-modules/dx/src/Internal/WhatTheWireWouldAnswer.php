@@ -192,6 +192,19 @@ final readonly class WhatTheWireWouldAnswer
     }
 
     /**
+     * One envelope, built from its declaration, where no path the SDK names answers with it.
+     *
+     * An action is answered as work by {@see to()}, so the envelope an action
+     * itself answers with — the `upgrade` envelope, or the `music` one — has
+     * no path to be asked for by. This builds it the way every other answer
+     * here is built, for a caller that knows which one an action answers with.
+     */
+    public static function withTheEnvelope(string $envelope, int $status): MockResponse
+    {
+        return new MockResponse(self::oneEnvelope($envelope), $status);
+    }
+
+    /**
      * The text values a request's query carries, which is what picks between envelopes one endpoint answers with.
      *
      * @param array<array-key, mixed> $query

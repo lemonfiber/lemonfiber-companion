@@ -71,8 +71,17 @@ enum WireField: string implements NamesAWireField
     /** What something comes to for the operator, in the core's words: a problem, or the front door. */
     case Meaning = 'meaning';
 
-    /** Which arm of the verdict union this is — the tag, not a field beside it. */
+    /**
+     * Which arm of the verdict union this is — the tag, not a field beside it —
+     * and what became of asking a service to act on a quality choice.
+     */
     case Outcome = 'outcome';
+
+    /**
+     * The technical detail under a verdict, where the core gave one, and a
+     * service's own account of why it refused to act on a quality choice.
+     */
+    case Detail = 'detail';
 
     /** Why a check has no answer, on the arms that produced none. */
     case Reason = 'reason';
@@ -102,7 +111,7 @@ enum WireField: string implements NamesAWireField
      * wire, which is what this enum is for; the type it becomes is not.
      *
      * The `credentials` envelope spends the same word on where a credential
-     * stands.
+     * stands, and the quality envelopes on what became of asking a service.
      */
     case State = 'state';
 
@@ -242,7 +251,7 @@ enum WireField: string implements NamesAWireField
     /** Where something stands: one long-running command, or the household's front door. */
     case Standing = 'standing';
 
-    /** What an alert preset means, in the operator's terms. */
+    /** What an alert preset, a quality preset or a music format means, in the operator's terms. */
     case Means = 'means';
 
     /** What throttling the upload costs, where an upload limit is in force. */
@@ -294,10 +303,29 @@ enum WireField: string implements NamesAWireField
     case Summary = 'summary';
 
     /**
-     * A preset by the name it was chosen under: the alert preset in force, and
-     * the quality preset that strains playback on this machine.
+     * A preset by the name it was chosen under: the alert preset in force, the
+     * quality preset that strains playback on this machine, each quality
+     * preset in force, and the bar an upgrade would fetch a kind of media to.
      */
     case Preset = 'preset';
+
+    /** What a quality choice applies to: everything, one kind of media, or music. */
+    case Scope = 'scope';
+
+    /** Roughly how much room an hour of media takes at a quality, as the stack words it. */
+    case SizePerHour = 'size_per_hour';
+
+    /** A music format by its plain-language name. */
+    case Format = 'format';
+
+    /** The audio format a music choice aims for, in plain terms. */
+    case Targets = 'targets';
+
+    /** The caveat worth knowing about a music format: playing it, or finding it. */
+    case Note = 'note';
+
+    /** What the stack did with a quality choice: shown, recorded, rehearsed or held. */
+    case Disposition = 'disposition';
 
     /**
      * What sits beside the thing asked about: what is on the machine that is

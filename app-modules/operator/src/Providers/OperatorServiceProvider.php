@@ -8,6 +8,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
+use Modules\Operator\Internal\Screens\ChoosingHowGood;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
@@ -240,6 +241,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // What is already on the machine, before anything is moved in. Its
             // own screen, because the survey is read before any mode is chosen.
             Router::native(AStacksScreen::AlreadyHere->value, WhatIsAlreadyOnThisMachine::class);
+
+            // How good the media should be. Its own screen, because choosing
+            // is asked about what comes next and upgrading about what is
+            // already here, and both are decided in front of what each costs.
+            Router::native(AStacksScreen::Quality->value, ChoosingHowGood::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);

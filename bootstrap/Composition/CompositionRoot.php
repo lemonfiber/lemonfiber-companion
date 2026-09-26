@@ -33,6 +33,7 @@ use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Capture;
+use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\DeviceAuth;
@@ -66,6 +67,7 @@ use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Tracing;
+use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\Verdicts;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
@@ -81,6 +83,7 @@ use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
+use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
@@ -102,6 +105,7 @@ use Modules\Sdk\Api\Storekeepers;
 use Modules\Sdk\Api\Supervisors;
 use Modules\Sdk\Api\Surveyors;
 use Modules\Sdk\Api\TheirOwn;
+use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
 use Modules\Vault\Api\PlatformKeychain;
@@ -355,6 +359,11 @@ final class CompositionRoot extends ServiceProvider
         // What is already on the machine, before anything is moved in, read
         // beside the rest and bound for the same reason.
         $this->app->bind(MovingIn::class, Scouts::class);
+
+        // How good the media should be: choosing a preset, and upgrading what
+        // is already here, which is its own act.
+        $this->app->bind(ChoosingQuality::class, Graders::class);
+        $this->app->bind(UpgradingTheLibrary::class, Upgraders::class);
 
         $this->app->bind(Explaining::class, Explainers::class);
         $this->app->bind(Rehearsing::class, Rehearsers::class);

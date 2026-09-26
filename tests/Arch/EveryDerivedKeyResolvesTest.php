@@ -42,7 +42,9 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
+use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatHappenedToIt;
@@ -53,6 +55,7 @@ use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
+use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
@@ -317,6 +320,18 @@ function everyDerivedKey(): array
             HowWellADeviceIsServed::cases(),
             static fn(HowWellADeviceIsServed $case): array => [$case->saidOnTheScreen()],
         ),
+        WhatBecameOfTheChoice::class => aPairPerCase(
+            WhatBecameOfTheChoice::cases(),
+            static fn(WhatBecameOfTheChoice $case): array => [$case->saidOnTheScreen()],
+        ),
+        // A class rather than an enum, because a failure carries the service's
+        // own words beside its state; every arm it can take is asked for here.
+        WhatBecameOfAskingIt::class => [
+            WhatBecameOfAskingIt::notAsked()->saidOnTheScreen(),
+            WhatBecameOfAskingIt::asked(WhereTheAskingStands::Started)->saidOnTheScreen(),
+            WhatBecameOfAskingIt::asked(WhereTheAskingStands::NotStarted)->saidOnTheScreen(),
+            WhatBecameOfAskingIt::failed('The service refused')->saidOnTheScreen(),
+        ],
         WhereTheFrontDoorStands::class => aPairPerCase(
             WhereTheFrontDoorStands::cases(),
             static fn(WhereTheFrontDoorStands $case): array => [$case->saidOnTheScreen()],

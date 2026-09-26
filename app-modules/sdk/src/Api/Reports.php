@@ -327,11 +327,11 @@ final readonly class Reports
         // This is the field where the distinction is real — the contract marks
         // it optional, so absent is the core having nothing to add rather than
         // a conversation gone wrong.
-        if (! array_key_exists(DoctorField::Detail->value, $verdict)) {
+        if (! array_key_exists(WireField::Detail->value, $verdict)) {
             return WhatItSaysUnderneath::none();
         }
 
-        $said = $verdict[DoctorField::Detail->value];
+        $said = $verdict[WireField::Detail->value];
 
         return is_string($said) ? WhatItSaysUnderneath::said($said) : WhatItSaysUnderneath::none();
     }

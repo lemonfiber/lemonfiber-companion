@@ -174,6 +174,49 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'guess either from a service\'s name or its ports; the survey draws what it carries and '
             . 'says nothing about where a service keeps its settings.',
     ],
+    [
+        'requirement' => 'N24-R1',
+        'asks' => 'to offer the presets a choice may be made from, and the kinds of media it may be made for, in the stack\'s plain terms',
+        // Unnamed, because the list could land on the quality reading or on a
+        // reading of its own. `presets` is free on this wire, and is the
+        // plainest name for what is missing.
+        'envelope' => null,
+        'field' => 'presets',
+        'shape' => null,
+        'raised' => 'The `quality` envelope lists the choices in force and nothing else: which presets a '
+            . 'choice may be made from, which formats music may take, and which kinds of media a preset '
+            . 'may be set apart for are the core\'s, and none is carried. A list written here would be a '
+            . 'second copy of the core\'s vocabulary that goes stale the day it changes, which `N2-R14` '
+            . 'refuses. So the operator names a preset and a kind in the stack\'s words, as the choices '
+            . 'in force name them, and the stack takes the name or refuses it. What closes this row is '
+            . 'the offered presets, formats and kinds carried beside the choices in force.',
+    ],
+    [
+        'requirement' => 'N24-R4',
+        'asks' => 'to state what upgrading the library costs in total before it is confirmed',
+        // Named, and watched as a whole payload: a total could arrive under any
+        // name, and the payload saying anything it does not say now is what
+        // closes this.
+        'envelope' => 'UpgradeEnvelope',
+        'field' => null,
+        'shape' => 'array{confirmed: bool, media: list<array{media_type: string, outcome?: array{state: \'started\'}|array{state: \'not-started\'}|array{detail: string, state: \'failed\'}|null, preset: string, size_per_hour: string}>}',
+        'raised' => 'An upgrade is described kind by kind with the preset in force and what an hour of it '
+            . 'costs, and nothing else. `D2-R7` asks for its cost stated, and a rate per hour is not a '
+            . 'cost: nothing says how many hours the library holds, and `N2-R14` forbids working one out. '
+            . 'The screen draws each kind\'s rate as the stack words it and no sum.',
+    ],
+    [
+        'requirement' => 'N24-R4',
+        'asks' => 'to say, in the stack\'s words, that choosing a preset shapes what is fetched next and changes nothing already here',
+        // Named, and watched as a whole payload, for the row above's reason.
+        'envelope' => 'QualityEnvelope',
+        'field' => null,
+        'shape' => 'array{choices: list<array{means: string, needs_transcoding_here: bool, preset: string, resolution: string, scope: string, size_per_hour: string, transcoding: string}>, customised: bool, disposition: \'shown\'|\'recorded\'|\'rehearsed\'|\'held\'|\'reapplied\'|\'would-reapply\', music?: array{format: string, means: string, note: string, scope: string, size_per_hour: string, targets: string}|null, overwritten?: array{diff: string, path: string}|null}',
+        'raised' => '`D2-R6` requires a changed preset to state that it affects future acquisitions only, and '
+            . 'the `quality` envelope carries no such statement. A sentence written here would be this app '
+            . 'asserting what the core does with a choice, which is the core\'s to say. The screen offers '
+            . 'upgrading as its own act and says nothing about what choosing does to the library.',
+    ],
 ];
 
 /**
