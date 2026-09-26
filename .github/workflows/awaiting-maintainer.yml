@@ -34,13 +34,6 @@
 # behind, which is the state `sdk-bump` exists to take off an author's hands.
 #
 # Add a workflow to branch protection and it belongs here in the same change.
-#
-# All three also run on `merge_group`, and their merge-group runs reach this gate
-# too. Nothing here needs to know that: the reusable asks which pull request the
-# head commit belongs to, a merge group's head is a commit the queue built that
-# belongs to none, and it says so and stops. The flag is about a pull request
-# waiting for a maintainer, and by the time a merge group exists that wait is
-# over.
 name: awaiting-maintainer
 on:
   workflow_run:
