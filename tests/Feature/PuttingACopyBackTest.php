@@ -16,6 +16,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
@@ -474,4 +475,24 @@ it('has nothing to report for a yes nobody gave', function (): void {
 
     expect(everythingThePuttingBackShows($screen->done()))->toBe(nothingReportedOfPuttingItBack(['hasEnded' => true]))
         ->and($puttingBack->followed())->toBe([]);
+});
+
+it('refuses a route parameter that is not text as naming a stack', function (): void {
+    // A parameter arrives as `mixed`, because the navigation stack's own
+    // parameter array is untyped, and anything that is not a string names no
+    // stack.
+    $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::stillRunning()));
+    $screen->setParams(['stack' => 42, 'service' => 'lemonfiber-20260924-0300-full']);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
+});
+
+it('names no copy where the route carries one that is not text, and asks the stack nothing', function (): void {
+    $puttingBack = AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::stillRunning());
+    $screen = thePuttingBackScreen($puttingBack);
+    $screen->setParams(['stack' => theStackACopyGoesBackOn()->id()->stored(), 'service' => 42]);
+
+    expect($screen->copyNamed())->toBe('')
+        ->and(everythingTheListingShows($screen->answer()))->toBe(nothingListedOfTheCopy(['namesACopy' => false]))
+        ->and($puttingBack->rehearsed())->toBe([]);
 });

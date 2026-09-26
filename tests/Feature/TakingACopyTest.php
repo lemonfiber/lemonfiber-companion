@@ -16,6 +16,7 @@ use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheCopies;
@@ -456,4 +457,32 @@ it('asks the stack again, the services and the copy both', function (): void {
 
     expect($supervising->askings())->toBe(2)
         ->and($copying->followed())->toHaveCount(1);
+});
+
+it('asks the stack for its services once, however often a frame reads them', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
+    $screen = theCopyingScreen(AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning()), $supervising);
+    $screen->answer();
+    $screen->answer();
+
+    expect($supervising->askings())->toBe(1);
+});
+
+it('follows nothing where it holds a handle but not the copy the handle was for', function (): void {
+    $copying = AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning());
+    $screen = theCopyingScreen($copying);
+    $screen->took = AStackThatTakesCopies::THE_JOB;
+
+    expect(everythingAboutTheCopy($screen->lastCopy()))->toBe(nothingReportedOfTheCopy(['wasAsked' => false]))
+        ->and($copying->followed())->toBe([]);
+});
+
+it('refuses a route parameter that is not text as naming a stack', function (): void {
+    // A parameter arrives as `mixed`, because the navigation stack's own
+    // parameter array is untyped, and anything that is not a string names no
+    // stack.
+    $screen = theCopyingScreen(AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning()));
+    $screen->setParams(['stack' => 42]);
+
+    expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
