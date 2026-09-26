@@ -309,7 +309,12 @@ enum WireField: string implements NamesAWireField
      */
     case Preset = 'preset';
 
-    /** What a quality choice applies to: everything, one kind of media, or music. */
+    /**
+     * How far something reaches: what a quality choice applies to, everything,
+     * one kind of media or music; and how much a copy covers, on a copy taken
+     * and on a copy put back — and, inside it, the word that says which of the
+     * three scopes it is.
+     */
     case Scope = 'scope';
 
     /** Roughly how much room an hour of media takes at a quality, as the stack words it. */
@@ -375,8 +380,8 @@ enum WireField: string implements NamesAWireField
 
     /**
      * Whether an act was only described rather than carried out: a hosting
-     * run, in which case nothing it lists happened, and an invitation, in
-     * which case no account was made.
+     * run, in which case nothing it lists happened, an invitation, in which
+     * case no account was made, and a copy, in which case nothing was written.
      */
     case Rehearsed = 'rehearsed';
 
@@ -402,4 +407,28 @@ enum WireField: string implements NamesAWireField
 
     /** Where something would go: what a setting would hold, and the port a service would take instead. */
     case To = 'to';
+
+    /**
+     * Two groups under one word: the people in a household, each with what
+     * they have asked for, and what a copy holds, each with its label.
+     */
+    case Members = 'members';
+
+    /**
+     * The name a stack gives one listing, quoted back on a yes: a listing of
+     * repairs, and what putting a copy back would do.
+     */
+    case Agreement = 'agreement';
+
+    /**
+     * A Compose project: the one a set of existing services was started under,
+     * and the one a copy of an existing setup was taken from.
+     */
+    case Project = 'project';
+
+    /** The host trees a copy of an existing setup read. */
+    case Trees = 'trees';
+
+    /** Where one of those trees was read from on the machine. */
+    case HostPath = 'host_path';
 }

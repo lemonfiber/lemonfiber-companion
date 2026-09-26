@@ -8,6 +8,7 @@ use function array_filter;
 
 use const ARRAY_FILTER_USE_KEY;
 
+use function array_key_exists;
 use function implode;
 use function is_array;
 use function is_string;
@@ -16,6 +17,8 @@ use function json_encode;
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Dx\Api\AStandInStack;
+use Modules\Kernel\Api\WhatToDoWithACopy;
+use Modules\Sdk\Api\Fields\UpdateField;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -99,6 +102,17 @@ final readonly class WhatTheWireWouldAnswer
     private const string WHAT_WORK_BECOMES = 'RepairEnvelope';
 
     /**
+     * What asking what putting a copy back would do answers with.
+     *
+     * The one action a stack answers on the spot rather than with a name for
+     * the work: without the yes, `restore` reads a copy's own account of
+     * itself and changes nothing, and a listing behind a job name would arrive
+     * after the moment it exists for. With the yes it is work like any other,
+     * and answers with the name.
+     */
+    private const string A_LISTING_OF_A_COPY = 'RestoreEnvelope';
+
+    /**
      * What a door answers a password with.
      *
      * The third endpoint the contract does not write down, and the one that is
@@ -168,11 +182,13 @@ final readonly class WhatTheWireWouldAnswer
         $status = $machine->answersWith();
 
         return new MockClient([
-            '*' => static fn(PendingRequest $asked): MockResponse => self::to(
-                $asked->getRequest()->resolveEndpoint(),
-                $status,
-                ...self::theValuesIn($asked->query()->all()),
-            ),
+            '*' => static fn(PendingRequest $asked): MockResponse => self::answersAtOnce($asked)
+                ? new MockResponse(self::oneEnvelope(self::A_LISTING_OF_A_COPY), $status)
+                : self::to(
+                    $asked->getRequest()->resolveEndpoint(),
+                    $status,
+                    ...self::theValuesIn($asked->query()->all()),
+                ),
         ]);
     }
 
@@ -202,6 +218,19 @@ final readonly class WhatTheWireWouldAnswer
     public static function withTheEnvelope(string $envelope, int $status): MockResponse
     {
         return new MockResponse(self::oneEnvelope($envelope), $status);
+    }
+
+    /**
+     * Whether this request is one a stack answers with its outcome rather than
+     * with a name for the work: asking what putting a copy back would do, with
+     * no yes.
+     */
+    private static function answersAtOnce(PendingRequest $asked): bool
+    {
+        $body = $asked->body()?->all();
+
+        return $asked->getRequest()->resolveEndpoint() === Api::action(WhatToDoWithACopy::PutBack->asked())
+            && (!is_array($body) || !array_key_exists(UpdateField::Confirm->value, $body));
     }
 
     /**

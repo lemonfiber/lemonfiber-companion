@@ -60,6 +60,38 @@ use Tests\Support\WhereAShapeHoldsItself;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
+        'path' => 'BackupEnvelope.path',
+        'because' => 'Where the copy was written on the machine. A copy is named on the screen by the name the listing of copies gives it, which is what putting it back is asked for by; a path on a machine the operator has no filesystem in front of names nothing they can use.',
+    ],
+    [
+        'path' => 'BackupEnvelope.scope.trees[].archive_path',
+        'because' => 'Where each tree of an existing setup sits inside the archive. The host path each was read from is what says whose directories were copied, and it is read; the place inside the file is the archive\'s own layout.',
+    ],
+    [
+        'path' => 'RestoreEnvelope.would.manifest.scope.trees[].archive_path',
+        'because' => 'Where each tree of an existing setup sits inside the archive, for `BackupEnvelope.scope.trees[].archive_path`\'s reason.',
+    ],
+    [
+        'path' => 'RestoreEnvelope.done.scope.trees[].archive_path',
+        'because' => 'Where each tree of an existing setup sits inside the archive, for `BackupEnvelope.scope.trees[].archive_path`\'s reason.',
+    ],
+    [
+        'path' => 'RestoreEnvelope.would.manifest.members[].archive_path',
+        'because' => 'Where each thing a copy holds sits inside the archive. What it is called is read and listed as what putting it back would overwrite; the place inside the file is the archive\'s own layout.',
+    ],
+    [
+        'path' => 'RestoreEnvelope.would.manifest.data_root',
+        'because' => 'The data root the copy was taken against. Where that differs from this machine\'s, the stack says so in `relocation`, which is read and drawn before the yes; where it does not, the data goes back where it was, which the screen says.',
+    ],
+    [
+        'path' => 'RestoreEnvelope.would.manifest.schema',
+        'because' => 'The archive format. Whether this machine can read it is the stack\'s decision, and one it cannot is refused before anything is listed, so a listing that arrives is one it can restore.',
+    ],
+    [
+        'path' => 'RestoreEnvelope.would.manifest.sensitive',
+        'because' => 'Whether the copy carries credentials, as its own account of itself records it. The copy\'s report says so when it is taken, and every capture the stack takes carries them; `N6` asks nothing of a restore\'s listing about it.',
+    ],
+    [
         'path' => 'BandwidthEnvelope.applied',
         'because' => 'Whether the call that answered wrote limits to the clients or only read them. This app reads the line and never writes a limit, so every answer it asks for says it only read, and a screen showing that would be reporting on an act it did not perform.',
     ],

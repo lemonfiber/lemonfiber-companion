@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Stacks\Api;
 
+use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
@@ -147,6 +148,17 @@ enum AStacksScreen: string
     /** What this machine keeps, where, and why, and the copies it holds. */
     case Keeps = '/stacks/{stack}/keeps';
 
+    /** Taking a copy of this machine's stack, of all of it or of one service. */
+    case Copy = '/stacks/{stack}/copy';
+
+    /**
+     * Putting one copy back, rehearsed before anything is agreed to.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the name a copy was written under.
+     */
+    case PutBack = '/stacks/{stack}/copies/{service}';
+
     /** How full this machine is, and where the room went. */
     case Room = '/stacks/{stack}/room';
 
@@ -280,6 +292,21 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($item->term())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one copy on one machine.
+     *
+     * Encoded for {@see self::forTheStacksWord()}'s reason: nothing about a
+     * name the stack wrote promises it is a path segment.
+     */
+    public function forTheStacksCopy(StackId $stack, ACopy $copy): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($copy->name())], $this->value);
     }
 
     /**

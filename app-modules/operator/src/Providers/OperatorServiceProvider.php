@@ -15,7 +15,9 @@ use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
+use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
@@ -222,6 +224,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // What it keeps on the machine and the copies it holds: two
             // readings on one screen.
             Router::native(AStacksScreen::Keeps->value, WhatThisMachineKeepsHere::class);
+
+            // Taking a copy, and putting one back. Screens of their own, each
+            // reached from the copies above, because each states what it would
+            // do before anything is agreed to. A copy's name can hold anything
+            // the stack wrote, so it is encoded and takes the rest of the path.
+            Router::native(AStacksScreen::Copy->value, TakingACopyHere::class);
+            Router::native(AStacksScreen::PutBack->value, PuttingACopyBack::class)->where('service', '.+');
 
             // How full it is. Its own screen, because a warning that the disk
             // is filling arrives on its own.

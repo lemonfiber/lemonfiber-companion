@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
+use Modules\Sdk\Api\Fields\BackupField;
 use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
@@ -25,6 +26,7 @@ use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\QualityField;
 use Modules\Sdk\Api\Fields\RepairField;
+use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
@@ -54,6 +56,7 @@ function everyFieldNamedOnTheWire(): array
         ...WireField::cases(),
         ...AlertsField::cases(),
         ...ArchivesField::cases(),
+        ...BackupField::cases(),
         ...BandwidthField::cases(),
         ...ClientsField::cases(),
         ...ConfigField::cases(),
@@ -75,6 +78,7 @@ function everyFieldNamedOnTheWire(): array
         ...ProvenanceField::cases(),
         ...QualityField::cases(),
         ...RepairField::cases(),
+        ...RestoreField::cases(),
         ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
         ...StatusField::cases(),

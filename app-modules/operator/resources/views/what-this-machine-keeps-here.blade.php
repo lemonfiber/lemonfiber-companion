@@ -40,7 +40,17 @@
     <x-operator::emphasis>{{ __('stacks.keeps.copies') }}</x-operator::emphasis>
     @if ($this->answer()->copies->went->cameBack())
         @forelse ($this->answer()->copies->names as $name)
-            <x-operator::note>{{ $name }}</x-operator::note>
+            {{-- Putting a copy back is offered for a copy the stack listed
+                 and for nothing else, and it opens on what putting it back
+                 would do rather than doing it. --}}
+            <x-operator::entry>
+                <x-operator::note>{{ $name }}</x-operator::note>
+                <x-operator::action
+                    label="{{ __('stacks.keeps.put_back') }}"
+                    answers-to="{{ __('stacks.keeps.put_back_that', ['copy' => $name]) }}"
+                    :goes="$this->goes()->ofItself()->puttingBack($name)"
+                />
+            </x-operator::entry>
         @empty
             <x-operator::note>{{ __('stacks.keeps.no_copies') }}</x-operator::note>
         @endforelse
@@ -60,7 +70,7 @@
         @endif
     @endif
 
-    <x-operator::note>{{ __('stacks.keeps.at_the_machine') }}</x-operator::note>
+    <x-operator::action label="{{ __('stacks.keeps.take_a_copy') }}" :goes="$this->goes()->ofItself()->copy()" />
 
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 </x-operator::content>

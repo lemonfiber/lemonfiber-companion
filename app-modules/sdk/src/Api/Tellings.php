@@ -55,7 +55,7 @@ final readonly class Tellings
         $data = self::payload(Wire::checked($envelope));
 
         if (! is_array($data)) {
-            throw HouseholdIsUnreadable::missing(HouseholdField::Members);
+            throw HouseholdIsUnreadable::missing(WireField::Members);
         }
 
 
@@ -136,14 +136,14 @@ final readonly class Tellings
      */
     private static function members(array $data): array
     {
-        if (! array_key_exists(HouseholdField::Members->value, $data)) {
-            throw HouseholdIsUnreadable::missing(HouseholdField::Members);
+        if (! array_key_exists(WireField::Members->value, $data)) {
+            throw HouseholdIsUnreadable::missing(WireField::Members);
         }
 
-        $members = $data[HouseholdField::Members->value];
+        $members = $data[WireField::Members->value];
 
         if (! is_array($members)) {
-            throw HouseholdIsUnreadable::missing(HouseholdField::Members);
+            throw HouseholdIsUnreadable::missing(WireField::Members);
         }
 
         return $members;

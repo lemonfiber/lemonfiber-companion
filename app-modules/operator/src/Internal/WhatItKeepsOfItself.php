@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
@@ -66,6 +67,23 @@ final readonly class WhatItKeepsOfItself
     public function keeps(): string
     {
         return AStacksScreen::Keeps->forTheStack($this->stack);
+    }
+
+    /** Taking a copy of this machine's stack. */
+    public function copy(): string
+    {
+        return AStacksScreen::Copy->forTheStack($this->stack);
+    }
+
+    /**
+     * Putting one of this machine's copies back, by the name it was listed under.
+     *
+     * Text on the way in, because a template holds the names as text, and an
+     * {@see ACopy} on the way out, which refuses a blank.
+     */
+    public function puttingBack(string $named): string
+    {
+        return AStacksScreen::PutBack->forTheStacksCopy($this->stack, ACopy::named($named));
     }
 
     /** How full this machine is, and where the room went. */

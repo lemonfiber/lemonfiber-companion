@@ -6,8 +6,10 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stalled;
+use Modules\Kernel\Api\Unsupported;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatTheQueueCouldNotReach;
 
 /**
  * What asking a stack what has stopped produces, as the fields a screen draws.
@@ -18,6 +20,12 @@ use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
  */
 final readonly class HowAStallReads
 {
+    /** The count, where the stack looked at everything it manages. */
+    public const string COUNTED = 'health.stuck_count';
+
+    /** The count, where something it manages was out of its reach. */
+    public const string COUNTED_WHERE_IT_LOOKED = 'health.stuck_count_where_it_looked';
+
     /**
      * This device no longer holds a session for that stack.
      *
@@ -31,6 +39,8 @@ final readonly class HowAStallReads
             went: HowTheReadingWent::theSessionEnded(),
             stalled: [],
             shownSaid: '',
+            unreached: [],
+            countSaid: self::COUNTED,
         );
     }
 
@@ -43,6 +53,12 @@ final readonly class HowAStallReads
             $rows[] = new HowAStalledItemReads()->in($one);
         }
 
+        $unreached = [];
+
+        foreach ($stalled->whatItCannotActOn() as $limit) {
+            $unreached[] = $this->unreached($limit);
+        }
+
         // The key comes off the listing rather than off the rows, so how much
         // is shown is decided where the stack said it and a fold that dropped a
         // row could never quietly turn a partial listing into a complete one.
@@ -50,6 +66,8 @@ final readonly class HowAStallReads
             went: HowTheReadingWent::itCameBack(),
             stalled: $rows,
             shownSaid: $stalled->howMuchIsShown()->saidOnTheScreen(),
+            unreached: $unreached,
+            countSaid: $unreached === [] ? self::COUNTED : self::COUNTED_WHERE_IT_LOOKED,
         );
     }
 
@@ -73,6 +91,13 @@ final readonly class HowAStallReads
             went: HowTheReadingWent::somethingStopped($why),
             stalled: [],
             shownSaid: '',
+            unreached: [],
+            countSaid: self::COUNTED,
         );
+    }
+
+    private function unreached(Unsupported $limit): WhatTheQueueCouldNotReach
+    {
+        return new WhatTheQueueCouldNotReach(what: $limit->what(), because: $limit->because());
     }
 }

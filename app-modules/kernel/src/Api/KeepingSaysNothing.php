@@ -26,4 +26,14 @@ final class KeepingSaysNothing extends InvalidArgumentException
             $field,
         ));
     }
+
+    /** A figure below nothing, which no measurement of a copy could come to. */
+    public static function below(string $field, int $figure): self
+    {
+        return new self(sprintf(
+            'A copy arrived with its `%s` at %d, and a size below nothing is a stack that measured nothing.',
+            $field,
+            $figure,
+        ));
+    }
 }
