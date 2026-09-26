@@ -23,9 +23,6 @@ enum InvitationField: string implements NamesAWireField
     /** Whether the request service knows about the household yet. */
     case Linked = 'linked';
 
-    /** Whether the account was made, or only described. */
-    case Rehearsed = 'rehearsed';
-
     /** What a limit is and what it is not, in the stack's words. */
     case Filtering = 'filtering';
 

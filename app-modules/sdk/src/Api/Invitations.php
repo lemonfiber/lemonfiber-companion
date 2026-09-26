@@ -119,11 +119,11 @@ final readonly class Invitations
      */
     private static function rehearsed(array $data): bool
     {
-        if (! array_key_exists(InvitationField::Rehearsed->value, $data) || ! is_bool($data[InvitationField::Rehearsed->value])) {
-            throw InvitationIsUnreadable::missing(InvitationField::Rehearsed);
+        if (! array_key_exists(WireField::Rehearsed->value, $data) || ! is_bool($data[WireField::Rehearsed->value])) {
+            throw InvitationIsUnreadable::missing(WireField::Rehearsed);
         }
 
-        return $data[InvitationField::Rehearsed->value];
+        return $data[WireField::Rehearsed->value];
     }
 
     /**

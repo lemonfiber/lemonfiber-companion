@@ -344,4 +344,11 @@ enum WireField: string implements NamesAWireField
      * what an invitation wrote on the account.
      */
     case Applied = 'applied';
+
+    /**
+     * Whether an act was only described rather than carried out: a hosting
+     * run, in which case nothing it lists happened, and an invitation, in
+     * which case no account was made.
+     */
+    case Rehearsed = 'rehearsed';
 }

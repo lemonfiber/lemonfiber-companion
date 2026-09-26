@@ -64,7 +64,7 @@ final readonly class Handovers
 
         return WhatTheHandoverDid::removing(
             name: $name,
-            rehearsed: self::flag($changed, HostingField::Rehearsed),
+            rehearsed: self::flag($changed, WireField::Rehearsed),
             standing: self::standing($row),
             touched: self::touched($changed),
         );
@@ -83,7 +83,7 @@ final readonly class Handovers
         if ($output === null) {
             return WhatTheHandoverDid::installingWithNowhereSaid(
                 name: $name,
-                rehearsed: self::flag($changed, HostingField::Rehearsed),
+                rehearsed: self::flag($changed, WireField::Rehearsed),
                 started: self::flag($changed, HostingField::Started),
                 standing: self::standing($row),
                 touched: self::touched($changed),
@@ -92,7 +92,7 @@ final readonly class Handovers
 
         return WhatTheHandoverDid::installing(
             name: $name,
-            rehearsed: self::flag($changed, HostingField::Rehearsed),
+            rehearsed: self::flag($changed, WireField::Rehearsed),
             started: self::flag($changed, HostingField::Started),
             standing: self::standing($row),
             output: $output,
