@@ -7,10 +7,6 @@ namespace Modules\Kernel\Api;
 use function array_values;
 
 use ArrayIterator;
-
-use function count;
-
-use Countable;
 use IteratorAggregate;
 use Traversable;
 
@@ -22,7 +18,7 @@ use Traversable;
  *
  * @implements IteratorAggregate<int, APieceOfABundle>
  */
-final readonly class ThePiecesOfABundle implements Countable, IteratorAggregate
+final readonly class ThePiecesOfABundle implements IteratorAggregate
 {
     /** @param list<APieceOfABundle> $pieces */
     private function __construct(private array $pieces) {}
@@ -37,10 +33,5 @@ final readonly class ThePiecesOfABundle implements Countable, IteratorAggregate
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->pieces);
-    }
-
-    public function count(): int
-    {
-        return count($this->pieces);
     }
 }
