@@ -35,8 +35,8 @@ use Tests\Support\WhatTheReadersRead;
  */
 const OFFERED = [
     'Alerts', 'Archives', 'Bandwidth', 'Clients', 'Config', 'Credentials', 'Doctor', 'Error', 'Forms', 'FrontDoor',
-    'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Log', 'Migration', 'Outbound',
-    'Preview', 'Provenance', 'Repair', 'SelfUpdate', 'Space', 'Status', 'Stored', 'Stuck', 'Trace', 'Update',
+    'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Log', 'Migration', 'Music', 'Outbound',
+    'Preview', 'Provenance', 'Quality', 'Repair', 'SelfUpdate', 'Space', 'Status', 'Stored', 'Stuck', 'Trace', 'Update', 'Upgrade',
 ];
 
 /**
@@ -71,8 +71,8 @@ const ELSEWHERE = [
  */
 const NOT_YET = [
     'Admission', 'Adoption', 'Backup', 'Beside', 'Bundle', 'Catalogue', 'Dashboard', 'Import', 'Lifecycle',
-    'Music', 'Plugins', 'Pull', 'Quality', 'Removal', 'Replacement', 'Reset', 'Restore',
-    'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall', 'Upgrade', 'Version',
+    'Plugins', 'Pull', 'Removal', 'Replacement', 'Reset', 'Restore',
+    'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall', 'Version',
     'Walkthrough', 'Watch', 'Wiring', 'Word',
 ];
 

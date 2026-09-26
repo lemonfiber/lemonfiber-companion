@@ -25,7 +25,4 @@ enum DoctorField: string implements NamesAWireField
 
     /** How a single check turned out, as a tagged union. */
     case Verdict = 'verdict';
-
-    /** The technical detail under a verdict, where the core gave one. */
-    case Detail = 'detail';
 }

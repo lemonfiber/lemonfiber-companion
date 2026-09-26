@@ -12,13 +12,13 @@ use Modules\Stacks\Api\AStacksScreen;
  * Where the screens are that read what one machine keeps about itself.
  *
  * What it changed, where what it runs came from, what it sends, what it will
- * wake somebody for, how it shares the line and what else already stands on
- * it — screens answering one kind of question, which is what the machine does
- * and keeps on its own account while nobody is looking. Apart from
- * {@see WhereAStackIs} because that is where the questions change subject,
- * and because that class had reached the twenty-method ceiling
- * `H3` refuses: one accessor there hands out this, and the next screen of this
- * kind costs it nothing.
+ * wake somebody for, how it shares the line, what else already stands on it
+ * and how good the media it fetches should be — screens answering one kind of
+ * question, which is what the machine does and keeps on its own account while
+ * nobody is looking. Apart from {@see WhereAStackIs} because that is where the
+ * questions change subject, and because that class had reached the
+ * twenty-method ceiling `H3` refuses: one accessor there hands out this, and
+ * the next screen of this kind costs it nothing.
  *
  * `Internal`, for {@see WhereAStackIs}' reason.
  */
@@ -84,6 +84,12 @@ final readonly class WhatItKeepsOfItself
     public function alreadyHere(): string
     {
         return AStacksScreen::AlreadyHere->forTheStack($this->stack);
+    }
+
+    /** How good this machine's media should be, and upgrading what is already here. */
+    public function quality(): string
+    {
+        return AStacksScreen::Quality->forTheStack($this->stack);
     }
 
     /** What lemonfiber's words mean. */

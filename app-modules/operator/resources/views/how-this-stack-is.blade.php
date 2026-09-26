@@ -239,6 +239,10 @@
     <x-operator::quiet-action label="{{ __('stacks.front_door.road_in') }}" :goes="$this->goes()->whoGetsIn()->frontDoor()" />
     <x-operator::quiet-action label="{{ __('stacks.invitation.road_in') }}" :goes="$this->goes()->whoGetsIn()->invite()" />
 
+    {{-- How good the media it fetches should be, and upgrading what is
+         already here. --}}
+    <x-operator::quiet-action label="{{ __('quality.road_in') }}" :goes="$this->goes()->ofItself()->quality()" />
+
     {{-- What lemonfiber's words mean. --}}
     <x-operator::quiet-action label="{{ __('stacks.words.road_in') }}" :goes="$this->goes()->ofItself()->words()" />
 </x-operator::content>

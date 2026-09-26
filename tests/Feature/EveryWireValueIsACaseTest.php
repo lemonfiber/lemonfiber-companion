@@ -34,6 +34,7 @@ use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
 use Modules\Kernel\Api\WhatBecameOfIt;
+use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatHappenedToIt;
@@ -43,6 +44,7 @@ use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
+use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
@@ -731,6 +733,28 @@ it('everything that can become of unrated material has a case', function (): voi
     expect(valuesOf(WhatBecomesOfUnrated::cases()))->toBe($words);
 });
 
+it('everything a quality choice can become has a case, on both envelopes that carry it', function (): void {
+    // The one where a missing case would be worst: a disposition drawn as the
+    // nearest one could call a held choice recorded, and nobody would be asked
+    // to confirm it.
+    $quality = unionIn(theGeneratedEnvelope('QualityEnvelope'), 'disposition');
+    $music = unionIn(theGeneratedEnvelope('MusicEnvelope'), 'disposition');
+
+    expect($quality)->not->toBe([], 'no disposition union was found in the generated quality envelope');
+    expect(valuesOf(WhatBecameOfTheChoice::cases()))->toBe($quality)->toBe($music);
+});
+
+it('everything asking a service about quality can come to has a case', function (): void {
+    // Tags on objects of their own rather than a union, because the failing
+    // one carries a detail beside it, so they are gathered by tag.
+    preg_match_all("/\\bstate: '([a-z_-]+)'/", theGeneratedEnvelope('UpgradeEnvelope'), $found);
+    $words = array_values(array_unique($found[1]));
+    sort($words);
+
+    expect($words)->not->toBe([], 'no outcome states were found in the generated upgrade envelope');
+    expect(valuesOf(WhereTheAskingStands::cases()))->toBe($words);
+});
+
 it('N1-R13 — every service manager the contract describes has a case', function (): void {
     $managers = unionIn(theGeneratedHostingEnvelope(), 'manager');
 
@@ -863,6 +887,8 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhereTheInvitationStands::class => 'standing',
     WhetherTheyCanAsk::class => 'linked',
     WhatBecomesOfUnrated::class => 'unrated',
+    WhatBecameOfTheChoice::class => 'disposition',
+    WhereTheAskingStands::class => 'state',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

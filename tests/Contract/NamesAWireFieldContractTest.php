@@ -19,9 +19,11 @@ use Modules\Sdk\Api\Fields\InvitationField;
 use Modules\Sdk\Api\Fields\JobField;
 use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\MigrationField;
+use Modules\Sdk\Api\Fields\MusicField;
 use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
+use Modules\Sdk\Api\Fields\QualityField;
 use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SpaceField;
@@ -30,6 +32,7 @@ use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Api\Fields\UpgradeField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
 
@@ -66,9 +69,11 @@ function everyFieldNamedOnTheWire(): array
         ...JobField::cases(),
         ...LogField::cases(),
         ...MigrationField::cases(),
+        ...MusicField::cases(),
         ...OutboundField::cases(),
         ...PreviewField::cases(),
         ...ProvenanceField::cases(),
+        ...QualityField::cases(),
         ...RepairField::cases(),
         ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
@@ -77,6 +82,7 @@ function everyFieldNamedOnTheWire(): array
         ...StuckField::cases(),
         ...TraceField::cases(),
         ...UpdateField::cases(),
+        ...UpgradeField::cases(),
     ];
 }
 

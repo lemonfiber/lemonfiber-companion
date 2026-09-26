@@ -174,6 +174,13 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'confirmation here because there is no change.',
     ],
     [
+        'path' => 'QualityEnvelope.overwritten',
+        'because' => 'The hand-edited configuration a re-assert replaced, or a rehearsed one would, with the '
+            . 'diff. Carried only where the preset was put back over a hand-edit, and this app does not '
+            . 'offer that: `N24-R5` shows a hand-edit as respected and keeps the re-assert off this surface, '
+            . 'so no answer it asks for carries one.',
+    ],
+    [
         'path' => 'CredentialsEnvelope.held[].fingerprint',
         'because' => 'A short likeness of the value, for telling two copies apart in a report. Nothing on the '
             . 'credentials screen compares copies, and a likeness of a value drawn beside a credential is '
