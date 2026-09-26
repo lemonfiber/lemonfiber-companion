@@ -78,8 +78,9 @@ enum WireField: string implements NamesAWireField
     case Outcome = 'outcome';
 
     /**
-     * The technical detail under a verdict, where the core gave one, and a
-     * service's own account of why it refused to act on a quality choice.
+     * The technical detail under a verdict, where the core gave one; a
+     * service's own account of why it refused to act on a quality choice; and
+     * what was specifically true of one line a walkthrough said.
      */
     case Detail = 'detail';
 
@@ -438,11 +439,4 @@ enum WireField: string implements NamesAWireField
      * walkthrough is asked to walk by.
      */
     case Item = 'item';
-
-    /**
-     * The particular under something more general: the technical detail
-     * under a check's verdict, and what was specifically true of one line a
-     * walkthrough said.
-     */
-    case Detail = 'detail';
 }
