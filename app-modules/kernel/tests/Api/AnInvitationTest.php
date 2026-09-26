@@ -110,7 +110,8 @@ it('holds libraries and names taken back in the order given, and refuses a blank
         ->and(iterator_to_array($withdrawn, preserve_keys: true))->toBe(['bob', 'carol'])
         ->and($withdrawn)->toHaveCount(2)
         ->and(fn(): TheLibraries => TheLibraries::of('Films', ' '))->toThrow(InvitationSaysNothing::class, 'its `libraries` blank')
-        ->and(fn(): WhoWasTakenBack => WhoWasTakenBack::of(''))->toThrow(InvitationSaysNothing::class, 'its `withdrawn` blank');
+        ->and(fn(): WhoWasTakenBack => WhoWasTakenBack::of(''))->toThrow(InvitationSaysNothing::class, 'its `withdrawn` blank')
+        ->and(fn(): WhoWasTakenBack => WhoWasTakenBack::of('bob', ' '))->toThrow(InvitationSaysNothing::class, 'its `withdrawn` blank');
 });
 
 it('leaves something to hand over for everybody but somebody who has joined', function (): void {
