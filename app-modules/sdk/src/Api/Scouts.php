@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
+use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\MovingIn;
 use Modules\Kernel\Api\Obstacle;
@@ -38,7 +39,7 @@ final readonly class Scouts implements MovingIn
             return WhatWasFoundAlreadyHere::found(WhatIsAlreadyHere::in($envelope));
         } catch (RequestFailed $why) {
             return WhatWasFoundAlreadyHere::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|MigrationIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|MigrationIsUnreadable) {
             return WhatWasFoundAlreadyHere::met(Obstacle::StackDidNotAnswer);
         }
     }
