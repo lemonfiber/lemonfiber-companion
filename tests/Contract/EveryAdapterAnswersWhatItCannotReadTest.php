@@ -198,7 +198,6 @@ function everyAdapterCallThatReads(): array
         'Keepers::handOver' => static fn(): object
             => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
         'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
-        'Listeners::letGo' => static fn(): object => new Listeners($clients)->letGo(),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
@@ -641,6 +640,20 @@ it('answers a machine that is not the one paired as exactly that', function (str
     }
 });
 
+/**
+ * The public calls of a reading adapter that ask the stack nothing, each with
+ * why, so the list above holds only calls that can meet a stack and the rule
+ * below still accounts for every public method.
+ *
+ * @return array<string, string>
+ */
+function adapterCallsThatAskNothing(): array
+{
+    return [
+        'Listeners::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
+    ];
+}
+
 it('asks every adapter call that reads a stack', function (): void {
     // The list above is written out, because each call needs its own
     // arguments. This holds it to the adapters: every public method of a class
@@ -663,7 +676,7 @@ it('asks every adapter call that reads a stack', function (): void {
         }
     }
 
-    $asked = array_keys(everyAdapterCallThatReads());
+    $asked = [...array_keys(everyAdapterCallThatReads()), ...array_keys(adapterCallsThatAskNothing())];
     sort($expected);
     sort($asked);
 

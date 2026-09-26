@@ -383,6 +383,24 @@ it('opens a stream that ended again, once it has said that it ended', function (
     $stack->assertSentCount(2);
 });
 
+it('opens again straight after a stream that ended having said nothing', function (): void {
+    // The end of a stream that carried nothing is said by the call that finds
+    // it, so there is no second `closed` owed: the next wake opens again.
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(''),
+        MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth())),
+    ]);
+
+    expect(whatWakesHear(new Listeners(new PinnedClients()), 3))->toBe([
+        'nothing',
+        'closed',
+        'healthy, 0 wanting, worst "", {}',
+    ]);
+
+    $stack->assertSentCount(2);
+});
+
 it('holds nothing after a summary it could not read, so the next wake opens again', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([

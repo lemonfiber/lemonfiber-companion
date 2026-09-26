@@ -46,13 +46,12 @@ final readonly class WhatWasHeardSoFar
         private ?Instant $lastSignOfLife,
         private ?Instant $closedAt,
         private ?Obstacle $stoppedBy,
-        private bool $current,
     ) {}
 
     /** A screen that has not listened yet, and so holds nothing. */
     public static function nothingYet(): self
     {
-        return new self(null, null, null, null, current: false);
+        return new self(null, null, null, null);
     }
 
     /** What the screen holds once the subscription has answered at `$now`. */
@@ -61,9 +60,9 @@ final readonly class WhatWasHeardSoFar
         return $heard->either(
             nothing: fn(): self => $this->listening($this->lastSignOfLife ?? $now),
             alive: fn(): self => $this->listening($now),
-            said: static fn(TheHealthSummary $summary): self => new self(new ASummaryHeard($summary, $now), $now, null, null, current: true),
-            closed: fn(): self => new self($this->heard, null, $now, null, current: false),
-            met: fn(Obstacle $why): self => new self($this->heard, null, $now, $why, current: false),
+            said: static fn(TheHealthSummary $summary): self => new self(ASummaryHeard::at($summary, $now), $now, null, null),
+            closed: fn(): self => new self($this->heldNoLongerCurrent(), null, $now, null),
+            met: fn(Obstacle $why): self => new self($this->heldNoLongerCurrent(), null, $now, $why),
         );
     }
 
@@ -75,7 +74,7 @@ final readonly class WhatWasHeardSoFar
      */
     public function wentAway(): self
     {
-        return new self($this->heard, null, null, $this->stoppedBy, current: false);
+        return new self($this->heldNoLongerCurrent(), null, null, $this->stoppedBy);
     }
 
     /** Whether the screen may ask the subscription at `$now`, which opens it where it is not open. */
@@ -115,7 +114,7 @@ final readonly class WhatWasHeardSoFar
             return $none();
         }
 
-        return $this->current ? $current($this->heard->summary) : $asOf($this->heard->summary, $this->heard->at);
+        return $this->heard->current ? $current($this->heard->summary) : $asOf($this->heard->summary, $this->heard->at);
     }
 
     /**
@@ -133,8 +132,14 @@ final readonly class WhatWasHeardSoFar
         return $this->stoppedBy instanceof Obstacle ? $met($this->stoppedBy) : $nothing();
     }
 
+    /** What is held, once the subscription that carried it is no longer open. */
+    private function heldNoLongerCurrent(): ?ASummaryHeard
+    {
+        return $this->heard instanceof ASummaryHeard ? $this->heard->noLongerCurrent() : null;
+    }
+
     private function listening(Instant $since): self
     {
-        return new self($this->heard, $since, null, null, current: $this->current);
+        return new self($this->heard, $since, null, null);
     }
 }
