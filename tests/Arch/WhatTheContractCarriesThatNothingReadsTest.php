@@ -127,26 +127,11 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'whole is worth trusting for.',
     ],
     [
-        'path' => 'HostingEnvelope.changed',
-        'because' => 'What one run of an install or a take-it-back did to the machine. This app never '
-            . 'asks for one: what is configured is the core\'s and this surface reads, so the field is '
-            . 'absent on every answer it asks for, and a screen reading it would be reporting on an act '
-            . 'it did not perform. Named as one path rather than five because the whole branch is '
-            . 'unreachable from here for one reason.',
-    ],
-    [
         'path' => 'HostingEnvelope.commands[].definition',
         'because' => 'The service definition installed for a command — the plist or unit file. Technical '
             . 'detail, which is available and does not lead: it is what somebody opens a terminal for '
             . 'after the screen has told them which command is wrong, and putting a file path on the row '
             . 'itself would make the list unreadable for the nine times out of ten nobody needs it.',
-    ],
-    [
-        'path' => 'HostingEnvelope.commands[].output',
-        'because' => 'Where a hosted run writes what it would have said on a terminal. The same decision '
-            . 'as `definition` and the same next step: a path to a log file is what an operator wants '
-            . 'once, about one row, after they know which row. `N2-R10` already governs how this app '
-            . 'reads a log and it reads them by service rather than by hosted command.',
     ],
     [
         'path' => 'HostingEnvelope.commands[].runs',

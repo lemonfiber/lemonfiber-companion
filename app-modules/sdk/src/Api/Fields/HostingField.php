@@ -44,4 +44,22 @@ enum HostingField: string implements NamesAWireField
      * about a state it is not in.
      */
     case Missing = 'missing';
+
+    /**
+     * Where a hosted run writes what it would have said on a terminal.
+     *
+     * Read for the command an install acted on, because that is where
+     * installing has to say its words go. Absent or null is the stack not
+     * saying, which is a sentence of its own on the screen.
+     */
+    case Output = 'output';
+
+    /** Whether an install started the command, which only installing does. */
+    case Started = 'started';
+
+    /** Whether a run was a rehearsal, in which case nothing it lists happened. */
+    case Rehearsed = 'rehearsed';
+
+    /** Every file an install wrote or a removal took back. */
+    case Touched = 'touched';
 }

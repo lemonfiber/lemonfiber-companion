@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
+use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
@@ -240,6 +241,10 @@ function everyDerivedKey(): array
         WhatKeepsItRunning::class => aPairPerCase(
             WhatKeepsItRunning::cases(),
             static fn(WhatKeepsItRunning $manager): array => [$manager->saidOnTheScreen()],
+        ),
+        HandingOver::class => aPairPerCase(
+            HandingOver::cases(),
+            static fn(HandingOver $doing): array => [$doing->askedOnTheScreen(), $doing->meansOnTheScreen()],
         ),
         HowFarItGoesBack::class => aPairPerCase(
             HowFarItGoesBack::cases(),

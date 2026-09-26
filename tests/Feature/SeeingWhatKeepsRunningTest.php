@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HandingOver;
+use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowItIsHosted;
+use Modules\Kernel\Api\HowTheHandoverWent;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -12,11 +15,14 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheFilesTouched;
 use Modules\Kernel\Api\Unattended;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatRunsUnattended;
+use Modules\Kernel\Api\WhatTheHandoverDid;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
+use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatHosts;
@@ -254,4 +260,291 @@ it('renders its own view', function (): void {
     $screen = theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()));
 
     expect($screen->render()->name())->toBe('operator::what-keeps-running-here');
+});
+
+/** A machine with a manager keeping the guard and the boot start. */
+function aMachineWithTheGuardAndTheBootStart(): WhatRunsUnattended
+{
+    return WhatRunsUnattended::keptBy(
+        WhatKeepsItRunning::Systemd,
+        Unattended::called('watch', 'lemonfiber watch', 'stops the stack if the data location disappears', HowItIsHosted::NotHosted),
+        Unattended::called('boot', 'lemonfiber up --at-boot', 'brings the stack back after this machine restarts', HowItIsHosted::Hosted),
+    );
+}
+
+/** An install that started the guard, as the stack would report it. */
+function anInstallThatStartedTheGuard(bool $rehearsed = false): HowTheHandoverWent
+{
+    return HowTheHandoverWent::did(WhatTheHandoverDid::installing(
+        name: 'watch',
+        rehearsed: $rehearsed,
+        started: ! $rehearsed,
+        standing: HowItIsHosted::Hosted,
+        output: '/home/me/.local/state/lemonfiber/hosted/watch.log',
+        touched: TheFilesTouched::these('/home/me/.config/systemd/user/lemonfiber-watch.service'),
+    ));
+}
+
+/** The screen with the question for one act answered yes, and what it sent. */
+function theHostingScreenHavingAgreed(AStackThatHosts $stack, HandingOver $doing = HandingOver::Install): WhatKeepsRunningHere
+{
+    $screen = theHostingScreen($stack);
+
+    $doing === HandingOver::Install ? $screen->wouldInstall('watch') : $screen->wouldRemove('watch');
+    $screen->agree();
+
+    return $screen;
+}
+
+it('offers keeping each command running, and taking it back, where the machine has a manager', function (): void {
+    expect(theHostingScreen(AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart()))->answer()->handsOver)->toBeTrue();
+});
+
+it('offers neither on a machine this product cannot configure', function (): void {
+    // The stack has said it cannot perform the act there. Offering it would be
+    // offering what it has already refused.
+    $running = WhatRunsUnattended::unsupported(
+        'Add it to your own login items.',
+        Unattended::called('watch', 'lemonfiber watch', 'stops the stack if the data location disappears', HowItIsHosted::Unsupported),
+    );
+    $stack = AStackThatHosts::with($running, anInstallThatStartedTheGuard());
+    $screen = theHostingScreen($stack);
+
+    $screen->wouldInstall('watch');
+    $screen->agree();
+
+    expect($screen->answer()->handsOver)->toBeFalse()
+        ->and($screen->asking)->toBeNull()
+        ->and($stack->told())->toBe([]);
+});
+
+it('offers neither where the machine could not be asked, or nobody is signed in', function (): void {
+    expect(theHostingScreen(AStackThatHosts::met(Obstacle::StackDidNotAnswer))->answer()->handsOver)->toBeFalse()
+        ->and(theHostingScreen(AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart()), signedIn: false)->answer()->handsOver)->toBeFalse();
+});
+
+it('asks before keeping a command running, and sends nothing until the yes', function (): void {
+    $stack = AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), anInstallThatStartedTheGuard());
+    $screen = theHostingScreen($stack);
+
+    $screen->wouldInstall('watch');
+
+    expect($screen->asking?->doing())->toBe(HandingOver::Install)
+        ->and($screen->asking?->named())->toBe('watch')
+        ->and($stack->told())->toBe([]);
+});
+
+it('asks before taking a command back, and sends nothing until the yes', function (): void {
+    $stack = AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart());
+    $screen = theHostingScreen($stack);
+
+    $screen->wouldRemove('boot');
+
+    expect($screen->asking?->doing())->toBe(HandingOver::Remove)
+        ->and($screen->asking?->named())->toBe('boot')
+        ->and($stack->told())->toBe([]);
+});
+
+it('does not ask about a command the listing does not carry', function (): void {
+    // The name arrives from a template; what is asked about is built from what
+    // was read.
+    $screen = theHostingScreen(AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart()));
+
+    $screen->wouldInstall('expiring');
+    $screen->wouldRemove('');
+
+    expect($screen->asking)->toBeNull();
+});
+
+it('putting the question away sends nothing', function (): void {
+    $stack = AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), anInstallThatStartedTheGuard());
+    $screen = theHostingScreen($stack);
+
+    $screen->wouldInstall('watch');
+    $screen->neverMind();
+    $screen->agree();
+
+    expect($screen->asking)->toBeNull()
+        ->and($screen->handedOver)->toBeNull()
+        ->and($stack->told())->toBe([]);
+});
+
+it('the yes sends what was asked about, once, and reads the machine again', function (): void {
+    $stack = AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), anInstallThatStartedTheGuard());
+    $screen = theHostingScreen($stack);
+
+    $screen->answer();
+    $screen->wouldInstall('watch');
+    $screen->agree();
+    $screen->agree();
+    $screen->answer();
+
+    expect(array_map(static fn(HostingAgreed $one): string => sprintf('%s %s', $one->doing()->value, $one->named()), $stack->told()))
+        ->toBe(['install watch'])
+        ->and($screen->asking)->toBeNull()
+        ->and($stack->wasGivenASession())->toBeTrue()
+        ->and($stack->askedAbout()?->id()->stored())->toBe(theStackWhoseHostingIsRead()->id()->stored())
+        // The listing in front of the operator was about the machine before the act.
+        ->and($stack->askings())->toBe(2);
+});
+
+it('an install is reported by where the command stands, whether it started, where its words go, and each file', function (): void {
+    $shown = theHostingScreenHavingAgreed(
+        AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), anInstallThatStartedTheGuard()),
+    )->handedOver;
+
+    expect($shown?->headingSaid)->toBe('stacks.handed_over.heading.install')
+        ->and($shown?->name)->toBe('watch')
+        ->and($shown?->rehearsed)->toBeFalse()
+        ->and($shown?->standingSaid)->toBe(HowItIsHosted::Hosted->saidOnTheScreen())
+        ->and($shown?->startedSaid)->toBe('stacks.handed_over.started')
+        ->and($shown?->writesToSaid)->toBe('stacks.handed_over.writes_to')
+        ->and($shown?->writesTo)->toBe('/home/me/.local/state/lemonfiber/hosted/watch.log')
+        ->and($shown?->touched)->toBe(['/home/me/.config/systemd/user/lemonfiber-watch.service'])
+        ->and($shown?->touchedSaid)->toBe('stacks.handed_over.touched.install')
+        ->and($shown?->touchedNothingSaid)->toBe('stacks.handed_over.touched_nothing.install')
+        ->and($shown?->refused)->toBe('')
+        ->and($shown?->metSaid)->toBe('');
+});
+
+it('an install the stack did not start, and did not say where it writes, says both', function (): void {
+    $went = HowTheHandoverWent::did(WhatTheHandoverDid::installingWithNowhereSaid(
+        name: 'watch',
+        rehearsed: false,
+        started: false,
+        standing: HowItIsHosted::InstalledUnverified,
+        touched: TheFilesTouched::these(),
+    ));
+    $shown = theHostingScreenHavingAgreed(AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), $went))->handedOver;
+
+    expect($shown?->startedSaid)->toBe('stacks.handed_over.not_started')
+        ->and($shown?->standingSaid)->toBe(HowItIsHosted::InstalledUnverified->saidOnTheScreen())
+        ->and($shown?->writesToSaid)->toBe('stacks.handed_over.writes_unsaid')
+        ->and($shown?->writesTo)->toBe('')
+        ->and($shown?->touched)->toBe([]);
+});
+
+it('a removal names what it took back, and says nothing about starting or writing', function (): void {
+    $went = HowTheHandoverWent::did(WhatTheHandoverDid::removing(
+        name: 'watch',
+        rehearsed: false,
+        standing: HowItIsHosted::NotHosted,
+        touched: TheFilesTouched::these('/home/me/a.service'),
+    ));
+    $shown = theHostingScreenHavingAgreed(AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), $went), HandingOver::Remove)->handedOver;
+
+    expect($shown?->headingSaid)->toBe('stacks.handed_over.heading.remove')
+        ->and($shown?->startedSaid)->toBe('')
+        ->and($shown?->writesToSaid)->toBe('')
+        ->and($shown?->standingSaid)->toBe(HowItIsHosted::NotHosted->saidOnTheScreen())
+        ->and($shown?->touched)->toBe(['/home/me/a.service'])
+        ->and($shown?->touchedSaid)->toBe('stacks.handed_over.touched.remove')
+        ->and($shown?->touchedNothingSaid)->toBe('stacks.handed_over.touched_nothing.remove');
+});
+
+it('a rehearsal is labelled as one, and its files are what would have happened', function (): void {
+    $install = theHostingScreenHavingAgreed(
+        AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), anInstallThatStartedTheGuard(rehearsed: true)),
+    )->handedOver;
+    $removal = theHostingScreenHavingAgreed(
+        AStackThatHosts::with(
+            aMachineWithTheGuardAndTheBootStart(),
+            HowTheHandoverWent::did(WhatTheHandoverDid::removing(
+                name: 'watch',
+                rehearsed: true,
+                standing: HowItIsHosted::Hosted,
+                touched: TheFilesTouched::these('/home/me/a.service'),
+            )),
+        ),
+        HandingOver::Remove,
+    )->handedOver;
+
+    expect($install?->rehearsed)->toBeTrue()
+        ->and($install?->touchedSaid)->toBe('stacks.handed_over.would_touch.install')
+        ->and($removal?->rehearsed)->toBeTrue()
+        ->and($removal?->touchedSaid)->toBe('stacks.handed_over.would_touch.remove');
+});
+
+/**
+ * Every field an act that did not happen should have left empty, where it did not.
+ *
+ * An act that never happened has no standing, no start, nowhere it writes, no
+ * files and no rehearsal; a line drawn for any of them would report something
+ * that did not occur.
+ *
+ * @return list<string>
+ */
+function whatAnActThatDidNotHappenStillSays(?WhatTheHandoverShows $shown): array
+{
+    $said = [
+        'rehearsed' => $shown?->rehearsed === true ? 'yes' : '',
+        'startedSaid' => $shown?->startedSaid,
+        'standingSaid' => $shown?->standingSaid,
+        'writesToSaid' => $shown?->writesToSaid,
+        'writesTo' => $shown?->writesTo,
+        'touched' => $shown?->touched === [] ? '' : 'files',
+        'touchedSaid' => $shown?->touchedSaid,
+        'touchedNothingSaid' => $shown?->touchedNothingSaid,
+    ];
+    $left = [];
+
+    foreach ($said as $field => $value) {
+        if ($value !== '') {
+            $left[] = $field;
+        }
+    }
+
+    return $left;
+}
+
+it('a refusal is shown in the stack\'s own words, as something that did not happen', function (): void {
+    $went = HowTheHandoverWent::refused('The guard was not told what to guard');
+    $shown = theHostingScreenHavingAgreed(AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), $went))->handedOver;
+
+    expect($shown?->headingSaid)->toBe('stacks.handed_over.heading.did_not')
+        ->and($shown?->name)->toBe('watch')
+        ->and($shown?->refused)->toBe('The guard was not told what to guard')
+        ->and($shown?->metSaid)->toBe('')
+        ->and(whatAnActThatDidNotHappenStillSays($shown))->toBe([]);
+});
+
+it('an act that never got an answer says what was met, and a refused credential lets the session go', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $stack = AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), HowTheHandoverWent::met(Obstacle::CredentialWasRefused));
+    $screen = theHostingScreen($stack, $keychain);
+
+    $screen->wouldInstall('watch');
+    $screen->agree();
+
+    expect($screen->handedOver?->headingSaid)->toBe('stacks.handed_over.heading.did_not')
+        ->and($screen->handedOver?->metSaid)->toBe(Obstacle::CredentialWasRefused->said())
+        ->and($screen->handedOver?->refused)->toBe('')
+        ->and(whatAnActThatDidNotHappenStillSays($screen->handedOver))->toBe([])
+        ->and($keychain->isHolding(theStackWhoseHostingIsRead()->id()))->toBeFalse();
+});
+
+it('an act on a device that no longer holds a session sends nothing and says it did not happen', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $stack = AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), anInstallThatStartedTheGuard());
+    $screen = theHostingScreen($stack, $keychain);
+
+    $screen->wouldInstall('watch');
+    $keychain->forget(theStackWhoseHostingIsRead()->id());
+    $screen->agree();
+
+    expect($stack->told())->toBe([])
+        ->and($screen->handedOver?->headingSaid)->toBe('stacks.handed_over.heading.did_not')
+        ->and($screen->handedOver?->refused)->toBe('')
+        ->and($screen->handedOver?->metSaid)->toBe('')
+        ->and(whatAnActThatDidNotHappenStillSays($screen->handedOver))->toBe([]);
+});
+
+it('asking about another act puts the last outcome away', function (): void {
+    $screen = theHostingScreenHavingAgreed(
+        AStackThatHosts::with(aMachineWithTheGuardAndTheBootStart(), anInstallThatStartedTheGuard()),
+    );
+
+    $screen->wouldRemove('boot');
+
+    expect($screen->handedOver)->toBeNull();
 });

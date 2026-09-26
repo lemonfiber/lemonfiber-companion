@@ -2,6 +2,65 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+@if ($this->asking !== null)
+    {{-- The question, naming the command, before anything is sent. What the
+         act does to the machine is said beside it, because taking a command
+         back is a guarantee the household stops having. --}}
+    <x-operator::heading>
+        {{ __($this->asking->doing()->askedOnTheScreen(), ['name' => $this->asking->named()]) }}
+    </x-operator::heading>
+    <native:text>{{ __($this->asking->doing()->meansOnTheScreen()) }}</native:text>
+
+    <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
+    <x-operator::quiet-action label="{{ __('health.never_mind') }}" tap="neverMind()" />
+@else
+    @if ($this->handedOver !== null)
+        {{-- What came of the last one, as the stack said it. The heading names
+             what was asked for and never says it worked: whether the command
+             runs is the standing below it. --}}
+        <x-operator::heading>
+            {{ __($this->handedOver->headingSaid, ['name' => $this->handedOver->name]) }}
+        </x-operator::heading>
+
+        @if ($this->handedOver->rehearsed)
+            {{-- Said first, because everything under it is what would have
+                 happened and none of it did. --}}
+            <x-operator::emphasis>{{ __('stacks.handed_over.rehearsed') }}</x-operator::emphasis>
+        @endif
+
+        @if ($this->handedOver->refused !== '')
+            {{-- The stack's own words for why it would not. --}}
+            <native:text>{{ $this->handedOver->refused }}</native:text>
+        @endif
+
+        @if ($this->handedOver->metSaid !== '')
+            <native:text>{{ __($this->handedOver->metSaid) }}</native:text>
+        @endif
+
+        @if ($this->handedOver->standingSaid !== '')
+            <native:text>{{ __('stacks.handed_over.stands', ['standing' => __($this->handedOver->standingSaid)]) }}</native:text>
+        @endif
+
+        @if ($this->handedOver->startedSaid !== '')
+            <x-operator::note>{{ __($this->handedOver->startedSaid) }}</x-operator::note>
+        @endif
+
+        @if ($this->handedOver->writesToSaid !== '')
+            {{-- Where its words go. A hosted command with nowhere visible to
+                 speak is one nobody can tell from a failure. --}}
+            <x-operator::note>{{ __($this->handedOver->writesToSaid, ['output' => $this->handedOver->writesTo]) }}</x-operator::note>
+        @endif
+
+        @if ($this->handedOver->touchedNothingSaid !== '')
+            {{-- Every file, each with what happened to it. --}}
+            @forelse ($this->handedOver->touched as $file)
+                <x-operator::note>{{ __($this->handedOver->touchedSaid, ['file' => $file]) }}</x-operator::note>
+            @empty
+                <x-operator::note>{{ __($this->handedOver->touchedNothingSaid) }}</x-operator::note>
+            @endforelse
+        @endif
+    @endif
+
     {{-- What keeps them running, said before the list. It is a fact about the
          machine rather than about any row, and an operator reading rows without
          it cannot tell a launch agent from a login item they set up themselves
@@ -52,6 +111,21 @@
                     {{ __('stacks.missing_program', ['program' => $command->missing]) }}
                 </x-operator::note>
             @endif
+
+            @if ($this->answer()->handsOver)
+                {{-- Both acts on every row, each naming its command, and each
+                     only a question until the operator says yes. A machine
+                     with no manager draws neither: the stack has said it cannot
+                     do this there. --}}
+                <x-operator::quiet-action
+                    label="{{ __('stacks.handing_over.install', ['name' => $command->name]) }}"
+                    tap="wouldInstall('{{ $command->name }}')"
+                />
+                <x-operator::quiet-action
+                    label="{{ __('stacks.handing_over.remove', ['name' => $command->name]) }}"
+                    tap="wouldRemove('{{ $command->name }}')"
+                />
+            @endif
         </x-operator::entry>
     @empty
         {{-- Not the same screen as a machine that could not be asked, and not
@@ -66,6 +140,7 @@
          the stuck screen's reason: somebody who has just started something at
          the machine is looking at a screen they want to ask again. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+@endif
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

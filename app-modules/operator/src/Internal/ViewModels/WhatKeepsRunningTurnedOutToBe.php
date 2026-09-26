@@ -24,6 +24,11 @@ namespace Modules\Operator\Internal\ViewModels;
  * template printing it unconditionally would put a blank under a heading on
  * every machine that has a manager, so the field is what the template branches
  * on — the shape {@see WhatStoppedTurnedOutToBe} uses for `$shownSaid`.
+ *
+ * **`$handsOver` is whether a command can be handed to this machine or taken
+ * back from here.** True only where the machine answered and has a manager
+ * this product configures; where it has none, the stack has already said it
+ * cannot perform the act, and offering it would be offering what it refused.
  */
 final readonly class WhatKeepsRunningTurnedOutToBe
 {
@@ -32,6 +37,7 @@ final readonly class WhatKeepsRunningTurnedOutToBe
      * @param string $keptBySaid the key for what keeps them running
      * @param string $instead    what to do where this product configures nothing, or empty
      * @param int    $missing    how many are installed and not running
+     * @param bool   $handsOver  whether installing and removing are offered
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -39,5 +45,6 @@ final readonly class WhatKeepsRunningTurnedOutToBe
         public string $keptBySaid,
         public string $instead,
         public int $missing,
+        public bool $handsOver,
     ) {}
 }

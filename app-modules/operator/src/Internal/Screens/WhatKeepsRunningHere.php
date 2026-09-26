@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use function array_any;
+
 use Illuminate\View\View;
 
 use function is_string;
 
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\Hosting;
+use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -17,9 +21,13 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatRunsUnattended;
+use Modules\Kernel\Api\WhatTheHandoverDid;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\Presenters\HowAHandoverReads;
 use Modules\Operator\Internal\Presenters\HowHostingReads;
 use Modules\Operator\Internal\ViewModels\WhatKeepsRunningTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatOneUnattendedCommandSays;
+use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -45,11 +53,20 @@ use function view;
  * the template branches on rather than a row it might or might not have, and
  * the reading refuses a machine that claims the first and carries no sentence.
  *
- * **Nothing here is a button.** What is configured is the core's: this app does
- * not install a launch agent, does not take one back, and does not turn coming
- * back after a restart on or off. A phone that could would be a second place
- * the answer is decided, and the two would disagree the first time somebody
- * used the other one.
+ * **Handing a command over is offered here, as an act of its own.** Each row
+ * offers keeping it running and taking it back, and neither is sent until the
+ * operator has said yes to a question naming the command — {@see agree()} is
+ * the only thing that sends, and it sends what was asked about. Nothing else on
+ * this screen reaches the machine's service manager.
+ *
+ * **What came back is reported as the stack said it.** Where the command now
+ * stands, whether it was started, where its words are written, every file
+ * written or taken back, and whether it was a rehearsal — never *installed*,
+ * which says nothing about whether anything is running it.
+ *
+ * **A machine with no manager offers neither.** The stack has already said it
+ * cannot perform the act there, and the sentence saying what to do instead is
+ * drawn in place of the controls.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is assembled from
@@ -73,6 +90,12 @@ final class WhatKeepsRunningHere extends NativeComponent
      * reason {@see WhatStoppedComingIn::$answered} gives.
      */
     public ?WhatKeepsRunningTurnedOutToBe $answered = null;
+
+    /** What the operator has been asked about, where handing a command over is waiting on a yes. Public for {@see $answered}'s reason. */
+    public ?HostingAgreed $asking = null;
+
+    /** What came of the last handing over, until another is asked about. Public for {@see $answered}'s reason. */
+    public ?WhatTheHandoverShows $handedOver = null;
 
     public function __construct(
         private readonly Hosting $hosting,
@@ -108,6 +131,61 @@ final class WhatKeepsRunningHere extends NativeComponent
     public function again(): void
     {
         $this->answered = null;
+    }
+
+    /**
+     * Ask whether to hand the command of that name to this machine.
+     *
+     * Held rather than sent: {@see agree()} is the only thing that sends.
+     */
+    public function wouldInstall(string $named): void
+    {
+        $this->wouldYouLike(HandingOver::Install, $named);
+    }
+
+    /**
+     * Ask whether to take the command of that name back off this machine.
+     *
+     * Held rather than sent, for {@see wouldInstall()}'s reason.
+     */
+    public function wouldRemove(string $named): void
+    {
+        $this->wouldYouLike(HandingOver::Remove, $named);
+    }
+
+    /**
+     * Carry out what the operator has just agreed to.
+     *
+     * It sends what was held and nothing a template passed in, so the command
+     * that was asked about and the command that is handed over are the same
+     * value.
+     */
+    public function agree(): void
+    {
+        $agreed = $this->asking;
+
+        if (! $agreed instanceof HostingAgreed) {
+            return;
+        }
+
+        $this->asking = null;
+
+        $stack = $this->stack();
+
+        $this->handedOver = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatTheHandoverShows => $this->handOver($stack, $session, $agreed),
+            notHeld: static fn(): WhatTheHandoverShows => new HowAHandoverReads()->signedOut($agreed->named()),
+        );
+
+        // What was read is about the machine before the act, so the next
+        // accessor asks again rather than drawing a listing the act changed.
+        $this->answered = null;
+    }
+
+    /** Put the question away without doing anything about it. */
+    public function neverMind(): void
+    {
+        $this->asking = null;
     }
 
     /**
@@ -152,6 +230,45 @@ final class WhatKeepsRunningHere extends NativeComponent
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatKeepsRunningTurnedOutToBe => $this->asked($stack, $session),
             notHeld: static fn(): WhatKeepsRunningTurnedOutToBe => new HowHostingReads()->signedOut(),
+        );
+    }
+
+    /**
+     * Hold the question, where the listing offers the act and names the command.
+     *
+     * Built from what was read rather than from what the template passed: a
+     * name the listing does not carry is not asked about, and neither is any
+     * name on a machine where the stack said it cannot host anything.
+     */
+    private function wouldYouLike(HandingOver $doing, string $named): void
+    {
+        $answer = $this->answer();
+
+        if (! $answer->handsOver || ! $this->lists($answer, $named)) {
+            return;
+        }
+
+        $this->handedOver = null;
+        $this->asking = HostingAgreed::to($doing, $named);
+    }
+
+    /** Whether the listing carries a command of that name. */
+    private function lists(WhatKeepsRunningTurnedOutToBe $answer, string $named): bool
+    {
+        return array_any($answer->commands, fn(WhatOneUnattendedCommandSays $command): bool => $command->name === $named);
+    }
+
+    /** Hand it to the port, and fold whichever arm came back. */
+    private function handOver(Stack $stack, Session $session, HostingAgreed $agreed): WhatTheHandoverShows
+    {
+        return $this->hosting->handOver($stack, $session, $agreed)->either(
+            did: static fn(WhatTheHandoverDid $did): WhatTheHandoverShows => new HowAHandoverReads()->did($did),
+            refused: static fn(string $said): WhatTheHandoverShows => new HowAHandoverReads()->refused($agreed->named(), $said),
+            met: function (Obstacle $why) use ($stack, $agreed): WhatTheHandoverShows {
+                $this->letGoOfTheSession($why, $stack);
+
+                return new HowAHandoverReads()->met($agreed->named(), $why);
+            },
         );
     }
 
