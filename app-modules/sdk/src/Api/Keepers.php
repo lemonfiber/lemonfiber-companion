@@ -102,7 +102,7 @@ final readonly class Keepers implements Hosting
             return HowTheHandoverWent::did(Handovers::in($envelope));
         } catch (RequestFailed $why) {
             return $this->refusedWith($why);
-        } catch (ApiVersionMismatch|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HostingIsUnreadable) {
             return HowTheHandoverWent::met(Obstacle::StackDidNotAnswer);
         }
     }
