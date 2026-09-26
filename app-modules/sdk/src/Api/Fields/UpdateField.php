@@ -17,9 +17,6 @@ enum UpdateField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The services, as opposed to this copy of lemonfiber. */
-    case TheStack = 'stack';
-
     /**
      * Whether one of those changes cannot be put back.
      *
@@ -57,8 +54,8 @@ enum UpdateField: string implements NamesAWireField
     /**
      * The operator's yes, on the actions that only describe themselves or hold
      * back without one: the update, an invitation, confirming a held quality
-     * choice, upgrading what is already in the library, and putting a copy
-     * back.
+     * choice, upgrading what is already in the library, putting a copy back,
+     * and a support bundle revealing a setting.
      *
      * Here rather than in `WireField`, which holds the words read out of more
      * than one envelope. This one is sent and never read, and a word is named

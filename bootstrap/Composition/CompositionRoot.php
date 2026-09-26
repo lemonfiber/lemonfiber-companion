@@ -32,6 +32,7 @@ use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
+use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\Clock;
@@ -81,6 +82,7 @@ use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
+use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
@@ -357,6 +359,10 @@ final class CompositionRoot extends ServiceProvider
         // copies for the same reason.
         $this->app->bind(TakingCopies::class, Copiers::class);
         $this->app->bind(PuttingBack::class, Restorers::class);
+
+        // A support bundle, described and written, asked beside the rest and
+        // bound for the same reason.
+        $this->app->bind(AskingForHelp::class, Bundlers::class);
 
         // How full the machine is, read beside the rest and bound for the
         // same reason.

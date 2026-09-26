@@ -170,7 +170,7 @@ final readonly class Hosts
             $name,
             $command,
             $guarantees,
-            self::text($row, HostingField::Missing, $position),
+            self::text($row, WireField::Missing, $position),
         );
     }
 
