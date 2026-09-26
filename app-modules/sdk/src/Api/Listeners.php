@@ -8,6 +8,7 @@ use Lemonfiber\Sdk\Envelope\EnvelopeReader;
 use Lemonfiber\Sdk\Events\ServerEvent;
 use Lemonfiber\Sdk\Events\SseParser;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\StreamInterrupted;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
@@ -104,7 +105,7 @@ final class Listeners implements Hearing
     {
         try {
             return $this->taken($this->held ??= $this->opened($stack, $session));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
         } catch (
             Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted

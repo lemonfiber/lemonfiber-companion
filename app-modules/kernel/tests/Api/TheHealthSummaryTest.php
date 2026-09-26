@@ -87,6 +87,12 @@ it('holds every part of an affected item as the core sent it', function (): void
         ->and($item->downstream()->count())->toBe(2);
 });
 
+it('holds what followed by position, whatever it was handed over keyed by', function (): void {
+    $keyed = ['first' => 'Imports are waiting', 'second' => 'Requests are waiting'];
+
+    expect(array_keys(iterator_to_array(WhatFollowedFromIt::of(...$keyed), preserve_keys: true)))->toBe([0, 1]);
+});
+
 it('holds nothing downstream where nothing followed from it', function (): void {
     expect(WhatFollowedFromIt::of()->count())->toBe(0)
         ->and(iterator_to_array(WhatFollowedFromIt::of(), preserve_keys: false))->toBe([]);
