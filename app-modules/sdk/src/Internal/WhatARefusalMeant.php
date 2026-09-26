@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Internal;
 
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Modules\Kernel\Api\Obstacle;
 
@@ -23,6 +24,12 @@ use Modules\Kernel\Api\Obstacle;
  * leaving the session alone, which is the part that matters: reading it as the
  * first would sign a member out the first time they reached something that was
  * never theirs.
+ *
+ * **A third refusal is this app's own, and it is not silence either.** A
+ * peer that presents a certificate the pairing did not name answered, and it
+ * is not the machine paired with. It is refused before anything is sent, and
+ * it reaches the operator as the stack not being the one paired, with
+ * re-pairing as the remedy.
  *
  * Everything else — a stack asleep, a network that dropped, an endpoint
  * answering five hundred — is the same sentence, and it is the one an obstacle
@@ -57,8 +64,12 @@ final readonly class WhatARefusalMeant
      */
     private const int ACCOUNT_MAY_NOT_ASK = 403;
 
-    public static function obstacle(RequestFailed $why): Obstacle
+    public static function obstacle(CertificateWasRefused|RequestFailed $why): Obstacle
     {
+        if ($why instanceof CertificateWasRefused) {
+            return Obstacle::StackIsNotTheOnePaired;
+        }
+
         return match ($why->status()) {
             self::SESSION_IS_NOT_ACCEPTED => Obstacle::CredentialWasRefused,
             self::ACCOUNT_MAY_NOT_ASK => Obstacle::NotForThisAccount,

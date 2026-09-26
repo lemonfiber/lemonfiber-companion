@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -70,7 +71,7 @@ final readonly class Requests implements Wanting
             // that never arrived, and reading it outside would put an uncaught
             // raise on a screen instead.
             return WhatWasWanted::these(Households::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasWanted::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HouseholdIsUnreadable|RequestHasNobodyBehindIt) {
             return WhatWasWanted::met(Obstacle::StackDidNotAnswer);
@@ -94,7 +95,7 @@ final readonly class Requests implements Wanting
             );
 
             return Underway::as(Handles::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return Underway::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);

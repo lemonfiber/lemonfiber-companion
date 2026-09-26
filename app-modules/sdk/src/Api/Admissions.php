@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\PasswordWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\TooManyAttempts;
@@ -33,7 +34,7 @@ use Modules\Kernel\Api\Whose;
  * stand-in and the sign-in screen could not, because the one flow carrying the
  * password was the one flow that reached the network whatever the switch said.
  *
- * **Three refusals, because the operator meets three different things.** The
+ * **Four refusals, because the operator meets four different things.** The
  * SDK goes out of its way to tell a wrong password from a door that has stopped
  * listening, and an obstacle is required to keep that kind of distinction. Flattening
  * them would have somebody typing carefully into a door that is not answering —
@@ -43,6 +44,7 @@ use Modules\Kernel\Api\Whose;
  * |---|---|
  * | {@see PasswordWasRefused} | `CredentialWasRefused` — offer another attempt |
  * | {@see TooManyAttempts} | `TooManyAttempts` — wait, and do not attempt |
+ * | {@see CertificateWasRefused} | `StackIsNotTheOnePaired` — this is not the machine paired with; nothing was sent, the password included |
  * | {@see RequestFailed}, {@see Unreachable}, {@see UnreadableResponse} | `StackDidNotAnswer` |
  *
  * **Nothing here reads a timestamp.** The SDK hands over the ending as a count
@@ -69,7 +71,7 @@ final readonly class Admissions implements Admitting
 
         try {
             $opened = $door->open($said->forTheExchange());
-        } catch (PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why) {
+        } catch (CertificateWasRefused|PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why) {
             return Admitted::refused($this->met($why));
         }
 
@@ -90,18 +92,19 @@ final readonly class Admissions implements Admitting
      * whether the door opened, and what to say when it did not — and together
      * they left one method with four ways out (`H8`).
      *
-     * A `match` rather than five `catch` blocks, so the mapping reads as one
+     * A `match` rather than six `catch` blocks, so the mapping reads as one
      * table. `RequestFailed`, `Unreachable` and `UnreadableResponse` share an
      * answer: each means the operator did not get in and nothing about their
      * password is known, which is *the stack did not answer* rather than *the
      * credential was refused*. The remedy on that screen — check the machine is
      * on and on this network — is the right one for each.
      */
-    private function met(PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why): Obstacle
+    private function met(CertificateWasRefused|PasswordWasRefused|TooManyAttempts|RequestFailed|Unreachable|UnreadableResponse $why): Obstacle
     {
         return match (true) {
             $why instanceof PasswordWasRefused => Obstacle::CredentialWasRefused,
             $why instanceof TooManyAttempts => Obstacle::TooManyAttempts,
+            $why instanceof CertificateWasRefused => Obstacle::StackIsNotTheOnePaired,
             default => Obstacle::StackDidNotAnswer,
         };
     }

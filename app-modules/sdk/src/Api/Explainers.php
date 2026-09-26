@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -37,7 +38,7 @@ final readonly class Explainers implements Explaining
             // Inside the same `try` as the request, for the argument
             // {@see Recorders::recordedOn()} makes.
             return WhatWasFoundOfTheWords::found(TheWordsExplained::in($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheWords::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|GlossaryIsUnreadable) {
             return WhatWasFoundOfTheWords::met(Obstacle::StackDidNotAnswer);

@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -73,7 +74,7 @@ final readonly class Adjustments implements Adjusting
             // read is the same thing to the operator as one that never
             // arrived — and on a write, *did it happen* is the question.
             return WhatTheStackMadeOfIt::said(Dials::reviewIn($envelope));
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheStackMadeOfIt::refused(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed) {
             return WhatTheStackMadeOfIt::refused(Obstacle::StackDidNotAnswer);

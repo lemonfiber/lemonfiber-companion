@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Contract\Api;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Kernel\Api\Address;
@@ -73,7 +74,8 @@ use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Tree;
 
 // A malformed answer reaches a screen as an obstacle, whichever adapter read it,
-// and so does a stack that could not be asked at all.
+// and so do a stack that could not be asked at all and a machine that is not the
+// one paired with.
 //
 // Each adapter is asked once for every way its answer can be spoiled: `data`
 // that is not a table, each text in it left blank, and each table or list in
@@ -87,8 +89,9 @@ use Tests\Support\Tree;
 // screen would draw as a crash rather than as the sentence an obstacle carries.
 //
 // Each adapter is also asked once with the connection refused before any
-// answer exists, and that one has a single right answer: the obstacle for a
-// stack that did not answer.
+// answer exists, and once with the peer presenting a certificate the pairing did
+// not name. Each has a single right answer: the obstacle for a stack that did
+// not answer, and the obstacle for a stack that is not the one paired.
 
 afterEach(function (): void {
     MockClient::destroyGlobal();
@@ -427,6 +430,25 @@ function answerNothingAtAll(): void
 }
 
 /**
+ * Answer every request as the SDK does when the peer is not the paired machine.
+ *
+ * The SDK raises this from its transport, having refused the peer during the
+ * handshake, so it is raised here where the transport would raise it.
+ */
+function answerAsAStranger(): void
+{
+    MockClient::destroyGlobal();
+    MockClient::global([
+        '*' => MockResponse::make()->throw(static fn(PendingRequest $asked): CertificateWasRefused
+            => CertificateWasRefused::whenAsking(
+                $asked->getRequest()->resolveEndpoint(),
+                str_repeat('b', 64),
+                str_repeat('f', 64),
+            )),
+    ]);
+}
+
+/**
  * What one call answered where nothing answered it, as a word a failure can name.
  *
  * @param Closure(): object $ask
@@ -435,6 +457,28 @@ function whatACallAnsweredToNothing(Closure $ask): string
 {
     answerNothingAtAll();
 
+    return whatACallAnswered($ask);
+}
+
+/**
+ * What one call answered where a stranger answered it, as a word a failure can name.
+ *
+ * @param Closure(): object $ask
+ */
+function whatACallAnsweredToAStranger(Closure $ask): string
+{
+    answerAsAStranger();
+
+    return whatACallAnswered($ask);
+}
+
+/**
+ * What one call answered with the answers already arranged.
+ *
+ * @param Closure(): object $ask
+ */
+function whatACallAnswered(Closure $ask): string
+{
     try {
         $met = theObstacleIn($ask());
 
@@ -497,6 +541,19 @@ it('answers a stack that could not be asked as one that did not answer', functio
         '%s did not answer a stack nothing answered for with the obstacle for one. An adapter '
         . 'catches what the SDK raises when nothing answers and answers with that obstacle, '
         . 'beside every other failure it answers the same way.',
+        $which,
+    ));
+})->with(static function (): Generator {
+    foreach (everyAdapterCallThatReads() as $which => $ask) {
+        yield $which => [$which, $ask];
+    }
+});
+
+it('answers a machine that is not the one paired as exactly that', function (string $which, Closure $ask): void {
+    expect(whatACallAnsweredToAStranger($ask))->toBe(Obstacle::StackIsNotTheOnePaired->value, sprintf(
+        '%s did not answer a peer presenting another certificate with the obstacle for a stack that '
+        . 'is not the one paired. An adapter catches the refusal the SDK raises for it beside the '
+        . 'refusals it hands to the one place that decides what a refusal meant.',
         $which,
     ));
 })->with(static function (): Generator {

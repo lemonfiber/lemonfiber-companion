@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
+use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -61,7 +62,7 @@ final readonly class Shelves implements Watching
             // read is the same thing to whoever is looking at the screen as
             // one that never arrived.
             return Holdings::in($envelope);
-        } catch (RequestFailed $why) {
+        } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatTheyMayWatch::refused(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ShelfIsUnreadable|HoldingIsUnnamed|SentenceSaysNothing) {
             return WhatTheyMayWatch::refused(Obstacle::StackDidNotAnswer);
