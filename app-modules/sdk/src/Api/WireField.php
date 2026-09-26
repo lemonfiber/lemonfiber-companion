@@ -309,7 +309,12 @@ enum WireField: string implements NamesAWireField
      */
     case Preset = 'preset';
 
-    /** What a quality choice applies to: everything, one kind of media, or music. */
+    /**
+     * How far something reaches: what a quality choice applies to, everything,
+     * one kind of media or music; and how much a copy covers, on a copy taken
+     * and on a copy put back — and, inside it, the word that says which of the
+     * three scopes it is.
+     */
     case Scope = 'scope';
 
     /** Roughly how much room an hour of media takes at a quality, as the stack words it. */
@@ -414,12 +419,6 @@ enum WireField: string implements NamesAWireField
      * repairs, and what putting a copy back would do.
      */
     case Agreement = 'agreement';
-
-    /**
-     * How much a copy covers, on a copy taken and on a copy put back — and,
-     * inside it, the word that says which of the three scopes it is.
-     */
-    case Scope = 'scope';
 
     /**
      * A Compose project: the one a set of existing services was started under,
