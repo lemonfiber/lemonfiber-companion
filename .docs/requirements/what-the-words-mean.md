@@ -27,5 +27,6 @@ name for it; a word the glossary does not carry in any form is drawn as it came.
 
 ## Asked for, and not drawn yet
 
-`N15-R1`, `N15-R2` and `N15-R5` to `N15-R8` are about setup, job stages and
-walkthroughs, each a reading of its own.
+`N15-R1`, `N15-R2` and `N15-R5` are about setup and job stages, each a reading
+of its own. `N15-R6` to `N15-R8` are the walkthrough, kept on
+[watching one thing arrive](watching-one-thing-arrive.md).

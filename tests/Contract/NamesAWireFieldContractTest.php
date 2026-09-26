@@ -35,6 +35,7 @@ use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\UpgradeField;
+use Modules\Sdk\Api\Fields\WalkthroughField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
 
@@ -87,6 +88,7 @@ function everyFieldNamedOnTheWire(): array
         ...TraceField::cases(),
         ...UpdateField::cases(),
         ...UpgradeField::cases(),
+        ...WalkthroughField::cases(),
     ];
 }
 

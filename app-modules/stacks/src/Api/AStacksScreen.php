@@ -197,6 +197,9 @@ enum AStacksScreen: string
     /** Where one item got to, followed through the services by the name it is known by. */
     case Trace = '/stacks/{stack}/trace/{service}';
 
+    /** Watching one thing arrive, narrated end to end, and the record of what was said. */
+    case Walkthrough = '/stacks/{stack}/walkthrough';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 

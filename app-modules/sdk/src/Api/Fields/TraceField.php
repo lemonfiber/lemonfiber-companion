@@ -20,9 +20,6 @@ enum TraceField: string implements NamesAWireField
     /** What a trace is asked to follow. */
     case Term = 'term';
 
-    /** The term the item was searched for by. */
-    case Item = 'item';
-
     /** Whether a monitored item matched the term at all. */
     case Matched = 'matched';
 

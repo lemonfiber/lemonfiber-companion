@@ -18,6 +18,7 @@ use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
+use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
@@ -265,6 +266,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // Where one item got to, from whatever named it. A title can hold
             // a slash, so the segment takes the rest, as a word's does.
             Router::native(AStacksScreen::Trace->value, WhereThisGotTo::class)->where('service', '.+');
+
+            // Watching one thing arrive, and the record of what was said about
+            // it. Its own screen, because a walkthrough is started and then
+            // followed, and the record is read after the fact.
+            Router::native(AStacksScreen::Walkthrough->value, WatchingOneArrive::class);
 
             // What the whole application is for: one stack, and whether it is
             // doing what it should. A screen of its own rather than a section

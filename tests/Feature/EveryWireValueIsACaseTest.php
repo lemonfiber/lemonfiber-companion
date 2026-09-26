@@ -18,6 +18,7 @@ use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
+use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -30,6 +31,7 @@ use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Waiting;
+use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
@@ -42,6 +44,7 @@ use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
@@ -50,10 +53,13 @@ use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
+use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 use Tests\Support\Tree;
@@ -654,6 +660,53 @@ it('everything a traced item\'s history can record has a case', function (): voi
     expect(valuesOf(WhatHappenedToIt::cases()))->toBe($words);
 });
 
+it('every step a walkthrough can narrate or stop at has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'step');
+
+    expect($words)->not->toBe([], 'no step union was found in the generated envelope');
+    expect(valuesOf(WalkthroughStep::cases()))->toBe($words);
+});
+
+it('everywhere a walkthrough can end up has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'state');
+
+    expect($words)->not->toBe([], 'no state union was found in the generated envelope');
+    expect(valuesOf(WhereTheWalkthroughIs::cases()))->toBe($words);
+});
+
+it('every walk a stack can be offered has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'shape');
+
+    expect($words)->not->toBe([], 'no shape union was found in the generated envelope');
+    expect(valuesOf(WhichWalk::cases()))->toBe($words);
+});
+
+it('everything an import can have done with the file has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'link');
+
+    expect($words)->not->toBe([], 'no link union was found in the generated envelope');
+    expect(valuesOf(HowTheImportLinked::cases()))->toBe($words);
+});
+
+it('every reason a walkthrough can stop for has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('WalkthroughEnvelope'), 'reason');
+
+    expect($words)->not->toBe([], 'no reason union was found in the generated envelope');
+    expect(valuesOf(WhyTheWalkthroughStopped::cases()))->toBe($words);
+});
+
+it('everything a walkthrough can hand over to has a case', function (): void {
+    // A list of the union rather than the union itself, which `unionIn` does
+    // not read, so the list is matched here.
+    preg_match_all("/\\bnext: list<((?:'[a-z_-]+'\\|)+'[a-z_-]+')>/", theGeneratedEnvelope('WalkthroughEnvelope'), $found);
+    preg_match_all("/'([a-z_-]+)'/", $found[1] === [] ? '' : $found[1][0], $literals);
+    $words = $literals[1];
+    sort($words);
+
+    expect($words)->not->toBe([], 'no next union was found in the generated envelope');
+    expect(valuesOf(WhatToDoNext::cases()))->toBe($words);
+});
+
 it('N1-R13 — every way lemonfiber can have been installed has a case', function (): void {
     $words = unionIn(theGeneratedSelfUpdateEnvelope(), 'installed');
 
@@ -889,6 +942,12 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhatBecomesOfUnrated::class => 'unrated',
     WhatBecameOfTheChoice::class => 'disposition',
     WhereTheAskingStands::class => 'state',
+    WalkthroughStep::class => 'step',
+    WhereTheWalkthroughIs::class => 'state',
+    WhichWalk::class => 'shape',
+    HowTheImportLinked::class => 'link',
+    WhyTheWalkthroughStopped::class => 'reason',
+    WhatToDoNext::class => 'next',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

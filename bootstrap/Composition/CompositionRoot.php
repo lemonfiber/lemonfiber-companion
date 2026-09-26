@@ -71,6 +71,7 @@ use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\Verdicts;
+use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\Welcoming;
@@ -87,6 +88,7 @@ use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
@@ -377,6 +379,7 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Explaining::class, Explainers::class);
         $this->app->bind(Rehearsing::class, Rehearsers::class);
         $this->app->bind(Tracing::class, Followers::class);
+        $this->app->bind(WalkingThrough::class, Guides::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

@@ -23,6 +23,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
+use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
@@ -52,6 +53,7 @@ use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
@@ -61,16 +63,19 @@ use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Tests\Support\Catalogue;
 use Tests\Support\Tree;
@@ -303,6 +308,26 @@ function everyDerivedKey(): array
         WhatHappenedToIt::class => aPairPerCase(
             WhatHappenedToIt::cases(),
             static fn(WhatHappenedToIt $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereTheWalkthroughIs::class => aPairPerCase(
+            WhereTheWalkthroughIs::cases(),
+            static fn(WhereTheWalkthroughIs $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhichWalk::class => aPairPerCase(
+            WhichWalk::cases(),
+            static fn(WhichWalk $case): array => [$case->saidOnTheScreen()],
+        ),
+        HowTheImportLinked::class => aPairPerCase(
+            HowTheImportLinked::cases(),
+            static fn(HowTheImportLinked $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatToDoNext::class => aPairPerCase(
+            WhatToDoNext::cases(),
+            static fn(WhatToDoNext $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhyTheWalkthroughStopped::class => aPairPerCase(
+            WhyTheWalkthroughStopped::cases(),
+            static fn(WhyTheWalkthroughStopped $case): array => [$case->saidOnTheScreen()],
         ),
         HowLemonfiberWasInstalled::class => aPairPerCase(
             HowLemonfiberWasInstalled::cases(),

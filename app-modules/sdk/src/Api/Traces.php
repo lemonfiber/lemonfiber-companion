@@ -77,7 +77,7 @@ final readonly class Traces
     /** @param array<array-key, mixed> $data */
     private static function read(array $data): WhereItGotTo
     {
-        $item = self::text($data, TraceField::Item);
+        $item = self::text($data, WireField::Item);
 
         if (! self::flag($data, TraceField::Matched)) {
             return WhereItGotTo::nothingAskedFor($item);

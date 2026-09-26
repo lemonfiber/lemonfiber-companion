@@ -70,6 +70,7 @@ lookup stops being wrong.
 | [where-an-item-got-to.md](where-an-item-got-to.md) | One item followed through the services: how sure, how far, what was tried, and what of a series is here |
 | [what-the-words-mean.md](what-the-words-mean.md) | lemonfiber's words, each with its glosses and what else it is called |
 | [choosing-how-good.md](choosing-how-good.md) | How good the media should be: the presets in force, choosing one, a held choice confirmed, and upgrading what is already here |
+| [watching-one-thing-arrive.md](watching-one-thing-arrive.md) | One thing fetched while the operator watches: every line it said, where it stopped and why, and what to do next |
 | [running-part-of-it.md](running-part-of-it.md) | A stack running some of its forms on purpose, and what starting a form would come to |
 | [what-is-running-here.md](what-is-running-here.md) | Which version of lemonfiber runs, how it was installed, and what moving it would take |
 | [who-gets-in.md](who-gets-in.md) | The credentials a machine holds and what uses each, which app to watch on, where the household comes in, and what an invitation grants before it is sent |

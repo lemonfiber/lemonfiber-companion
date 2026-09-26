@@ -78,8 +78,9 @@ enum WireField: string implements NamesAWireField
     case Outcome = 'outcome';
 
     /**
-     * The technical detail under a verdict, where the core gave one, and a
-     * service's own account of why it refused to act on a quality choice.
+     * The technical detail under a verdict, where the core gave one; a
+     * service's own account of why it refused to act on a quality choice; and
+     * what was specifically true of one line a walkthrough said.
      */
     case Detail = 'detail';
 
@@ -394,8 +395,8 @@ enum WireField: string implements NamesAWireField
 
     /**
      * What would put something right, in one sentence: the single thing to do
-     * about an unverified check, and what would fix a layout that cannot hold
-     * a hardlink.
+     * about an unverified check, what would fix a layout that cannot hold a
+     * hardlink, and what to try about a walkthrough that stopped.
      */
     case Remedy = 'remedy';
 
@@ -431,4 +432,11 @@ enum WireField: string implements NamesAWireField
 
     /** Where one of those trees was read from on the machine. */
     case HostPath = 'host_path';
+
+    /**
+     * What something is about, as the stack names it: the term a trace
+     * searched for, and what a walkthrough walked — which is also the name a
+     * walkthrough is asked to walk by.
+     */
+    case Item = 'item';
 }
