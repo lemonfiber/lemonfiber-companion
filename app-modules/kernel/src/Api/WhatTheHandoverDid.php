@@ -52,7 +52,7 @@ final readonly class WhatTheHandoverDid
     ): self {
         return new self(
             did: HandingOver::Install,
-            name: self::said($name, 'which command'),
+            name: self::named($name),
             rehearsed: $rehearsed,
             started: $started,
             standing: $standing,
@@ -77,7 +77,7 @@ final readonly class WhatTheHandoverDid
     ): self {
         return new self(
             did: HandingOver::Install,
-            name: self::said($name, 'which command'),
+            name: self::named($name),
             rehearsed: $rehearsed,
             started: $started,
             standing: $standing,
@@ -95,7 +95,7 @@ final readonly class WhatTheHandoverDid
     ): self {
         return new self(
             did: HandingOver::Remove,
-            name: self::said($name, 'which command'),
+            name: self::named($name),
             rehearsed: $rehearsed,
             started: false,
             standing: $standing,
@@ -157,6 +157,12 @@ final readonly class WhatTheHandoverDid
     public function writesTo(Closure $there, Closure $unsaid): object
     {
         return $this->output === null ? $unsaid() : $there($this->output);
+    }
+
+    /** The command it acted on, refused where it names none. */
+    private static function named(string $name): string
+    {
+        return self::said($name, 'which command');
     }
 
     /** One word, less the space around it, refused where nothing is left. */
