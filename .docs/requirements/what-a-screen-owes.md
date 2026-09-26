@@ -101,7 +101,7 @@ reaches that action another way. So those four are *partly* built, and the
 question they ask is narrower than the rest: not whether this app does the
 thing, but whether it reads everything the wire now says about it.
 
-**Sixteen more are partly built, the other way round:** the envelope is read and
+**Seventeen more are partly built, the other way round:** the envelope is read and
 drawn, and it answers some of the feature's requirements rather than all of
 them. `A5` is the survey of what is already on a machine: every project and service, what is in the way, what cannot be taken over, what the layout costs, and the modes as the stack offers them (`N7-R5`, `N7-R6`, `N7-R11` to `N7-R14`); `A7` is the credentials a stack holds, where each stands, who made it and what uses it, and never a value (`N9-R1` to `N9-R4`); `G5` is the front door, what each address faces and why, and whether it was chosen (`N9-R9` to `N9-R11`); `G6` is which app to watch on, device by device, with its rating and what to use instead (`N9-R8`, `N9-R9`); `D6` is inviting somebody, what the invitation grants and when it lapses before it is sent, handing it over, and taking a password off (`N9-R5`, `N9-R6`, `N21-R1` to `N21-R10`); `B1` is a stack running some of its forms, and what starting a form would come to (`N18-R1`, `N18-R3` to `N18-R9`); `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B10` is what
 keeps running when nobody is signed in, what each command guarantees and what
@@ -123,7 +123,7 @@ theirs apart (`N10-R1` to `N10-R3`, `N10-R12`). Each is kept on
 [what was done here](what-was-done-here.md), and the rest of each feature is
 still a decision nobody has made.
 
-That leaves **seventeen** with nothing documented at all.
+That leaves **sixteen** with nothing documented at all.
 
 | Feature | What it is |
 |---|---|
