@@ -58,7 +58,7 @@ requirement is right and this page is a defect.
 | `N2-R9` | Stuck downloads are reachable, and *stuck* on its own is not something anybody can act on | `Stage` |
 | `N2-R10` | A log read is bounded, and a bound is only a bound if something holds it | `HowManyLines` |
 | `N16-R10` | Where self-healing could not reach what it manages, that is its own answer and is never rendered as nothing needing attention | `WhatIsUnsupported`, carried on `Stalled` beside the listing rather than anywhere a screen could draw the queue without it. `Unsupported` holds both halves and refuses a blank either side, so a limit cannot reach a screen as a fault with no reason. An absent field reads as `none()` — a stack that reached everything says nothing — while a malformed one is refused, because a limit shown with half its sentence is one nobody can act on |
-| `N16-R12` | The app does not act on a wedged item, change a strike count or a grace window, or turn returning-after-restart on or off | `WhatStoppedComingIn` and `WhatKeepsRunningHere` offer one control each, asking again. Nothing on either screen writes, and the port each reads through has no verb that could |
+| `N16-R12` | The app does not act on a wedged item, change a strike count or a grace window, or turn the stack's own autostart on or off | `WhatStoppedComingIn` and `WhatKeepsRunningHere` offer one control each, asking again. Nothing on either screen writes, and the port each reads through has no verb that could |
 
 `N16-R8`, `N16-R9` and `N16-R11` wait on the contract rather than on this app.
 They ask for why an item was classified as wedged and how many strikes it
@@ -70,28 +70,26 @@ rather than approximated from the stage.
 
 ## What keeps running when nobody is signed in
 
+These are lemonfiber's own long-running commands (`B10`), which the `hosting`
+envelope carries and `WhatKeepsRunningHere` draws.
+
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N16-R5` | Whether the stack comes back after a restart is shown, and where the platform cannot provide it the app says so rather than rendering it as off | `HowItIsHosted`, whose `cannotBePromisedHere()` is a separate question from `comesBackOnItsOwn()` so that *not available here* cannot be drawn as *off*; and `WhatKeepsItRunning::configuresAnything()`, the same line drawn about the machine rather than about one command |
-| `N16-R6` | A restart that did not bring everything back names what did not come back, and is not reported as a completed start | `HowItIsHosted::didNotComeBack()`, which counts `Orphaned` as well as `Stopped` — the definition is installed and the program it names is gone, so it cannot run — and does not count `NotHosted`, where nothing was installed and so nothing failed to start |
-| `N16-R13` | State that could not be read is told apart from there being nothing wrong | `HowItIsHosted::InstalledUnverified`, the manager declining to say. It answers none of the three questions, so a screen cannot draw it from a boolean and has to have a sentence for it — which is what `EveryDerivedKeyResolvesTest` then requires of both locales |
-| `N16-R5` | The sentence that makes *not available here* read differently from *off* | `WhatRunsUnattended::unsupported()`, which takes the instruction and refuses a blank one through `InstructionSaysNothing`. It is a named constructor rather than a nullable parameter, so an unsupported machine with no instruction and an instruction attached to a machine that has a manager are both unspellable |
-| `N16-R6` | What did not come back is named | `WhatRunsUnattended::didNotComeBack()`, answering `WhatDidNotComeBack` — a type of its own rather than a filtered array (`D1`), because *everything this machine hosts* and *everything that did not start* are different lists for different moments. What counts is `HowItIsHosted`'s, so the walk does not judge |
-| `N16-R6` | For an orphan, the honest name is the program rather than the service | `Unattended::orphaned()`, which carries the missing path and sets the standing itself — a row naming a missing program while claiming to be running cannot be built. `Unattended::missing()` hands it over in two arms, so a screen cannot print a blank where a path belongs |
-| `N16-R14` | Nothing on this surface offers first-run setup | `WhatKeepsRunningHere` offers asking again and nothing else. Setup is the one act `N1-R4` keeps at the machine, and `EveryActionTheStackOffersTest` holds the setup kinds as not offered, with that requirement as the reason |
+| `N10-R10` | A long-running command is shown with what it guarantees and what is missing, and one that is defined but not running is shown as that rather than as absent | `HowItIsHosted`, six standings each with a word of its own, so *installed and not running* cannot be drawn as *not hosted*. `didNotComeBack()` counts `Orphaned` as well as `Stopped` — the definition is installed and the program it names is gone, so it cannot run — and does not count `NotHosted`, where nothing was installed and so nothing failed to start |
+| `N10-R10` | A standing the service manager declined to confirm is not drawn as one it confirmed | `HowItIsHosted::InstalledUnverified`. It answers none of the three questions, so a screen cannot draw it from a boolean and has to have a sentence for it — which is what `EveryDerivedKeyResolvesTest` then requires of both locales |
+| `N10-R10` | What did not come back is named | `WhatRunsUnattended::didNotComeBack()`, answering `WhatDidNotComeBack` — a type of its own rather than a filtered array (`D1`), because *everything this machine hosts* and *everything that did not start* are different lists for different moments. What counts is `HowItIsHosted`'s, so the walk does not judge |
+| `N10-R10` | For an orphan, what is missing is the program rather than the service | `Unattended::orphaned()`, which carries the missing path and sets the standing itself — a row naming a missing program while claiming to be running cannot be built. `Unattended::missing()` hands it over in two arms, so a screen cannot print a blank where a path belongs |
+| `N23-R4` | Where the platform has no service manager lemonfiber configures, the stack's instruction is shown and no install is offered | `WhatRunsUnattended::unsupported()`, which takes the instruction and refuses a blank one through `InstructionSaysNothing`. It is a named constructor rather than a nullable parameter, so an unsupported machine with no instruction and an instruction attached to a machine that has a manager are both unspellable. `WhatKeepsItRunning::configuresAnything()` is the same line drawn about the machine, and `WhatKeepsRunningHere` offers asking again and nothing else |
 
-`N16-R7` is deliberately absent. It asks for post-boot verification *with when
-it last ran*, and no envelope carries a time for one — `installed-unverified`
-is the service manager declining to confirm, which is a different subject. The
-spec's own notes on `N16` say so, and `N1-R17` is why the difference is written
-down here rather than approximated from the nearest field.
+`N23-R1` to `N23-R3` and `N23-R5` are not built. They ask for hosting a command
+and removing one as acts of their own, for what an install started and wrote,
+and for a rehearsed one labelled as such. This app reads `hosting` and sends
+neither `hosting-install` nor `hosting-remove`.
 
-`N16-R1` to `N16-R4` wait on the contract too. They are about an outside
-watcher — its verdict beside the stack's own, a monitor that is not reporting,
-a missing heartbeat and how long it has been gone, a check that could not be
-configured to observe what it should — and no envelope carries a monitor or a
-heartbeat. `stage: 'monitored'` on a stuck item is the download pipeline's word
-for a wanted title, not a watcher.
+`N16-R5` to `N16-R7` are not answered here. They are about the stack's own
+autostart (`B8`) — whether it is configured, and what a restart did and did not
+bring back — and no envelope reports it. `hosting` is a different subject, and
+`N1-R17` is why its standings are not offered as an answer to these.
 
 ## What a machine is set to, and who put things there
 
