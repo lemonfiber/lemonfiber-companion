@@ -297,6 +297,25 @@ final readonly class WhatTheWireWouldAnswer
     }
 
     /**
+     * One envelope, wrapped the way the wire wraps one.
+     *
+     * The version comes off `Api::VERSION` rather than being written here, so a
+     * stand-in can never answer with a version the client it is answering would
+     * refuse — which would turn every screen into the mismatch message and read
+     * exactly like a stack running the wrong release.
+     *
+     * @return array<string, mixed>
+     */
+    private static function oneEnvelope(string $envelope): array
+    {
+        return [
+            'api_version' => Api::VERSION,
+            'kind' => WhatTheContractDeclares::kindOf($envelope),
+            'data' => WhatAStackWouldSay::inside($envelope),
+        ];
+    }
+
+    /**
      * A door that opened, with an ending a reader can parse.
      *
      * Built from `AdmissionEnvelope`'s own declaration and then corrected in
