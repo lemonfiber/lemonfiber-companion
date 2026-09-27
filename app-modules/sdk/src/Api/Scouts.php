@@ -29,8 +29,6 @@ use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
-use function trim;
-
 /**
  * The one place this application asks a stack what is already on its machine, and moves in beside it.
  *
@@ -173,7 +171,9 @@ final readonly class Scouts implements MovingIn
 
         $said = $why->said();
 
-        if ($obstacle !== Obstacle::StackDidNotAnswer || $said === null || trim($said) === '') {
+        // The SDK trims what the stack said and hands a blank back as
+        // nothing, so a sentence here always has something in it.
+        if ($obstacle !== Obstacle::StackDidNotAnswer || $said === null) {
             return WhatBecameOfTheMove::met($obstacle);
         }
 
