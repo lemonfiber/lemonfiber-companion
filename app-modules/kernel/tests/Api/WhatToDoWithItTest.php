@@ -53,3 +53,11 @@ it('gives every verb a key of its own', function (): void {
 
     expect(array_unique($keys))->toHaveCount(count(WhatToDoWithIt::cases()));
 });
+
+it('a start and a restart are meant to leave services up, and a stop is not', function (): void {
+    // What decides whether a verb's report is judged by what came back. A stop
+    // judged that way would name everything it stopped as a failure.
+    expect(WhatToDoWithIt::Start->bringsSomethingUp())->toBeTrue()
+        ->and(WhatToDoWithIt::Restart->bringsSomethingUp())->toBeTrue()
+        ->and(WhatToDoWithIt::Stop->bringsSomethingUp())->toBeFalse();
+});

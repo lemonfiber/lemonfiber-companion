@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\APortHeld;
+use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
@@ -13,6 +15,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -22,9 +25,16 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\ThePortsHeld;
+use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\WhatItTakesAway;
+use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatLeansOnIt;
+use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhereAServiceEndedUp;
+use Modules\Kernel\Api\WhereTheServicesEndedUp;
+use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Supervisors;
 use Saloon\Http\Faking\MockClient;
@@ -575,4 +585,217 @@ it('stands in for a stack with payloads the contract would accept', function ():
             sprintf("The payload this suite stands in for a stack with is not one a stack would send: %s.\n", $which),
         );
     }
+});
+
+/**
+ * The payload a stack reports a restart with, changed where a case says.
+ *
+ * A restart that brought one service back and left one failed, with a service
+ * the configuration left out and a port something else already holds: every
+ * part the screen draws, each carrying something.
+ *
+ * @param  array<mixed>         $changed
+ * @return array<string, mixed>
+ */
+function whatAStackReportsOfARestart(array $changed = []): array
+{
+    return ['api_version' => 1, 'kind' => 'lifecycle', 'data' => [
+        'action' => 'restart',
+        'command' => ['docker', 'compose', '--profile', 'media', 'restart'],
+        'condition' => 'partial',
+        'plan' => [
+            'forms' => ['library'],
+            'profiles' => ['media', 'tv'],
+            'services' => ['jellyfin', 'sonarr'],
+            'dropped' => [['profile' => 'torrent', 'needs' => 'torrent']],
+            'filtered' => [['id' => 'qbittorrent', 'name' => 'qBittorrent', 'profile' => 'torrent', 'needs' => 'torrent', 'forms' => ['library']]],
+            'footprint' => ['estimated_mib' => 900, 'unestimated' => []],
+        ],
+        'port_conflicts' => [['port' => 8096, 'wanted_by' => 'jellyfin', 'held_by' => 'media-server']],
+        'rehearsed' => false,
+        'services' => [
+            [
+                'id' => 'jellyfin',
+                'name' => 'Jellyfin',
+                'describes' => 'The library everybody watches from',
+                'profile' => 'media',
+                'forms' => ['library'],
+                'state' => 'healthy',
+                'criticality' => 'core',
+                'depends_on' => [],
+            ],
+            [
+                'id' => 'sonarr',
+                'name' => 'Sonarr',
+                'describes' => 'Fetches the series somebody is following',
+                'profile' => 'tv',
+                'forms' => ['library'],
+                'state' => 'failed',
+                'criticality' => 'important',
+                'depends_on' => ['jellyfin'],
+                'exit' => 137,
+            ],
+        ],
+        'stack_edits' => [],
+        'status' => 0,
+        ...$changed,
+    ]];
+}
+
+/** The report that payload stands for, as the fake is handed it. */
+function theSameRestartReported(): WhatTheVerbCameTo
+{
+    return WhatTheVerbCameTo::reported(
+        WhetherItWasRehearsed::CarriedOut,
+        WhereTheServicesEndedUp::of(
+            WhereAServiceEndedUp::as('Jellyfin', HowAServiceRuns::Healthy),
+            WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Failed),
+        ),
+        TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
+        ThePortsHeld::of(APortHeld::of(8096, 'jellyfin', 'media-server')),
+    )->amountingTo(HowTheStackIsRunning::Partial);
+}
+
+/**
+ * Both ways of following a verb, each set up to say the same.
+ *
+ * @return array<string, Closure(): Supervising>
+ */
+function everyWayOfFollowingAVerb(MockResponse $answered, HowTheVerbIsGoing $became): array
+{
+    return [
+        'the fake' => static fn(): Supervising => AStackThatSupervises::with(theSameRunning())->whichCameTo($became),
+        'the adapter' => static function () use ($answered): Supervising {
+            MockClient::destroyGlobal();
+            MockClient::global([$answered]);
+
+            return new Supervisors(new PinnedClients(), SequencedEntropy::counting());
+        },
+    ];
+}
+
+/** Every part of a finished verb's report, folded to one line. */
+function everyPartOfWhatTheVerbCameTo(WhatTheVerbCameTo $report): string
+{
+    $notBack = [];
+    $leftOut = [];
+    $ports = [];
+
+    foreach ($report->whatDidNotComeBack() as $service) {
+        $notBack[] = sprintf('%s:%s', $service->name(), $service->runs()->value);
+    }
+
+    foreach ($report->leftOut() as $service) {
+        $leftOut[] = sprintf('%s:%s', $service->name(), $service->needs()->value);
+    }
+
+    foreach ($report->portsHeld() as $held) {
+        $ports[] = sprintf('%d:%s:%s', $held->port(), $held->wantedBy(), $held->heldBy());
+    }
+
+    return sprintf(
+        '%s|%s|not back %s|left out %s|ports %s|%s',
+        $report->was()->value,
+        $report->amountsTo(
+            said: static fn(HowTheStackIsRunning $condition): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay($condition->value),
+            unsaid: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('unsaid'),
+        )->said,
+        implode(',', $notBack),
+        implode(',', $leftOut),
+        implode(',', $ports),
+        $report->whetherItRan(
+            ran: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('ran'),
+            declined: static fn(string $why): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay(sprintf('declined: %s', $why)),
+        )->said,
+    );
+}
+
+/** What asking after a verb came to, as one line. */
+function whatBecameOfTheVerb(Supervising $supervising): string
+{
+    return $supervising->whatBecameOf(aStackWithServices(), theSessionTheStackIsSupervisedWith(), Job::named(AStackThatSupervises::THE_JOB))->either(
+        stillRunning: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('still running'),
+        done: static fn(WhatTheVerbCameTo $report): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay(everyPartOfWhatTheVerbCameTo($report)),
+        ended: static fn(): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay('ended'),
+        met: static fn(Obstacle $why): WhatSupervisingTurnedOutToSay => new WhatSupervisingTurnedOutToSay($why->value),
+    )->said;
+}
+
+/** What a stack answers where the verb is still being carried out. */
+function aVerbStillRunning(): MockResponse
+{
+    return MockResponse::make((string) json_encode(whatAStackTakingAVerbSends()), 202);
+}
+
+it('reads every part of what a finished verb came to', function (): void {
+    $finished = MockResponse::make((string) json_encode(whatAStackReportsOfARestart()));
+
+    foreach (everyWayOfFollowingAVerb($finished, HowTheVerbIsGoing::done(theSameRestartReported())) as $which => $build) {
+        expect(whatBecameOfTheVerb($build()))
+            ->toBe('carried_out|partial|not back Sonarr:failed|left out qBittorrent:torrent|ports 8096:jellyfin:media-server|ran', $which);
+    }
+});
+
+it('a verb still being carried out is its own answer', function (): void {
+    foreach (everyWayOfFollowingAVerb(aVerbStillRunning(), HowTheVerbIsGoing::stillRunning()) as $which => $build) {
+        expect(whatBecameOfTheVerb($build()))->toBe('still running', $which);
+    }
+});
+
+it('a verb the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
+    foreach (everyWayOfFollowingAVerb($forgotten, HowTheVerbIsGoing::ended()) as $which => $build) {
+        expect(whatBecameOfTheVerb($build()))->toBe('ended', $which);
+    }
+})->with([
+    'let go of' => [MockResponse::make((string) json_encode(whatAStackTakingAVerbSends()))],
+    'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
+]);
+
+it('asking after a verb tells a refused session from a stack that is not answering', function (): void {
+    $table = [
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        foreach (everyWayOfFollowingAVerb($answered, HowTheVerbIsGoing::met($why)) as $which => $build) {
+            expect(whatBecameOfTheVerb($build()))->toBe($why->value, $which);
+        }
+    }
+});
+
+it('a report this app cannot read is a stack that did not answer, never a shorter report', function (array $changed): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode(whatAStackReportsOfARestart($changed)))]);
+
+    expect(whatBecameOfTheVerb(new Supervisors(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->value);
+})->with([
+    'no word on whether it was rehearsed' => [['rehearsed' => 'no']],
+    'a condition this app has no word for' => [['condition' => 'fine']],
+    'a service in a state this app has no word for' => [['services' => [['id' => 'sonarr', 'name' => 'Sonarr', 'describes' => '', 'profile' => 'tv', 'forms' => [], 'state' => 'resting', 'criticality' => 'core', 'depends_on' => []]]]],
+    'a declined start with a blank reason' => [['held' => ' ']],
+    'a port held by nothing named' => [['port_conflicts' => [['port' => 8096, 'wanted_by' => 'jellyfin', 'held_by' => '']]]],
+    'no plan' => [['plan' => null]],
+]);
+
+it('asking after a verb names the handle telling it answered', function (): void {
+    $supervising = AStackThatSupervises::with(theSameRunning())->whichCameTo(HowTheVerbIsGoing::stillRunning());
+    whatBecameOfTheVerb($supervising);
+
+    expect($supervising->followed())->toHaveCount(1)
+        ->and($supervising->followed()[0]->shown())->toBe(AStackThatSupervises::THE_JOB);
+});
+
+it('the fake follows a verb as still running until a test says what it came to', function (): void {
+    // A default a screen test can rely on without spelling it: a verb just
+    // sent is running. A stack that could not be reached cannot be asked
+    // after either, which is the obstacle every half of it meets.
+    expect(whatBecameOfTheVerb(AStackThatSupervises::with(theSameRunning())))->toBe('still running')
+        ->and(whatBecameOfTheVerb(AStackThatSupervises::met(Obstacle::DeviceHasNoNetwork)))->toBe(Obstacle::DeviceHasNoNetwork->value);
+});
+
+it('stands in for a stack with a report the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('LifecycleEnvelope', whatAStackReportsOfARestart()))
+        ->toBe([], "The report this suite stands in for a stack with is not one a stack would send.\n");
 });

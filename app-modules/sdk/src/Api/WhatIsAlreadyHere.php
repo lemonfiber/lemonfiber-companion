@@ -175,13 +175,13 @@ final readonly class WhatIsAlreadyHere
 
         foreach (Required::rows($data, MigrationField::Conflicts, MigrationIsUnreadable::missing(MigrationField::Conflicts)) as $row) {
             if (! is_array($row)) {
-                throw MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, MigrationField::Port);
+                throw MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, WireField::Port);
             }
 
             $found[] = APortHeld::of(
-                Required::number($row, MigrationField::Port, MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, MigrationField::Port)),
-                Required::text($row, MigrationField::WantedBy, MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, MigrationField::WantedBy)),
-                Required::text($row, MigrationField::HeldBy, MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, MigrationField::HeldBy)),
+                Required::number($row, WireField::Port, MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, WireField::Port)),
+                Required::text($row, WireField::WantedBy, MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, WireField::WantedBy)),
+                Required::text($row, WireField::HeldBy, MigrationIsUnreadable::entry(MigrationField::Conflicts, $position, WireField::HeldBy)),
             );
             $position++;
         }

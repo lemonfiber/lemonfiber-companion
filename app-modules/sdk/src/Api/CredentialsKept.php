@@ -123,14 +123,14 @@ final readonly class CredentialsKept
      */
     private static function held(array $data): array
     {
-        if (! array_key_exists(CredentialsField::Held->value, $data) || ! is_array($data[CredentialsField::Held->value])) {
-            throw CredentialsIsUnreadable::missing(CredentialsField::Held);
+        if (! array_key_exists(WireField::Held->value, $data) || ! is_array($data[WireField::Held->value])) {
+            throw CredentialsIsUnreadable::missing(WireField::Held);
         }
 
         $found = [];
         $position = 0;
 
-        foreach ($data[CredentialsField::Held->value] as $row) {
+        foreach ($data[WireField::Held->value] as $row) {
             if (! is_array($row)) {
                 throw CredentialsIsUnreadable::row($position);
             }

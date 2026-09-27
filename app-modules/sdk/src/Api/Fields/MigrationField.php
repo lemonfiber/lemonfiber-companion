@@ -29,15 +29,6 @@ enum MigrationField: string implements NamesAWireField
     /** Ports lemonfiber wants that something already here holds. */
     case Conflicts = 'conflicts';
 
-    /** The host port a conflict is about. */
-    case Port = 'port';
-
-    /** The lemonfiber service that would publish a port already held. */
-    case WantedBy = 'wanted_by';
-
-    /** The project already holding it. */
-    case HeldBy = 'held_by';
-
     /** What may be done about what was found, least destructive first. */
     case Modes = 'modes';
 

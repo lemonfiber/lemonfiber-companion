@@ -75,8 +75,8 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 62 envelopes and this app follows 37.
-Of the rest, 23 are never named by the code in `app-modules` or `bridge`, tests
+**The measurement.** The SDK ships 62 envelopes and this app follows 38.
+Of the rest, 22 are never named by the code in `app-modules` or `bridge`, tests
 aside, and 2 more — `Admission` and `Pull` — are named without being followed.
 They resolve to the features below — each one an action available from another
 surface and not offered here, or offered only in part.
@@ -93,17 +93,15 @@ wants a requirement before it wants a surface. What each row needs is a decision
 — a companion surface, or a requirement stating why not, the way `N1-R4` does
 for setup.
 
-**An unread envelope is not an unbuilt feature, and four rows prove it.** `B2`,
-`D7`, `F7` and `G2` are each documented on these pages already: lifecycle
-control is `N2-R7`, kept by `Daemon` and `HowAServiceRuns`, and the screen is
-`WhatToDoWithThis`. What is unread is the `lifecycle` envelope, because the app
-reaches that action another way. So those four are *partly* built, and the
-question they ask is narrower than the rest: not whether this app does the
-thing, but whether it reads everything the wire now says about it.
+**An unread envelope is not an unbuilt feature, and three rows prove it.** `D7`,
+`F7` and `G2` are each documented on these pages already, beside an envelope the
+app does not read. So those three are *partly* built, and the question they ask
+is narrower than the rest: not whether this app does the thing, but whether it
+reads everything the wire now says about it.
 
-**Eighteen more are partly built, the other way round:** the envelope is read and
+**Nineteen more are partly built, the other way round:** the envelope is read and
 drawn, and it answers some of the feature's requirements rather than all of
-them. `A5` is the survey of what is already on a machine: every project and service, what is in the way, what cannot be taken over, what the layout costs, and the modes as the stack offers them (`N7-R5`, `N7-R6`, `N7-R11` to `N7-R14`); `A7` is the credentials a stack holds, where each stands, who made it and what uses it, and never a value (`N9-R1` to `N9-R4`); `G5` is the front door, what each address faces and why, and whether it was chosen (`N9-R9` to `N9-R11`); `G6` is which app to watch on, device by device, with its rating and what to use instead (`N9-R8`, `N9-R9`); `D6` is inviting somebody, what the invitation grants and when it lapses before it is sent, handing it over, and taking a password off (`N9-R5`, `N9-R6`, `N21-R1` to `N21-R10`); `B1` is a stack running some of its forms, and what starting a form would come to (`N18-R1`, `N18-R3` to `N18-R9`); `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B10` is what
+them. `B2` is starting, stopping and restarting a service or a form, followed to what the stack reports it came to: what did not come back, a start it declined with its reason, a rehearsal, what was left out and which ports something else holds (`N2-R7`, `N16-R6`); `A5` is the survey of what is already on a machine: every project and service, what is in the way, what cannot be taken over, what the layout costs, and the modes as the stack offers them (`N7-R5`, `N7-R6`, `N7-R11` to `N7-R14`); `A7` is the credentials a stack holds, where each stands, who made it and what uses it, and never a value (`N9-R1` to `N9-R4`); `G5` is the front door, what each address faces and why, and whether it was chosen (`N9-R9` to `N9-R11`); `G6` is which app to watch on, device by device, with its rating and what to use instead (`N9-R8`, `N9-R9`); `D6` is inviting somebody, what the invitation grants and when it lapses before it is sent, handing it over, and taking a password off (`N9-R5`, `N9-R6`, `N21-R1` to `N21-R10`); `B1` is a stack running some of its forms, and what starting a form would come to (`N18-R1`, `N18-R3` to `N18-R9`); `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B10` is what
 keeps running when nobody is signed in, what each command guarantees and what
 did not come back, and handing a command over or taking it back with what each did (`N10-R10`, `N23-R1` to `N23-R5`); `D9` is where one item got to, followed through the services (`N8-R4` to `N8-R6`, `N8-R8`, `N8-R9`); `D2` is the quality presets in force, choosing one overall or per kind of media, a held choice confirmed apart, and upgrading what is already here described kind by kind before it is carried out (`N24-R1` to `N24-R5`, `N24-R10`); `D3` is the first-content walkthrough, started from the phone and followed to its record (`N15-R6` to `N15-R8`); `D5` is how full the machine is, where the room went and each download with where it stands (`N12-R1` to `N12-R3`, `N12-R6`, `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E2` is which version runs, how it was installed and what moving it would take (`N14-R1` to `N14-R8`); `E4`
 is the record of what was changed and how far back it goes (`N11-R1` to

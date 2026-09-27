@@ -374,6 +374,109 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'profile is the stack\'s grouping of them rather than something an operator starts.',
     ],
     [
+        'path' => 'LifecycleEnvelope.action',
+        'because' => 'The Compose subcommand that was run. The screen judges the report against the verb the '
+            . 'operator agreed to, which it sent and holds; reading the subcommand to decide would put a '
+            . 'second answer beside that one, for `JobEnvelope.action`\'s reason.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.command',
+        'because' => 'The exact command line the stack ran. It is what somebody at a terminal checks a run '
+            . 'against, and no `N` requirement asks the phone to show it; `N16-R6` asks for what did not '
+            . 'come back, which is read off the services. Raise it against the spec before reading it, '
+            . 'which is `N1-R17`.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.forwarding',
+        'because' => 'What starting did about the VPN\'s forwarded port, where it did anything. No `N` '
+            . 'requirement asks what a verb came to to carry it: `N2-R9` has VPN verification reachable, '
+            . 'which is a reading of the tunnel rather than a sentence on one start. Raise it against the '
+            . 'spec before reading it, which is `N1-R17`.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.stack_edits',
+        'because' => 'Stack files the operator edited, which an upgrade would change. A warning about an '
+            . 'upgrade, and this screen offers start, stop and restart (`N2-R7`); the edits are the '
+            . 'operator\'s, made at the machine, and no requirement asks a verb\'s outcome to list them.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.status',
+        'because' => 'The exit status of the command. What the verb came to is read off the condition and '
+            . 'off each service the stack waited for, which say what came back; a process status beside '
+            . 'them is a second answer about the same run and names nothing `N16-R6` asks to be named.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.switched',
+        'because' => 'What narrowing moved, where the command was a switch. Absent for every other action, '
+            . 'and this app offers no switch (`N2-R7` offers start, stop and restart), for the reason '
+            . '`StatusEnvelope.disturbs.switching` is not read.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.plan.dropped',
+        'because' => 'The profiles the verb left out, each with what it would need. `filtered` says the '
+            . 'same service by service, which is what the report draws, for `PreviewEnvelope.dropped`\'s '
+            . 'reason.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.plan.filtered[].profile',
+        'because' => 'Which profile a service left out belongs to, for `PreviewEnvelope.filtered[].profile`\'s reason.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.plan.footprint',
+        'because' => 'What the stack estimated the services would need. It is drawn before a start, as the '
+            . 'rehearsal (`N18-R5`); after one, what came back is the answer, and an estimate beside it '
+            . 'would read as a measurement of what is running, which `N18-R5` refuses.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.plan.forms',
+        'because' => 'The forms the operator named, repeated back. The screen sent the one it is about and '
+            . 'draws the report under that name, for `PreviewEnvelope.forms`\'s reason.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.plan.profiles',
+        'because' => 'The profiles the verb activated, for `PreviewEnvelope.profiles`\'s reason.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.plan.services',
+        'because' => 'The services the plan named. Where the stack waited for them, `services` says where '
+            . 'each ended up and is read; the plan\'s list beside it would name them twice. Where it did '
+            . 'not wait, which is a stop, the listing read afterwards says where they stand.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.services[].criticality',
+        'because' => 'How much a service\'s absence costs. `N16-R6` asks for what did not come back to be '
+            . 'named, which is its name and where it stood; the service\'s own frame draws how much it '
+            . 'matters, off the listing read now rather than a report of a moment ago.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.services[].depends_on',
+        'because' => 'What a service will not work without. Drawn on the service\'s own frame off the '
+            . 'listing, for `services[].criticality`\'s reason.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.services[].describes',
+        'because' => 'What a service is for, in the stack\'s words, for `StatusEnvelope.services[].describes`\'s reason.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.services[].exit',
+        'because' => 'What a service exited with. Drawn on the service\'s own frame off the listing, which '
+            . 'carries the same field, for `services[].criticality`\'s reason.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.services[].forms',
+        'because' => 'The forms that brought a service in. `N18-R1` has that drawn where what is running is '
+            . 'listed, and it is, off the listing; the report names what did not come back.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.services[].id',
+        'because' => 'The service\'s identifier. The report names a service by what an operator reads, and '
+            . 'nothing on it is asked for by identifier.',
+    ],
+    [
+        'path' => 'LifecycleEnvelope.services[].profile',
+        'because' => 'The compose profile a service belongs to, for `StatusEnvelope.services[].profile`\'s reason.',
+    ],
+    [
         'path' => 'HouseholdEnvelope.findings',
         'because' => 'Plain sentences about the listing itself, beside the members. `N2-R3` has a finding '
             . 'carry a code, a meaning and a remedy, and those arrive on the `doctor` envelope; a bare '

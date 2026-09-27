@@ -8,6 +8,7 @@ use Closure;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
+use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -52,11 +53,19 @@ final class AStackThatSupervises implements Supervising
     /** @var list<AgreedTo> Everything it was told to do, in the order it was told. */
     private array $told = [];
 
+    /** @var list<Job> Every handle it was asked after, in the order it was asked. */
+    private array $followed = [];
+
     /**
      * @param Closure(): WhatIsRunning $answer
      * @param Closure(): Underway      $acting
+     * @param ?HowTheVerbIsGoing       $becoming what asking after a verb answers, where a test said; still running where none did
      */
-    private function __construct(private readonly Closure $answer, private readonly Closure $acting) {}
+    private function __construct(
+        private readonly Closure $answer,
+        private readonly Closure $acting,
+        private readonly ?HowTheVerbIsGoing $becoming = null,
+    ) {}
 
     /** A stack running these, which takes what it is told. */
     public static function with(Daemons $daemons): self
@@ -99,12 +108,13 @@ final class AStackThatSupervises implements Supervising
         )));
     }
 
-    /** A stack the operator could not reach, for the reason given, either way. */
+    /** A stack the operator could not reach, for the reason given, every way. */
     public static function met(Obstacle $why): self
     {
         return new self(
             static fn(): WhatIsRunning => WhatIsRunning::met($why),
             static fn(): Underway => Underway::met($why),
+            HowTheVerbIsGoing::met($why),
         );
     }
 
@@ -185,6 +195,18 @@ final class AStackThatSupervises implements Supervising
         );
     }
 
+    /**
+     * The same stack, which answers asking after a verb with `$became`.
+     *
+     * A wither rather than a constructor per outcome, because what a verb
+     * came to is independent of what the stack lists and every listing above
+     * wants to be followable.
+     */
+    public function whichCameTo(HowTheVerbIsGoing $became): self
+    {
+        return new self($this->answer, $this->acting, $became);
+    }
+
     /** The stack it was last asked about, or nothing where it never was. */
     public function askedAbout(): ?Stack
     {
@@ -226,6 +248,27 @@ final class AStackThatSupervises implements Supervising
         $this->told[] = $agreed;
 
         return ($this->acting)();
+    }
+
+    /**
+     * Not counted among {@see askings()}, which count readings of the listing
+     * and verbs: following is its own question, asked on its own cadence.
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
+    {
+        $this->followed[] = $job;
+
+        return $this->becoming ?? HowTheVerbIsGoing::stillRunning();
+    }
+
+    /**
+     * Every handle it was asked after, in order.
+     *
+     * @return list<Job>
+     */
+    public function followed(): array
+    {
+        return $this->followed;
     }
 
     /**

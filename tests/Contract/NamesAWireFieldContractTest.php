@@ -19,6 +19,7 @@ use Modules\Sdk\Api\Fields\HostingField;
 use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\Fields\InvitationField;
 use Modules\Sdk\Api\Fields\JobField;
+use Modules\Sdk\Api\Fields\LifecycleField;
 use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Api\Fields\MusicField;
@@ -73,6 +74,7 @@ function everyFieldNamedOnTheWire(): array
         ...HostingField::cases(),
         ...HouseholdField::cases(),
         ...JobField::cases(),
+        ...LifecycleField::cases(),
         ...LogField::cases(),
         ...MigrationField::cases(),
         ...MusicField::cases(),

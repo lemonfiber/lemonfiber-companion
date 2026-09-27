@@ -35,7 +35,7 @@ use Tests\Support\WhatTheReadersRead;
  */
 const OFFERED = [
     'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Clients', 'Config', 'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms',
-    'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Log', 'Migration',
+    'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
     'Music', 'Outbound', 'Preview', 'Provenance', 'Quality', 'Repair', 'Restore', 'SelfUpdate', 'Space', 'Status',
     'Stored', 'Stuck', 'Trace', 'Update', 'Upgrade',
     'Walkthrough',
@@ -72,7 +72,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Adoption', 'Beside', 'Bundle', 'Catalogue', 'Import', 'Lifecycle',
+    'Admission', 'Adoption', 'Beside', 'Bundle', 'Catalogue', 'Import',
     'Plugins', 'Pull', 'Removal', 'Replacement', 'Reset',
     'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall', 'Version',
     'Watch', 'Wiring', 'Word',

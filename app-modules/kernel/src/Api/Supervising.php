@@ -53,4 +53,12 @@ interface Supervising
      * another's.
      */
     public function told(Stack $stack, Session $session, AgreedTo $agreed): Underway;
+
+    /**
+     * What became of a verb, by the handle telling the stack answered.
+     *
+     * A read: it asks after work the stack already named, and asking twice
+     * changes nothing, so it carries no key.
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing;
 }

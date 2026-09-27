@@ -100,4 +100,19 @@ enum WhatToDoWithIt: string
         };
     }
 
+    /**
+     * Whether doing this is meant to leave services up.
+     *
+     * What such a verb came to is judged by whether everything came back, and
+     * what did not is named. A stop is meant to leave them down, and naming
+     * what it left down as *not back* would report the stop as a failure.
+     */
+    public function bringsSomethingUp(): bool
+    {
+        return match ($this) {
+            self::Start, self::Restart => true,
+            self::Stop => false,
+        };
+    }
+
 }

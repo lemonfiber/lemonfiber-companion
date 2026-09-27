@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use Lemonfiber\Sdk\Contract\Api;
+use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
+use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -65,6 +69,11 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * does not take one — a port that accepted a key is a port a caller can hand
  * the same key to twice, which is the replay `ADR-0020` argues at length
  * against, arriving through the one door built to prevent it.
+ *
+ * **Following a verb carries no key**, for {@see Copiers}' reason: it asks
+ * after work already named and changes nothing. What the verb came to is read
+ * by {@see Lifecycles} inside the same `try` as the request, so a report this
+ * app cannot read is the same obstacle as one that never arrived.
  */
 final readonly class Supervisors implements Supervising
 {
@@ -116,6 +125,35 @@ final readonly class Supervisors implements Supervising
             return Underway::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName) {
             return Underway::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
+    {
+        try {
+            return $this->outcome($stack, $session, $job);
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return HowTheVerbIsGoing::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|LifecycleIsUnreadable) {
+            return HowTheVerbIsGoing::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
+    /**
+     * What the stack says about the verb, with only `NoSuchJob` caught, for
+     * {@see Upkeepers::outcome()}'s reason.
+     */
+    private function outcome(Stack $stack, Session $session, Job $job): HowTheVerbIsGoing
+    {
+        try {
+            return $this->clients->client($stack, $session)->whatBecameOf($job->shown())->answering(
+                stillRunning: static fn(): HowTheVerbIsGoing => HowTheVerbIsGoing::stillRunning(),
+                finished: static fn(Envelope $envelope): HowTheVerbIsGoing
+                    => HowTheVerbIsGoing::done(Lifecycles::in($envelope)),
+                ended: static fn(): HowTheVerbIsGoing => HowTheVerbIsGoing::ended(),
+            );
+        } catch (NoSuchJob) {
+            return HowTheVerbIsGoing::ended();
         }
     }
 

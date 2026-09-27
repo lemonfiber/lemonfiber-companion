@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
@@ -303,6 +304,20 @@ it('N1-R17 — reads what is running, then the forms the stack declares, each at
     expect($asked)->toHaveCount(2)
         ->and($asked[0])->toEndWith(Api::STATUS_ENDPOINT)
         ->and($asked[1])->toEndWith(Api::FORMS_ENDPOINT);
+});
+
+it('asks after a verb by the name its handle carries, and carries no key', function (): void {
+    // A read of work already named: a key on it would be a key a caller could
+    // replay, and nothing here changes a stack.
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([MockResponse::make('{"error":"no such job"}', 404)]);
+
+    new Supervisors(new PinnedClients(), SequencedEntropy::counting())->whatBecameOf(theSupervisedStack(), Session::of('a-session-not-a-secret'), Job::named('a-restart'));
+
+    $sent = $mock->getLastPendingRequest();
+
+    expect($sent?->getUrl())->toEndWith('/api/jobs/a-restart')
+        ->and($sent?->headers()->get(Api::IDEMPOTENCY_HEADER))->toBeNull();
 });
 
 it('stands in for a stack with payloads the contract would accept', function (): void {

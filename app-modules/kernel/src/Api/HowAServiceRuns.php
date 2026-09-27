@@ -118,6 +118,24 @@ enum HowAServiceRuns: string
     }
 
     /**
+     * Whether a verb that waited for it can count it as back.
+     *
+     * What a restart names as not having come back is every service this
+     * answers false for. Back is up: `Running` or `Healthy`. `HostManaged` is
+     * the host's to bring back rather than this stack's, for
+     * {@see isThisStacksToRun()}'s reason, so a report naming it as missing
+     * would put the machine's own arrangement down to the stack. Every arm is
+     * written out, for {@see whatMayBeDoneToIt()}'s reason.
+     */
+    public function cameBack(): bool
+    {
+        return match ($this) {
+            self::Running, self::Healthy, self::HostManaged => true,
+            self::Failed, self::CrashLooping, self::Unhealthy, self::Absent, self::Stopped, self::Starting => false,
+        };
+    }
+
+    /**
      * Whether this state can take that one of the three verbs.
      *
      * Asked one verb at a time because `D1` refuses an array crossing a module
