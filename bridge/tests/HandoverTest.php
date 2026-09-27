@@ -110,3 +110,43 @@ it('does not send a payload it could not encode, and says so as nothing said', f
         ->toBe(WhyNothingWasHandedOver::ThePlatformWouldNot)
         ->and($bridge->calls)->toBe([]);
 });
+
+it('sends a file as its title, its name and its bytes in base64, and nothing else', function (): void {
+    // Bytes that are not text, which is what an archive is: base64 is what
+    // lets them cross a bridge that carries JSON, byte for byte.
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Handover.OfferFile', ['outcome' => 'offered']);
+
+    expect(whyTheSheetWasRefused(new Handover()->offerFile('a-bundle.tar.gz', 'a-bundle.tar.gz', "\x1F\x8B\x08\x00\xB1")))->toBeNull();
+
+    $bridge->assertCalled(
+        'Lemonfiber.Handover.OfferFile',
+        static fn(array $sent): bool => $sent === ['title' => 'a-bundle.tar.gz', 'name' => 'a-bundle.tar.gz', 'bytes' => 'H4sIALE='],
+    );
+});
+
+it('reads each refusal the sheet can answer a file with', function (): void {
+    foreach (WhyNothingWasHandedOver::cases() as $why) {
+        FakeBridge::disable();
+        FakeBridge::enable()->respondTo('Lemonfiber.Handover.OfferFile', [
+            'outcome' => 'refused',
+            'because' => $why->value,
+        ]);
+
+        expect(whyTheSheetWasRefused(new Handover()->offerFile('a', 'a', 'b')))->toBe($why);
+    }
+});
+
+it('reads no answer to a file as the platform having refused', function (): void {
+    FakeBridge::enable();
+
+    expect(whyTheSheetWasRefused(new Handover()->offerFile('a', 'a', 'b')))
+        ->toBe(WhyNothingWasHandedOver::ThePlatformWouldNot);
+});
+
+it('does not send a file whose name it could not encode', function (): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Handover.OfferFile', ['outcome' => 'offered']);
+
+    expect(whyTheSheetWasRefused(new Handover()->offerFile('a', "\xB1", 'b')))
+        ->toBe(WhyNothingWasHandedOver::ThePlatformWouldNot)
+        ->and($bridge->calls)->toBe([]);
+});

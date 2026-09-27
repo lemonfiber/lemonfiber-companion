@@ -77,6 +77,12 @@ const DOORS_THE_APP_OPENS = [
     // only while somebody can see it.
     'eventSource' => 'listens to the stack\'s event stream for the health summary, changing nothing',
 
+    // The one read whose answer is a file rather than an envelope: a support
+    // bundle the stack already wrote, fetched by the name its path ends in so
+    // the operator can hand it over through the device's own sharing. It
+    // changes nothing on the machine, and nothing is sent back through it.
+    'bundle' => 'reads one support bundle the stack wrote, by its name, changing nothing',
+
     // The one thing this app can ask a stack to change,
     // and it takes a `Repair` the stack itself offered rather than an endpoint
     // and a body. A caller cannot spell an arbitrary change through it.

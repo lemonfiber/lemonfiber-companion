@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use Lemonfiber\Native\Handover;
 use Modules\Device\Api\PlatformShare;
+use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Assembled;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Handed;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\WhyNothingWasShared;
@@ -174,6 +176,59 @@ it('says so where the platform would not pass an invitation on', function (): vo
             ->toBe(WhyNothingWasShared::TheDeviceWouldNotOffer->value, $which);
     }
 });
+
+/**
+ * The adapter, over a bridge scripted to answer a file one way.
+ *
+ * @param array<string, string> $answer
+ */
+function overASheetThatSaysOfAFile(array $answer): PlatformShare
+{
+    FakeBridge::disable();
+    FakeBridge::enable()->respondTo('Lemonfiber.Handover.OfferFile', $answer);
+
+    return new PlatformShare(new Handover());
+}
+
+/** A bundle's file as the stack served it. */
+function aBundleToHandOver(): ABundleFile
+{
+    return ABundleFile::fetched(AWrittenBundle::at('/home/op/bundles/lemonfiber-support.tar.gz'), "\x1F\x8B\x08\x00an archive");
+}
+
+it('hands a bundle over as its own file, named for itself, and says it did', function (): void {
+    $adapter = overASheetThatSaysOfAFile(['outcome' => 'offered']);
+    $fake = AShareSheetThatWasOffered::working();
+
+    foreach (['the fake' => $fake, 'the adapter' => $adapter] as $which => $sharing) {
+        expect(howTheSharingWent($sharing->handOver(aBundleToHandOver())))->toBe('over', $which);
+    }
+
+    expect(array_map(static fn(ABundleFile $file): string => $file->bytes(), $fake->handedOver()))->toBe(["\x1F\x8B\x08\x00an archive"]);
+
+    // Only the adapter can be asked this: the sheet is offered the file's own
+    // name as its title and its name, and its bytes, and nothing else — no
+    // address, no session, nothing this app holds.
+    FakeBridge::enable()->assertCalled(
+        'Lemonfiber.Handover.OfferFile',
+        static fn(array $sent): bool => $sent === [
+            'title' => 'lemonfiber-support.tar.gz',
+            'name' => 'lemonfiber-support.tar.gz',
+            'bytes' => 'H4sIAGFuIGFyY2hpdmU=',
+        ],
+    );
+});
+
+it('says so where a bundle could not be put on the device, or the sheet would not open for it', function (string $because, WhyNothingWasShared $why): void {
+    $adapter = overASheetThatSaysOfAFile(['outcome' => 'refused', 'because' => $because]);
+
+    foreach (['the fake' => AShareSheetThatWasOffered::refusing($why), 'the adapter' => $adapter] as $which => $sharing) {
+        expect(howTheSharingWent($sharing->handOver(aBundleToHandOver())))->toBe($why->value, $which);
+    }
+})->with([
+    'nothing to hand over' => ['nothing_to_hand_over', WhyNothingWasShared::NothingToHandOver],
+    'a sheet that would not open' => ['the_platform_would_not', WhyNothingWasShared::TheDeviceWouldNotOffer],
+]);
 
 it('PlatformShare answers the same port', function (): void {
     expect(PlatformShare::class)->toImplement(Sharing::class);

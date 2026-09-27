@@ -9,6 +9,7 @@ use function implode;
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\APieceOfABundle;
 use Modules\Kernel\Api\ASettingToReveal;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\ThePiecesOfABundle;
@@ -86,7 +87,7 @@ final readonly class WhatABundleSays
     /** The same bundle, written where it said it would go. */
     public static function written(): ABundle
     {
-        return self::at(WhereABundleIs::writtenAt(self::WOULD_GO));
+        return self::at(WhereABundleIs::writtenAt(AWrittenBundle::at(self::WOULD_GO)));
     }
 
     /**

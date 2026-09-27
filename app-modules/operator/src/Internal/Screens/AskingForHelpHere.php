@@ -10,22 +10,27 @@ use function is_string;
 
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\AskingForHelp;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
+use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowABundleReads;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
+use Modules\Operator\Internal\WhatHandingOverCameTo;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
@@ -34,7 +39,7 @@ use Native\Mobile\Edge\NativeComponent;
 use function view;
 
 /**
- * Asking for help: a support bundle, described, and only then written.
+ * Asking for help: a support bundle, described, written, and handed over by the operator.
  *
  * **It opens on a description.** The stack is asked what a bundle made the
  * careful way would hold — the usual log window, filenames replaced, nothing
@@ -53,8 +58,11 @@ use function view;
  * gathers. A bundle the stack refused is its answer, drawn as a refusal in its
  * own words and never as a fault to try again.
  *
- * This screen adds nothing to a bundle and sends it nowhere. The file stays on
- * the stack's machine; what is drawn is only what the stack answered with.
+ * **Handing it over is a third tap, and it is the operator's.** A written
+ * bundle offers it: the file is fetched from the stack and put in front of the
+ * device's own sharing, where the operator chooses where it goes. This screen
+ * adds nothing to the bundle and sends it nowhere itself, and what it says
+ * afterwards is only whether the sheet was reached.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -82,10 +90,17 @@ final class AskingForHelpHere extends NativeComponent
     /** Whether the operator is changing what goes in, which asks the stack nothing until they describe it. */
     public bool $choosing = false;
 
+    /** The catalogue key for what handing the bundle over came to, or empty where it has not been. */
+    public string $handing = '';
+
+    /** The key for what stands after it, beside {@see $handing}. */
+    public string $handingLeaves = '';
+
     public function __construct(
         private readonly AskingForHelp $helping,
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
+        private readonly Sharing $sharing,
     ) {}
 
     /**
@@ -138,6 +153,45 @@ final class AskingForHelpHere extends NativeComponent
         $this->went = $this->send($asked->written());
     }
 
+    /**
+     * Hand the written bundle over through the device's own sharing.
+     *
+     * Silent unless a written bundle is what the stack last answered with. The
+     * file is fetched from the stack and handed to the sheet, and what is said
+     * afterwards is whether the sheet was reached, or what stood in the way:
+     * the contents already drawn stand either way, and nothing is retried.
+     */
+    public function handOver(): void
+    {
+        $bundle = $this->answer()->bundle;
+
+        if (! $this->answer()->isWritten || ! $bundle instanceof ABundleAsShown) {
+            return;
+        }
+
+        $stack = $this->stack();
+        $written = AWrittenBundle::at($bundle->where);
+
+        $came = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatHandingOverCameTo => $this->helping->fetch($stack, $session, $written)->either(
+                fetched: fn(ABundleFile $file): WhatHandingOverCameTo => $this->handed($file),
+                met: function (Obstacle $why) use ($stack): WhatHandingOverCameTo {
+                    $this->letGoOfTheSession($why, $stack);
+
+                    return WhatHandingOverCameTo::stoppedBy($why->said());
+                },
+            ),
+            notHeld: function (): WhatHandingOverCameTo {
+                $this->went = new HowABundleReads()->signedOut();
+
+                return WhatHandingOverCameTo::nothing();
+            },
+        );
+
+        $this->handing = $came->said;
+        $this->handingLeaves = $came->leaves;
+    }
+
     /** Go back to the choices, keeping them, and forget the bundle followed. */
     public function startOver(): void
     {
@@ -145,6 +199,8 @@ final class AskingForHelpHere extends NativeComponent
         $this->asked = null;
         $this->handle = null;
         $this->went = null;
+        $this->handing = '';
+        $this->handingLeaves = '';
     }
 
     /** Ask the stack again what became of the bundle. */
@@ -181,6 +237,24 @@ final class AskingForHelpHere extends NativeComponent
     }
 
     /**
+     * The fetched file, put in front of the device's own sharing, and what the sheet answered.
+     *
+     * One sentence per refusal, because the remedies differ: a file this phone
+     * could not hold is answered by freeing room, and a sheet that would not
+     * open by the other roads the phone has.
+     */
+    private function handed(ABundleFile $file): WhatHandingOverCameTo
+    {
+        return $this->sharing->handOver($file)->either(
+            over: WhatHandingOverCameTo::offered(...),
+            refused: static fn(WhyNothingWasShared $why): WhatHandingOverCameTo => WhatHandingOverCameTo::stoppedBy(match ($why) {
+                WhyNothingWasShared::NothingToHandOver => 'stacks.help.not_held_here',
+                WhyNothingWasShared::TheDeviceWouldNotOffer => 'stacks.help.not_offered',
+            }),
+        );
+    }
+
+    /**
      * Send the bundle asked for, and hold what to follow it by.
      *
      * An obstacle is what became of it, so the screen says what stood in the
@@ -191,6 +265,8 @@ final class AskingForHelpHere extends NativeComponent
         $stack = $this->stack();
         $this->asked = $asked;
         $this->handle = null;
+        $this->handing = '';
+        $this->handingLeaves = '';
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheBundleWent => $this->helping->ask($stack, $session, $asked)->either(

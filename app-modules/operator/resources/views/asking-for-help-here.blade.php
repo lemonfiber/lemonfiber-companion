@@ -115,9 +115,19 @@
         <x-operator::note>{{ __('stacks.help.holds_no_files') }}</x-operator::note>
     @endforelse
 
-    @if (! $this->answer()->isWritten)
+    @if ($this->answer()->isWritten)
+        {{-- The operator's own act, below everything the bundle holds: the
+             file goes to the phone's own sharing and they choose where it
+             goes. This app sends it nowhere. --}}
+        <x-operator::action label="{{ __('stacks.help.hand_over') }}" tap="handOver()" />
+    @else
         {{-- The second yes, on the description above and on nothing else. --}}
         <x-operator::action label="{{ __('stacks.help.write') }}" tap="write()" />
+    @endif
+
+    @if ($this->handing !== '')
+        <x-operator::emphasis>{{ __($this->handing) }}</x-operator::emphasis>
+        <native:text>{{ __($this->handingLeaves) }}</native:text>
     @endif
 
     <x-operator::quiet-action label="{{ __('stacks.help.start_over') }}" tap="startOver()" />

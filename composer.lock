@@ -3068,9 +3068,10 @@
             "dist": {
                 "type": "path",
                 "url": "bridge",
-                "reference": "0155bb7bc6fb227e5e41952535e48963662bae4d"
+                "reference": "9143919b0d648fe63d7c4b3b92a2086fbd184f30"
             },
             "require": {
+                "ext-sodium": "*",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
             },

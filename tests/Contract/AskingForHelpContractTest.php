@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AskingForHelp;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowTheBundleIsGoing;
@@ -204,6 +206,42 @@ it('the fake remembers each bundle asked for, in order', function (): void {
     $helping->ask(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), aBundleAskedFor()->written());
 
     expect(array_map(static fn(ABundleAsked $asked): bool => $asked->writes(), $helping->asked()))->toBe([false, true]);
+});
+
+/** What fetching the written bundle's file came to, as a line. */
+function whatFetchingTheBundleCameTo(AskingForHelp $helping): string
+{
+    return $helping->fetch(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))->either(
+        fetched: static fn(ABundleFile $file): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('%s: %s', $file->named(), $file->bytes())),
+        met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->name),
+    )->said;
+}
+
+it('fetches a written bundle whole, named for itself and unopened', function (): void {
+    foreach (everyWayOfAskingForABundle(MockResponse::make(AStackThatBundles::THE_BYTES), HowTheBundleIsGoing::done(WhatABundleSays::written())) as $which => $build) {
+        expect(whatFetchingTheBundleCameTo($build()))
+            ->toBe(sprintf('lemonfiber-support-2026-09-26T10-00-00Z.tar.gz: %s', AStackThatBundles::THE_BYTES), $which);
+    }
+});
+
+it('comes away from a bundle it could not fetch with the obstacle rather than a file', function (MockResponse $answered, Obstacle $why): void {
+    MockClient::destroyGlobal();
+    MockClient::global([$answered]);
+
+    expect(whatFetchingTheBundleCameTo(new Bundlers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name)
+        ->and(whatFetchingTheBundleCameTo(AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::ended(), $why)))->toBe($why->name);
+})->with([
+    'a refused session' => [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
+    'an account that may not ask' => [MockResponse::make('{"error":"no"}', 403), Obstacle::NotForThisAccount],
+    'a bundle no longer there' => [MockResponse::make('{"error":"gone"}', 404), Obstacle::StackDidNotAnswer],
+]);
+
+it('the fake remembers each written bundle it was asked for the file of', function (): void {
+    $helping = AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written()));
+    whatFetchingTheBundleCameTo($helping);
+
+    expect(array_map(static fn(AWrittenBundle $written): string => $written->name(), $helping->fetched()))
+        ->toBe(['lemonfiber-support-2026-09-26T10-00-00Z.tar.gz']);
 });
 
 it('stands in for a stack with payloads the contract would accept', function (): void {

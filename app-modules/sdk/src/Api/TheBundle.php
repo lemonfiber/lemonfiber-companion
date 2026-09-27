@@ -16,6 +16,7 @@ use Lemonfiber\Sdk\Generated\BundleEnvelope;
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\APieceOfABundle;
 use Modules\Kernel\Api\ASettingToReveal;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\ThePiecesOfABundle;
@@ -113,7 +114,8 @@ final readonly class TheBundle
     /**
      * Where it went, where it would go, or that the stack did not say.
      *
-     * A path means it was written, whatever else arrived beside it.
+     * A path means it was written, whatever else arrived beside it, and a path
+     * ending in no file's name is refused as {@see AWrittenBundle} refuses it.
      *
      * @param array<array-key, mixed> $data
      */
@@ -122,7 +124,7 @@ final readonly class TheBundle
         $path = self::place($data, BundleField::Path);
 
         if ($path !== null) {
-            return WhereABundleIs::writtenAt($path);
+            return WhereABundleIs::writtenAt(AWrittenBundle::at($path));
         }
 
         $wouldGo = self::place($data, BundleField::WouldGo);

@@ -2,6 +2,18 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Native\Handover;
+use Lemonfiber\Native\Offered;
+use Lemonfiber\Native\WhyNothingWasHandedOver;
+use Modules\Device\Api\PlatformShare;
+use Modules\Kernel\Api\ABundleFile;
+use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AnInvitationToPassOn;
+use Modules\Kernel\Api\AskingForHelp;
+use Modules\Kernel\Api\Assembled;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Sharing;
+use Modules\Kernel\Api\Stack;
 use Tests\Support\Manifests;
 
 // The app sends no analytics, telemetry or crash reports to a third
@@ -47,4 +59,82 @@ it('N4-R12 — no package that reports to a third party is installed', function 
         . 'and it is the operator who sends it.',
         implode("\n  ", $found),
     ));
+});
+
+// The other road off the device is the operator's own: the device's sharing,
+// handed a report, an invitation or a support bundle, with the choice of where
+// it goes left to them. What keeps that road from becoming the app's is what
+// the port is handed. It takes one value per method and nothing that says
+// where — no address, no stack, no session, no text or bytes a caller could
+// have picked up anywhere — and its adapter holds the sheet and nothing else.
+
+/**
+ * Every parameter one interface or class declares, as `method($name: Type)`, sorted.
+ *
+ * @param class-string $of
+ * @return list<string>
+ */
+function everyParameterOf(string $of, int $visibility = ReflectionMethod::IS_PUBLIC): array
+{
+    $taken = [];
+
+    foreach (new ReflectionClass($of)->getMethods($visibility) as $method) {
+        foreach ($method->getParameters() as $parameter) {
+            $taken[] = sprintf('%s($%s: %s)', $method->getName(), $parameter->getName(), (string) $parameter->getType());
+        }
+    }
+
+    sort($taken);
+
+    return $taken;
+}
+
+it('hands the device\'s sharing a value to put in front of the operator, and never somewhere to send it', function (): void {
+    expect(everyParameterOf(Sharing::class))->toBe([
+        sprintf('hand($assembled: %s)', Assembled::class),
+        sprintf('handOver($bundle: %s)', ABundleFile::class),
+        sprintf('passOn($invitation: %s)', AnInvitationToPassOn::class),
+    ], 'The device\'s sharing takes one value made for handing over. A string, an address, a stack or a '
+        . 'session beside it is somewhere to send something, and that is the app sending it rather than '
+        . 'the operator.');
+});
+
+it('holds nothing that says where, in anything the device\'s sharing is handed', function (): void {
+    $where = [Address::class, Stack::class, Session::class];
+    $holding = [];
+
+    foreach ([Assembled::class, AnInvitationToPassOn::class, ABundleFile::class] as $handed) {
+        foreach (new ReflectionClass($handed)->getProperties() as $property) {
+            $held = $property->getType();
+
+            if ($held instanceof ReflectionNamedType && in_array($held->getName(), $where, strict: true)) {
+                $holding[] = sprintf('%s::$%s', $handed, $property->getName());
+            }
+        }
+    }
+
+    expect($holding)->toBe([]);
+});
+
+it('builds the device\'s sharing over the sheet and over nothing that could send', function (): void {
+    expect(everyParameterOf(PlatformShare::class, ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_PRIVATE))->toBe([
+        sprintf('__construct($sheet: %s)', Handover::class),
+        sprintf('hand($assembled: %s)', Assembled::class),
+        sprintf('handOver($bundle: %s)', ABundleFile::class),
+        sprintf('handed($offered: %s)', Offered::class),
+        sprintf('meaning($why: %s)', WhyNothingWasHandedOver::class),
+        sprintf('passOn($invitation: %s)', AnInvitationToPassOn::class),
+    ]);
+});
+
+it('fetches a support bundle without taking one to send', function (): void {
+    // The bundle comes to this device over the one port that asks a stack for
+    // it, and that port is handed nothing a bundle is made of: what leaves the
+    // device goes through the device's sharing above, or not at all.
+    $taking = array_values(array_filter(
+        everyParameterOf(AskingForHelp::class),
+        static fn(string $parameter): bool => str_contains($parameter, ABundleFile::class),
+    ));
+
+    expect($taking)->toBe([]);
 });

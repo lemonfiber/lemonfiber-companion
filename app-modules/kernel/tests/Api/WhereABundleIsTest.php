@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\WhereABundleIs;
 
 use function sprintf;
@@ -31,9 +32,9 @@ it('takes the arm for each place, carrying the path, and says which of them is w
     $path = '/home/op/.config/lemonfiber/bundles/lemonfiber-support-2026-09-26T10-00-00Z.tar.gz';
 
     expect(whereTheBundleIsReads(WhereABundleIs::wouldGo($path)))->toBe(sprintf('would go:%s', $path))
-        ->and(whereTheBundleIsReads(WhereABundleIs::writtenAt($path)))->toBe(sprintf('written:%s', $path))
+        ->and(whereTheBundleIsReads(WhereABundleIs::writtenAt(AWrittenBundle::at($path))))->toBe(sprintf('written:%s', $path))
         ->and(whereTheBundleIsReads(WhereABundleIs::unsaid()))->toBe('unsaid')
         ->and(WhereABundleIs::wouldGo($path)->isWritten())->toBeFalse()
-        ->and(WhereABundleIs::writtenAt($path)->isWritten())->toBeTrue()
+        ->and(WhereABundleIs::writtenAt(AWrittenBundle::at($path))->isWritten())->toBeTrue()
         ->and(WhereABundleIs::unsaid()->isWritten())->toBeFalse();
 });

@@ -12,8 +12,10 @@ use function json_encode;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ASettingToReveal;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\Job;
@@ -173,6 +175,44 @@ it('reads a refused session, an account that may not ask, and a refusal with no 
     'an account that may not ask' => [403, 'Only the operator can ask for this.', Obstacle::NotForThisAccount],
     'nothing said' => [500, '', Obstacle::StackDidNotAnswer],
     'markup from something in between' => [502, '<html>bad gateway</html>', Obstacle::StackDidNotAnswer],
+]);
+
+it('reads a bundle written to a path that names no file as a stack that did not answer', function (): void {
+    expect(whatBecameOfTheBundleAnswered(MockResponse::make((string) json_encode(WhatABundleSays::envelope(['path' => '/home/op/bundles/'])))))
+        ->toBe(Obstacle::StackDidNotAnswer->name);
+});
+
+it('fetches a written bundle by the last segment of its path, and hands back its bytes unopened', function (): void {
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([MockResponse::make("\x1F\x8B\x08\x00an archive", 200, ['Content-Type' => 'application/gzip'])]);
+
+    $said = new Bundlers(new PinnedClients(), SequencedEntropy::counting())
+        ->fetch(theStackTheBundlerAsks(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))
+        ->either(
+            fetched: static fn(ABundleFile $file): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('%s: %s', $file->named(), $file->bytes())),
+            met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->name),
+        )->said;
+
+    expect($said)->toBe("lemonfiber-support-2026-09-26T10-00-00Z.tar.gz: \x1F\x8B\x08\x00an archive")
+        ->and($mock->getLastPendingRequest()?->getUrl())->toEndWith('/api/bundle/lemonfiber-support-2026-09-26T10-00-00Z.tar.gz');
+});
+
+it('reads a bundle it could not fetch as the obstacle the refusal was', function (int $status, Obstacle $why): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make('no', $status)]);
+
+    $said = new Bundlers(new PinnedClients(), SequencedEntropy::counting())
+        ->fetch(theStackTheBundlerAsks(), Session::of('a-session-not-a-secret'), AWrittenBundle::at(WhatABundleSays::WOULD_GO))
+        ->either(
+            fetched: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('fetched'),
+            met: static fn(Obstacle $met): WhatTheBundlerSaid => new WhatTheBundlerSaid($met->name),
+        )->said;
+
+    expect($said)->toBe($why->name);
+})->with([
+    'a refused session' => [401, Obstacle::CredentialWasRefused],
+    'an account that may not ask' => [403, Obstacle::NotForThisAccount],
+    'a bundle the stack no longer has' => [404, Obstacle::StackDidNotAnswer],
 ]);
 
 it('stands in for a stack with payloads the contract would accept', function (): void {

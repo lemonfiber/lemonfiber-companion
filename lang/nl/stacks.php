@@ -566,7 +566,7 @@ return [
     'help' => [
         'road_in' => 'Om hulp vragen',
         'what_goes_in' => 'Wat er in de bundel komt',
-        'nothing_leaves' => 'De stack beschrijft de bundel eerst. Er wordt niets geschreven totdat je instemt met die beschrijving, en deze app voegt niets aan de bundel toe en stuurt hem nergens heen.',
+        'nothing_leaves' => 'De stack beschrijft de bundel eerst. Er wordt niets geschreven totdat je instemt met die beschrijving, en deze app voegt niets aan de bundel toe en stuurt hem nergens heen: een geschreven bundel geef je zelf door, via het deelmenu van je telefoon.',
         'lines' => '{1} De laatste regel van de logs van elke service|[2,*] De laatste :count regels van de logs van elke service',
         'take_lines' => '{1} Neem de laatste regel|[2,*] Neem de laatste :count regels',
         'filenames_shown' => 'Bestandsnamen van media worden getoond zoals ze zijn',
@@ -602,5 +602,11 @@ return [
         'nothing_missing' => 'Alles is verzameld',
         'holds_no_files' => 'Er zitten geen bestanden in',
         'write' => 'Schrijf deze bundel',
+        'hand_over' => 'Geef hem door',
+        'handed_over' => 'De bundel staat klaar in het deelmenu van je telefoon.',
+        'yours_to_send' => 'Waar hij heen gaat, kies jij. Deze app heeft hem nergens heen gestuurd.',
+        'not_held_here' => 'De bundel kon niet op deze telefoon worden gezet om door te geven. Een volle opslag is de meest voorkomende reden.',
+        'not_offered' => 'Deze telefoon bood geen manier aan om hem door te geven.',
+        'still_on_the_machine' => 'Er heeft niets deze telefoon verlaten. De bundel staat nog op de machine.',
     ],
 ];

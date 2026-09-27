@@ -21,6 +21,7 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Decided;
@@ -252,6 +253,8 @@ function everyAdapterCallThatReads(): array
         ),
         'Bundlers::whatBecameOf' => static fn(): object
             => new Bundlers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Bundlers::fetch' => static fn(): object
+            => new Bundlers($clients, $entropy)->fetch($stack, $session, AWrittenBundle::at('/home/op/bundles/lemonfiber-support.tar.gz')),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),

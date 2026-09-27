@@ -644,7 +644,7 @@ return [
     'help' => [
         'road_in' => 'Ask for help',
         'what_goes_in' => 'What goes in the bundle',
-        'nothing_leaves' => 'The stack describes the bundle first. Nothing is written until you agree to that description, and this app adds nothing to the bundle and sends it nowhere.',
+        'nothing_leaves' => 'The stack describes the bundle first. Nothing is written until you agree to that description, and this app adds nothing to the bundle and sends it nowhere: a written bundle is yours to hand over, through your phone\'s own sharing.',
         'lines' => '{1} The last line of each service\'s logs|[2,*] The last :count lines of each service\'s logs',
         'take_lines' => '{1} Take the last line|[2,*] Take the last :count lines',
         'filenames_shown' => 'Media filenames are shown as they are',
@@ -680,5 +680,11 @@ return [
         'nothing_missing' => 'Everything was collected',
         'holds_no_files' => 'It holds no files',
         'write' => 'Write this bundle',
+        'hand_over' => 'Hand it over',
+        'handed_over' => 'The bundle is in your phone\'s sharing.',
+        'yours_to_send' => 'Where it goes is yours to choose. This app sent it nowhere.',
+        'not_held_here' => 'The bundle could not be put on this phone to hand over. A full phone is the commonest reason.',
+        'not_offered' => 'This phone would not offer a way to hand it over.',
+        'still_on_the_machine' => 'Nothing left this phone. The bundle is still on the machine.',
     ],
 ];
