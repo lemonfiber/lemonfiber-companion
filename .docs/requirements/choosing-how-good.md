@@ -40,4 +40,5 @@ written here.
 All three are blocked on the contract, and `WhatTheContractDoesNotCarryTest`
 holds each.
 
-`N24-R6` to `N24-R9` are the walkthrough.
+`N24-R6` to `N24-R9` are the walkthrough, on
+[watching-one-thing-arrive.md](watching-one-thing-arrive.md).

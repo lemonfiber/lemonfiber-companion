@@ -24,10 +24,10 @@ use Tests\Support\Fakes\AStoreOnAHandset;
 // runs against.
 //
 // It matters here more than it reads. Every test of `PlatformKeychain`,
-// `PlatformStacks` and `PlatformStandings` hands its subject an
-// `APlatformStore` and never touches a keychain, so a fake easier to satisfy
-// than the platform is a fake that makes all three green about a device that
-// does not exist. Two answers had already come apart that way: the fake
+// `PlatformStacks`, `PlatformStandings` and `PlatformWorkLeftRunning` hands its
+// subject an `APlatformStore` and never touches a keychain, so a fake easier to
+// satisfy than the platform is a fake that makes all four green about a device
+// that does not exist. Two answers had already come apart that way: the fake
 // reported every removal done where the adapter refuses one it could not make,
 // and the fake could only ever be a store that grants exactly what it was asked
 // for — which is one of the two platforms and not the one the answer in the

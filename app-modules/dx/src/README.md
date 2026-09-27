@@ -11,7 +11,7 @@ it is, these `StandsIn` implementations take the place of real ones:
 |---|---|
 | `AStackThatIsNotThere` | A stack that answers every request and is not running |
 | `ADoorThatIsNotThere` | A stack that a password can be offered to |
-| `ADeviceAlreadyPaired`, `ASessionThisRunKeeps`, `StandingsThisRunKeeps` | A device that is already paired, keeping what it holds for one run |
+| `ADeviceAlreadyPaired`, `ASessionThisRunKeeps`, `StandingsThisRunKeeps`, `WorkLeftRunningThisRunKeeps` | A device that is already paired, keeping what it holds for one run |
 | `ACameraThatSeesAStandIn` | A camera that always reads a pairing code for a new stack |
 
 `ClientsThatReachNothing` and `DoorsThatOpenOnNothing` wrap the real SDK

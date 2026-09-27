@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -22,12 +23,15 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatToWalk;
+use Modules\Kernel\Api\WorkLeftRunning;
+use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
@@ -47,6 +51,19 @@ use function view;
  * be here, first and in its own words, and never drawn as a search that
  * matched nothing.
  *
+ * **Leaving does not stop a walk.** The stack carries on with it whether or not
+ * anybody is watching, and the screen says so while it runs. What leaving does
+ * drop is the screen, so the handle is also kept on the device
+ * ({@see WorkLeftRunning}), and the screen opened again follows it: returning
+ * shows where the walk got to rather than offering to start it over.
+ *
+ * **A finished record stays until another walk starts.** Coming back to a walk
+ * that finished while nobody was looking is the case the record exists for, so
+ * the handle is kept past the end and the record drawn again on each return.
+ * Starting another walk lets go of it, and so does the stack no longer knowing
+ * it: an outcome the stack cannot give is said once, on the screen that asked,
+ * and the next opening offers a new walk instead of saying it again.
+ *
  * `Concealed` for the reason every stack-facing screen here is.
  */
 #[Lazy]
@@ -65,12 +82,42 @@ final class WatchingOneArrive extends NativeComponent
     /** What became of it, once this frame has asked. */
     public ?WhatTheWalkthroughTurnedOutToBe $answered = null;
 
+    /**
+     * Whether coming back to this screen will find the walk started here.
+     *
+     * Only ever false where this device would not keep the handle of a walk it
+     * just started, which the screen says while that walk runs. Public for
+     * {@see HowCurrentThisStackIs::$answered}'s reason.
+     */
+    public bool $willBeFoundAgain = true;
+
     public function __construct(
         private readonly WalkingThrough $walking,
         private readonly Explaining $explaining,
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
+        private readonly WorkLeftRunning $leftRunning,
     ) {}
+
+    /**
+     * Pick up the walk this device left running on this stack, where there is one.
+     *
+     * A screen opened again is a new screen, holding nothing of the one that was
+     * left. The handle kept when the walk started is what it follows instead.
+     * Read from the device rather than the stack, so the first frame waits on
+     * nothing.
+     */
+    public function mount(): void
+    {
+        // A handle is never blank, so an empty one can only be the arm that
+        // found nothing.
+        $left = $this->leftRunning->whatWasLeft($this->stack()->id(), KindOfWork::Walkthrough)->either(
+            job: static fn(Job $job): AsText => AsText::of($job->shown()),
+            nothing: static fn(): AsText => AsText::nothing(),
+        )->said;
+
+        $this->took = $left === '' ? null : $left;
+    }
 
     /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */
     public function stack(): Stack
@@ -169,21 +216,31 @@ final class WatchingOneArrive extends NativeComponent
     }
 
     /**
-     * Start a walkthrough, and hold what to follow it by.
+     * Start a walkthrough, and hold what to follow it by, here and on the device.
      *
      * Just started, it is running, and the cadence asks after it from there. A
      * refusal is kept as what became of it, so the screen says what stood in
      * the way rather than carrying on as though it were running.
+     *
+     * The walk before it is let go of first, whatever becomes of the start:
+     * asking for another walk is moving on from the last, and a start that
+     * failed leaves nothing to come back to rather than an older walk the
+     * operator had already turned from.
      */
     private function start(WhatToWalk $asked): void
     {
         $stack = $this->stack();
         $this->took = null;
+        $this->leftRunning->forget($stack->id(), KindOfWork::Walkthrough);
 
         $this->answered = $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheWalkthroughTurnedOutToBe => $this->walking->walk($stack, $session, $asked)->either(
-                started: function (Job $job): WhatTheWalkthroughTurnedOutToBe {
+                started: function (Job $job) use ($stack): WhatTheWalkthroughTurnedOutToBe {
                     $this->took = $job->shown();
+                    $this->willBeFoundAgain = $this->leftRunning->remember($stack->id(), KindOfWork::Walkthrough, $job)->either(
+                        job: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIs(),
+                        nothing: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIsNot(),
+                    )->held;
 
                     return new HowAWalkthroughReads()->running();
                 },
@@ -208,11 +265,24 @@ final class WatchingOneArrive extends NativeComponent
             held: fn(Session $session): WhatTheWalkthroughTurnedOutToBe => $this->walking->whatBecameOf($stack, $session, Job::named($took))->either(
                 stillRunning: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->running(),
                 done: static fn(AWalkthrough $report): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->done($report),
-                ended: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->ended(),
+                ended: fn(): WhatTheWalkthroughTurnedOutToBe => $this->endedWithNoOutcome($stack),
                 met: fn(Obstacle $why): WhatTheWalkthroughTurnedOutToBe => $this->refused($why, $stack),
             ),
             notHeld: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->signedOut(),
         );
+    }
+
+    /**
+     * The stack has no outcome for the walk any more, so there is nothing left to come back to.
+     *
+     * Said on this screen, and let go of on the device, so the next opening
+     * offers a new walk rather than the same missing outcome.
+     */
+    private function endedWithNoOutcome(Stack $stack): WhatTheWalkthroughTurnedOutToBe
+    {
+        $this->leftRunning->forget($stack->id(), KindOfWork::Walkthrough);
+
+        return new HowAWalkthroughReads()->ended();
     }
 
     /**

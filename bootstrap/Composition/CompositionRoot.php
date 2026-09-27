@@ -77,6 +77,7 @@ use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\Welcoming;
+use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
@@ -121,6 +122,7 @@ use Modules\Sdk\Api\Ushers;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
+use Modules\Vault\Api\PlatformWorkLeftRunning;
 
 /**
  * The composition root.
@@ -272,6 +274,16 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             Standings::class,
             static fn(): Standings => new PlatformStandings(new PlatformStore()),
+        );
+
+        // The handle of work left running on each stack, in the same store and
+        // bound the same way. A fourth port rather than a method on any of the
+        // three above, because it answers a different question: not who this
+        // device signs in as, what it is paired with or what a stack's one line
+        // last said, but which work a screen left running there.
+        $this->app->bind(
+            WorkLeftRunning::class,
+            static fn(): WorkLeftRunning => new PlatformWorkLeftRunning(new PlatformStore()),
         );
 
         // Whether this device is on a network at all, which is the one question
