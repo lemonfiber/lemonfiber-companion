@@ -52,6 +52,7 @@ it('sweeps away a copy a run left behind, and only that one', function (): void 
         mkdir(sprintf('%s/app-modules', $copy), 0o755, recursive: true);
         file_put_contents(sprintf('%s/app-modules/Planted.php', $copy), '<?php // planted');
         file_put_contents(theReportOf($copy), '<testsuites/>');
+        file_put_contents(theSerialReportOf($copy), '<testsuites/>');
         file_put_contents(sprintf('%s.lock', $copy), '');
     }
 
@@ -61,6 +62,7 @@ it('sweeps away a copy a run left behind, and only that one', function (): void 
 
     expect(is_dir($abandoned))->toBeFalse()
         ->and(is_file(theReportOf($abandoned)))->toBeFalse()
+        ->and(is_file(theSerialReportOf($abandoned)))->toBeFalse()
         ->and(is_file(sprintf('%s.lock', $abandoned)))->toBeFalse()
         ->and(is_file(sprintf('%s/app-modules/Planted.php', $live)))->toBeTrue()
         ->and(is_file(sprintf('%s.lock', $live)))->toBeTrue();
@@ -216,7 +218,14 @@ it('the suite fails every rule it is supposed to', function (): void {
     ));
 
     $run = theRun();
-    $failures = suiteFailures($run['suite'], $run['copy']);
+
+    // Two passes over the one planted copy, each with a report of its own, and
+    // both read: a fixture its rule refuses is named in the report of the pass
+    // that ran the rule, and nowhere else.
+    $failures = [
+        ...suiteFailures($run['serial'], theSerialReportOf($run['copy'])),
+        ...suiteFailures($run['parallel'], theReportOf($run['copy'])),
+    ];
     $silent = [];
 
     // The isolated ones each get a pass to themselves, in a copy holding only
@@ -226,7 +235,7 @@ it('the suite fails every rule it is supposed to', function (): void {
     // exactly that reason: it reads the file rather than running it, so a
     // suite that does not load the file still reports it.
     foreach ($run['isolated'] as [$alone, $pass, $copy]) {
-        if (! wasRefused(suiteFailures($pass, $copy), $alone)) {
+        if (! wasRefused(suiteFailures($pass, theReportOf($copy)), $alone)) {
             $silent[] = sprintf('%s — "%s" did not fail on its own', $alone->rule, $alone->marker);
         }
     }
@@ -442,13 +451,15 @@ function text(mixed $value): string
  * it — the class it lives in and the failure text, so a fixture can be found by
  * name in whichever of the three it appears.
  *
+ * Empty where the pass wrote no report, or one that does not parse, which
+ * reads as nothing refused and so fails every fixture the pass was there for.
+ *
  * @return array<string, string>
  */
-function suiteFailures(Process $pass, string $copy): array
+function suiteFailures(Process $pass, string $log): array
 {
     $pass->wait();
 
-    $log = theReportOf($copy);
     $report = is_file($log) ? file_get_contents($log) : false;
 
     if (! is_string($report) || $report === '') {
@@ -489,17 +500,30 @@ function wasRefused(array $failures, Fixture $fixture): bool
 /**
  * The planted copy, and every process reading it.
  *
- * Made on first use and shared by the tests that read it. Every pass starts at
- * once — the analyser and the suite over the copy holding every fixture, and an
- * Arch pass over a copy of its own for each fixture that has to be read alone —
- * because each writes only to its own copy and its own report, so the run lasts
- * as long as the slowest pass rather than as long as all of them.
+ * Made on first use and shared by the tests that read it. The passes overlap
+ * wherever they can — the analyser over the copy holding every fixture, an Arch
+ * pass over a copy of its own for each fixture that has to be read alone, and
+ * the suite over the planted copy — because each writes only to its own copy
+ * and its own report, so the run lasts as long as the slowest pass rather than
+ * as long as all of them.
  *
- * @return array{copy: string, analyser: Process, suite: Process, isolated: list<array{Fixture, Process, string}>}
+ * The suite over the planted copy is two passes, each with a report of its
+ * own. Modules and Floors go first, in one process. Floors reads the planted
+ * clover report, which is why `composer test` and `test:report` leave it out of
+ * their parallel runs. Modules loads W5's fixture, whose compile warning the
+ * parallel runner raises as an error that ends the pass before a test has run.
+ * Then Arch, Templates and Feature, in parallel, as `composer test` runs them.
+ * One pass after the other rather than side by side, because each records its
+ * run history in the copy's own `vendor`.
+ *
+ * Each isolated Arch pass runs in parallel too. Its fixture sits in a module's
+ * tests, which no Arch test loads.
+ *
+ * @return array{copy: string, analyser: Process, serial: Process, parallel: Process, isolated: list<array{Fixture, Process, string}>}
  */
 function theRun(): array
 {
-    /** @var array{copy: string, analyser: Process, suite: Process, isolated: list<array{Fixture, Process, string}>}|null $run */
+    /** @var array{copy: string, analyser: Process, serial: Process, parallel: Process, isolated: list<array{Fixture, Process, string}>}|null $run */
     static $run = null;
 
     if ($run !== null) {
@@ -518,13 +542,19 @@ function theRun(): array
 
         $own = aCopy();
         plantFile(sprintf('%s/%s', $own, $alone->path), $alone->code);
-        $isolated[] = [$alone, started(theSuiteIn($own, 'Arch')), $own];
+        $isolated[] = [$alone, started(theSuiteIn($own, 'Arch', theReportOf($own), '--parallel')), $own];
     }
+
+    $analyser = started(theAnalyserIn($copy));
+
+    $serial = started(theSuiteIn($copy, 'Modules,Floors', theSerialReportOf($copy)));
+    $serial->wait();
 
     $run = [
         'copy' => $copy,
-        'analyser' => started(theAnalyserIn($copy)),
-        'suite' => started(theSuiteIn($copy, 'Arch,Templates,Modules,Feature,Floors')),
+        'analyser' => $analyser,
+        'serial' => $serial,
+        'parallel' => started(theSuiteIn($copy, 'Arch,Templates,Feature', theReportOf($copy), '--parallel')),
         'isolated' => $isolated,
     ];
 
@@ -556,15 +586,16 @@ function theAnalyserIn(string $copy): Process
     );
 }
 
-/** The named suites, inside a copy, reporting to the file beside it. */
-function theSuiteIn(string $copy, string $suites): Process
+/** The named suites, inside a copy, reporting to a file beside it. */
+function theSuiteIn(string $copy, string $suites, string $report, string ...$options): Process
 {
     $pass = new Process(
         [
             PHP_BINARY,
             'vendor/bin/pest',
+            ...$options,
             sprintf('--testsuite=%s', $suites),
-            sprintf('--log-junit=%s', theReportOf($copy)),
+            sprintf('--log-junit=%s', $report),
         ],
         $copy,
         timeout: null,
@@ -597,6 +628,12 @@ function started(Process $process): Process
 function theReportOf(string $copy): string
 {
     return sprintf('%s.junit.xml', $copy);
+}
+
+/** Where the pass in one process over a copy writes its JUnit report, for the same reasons. */
+function theSerialReportOf(string $copy): string
+{
+    return sprintf('%s.serial.junit.xml', $copy);
 }
 
 /**
@@ -799,7 +836,12 @@ function discardCopy(string $copy): void
 
 function removeTheCopy(string $copy): void
 {
-    shell_exec(sprintf('rm -rf %s %s', escapeshellarg($copy), escapeshellarg(theReportOf($copy))));
+    shell_exec(sprintf(
+        'rm -rf %s %s %s',
+        escapeshellarg($copy),
+        escapeshellarg(theReportOf($copy)),
+        escapeshellarg(theSerialReportOf($copy)),
+    ));
 }
 
 /**
