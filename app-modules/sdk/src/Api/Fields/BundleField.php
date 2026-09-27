@@ -53,9 +53,6 @@ enum BundleField: string implements NamesAWireField
     /** Whether to write the bundle, rather than say what one would hold. */
     case Write = 'write';
 
-    /** How many log lines to take from each service. */
-    case Logs = 'logs';
-
     /** The settings to show as they are, named as the bundle names them. */
     case Reveal = 'reveal';
 }

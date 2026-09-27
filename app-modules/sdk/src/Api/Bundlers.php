@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Sdk\Api\Fields\BundleField;
 use Modules\Sdk\Api\Fields\UpdateField;
+use Modules\Sdk\Api\Fields\WalkthroughField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -96,7 +97,7 @@ final readonly class Bundlers implements AskingForHelp
 
         return [
             BundleField::Write->value => $asked->writes(),
-            BundleField::Logs->value => $asked->lines()->figure(),
+            WalkthroughField::Logs->value => $asked->lines()->figure(),
             BundleField::Filenames->value => $asked->filenames() === WhatFilenamesShow::Shown,
             BundleField::Reveal->value => $revealing,
             UpdateField::Confirm->value => $revealing !== [],
