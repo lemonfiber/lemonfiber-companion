@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowABundleReads;
@@ -230,7 +231,7 @@ final class AskingForHelpHere extends NativeComponent
             held: fn(Session $session): HowTheBundleWent => $this->helping->whatBecameOf($stack, $session, Job::named($handle))->either(
                 stillRunning: static fn(): HowTheBundleWent => new HowABundleReads()->running(),
                 done: static fn(ABundle $bundle): HowTheBundleWent => new HowABundleReads()->done($bundle),
-                refused: static fn(string $said): HowTheBundleWent => new HowABundleReads()->refused($said),
+                refused: static fn(string $said, WhatTheRefusalNamed $named): HowTheBundleWent => new HowABundleReads()->refused($said, $named),
                 ended: static fn(): HowTheBundleWent => new HowABundleReads()->ended(),
                 met: fn(Obstacle $why): HowTheBundleWent => $this->refused($why, $stack),
             ),

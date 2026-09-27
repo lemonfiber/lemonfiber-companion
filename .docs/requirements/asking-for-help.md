@@ -17,13 +17,13 @@ requirement is right and this page is a defect.
 | `N22-R5` | Every piece of a bundle is readable before it can be handed over | `APieceOfABundle`, a name and its body as the stack redacted it. `TheBundle` refuses a bundle with a file missing either, and the screen draws every body whole |
 | `N22-R6` | What the stack could not collect is shown with the bundle | `ABundle::missing()`. `TheBundle` refuses a bundle without the list, and the screen draws each entry, or says everything was collected |
 | `N22-R7` | When a bundle was taken, and the lemonfiber and stack versions it came from, are shown with it | `WhenABundleWasTaken`, drawn on every bundle |
-| `N22-R8` | A bundle the stack refused is shown as refused with the source it named, and not as an error to retry | Half kept. `HowTheBundleIsGoing::refused()` is its own arm, and `Bundlers` answers it where the stack refused the bundle in words. The screen heads it as refused, draws the stack's sentence and offers going back to the choices, never asking again. The source is in the refusal's `detail`, and the SDK's `RequestFailed` carries the refusal's sentence alone, so the sentence is what is drawn |
+| `N22-R8` | A bundle the stack refused is shown as refused with the source it named, and not as an error to retry | `HowTheBundleIsGoing::refused()` is its own arm, and `Bundlers` answers it where the stack refused the bundle in words, carrying the problem document's `detail`, the source the stack named, as `WhatTheRefusalNamed`. The screen heads it as refused, draws the stack's sentence and what it named, and offers going back to the choices, never asking again. What it named is drawn there and nowhere else: it hides itself from debuggers, JSON and logs, refuses serialisation, and is one of the types a diagnostic report refuses |
 | `N22-R10` | The app adds nothing to a bundle, and puts nothing it holds into one | `Bundlers` sends the choices, `write` and `confirm`, and nothing else. `ABundleAsShown` holds only what the stack answered with, and nothing of this device's is drawn into it |
 
 ## Asked for, and not drawn yet
 
-`N22-R9` is handing a bundle over through the device's own sharing. The file is
-served at `/api/bundle/{name}` as a file rather than an envelope, and the SDK's
-client has no method fetching it, so this app has no way to hold the file
-(`N1-R16`, `N1-R17`). A written bundle stays on the stack's machine, and the
-screen says where.
+`N22-R9` is handing a bundle over through the device's own sharing. The SDK
+fetches the file (`Client::bundle()`), and the device's sharing hands over text:
+the bridge's `Handover` writes no file, and a bundle is an archive. Handing one
+over needs the bridge to offer a file to the platform's sheet. A written bundle
+stays on the stack's machine, and the screen says where.

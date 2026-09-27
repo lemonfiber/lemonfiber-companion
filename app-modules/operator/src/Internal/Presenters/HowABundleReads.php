@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhereABundleIs;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
@@ -53,10 +54,10 @@ final readonly class HowABundleReads
         return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
     }
 
-    /** The stack refused the bundle, and this is what it said. */
-    public function refused(string $said): HowTheBundleWent
+    /** The stack refused the bundle, and this is what it said and what it named. */
+    public function refused(string $said, WhatTheRefusalNamed $named): HowTheBundleWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), refused: $said);
+        return $this->following(HowTheReadingWent::itCameBack(), refused: $said, named: $named->forTheOperator());
     }
 
     /** The bundle, described or written, as the stack answered with it. */
@@ -80,6 +81,7 @@ final readonly class HowABundleReads
             isWorking: false,
             hasEnded: false,
             refused: '',
+            named: '',
             isWritten: $bundle->where()->isWritten(),
             bundle: new ABundleAsShown(
                 bytes: $bundle->bytes(),
@@ -126,6 +128,7 @@ final readonly class HowABundleReads
         bool $isWorking = false,
         bool $hasEnded = false,
         string $refused = '',
+        string $named = '',
     ): HowTheBundleWent {
         return new HowTheBundleWent(
             went: $went,
@@ -133,6 +136,7 @@ final readonly class HowABundleReads
             isWorking: $isWorking,
             hasEnded: $hasEnded,
             refused: $refused,
+            named: $named,
             isWritten: false,
             bundle: null,
         );

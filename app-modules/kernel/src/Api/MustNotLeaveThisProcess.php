@@ -62,6 +62,16 @@ final class MustNotLeaveThisProcess extends LogicException
     }
 
     /**
+     * What a stack named when it refused a bundle: the file a credential sits in, and the line.
+     *
+     * Not a secret itself, and a signpost to one, which is why it is kept here.
+     */
+    public static function whatARefusalNamed(): self
+    {
+        return new self('What a refusal named may not be serialised. N22-R8 draws it on the screen that asked and nowhere else: it names the file and the line a credential sits in, and anything that serialises one keeps a signpost to that credential.');
+    }
+
+    /**
      * A credential is spent once and is gone.
      *
      * The strictest of the three, because a credential that reached a cache is a

@@ -19,7 +19,8 @@ final readonly class HowTheBundleIsGoing
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?ABundle $done = null,
-        private ?string $refused = null,
+        private string $refused = '',
+        private ?WhatTheRefusalNamed $named = null,
         private ?Obstacle $met = null,
         private bool $running = false,
     ) {}
@@ -36,10 +37,10 @@ final readonly class HowTheBundleIsGoing
         return new self(done: $bundle);
     }
 
-    /** The stack refused it, and said why. */
-    public static function refused(string $said): self
+    /** The stack refused it, said why, and named what it refused over, where it named anything. */
+    public static function refused(string $said, WhatTheRefusalNamed $named): self
     {
-        return new self(refused: $said);
+        return new self(refused: $said, named: $named);
     }
 
     /** The stack has no outcome for it any more. */
@@ -63,7 +64,7 @@ final readonly class HowTheBundleIsGoing
      *
      * @param Closure(): T         $stillRunning
      * @param Closure(ABundle): T  $done
-     * @param Closure(string): T   $refused
+     * @param Closure(string, WhatTheRefusalNamed): T $refused
      * @param Closure(): T         $ended
      * @param Closure(Obstacle): T $met
      *
@@ -75,7 +76,7 @@ final readonly class HowTheBundleIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->done instanceof ABundle => $done($this->done),
-            $this->refused !== null => $refused($this->refused),
+            $this->named instanceof WhatTheRefusalNamed => $refused($this->refused, $this->named),
             default => $ended(),
         };
     }
