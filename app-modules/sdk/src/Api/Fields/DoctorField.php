@@ -22,7 +22,4 @@ enum DoctorField: string implements NamesAWireField
 
     /** What a whole run came to, in the run's own judgement. */
     case Overall = 'overall';
-
-    /** How a single check turned out, as a tagged union. */
-    case Verdict = 'verdict';
 }

@@ -8,6 +8,7 @@ use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AskingThemIn;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
+use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
@@ -203,6 +204,16 @@ const VERBS_THE_APP_ASKS_FOR = [
     // what the description listed. A setting is shown as it is only where
     // the operator named it and agreed to it on its own.
     'support' => 'describes a support bundle, and writes the one described on a second yes',
+
+    // Moving in beside what is already on the machine, one verb per mode.
+    // Each is asked twice: without the yes it says what it would come to and
+    // does nothing; with it, it is carried out. The yes is only ever sent
+    // after a pending answer to the same verb, which is the one thing
+    // `AMoveAgreed` can be built from.
+    'migrate-adopt' => 'takes over the setup already here, having first said what it would open and what it copies first',
+    'migrate-import' => 'carries the old setup\'s own records across, having first said what would and would not come',
+    'migrate-beside' => 'stands lemonfiber up beside the setup already here, having first said where each service would listen',
+    'migrate-replace' => 'stops the setup already here and stands in its place, having first said what it would stop',
 ];
 
 /**
@@ -470,6 +481,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(AskingThemIn $asking): string => $asking->asked(), AskingThemIn::cases()),
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
+        ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),

@@ -9,6 +9,7 @@ use function implode;
 use Modules\Kernel\Api\AMode;
 use Modules\Kernel\Api\AProjectStanding;
 use Modules\Kernel\Api\AServiceStanding;
+use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheSurvey;
 use Modules\Operator\Internal\ViewModels\ALineOfTheSurvey;
@@ -105,7 +106,13 @@ final readonly class HowTheSurveyReads
         );
     }
 
-    /** One mode, with whether it disturbs what is running and whether it is chosen already. */
+    /**
+     * One mode, with whether it disturbs what is running, whether it is chosen already, and how to ask what it would come to.
+     *
+     * A mode is asked about only where it is one of the four acts this app
+     * can ask for; one the survey offers under another word is drawn and
+     * offers nothing to press.
+     */
     private function mode(AMode $mode): AModeAsShown
     {
         return new AModeAsShown(
@@ -113,6 +120,13 @@ final readonly class HowTheSurveyReads
             what: $mode->what(),
             disturbsSaid: $mode->disturbs() ? 'stacks.already_here.disturbs' : 'stacks.already_here.disturbs_nothing',
             preselected: $mode->isPreselected(),
+            askSaid: match (MovingInBy::tryFrom($mode->mode())) {
+                MovingInBy::Adopting => 'stacks.moving_in.ask.adopt',
+                MovingInBy::Importing => 'stacks.moving_in.ask.import',
+                MovingInBy::StandingBeside => 'stacks.moving_in.ask.beside',
+                MovingInBy::Replacing => 'stacks.moving_in.ask.replace',
+                null => '',
+            },
         );
     }
 

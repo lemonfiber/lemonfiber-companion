@@ -12,11 +12,13 @@ final readonly class AModeAsShown
      * @param string $what         what choosing it would come to, in the stack's words
      * @param string $disturbsSaid the catalogue key for whether it disturbs what is running
      * @param bool   $preselected  whether it is offered already chosen
+     * @param string $askSaid      the catalogue key for asking what it would come to, or empty where no act carries it out
      */
     public function __construct(
         public string $mode,
         public string $what,
         public string $disturbsSaid,
         public bool $preselected,
+        public string $askSaid,
     ) {}
 }

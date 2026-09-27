@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use Modules\Sdk\Api\Fields\AdoptionField;
 use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Api\Fields\BackupField;
 use Modules\Sdk\Api\Fields\BandwidthField;
+use Modules\Sdk\Api\Fields\BesideField;
 use Modules\Sdk\Api\Fields\BundleField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
@@ -18,6 +20,7 @@ use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Api\Fields\HistoryField;
 use Modules\Sdk\Api\Fields\HostingField;
 use Modules\Sdk\Api\Fields\HouseholdField;
+use Modules\Sdk\Api\Fields\ImportField;
 use Modules\Sdk\Api\Fields\InvitationField;
 use Modules\Sdk\Api\Fields\JobField;
 use Modules\Sdk\Api\Fields\LifecycleField;
@@ -29,6 +32,7 @@ use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\QualityField;
 use Modules\Sdk\Api\Fields\RepairField;
+use Modules\Sdk\Api\Fields\ReplacementField;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SpaceField;
@@ -58,10 +62,12 @@ function everyFieldNamedOnTheWire(): array
 {
     return [
         ...WireField::cases(),
+        ...AdoptionField::cases(),
         ...AlertsField::cases(),
         ...ArchivesField::cases(),
         ...BackupField::cases(),
         ...BandwidthField::cases(),
+        ...BesideField::cases(),
         ...BundleField::cases(),
         ...ClientsField::cases(),
         ...ConfigField::cases(),
@@ -75,6 +81,7 @@ function everyFieldNamedOnTheWire(): array
         ...HistoryField::cases(),
         ...HostingField::cases(),
         ...HouseholdField::cases(),
+        ...ImportField::cases(),
         ...JobField::cases(),
         ...LifecycleField::cases(),
         ...LogField::cases(),
@@ -85,6 +92,7 @@ function everyFieldNamedOnTheWire(): array
         ...ProvenanceField::cases(),
         ...QualityField::cases(),
         ...RepairField::cases(),
+        ...ReplacementField::cases(),
         ...RestoreField::cases(),
         ...SelfUpdateField::cases(),
         ...SpaceField::cases(),

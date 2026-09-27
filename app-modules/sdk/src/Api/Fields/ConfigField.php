@@ -28,17 +28,4 @@ enum ConfigField: string implements NamesAWireField
 
     /** The difference a review is about, as it would be applied. */
     case Change = 'change';
-
-    /** Where a proposed change stands. */
-    case Stance = 'stance';
-
-    /**
-     * Why nothing was written, where the reason is not that nobody said yes.
-     *
-     * A different word on the wire from `refused`, which this enum already
-     * carries for a request a household member was turned down for. Two cases
-     * because they are two fields on two envelopes, and one case serving both
-     * would be this app deciding they are the same thing.
-     */
-    case Refusal = 'refusal';
 }

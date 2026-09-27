@@ -17,9 +17,6 @@ enum OutboundField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Every request lemonfiber makes on its own account. */
-    case Ours = 'ours';
-
     /**
      * What the stack's services reach, attributed to them.
      *

@@ -445,14 +445,14 @@ final readonly class Reports
      */
     private static function verdict(array $row, int $position): array
     {
-        if (! array_key_exists(DoctorField::Verdict->value, $row)) {
-            throw ReportIsUnreadable::inFinding($position, DoctorField::Verdict);
+        if (! array_key_exists(WireField::Verdict->value, $row)) {
+            throw ReportIsUnreadable::inFinding($position, WireField::Verdict);
         }
 
-        $verdict = $row[DoctorField::Verdict->value];
+        $verdict = $row[WireField::Verdict->value];
 
         if (! is_array($verdict)) {
-            throw ReportIsUnreadable::inFinding($position, DoctorField::Verdict);
+            throw ReportIsUnreadable::inFinding($position, WireField::Verdict);
         }
 
         return $verdict;

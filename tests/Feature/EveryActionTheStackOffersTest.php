@@ -34,11 +34,11 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Bundle', 'Clients', 'Config', 'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms',
-    'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
-    'Music', 'Outbound', 'Preview', 'Provenance', 'Quality', 'Repair', 'Restore', 'SelfUpdate', 'Space', 'Status',
-    'Stored', 'Stuck', 'Trace', 'Update', 'Upgrade',
-    'Walkthrough',
+    'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Clients', 'Config', 'Credentials',
+    'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household',
+    'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'Outbound', 'Preview', 'Provenance',
+    'Quality', 'Repair', 'Replacement', 'Restore', 'SelfUpdate', 'Space', 'Status', 'Stored', 'Stuck', 'Trace',
+    'Update', 'Upgrade', 'Walkthrough',
 ];
 
 /**

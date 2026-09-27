@@ -846,10 +846,11 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     ],
     [
         'path' => 'MigrationEnvelope.carrying[].existing',
-        'because' => 'The version of a service standing here now. Read with `ours` and `verdict` when '
-            . 'adopting is offered as an act, which is where `N7-R4` asks for what adopting would come '
-            . 'to. The survey reads the service, what adopting it means, whether a copy is wanted '
-            . 'first and whether adopting is refused, and draws none of them until then.',
+        'because' => 'The version of a service standing here now. Adopting is asked about as an act of its '
+            . 'own, and its answer carries the same versions for every service it would open, in '
+            . '`AdoptionEnvelope.upgrades[]`, which is read and drawn before the yes (`N7-R4`). The '
+            . 'survey reads the service, what adopting it means, whether a copy is wanted first and '
+            . 'whether adopting is refused, and draws none of them: choosing a mode is where they are said.',
     ],
     [
         'path' => 'MigrationEnvelope.carrying[].ours',

@@ -86,19 +86,19 @@ final readonly class WhatLeaves
         $found = [];
         $position = 0;
 
-        foreach (self::rows($data, OutboundField::Ours) as $row) {
+        foreach (self::rows($data, WireField::Ours) as $row) {
             if (! is_array($row)) {
-                throw OutboundIsUnreadable::row(OutboundField::Ours, $position);
+                throw OutboundIsUnreadable::row(WireField::Ours, $position);
             }
 
             $found[] = ARequestOfOurs::described(
                 self::asksFor($row, $position),
                 self::destinations($row, $position),
-                self::text($row, OutboundField::Ours, OutboundField::Purpose, $position),
-                self::text($row, OutboundField::Ours, OutboundField::Sends, $position),
-                WhetherItIsAllowed::said(allowed: self::flag($row, OutboundField::Ours, OutboundField::Allowed, $position)),
-                self::text($row, OutboundField::Ours, OutboundField::Switch, $position),
-                self::text($row, OutboundField::Ours, WireField::Cost, $position),
+                self::text($row, WireField::Ours, OutboundField::Purpose, $position),
+                self::text($row, WireField::Ours, OutboundField::Sends, $position),
+                WhetherItIsAllowed::said(allowed: self::flag($row, WireField::Ours, OutboundField::Allowed, $position)),
+                self::text($row, WireField::Ours, OutboundField::Switch, $position),
+                self::text($row, WireField::Ours, WireField::Cost, $position),
             );
             $position++;
         }
@@ -198,7 +198,7 @@ final readonly class WhatLeaves
      */
     private static function asksFor(array $row, int $position): WhatLemonfiberAsksFor
     {
-        $said = self::text($row, OutboundField::Ours, OutboundField::Reach, $position);
+        $said = self::text($row, WireField::Ours, OutboundField::Reach, $position);
 
         return WhatLemonfiberAsksFor::tryFrom($said) ?? throw OutboundIsUnreadable::reach($said, $position);
     }
@@ -211,14 +211,14 @@ final readonly class WhatLeaves
     private static function destinations(array $row, int $position): WhereItGoes
     {
         if (! array_key_exists(OutboundField::Destination->value, $row) || ! is_array($row[OutboundField::Destination->value])) {
-            throw OutboundIsUnreadable::said(OutboundField::Ours, OutboundField::Destination, $position);
+            throw OutboundIsUnreadable::said(WireField::Ours, OutboundField::Destination, $position);
         }
 
         $found = [];
 
         foreach ($row[OutboundField::Destination->value] as $one) {
             if (! is_string($one) || trim($one) === '') {
-                throw OutboundIsUnreadable::said(OutboundField::Ours, OutboundField::Destination, $position);
+                throw OutboundIsUnreadable::said(WireField::Ours, OutboundField::Destination, $position);
             }
 
             $found[] = $one;
