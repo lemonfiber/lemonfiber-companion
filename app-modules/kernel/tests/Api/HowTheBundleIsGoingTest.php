@@ -15,6 +15,7 @@ use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\ThePiecesOfABundle;
 use Modules\Kernel\Api\TheTermsOfABundle;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhenABundleWasTaken;
 use Modules\Kernel\Api\WhereABundleIs;
 
@@ -32,7 +33,7 @@ function howTheBundleIsGoingReads(HowTheBundleIsGoing $going): string
     return $going->either(
         stillRunning: static fn(): WhichArmTheBundleTook => new WhichArmTheBundleTook('running'),
         done: static fn(ABundle $bundle): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('done:%d', $bundle->bytes())),
-        refused: static fn(string $said): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('refused:%s', $said)),
+        refused: static fn(string $said, WhatTheRefusalNamed $named): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('refused:%s:%s', $said, $named->forTheOperator())),
         ended: static fn(): WhichArmTheBundleTook => new WhichArmTheBundleTook('ended'),
         met: static fn(Obstacle $why): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('met:%s', $why->value)),
     )->said;
@@ -50,8 +51,10 @@ it('takes the arm for each state, and carries the bundle, the refusal and the ob
 
     expect(howTheBundleIsGoingReads(HowTheBundleIsGoing::stillRunning()))->toBe('running')
         ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::done($bundle)))->toBe('done:4096')
-        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::refused('The bundle still held something that reads as a credential')))
-        ->toBe('refused:The bundle still held something that reads as a credential')
+        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::refused('The bundle still held something that reads as a credential', WhatTheRefusalNamed::as('sonarr/config.xml line 12'))))
+        ->toBe('refused:The bundle still held something that reads as a credential:sonarr/config.xml line 12')
+        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::refused('Showing a setting as it is has to be confirmed', WhatTheRefusalNamed::nothing())))
+        ->toBe('refused:Showing a setting as it is has to be confirmed:')
         ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::ended()))->toBe('ended')
         ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));
 });

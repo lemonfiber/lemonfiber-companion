@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\PinnedClients;
 use RuntimeException;
@@ -97,7 +98,7 @@ function whatBecameOfTheBundleAnswered(MockResponse $answered): string
         ->either(
             stillRunning: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('still running'),
             done: static fn(ABundle $bundle): WhatTheBundlerSaid => new WhatTheBundlerSaid(WhatABundleSays::of($bundle)),
-            refused: static fn(string $said): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('refused: %s', $said)),
+            refused: static fn(string $said, WhatTheRefusalNamed $named): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('refused: %s (%s)', $said, $named->forTheOperator())),
             ended: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('ended'),
             met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->name),
         )->said;
@@ -141,9 +142,9 @@ it('asks after a bundle at the handle it was answered with', function (): void {
     expect($mock->getLastPendingRequest()?->getUrl())->toEndWith('/api/jobs/a-bundle');
 });
 
-it('carries a bundle the stack refused in its own words, from an error or from prose', function (int $status, string $body): void {
+it('carries a bundle the stack refused in its own words, from an error or from prose, with what the error named', function (int $status, string $body, string $named): void {
     expect(whatBecameOfTheBundleAnswered(MockResponse::make($body, $status)))
-        ->toBe(sprintf('refused: %s', WhatABundleSays::A_LEAK));
+        ->toBe(sprintf('refused: %s (%s)', WhatABundleSays::A_LEAK, $named));
 })->with([
     'an error envelope' => [500, (string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => [
         'code' => 'BUNDLE_LEAK',
@@ -152,9 +153,17 @@ it('carries a bundle the stack refused in its own words, from an error or from p
         'summary' => WhatABundleSays::A_LEAK,
         'meaning' => 'Nothing has been written.',
         'remedies' => [['action' => 'Report which file this names']],
-        'detail' => 'services.txt line 3 — nothing was written',
-    ]])],
-    'a sentence' => [400, WhatABundleSays::A_LEAK],
+        'detail' => WhatABundleSays::A_LEAK_NAMES,
+    ]]), WhatABundleSays::A_LEAK_NAMES],
+    'an error envelope naming nothing' => [500, (string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => [
+        'code' => 'BUNDLE_LEAK',
+        'severity' => 'critical',
+        'state' => 'guided',
+        'summary' => WhatABundleSays::A_LEAK,
+        'meaning' => 'Nothing has been written.',
+        'remedies' => [],
+    ]]), ''],
+    'a sentence' => [400, WhatABundleSays::A_LEAK, ''],
 ]);
 
 it('reads a refused session, an account that may not ask, and a refusal with no words as obstacles', function (int $status, string $body, Obstacle $why): void {

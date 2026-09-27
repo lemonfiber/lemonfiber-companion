@@ -19,6 +19,7 @@ final readonly class HowTheBundleWent
      * @param bool              $isWorking whether the stack is still gathering it
      * @param bool              $hasEnded  whether the stack has no outcome for it any more
      * @param string            $refused   what the stack refused the bundle with, in its own words, blank unless it refused
+     * @param string            $named     what the refusal named, the source a credential was found in, blank where it named nothing
      * @param bool              $isWritten whether the bundle exists on the machine, rather than being described
      * @param ?ABundleAsShown   $bundle    the bundle, once the stack answered with one
      */
@@ -28,6 +29,7 @@ final readonly class HowTheBundleWent
         public bool $isWorking,
         public bool $hasEnded,
         public string $refused,
+        public string $named,
         public bool $isWritten,
         public ?ABundleAsShown $bundle,
     ) {}

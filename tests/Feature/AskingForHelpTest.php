@@ -19,6 +19,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\ThePiecesOfABundle;
 use Modules\Kernel\Api\TheTermsOfABundle;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhenABundleWasTaken;
 use Modules\Kernel\Api\WhereABundleIs;
 use Modules\Kernel\Api\Whose;
@@ -371,22 +372,33 @@ it('never sends a write again that met an obstacle: asking again describes', fun
         ->and($helping->followed())->toHaveCount(1);
 });
 
-it('draws a bundle the stack refused as its refusal, and offers the choices rather than asking again', function (): void {
-    $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::refused(WhatABundleSays::A_LEAK)));
+it('draws a bundle the stack refused as its refusal, with what it named, and offers the choices rather than asking again', function (): void {
+    $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::refused(WhatABundleSays::A_LEAK, WhatTheRefusalNamed::as(WhatABundleSays::A_LEAK_NAMES))));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->answer()->refused)->toBe(WhatABundleSays::A_LEAK)
+        ->and($screen->answer()->named)->toBe(WhatABundleSays::A_LEAK_NAMES)
         ->and($screen->answer()->bundle)->toBeNull()
         ->and($drawn->said())->toContain(__('stacks.help.refused'))
         ->and($drawn->said())->toContain(WhatABundleSays::A_LEAK)
+        ->and($drawn->said())->toContain(__('stacks.help.refused_named', ['named' => WhatABundleSays::A_LEAK_NAMES]))
         ->and($drawn->said())->toContain(__('stacks.help.refused_wrote_nothing'))
         ->and($drawn->offers())->toContain(__('stacks.help.start_over'))
         ->and($drawn->offers())->not->toContain(__('health.ask_again'))
         ->and($drawn->offers())->not->toContain(__('stacks.help.write'));
 });
 
+it('draws nothing for what a refusal named where it named nothing', function (): void {
+    $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::refused(WhatABundleSays::A_LEAK, WhatTheRefusalNamed::nothing())));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->answer()->named)->toBe('')
+        ->and($drawn->said())->toContain(WhatABundleSays::A_LEAK)
+        ->and($drawn->said())->not->toContain(__('stacks.help.refused_named', ['named' => '']));
+});
+
 it('goes back to the choices, keeping them, and forgets the bundle it was following', function (): void {
-    $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::refused(WhatABundleSays::A_LEAK)));
+    $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::refused(WhatABundleSays::A_LEAK, WhatTheRefusalNamed::nothing())));
     $screen->chooseLines(50);
     $screen->startOver();
 

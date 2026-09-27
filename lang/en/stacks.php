@@ -667,6 +667,7 @@ return [
         'no_outcome' => 'The stack no longer says what became of this bundle.',
         'start_over' => 'Change what goes in',
         'refused' => 'The stack refused this bundle',
+        'refused_named' => 'It names :named',
         'refused_wrote_nothing' => 'Nothing was written. The stack gives the same answer until what it names has changed.',
         'written' => 'The bundle is written',
         'described' => 'Nothing has been written yet',

@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 
 // A report the operator sends, and the app does not.
 //
@@ -32,6 +33,7 @@ const NEVER_IN_A_REPORT = [
     Nonce::class,
     Address::class,
     Reading::class,
+    WhatTheRefusalNamed::class,
 ];
 
 it('N4-R13 — the assembler will not accept anything private', function (): void {

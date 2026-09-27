@@ -34,6 +34,9 @@ final readonly class WhatABundleSays
     /** The sentence a stack refuses a bundle holding a credential with. */
     public const string A_LEAK = 'The bundle still held something that reads as a credential';
 
+    /** What a stack names when it refuses one: the file the credential is in, and the line. */
+    public const string A_LEAK_NAMES = 'sonarr/config.xml line 12 — nothing was written';
+
     private function __construct(public string $said) {}
 
     /**

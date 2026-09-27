@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
@@ -93,7 +94,7 @@ function whatBecameOfTheBundle(AskingForHelp $helping): string
     return $helping->whatBecameOf(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), Job::named(AStackThatBundles::THE_JOB))->either(
         stillRunning: static fn(): WhatAskingForABundleSaid => new WhatAskingForABundleSaid('still running'),
         done: static fn(ABundle $bundle): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(WhatABundleSays::of($bundle)),
-        refused: static fn(string $said): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('refused: %s', $said)),
+        refused: static fn(string $said, WhatTheRefusalNamed $named): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('refused: %s (%s)', $said, $named->forTheOperator())),
         ended: static fn(): WhatAskingForABundleSaid => new WhatAskingForABundleSaid('ended'),
         met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->name),
     )->said;
@@ -152,7 +153,7 @@ it('a bundle the stack no longer has a job for is ended, not unreachable and not
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 
-it('a bundle the stack refused is its refusal, in its words', function (): void {
+it('a bundle the stack refused is its refusal, in its words, with what it named', function (): void {
     $refused = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => [
         'code' => 'BUNDLE_LEAK',
         'severity' => 'critical',
@@ -160,10 +161,11 @@ it('a bundle the stack refused is its refusal, in its words', function (): void 
         'summary' => WhatABundleSays::A_LEAK,
         'meaning' => 'Nothing has been written.',
         'remedies' => [],
+        'detail' => WhatABundleSays::A_LEAK_NAMES,
     ]]), 500);
 
-    foreach (everyWayOfAskingForABundle($refused, HowTheBundleIsGoing::refused(WhatABundleSays::A_LEAK)) as $which => $build) {
-        expect(whatBecameOfTheBundle($build()))->toBe(sprintf('refused: %s', WhatABundleSays::A_LEAK), $which);
+    foreach (everyWayOfAskingForABundle($refused, HowTheBundleIsGoing::refused(WhatABundleSays::A_LEAK, WhatTheRefusalNamed::as(WhatABundleSays::A_LEAK_NAMES))) as $which => $build) {
+        expect(whatBecameOfTheBundle($build()))->toBe(sprintf('refused: %s (%s)', WhatABundleSays::A_LEAK, WhatABundleSays::A_LEAK_NAMES), $which);
     }
 });
 
