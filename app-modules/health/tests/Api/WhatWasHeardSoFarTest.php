@@ -187,3 +187,11 @@ it('keeps what stopped it while nobody can see it', function (): void {
     expect(whatStoppedIt($heard))->toBe('no_answer')
         ->and($heard->mayListen(secondsIn(0)))->toBeTrue();
 });
+
+it('takes what was heard as current for as long as a stream may be silent, and no longer', function (): void {
+    expect(WhatWasHeardSoFar::isStillCurrent(secondsIn(0), secondsIn(0)))->toBeTrue()
+        ->and(WhatWasHeardSoFar::isStillCurrent(secondsIn(0), secondsIn(30)))->toBeTrue()
+        ->and(WhatWasHeardSoFar::isStillCurrent(secondsIn(0), secondsIn(31)))->toBeFalse()
+        ->and(WhatWasHeardSoFar::isStillCurrent(secondsIn(10), secondsIn(40)))->toBeTrue()
+        ->and(WhatWasHeardSoFar::isStillCurrent(secondsIn(60), secondsIn(0)))->toBeTrue();
+});

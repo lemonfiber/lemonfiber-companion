@@ -84,11 +84,23 @@ final readonly class WhatWasHeardSoFar
             || $now->epochSeconds() - $this->closedAt->epochSeconds() >= HowOften::AfterABreak->seconds();
     }
 
+    /**
+     * Whether something heard at `$heard` may still be taken as current at `$now`.
+     *
+     * For as long as the contract lets a stream be silent, and no longer. A
+     * screen holding the stream takes a summary as current until then, and a
+     * screen holding only what was heard, with no stream behind it, can vouch
+     * for it for exactly as long.
+     */
+    public static function isStillCurrent(Instant $heard, Instant $now): bool
+    {
+        return $now->epochSeconds() - $heard->epochSeconds() <= self::HEARTBEAT_SECONDS * self::BEATS_OF_SILENCE;
+    }
+
     /** Whether an open subscription has been silent past the contract's bound at `$now`. */
     public function hasGoneQuiet(Instant $now): bool
     {
-        return $this->lastSignOfLife instanceof Instant
-            && $now->epochSeconds() - $this->lastSignOfLife->epochSeconds() > self::HEARTBEAT_SECONDS * self::BEATS_OF_SILENCE;
+        return $this->lastSignOfLife instanceof Instant && ! self::isStillCurrent($this->lastSignOfLife, $now);
     }
 
     /** Whether a subscription is open, so the screen says how often it looks at it. */

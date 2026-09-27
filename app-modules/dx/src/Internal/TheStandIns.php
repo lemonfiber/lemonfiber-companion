@@ -10,8 +10,8 @@ use Modules\Dx\Api\ADeviceAlreadyPaired;
 use Modules\Dx\Api\ADoorThatIsNotThere;
 use Modules\Dx\Api\ASessionThisRunKeeps;
 use Modules\Dx\Api\AStackThatIsNotThere;
+use Modules\Dx\Api\StandingsThisRunKeeps;
 use Modules\Dx\Api\StandsIn;
-use Modules\Dx\Api\VerdictsThisRunKeeps;
 
 /**
  * Everything this module can take the place of.
@@ -59,7 +59,7 @@ final readonly class TheStandIns
             new ACameraThatSeesAStandIn(),
             new ADeviceAlreadyPaired($store),
             new ASessionThisRunKeeps($store),
-            new VerdictsThisRunKeeps($store),
+            new StandingsThisRunKeeps($store),
         ];
     }
 }

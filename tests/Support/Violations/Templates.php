@@ -28,7 +28,7 @@ final readonly class Templates
         return [
             Fixture::suite('F3', sprintf('%s/unknown-class.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full flex-nonsense">
-                    <native:text>{{ __('health.overall.healthy') }}</native:text>
+                    <native:text>{{ __('health.standing.healthy') }}</native:text>
                 </native:column>
                 BLADE, 'every class in', 'unknown-class'),
 
@@ -40,7 +40,7 @@ final readonly class Templates
 
             Fixture::suite('F3', sprintf('%s/bare-tag.blade.php', $views), <<<'BLADE'
                 <column class="w-full">
-                    <native:text>{{ __('health.overall.healthy') }}</native:text>
+                    <native:text>{{ __('health.standing.healthy') }}</native:text>
                 </column>
                 BLADE, 'every element in', 'bare-tag'),
 
@@ -58,7 +58,7 @@ final readonly class Templates
 
             Fixture::suite('F3', sprintf('%s/literal-colour.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full bg-red-500">
-                    <native:text>{{ __('health.overall.healthy') }}</native:text>
+                    <native:text>{{ __('health.standing.healthy') }}</native:text>
                 </native:column>
                 BLADE, 'names no literal colour', 'literal-colour'),
 
@@ -68,7 +68,7 @@ final readonly class Templates
             // colour and the accent set as text, and all three pass it.
             Fixture::suite('F9', sprintf('%s/runtime-class.blade.php', $views), <<<'BLADE'
                 <native:column class="{{ $open ? 'bg-theme-accnt' : 'bg-red-500' }}">
-                    <native:text class="{{ $open ? 'text-theme-accent' : '' }}">{{ __('health.overall.healthy') }}</native:text>
+                    <native:text class="{{ $open ? 'text-theme-accent' : '' }}">{{ __('health.standing.healthy') }}</native:text>
                 </native:column>
                 BLADE, 'F9 —', 'runtime-class'),
 
@@ -123,7 +123,7 @@ final readonly class Templates
             // opened by the component that holds it.
             Fixture::suite('F16', sprintf('%s/a-content-column-written-out.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full gap-4 px-6 py-4">
-                    <native:text>{{ __('health.overall.healthy') }}</native:text>
+                    <native:text>{{ __('health.standing.healthy') }}</native:text>
                 </native:column>
                 BLADE, 'no template but the component writes the content column out', 'a-content-column-written-out'),
 
