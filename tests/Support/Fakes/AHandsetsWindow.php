@@ -72,4 +72,14 @@ final class AHandsetsWindow
     {
         return ['protected' => $this->concealed || ! $this->inFront];
     }
+
+    /**
+     * What `Lemonfiber.IsInFront` answers on this handset.
+     *
+     * @return array{inFront: bool}
+     */
+    public function whereItIs(): array
+    {
+        return ['inFront' => $this->inFront];
+    }
 }

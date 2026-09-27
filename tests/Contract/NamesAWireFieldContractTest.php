@@ -9,6 +9,7 @@ use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\CredentialsField;
+use Modules\Sdk\Api\Fields\DashboardField;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\Fields\FrontDoorField;
 use Modules\Sdk\Api\Fields\GlossaryField;
@@ -62,6 +63,7 @@ function everyFieldNamedOnTheWire(): array
         ...ClientsField::cases(),
         ...ConfigField::cases(),
         ...CredentialsField::cases(),
+        ...DashboardField::cases(),
         ...DoctorField::cases(),
         ...GlossaryField::cases(),
         ...HeldField::cases(),

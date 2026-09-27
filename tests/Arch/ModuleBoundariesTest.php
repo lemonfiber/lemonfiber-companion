@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
+use Modules\Sdk\Api\Listeners;
 use Tests\Support\Imports;
 use Tests\Support\Kind;
 use Tests\Support\Module;
@@ -73,6 +74,14 @@ const MUTABLE_BY_DESIGN = [
     // which is keeping nothing on the device — so the mutability buys a correct screen and costs
     // nothing that outlives the run.
     TheStoreThisRunKeeps::class,
+    // A connection held open is a thing that changes. This keeps a stack's
+    // event stream between one wake of a screen and the next, because the
+    // health summary is published there and nowhere else, and reopening the
+    // stream to take each value would be polling with a longer request. What
+    // it keeps is the connection and the half of an event that arrived before
+    // the rest of it; letting go is a mutation, and it is how the connection is
+    // closed.
+    Listeners::class,
 ];
 
 foreach ($modules as $module) {

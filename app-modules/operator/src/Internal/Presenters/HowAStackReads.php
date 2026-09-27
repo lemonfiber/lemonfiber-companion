@@ -37,7 +37,6 @@ final readonly class HowAStackReads
     {
         return new WhatTheStackTurnedOutToBe(
             went: HowTheReadingWent::theSessionEnded(),
-            overall: '',
             findings: Findings::none(),
             marksAnOrigin: false,
         );
@@ -48,7 +47,6 @@ final readonly class HowAStackReads
     {
         return new WhatTheStackTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
-            overall: $report->overall()->saidOnTheScreen(),
             findings: $report->findings(),
             marksAnOrigin: $this->marksAnOrigin($report->findings()),
         );
@@ -65,7 +63,6 @@ final readonly class HowAStackReads
     {
         return new WhatTheStackTurnedOutToBe(
             went: HowTheReadingWent::somethingStopped($why),
-            overall: '',
             findings: Findings::none(),
             marksAnOrigin: false,
         );
