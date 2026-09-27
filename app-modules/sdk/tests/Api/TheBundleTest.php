@@ -10,6 +10,7 @@ use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\ABundle;
+use Modules\Kernel\Api\ABundleHasNoName;
 use Modules\Sdk\Api\BundleIsUnreadable;
 use Modules\Sdk\Api\TheBundle;
 use Tests\Support\WhatABundleSays;
@@ -100,4 +101,12 @@ it('refuses a bundle it cannot show whole, naming what was wrong', function (mix
     'no moment' => [WhatABundleSays::payloadWhoseContents(['taken' => ['lemonfiber' => '1.4.0', 'stack' => '2026.09']]), 'no readable `at`'],
     'no lemonfiber version' => [WhatABundleSays::payloadWhoseContents(['taken' => ['at' => 'now', 'stack' => '2026.09']]), 'no readable `lemonfiber`'],
     'a blank stack version' => [WhatABundleSays::payloadWhoseContents(['taken' => ['at' => 'now', 'lemonfiber' => '1.4.0', 'stack' => ' ']]), 'no readable `stack`'],
+]);
+
+it('refuses a bundle written to a path that ends in no file it could be fetched by', function (string $path): void {
+    expect(static fn(): ABundle => aBundleRead(WhatABundleSays::payload(['path' => $path])))->toThrow(ABundleHasNoName::class);
+})->with([
+    'a directory' => ['/home/op/.config/lemonfiber/bundles/'],
+    'a step up' => ['/home/op/.config/lemonfiber/bundles/..'],
+    'the directory itself' => ['.'],
 ]);

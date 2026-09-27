@@ -30,6 +30,10 @@ private const val TAG = "Lemonfiber"
  * @param context whatever the host had to hand when the bridge was registered.
  */
 public fun installLemonfiber(context: Context) {
+    // Whatever the last handover left in the share cache, gone before anything
+    // else runs.
+    ShareCache.inside(context.cacheDir).sweep()
+
     val application = context.applicationContext
 
     if (application !is Application) {

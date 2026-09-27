@@ -17,7 +17,11 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Refusal;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\ABundleFetched;
+use Modules\Kernel\Api\ABundleFile;
+use Modules\Kernel\Api\ABundleHasNoName;
 use Modules\Kernel\Api\AskingForHelp;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowTheBundleIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -35,10 +39,14 @@ use Modules\Sdk\Api\Fields\WalkthroughField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
- * Asking a stack for a support bundle, and following it, through the SDK.
+ * Asking a stack for a support bundle, following it, and fetching it once written, through the SDK.
  *
  * Built as {@see Copiers} is: the client is fetched per stack and session, and
  * what the stack answers is read inside the same `try` as the request.
+ *
+ * **Fetching is a read, and the SDK's `bundle()` is the whole of it.** The file
+ * comes back as the stack served it, for the operator to hand over through the
+ * device's own sharing; nothing here sends it anywhere.
  *
  * **A refusal of the bundle is the stack's answer, not a fault.** Where the
  * work stopped on a problem — a credential redaction missed, a setting shown
@@ -76,8 +84,28 @@ final readonly class Bundlers implements AskingForHelp
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $this->refusal($why);
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BundleIsUnreadable) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BundleIsUnreadable|ABundleHasNoName) {
             return HowTheBundleIsGoing::met(Obstacle::StackDidNotAnswer);
+        }
+    }
+
+    /**
+     * The written bundle's file, as the stack serves it.
+     *
+     * A read and nothing else: the bytes come back whole and unopened, and the
+     * type and length the transport stated are not carried, because the sheet
+     * names the file by its name and hands over what arrived.
+     */
+    public function fetch(Stack $stack, Session $session, AWrittenBundle $written): ABundleFetched
+    {
+        try {
+            $file = $this->clients->client($stack, $session)->bundle($written->name());
+
+            return ABundleFetched::as(ABundleFile::fetched($written, $file->bytes()));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return ABundleFetched::met(WhatARefusalMeant::obstacle($why));
+        } catch (Unreachable) {
+            return ABundleFetched::met(Obstacle::StackDidNotAnswer);
         }
     }
 

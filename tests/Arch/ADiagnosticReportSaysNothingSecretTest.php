@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Assembled;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Diagnostics;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
@@ -34,6 +36,7 @@ const NEVER_IN_A_REPORT = [
     Address::class,
     Reading::class,
     WhatTheRefusalNamed::class,
+    ABundleFile::class,
 ];
 
 it('N4-R13 — the assembler will not accept anything private', function (): void {
@@ -81,4 +84,17 @@ it('N4-R13 — an assembled report holds no constructor a caller could fill', fu
     // this is convention — but a private constructor is what stops a caller
     // assembling one out of whatever it happens to be holding.
     expect(new ReflectionClass(Assembled::class)->getConstructor()?->isPrivate())->toBeTrue();
+});
+
+it('nothing about a support bundle\'s file can send it', function (): void {
+    // The same absence, for the other thing this app hands over. The file is
+    // made from a bundle the stack wrote and the bytes it served, and it is
+    // read by name and by bytes for the sheet; there is no `send()` beside
+    // them for the reason there is none on a report.
+    $methods = get_class_methods(ABundleFile::class);
+    sort($methods);
+
+    expect($methods)->toBe(['__debugInfo', '__serialize', '__unserialize', 'bytes', 'fetched', 'jsonSerialize', 'named'])
+        ->and(new ReflectionClass(ABundleFile::class)->getConstructor()?->isPrivate())->toBeTrue()
+        ->and(new ReflectionMethod(ABundleFile::class, 'fetched')->getParameters()[0]->getType()?->__toString())->toBe(AWrittenBundle::class);
 });

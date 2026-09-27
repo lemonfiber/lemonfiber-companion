@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheBundleIsGoing;
 use Modules\Kernel\Api\Nonce;
@@ -23,11 +25,13 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhenABundleWasTaken;
 use Modules\Kernel\Api\WhereABundleIs;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatBundles;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatABundleSays;
@@ -50,9 +54,13 @@ function theStackHelpIsAskedAbout(): Stack
     );
 }
 
-/** The screen, with a stack it knows and a keychain holding whatever a case says. */
-function theHelpScreen(AStackThatBundles $helping, ?AKeychainInMemory $keychain = null, bool $signedIn = true): AskingForHelpHere
-{
+/** The screen, with a stack it knows, a keychain holding whatever a case says, and a share sheet. */
+function theHelpScreen(
+    AStackThatBundles $helping,
+    ?AKeychainInMemory $keychain = null,
+    bool $signedIn = true,
+    ?AShareSheetThatWasOffered $sheet = null,
+): AskingForHelpHere {
     $stack = theStackHelpIsAskedAbout();
     $keychain ??= AKeychainInMemory::working();
 
@@ -60,7 +68,7 @@ function theHelpScreen(AStackThatBundles $helping, ?AKeychainInMemory $keychain 
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new AskingForHelpHere($helping, $keychain, StacksInMemory::holding($stack));
+    $screen = new AskingForHelpHere($helping, $keychain, StacksInMemory::holding($stack), $sheet ?? AShareSheetThatWasOffered::working());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -71,6 +79,21 @@ function aBundleDescribedOnTheScreen(?AStackThatBundles $helping = null): Asking
 {
     $screen = theHelpScreen($helping ?? AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::described())));
     $screen->describe();
+    $screen->whileItRuns();
+
+    return $screen;
+}
+
+/** A screen whose bundle the stack has described and then written, handed over through this sheet. */
+function aBundleWrittenOnTheScreen(
+    AStackThatBundles $helping,
+    ?AShareSheetThatWasOffered $sheet = null,
+    ?AKeychainInMemory $keychain = null,
+): AskingForHelpHere {
+    $screen = theHelpScreen($helping, $keychain, sheet: $sheet);
+    $screen->describe();
+    $screen->whileItRuns();
+    $screen->write();
     $screen->whileItRuns();
 
     return $screen;
@@ -495,6 +518,122 @@ it('follows nothing for a stack this device stopped holding a session for', func
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($helping->followed())->toBe([]);
+});
+
+it('hands a written bundle over as the stack served it, and leaves where it goes to the operator', function (): void {
+    $helping = AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written()));
+    $sheet = AShareSheetThatWasOffered::working();
+    $screen = aBundleWrittenOnTheScreen($helping, $sheet);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.help.hand_over'))
+        ->and($sheet->handedOver())->toBe([]);
+
+    $screen->handOver();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $handed = array_map(static fn(ABundleFile $file): string => sprintf('%s: %s', $file->named(), $file->bytes()), $sheet->handedOver());
+
+    expect($handed)->toBe([sprintf('lemonfiber-support-2026-09-26T10-00-00Z.tar.gz: %s', AStackThatBundles::THE_BYTES)])
+        ->and(array_map(static fn(AWrittenBundle $written): string => $written->path(), $helping->fetched()))->toBe([WhatABundleSays::WOULD_GO])
+        ->and($screen->handing)->toBe('stacks.help.handed_over')
+        ->and($drawn->said())->toContain(__('stacks.help.handed_over'))
+        ->and($drawn->said())->toContain(__('stacks.help.yours_to_send'))
+        ->and($drawn->said())->not->toContain(__('stacks.help.still_on_the_machine'));
+});
+
+it('offers no handing over of a bundle only described, and a tap there fetches nothing', function (): void {
+    $helping = AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::described()));
+    $sheet = AShareSheetThatWasOffered::working();
+    $screen = theHelpScreen($helping, sheet: $sheet);
+    $screen->handOver();
+    $screen->whileItRuns();
+    $screen->handOver();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.help.hand_over'))
+        ->and($helping->fetched())->toBe([])
+        ->and($sheet->handedOver())->toBe([])
+        ->and($screen->handing)->toBe('');
+});
+
+it('says why the sheet was not reached, and that nothing left the phone', function (WhyNothingWasShared $why, string $said): void {
+    $screen = aBundleWrittenOnTheScreen(
+        AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written())),
+        AShareSheetThatWasOffered::refusing($why),
+    );
+    $screen->handOver();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->handing)->toBe($said)
+        ->and($drawn->said())->toContain(__($said))
+        ->and($drawn->said())->toContain(__('stacks.help.still_on_the_machine'))
+        ->and($drawn->said())->not->toContain(__('stacks.help.yours_to_send'));
+})->with([
+    'a file the phone could not hold' => [WhyNothingWasShared::NothingToHandOver, 'stacks.help.not_held_here'],
+    'a sheet that would not open' => [WhyNothingWasShared::TheDeviceWouldNotOffer, 'stacks.help.not_offered'],
+]);
+
+it('says what stood in the way of fetching the file, hands nothing over, and keeps the bundle drawn', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $sheet = AShareSheetThatWasOffered::working();
+    $screen = aBundleWrittenOnTheScreen(
+        AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::done(WhatABundleSays::written()), Obstacle::StackDidNotAnswer),
+        $sheet,
+        $keychain,
+    );
+    $screen->handOver();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->handing)->toBe(Obstacle::StackDidNotAnswer->said())
+        ->and($sheet->handedOver())->toBe([])
+        ->and($keychain->isHolding(theStackHelpIsAskedAbout()->id()))->toBeTrue()
+        ->and($screen->answer()->isWritten)->toBeTrue()
+        ->and($drawn->said())->toContain(__('stacks.help.still_on_the_machine'))
+        ->and($drawn->said())->toContain(__('stacks.help.written'));
+});
+
+it('lets go of a session the stack refused while the file was fetched', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = aBundleWrittenOnTheScreen(
+        AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::done(WhatABundleSays::written()), Obstacle::CredentialWasRefused),
+        keychain: $keychain,
+    );
+    $screen->handOver();
+
+    expect($screen->handing)->toBe(Obstacle::CredentialWasRefused->said())
+        ->and($keychain->isHolding(theStackHelpIsAskedAbout()->id()))->toBeFalse();
+});
+
+it('fetches nothing for a stack this device stopped holding a session for, and says it is signed out', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $helping = AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written()));
+    $screen = aBundleWrittenOnTheScreen($helping, keychain: $keychain);
+
+    // The written bundle is on the screen when the session goes, which is
+    // the frame the tap arrives on.
+    expect($screen->answer()->isWritten)->toBeTrue();
+
+    $keychain->forget(theStackHelpIsAskedAbout()->id());
+    $screen->handOver();
+
+    expect($helping->fetched())->toBe([])
+        ->and($screen->handing)->toBe('')
+        ->and($screen->handingLeaves)->toBe('')
+        ->and($screen->answer()->went->isSignedIn)->toBeFalse();
+});
+
+it('forgets what handing over came to once the choices change or a bundle is described again', function (): void {
+    $screen = aBundleWrittenOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written())));
+    $screen->handOver();
+    $screen->startOver();
+
+    expect($screen->handing)->toBe('')
+        ->and($screen->handingLeaves)->toBe('');
+
+    $screen = aBundleWrittenOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written())));
+    $screen->handOver();
+    $screen->describe();
+
+    expect($screen->handing)->toBe('')
+        ->and($screen->handingLeaves)->toBe('');
 });
 
 it('is reached from the machine it is about, and goes back to it', function (): void {

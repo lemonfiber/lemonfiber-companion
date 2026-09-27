@@ -126,6 +126,12 @@
             "android": "app.lemonfiber.native.HandoverFunctions.Offer",
             "ios": "HandoverFunctions.Offer",
             "description": "Offer a report to whoever the operator picks, and say whether the sheet was reached"
+        },
+        {
+            "name": "Lemonfiber.Handover.OfferFile",
+            "android": "app.lemonfiber.native.HandoverFunctions.OfferFile",
+            "ios": "HandoverFunctions.OfferFile",
+            "description": "Write one file into the app's own share cache, swept before the next, offer it to whoever the operator picks, and say whether the sheet was reached"
         }
     ],
     "android": {

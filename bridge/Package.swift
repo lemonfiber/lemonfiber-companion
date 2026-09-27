@@ -74,6 +74,11 @@ let package = Package(
             path: "ios/Tests/HandoverRuleTests"
         ),
         .testTarget(
+            name: "ShareCacheTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/ShareCacheTests"
+        ),
+        .testTarget(
             name: "LinkRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/LinkRuleTests"

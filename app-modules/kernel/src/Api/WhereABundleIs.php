@@ -24,10 +24,15 @@ final readonly class WhereABundleIs
         return new self($path, written: false);
     }
 
-    /** Written, and this is where it is. */
-    public static function writtenAt(string $path): self
+    /**
+     * Written, and this is where it is.
+     *
+     * An {@see AWrittenBundle} rather than a path, so a written bundle always
+     * has a file name to be fetched by.
+     */
+    public static function writtenAt(AWrittenBundle $written): self
     {
-        return new self($path, written: true);
+        return new self($written->path(), written: true);
     }
 
     /** Not written, and the stack did not say where it would be. */

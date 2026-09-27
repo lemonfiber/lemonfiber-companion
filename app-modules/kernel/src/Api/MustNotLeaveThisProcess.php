@@ -72,6 +72,17 @@ final class MustNotLeaveThisProcess extends LogicException
     }
 
     /**
+     * A support bundle's file, fetched to be handed over.
+     *
+     * It leaves the device by the operator's own act through the device's
+     * sharing, and by no other road.
+     */
+    public static function aBundle(): self
+    {
+        return new self('A support bundle may not be serialised. N22-R9 lets it leave the device only as the operator hands it over through the device\'s own sharing, and anything that serialises one has written it somewhere nobody chose.');
+    }
+
+    /**
      * A credential is spent once and is gone.
      *
      * The strictest of the three, because a credential that reached a cache is a

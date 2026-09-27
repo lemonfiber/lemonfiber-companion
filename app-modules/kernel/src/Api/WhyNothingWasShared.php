@@ -20,12 +20,13 @@ use function sprintf;
 enum WhyNothingWasShared: string
 {
     /**
-     * There was no report to hand over.
+     * There was nothing to hand over.
      *
-     * The report was not assembled, so nothing was put in front of anybody. The
-     * remedy is to ask for it again rather than to try the sheet again, which
-     * is why this is not merged with the case below: that one says the report
-     * exists and the platform would not show it.
+     * A report that was not assembled, or a file the device could not write, so
+     * nothing was put in front of anybody. The remedy is to ask for it again
+     * rather than to try the sheet again, which is why this is not merged with
+     * the case below: that one says the thing exists and the platform would not
+     * show it.
      */
     case NothingToHandOver = 'nothing_to_hand_over';
 
