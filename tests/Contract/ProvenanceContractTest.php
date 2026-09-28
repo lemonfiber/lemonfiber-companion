@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\ImageDigest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Provenance;
@@ -51,7 +52,7 @@ function aStackThatSaysWhereItsServicesComeFrom(): Stack
 function theSameOrigins(): WhereTheServicesComeFrom
 {
     return WhereTheServicesComeFrom::declaring(
-        WhereItComesFrom::declared(ServiceId::called('sonarr'), 'Sonarr', 'lscr.io/linuxserver/sonarr', '4.0.15', 'https://github.com/Sonarr/Sonarr', 'GPL-3.0-only'),
+        WhereItComesFrom::declared(ServiceId::called('sonarr'), 'Sonarr', 'lscr.io/linuxserver/sonarr', '4.0.15', 'https://github.com/Sonarr/Sonarr', 'GPL-3.0-only')->pinnedAt(ImageDigest::of('sha256:3f1c7a0e2b4d6f8091a3c5e7b9d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5d7')),
         WhereItComesFrom::declared(ServiceId::called('jellyfin'), 'Jellyfin', 'jellyfin/jellyfin', '10.10.7', 'https://github.com/jellyfin/jellyfin', 'GPL-2.0-only'),
     );
 }
@@ -76,6 +77,7 @@ function whatAStackNamingItsOriginsSends(string $licenceOfTheFirst = 'GPL-3.0-on
                     'name' => 'Sonarr',
                     'image' => 'lscr.io/linuxserver/sonarr',
                     'pinned' => '4.0.15',
+                    'digest' => 'sha256:3f1c7a0e2b4d6f8091a3c5e7b9d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5d7',
                     'upstream' => 'https://github.com/Sonarr/Sonarr',
                     'license' => $licenceOfTheFirst,
                 ],
@@ -137,11 +139,12 @@ function everythingTheOriginsSay(Provenance $provenance): string
 
             foreach ($origins as $origin) {
                 $rows[] = sprintf(
-                    '%s/%s/%s/%s/%s/%s',
+                    '%s/%s/%s/%s[%s]/%s/%s',
                     $origin->service()->named(),
                     $origin->name(),
                     $origin->image(),
                     $origin->pinned(),
+                    $origin->digest(),
                     $origin->upstream(),
                     $origin->licence(),
                 );
@@ -158,8 +161,8 @@ it('N11-R6, N11-R7 — comes away with every service\'s image, pin, upstream and
 
     foreach (everyWayOfAskingWhereItComesFrom($answered) as $which => $make) {
         expect(everythingTheOriginsSay($make()))->toBe(
-            'origins: sonarr/Sonarr/lscr.io/linuxserver/sonarr/4.0.15/https://github.com/Sonarr/Sonarr/GPL-3.0-only'
-            . ' | jellyfin/Jellyfin/jellyfin/jellyfin/10.10.7/https://github.com/jellyfin/jellyfin/GPL-2.0-only',
+            'origins: sonarr/Sonarr/lscr.io/linuxserver/sonarr/4.0.15[sha256:3f1c7a0e2b4d6f8091a3c5e7b9d1f3a5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5d7]/https://github.com/Sonarr/Sonarr/GPL-3.0-only'
+            . ' | jellyfin/Jellyfin/jellyfin/jellyfin/10.10.7[]/https://github.com/jellyfin/jellyfin/GPL-2.0-only',
             $which,
         );
     }

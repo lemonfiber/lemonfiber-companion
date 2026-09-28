@@ -15,6 +15,16 @@
         <x-operator::entry>
             <x-operator::emphasis>{{ $service->name }}</x-operator::emphasis>
             <x-operator::note>{{ __('stacks.origins.runs', ['image' => $service->image, 'pinned' => $service->pinned]) }}</x-operator::note>
+            {{-- The digest beside the version rather than in its place: the
+                 version is what a person recognises, and the digest is what
+                 makes the pin immutable. An image pinned by tag alone says so,
+                 because a row with no digest and nothing said reads the same
+                 as one this screen forgot to draw. --}}
+            @if ($service->digest !== '')
+                <x-operator::note>{{ __('stacks.origins.digest', ['digest' => $service->digest]) }}</x-operator::note>
+            @else
+                <x-operator::note>{{ __('stacks.origins.no_digest') }}</x-operator::note>
+            @endif
             <native:text>{{ __('stacks.origins.licence', ['licence' => $service->licence]) }}</native:text>
             <x-operator::note>{{ __('stacks.origins.upstream', ['upstream' => $service->upstream]) }}</x-operator::note>
         </x-operator::entry>

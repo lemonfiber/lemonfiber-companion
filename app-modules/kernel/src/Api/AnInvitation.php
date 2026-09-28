@@ -26,18 +26,20 @@ final readonly class AnInvitation
         private WhereTheInvitationStands $standing,
         private WhetherTheyCanAsk $linked,
         private WhoWasTakenBack $withdrawn,
+        private WhoWasSwitchedOff $suspended,
         private bool $rehearsed,
         private ?WhatWasGranted $granted = null,
     ) {}
 
-    /** What inviting them would come to, with nothing made and nothing taken back. */
+    /** What inviting them would come to, with nothing made, taken back or switched off. */
     public static function rehearsed(
         AnInvitationToHand $toHand,
         WhereTheInvitationStands $standing,
         WhetherTheyCanAsk $linked,
         WhoWasTakenBack $withdrawn,
+        WhoWasSwitchedOff $suspended,
     ): self {
-        return new self($toHand, $standing, $linked, $withdrawn, rehearsed: true);
+        return new self($toHand, $standing, $linked, $withdrawn, $suspended, rehearsed: true);
     }
 
     /** What inviting them came to, carried out. */
@@ -46,14 +48,15 @@ final readonly class AnInvitation
         WhereTheInvitationStands $standing,
         WhetherTheyCanAsk $linked,
         WhoWasTakenBack $withdrawn,
+        WhoWasSwitchedOff $suspended,
     ): self {
-        return new self($toHand, $standing, $linked, $withdrawn, rehearsed: false);
+        return new self($toHand, $standing, $linked, $withdrawn, $suspended, rehearsed: false);
     }
 
     /** The same answer, with what it wrote, or would write, on the account. */
     public function granting(WhatWasGranted $granted): self
     {
-        return new self($this->toHand, $this->standing, $this->linked, $this->withdrawn, $this->rehearsed, $granted);
+        return new self($this->toHand, $this->standing, $this->linked, $this->withdrawn, $this->suspended, $this->rehearsed, $granted);
     }
 
     /** The name, the address and how long it stands. */
@@ -78,6 +81,12 @@ final readonly class AnInvitation
     public function withdrawn(): WhoWasTakenBack
     {
         return $this->withdrawn;
+    }
+
+    /** Resets that lapsed, switched off on the way past and kept, or that would be. */
+    public function suspended(): WhoWasSwitchedOff
+    {
+        return $this->suspended;
     }
 
     /** Whether this only described the invitation, making nothing. */

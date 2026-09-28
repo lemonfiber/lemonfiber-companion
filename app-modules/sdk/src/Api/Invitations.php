@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\Fields\InvitationField;
 use Modules\Sdk\Internal\Wire;
@@ -58,10 +59,11 @@ final readonly class Invitations
         $standing = self::standing($data);
         $linked = self::linked(self::text($data, InvitationField::Linked), InvitationField::Linked);
         $withdrawn = WhoWasTakenBack::of(...self::names($data, WireField::Withdrawn));
+        $suspended = WhoWasSwitchedOff::of(...self::names($data, InvitationField::Suspended));
 
         $invitation = self::rehearsed($data)
-            ? AnInvitation::rehearsed($toHand, $standing, $linked, $withdrawn)
-            : AnInvitation::carriedOut($toHand, $standing, $linked, $withdrawn);
+            ? AnInvitation::rehearsed($toHand, $standing, $linked, $withdrawn, $suspended)
+            : AnInvitation::carriedOut($toHand, $standing, $linked, $withdrawn, $suspended);
 
         if (! array_key_exists(WireField::Applied->value, $data) || $data[WireField::Applied->value] === null) {
             return $invitation;

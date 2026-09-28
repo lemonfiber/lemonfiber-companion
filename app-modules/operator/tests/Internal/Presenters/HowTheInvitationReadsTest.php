@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AScannableCode;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 
@@ -24,6 +25,7 @@ function annasInvitationCarriedOut(): AnInvitation
         WhereTheInvitationStands::Made,
         WhetherTheyCanAsk::Made,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     );
 }
 

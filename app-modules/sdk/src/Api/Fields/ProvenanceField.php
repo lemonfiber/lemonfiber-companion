@@ -28,6 +28,9 @@ enum ProvenanceField: string implements NamesAWireField
      */
     case Pinned = 'pinned';
 
+    /** The digest the image is pinned to, where the stack's manifest names one. */
+    case Digest = 'digest';
+
     /** The project a service is built from, where its licence is checked. */
     case Upstream = 'upstream';
 

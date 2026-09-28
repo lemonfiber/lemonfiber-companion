@@ -6,6 +6,7 @@ namespace Modules\Sdk\Tests\Api;
 
 use function expect;
 use function it;
+use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\WhereTheServicesComeFrom;
@@ -13,6 +14,7 @@ use Modules\Sdk\Api\Origins;
 use Modules\Sdk\Api\ProvenanceIsUnreadable;
 
 use function sprintf;
+use function str_repeat;
 
 use Tests\Support\WhatTheContractAccepts;
 
@@ -147,3 +149,23 @@ it('judges the payload these cases are built on against the contract', function 
     expect(WhatTheContractAccepts::complaintsAbout('ProvenanceEnvelope', ['api_version' => 1, 'kind' => 'provenance', 'data' => ['services' => [aDeclaredService()]]]))
         ->toBe([]);
 });
+
+it('reads the digest an image is pinned to, beside its version', function (): void {
+    $digest = sprintf('sha256:%s', str_repeat('a', 64));
+    $origins = iterator_to_array(Origins::in(theOriginsOf([[...aDeclaredService(), 'digest' => $digest]])), preserve_keys: false);
+
+    expect($origins[0]->digest())->toBe($digest)
+        ->and($origins[0]->pinned())->toBe('4.0.15');
+});
+
+it('reads an image pinned by tag alone as naming no digest, whether the field is left out or sent as nothing', function (): void {
+    $origins = iterator_to_array(Origins::in(theOriginsOf([aDeclaredService('radarr'), [...aDeclaredService(), 'digest' => null]])), preserve_keys: false);
+
+    expect($origins[0]->digest())->toBe('')
+        ->and($origins[1]->digest())->toBe('');
+});
+
+it('refuses a digest that is there and blank or not text, naming where', function (mixed $said): void {
+    expect(fn(): WhereTheServicesComeFrom => Origins::in(theOriginsOf([aDeclaredService('radarr'), [...aDeclaredService(), 'digest' => $said]])))
+        ->toThrow(ProvenanceIsUnreadable::class, 'Service 1 in the provenance envelope has no readable `digest`');
+})->with([['  '], [3]]);

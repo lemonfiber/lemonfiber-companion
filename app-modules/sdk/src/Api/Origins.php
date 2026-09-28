@@ -10,6 +10,7 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\ProvenanceEnvelope;
+use Modules\Kernel\Api\ImageDigest;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhereItComesFrom;
 use Modules\Kernel\Api\WhereTheServicesComeFrom;
@@ -137,7 +138,7 @@ final readonly class Origins
      */
     private static function one(array $row, int $position): WhereItComesFrom
     {
-        return WhereItComesFrom::declared(
+        $origin = WhereItComesFrom::declared(
             ServiceId::called(self::text($row, WireField::Id, $position)),
             self::text($row, WireField::Name, $position),
             self::text($row, ProvenanceField::Image, $position),
@@ -145,6 +146,15 @@ final readonly class Origins
             self::text($row, ProvenanceField::Upstream, $position),
             self::text($row, ProvenanceField::License, $position),
         );
+
+        // Absent and null mean the same here: the stack pins this image by tag
+        // alone. A digest that is there and blank is refused, for `text()`'s
+        // reason.
+        if (! array_key_exists(ProvenanceField::Digest->value, $row) || $row[ProvenanceField::Digest->value] === null) {
+            return $origin;
+        }
+
+        return $origin->pinnedAt(ImageDigest::of(self::text($row, ProvenanceField::Digest, $position)));
     }
 
     /**

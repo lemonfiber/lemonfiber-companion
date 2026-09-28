@@ -71,6 +71,7 @@ use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
@@ -192,6 +193,7 @@ function anInvitationToSpoilTheAnswerTo(): AnInvitationAgreed
         WhereTheInvitationStands::Made,
         WhetherTheyCanAsk::NotTried,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     ));
 }
 

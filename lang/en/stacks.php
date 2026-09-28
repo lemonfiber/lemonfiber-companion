@@ -137,6 +137,10 @@ return [
         // The image and the version it is pinned at, printed together because
         // a version without its image names nothing that can be fetched.
         'runs' => 'Runs :image, pinned at :pinned',
+        // Beside the version, the digest that makes the pin immutable.
+        'digest' => 'Pinned to digest :digest',
+        // An image pinned by tag alone, said rather than left blank.
+        'no_digest' => 'Pinned by tag alone; this machine names no digest for it',
         // On every row, not only where it is unusual.
         'licence' => 'Licence: :licence',
         'upstream' => 'Built from :upstream',
@@ -387,6 +391,9 @@ return [
         'would_withdraw' => 'Invitations nobody took up, which this would take back',
         'withdrew' => 'Invitations nobody took up, taken back on the way',
         'nobody_withdrawn' => 'None',
+        'would_switch_off' => 'Resets nobody took up, which this would switch off and keep',
+        'switched_off' => 'Resets nobody took up, switched off on the way and kept',
+        'nobody_switched_off' => 'None',
         'start_again' => 'Start again',
         'who_is_in' => 'Who is in already',
         'ask_who_is_in_again' => 'See who is in again',

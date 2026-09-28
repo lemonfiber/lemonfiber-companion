@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
@@ -62,8 +63,8 @@ function annasInvitation(bool $rehearsed, WhereTheInvitationStands $standing = W
     $linked = $rehearsed ? WhetherTheyCanAsk::NotTried : WhetherTheyCanAsk::NotYet;
     $withdrawn = WhoWasTakenBack::of('bob');
     $invitation = $rehearsed
-        ? AnInvitation::rehearsed($toHand, $standing, $linked, $withdrawn)
-        : AnInvitation::carriedOut($toHand, $standing, $linked, $withdrawn);
+        ? AnInvitation::rehearsed($toHand, $standing, $linked, $withdrawn, WhoWasSwitchedOff::of())
+        : AnInvitation::carriedOut($toHand, $standing, $linked, $withdrawn, WhoWasSwitchedOff::of());
 
     return $invitation->granting(WhatWasGranted::granted(TheLibraries::of('Films', 'Kids'), WhatBecomesOfUnrated::HeldBack, $linked, 'A limit holds back what is rated above it, and nothing else', 'PG-13'));
 }
@@ -350,6 +351,7 @@ it('says an invitation wrote nothing about access, rather than that it opens eve
         WhereTheInvitationStands::Waiting,
         WhetherTheyCanAsk::Made,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     );
     $open = $bare->granting(WhatWasGranted::granted(TheLibraries::of(), WhatBecomesOfUnrated::LetThrough, WhetherTheyCanAsk::Made, 'A limit is not a lock', ''));
     $drawnBare = WhatTheDeviceWouldDraw::by(anInvitationAnsweredWith($bare))->said();

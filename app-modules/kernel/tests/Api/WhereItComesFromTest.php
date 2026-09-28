@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\ImageDigest;
 use Modules\Kernel\Api\OriginSaysNothing;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhereItComesFrom;
@@ -55,3 +56,25 @@ it('N11-R7 — refuses an origin with any word blank, naming which', function (s
     expect(fn(): WhereItComesFrom => sonarrsOrigin([$field => '  ']))
         ->toThrow(OriginSaysNothing::class, sprintf('`%s`', $field));
 })->with(['name', 'image', 'pinned', 'upstream', 'licence']);
+
+it('names no digest until one is given, and keeps every other word when it is', function (): void {
+    $pinned = sonarrsOrigin()->pinnedAt(ImageDigest::of('sha256:abc'));
+
+    expect(sonarrsOrigin()->digest())->toBe('')
+        ->and($pinned->digest())->toBe('sha256:abc')
+        ->and($pinned->service()->named())->toBe('sonarr')
+        ->and($pinned->name())->toBe('Sonarr')
+        ->and($pinned->image())->toBe('lscr.io/linuxserver/sonarr')
+        ->and($pinned->pinned())->toBe('4.0.15')
+        ->and($pinned->upstream())->toBe('https://github.com/Sonarr/Sonarr')
+        ->and($pinned->licence())->toBe('GPL-3.0-only');
+});
+
+it('refuses a digest given blank', function (): void {
+    expect(fn(): WhereItComesFrom => sonarrsOrigin()->pinnedAt(ImageDigest::of('  ')))
+        ->toThrow(OriginSaysNothing::class, '`digest`');
+});
+
+it('holds a digest as the stack spelled it', function (): void {
+    expect(ImageDigest::of('sha256:abc')->said())->toBe('sha256:abc');
+});

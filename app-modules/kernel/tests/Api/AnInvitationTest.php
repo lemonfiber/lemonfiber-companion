@@ -17,6 +17,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 
 /** One line carried out of an arm. */
@@ -43,7 +44,7 @@ function whatItGranted(AnInvitation $invitation): string
 it('keeps everything a rehearsal was answered with, and says it was one', function (): void {
     $toHand = anInvitationForAnna();
     $withdrawn = WhoWasTakenBack::of('bob');
-    $invitation = AnInvitation::rehearsed($toHand, WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, $withdrawn);
+    $invitation = AnInvitation::rehearsed($toHand, WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, $withdrawn, WhoWasSwitchedOff::of());
 
     expect([$invitation->toHand(), $invitation->standing(), $invitation->linked(), $invitation->withdrawn(), $invitation->wasRehearsed()])
         ->toBe([$toHand, WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, $withdrawn, true]);
@@ -52,7 +53,7 @@ it('keeps everything a rehearsal was answered with, and says it was one', functi
 it('keeps everything an invitation carried out was answered with, and says it was not rehearsed', function (): void {
     $toHand = anInvitationForAnna();
     $withdrawn = WhoWasTakenBack::of();
-    $invitation = AnInvitation::carriedOut($toHand, WhereTheInvitationStands::Waiting, WhetherTheyCanAsk::NotYet, $withdrawn);
+    $invitation = AnInvitation::carriedOut($toHand, WhereTheInvitationStands::Waiting, WhetherTheyCanAsk::NotYet, $withdrawn, WhoWasSwitchedOff::of());
 
     expect([$invitation->toHand(), $invitation->standing(), $invitation->linked(), $invitation->withdrawn(), $invitation->wasRehearsed()])
         ->toBe([$toHand, WhereTheInvitationStands::Waiting, WhetherTheyCanAsk::NotYet, $withdrawn, false]);
@@ -61,7 +62,7 @@ it('keeps everything an invitation carried out was answered with, and says it wa
 it('says it granted nothing until it is given what it granted, and keeps the rest when it is', function (): void {
     $toHand = anInvitationForAnna();
     $withdrawn = WhoWasTakenBack::of('bob');
-    $bare = AnInvitation::rehearsed($toHand, WhereTheInvitationStands::Reset, WhetherTheyCanAsk::Made, $withdrawn);
+    $bare = AnInvitation::rehearsed($toHand, WhereTheInvitationStands::Reset, WhetherTheyCanAsk::Made, $withdrawn, WhoWasSwitchedOff::of());
     $granting = $bare->granting(WhatWasGranted::granted(TheLibraries::of(), WhatBecomesOfUnrated::HeldBack, WhetherTheyCanAsk::Made, 'A limit is not a lock', ''));
 
     expect(whatItGranted($bare))->toBe('nothing')
