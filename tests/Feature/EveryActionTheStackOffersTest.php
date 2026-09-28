@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Generated\Kind;
 use Tests\Support\Tree;
 use Tests\Support\WhatTheReadersRead;
@@ -42,6 +43,20 @@ const OFFERED = [
 ];
 
 /**
+ * Kinds the app offers through a class of the SDK's that reads the envelope itself.
+ *
+ * Signing in is one: the door the SDK opens reads `AdmissionEnvelope` and hands
+ * back a session, so no reader here opens it and `OFFERED` cannot hold it. Each
+ * entry names that SDK class, and is held to the class reading the envelope and
+ * to this app using the class.
+ *
+ * @var array<string, class-string>
+ */
+const THROUGH_THE_SDK = [
+    'Admission' => Admission::class,
+];
+
+/**
  * Kinds the app deliberately does not offer, each with the requirement saying
  * why.
  *
@@ -72,8 +87,8 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Catalogue', 'Plugins', 'Pull', 'Removal', 'Reset', 'Start', 'Step', 'StopSeeding', 'Substitution',
-    'Undo', 'Uninstall', 'Version',
+    'Catalogue', 'Plugins', 'Pull', 'Removal', 'Reset', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo',
+    'Uninstall', 'Version',
     'Watch', 'Wiring', 'Word',
 ];
 
@@ -86,7 +101,7 @@ it('N1-R2 — every kind the stack offers has been looked at', function (): void
     // passes only when it has nothing to say is not a check.
     $unclassified = array_values(array_diff(
         array_map(static fn(Kind $kind): string => $kind->name, Kind::cases()),
-        [...OFFERED, ...array_keys(ELSEWHERE), ...NOT_YET],
+        [...OFFERED, ...array_keys(THROUGH_THE_SDK), ...array_keys(ELSEWHERE), ...NOT_YET],
     ));
 
     expect($unclassified)->toBe([], sprintf(
@@ -154,7 +169,7 @@ it('N1-R2 — nothing read here is still waiting to be offered', function (): vo
     // somebody has yet to build the thing they just built — which reads as a
     // to-do list and is a lie about the app.
     $built = array_values(array_intersect(
-        [...NOT_YET, ...array_keys(ELSEWHERE)],
+        [...NOT_YET, ...array_keys(ELSEWHERE), ...array_keys(THROUGH_THE_SDK)],
         everyKindThisAppOpens(),
     ));
 
@@ -173,7 +188,7 @@ it('N1-R2 — nothing is claimed for a kind the stack no longer offers', functio
     // which reads as current, and which would let `ELSEWHERE` go on excusing
     // something nobody could offer anyway.
     $stale = array_values(array_diff(
-        [...OFFERED, ...array_keys(ELSEWHERE), ...NOT_YET],
+        [...OFFERED, ...array_keys(THROUGH_THE_SDK), ...array_keys(ELSEWHERE), ...NOT_YET],
         array_map(static fn(Kind $kind): string => $kind->name, Kind::cases()),
     ));
 
@@ -188,7 +203,7 @@ it('N1-R2 — nothing is claimed for a kind the stack no longer offers', functio
 it('N1-R2 — a kind is in exactly one list', function (): void {
     // Two lists claiming the same kind is two answers to one question, and the
     // one that gets read depends on which list somebody opened.
-    $named = [...OFFERED, ...array_keys(ELSEWHERE), ...NOT_YET];
+    $named = [...OFFERED, ...array_keys(THROUGH_THE_SDK), ...array_keys(ELSEWHERE), ...NOT_YET];
     $twice = array_values(array_diff_assoc($named, array_unique($named)));
 
     expect($twice)->toBe([], sprintf(
@@ -197,6 +212,23 @@ it('N1-R2 — a kind is in exactly one list', function (): void {
         . 'somebody opened first (N1-R2).',
         implode("\n  ", $twice),
     ));
+});
+
+it('holds every kind offered through the SDK to a class that reads it, used here', function (): void {
+    $source = '';
+
+    foreach ([...Tree::filesUnder(Tree::at('app-modules'), '.php'), ...Tree::filesUnder(Tree::at('bridge/src'), '.php')] as $file) {
+        if (! str_contains($file, '/tests/')) {
+            $source .= (string) file_get_contents($file);
+        }
+    }
+
+    foreach (THROUGH_THE_SDK as $kind => $class) {
+        $reads = (string) file_get_contents((string) new ReflectionClass($class)->getFileName());
+
+        expect($reads)->toContain(sprintf('%sEnvelope::in(', $kind))
+            ->and($source)->toContain(sprintf('use %s;', $class));
+    }
 });
 
 it('N1-R2 — every excuse names a requirement', function (): void {
@@ -263,7 +295,7 @@ it('states on the parity page the counts these lists come to', function (): void
     $listed = $names === [] ? (string) $last : sprintf('%s and %s', implode(', ', $names), $last);
 
     expect($page)
-        ->toContain(sprintf('The SDK ships %d envelopes and this app follows %d.', count(Kind::cases()), count(OFFERED)))
+        ->toContain(sprintf('The SDK ships %d envelopes and this app follows %d.', count(Kind::cases()), count(OFFERED) + count(THROUGH_THE_SDK)))
         ->toContain(sprintf('Of the rest, %d are never named by the code in `app-modules` or `bridge`', count(NOT_YET) + count(ELSEWHERE) - count($named)))
-        ->toContain(sprintf('and %d more — %s — are named without being followed.', count($named), $listed));
+        ->toContain(sprintf('and %d more — %s — %s named without being followed.', count($named), $listed, count($named) === 1 ? 'is' : 'are'));
 });
