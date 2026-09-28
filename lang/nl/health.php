@@ -302,7 +302,7 @@ return [
         'failed' => 'Omgevallen',
         'crash-looping' => 'Valt om en start steeds opnieuw',
         'unhealthy' => 'Draait, en antwoordt slecht',
-        'absent' => 'Verwacht, en er niet',
+        'absent' => 'Niet aanwezig',
         'stopped' => 'Uitgezet',
         'starting' => 'Start op',
         'running' => 'Draait',

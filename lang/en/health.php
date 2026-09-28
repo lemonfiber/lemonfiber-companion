@@ -306,7 +306,7 @@ return [
         'failed' => 'Fell over',
         'crash-looping' => 'Falling over and starting again',
         'unhealthy' => 'Up, and answering badly',
-        'absent' => 'Expected, and not there',
+        'absent' => 'Not there',
         'stopped' => 'Turned off',
         'starting' => 'Starting',
         'running' => 'Running',
