@@ -80,9 +80,19 @@ enum WireField: string implements NamesAWireField
     /**
      * The technical detail under a verdict, where the core gave one; a
      * service's own account of why it refused to act on a quality choice; and
-     * what was specifically true of one line a walkthrough said.
+     * what was specifically true of one line a walkthrough said, in its record
+     * or on the event stream as it ran.
      */
     case Detail = 'detail';
+
+    /**
+     * The step a walkthrough's line narrates, in its record or on the event
+     * stream as it ran, or the one a walkthrough stopped at.
+     */
+    case Step = 'step';
+
+    /** What a walkthrough's line says it is doing, in plain language, in its record or on the event stream. */
+    case Said = 'said';
 
     /** Why a check has no answer, on the arms that produced none. */
     case Reason = 'reason';

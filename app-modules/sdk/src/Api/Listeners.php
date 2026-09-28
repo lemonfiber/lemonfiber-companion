@@ -33,9 +33,6 @@ use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Internal\AStreamHeldOpen;
 use Modules\Sdk\Internal\WhatARefusalMeant;
-use Modules\Sdk\Internal\WhatTheStreamBrought;
-
-use function sprintf;
 
 /**
  * The one place this application holds a stack's event stream open.
@@ -49,8 +46,8 @@ use function sprintf;
  *
  * **It never waits on the stack.** The stream is opened with a wait of one
  * millisecond, so a read that finds nothing comes back with nothing almost at
- * once. Each call takes chunks until one comes back empty, reads the last
- * `dashboard` event among them, and hands that back. The wait for the next
+ * once. Each call takes what {@see AStreamHeldOpen::taken()} finds, reads the
+ * last `dashboard` event among it, and hands that back. The wait for the next
  * event is spent between calls, on the screen's cadence, rather than inside
  * one.
  *
@@ -104,13 +101,13 @@ final class Listeners implements Hearing
     {
         try {
             $held = $this->held ??= $this->opened($stack, $session);
-            $brought = $this->drained($held);
-            $latest = $this->theLastOf($held->parser->feed($brought->said), StartEnvelope::KIND->value);
+            $arrived = $held->taken();
+            $latest = $arrived->theLast(StartEnvelope::KIND);
 
             // A stream that ended is let go of and opened again on the next
             // ask. There is no end to report here: a start's lines stop when
             // the start does, and the job being followed says when that was.
-            if ($brought->ended) {
+            if ($arrived->ended) {
                 $this->held = null;
             }
 
@@ -161,67 +158,23 @@ final class Listeners implements Hearing
         );
     }
 
-    /**
-     * Everything that has arrived, up to the first read that found nothing.
-     *
-     * A chunk is taken and the reader moved on before the chunk is looked at,
-     * so the read that comes back empty is the last one this call waits on and
-     * whatever the move found is the first thing the next call takes. A stream
-     * that runs out before any read comes back empty has ended.
-     */
-    private function drained(AStreamHeldOpen $held): WhatTheStreamBrought
-    {
-        $arrived = '';
-
-        while ($held->chunks->valid()) {
-            $chunk = $held->chunks->current();
-            $held->chunks->next();
-
-            if ($chunk === '') {
-                return new WhatTheStreamBrought($arrived, ended: false);
-            }
-
-            $arrived = sprintf('%s%s', $arrived, $chunk);
-        }
-
-        return new WhatTheStreamBrought($arrived, ended: true);
-    }
-
     /** What arrived, as what was heard, letting go of a stream that ended. */
     private function heard(AStreamHeldOpen $held): WhatWasHeard
     {
-        $brought = $this->drained($held);
-        $latest = $this->theLastOf($held->parser->feed($brought->said), DashboardEnvelope::KIND->value);
+        $arrived = $held->taken();
+        $latest = $arrived->theLast(DashboardEnvelope::KIND);
 
-        if ($brought->ended) {
+        if ($arrived->ended) {
             $this->held = null;
-            $this->ended = $brought->said !== '';
+            $this->ended = $arrived->anything;
         }
 
         return match (true) {
             $latest instanceof ServerEvent => WhatWasHeard::said(Summaries::in(new EnvelopeReader()->read($latest->data))),
-            $brought->said !== '' => WhatWasHeard::aSignOfLife(),
-            $brought->ended => WhatWasHeard::closed(),
+            $arrived->anything => WhatWasHeard::aSignOfLife(),
+            $arrived->ended => WhatWasHeard::closed(),
             default => WhatWasHeard::nothing(),
         };
-    }
-
-    /**
-     * The last event of this kind among those that arrived, or none.
-     *
-     * @param list<ServerEvent> $events
-     */
-    private function theLastOf(array $events, string $kind): ?ServerEvent
-    {
-        $latest = null;
-
-        foreach ($events as $event) {
-            if ($event->kind === $kind) {
-                $latest = $event;
-            }
-        }
-
-        return $latest;
     }
 
     /**

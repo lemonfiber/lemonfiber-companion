@@ -26,12 +26,6 @@ enum WalkthroughField: string implements NamesAWireField
     /** Every line it said, in order. */
     case Lines = 'lines';
 
-    /** The step a line narrates, or the one a walkthrough stopped at. */
-    case Step = 'step';
-
-    /** What a line says it is doing, in plain language. */
-    case Said = 'said';
-
     /** What could have been walked instead, where nothing was chosen. */
     case Suggestions = 'suggestions';
 

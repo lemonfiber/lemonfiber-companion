@@ -3,10 +3,33 @@
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
     @if ($this->answer()->isWorking)
-        {{-- Running: the handle says only that, so this says only that, and
-             how often it looks again. The lines arrive once, whole, when the
-             walk has finished. --}}
+        {{-- Running: the stage it is at, in the stack's own word, taken from
+             the stream on the wakes that ask after the handle. Never a bar:
+             a stage says what the walk is doing, and a stage that could not
+             be heard says so rather than reading as a walk doing nothing. --}}
         <x-operator::emphasis>{{ __('health.walkthrough.walking') }}</x-operator::emphasis>
+        @if ($this->stage()->step !== '')
+            @if ($this->stage()->ago->said === '')
+                <native:text>{{ __('health.walkthrough.at_stage_now', ['stage' => $this->gloss($this->stage()->step)->word]) }}</native:text>
+            @else
+                {{-- Heard before the stream broke: what was last true, with
+                     when, under the sentence saying it is not known now. --}}
+                <native:text>{{ __('health.walkthrough.stage_unheard') }}</native:text>
+                <x-operator::note>{{ __('health.walkthrough.last_at_stage', ['stage' => $this->gloss($this->stage()->step)->word, 'ago' => trans_choice($this->stage()->ago->said, $this->stage()->ago->count)]) }}</x-operator::note>
+            @endif
+            <x-operator::gloss :gloss="$this->gloss($this->stage()->step)" />
+            <native:text>{{ $this->stage()->said }}</native:text>
+            @if ($this->stage()->detail !== '')
+                <x-operator::note>{{ $this->stage()->detail }}</x-operator::note>
+            @endif
+        @elseif ($this->stage()->listening)
+            <native:text>{{ __('health.walkthrough.stage_not_said_yet') }}</native:text>
+        @else
+            <native:text>{{ __('health.walkthrough.stage_unheard') }}</native:text>
+        @endif
+        @unless ($this->stage()->listening)
+            <x-operator::note>{{ __('health.walkthrough.listening_again', ['count' => $this->listensAgain()->seconds()]) }}</x-operator::note>
+        @endunless
         <native:text>{{ __('health.walkthrough.lines_when_done') }}</native:text>
         {{-- Leaving does not stop it, said while it runs because that is when
              somebody decides whether to wait for it. Where this device would

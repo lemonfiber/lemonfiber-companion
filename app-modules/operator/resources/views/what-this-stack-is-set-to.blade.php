@@ -16,6 +16,11 @@
          against what they see in the stack's own interfaces. --}}
     <x-operator::note>{{ __('config.listing_is_the_stacks') }}</x-operator::note>
 
+    {{-- What setup settled is here as facts about the stack, among the rest
+         of what it is set to, and changing one is reconfiguration. The stack
+         does not say which settings setup wrote, so none is singled out. --}}
+    <x-operator::note>{{ __('config.what_setup_settled') }}</x-operator::note>
+
     @forelse ($this->answer()->set as $setting)
         <x-operator::entry>
             <x-operator::emphasis>{{ $setting->key }}</x-operator::emphasis>
@@ -153,6 +158,13 @@
          back: which files differ is the stack's to say, and this listing of
          settings does not. --}}
     <x-operator::quiet-action label="{{ __('config.put_it_all_back') }}" :goes="$this->goes()->ofItself()->changing()->reset()" />
+
+    {{-- First-run setup, declined with the reason where somebody looking for
+         it would look: a phone cannot perform the act that makes a phone
+         able to reach the stack, and saying so is not the same as leaving
+         it out. --}}
+    <x-operator::emphasis>{{ __('config.first_run_setup') }}</x-operator::emphasis>
+    <native:text>{{ __('config.first_run_setup_why') }}</native:text>
 
     {{-- Last, under what it is about, for the reason every other reading
          screen puts it there: somebody who has just changed something in the

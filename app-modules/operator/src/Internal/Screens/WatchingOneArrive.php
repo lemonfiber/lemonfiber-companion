@@ -9,8 +9,11 @@ use Illuminate\View\View;
 use function is_string;
 
 use Modules\Kernel\Api\AWalkthrough;
+use Modules\Kernel\Api\Capture;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
+use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfWork;
@@ -25,11 +28,13 @@ use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\HearsWhereTheWalkIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
+use Modules\Operator\Internal\WhatTheWalkIsFollowedWith;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
 use Native\Mobile\Attributes\Lazy;
@@ -43,9 +48,11 @@ use function view;
  *
  * Before one is started it shows the road a walk takes, each step in the
  * glossary's words. Started from here with a title, or with nothing so the
- * stack picks something likely to work. While it runs the handle is asked after at a stated cadence;
- * once it finishes, what it said is drawn whole, as the record of it, with
- * where it stopped and why, what the import did, and what to do next.
+ * stack picks something likely to work. While it runs the handle is asked after at a stated cadence,
+ * and the stage it is at is taken on the same wakes from the stack's event
+ * stream, {@see HearsWhereTheWalkIs}; once it finishes, what it said is drawn
+ * whole, as the record of it, with where it stopped and why, what the import
+ * did, and what to do next.
  *
  * **Already here is an outcome.** Something the stack already has is said to
  * be here, first and in its own words, and never drawn as a search that
@@ -70,6 +77,7 @@ use function view;
 #[Concealed]
 final class WatchingOneArrive extends NativeComponent
 {
+    use HearsWhereTheWalkIs;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
 
@@ -97,6 +105,9 @@ final class WatchingOneArrive extends NativeComponent
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
         private readonly WorkLeftRunning $leftRunning,
+        private readonly HearingTheWalk $hearingTheWalk,
+        private readonly Clock $clock,
+        private readonly Capture $capture,
     ) {}
 
     /**
@@ -171,19 +182,25 @@ final class WatchingOneArrive extends NativeComponent
     }
 
     /**
-     * Ask after the walkthrough again while the stack is walking it.
+     * Ask after the walkthrough again while the stack is walking it, and take the stage it said.
      *
-     * It does nothing unless the walk is running, which is what keeps this
+     * It asks nothing unless the walk is running, which is what keeps this
      * from being polling: a finished record answers the same however often it
-     * is read. The interval is {@see HowOften}'s constant, which
-     * {@see cadence()} states on the screen.
+     * is read, and the stream is let go of once the walk is over. Taking the
+     * stage sends nothing to the stack. The interval is {@see HowOften}'s
+     * constant, which {@see cadence()} states on the screen.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->answer()->isWorking) {
-            $this->answered = null;
+        if (! $this->answer()->isWorking) {
+            $this->letGoOfAWalkThatIsOver();
+
+            return;
         }
+
+        $this->answered = null;
+        $this->listenToTheWalk();
     }
 
     /** How often this screen asks after a walkthrough running, as the screen states it. */
@@ -215,12 +232,18 @@ final class WatchingOneArrive extends NativeComponent
         return $this->explaining;
     }
 
+    protected function followsTheWalkWith(): WhatTheWalkIsFollowedWith
+    {
+        return new WhatTheWalkIsFollowedWith($this->hearingTheWalk, $this->clock, $this->capture);
+    }
+
     /**
      * Start a walkthrough, and hold what to follow it by, here and on the device.
      *
-     * Just started, it is running, and the cadence asks after it from there. A
-     * refusal is kept as what became of it, so the screen says what stood in
-     * the way rather than carrying on as though it were running.
+     * The stream is opened first, so the first step the walk says is one this
+     * screen hears. Just started, it is running, and the cadence asks after it
+     * from there. A refusal is kept as what became of it, so the screen says
+     * what stood in the way rather than carrying on as though it were running.
      *
      * The walk before it is let go of first, whatever becomes of the start:
      * asking for another walk is moving on from the last, and a start that
@@ -232,6 +255,7 @@ final class WatchingOneArrive extends NativeComponent
         $stack = $this->stack();
         $this->took = null;
         $this->leftRunning->forget($stack->id(), KindOfWork::Walkthrough);
+        $this->listenToANewWalk();
 
         $this->answered = $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheWalkthroughTurnedOutToBe => $this->walking->walk($stack, $session, $asked)->either(
