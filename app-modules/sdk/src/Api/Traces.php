@@ -85,7 +85,7 @@ final readonly class Traces
 
         return WhereItGotTo::followed($item, WhatTheTraceFound::traced(
             self::sure($data),
-            HowFarItGot::reached(self::stage($data, TraceField::Furthest), self::stages($data), self::optional($data, TraceField::Stall)),
+            HowFarItGot::reached(self::stage($data, TraceField::Furthest), self::stages($data), self::optional($data, WireField::Stall)),
             self::history($data),
             WhereTheServicesDisagree::of(...array_map(
                 static fn(mixed $finding): string => is_string($finding) ? $finding : throw TraceIsUnreadable::missing(WireField::Findings),

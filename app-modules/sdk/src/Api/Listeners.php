@@ -18,10 +18,12 @@ use Lemonfiber\Sdk\Generated\DashboardEnvelope;
 use Lemonfiber\Sdk\Time\Duration;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\HowLongIsBelowNothing;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RemedySaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StoppageSaysNothing;
 use Modules\Kernel\Api\SummaryCountsBelowNothing;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Internal\AStreamHeldOpen;
@@ -109,7 +111,7 @@ final class Listeners implements Hearing
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
         } catch (
             Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted
-            |SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing
+            |SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing
         ) {
             $this->letGo();
 

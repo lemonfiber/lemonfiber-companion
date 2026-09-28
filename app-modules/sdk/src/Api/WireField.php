@@ -477,4 +477,17 @@ enum WireField: string implements NamesAWireField
 
     /** The project already holding it. */
     case HeldBy = 'held_by';
+
+    /**
+     * Which kind of stopped something is: on a trace, why one item stopped,
+     * and on the dashboard, the category a stopped row is in.
+     */
+    case Stall = 'stall';
+
+    /**
+     * The rows of the stuck listing, and on the dashboard, how many items one
+     * stopped row stands for. One word on the wire for a list in one envelope
+     * and a count in the other, which is why the readers say which they read.
+     */
+    case Items = 'items';
 }

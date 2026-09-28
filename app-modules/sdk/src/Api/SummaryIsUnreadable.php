@@ -9,6 +9,7 @@ use function implode;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\Severity;
 
 use function sprintf;
@@ -60,6 +61,33 @@ final class SummaryIsUnreadable extends InvalidArgumentException
             implode(', ', array_map(
                 static fn(Severity $severity): string => sprintf('`%s`', $severity->value),
                 Severity::cases(),
+            )),
+        ));
+    }
+
+    public static function noStopped(): self
+    {
+        return new self('The dashboard envelope has no readable `stuck` list. Every dashboard the contract describes carries one, empty where nothing has stopped, so a missing one is not the same as nothing stopped.');
+    }
+
+    public static function inStopped(int $position, NamesAWireField $field): self
+    {
+        return new self(sprintf(
+            'Stopped row %d on the dashboard has no readable `%s`. A queue with a row this app cannot read is refused rather than shown one row short.',
+            $position,
+            $field->value,
+        ));
+    }
+
+    public static function stall(string $said, int $position): self
+    {
+        return new self(sprintf(
+            'Stopped row %d on the dashboard is `%s`, and this app reads %s.',
+            $position,
+            $said,
+            implode(', ', array_map(
+                static fn(HowItStopped $how): string => sprintf('`%s`', $how->value),
+                HowItStopped::cases(),
             )),
         ));
     }

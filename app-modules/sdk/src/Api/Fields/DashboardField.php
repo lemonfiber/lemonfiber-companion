@@ -31,4 +31,13 @@ enum DashboardField: string implements NamesAWireField
 
     /** What else is wrong because of one affected item. */
     case Downstream = 'downstream';
+
+    /** What stopped moving in the queue, by kind, worst first. */
+    case Stuck = 'stuck';
+
+    /** What a service said was in a stopped row's way, in its own words. */
+    case Blocking = 'blocking';
+
+    /** How long a stopped row has been that way, in seconds. */
+    case HeldFor = 'held_for';
 }

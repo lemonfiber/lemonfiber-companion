@@ -28,6 +28,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
+use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
@@ -314,6 +315,12 @@ final class HowThisStackIs extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** Where one stopped item got to, followed through every service. */
+    public function traceOf(string $item): string
+    {
+        return $this->goes()->traceOf(WhatToFollow::called($item));
     }
 
     public function render(): View

@@ -20,14 +20,16 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Sdk\Api\Fields\DashboardField;
+use Modules\Sdk\Internal\StoppedRows;
 use Modules\Sdk\Internal\Wire;
 
 /**
- * The health summary out of a `dashboard` envelope, and nothing else from it.
+ * The health summary out of a `dashboard` envelope, with what stopped moving.
  *
- * The summary is the one part of the dashboard a screen here draws. The rest
- * of the envelope is recorded field by field as something this app has decided
- * not to read, which is a decision rather than an oversight.
+ * The summary and the queue's stopped rows are the parts of the dashboard a
+ * screen here draws. The rest of the envelope is recorded field by field as
+ * something this app has decided not to read, which is a decision rather than
+ * an oversight.
  *
  * **Every field is refused rather than defaulted.** A summary missing its count
  * or its standing is not a summary with fewer things wrong, and a reader that
@@ -50,6 +52,7 @@ final readonly class Summaries
             self::standing(self::text($health, WireField::Standing)),
             self::wanting($health),
             self::worst($health),
+            StoppedRows::in($data),
             ...self::affected($health),
         );
     }

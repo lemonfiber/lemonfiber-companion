@@ -19,7 +19,4 @@ enum StuckField: string implements NamesAWireField
 
     /** Whether a listing is short of what the stack actually holds. */
     case Incomplete = 'incomplete';
-
-    /** The rows of a listing, where the envelope does not name them otherwise. */
-    case Items = 'items';
 }
