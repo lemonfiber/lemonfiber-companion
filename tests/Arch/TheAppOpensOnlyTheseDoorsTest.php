@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Client;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\MovingInBy;
@@ -99,6 +101,11 @@ const DOORS_THE_APP_OPENS = [
     // call is chained off `client(...)` rather than landing in a variable, and
     // the rule matched a receiver.
     'whatBecameOf' => 'asks what became of work the stack named, changing nothing',
+
+    // The one way to end work the stack named. Opened for the guard on the
+    // data location alone, which has no ending of its own: the screen holding
+    // it lets it go when it is left, rather than leaving it to lapse.
+    'letGoOf' => 'ends a guard this app started, when the screen holding it is left',
 
     // The verbs below, and nothing else can reach it: the path is composed by
     // `Api::action()` from a name the kernel spells — a case of a closed set,
@@ -239,6 +246,11 @@ const VERBS_THE_APP_ASKS_FOR = [
     // Wires the services to each other. It changes nothing already right and
     // keeps what the operator changed, and it overwrites nothing of theirs.
     'seed' => 'wires the services to each other, keeping what the operator changed and changing nothing already right',
+
+    // A guard on the data location for the forms the operator names. It
+    // stops those forms if the location goes, and never starts them again;
+    // it is held only while the screen that started it keeps asking.
+    'watch' => 'guards the data location for the forms named, while the screen that started it asks',
 ];
 
 /**
@@ -513,6 +525,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),
+        AGuardAskedFor::of(Forms::none())->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
 

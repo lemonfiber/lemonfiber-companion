@@ -246,6 +246,35 @@ return [
         'not_the_services' => 'Dit is lemonfiber zelf. De services worden bijgewerkt vanaf hun eigen scherm.',
     ],
 
+    // Een bewaker op de gegevenslocatie, die blijft zolang zijn scherm ernaar
+    // vraagt. Elke regel houdt hem apart van wat de machine host.
+    'guard' => [
+        'road_in' => 'Bewaak de gegevenslocatie terwijl je kijkt',
+        'apart' => 'Of bewaak de gegevenslocatie alleen zolang een scherm van deze app open is; dat is niet hosten',
+        'heading' => 'Bewaak de gegevenslocatie terwijl je kijkt',
+        'lives_while_asked' => 'Deze bewaker leeft alleen zolang dit scherm ernaar blijft vragen. Verlaat het scherm en hij stopt.',
+        'not_hosted' => 'Hij wordt niet aan de machine overgedragen, dus hij overleeft dit scherm, een vergrendelde telefoon of een herstart van de stack niet.',
+        'to_host_one' => 'Houd een bewaker draaiende als niemand kijkt',
+        'would_do' => 'Zolang hij bewaakt, kijkt de stack naar de gegevenslocatie. Verdwijnt die of blijkt het een andere schijf, dan stopt de stack de forms die hier genoemd zijn, zodat ze geen bibliotheek schrijven op wat er over is, en start ze niet opnieuw.',
+        'not_said_before' => 'Deze stack zegt vooraf niet welke locatie hij zou bewaken, hoe vaak hij kijkt of welke opdracht hij zou uitvoeren.',
+        'which_forms' => 'Welke forms moet hij stoppen?',
+        'name' => 'Noem ‘:form’',
+        'named' => '‘:form’ is genoemd',
+        'leave_out' => 'Laat ‘:form’ weg',
+        'no_forms' => 'Deze stack declareert geen forms om te bewaken',
+        'start' => 'Bewaak de genoemde forms',
+        'about_to' => 'De gegevenslocatie bewaken voor :forms?',
+        'guarding' => 'Bewaakt de gegevenslocatie voor :forms',
+        'saw_it_go' => 'De bewaker zag de gegevenslocatie verdwijnen',
+        'stopped_them' => 'Hij stopte deze forms:',
+        'did_not_stop_them' => 'Hij kon deze forms niet stoppen, en ze schrijven misschien nog naar wat er over is:',
+        'named_no_forms' => 'De stack noemde geen forms',
+        'did_not_start' => 'De bewaker is niet gestart',
+        'let_go' => 'De bewaker is losgelaten zonder iets te zien: hij is vrijgegeven, of er is lang genoeg niet naar gevraagd',
+        'unknown' => 'Deze stack kent de bewaker niet meer. Hij is herstart en de bewaker heeft dat niet overleefd, dus niets bewaakt nu',
+        'start_over' => 'Noem forms voor een nieuwe bewaker',
+    ],
+
     // Wat de woorden van lemonfiber betekenen, zoals de woordenlijst van de stack ze uitlegt.
     'words' => [
         'road_in' => 'Wat de woorden van lemonfiber betekenen',

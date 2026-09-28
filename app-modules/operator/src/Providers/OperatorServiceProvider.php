@@ -10,6 +10,7 @@ use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
+use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
@@ -166,6 +167,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // running now, and this says what would still be running after a
             // reboot nobody was there for.
             Router::native(AStacksScreen::Hosting->value, WhatKeepsRunningHere::class);
+
+            // A guard on the data location, held while its screen asks. A
+            // screen of its own rather than a row of the one above, because
+            // what that one keeps outlives everybody's screens and this one
+            // does not, and drawing the two side by side would invite reading
+            // one as the other.
+            Router::native(AStacksScreen::Guard->value, GuardingWhileYouWatch::class);
 
             // Everything the stack is set to. Beside the services listing
             // rather than under one of them, because a setting is the

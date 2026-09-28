@@ -156,6 +156,14 @@ enum WireField: string implements NamesAWireField
     case Forms = 'forms';
 
     /**
+     * Stopped, in each sense the wire uses the word: where and why a
+     * `walkthrough` stopped, the services stopped to stand in place of a setup
+     * already here, and whether a guard that saw the data location go stopped
+     * the forms it was guarding, on the `watch`.
+     */
+    case Stopped = 'stopped';
+
+    /**
      * The services the forms asked for left out, each with what it would
      * need: of the forms running, on the `status` envelope, and of the forms
      * named, on the `preview` envelope.
@@ -558,12 +566,6 @@ enum WireField: string implements NamesAWireField
      * version it pins for a service it would adopt.
      */
     case Ours = 'ours';
-
-    /**
-     * What stopped: where and why a walkthrough stopped, and the services
-     * stopped to stand in place of a setup already here.
-     */
-    case Stopped = 'stopped';
 
     /**
      * Host ports: every port an existing service publishes, and where each
