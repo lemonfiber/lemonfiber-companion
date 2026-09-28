@@ -215,7 +215,7 @@ final readonly class Offers
     {
         return Repair::offered(
             Check::of(self::said($row, WireField::Check, $position)),
-            self::said($row, RepairField::Does, $position),
+            self::said($row, WireField::Does, $position),
             Effects::of(...self::effects($row, $position)),
             self::undoing($row, $position),
         );

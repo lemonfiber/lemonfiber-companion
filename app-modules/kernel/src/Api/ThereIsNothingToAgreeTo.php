@@ -13,7 +13,7 @@ use function sprintf;
  *
  * A confirmation is only ever about something the stack put in front of the
  * operator: a choice it held, an upgrade it described without carrying out,
- * or a way of moving in it staged.
+ * a way of moving in it staged, or a run its record shows can go back.
  * Building one against anything else means a screen offered a yes it should
  * not have, which is a fault in the surface rather than a situation the
  * operator can resolve.
@@ -41,6 +41,15 @@ final class ThereIsNothingToAgreeTo extends InvalidArgumentException
         return new self(sprintf(
             'A way of moving in was agreed to where the stack answered `%s`, and only a pending move waits on a yes.',
             $stance->value,
+        ));
+    }
+
+    /** The record holds nothing of the run, or says part of it cannot go back, so the stack would put none of it back. */
+    public static function aRun(ARun $run): self
+    {
+        return new self(sprintf(
+            'Putting back the run stamped `%s` was agreed to where the record holds none of it or says part of it cannot go back, and the stack puts back a whole run or nothing.',
+            $run->stamp(),
         ));
     }
 }

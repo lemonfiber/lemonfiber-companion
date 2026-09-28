@@ -41,10 +41,10 @@ use function view;
  * second. The clock is read once per answer too, so every age on the screen is
  * measured against the same *now*.
  *
- * **Nothing here undoes anything.** Putting a change back is an action with an
- * agreement of its own, and a record offering it from a row would be a second
- * place that decision is made — the first time somebody used the other one,
- * the two would disagree about what had been undone.
+ * **Nothing here undoes anything.** Each moment leads to
+ * {@see PuttingThatRunBack}, which says what goes with the run before anything
+ * is agreed to, so there is one place that decision is made rather than a
+ * second one on every row.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * changed is the household's business, and a diagnostic report is assembled

@@ -124,6 +124,55 @@ return [
         // Where the stack's clock would not say when. A sentence rather than
         // a date, because the only date the stack wrote was nobody's guess.
         'clock_unreadable' => 'At a time the machine could not tell',
+        // The way to putting back what was done at one moment. It opens a
+        // screen that says what goes with it; nothing is put back from here.
+        'put_back' => 'What putting this back takes',
+        // The same, for somebody being read to, naming the moment.
+        'put_back_that' => 'What putting back ":did", :when, takes',
+    ],
+
+    // Putting back one run the record shows. The record's own rows are what is
+    // agreed to, because the stack takes no yes and offers no rehearsal of it.
+    'run_back' => [
+        'names_no_run' => 'This names nothing on the record to put back',
+        // A stamp nothing on the record carries: fallen past the horizon, or
+        // already put back.
+        'not_on_the_record' => 'The record holds nothing done at that moment. It may be older than the record reaches, or already put back.',
+        // Said before the yes, with the count the record's own row gives.
+        'goes_with_it' => '{1} Putting this back puts back the one change below.|[2,*] Putting this back puts back all :count changes made together, never some of them.',
+        'whole_or_nothing' => 'The stack puts back the whole of it or none of it, and says what it could not put back and why.',
+        'cannot_go_back' => 'One of these cannot be put back, so the stack would put back none of them.',
+        'put_it_back' => 'Put it back',
+        'putting_back' => 'Putting it back',
+        'no_progress_while_running' => 'The stack says what it put back once it has finished, and nothing about how far it has got while it runs.',
+        'no_outcome' => 'The stack no longer knows what became of putting it back',
+        'no_outcome_action' => 'It may have gone back. The record says what is there now.',
+        // A rehearsal is said to be one, and nothing about it is in the past tense.
+        'a_rehearsal' => 'A rehearsal: nothing has been put back',
+        // What was left leads, in the report's tense.
+        'did' => [
+            'all' => 'All of it went back.',
+            'not_all' => 'Not all of it went back. Still standing, and why:',
+            'reversed' => 'What went back:',
+            'none_reversed' => 'Nothing went back',
+        ],
+        'would' => [
+            'all' => 'All of it would go back.',
+            'not_all' => 'Not all of it can be promised. What might stay standing, and why:',
+            'reversed' => 'What would go back:',
+            'none_reversed' => 'Nothing would go back',
+        ],
+        // It goes back, and going back still leaves something behind.
+        'noted' => 'Going back also means:',
+        // What putting one change back does, in the stack's word for it.
+        'does' => [
+            'remove' => 'What it created is removed',
+            'restore' => 'The setting is put back to what it held',
+            'delete' => 'What it made is deleted',
+            'withdraw' => 'What lemonfiber wrote into the file is taken back out',
+            'repin' => 'Pinned back to the version it was on',
+            'reconfigure' => 'The service\'s own setting is put back',
+        ],
     ],
 
     // Where each service on the machine comes from.

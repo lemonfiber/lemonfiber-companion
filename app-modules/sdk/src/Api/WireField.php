@@ -451,6 +451,19 @@ enum WireField: string implements NamesAWireField
      */
     case Project = 'project';
 
+    /**
+     * What something was done or would be done to: one change on the record,
+     * and one change putting a run back reversed, left or noted.
+     */
+    case Target = 'target';
+
+    /**
+     * What something does, in one word or one sentence: what one repair would
+     * do, in the stack's words, and what putting one change back does, in its
+     * word for the kind of reversal.
+     */
+    case Does = 'does';
+
     /** The host trees a copy of an existing setup read. */
     case Trees = 'trees';
 

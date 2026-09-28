@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
@@ -78,7 +79,7 @@ final readonly class HowTheRecordReads
 
         foreach ($record as $change) {
             if ($when instanceof WhenItWasMade && ! $change->when()->isTheSameMomentAs($when)) {
-                $moments[] = $this->moment($when, $rows, $now);
+                $moments[] = $this->moment($when, $now, ...$rows);
                 $rows = [];
             }
 
@@ -87,26 +88,40 @@ final readonly class HowTheRecordReads
         }
 
         if ($when instanceof WhenItWasMade) {
-            $moments[] = $this->moment($when, $rows, $now);
+            $moments[] = $this->moment($when, $now, ...$rows);
         }
 
         return $moments;
     }
 
     /**
-     * One moment, with when it was said as an age or as the clock not saying.
+     * One moment, with when it was said as an age or as the clock not saying,
+     * the stamp what was done then is kept under, and what its first change did.
      *
-     * @param list<WhatOneRecordedChangeSays> $rows
+     * The first change is its own parameter because a moment is only ever
+     * opened for a change made at it.
      */
-    private function moment(WhenItWasMade $when, array $rows, Instant $now): AMomentOnTheRecord
-    {
+    private function moment(
+        WhenItWasMade $when,
+        Instant $now,
+        WhatOneRecordedChangeSays $first,
+        WhatOneRecordedChangeSays ...$rest,
+    ): AMomentOnTheRecord {
+        $rows = [$first];
+
+        foreach ($rest as $row) {
+            $rows[] = $row;
+        }
+
+        $stamp = ARun::madeAt($when)->stamp();
+
         return $when->either(
-            at: static function (Instant $at) use ($rows, $now): AMomentOnTheRecord {
+            at: static function (Instant $at) use ($rows, $now, $stamp, $first): AMomentOnTheRecord {
                 $unit = HowLongAgo::since($at, $now);
 
-                return new AMomentOnTheRecord($unit->saidOnTheScreen(), $unit->howManySince($at, $now), $rows);
+                return new AMomentOnTheRecord($unit->saidOnTheScreen(), $unit->howManySince($at, $now), $rows, $stamp, $first->did);
             },
-            unreadable: static fn(): AMomentOnTheRecord => new AMomentOnTheRecord(self::CLOCK_UNREADABLE, 0, $rows),
+            unreadable: static fn(): AMomentOnTheRecord => new AMomentOnTheRecord(self::CLOCK_UNREADABLE, 0, $rows, $stamp, $first->did),
         );
     }
 }
