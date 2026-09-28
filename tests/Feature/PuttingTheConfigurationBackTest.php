@@ -580,7 +580,7 @@ it('has nothing to report for a yes nobody gave', function (): void {
 it('names where it goes and what it draws', function (): void {
     $screen = thePuttingItAllBackScreen(aStackPreviewingTheReset());
 
-    expect($screen->goes()->ofItself()->reset())->toEndWith('/reset')
+    expect($screen->goes()->ofItself()->changing()->reset())->toEndWith('/reset')
         ->and($screen->cadence()->seconds())->toBe(5)
         ->and($screen->render()->name())->toBe('operator::putting-the-configuration-back');
 });

@@ -812,10 +812,10 @@ it('the way here and the way to a copy are routes', function (): void {
     $screen = theTakingItOffScreen(aStackReadingTheRemoval(aReadingOfTakingItOff()));
     $stack = theMachineLemonfiberLeaves()->id();
 
-    expect(NativeRouter::resolve($screen->goes()->ofItself()->takingItOff()))->not->toBeNull()
-        ->and($screen->goes()->ofItself()->takingItOff())->toBe(AStacksScreen::Uninstall->forTheStack($stack))
-        ->and($screen->goes()->ofItself()->takingItOff())->toBe(sprintf('/stacks/%s/uninstall', $stack->stored()))
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->copy()))->not->toBeNull();
+    expect(NativeRouter::resolve($screen->goes()->ofItself()->changing()->takingItOff()))->not->toBeNull()
+        ->and($screen->goes()->ofItself()->changing()->takingItOff())->toBe(AStacksScreen::Uninstall->forTheStack($stack))
+        ->and($screen->goes()->ofItself()->changing()->takingItOff())->toBe(sprintf('/stacks/%s/uninstall', $stack->stored()))
+        ->and(NativeRouter::resolve($screen->goes()->ofItself()->changing()->copy()))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

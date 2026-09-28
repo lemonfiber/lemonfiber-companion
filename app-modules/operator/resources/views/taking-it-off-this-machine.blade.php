@@ -176,7 +176,7 @@
                 <native:text>{{ __('uninstall.copy_first', ['said' => $this->answer()->reading->copyFirst]) }}</native:text>
             @else
                 <native:text>{{ __('uninstall.no_copy_first') }}</native:text>
-                <x-operator::quiet-action label="{{ __('uninstall.take_a_copy') }}" :goes="$this->goes()->ofItself()->copy()" />
+                <x-operator::quiet-action label="{{ __('uninstall.take_a_copy') }}" :goes="$this->goes()->ofItself()->changing()->copy()" />
             @endif
             <x-operator::emphasis>{{ __('uninstall.ends_this_session') }}</x-operator::emphasis>
         @endif

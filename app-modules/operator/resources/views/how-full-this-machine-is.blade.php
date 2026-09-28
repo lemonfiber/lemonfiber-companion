@@ -87,7 +87,7 @@
             <x-operator::action
                 label="{{ __('stacks.room.stop_seeding') }}"
                 answers-to="{{ __('stacks.room.stop_seeding_that', ['download' => $download->name]) }}"
-                :goes="$this->goes()->ofItself()->lettingGo($download->name)"
+                :goes="$this->goes()->ofItself()->changing()->lettingGo($download->name)"
             />
         </x-operator::entry>
     @empty
