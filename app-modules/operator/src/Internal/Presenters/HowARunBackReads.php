@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AChangeGoneBackAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
@@ -95,6 +96,17 @@ final readonly class HowARunBackReads
         return $this->following(HowTheReadingWent::somethingStopped($why));
     }
 
+    /** The stack answered and would not put the run back, and this is what it said and named. */
+    public function refused(WhyItWasNotPutBack $why): HowPuttingARunBackWent
+    {
+        return $this->following(
+            HowTheReadingWent::itCameBack(),
+            refused: $why->summary(),
+            refusedMeaning: $why->meaning(),
+            refusedNamed: $why->named()->forTheOperator(),
+        );
+    }
+
     /** This device no longer holds a session for the stack it was put back on. */
     public function signedOut(): HowPuttingARunBackWent
     {
@@ -131,6 +143,9 @@ final readonly class HowARunBackReads
             reversed: $reversed,
             left: $this->saidOf($report->left()),
             noted: $this->saidOf($report->noted()),
+            refused: '',
+            refusedMeaning: '',
+            refusedNamed: '',
         );
     }
 
@@ -182,6 +197,9 @@ final readonly class HowARunBackReads
         HowTheReadingWent $went,
         bool $isWorking = false,
         bool $hasEnded = false,
+        string $refused = '',
+        string $refusedMeaning = '',
+        string $refusedNamed = '',
     ): HowPuttingARunBackWent {
         return new HowPuttingARunBackWent(
             went: $went,
@@ -196,6 +214,9 @@ final readonly class HowARunBackReads
             reversed: [],
             left: [],
             noted: [],
+            refused: $refused,
+            refusedMeaning: $refusedMeaning,
+            refusedNamed: $refusedNamed,
         );
     }
 }

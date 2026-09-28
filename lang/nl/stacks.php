@@ -122,6 +122,9 @@ return [
         'no_progress_while_running' => 'De stack zegt wat hij terugzette als hij klaar is, en niets over hoe ver hij is terwijl hij loopt.',
         'no_outcome' => 'De stack weet niet meer wat er van het terugzetten geworden is',
         'no_outcome_action' => 'Misschien is het teruggezet. Het verslag zegt wat er nu is.',
+        'refused' => 'De stack antwoordde, en heeft dit niet teruggezet',
+        'refused_named' => 'Hij noemt :named',
+        'refused_same_answer' => 'Opnieuw vragen geeft hetzelfde antwoord. Het verslag zegt wat er nu is, en daar kan het opnieuw worden gekozen zodra wat de stack zei veranderd is.',
         'a_rehearsal' => 'Een generale repetitie: er is niets teruggezet',
         'did' => [
             'all' => 'Alles ging terug.',
