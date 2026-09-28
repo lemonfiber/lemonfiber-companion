@@ -37,7 +37,7 @@ const OFFERED = [
     'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Clients', 'Config', 'Credentials',
     'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household',
     'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'Outbound', 'Preview', 'Provenance',
-    'Quality', 'Repair', 'Replacement', 'Restore', 'SelfUpdate', 'Space', 'Status', 'Stored', 'Stuck', 'Trace',
+    'Quality', 'Repair', 'Replacement', 'Reset', 'Restore', 'SelfUpdate', 'Space', 'Status', 'Stored', 'Stuck', 'Trace',
     'Update', 'Upgrade', 'Walkthrough',
 ];
 
@@ -72,7 +72,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Catalogue', 'Plugins', 'Pull', 'Removal', 'Reset',
+    'Admission', 'Catalogue', 'Plugins', 'Pull', 'Removal',
     'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall', 'Version',
     'Watch', 'Wiring', 'Word',
 ];
