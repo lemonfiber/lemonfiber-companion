@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Disturbances;
+use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Sdk\Api\RosterIsUnreadable;
 use Modules\Sdk\Internal\Costs;
@@ -41,17 +42,22 @@ function howLong(Disturbances $disturbs, WhatToDoWithIt $doing): int
 /** The same, read as what it was waiting for. */
 function whatItCosts(Disturbances $disturbs, WhatToDoWithIt $doing): WhatItTurnedOutToCost
 {
-    return $disturbs->forThe($doing)->either(
-        bounded: static fn(int $seconds): WhatItTurnedOutToCost => new WhatItTurnedOutToCost(
-            seconds: $seconds,
-            said: 'a clock',
+    return $disturbs->forThe(
+        $doing,
+        said: static fn(WhatItTakesAway $takes): WhatItTurnedOutToCost => $takes->either(
+            bounded: static fn(int $seconds): WhatItTurnedOutToCost => new WhatItTurnedOutToCost(
+                seconds: $seconds,
+                said: 'a clock',
+            ),
+            // Minus one for an unbounded wait, which no clock can produce, so a
+            // case meaning to assert a length cannot pass by meeting one instead.
+            openEnded: static fn(Awaiting $awaiting): WhatItTurnedOutToCost => new WhatItTurnedOutToCost(
+                seconds: -1,
+                said: $awaiting->value,
+            ),
         ),
-        // Minus one for an unbounded wait, which no clock can produce, so a
-        // case meaning to assert a length cannot pass by meeting one instead.
-        openEnded: static fn(Awaiting $awaiting): WhatItTurnedOutToCost => new WhatItTurnedOutToCost(
-            seconds: -1,
-            said: $awaiting->value,
-        ),
+        // Minus two for a verb the stack reports nothing for, apart from both.
+        unreported: static fn(): WhatItTurnedOutToCost => new WhatItTurnedOutToCost(seconds: -2, said: 'unreported'),
     );
 }
 
@@ -64,6 +70,12 @@ it('reads a length for each verb this surface offers', function (): void {
     expect(howLong($disturbs, WhatToDoWithIt::Start))->toBe(180)
         ->and(howLong($disturbs, WhatToDoWithIt::Stop))->toBe(10)
         ->and(howLong($disturbs, WhatToDoWithIt::Restart))->toBe(45);
+});
+
+it('reports nothing for a fetch, apart from any length or wait', function (): void {
+    // The stack reports what starting, stopping and restarting disturb, and no
+    // bound for fetching.
+    expect(howLong(Costs::in(whatAStackReportsItsVerbsCost()), WhatToDoWithIt::Pull))->toBe(-2);
 });
 
 it('reads one with nothing bounding it as what it is waiting for', function (): void {

@@ -71,8 +71,9 @@ use function view;
  * agreeing about one service and being sent a whole form is the mistake that
  * costs a household something.
  *
- * **A start is not confirmed and the other two are.** That line is
- * {@see WhatToDoWithIt::takesSomethingAway()}'s and is not redrawn here. A
+ * **A start is not confirmed, and a stop, a restart and a fetch are.** That
+ * line is {@see WhatToDoWithIt::asksFirst()}'s and is not redrawn here. A fetch
+ * takes nothing away and is asked about for its cost in time and the line. A
  * screen that asked about a start would be teaching an operator to confirm
  * without reading, which is what makes the stop confirmation worth anything.
  *
@@ -167,11 +168,11 @@ final class WhatToDoWithThis extends NativeComponent
     }
 
     /**
-     * Ask about a verb, or carry it out where it takes nothing away.
+     * Ask about a verb, or carry it out where it asks nothing first.
      *
-     * Where the verb takes something away it is held rather than carried out,
-     * and {@see agree()} is the only thing that sends it. That is the rule in
-     * the shape of a method: this one cannot act on a disruptive verb however
+     * Where the verb asks first it is held rather than carried out, and
+     * {@see agree()} is the only thing that sends it. That is the rule in the
+     * shape of a method: this one cannot act on a verb that asks first however
      * it is called.
      */
     public function wouldYouLike(string $doing): void
@@ -188,7 +189,7 @@ final class WhatToDoWithThis extends NativeComponent
             return;
         }
 
-        if ($agreed->doing()->takesSomethingAway()) {
+        if ($agreed->doing()->asksFirst()) {
             $this->asking = $agreed;
 
             return;
@@ -240,7 +241,7 @@ final class WhatToDoWithThis extends NativeComponent
             return null;
         }
 
-        return new HowAVerbReads()->of($disturbs->forThe($agreed->doing()));
+        return new HowAVerbReads()->against($disturbs, $agreed->doing());
     }
 
     /**
@@ -311,7 +312,7 @@ final class WhatToDoWithThis extends NativeComponent
         $thing = $this->thing();
 
         if ($thing->service instanceof WhatOneServiceSays) {
-            return AgreedTo::theService($doing, ServiceId::called($thing->named));
+            return $doing->reachesAService() ? AgreedTo::theService($doing, ServiceId::called($thing->named)) : null;
         }
 
         return $thing->isAForm ? AgreedTo::theForm($doing, Form::called($thing->named)) : null;
