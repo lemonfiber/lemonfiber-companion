@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ALineOfADiff;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheResetIsGoing;
@@ -122,7 +123,7 @@ function whatBecameOfResetting(ResettingTheConfiguration $resetting, string $job
     return $resetting->whatBecameOf(aStackWhoseConfigurationGoesBack(), Session::of('a-session-not-a-secret'), Job::named($job))->either(
         stillRunning: static fn(): WhatResettingSaid => new WhatResettingSaid('still running'),
         done: static fn(TheReset $reset): WhatResettingSaid => new WhatResettingSaid(whatTheResetReportSays($reset)),
-        refused: static fn(string $said, WhatTheRefusalNamed $named): WhatResettingSaid => new WhatResettingSaid(sprintf('refused: %s (%s)', $said, $named->forTheOperator())),
+        refused: static fn(ARefusalInItsWords $why): WhatResettingSaid => new WhatResettingSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
         ended: static fn(): WhatResettingSaid => new WhatResettingSaid('ended'),
         met: static fn(Obstacle $why): WhatResettingSaid => new WhatResettingSaid($why->name),
     )->said;
@@ -239,7 +240,7 @@ it('a reset the stack refused is its refusal, in its words, with what it named',
         'detail' => 'compose.yaml',
     ]]), 500);
 
-    foreach (everyWayOfResetting($refused, HowTheResetIsGoing::refused('A stack file could not be written', WhatTheRefusalNamed::as('compose.yaml')), HowTheResetIsGoing::stillRunning()) as $which => $build) {
+    foreach (everyWayOfResetting($refused, HowTheResetIsGoing::refused(ARefusalInItsWords::said('A stack file could not be written', 'The reset stopped part way.', WhatTheRefusalNamed::as('compose.yaml'))), HowTheResetIsGoing::stillRunning()) as $which => $build) {
         expect(whatBecameOfResetting($build()))->toBe('refused: A stack file could not be written (compose.yaml)', $which);
     }
 });

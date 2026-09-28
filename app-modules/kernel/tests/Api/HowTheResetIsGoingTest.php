@@ -8,6 +8,7 @@ use function count;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\HowTheResetIsGoing;
@@ -29,7 +30,7 @@ function howTheResetIsGoingReads(HowTheResetIsGoing $going): string
     return $going->either(
         stillRunning: static fn(): WhichArmTheResetTook => new WhichArmTheResetTook('running'),
         done: static fn(TheReset $reset): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('done:%d', count($reset->connections()))),
-        refused: static fn(string $said, WhatTheRefusalNamed $named): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('refused:%s:%s', $said, $named->forTheOperator())),
+        refused: static fn(ARefusalInItsWords $why): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('refused:%s:%s', $why->summary(), $why->named()->forTheOperator())),
         ended: static fn(): WhichArmTheResetTook => new WhichArmTheResetTook('ended'),
         met: static fn(Obstacle $why): WhichArmTheResetTook => new WhichArmTheResetTook(sprintf('met:%s', $why->value)),
     )->said;
@@ -40,9 +41,9 @@ it('takes the arm for each state, and carries the report, the refusal and the ob
 
     expect(howTheResetIsGoingReads(HowTheResetIsGoing::stillRunning()))->toBe('running')
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::done($reset)))->toBe('done:1')
-        ->and(howTheResetIsGoingReads(HowTheResetIsGoing::refused('The recorded quality choice could not be read', WhatTheRefusalNamed::as('/srv/lemonfiber/quality.json'))))
+        ->and(howTheResetIsGoingReads(HowTheResetIsGoing::refused(ARefusalInItsWords::said('The recorded quality choice could not be read', '', WhatTheRefusalNamed::as('/srv/lemonfiber/quality.json')))))
         ->toBe('refused:The recorded quality choice could not be read:/srv/lemonfiber/quality.json')
-        ->and(howTheResetIsGoingReads(HowTheResetIsGoing::refused('A file could not be written', WhatTheRefusalNamed::nothing())))
+        ->and(howTheResetIsGoingReads(HowTheResetIsGoing::refused(ARefusalInItsWords::said('A file could not be written', '', WhatTheRefusalNamed::nothing()))))
         ->toBe('refused:A file could not be written:')
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::ended()))->toBe('ended')
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));

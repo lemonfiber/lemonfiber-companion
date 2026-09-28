@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\ABundle;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowTheBundleIsGoing;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
@@ -33,7 +34,7 @@ function howTheBundleIsGoingReads(HowTheBundleIsGoing $going): string
     return $going->either(
         stillRunning: static fn(): WhichArmTheBundleTook => new WhichArmTheBundleTook('running'),
         done: static fn(ABundle $bundle): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('done:%d', $bundle->bytes())),
-        refused: static fn(string $said, WhatTheRefusalNamed $named): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('refused:%s:%s', $said, $named->forTheOperator())),
+        refused: static fn(ARefusalInItsWords $why): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('refused:%s:%s', $why->summary(), $why->named()->forTheOperator())),
         ended: static fn(): WhichArmTheBundleTook => new WhichArmTheBundleTook('ended'),
         met: static fn(Obstacle $why): WhichArmTheBundleTook => new WhichArmTheBundleTook(sprintf('met:%s', $why->value)),
     )->said;
@@ -51,9 +52,9 @@ it('takes the arm for each state, and carries the bundle, the refusal and the ob
 
     expect(howTheBundleIsGoingReads(HowTheBundleIsGoing::stillRunning()))->toBe('running')
         ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::done($bundle)))->toBe('done:4096')
-        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::refused('The bundle still held something that reads as a credential', WhatTheRefusalNamed::as('sonarr/config.xml line 12'))))
+        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::refused(ARefusalInItsWords::said('The bundle still held something that reads as a credential', '', WhatTheRefusalNamed::as('sonarr/config.xml line 12')))))
         ->toBe('refused:The bundle still held something that reads as a credential:sonarr/config.xml line 12')
-        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::refused('Showing a setting as it is has to be confirmed', WhatTheRefusalNamed::nothing())))
+        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::refused(ARefusalInItsWords::said('Showing a setting as it is has to be confirmed', '', WhatTheRefusalNamed::nothing()))))
         ->toBe('refused:Showing a setting as it is has to be confirmed:')
         ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::ended()))->toBe('ended')
         ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(sprintf('met:%s', Obstacle::StackDidNotAnswer->value));

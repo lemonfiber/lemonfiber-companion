@@ -44,12 +44,14 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * comes back as the stack served it, for the operator to hand over through the
  * device's own sharing; nothing here sends it anywhere.
  *
- * **A refusal of the bundle is the stack's answer, not a fault.** Where the
- * work stopped on a problem — a credential redaction missed, a setting shown
- * without the yes — asking after it is answered with the refusal, and its
- * sentence is carried as {@see HowTheBundleIsGoing::refused()}. Only a refused
- * session, an account that may not ask, an answer with no sentence in it, and
- * a machine that is not the one paired are obstacles.
+ * **A refusal of the bundle is the stack's answer, not a fault.** The stack
+ * takes `support` on as work whatever it is asked, and refuses a bundle only
+ * by stopping that work on a problem — a setting shown without the yes, a
+ * credential still in what was gathered, nowhere to write the archive — which
+ * asking after it answers with the problem document. So a refused bundle
+ * follows the one rule every refusal in the stack's words follows,
+ * {@see WhatARefusalMeant::inItsWords()}, and is carried as
+ * {@see HowTheBundleIsGoing::refused()}.
  */
 final readonly class Bundlers implements AskingForHelp
 {
@@ -79,7 +81,11 @@ final readonly class Bundlers implements AskingForHelp
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return $this->refusal($why);
+            return WhatARefusalMeant::inItsWords(
+                $why,
+                refused: HowTheBundleIsGoing::refused(...),
+                met: HowTheBundleIsGoing::met(...),
+            );
         } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|BundleIsUnreadable|ABundleHasNoName) {
             return HowTheBundleIsGoing::met(Obstacle::StackDidNotAnswer);
         }
@@ -132,24 +138,6 @@ final readonly class Bundlers implements AskingForHelp
         ];
     }
 
-    /**
-     * What a refusal of the bundle comes to.
-     *
-     * A session refused, an account that may not ask, or a machine that is not
-     * the one paired is what the operator met; so is an answer carrying no
-     * sentence, which is no refusal the stack made. Anything else carries the
-     * stack's own words, and what its problem document named in `detail`: the
-     * source a credential was found in, which is what the operator acts on.
-     */
-    private function refusal(CertificateWasRefused|RequestFailed $why): HowTheBundleIsGoing
-    {
-        $met = WhatARefusalMeant::obstacle($why);
-        $said = $why instanceof RequestFailed ? $why->said() : null;
-
-        return $met !== Obstacle::StackDidNotAnswer || $said === null
-            ? HowTheBundleIsGoing::met($met)
-            : HowTheBundleIsGoing::refused($said, WhatARefusalMeant::named($why));
-    }
 
     /**
      * What the stack says about the bundle, with only `NoSuchJob` caught, for

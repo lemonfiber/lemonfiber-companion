@@ -818,7 +818,6 @@ return [
         'no_outcome' => 'De stack zegt niet meer wat er van deze bundel geworden is.',
         'start_over' => 'Verander wat erin komt',
         'refused' => 'De stack heeft deze bundel geweigerd',
-        'refused_named' => 'Hij noemt :named',
         'refused_wrote_nothing' => 'Er is niets geschreven. De stack geeft hetzelfde antwoord totdat wat hij noemt veranderd is.',
         'written' => 'De bundel is geschreven',
         'described' => 'Er is nog niets geschreven',
@@ -869,7 +868,6 @@ return [
         'no_outcome' => 'De stack zegt niet meer wat er van het terugzetten van de configuratie geworden is. Misschien is het gebeurd. Opnieuw vragen opent een nieuwe voorproef van wat nog verschilt.',
         'refused_preview' => 'De stack wilde niet zeggen wat het terugzetten van de configuratie zou veranderen:',
         'refused' => 'De stack wilde de configuratie niet terugzetten:',
-        'refused_named' => 'Hij noemt :named',
         'see_the_settings' => 'Bekijk de instellingen',
     ],
 ];

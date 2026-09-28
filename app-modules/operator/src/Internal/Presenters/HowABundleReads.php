@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ABundle;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatFilenamesShow;
-use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhereABundleIs;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 
@@ -54,10 +55,10 @@ final readonly class HowABundleReads
         return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
     }
 
-    /** The stack refused the bundle, and this is what it said and what it named. */
-    public function refused(string $said, WhatTheRefusalNamed $named): HowTheBundleWent
+    /** The stack refused the bundle, and this is why, in its words. */
+    public function refused(ARefusalInItsWords $why): HowTheBundleWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), refused: $said, named: $named->forTheOperator());
+        return $this->following(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** The bundle, described or written, as the stack answered with it. */
@@ -80,8 +81,7 @@ final readonly class HowABundleReads
             wasAsked: true,
             isWorking: false,
             hasEnded: false,
-            refused: '',
-            named: '',
+            refused: null,
             isWritten: $bundle->where()->isWritten(),
             bundle: new ABundleAsShown(
                 bytes: $bundle->bytes(),
@@ -127,8 +127,7 @@ final readonly class HowABundleReads
         bool $wasAsked = true,
         bool $isWorking = false,
         bool $hasEnded = false,
-        string $refused = '',
-        string $named = '',
+        ?ARefusalAsShown $refused = null,
     ): HowTheBundleWent {
         return new HowTheBundleWent(
             went: $went,
@@ -136,7 +135,6 @@ final readonly class HowABundleReads
             isWorking: $isWorking,
             hasEnded: $hasEnded,
             refused: $refused,
-            named: $named,
             isWritten: false,
             bundle: null,
         );

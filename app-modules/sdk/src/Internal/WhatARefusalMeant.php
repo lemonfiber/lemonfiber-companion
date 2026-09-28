@@ -48,10 +48,11 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
  * **Where the stack refused the work itself, it says why.** A problem
  * document at any status but `401` and `403` is the stack's answer about what
  * was asked — a copy it will not restore, work that stopped on a problem — and
- * {@see inItsWords()} carries it as {@see ARefusalInItsWords} for the ports
- * whose work can be refused that way. A sentence with no document around it
- * may have come from anything standing in front of the stack, and a document
- * with no sentence says nothing, so both stay the obstacle.
+ * {@see inItsWords()} carries it as {@see ARefusalInItsWords}. Every port whose
+ * work the stack refuses in its words follows that one rule. A sentence with
+ * no document around it may have come from anything standing in front of the
+ * stack, and a document with no sentence says nothing, so both stay the
+ * obstacle.
  *
  * `Internal` because which status means what is a detail of how this module
  * talks to a stack; the {@see Obstacle} it answers with is the shared word.
@@ -124,7 +125,7 @@ final readonly class WhatARefusalMeant
 
         return $obstacle !== Obstacle::StackDidNotAnswer || $said === null || ! $problem instanceof Refusal
             ? $met($obstacle)
-            : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::namedIn($problem)));
+            : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::named($problem)));
     }
 
     public static function obstacle(CertificateWasRefused|RequestFailed $why): Obstacle
@@ -140,23 +141,10 @@ final readonly class WhatARefusalMeant
         };
     }
 
-    /**
-     * What a refusal's problem document named in its `detail`, or nothing
-     * where the refusal was prose or named nothing.
-     *
-     * Asked only of a refusal the stack made about the work — a bundle it
-     * would not write, a reset it would not carry out — where what it named
-     * is what the operator acts on.
-     */
-    public static function named(RequestFailed $why): WhatTheRefusalNamed
+    /** What a problem document named in `detail`, or nothing where it named nothing. */
+    private static function named(Refusal $problem): WhatTheRefusalNamed
     {
-        return self::namedIn($why->refusal());
-    }
-
-    /** What a problem document named in `detail`, or nothing where there is none or it named nothing. */
-    private static function namedIn(?Refusal $problem): WhatTheRefusalNamed
-    {
-        $detail = $problem instanceof Refusal ? $problem->detail() : null;
+        $detail = $problem->detail();
 
         return is_string($detail) ? WhatTheRefusalNamed::as($detail) : WhatTheRefusalNamed::nothing();
     }
