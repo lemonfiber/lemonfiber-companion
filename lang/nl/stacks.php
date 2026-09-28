@@ -662,6 +662,14 @@ return [
         'put_back' => ':scope teruggezet, uit een kopie gemaakt door lemonfiber :version',
         'moved' => 'De gegevens gingen naar :now, niet naar :was waar ze vandaan kwamen.',
         'where_it_was' => 'De gegevens gingen terug naar waar ze vandaan kwamen.',
+        'would_not_list' => 'De stack zet deze kopie niet terug, en zegt waarom',
+        'refused' => 'De stack heeft het terugzetten van deze kopie niet afgemaakt, en zegt waarom',
+        'same_answer' => 'Opnieuw vragen geeft hetzelfde antwoord zolang wat hij zegt niet veranderd is.',
+        'look_again' => 'Lees wat terugzetten nu zou doen',
+    ],
+
+    'refusal' => [
+        'named' => 'Hij noemt :named',
     ],
 
     'line' => [
