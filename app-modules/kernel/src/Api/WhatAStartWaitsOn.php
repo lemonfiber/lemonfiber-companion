@@ -23,7 +23,7 @@ use function trim;
 final readonly class WhatAStartWaitsOn
 {
     private function __construct(
-        private string $line,
+        private ?string $line,
         private ?Obstacle $why,
     ) {}
 
@@ -42,13 +42,13 @@ final readonly class WhatAStartWaitsOn
     /** Nothing about the start has arrived since the screen last asked. */
     public static function nothingNew(): self
     {
-        return new self('', null);
+        return new self(null, null);
     }
 
     /** The stream could not be heard, and this is what stood in the way. */
     public static function met(Obstacle $why): self
     {
-        return new self('', $why);
+        return new self(null, $why);
     }
 
     /**
@@ -66,7 +66,7 @@ final readonly class WhatAStartWaitsOn
     {
         return match (true) {
             $this->why instanceof Obstacle => $met($this->why),
-            $this->line !== '' => $saying($this->line),
+            $this->line !== null => $saying($this->line),
             default => $nothingNew(),
         };
     }
