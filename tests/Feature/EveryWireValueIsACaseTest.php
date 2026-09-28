@@ -14,6 +14,7 @@ use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowItWasReached;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowMuchItMatters;
@@ -487,6 +488,16 @@ it('N1-R13 — every way one service reaches another has a case', function (): v
     expect(valuesOf(HowItWasReached::cases()))->toBe($reaches);
 });
 
+it('N1-R13 — every kind of stopped the dashboard describes has a case', function (): void {
+    // Read from the dashboard, whose `stuck` rows carry it. The cases are the
+    // stack's order as well as its words, worst first, so a kind added
+    // anywhere but the end fails here too.
+    $stalls = unionIn(theGeneratedEnvelope('DashboardEnvelope'), 'stall');
+
+    expect($stalls)->not->toBe([], 'no stall union was found in the generated dashboard');
+    expect(valuesOf(HowItStopped::cases()))->toBe($stalls);
+});
+
 it('N1-R13 — every stage the contract describes has a case', function (): void {
     // Read from the stuck envelope rather than the doctor one, which is the
     // first time these rules have looked at a second file. The union is only
@@ -929,6 +940,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     HowMuchItMatters::class => 'criticality',
     HowTheStackIsRunning::class => 'condition',
     Stage::class => 'stage',
+    HowItStopped::class => 'stall',
     AgainstThePins::class => 'state',
     HowItEnded::class => 'ending',
     HowToUndoIt::class => 'reversal',
