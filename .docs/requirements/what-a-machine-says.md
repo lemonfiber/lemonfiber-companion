@@ -105,6 +105,17 @@ command's name alone, and an install of the guard reaches the operator as the
 stack's own refusal, in its words, through `HowTheHandoverWent::refused()`.
 `N1-R17` is why it is not guessed from the command's name.
 
+A guard can also be started from this app without handing it to anything. It
+is a job the stack keeps only while somebody asks about it, drawn by
+`GuardingWhileYouWatch` on a screen of its own, reached from
+`WhatKeepsRunningHere` under a line saying it is not hosting.
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N23-R11` | Starting the data-root guard for forms the operator names is offered as an act of its own, with what it would guard and do said before it starts; a refusal to start is shown with the stack's reason | `Guarding::guard()`, which takes an `AGuardAskedFor` naming the forms and is sent by `Guards` as the `watch` action under a fresh idempotency key. `GuardingWhileYouWatch` offers each form the stack declares, holds the guard as a question naming the forms it would stop, and sends it only from `agree()`. Before it starts the screen says what a guard does and that the stack does not say beforehand which location it would guard, how often it looks or the command it would run: `watch.would` is answered only by a rehearsal the web route cannot ask for, recorded in `WhatTheContractDoesNotCarryTest`. A guard that could not start is `HowTheGuardIsGoing::refused()`, carrying the stack's sentence from the error or the prose it answered with |
+| `N23-R12` | The app says plainly, before the guard starts and while it runs, that it lives only while this screen asks and stops when it is left; it asks on the cadence it states, releases the guard when the screen is left, and never presents it as hosted | The screen says both before the guard starts and while it runs. `whileItGuards()` asks after the guard on `HowOften::WhileWorkRuns`, which the screen states, and only while it guards; each asking is what keeps it. `unmount()` lets it go through `Guarding::letGo()`, which `Guards` sends as `DELETE /api/jobs/{job}`, unless it has already ended. It is a screen of its own apart from the hosted rows, and it points to hosting for a guard that outlives the screen |
+| `N23-R13` | A guard that saw the data location go is shown with the forms it stopped, whether stopping them worked, and why it ended, and one that did not succeed is never shown as having stopped them; a guard ended without an outcome and one the stack no longer knows are each told apart from one that saw it go and one still guarding | `HowTheGuardIsGoing`, six arms. `Vigils` reads `watch.forms`, `watch.stopped` and `watch.reason`, each required, into `WhatTheGuardSaw`, and `HowAGuardReads` says *stopped* and *could not stop* in sentences of their own. `job` at `200` is `ended()`, and a name the stack's run never handed out is `unknown()` rather than ended. A guard another client released and one the stack let go both answer `job` at `200`, recorded in `WhatTheContractDoesNotCarryTest`, so the screen says it was released or not asked about without saying which |
+
 `N16-R5` and `N16-R7` are not answered here. They are about the stack's own
 autostart (`B8`) — whether it is configured, and whether a check after a boot
 ran — and no envelope reports either. `N16-R6` is answered under *Starting and

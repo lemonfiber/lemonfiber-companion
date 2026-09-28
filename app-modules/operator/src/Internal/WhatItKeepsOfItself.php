@@ -129,6 +129,12 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::WordAbout->forTheStacksWord($this->stack, $word);
     }
 
+    /** Where a guard on this machine's data location is started, and held while that screen asks. */
+    public function guard(): string
+    {
+        return AStacksScreen::Guard->forTheStack($this->stack);
+    }
+
     /** Where one thing is fetched while the operator watches, and the record of it is kept. */
     public function walkthrough(): string
     {

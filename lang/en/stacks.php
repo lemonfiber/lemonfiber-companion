@@ -243,6 +243,36 @@ return [
         'not_the_services' => 'This is lemonfiber itself. The services are updated from their own screen.',
     ],
 
+    // A guard on the data location, held while its screen asks. Every line
+    // keeps it apart from what the machine hosts: it lives only while the
+    // screen asks about it, and says so before it starts and while it runs.
+    'guard' => [
+        'road_in' => 'Guard the data location while you watch',
+        'apart' => 'Or guard the data location only while a screen of this app is open, which is not hosting it',
+        'heading' => 'Guard the data location while you watch',
+        'lives_while_asked' => 'This guard lives only while this screen keeps asking about it. Leave the screen and it stops.',
+        'not_hosted' => 'It is not handed to the machine, so it does not outlast this screen, a locked phone or a restart of the stack.',
+        'to_host_one' => 'Keep a guard running when nobody is looking',
+        'would_do' => 'While it guards, the stack looks at the data location. If it disappears or turns out to be a different drive, the stack stops the forms named here, so they do not write a library onto whatever is left, and does not start them again.',
+        'not_said_before' => 'This stack does not say beforehand which location it would guard, how often it looks, or the command it would run.',
+        'which_forms' => 'Which forms should it stop?',
+        'name' => 'Name ‘:form’',
+        'named' => '‘:form’ is named',
+        'leave_out' => 'Leave ‘:form’ out',
+        'no_forms' => 'This stack declares no forms to guard',
+        'start' => 'Guard the forms named',
+        'about_to' => 'Guard the data location for :forms?',
+        'guarding' => 'Guarding the data location for :forms',
+        'saw_it_go' => 'The guard saw the data location go',
+        'stopped_them' => 'It stopped these forms:',
+        'did_not_stop_them' => 'It could not stop these forms, and they may still be writing to whatever is left:',
+        'named_no_forms' => 'The stack named no forms',
+        'did_not_start' => 'The guard did not start',
+        'let_go' => 'The guard was let go without seeing anything: it was released, or nothing asked about it for long enough',
+        'unknown' => 'This stack no longer knows the guard. It restarted, and the guard did not survive that, so nothing is guarding now',
+        'start_over' => 'Name forms for another guard',
+    ],
+
     // What lemonfiber's words mean, as the stack's glossary explains them.
     'words' => [
         'road_in' => 'What lemonfiber\'s words mean',

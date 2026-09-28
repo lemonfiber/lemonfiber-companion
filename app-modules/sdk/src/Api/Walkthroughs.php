@@ -205,11 +205,11 @@ final readonly class Walkthroughs
      */
     private static function stopped(array $data): ?WhereItStopped
     {
-        if (self::absent($data, WalkthroughField::Stopped)) {
+        if (self::absent($data, WireField::Stopped)) {
             return null;
         }
 
-        $stopped = self::table($data[WalkthroughField::Stopped->value], WalkthroughField::Stopped);
+        $stopped = self::table($data[WireField::Stopped->value], WireField::Stopped);
         $said = self::text($stopped, WireField::Reason);
         $why = WhyTheWalkthroughStopped::tryFrom($said)
             ?? throw WalkthroughIsUnreadable::word(WireField::Reason, $said, ...array_map(static fn(WhyTheWalkthroughStopped $case): string => $case->value, WhyTheWalkthroughStopped::cases()));

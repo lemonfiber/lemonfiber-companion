@@ -41,6 +41,7 @@ use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
+use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
@@ -91,6 +92,7 @@ use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
@@ -397,6 +399,10 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Rehearsing::class, Rehearsers::class);
         $this->app->bind(Tracing::class, Followers::class);
         $this->app->bind(WalkingThrough::class, Guides::class);
+
+        // A guard on the data location, started, followed and let go through
+        // the same door as every other action, and bound for the same reason.
+        $this->app->bind(Guarding::class, Guards::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

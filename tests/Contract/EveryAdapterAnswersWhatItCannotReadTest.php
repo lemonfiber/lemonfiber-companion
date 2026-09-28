@@ -13,6 +13,7 @@ use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
@@ -28,6 +29,7 @@ use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowManyLines;
@@ -84,6 +86,7 @@ use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
@@ -267,6 +270,12 @@ function everyAdapterCallThatReads(): array
             => new Graders($clients)->choose($stack, $session, APresetToChoose::named('lossless', 'music')),
         'Graders::confirm' => static fn(): object
             => new Graders($clients)->confirm($stack, $session, aHeldChoiceToSpoilTheAnswerTo()),
+        'Guards::guard' => static fn(): object
+            => new Guards($clients, $entropy)->guard($stack, $session, AGuardAskedFor::of(Forms::these(Form::called('media')))),
+        'Guards::whatBecameOf' => static fn(): object
+            => new Guards($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Guards::letGo' => static fn(): object
+            => new Guards($clients, $entropy)->letGo($stack, $session, Job::named('a-job')),
         'Guides::walk' => static fn(): object
             => new Guides($clients)->walk($stack, $session, WhatToWalk::called('Sintel')),
         'Guides::whatBecameOf' => static fn(): object
@@ -381,6 +390,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Copiers::whatBecameOf' => sprintf('%sBackupEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Bundlers::whatBecameOf' => sprintf('%sBundleEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Guards::whatBecameOf', $which === 'Guards::letGo' => sprintf('%sWatchEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
