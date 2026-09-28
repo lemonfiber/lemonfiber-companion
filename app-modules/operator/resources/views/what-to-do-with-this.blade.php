@@ -78,7 +78,14 @@
                 :sign-in-goes-to="$this->goes()->signIn()"
             />
         @elseif ($this->whatItCameTo()->isWorking)
-            <native:text>{{ __('health.came_to.running') }}</native:text>
+            @if ($this->waitsOn !== '')
+                {{-- The stack's own line for what the start is waiting for,
+                     in place of this screen's sentence and with no progress
+                     figure of its own beside it. --}}
+                <native:text>{{ $this->waitsOn }}</native:text>
+            @else
+                <native:text>{{ __('health.came_to.running') }}</native:text>
+            @endif
             <x-operator::note>
                 {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
             </x-operator::note>

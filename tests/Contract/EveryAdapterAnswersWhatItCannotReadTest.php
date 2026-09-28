@@ -290,6 +290,7 @@ function everyAdapterCallThatReads(): array
         'Keepers::handOver' => static fn(): object
             => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
         'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
+        'Listeners::whatAStartWaitsOn' => static fn(): object => new Listeners($clients)->whatAStartWaitsOn($stack, $session),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
