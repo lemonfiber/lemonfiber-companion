@@ -525,12 +525,21 @@ jobs:
   # `fail-fast: false` because the point of a shard is to learn about all of
   # them: cancelling every other runner over one escaped mutant means a second
   # push to find the next one.
+  #
+  # `max-parallel: 5` because the organisation's repositories share twenty
+  # GitHub-hosted runners, and a pull request here can cut its trees into
+  # dozens of shards. Unbounded, the shards of a few open pull requests take
+  # nearly every runner, and every other repository's checks, however short,
+  # queue behind them. Five per run keeps three open pull requests to fifteen
+  # runners and leaves five for everything else; the shards past five wait
+  # their turn in this run rather than in everyone's.
   mutation:
     name: mutation (${{ matrix.shard.label }})
     needs: [tests, mutation-scope]
     if: ${{ !cancelled() && needs.tests.result == 'success' && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.shards != '[]' }}
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
         shard: ${{ fromJson(needs.mutation-scope.outputs.shards) }}
     runs-on: ubuntu-latest
