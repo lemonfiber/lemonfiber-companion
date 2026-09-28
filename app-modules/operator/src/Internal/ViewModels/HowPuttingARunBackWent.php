@@ -33,9 +33,7 @@ final readonly class HowPuttingARunBackWent
      * @param list<AChangeGoneBackAsShown> $reversed    what went back, or would, in the stack's order
      * @param list<AChangeAndWhyAsShown>  $left        what did not go back, or could not be promised, each with why
      * @param list<AChangeAndWhyAsShown>  $noted       what going back means beyond the changes themselves
-     * @param string                      $refused     the stack's sentence where it would not put the run back, in its own words, blank unless it refused
-     * @param string                      $refusedMeaning what that sentence means, blank where the stack said no more
-     * @param string                      $refusedNamed what the refusal named, blank where it named nothing
+     * @param ?ARefusalAsShown             $refused     why the stack would not put the run back, in its words, and nothing unless it refused
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -50,8 +48,6 @@ final readonly class HowPuttingARunBackWent
         public array $reversed,
         public array $left,
         public array $noted,
-        public string $refused,
-        public string $refusedMeaning,
-        public string $refusedNamed,
+        public ?ARefusalAsShown $refused,
     ) {}
 }

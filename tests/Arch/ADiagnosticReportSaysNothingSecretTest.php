@@ -13,7 +13,6 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
-use Modules\Kernel\Api\WhyItWasNotPutBack;
 
 // A report the operator sends, and the app does not.
 //
@@ -38,7 +37,6 @@ const NEVER_IN_A_REPORT = [
     Address::class,
     Reading::class,
     WhatTheRefusalNamed::class,
-    WhyItWasNotPutBack::class,
     ARefusalInItsWords::class,
     ABundleFile::class,
 ];

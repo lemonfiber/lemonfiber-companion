@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\AChangeAndWhy;
 use Modules\Kernel\Api\AChangePutBack;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\ARunPutBack;
@@ -28,7 +29,6 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWentBack;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
-use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Reversers;
 use Saloon\Http\Faking\MockClient;
@@ -172,7 +172,7 @@ function whatBecameOfPuttingARunBack(PuttingARunBack $puttingBack): string
                 changesAndWhySaid($report->noted()),
             ));
         },
-        refused: static fn(WhyItWasNotPutBack $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid(sprintf(
+        refused: static fn(ARefusalInItsWords $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid(sprintf(
             'refused: %s | %s | %s',
             $why->summary(),
             $why->meaning(),
@@ -208,7 +208,7 @@ function aProblemThatStoppedTheRun(string $code, string $summary, string $meanin
  * The four the undo command raises before it touches anything, and a change
  * that could not be reversed part of the way through, which names the file.
  *
- * @return array<string, array{array<string, mixed>, WhyItWasNotPutBack, string}>
+ * @return array<string, array{array<string, mixed>, ARefusalInItsWords, string}>
  */
 function everyProblemARunStopsOn(): array
 {
@@ -224,7 +224,7 @@ function everyProblemARunStopsOn(): array
     foreach ($table as $name => [$code, $summary, $meaning, $detail]) {
         $cases[$name] = [
             aProblemThatStoppedTheRun($code, $summary, $meaning, $detail),
-            WhyItWasNotPutBack::said($summary, $meaning, $detail === null ? WhatTheRefusalNamed::nothing() : WhatTheRefusalNamed::as($detail)),
+            ARefusalInItsWords::said($summary, $meaning, $detail === null ? WhatTheRefusalNamed::nothing() : WhatTheRefusalNamed::as($detail)),
             sprintf('refused: %s | %s | %s', $summary, $meaning, $detail ?? ''),
         ];
     }

@@ -22,7 +22,7 @@ final readonly class HowPuttingARunBackIsGoing
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?ARunPutBack $done = null,
-        private ?WhyItWasNotPutBack $refused = null,
+        private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
         private bool $running = false,
     ) {}
@@ -40,7 +40,7 @@ final readonly class HowPuttingARunBackIsGoing
     }
 
     /** The stack refused it, and this is why. */
-    public static function refused(WhyItWasNotPutBack $why): self
+    public static function refused(ARefusalInItsWords $why): self
     {
         return new self(refused: $why);
     }
@@ -66,7 +66,7 @@ final readonly class HowPuttingARunBackIsGoing
      *
      * @param Closure(): T                   $stillRunning
      * @param Closure(ARunPutBack): T        $done
-     * @param Closure(WhyItWasNotPutBack): T $refused
+     * @param Closure(ARefusalInItsWords): T $refused
      * @param Closure(): T                   $ended
      * @param Closure(Obstacle): T           $met
      *
@@ -78,7 +78,7 @@ final readonly class HowPuttingARunBackIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->done instanceof ARunPutBack => $done($this->done),
-            $this->refused instanceof WhyItWasNotPutBack => $refused($this->refused),
+            $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
             default => $ended(),
         };
     }

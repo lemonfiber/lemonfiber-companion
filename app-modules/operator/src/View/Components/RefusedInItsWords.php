@@ -13,9 +13,9 @@ use function view;
 /**
  * A stack's refusal in its own words, drawn the same on every screen that asked.
  *
- * One component because a refused listing and a refused yes are one shape: the
- * stack's sentence, what it means and what it named. Written per screen, one
- * of them would come to draw what was named where another does not.
+ * One component because every refusal the stack words itself is one shape:
+ * its sentence, what it means and what it named. Written per screen, one of
+ * them would come to draw what was named where another does not.
  */
 final class RefusedInItsWords extends Component
 {

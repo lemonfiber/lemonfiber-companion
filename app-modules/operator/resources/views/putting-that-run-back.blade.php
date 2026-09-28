@@ -24,23 +24,12 @@
         <x-operator::note>
             {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
         </x-operator::note>
-    @elseif ($this->done()->refused !== '')
+    @elseif ($this->done()->refused !== null)
         {{-- The stack's answer, in its words, and not a fault: asking after
              the same work is answered the same way, so the one road offered
              is back to the record. --}}
         <x-operator::heading>{{ __('stacks.run_back.refused') }}</x-operator::heading>
-        <x-operator::emphasis>{{ $this->done()->refused }}</x-operator::emphasis>
-
-        @if ($this->done()->refusedMeaning !== '')
-            <native:text>{{ $this->done()->refusedMeaning }}</native:text>
-        @endif
-
-        {{-- What it names can be a file on the machine, and this screen is the
-             only place it is drawn. --}}
-        @if ($this->done()->refusedNamed !== '')
-            <native:text>{{ __('stacks.run_back.refused_named', ['named' => $this->done()->refusedNamed]) }}</native:text>
-        @endif
-
+        <x-operator::refused-in-its-words :refused="$this->done()->refused" />
         <native:text>{{ __('stacks.run_back.refused_same_answer') }}</native:text>
         <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
     @elseif ($this->done()->hasEnded)
@@ -100,7 +89,7 @@
         <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
     @endif
 
-    @if ($this->done()->refused === '')
+    @if ($this->done()->refused === null)
         <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
     @endif
 @elseif (! $this->answer()->isOnTheRecord)
