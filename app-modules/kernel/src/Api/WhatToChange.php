@@ -7,20 +7,20 @@ namespace Modules\Kernel\Api;
 /**
  * What this app may ask a stack to change about its own configuration.
  *
- * One case, and the enum exists anyway. An action's name is the last segment
- * of the path it is asked for, so a name spelled as a literal at the call site
- * is this app able to ask a stack for *any* action it offers — `setup` among
- * them, and the ones that write a credential. A closed set is what makes the
- * reach of this app readable from one file instead of from every adapter.
- *
- * The same reason {@see WhatToDoWithIt} and {@see WhatWasDecided} exist, and
- * the count is not the point: a set of one is still a set, and this is where
- * the second configuration verb will be added when there is one.
+ * An action's name is the last segment of the path it is asked for, so a
+ * name spelled as a literal at the call site is this app able to ask a stack
+ * for *any* action it offers — `setup` among them, and the ones that write a
+ * credential. A closed set is what makes the reach of this app readable from
+ * one file instead of from every adapter, which is the reason
+ * {@see WhatToDoWithIt} and {@see WhatWasDecided} exist.
  */
 enum WhatToChange: string
 {
     /** Put a value in one setting. */
     case Setting = 'setting';
+
+    /** Put every file and connection the operator edited back to lemonfiber's own, or say what that would revert. */
+    case BackToItsOwn = 'back_to_its_own';
 
     /**
      * lemonfiber's word for it.
@@ -33,6 +33,7 @@ enum WhatToChange: string
     {
         return match ($this) {
             self::Setting => 'config-set',
+            self::BackToItsOwn => 'reset',
         };
     }
 }
