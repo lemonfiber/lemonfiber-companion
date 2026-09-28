@@ -144,6 +144,168 @@ SHIPS,
         '.build',
 BECOMES,
     ],
+    [
+        // A text field sends every keystroke to PHP and takes back whatever value
+        // PHP answers with, unless it equals the one value it sent last. Typing
+        // faster than PHP answers makes the answer to an earlier keystroke arrive
+        // after a later one was sent: "a" comes back while "ab" is out, differs
+        // from it, and is taken as PHP setting the field — so the "b" is gone.
+        // Measured on 2026-09-28 on a Galaxy A51: a pairing code typed at about
+        // eight characters a second lost one character in every thirty, and the
+        // code was refused as unreadable.
+        //
+        // So each field remembers everything it sent and PHP has not answered, and
+        // a value matching any of it is an answer rather than a change. Only a
+        // value this field never sent replaces what the person typed.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
+        'ships' => <<<'SHIPS'
+/**
+ * Outbound dispatch state machine.
+SHIPS,
+        'becomes' => <<<'BECOMES'
+/**
+ * What this field sent over the bridge that PHP has not answered yet, oldest
+ * first. PHP answers in the order it was asked, so a server value matching one
+ * of these is the answer to it — and to everything sent before it.
+ */
+internal class InFlight {
+    private val waiting = ArrayDeque<String>()
+
+    fun sent(value: String) {
+        waiting.addLast(value)
+        while (waiting.size > 64) waiting.removeFirst()
+    }
+
+    /** Whether [value] answers something this field sent; forgets it and everything older. */
+    fun answers(value: String): Boolean {
+        val at = waiting.indexOf(value)
+        if (at < 0) return false
+        repeat(at + 1) { waiting.removeFirst() }
+        return true
+    }
+
+    fun forget() = waiting.clear()
+}
+
+/**
+ * Outbound dispatch state machine.
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+        var lastSentValue by remember { mutableStateOf(props.serverValue) }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        var lastSentValue by remember { mutableStateOf(props.serverValue) }
+        val inFlight = remember { InFlight() }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+            if (props.serverValue != lastSentValue) {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            if (!inFlight.answers(props.serverValue) && props.serverValue != lastSentValue) {
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+                lastSentValue = props.serverValue
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                lastSentValue = props.serverValue
+                inFlight.forget()
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/OutlinedTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+                setLastSent = { lastSentValue = it },
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                setLastSent = { lastSentValue = it; inFlight.sent(it) },
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+        var lastSentValue by remember { mutableStateOf(props.serverValue) }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        var lastSentValue by remember { mutableStateOf(props.serverValue) }
+        val inFlight = remember { InFlight() }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+            if (props.serverValue != lastSentValue) {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            if (!inFlight.answers(props.serverValue) && props.serverValue != lastSentValue) {
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+                lastSentValue = props.serverValue
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                lastSentValue = props.serverValue
+                inFlight.forget()
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/FilledTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+                setLastSent = { lastSentValue = it },
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                setLastSent = { lastSentValue = it; inFlight.sent(it) },
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+        var lastSentValue by remember { mutableStateOf(props.serverValue) }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        var lastSentValue by remember { mutableStateOf(props.serverValue) }
+        val inFlight = remember { InFlight() }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+            if (props.serverValue != lastSentValue) {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            if (!inFlight.answers(props.serverValue) && props.serverValue != lastSentValue) {
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+                lastSentValue = props.serverValue
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                lastSentValue = props.serverValue
+                inFlight.forget()
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/BareTextInputRenderer.kt',
+        'ships' => <<<'SHIPS'
+                    lastSentValue = newValue.text
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                    lastSentValue = newValue.text
+                    inFlight.sent(newValue.text)
+BECOMES,
+    ],
 ];
 
 /**
