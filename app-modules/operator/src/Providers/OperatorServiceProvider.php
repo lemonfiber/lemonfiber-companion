@@ -21,6 +21,7 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
+use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
@@ -307,6 +308,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // removal is read and agreed to on its own, and the last of them
             // takes what nothing can fetch again.
             Router::native(AStacksScreen::Uninstall->value, TakingItOffThisMachine::class);
+
+            // Putting the configuration back. Its own screen, reached from the
+            // settings, because what it would revert is read file by file
+            // before anything is agreed to.
+            Router::native(AStacksScreen::Reset->value, PuttingTheConfigurationBack::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);

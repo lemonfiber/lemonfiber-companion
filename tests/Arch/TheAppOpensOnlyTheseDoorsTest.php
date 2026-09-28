@@ -145,6 +145,15 @@ const VERBS_THE_APP_ASKS_FOR = [
     // would otherwise read as the app being able to set anything.
     'config-set' => 'puts a value in one setting, having first been told what that would come to',
 
+    // Two requests under one name. Unconfirmed it compares the operator's
+    // files and connections with lemonfiber's and writes nothing; confirmed it
+    // writes lemonfiber's back. The yes is only ever sent after a preview that
+    // would revert something, which is the one thing `AResetAgreed` can be
+    // built from. The app names no value: what the stack writes is
+    // lemonfiber's own configuration over the operator's edits, and the
+    // preview shows a withheld line masked, as every diff of a stack file is.
+    'reset' => 'puts every edited file and connection back to lemonfiber\'s own, having first previewed what that reverts',
+
     // A start disturbs nothing, which is why it is the one verb
     // that asks for no confirmation.
     'up' => 'starts a form, or a service inside one',

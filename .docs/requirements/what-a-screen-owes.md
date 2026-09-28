@@ -75,8 +75,8 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 64 envelopes and this app follows 50.
-Of the rest, 10 are never named by the code in `app-modules` or `bridge`, tests
+**The measurement.** The SDK ships 64 envelopes and this app follows 51.
+Of the rest, 9 are never named by the code in `app-modules` or `bridge`, tests
 aside, and 2 more — `Admission` and `Pull` — are named without being followed.
 They resolve to the features below — each one an action available from another
 surface and not offered here, or offered only in part.

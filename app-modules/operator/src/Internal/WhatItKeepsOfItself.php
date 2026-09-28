@@ -15,8 +15,9 @@ use Modules\Stacks\Api\AStacksScreen;
  * Where the screens are that read what one machine keeps about itself.
  *
  * What it changed, where what it runs came from, what it sends, what it will
- * wake somebody for, how it shares the line, what else already stands on it
- * and how good the media it fetches should be — screens answering one kind of
+ * wake somebody for, how it shares the line, what else already stands on it,
+ * how good the media it fetches should be and putting its configuration back
+ * to lemonfiber's own — screens answering one kind of
  * question, which is what the machine does and keeps on its own account while
  * nobody is looking — and the record it keeps of walking one thing through.
  * Apart from {@see WhereAStackIs} because that is where the questions change
@@ -181,5 +182,11 @@ final readonly class WhatItKeepsOfItself
     public function walkthrough(): string
     {
         return AStacksScreen::Walkthrough->forTheStack($this->stack);
+    }
+
+    /** Putting this machine's configuration back to lemonfiber's own, previewed before any yes. */
+    public function reset(): string
+    {
+        return AStacksScreen::Reset->forTheStack($this->stack);
     }
 }

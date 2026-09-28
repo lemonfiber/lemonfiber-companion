@@ -147,6 +147,13 @@
         <native:text>{{ __('config.nothing_is_set_action') }}</native:text>
     @endforelse
 
+    {{-- Putting every edited file and connection back to lemonfiber's own is
+         its own screen, because what it would revert is read file by file
+         before anything is agreed to. Offered on every reading that came
+         back: which files differ is the stack's to say, and this listing of
+         settings does not. --}}
+    <x-operator::quiet-action label="{{ __('config.put_it_all_back') }}" :goes="$this->goes()->ofItself()->reset()" />
+
     {{-- Last, under what it is about, for the reason every other reading
          screen puts it there: somebody who has just changed something in the
          stack scrolls to the end of what they were reading, and that is where

@@ -961,4 +961,37 @@ return [
         'not_offered' => 'This phone would not offer a way to hand it over.',
         'still_on_the_machine' => 'Nothing left this phone. The bundle is still on the machine.',
     ],
+
+    // Putting the configuration back. A preview is worded in the conditional
+    // and never as having happened; only a report the stack says it carried
+    // out is worded in the past. Each file's lines are marked as the stack
+    // marks them: the operator's `-`, lemonfiber's `+`.
+    'reset' => [
+        'heading' => 'Putting the configuration back',
+        'a_preview' => 'A preview. Nothing has been put back.',
+        'put_back' => 'The configuration was put back.',
+        'would_revert_files' => 'These files would go back to lemonfiber\'s own. Lines marked - are edits that would be lost; lines marked + are what lemonfiber would write.',
+        'reverted_files' => 'These files went back to lemonfiber\'s own. Lines marked - are edits that were lost; lines marked + are what lemonfiber wrote.',
+        'would_revert_no_file' => 'No file would go back.',
+        'reverted_no_file' => 'No file went back.',
+        'differs_in_no_line' => 'It differs from lemonfiber\'s own in no line that can be shown.',
+        'differed_in_no_line' => 'It differed from lemonfiber\'s own in no line that can be shown.',
+        'would_revert_connections' => 'These connections would go back to lemonfiber\'s own with them:',
+        'reverted_connections' => 'These connections went back to lemonfiber\'s own with them:',
+        'would_revert_no_connection' => 'No connection would go back.',
+        'reverted_no_connection' => 'No connection went back.',
+        'would_change_nothing' => 'Nothing would change. No file and no connection differs from lemonfiber\'s own.',
+        'changed_nothing' => 'Nothing changed. No file and no connection differed from lemonfiber\'s own.',
+        'theirs' => '- :line',
+        'lemonfibers' => '+ :line',
+        'put_them_back' => 'Put these back',
+        'asking' => 'The stack is working out what putting the configuration back would change.',
+        'putting_back' => 'The stack is putting the configuration back.',
+        'no_preview' => 'The stack no longer says what putting the configuration back would change.',
+        'no_outcome' => 'The stack no longer says what became of putting the configuration back. It may have been done. Asking again opens a fresh preview of what still differs.',
+        'refused_preview' => 'The stack would not say what putting the configuration back would change:',
+        'refused' => 'The stack would not put the configuration back:',
+        'refused_named' => 'It names :named',
+        'see_the_settings' => 'See the settings',
+    ],
 ];
