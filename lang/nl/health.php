@@ -310,11 +310,11 @@ return [
         'host-managed' => 'Wordt door de machine gedraaid, niet door deze stack',
     ],
     'matters' => [
-        'critical' => 'Zonder dit werkt niets anders',
-        'core' => 'Hoort bij de stack zelf',
-        'important' => 'Het huishouden merkt het vandaag',
-        'enhancing' => 'Het huishouden merkt het op den duur',
-        'optional' => 'Niemand merkt het',
+        'critical' => 'Als dit faalt, reikt de schade verder dan deze stack',
+        'core' => 'Zonder dit kan de stack zijn werk niet doen',
+        'important' => 'Zonder dit verliest de stack veel van wat hij doet',
+        'enhancing' => 'Maakt het prettiger; de stack werkt ook zonder',
+        'optional' => 'Alleen aanwezig als je erom vroeg',
     ],
     'running' => [
         'inactive' => 'Er draait niets',
