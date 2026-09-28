@@ -97,7 +97,7 @@ return [
     'working_it_out_action' => 'It takes a moment. Ask again shortly.',
     'nothing_came_back' => 'That question has expired.',
     'nothing_came_back_action' => 'Nothing was carried out. Ask again.',
-    'nothing_to_put_right' => 'This stack has nothing to put right.',
+    'nothing_to_put_right' => 'This stack has no repair to offer.',
     'affects_nothing_else' => 'Affects nothing else.',
     'carrying_it_out' => 'This stack is doing it.',
     'carrying_it_out_action' => 'It takes a moment. Ask again shortly.',

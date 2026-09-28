@@ -193,9 +193,9 @@ it('a job the stack forgot is its own state, and asking again starts a new one',
     expect($mending->askings())->toBe(2);
 });
 
-it('a stack with nothing to put right is not a job that ended', function (): void {
-    // The healthy case. Both show no repairs, and they are different sentences:
-    // one says there is nothing to fix, the other says ask me again.
+it('a stack with no repair to offer is not a job that ended', function (): void {
+    // Both show no repairs, and they are different sentences: one says the
+    // stack has no repair to offer, the other says ask me again.
     $nothing = theRepairsScreen(AStackThatWouldMend::offering(Offer::of('named', Repairs::none())));
     $ended = theRepairsScreen(AStackThatWouldMend::thatForgotTheJob());
 

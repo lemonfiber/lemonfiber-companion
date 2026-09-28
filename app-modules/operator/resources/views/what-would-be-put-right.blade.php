@@ -137,9 +137,10 @@
                 <native:divider />
             @endunless
         @empty
-            {{-- A stack with nothing to put right is the healthy case, and it is
-                 told apart from a job that ended: there is nothing to fix, which
-                 is an answer, rather than ask me again. --}}
+            {{-- An empty listing says the stack has no repair to offer, which
+                 is not the same as nothing being wrong: a service that fell
+                 over for a reason no repair covers leaves it empty too. Said as
+                 an answer rather than as a job that ended. --}}
             <x-operator::emphasis>{{ __('health.nothing_to_put_right') }}</x-operator::emphasis>
         @endforelse
 

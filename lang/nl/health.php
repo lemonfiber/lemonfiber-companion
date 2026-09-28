@@ -95,7 +95,7 @@ return [
     'working_it_out_action' => 'Dit duurt even. Vraag het zo nog eens.',
     'nothing_came_back' => 'Deze vraag is verlopen.',
     'nothing_came_back_action' => 'Er is niets uitgevoerd. Vraag het opnieuw.',
-    'nothing_to_put_right' => 'Deze stack heeft niets te herstellen.',
+    'nothing_to_put_right' => 'Deze stack heeft geen herstel aan te bieden.',
     'affects_nothing_else' => 'Raakt verder niets.',
     'carrying_it_out' => 'Deze stack is ermee bezig.',
     'carrying_it_out_action' => 'Dit duurt even. Vraag het zo nog eens.',

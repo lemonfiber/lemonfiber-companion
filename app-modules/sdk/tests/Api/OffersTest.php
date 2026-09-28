@@ -151,7 +151,7 @@ it('refuses a listing with no offered repairs field at all', function (): void {
     ])))->toThrow(OfferIsUnreadable::class, 'offered');
 });
 
-it('reads a stack with nothing to put right as an empty listing', function (): void {
+it('reads a stack with no repair to offer as an empty listing', function (): void {
     // The healthy case, and an answer rather than an absence.
     $offer = Offers::offerIn(repairSaying([...aListingOf([]), 'offered' => []]));
 
