@@ -186,6 +186,9 @@ enum AStacksScreen: string
     /** How good this machine's media should be, and upgrading what is already here. */
     case Quality = '/stacks/{stack}/quality';
 
+    /** Wiring the services to each other, and how each connection turned out. */
+    case Wiring = '/stacks/{stack}/wiring';
+
     /** What lemonfiber's words mean. */
     case Words = '/stacks/{stack}/words';
 

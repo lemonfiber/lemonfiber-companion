@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowAVolumeWasRead;
+use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
@@ -18,6 +19,7 @@ use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowItWasReached;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\HowSeriousAConnectionIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheImportLinked;
@@ -47,6 +49,7 @@ use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatToDoNext;
+use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
@@ -204,7 +207,7 @@ function theGeneratedSelfUpdateEnvelope(): string
  */
 function theArmsIn(string $envelope, string $field): array
 {
-    preg_match_all(sprintf("/\\b%s: '([a-z_]+)'/", $field), $envelope, $found);
+    preg_match_all(sprintf("/\\b%s: '([a-z_-]+)'/", $field), $envelope, $found);
     $words = array_values(array_unique($found[1]));
     sort($words);
 
@@ -790,6 +793,30 @@ it('everything a service can be to the household has a case', function (): void 
     expect(valuesOf(WhatItFaces::cases()))->toBe($words);
 });
 
+it('every way a wiring run can have judged drift has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('SeedEnvelope'), 'assessment');
+
+    expect($words)->not->toBe([], 'no assessment union was found in the generated envelope');
+    expect(valuesOf(HowDriftWasJudged::cases()))->toBe($words);
+});
+
+it('every state a wired connection can end in has a case', function (): void {
+    // Thirteen arms, several with hyphens, and each drawn in a sentence of its
+    // own: a state this app did not know is refused rather than read as the
+    // nearest, so a new one on the wire has to be met here first.
+    $words = theArmsIn(theGeneratedEnvelope('SeedEnvelope'), 'state');
+
+    expect($words)->toHaveCount(13);
+    expect(valuesOf(WhereAConnectionStands::cases()))->toBe($words);
+});
+
+it('every severity a wired connection can carry has a case', function (): void {
+    $words = theArmsIn(theGeneratedEnvelope('SeedEnvelope'), 'severity');
+
+    expect($words)->not->toBe([], 'no severity arms were found in the generated envelope');
+    expect(valuesOf(HowSeriousAConnectionIs::cases()))->toBe($words);
+});
+
 it('every way a front door can have come to be has a case', function (): void {
     $words = theArmsIn(theGeneratedEnvelope('FrontDoorEnvelope'), 'chosen');
 
@@ -984,6 +1011,9 @@ const CHECKED_AGAINST_THE_WIRE = [
     HowTheImportLinked::class => 'link',
     WhyTheWalkthroughStopped::class => 'reason',
     WhatToDoNext::class => 'next',
+    HowDriftWasJudged::class => 'assessment',
+    WhereAConnectionStands::class => 'state',
+    HowSeriousAConnectionIs::class => 'severity',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

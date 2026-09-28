@@ -334,6 +334,10 @@
          already here. --}}
     <x-operator::quiet-action label="{{ __('quality.road_in') }}" :goes="$this->goes()->ofItself()->quality()" />
 
+    {{-- Wiring the services to each other, and how each connection turned
+         out. --}}
+    <x-operator::quiet-action label="{{ __('stacks.wiring.road_in') }}" :goes="$this->goes()->ofItself()->wiring()" />
+
     {{-- What lemonfiber's words mean. --}}
     <x-operator::quiet-action label="{{ __('stacks.words.road_in') }}" :goes="$this->goes()->ofItself()->words()" />
 </x-operator::content>

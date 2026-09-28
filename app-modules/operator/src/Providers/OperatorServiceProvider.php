@@ -13,6 +13,7 @@ use Modules\Operator\Internal\Screens\ChoosingHowGood;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
+use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
@@ -261,6 +262,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // is asked about what comes next and upgrading about what is
             // already here, and both are decided in front of what each costs.
             Router::native(AStacksScreen::Quality->value, ChoosingHowGood::class);
+
+            // Wiring the services to each other. Its own screen, because a run
+            // is an act with a report of its own, one connection at a time.
+            Router::native(AStacksScreen::Wiring->value, HowTheServicesAreWired::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);

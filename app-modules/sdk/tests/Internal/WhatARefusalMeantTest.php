@@ -67,3 +67,24 @@ it('reads a peer presenting a certificate the pairing did not name as not the pa
     expect($obstacle)->toBe(Obstacle::StackIsNotTheOnePaired)
         ->and($obstacle->meansWeAreSignedOut())->toBeFalse();
 });
+
+it('hands on the stack\'s own sentence only for a request it turned down', function (): void {
+    // Everything from the first refusal up to the first fault on the stack's
+    // side, bar the two with remedies of their own, is the stack saying no in
+    // words, and those words are the answer.
+    $said = [];
+
+    foreach ([399, 400, 401, 403, 409, 499, 500] as $status) {
+        $said[$status] = WhatARefusalMeant::inItsOwnWords(RequestFailed::from('/api/actions/seed', $status, 'Nothing here to wire'));
+    }
+
+    expect($said)->toBe([
+        399 => null,
+        400 => 'Nothing here to wire',
+        401 => null,
+        403 => null,
+        409 => 'Nothing here to wire',
+        499 => 'Nothing here to wire',
+        500 => null,
+    ])->and(WhatARefusalMeant::inItsOwnWords(refusedWith(409)))->toBeNull();
+});

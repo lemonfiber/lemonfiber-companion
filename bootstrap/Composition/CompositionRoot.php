@@ -77,6 +77,7 @@ use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\Wanting;
 use Modules\Kernel\Api\Watching;
 use Modules\Kernel\Api\Welcoming;
+use Modules\Kernel\Api\WiringTheServices;
 use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
@@ -119,6 +120,7 @@ use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
+use Modules\Sdk\Api\Wirers;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
@@ -399,6 +401,10 @@ final class CompositionRoot extends ServiceProvider
         // What is already on the machine, before anything is moved in, read
         // beside the rest and bound for the same reason.
         $this->app->bind(MovingIn::class, Scouts::class);
+
+        // Wiring the services to each other, which a run reports connection by
+        // connection.
+        $this->app->bind(WiringTheServices::class, Wirers::class);
 
         // How good the media should be: choosing a preset, and upgrading what
         // is already here, which is its own act.

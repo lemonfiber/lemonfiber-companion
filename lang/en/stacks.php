@@ -500,6 +500,46 @@ return [
         ],
     ],
 
+    // Wiring the services to each other, and how each connection turned out.
+    'wiring' => [
+        'road_in' => 'How the services are wired to each other',
+        'what_a_run_does' => 'A run changes nothing that is already right, and keeps what you changed by hand',
+        'wire' => 'Wire the services',
+        'services' => 'The services a run wires to each other',
+        'no_services' => 'This machine runs no service to wire',
+        'working' => 'The machine is wiring the services',
+        'no_outcome' => 'The machine no longer has an answer for this run',
+        'refused' => 'The machine turned this down',
+        // Said before anything else, and never drawn as a run that wrote.
+        'rehearsed' => 'A rehearsal: this run only said what it would do, and nothing was written',
+        'assessed' => 'Each connection was judged against what lemonfiber last wrote',
+        'unassessable' => 'Whether anything was changed by hand could not be judged this time: the record of what lemonfiber last wrote could not be read',
+        // One sentence per state. Skipped is not failed, and a value changed
+        // by hand is kept, not wired and not something to put back.
+        'state' => [
+            'wired' => 'Wired, and read back',
+            'already_wired' => 'Already wired; nothing was done',
+            'drifted' => 'Kept as you changed it',
+            'stale' => 'Still lemonfiber\'s own value, behind what it would write now; left as it is',
+            'conflicted' => 'You and lemonfiber both changed it; left as it is',
+            'adopted' => 'Your change is kept as the way it is meant to be',
+            'unmanaged' => 'A value lemonfiber never wrote; kept as it was',
+            'would_wire' => 'A run that writes would wire this',
+            'would_adopt' => 'A run that writes would keep your value as the way it is meant to be',
+            'observed' => 'Left alone, because you said to',
+            'skipped' => 'Not wired yet: something it needs is not there, and a later run finishes it',
+            'failed' => 'The service rejected it',
+            'refused' => 'lemonfiber will not do this',
+        ],
+        'yours' => 'The service holds: :value',
+        'ours' => 'lemonfiber would write: :value',
+        'breaks' => 'This breaks something: :breakage',
+        'remedy' => 'To put it right: :remediation',
+        'no_connections' => 'This run attempted no connection',
+        'cannot_wire' => 'What this run cannot wire',
+        'nothing_unsupported' => 'Every service here is one this run can speak to',
+    ],
+
     // How full the machine is, and where the room went.
     'room' => [
         'road_in' => 'How full this machine is',

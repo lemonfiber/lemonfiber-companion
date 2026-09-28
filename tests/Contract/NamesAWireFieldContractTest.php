@@ -34,6 +34,7 @@ use Modules\Sdk\Api\Fields\QualityField;
 use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Api\Fields\ReplacementField;
 use Modules\Sdk\Api\Fields\RestoreField;
+use Modules\Sdk\Api\Fields\SeedField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
@@ -94,6 +95,7 @@ function everyFieldNamedOnTheWire(): array
         ...RepairField::cases(),
         ...ReplacementField::cases(),
         ...RestoreField::cases(),
+        ...SeedField::cases(),
         ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
         ...StatusField::cases(),
