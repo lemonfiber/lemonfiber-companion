@@ -597,7 +597,31 @@ return [
         'ratio' => 'Ratio :ratio',
         'no_ratio' => 'No ratio: nothing was downloaded to divide by',
         'no_downloads' => 'No finished downloads are on this machine',
-        'at_the_machine' => 'Removing anything is done at the machine, not from here',
+        // On every download alike, so none is singled out.
+        'stop_seeding' => 'Stop seeding this',
+        'stop_seeding_that' => 'Stop seeding :download',
+        'at_the_machine' => 'Stopping seeding is offered one download at a time. Anything else is removed at the machine, not from here',
+    ],
+
+    // Stopping seeding one download: what it costs first, and only then the yes.
+    'let_go' => [
+        'names_no_download' => 'This names no download to stop seeding',
+        'see_the_room' => 'See how full the machine is',
+        'working_it_out' => 'Asking the stack what stopping seeding :download would cost',
+        'offer_ended' => 'The stack no longer knows what stopping seeding :download would cost. Ask again to hear it afresh.',
+        'what_it_costs' => 'What stopping seeding this costs',
+        // Stopping seeding is its own act, and said to be before the cost.
+        'its_own_act' => 'Stopping seeding is its own act: it asks the download client to let this one download go and stop sharing it. Nothing else on the machine is removed.',
+        'stop_it' => 'Stop seeding it',
+        'letting_go' => 'Stopping seeding :download',
+        'no_outcome' => 'The stack no longer knows what became of stopping seeding :download',
+        'no_outcome_action' => 'The client may have let it go. How full the machine is says whether it is still there.',
+        // A rehearsal is said to be one, and never reported as room freed.
+        'a_rehearsal' => 'A rehearsal: nothing has been let go',
+        'rehearsed' => 'The stack is rehearsing, so the client still holds :download and is still seeding it.',
+        'nothing_freed' => 'No room was freed. It still occupies :figure :unit.',
+        'let_go' => 'The client let :download go',
+        'occupied' => 'It occupied :figure :unit, as the client reported it.',
     ],
 
     // What the machine keeps, where, and why, and the copies it holds.

@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WhatToDoWithACopy;
+use Modules\Kernel\Api\WhatToDoWithADownload;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasDecided;
@@ -199,6 +200,13 @@ const VERBS_THE_APP_ASKS_FOR = [
     // the listing the operator was shown, and nothing else, because the yes
     // quotes that listing by name.
     'restore' => 'says what putting one copy back would do, and puts it back only against that listing',
+
+    // Two requests under one name, each answered as work. Naming only the
+    // download it says what letting it go would cost and lets nothing go;
+    // naming the offer as well, it asks the download client to let that one
+    // download go. There is no blanket yes: the offer's own name is the only
+    // one the stack takes.
+    'stop-seeding' => 'says what stopping seeding one download would cost, and stops it only against that offer',
 
     // The one verb that fetches something. It names at most a title, and
     // with none the stack chooses something likely to work; the stack
@@ -494,6 +502,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
         ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
+        ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),

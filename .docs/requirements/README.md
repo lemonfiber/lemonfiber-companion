@@ -67,7 +67,7 @@ lookup stops being wrong.
 | [what-a-machine-says.md](what-a-machine-says.md) | The values read back: verdicts, services, repairs, releases, requests |
 | [the-one-line.md](the-one-line.md) | The health summary every surface says, held from the core's event stream |
 | [what-leaves-a-machine.md](what-leaves-a-machine.md) | What a machine does unwatched: what it sends, how it shares the line, and what it wakes somebody for |
-| [how-full-a-machine-is.md](how-full-a-machine-is.md) | How full a machine is, where the room went, and each download with where it stands |
+| [how-full-a-machine-is.md](how-full-a-machine-is.md) | How full a machine is, where the room went, each download with where it stands, and stopping seeding one |
 | [where-an-item-got-to.md](where-an-item-got-to.md) | One item followed through the services: how sure, how far, what was tried, and what of a series is here |
 | [what-the-words-mean.md](what-the-words-mean.md) | lemonfiber's words, each with its glosses and what else it is called |
 | [choosing-how-good.md](choosing-how-good.md) | How good the media should be: the presets in force, choosing one, a held choice confirmed, and upgrading what is already here |

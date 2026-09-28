@@ -145,6 +145,27 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'says nothing about where a service keeps its settings.',
     ],
     [
+        'requirement' => 'N12-R8',
+        'asks' => 'to label a rehearsed cleanup of what costs nothing as a rehearsal, and never report it as room freed',
+        // Named, because the answer can land nowhere else: whether a cleanup
+        // was rehearsed is a fact about that cleanup, and `reclaimed` inside
+        // the `space` answer is where the cleanup is reported. `rehearsed` is
+        // the word the `stop-seeding` answer already uses for the same fact
+        // about letting one download go, so it is the word to watch for here.
+        'envelope' => 'SpaceEnvelope',
+        'field' => 'rehearsed',
+        'shape' => null,
+        'raised' => 'A confirmed `space` action takes what the account named as costing nothing, and its '
+            . 'answer reports that in `reclaimed` as the paths taken and the bytes they occupied. A stack '
+            . 'running as a rehearsal takes nothing and fills in `reclaimed` exactly the same way, so an '
+            . 'answer this app could read would say room was freed whether or not any was, which `N12-R8` '
+            . 'forbids. The action also takes a bare `confirm` rather than the offer\'s name, so a yes '
+            . 'cannot say which reading of the disk it was given for. This app therefore does not ask for '
+            . 'the cleanup: stopping seeding, which the stack answers with `gone.rehearsed` and agrees to by '
+            . 'the offer\'s own name, is the one removal it offers, one download at a time. What closes this '
+            . 'row is `reclaimed` saying whether it was rehearsed.',
+    ],
+    [
         'requirement' => 'N24-R1',
         'asks' => 'to offer the presets a choice may be made from, and the kinds of media it may be made for, in the stack\'s plain terms',
         // Unnamed, because the list could land on the quality reading or on a
