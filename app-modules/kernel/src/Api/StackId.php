@@ -23,28 +23,61 @@ use function trim;
  * DHCP lease, at which point every retained reading silently belongs to
  * something else.
  *
- * Generated on this side rather than taken from the wire. A server that has
- * never met this app cannot have named itself to it, and two stacks that have
- * never met each other could otherwise arrive with the same identifier —
- * `Nonce` is what makes one, and the pairing that creates a stack is where it
- * happens.
+ * Not the certificate either, which a renewal replaces. A machine that comes
+ * back with a new certificate is the machine the operator has been using, and
+ * an identity derived from its digest would orphan everything held for it at
+ * the moment they were told nothing had happened.
+ *
+ * **Taken from the stack's own pairing material.** The stack mints its
+ * identifier once, keeps it beside its configuration, and writes it into every
+ * piece of material it issues, so scanning a second code for the same machine
+ * names the same stack. An identity minted on this side could not do that:
+ * each pairing would name a new machine, and pairing the one already held would
+ * add a second row to the list whose whole job is to say which machines are in
+ * the house.
  */
 final readonly class StackId
 {
     private function __construct(private string $id) {}
 
+    /**
+     * An identity minted on this side, for a stack no pairing material described.
+     *
+     * What a stand-in holds: a machine that exists only in this build has no
+     * material of its own to name it.
+     */
     public static function of(Nonce $nonce): self
     {
         return new self($nonce->shown());
     }
 
     /**
+     * The identity a stack gave itself in the material it issued.
+     *
+     * Its own constructor rather than {@see rememberedAs()}, because the two
+     * fail in different places and a refusal has to say which: blank material
+     * is the stack's to reissue, and a blank retained entry is this device's
+     * state gone wrong.
+     */
+    public static function saidBy(string $said): self
+    {
+        $trimmed = trim($said);
+
+        if ($trimmed === '') {
+            throw StackIsUnidentified::byItsOwnMaterial();
+        }
+
+        return new self($trimmed);
+    }
+
+    /**
      * The one place a stored identifier becomes one again.
      *
-     * Separate from `of()` because they are different acts: one mints an
-     * identity for a stack being paired, and this reads back one that was
-     * already minted. A single constructor taking a string would make the first
-     * one possible by accident, from anywhere, with any string.
+     * Separate from `of()` and `saidBy()` because they are different acts: one
+     * mints an identity, one takes the identity a stack gave itself, and this
+     * reads back one that was already held. A single constructor taking a
+     * string would make the first two possible by accident, from anywhere, with
+     * any string.
      */
     public static function rememberedAs(string $id): self
     {

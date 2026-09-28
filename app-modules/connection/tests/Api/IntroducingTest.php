@@ -16,21 +16,22 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Pairing;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 
 use function str_repeat;
 
 use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\SequencedEntropy;
 
-/** Material read by the route named, carrying the digest named. */
-function material(HowItWasRead $how, string $character = 'a'): Pairing
+/** Material read by the route named, carrying the digest and the stack named. */
+function material(HowItWasRead $how, string $character = 'a', string $stack = '7f3c9a1e5b2d4086a9c1e3f5b7d90246'): Pairing
 {
     return Pairing::read(
         (string) json_encode([
             'address' => 'https://192.168.1.42',
             'fingerprint' => str_repeat($character, Fingerprint::CHARACTERS),
             'expires' => 2_000,
+            'stack' => $stack,
         ]),
         $how,
         FrozenClock::at(Instant::atEpochSeconds(1_000)),
@@ -45,10 +46,10 @@ function confirmationOf(string $character): FingerprintWasConfirmed
     );
 }
 
-/** The step, with a nonce nobody has to guess at. */
+/** The step. */
 function introductions(): Introducing
 {
-    return new Introducing(SequencedEntropy::counting());
+    return new Introducing();
 }
 
 it('carries the address and the certificate across unchanged', function (): void {
@@ -63,15 +64,31 @@ it('carries the address and the certificate across unchanged', function (): void
         ->and($stack->name()->shown())->toBe('The loft');
 });
 
-it('gives two stacks paired from the same material two identities', function (): void {
+it('names the machine by the identity its own material gives it', function (): void {
+    $stack = introductions()->stack(material(HowItWasRead::Scanned), StackName::of('The loft'));
+
+    expect($stack->id()->is(StackId::saidBy('7f3c9a1e5b2d4086a9c1e3f5b7d90246')))->toBeTrue();
+});
+
+it('makes one machine of two codes that stack issued, whatever else changed', function (): void {
+    // A second code for the machine already held, after its certificate was
+    // replaced: the identity is the stack's, so it is the same machine.
+    $introducing = introductions();
+
+    $first = $introducing->stack(material(HowItWasRead::Scanned, 'a'), StackName::of('The loft'));
+    $again = $introducing->stack(material(HowItWasRead::Scanned, 'b'), StackName::of('The loft'));
+
+    expect($first->id()->is($again->id()))->toBeTrue();
+});
+
+it('makes two machines of two stacks, even at one address with one certificate', function (): void {
     // Telling two machines apart depends on this: an identity derived from the
     // address or the digest would make one machine out of two, and a reading
     // from either would be attributed to whichever row won.
-    $said = material(HowItWasRead::Scanned);
     $introducing = introductions();
 
-    $first = $introducing->stack($said, StackName::of('The loft'));
-    $second = $introducing->stack($said, StackName::of('The shed'));
+    $first = $introducing->stack(material(HowItWasRead::Scanned), StackName::of('The loft'));
+    $second = $introducing->stack(material(HowItWasRead::Scanned, stack: '0d2e4f6a8c1b3d5e7f9a0b2c4d6e8f10'), StackName::of('The shed'));
 
     expect($first->id()->is($second->id()))->toBeFalse();
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
+use Modules\Connection\Api\Remembering;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
@@ -13,8 +14,8 @@ use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACameraInMemory;
+use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Fakes\StacksInMemory;
 
 // Pairing with a camera, where nobody compares hex (`ADR-0018`).
@@ -38,6 +39,7 @@ function scannedCode(mixed $expires = 2_000): string
         'address' => 'https://192.168.1.42',
         'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
         'expires' => $expires,
+        'stack' => '7f3c9a1e5b2d4086a9c1e3f5b7d90246',
     ]);
 }
 
@@ -46,10 +48,13 @@ function scanningScreen(ACameraInMemory $camera, ?WhyAStackCannotBeRemembered $r
 {
     return new PairByScanning(
         $camera,
-        new Introducing(SequencedEntropy::counting()),
-        $refusing instanceof WhyAStackCannotBeRemembered
-            ? StacksInMemory::refusing($refusing)
-            : StacksInMemory::working(),
+        new Introducing(),
+        new Remembering(
+            $refusing instanceof WhyAStackCannotBeRemembered
+                ? StacksInMemory::refusing($refusing)
+                : StacksInMemory::working(),
+            AKeychainInMemory::working(),
+        ),
         FrozenClock::at(Instant::atEpochSeconds(SCANNED_AT)),
     );
 }
@@ -193,6 +198,7 @@ it('refuses a scanned code naming an address that presents no certificate', func
         'address' => 'http://192.168.1.42',
         'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
         'expires' => 2_000,
+        'stack' => '7f3c9a1e5b2d4086a9c1e3f5b7d90246',
     ]))));
 
     $screen->scan();

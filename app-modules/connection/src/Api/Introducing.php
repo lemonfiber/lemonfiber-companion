@@ -5,37 +5,31 @@ declare(strict_types=1);
 namespace Modules\Connection\Api;
 
 use Modules\Kernel\Api\AtAGlance;
-use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 
 /**
  * Pairing material becoming a machine this device knows.
  *
  * The step between somebody reading a code off their stack and the app holding
- * a stack. Two things travel across unchanged — the address the material named
- * and the certificate it promised — and exactly one is decided here, which is
- * the identity.
+ * a stack. Everything the material carries travels across unchanged — the
+ * address it named, the certificate it promised and the identity the stack
+ * gave itself — and the one thing added here is the name the operator picked.
  *
  * **The fingerprint is carried rather than looked up.** It
  * comes from the material and never from the network: a fingerprint learned
  * from the connection it is meant to validate proves nothing at all. Nothing
  * in this class reads anything.
  *
- * **The identity is minted from entropy, and that is three decisions in one.**
- * It is not the address, because trust is pinned to the stack rather than
- * to where it answers — a stack keyed on its address becomes a different stack
- * the morning the router renumbers it, and every reading retained against it
- * silently belongs to something else. It is not the fingerprint either, which
- * changes on a certificate renewal that `ADR-0018` makes a re-pairing rather
- * than a new machine — an identity derived from it would orphan the stack's
- * own history at the exact moment the operator was told nothing had happened.
- * And it is not taken from the wire: a server that has never met this app
- * cannot have named itself to it, and two stacks that never met each other
- * could otherwise arrive carrying the same identifier.
+ * **The identity is the stack's, and nothing here decides it.** It is not the
+ * address, because trust is pinned to the stack rather than to where it
+ * answers, and not the fingerprint, which a certificate renewal replaces. It is
+ * the identifier the stack wrote into the material, which stays the same across
+ * every code that machine issues. So scanning a second code for a machine this
+ * device holds names the machine it holds, and writing it down replaces what is
+ * held for it instead of adding a second.
  *
  * **Two roads, and they are not equally safe.** A
  * camera comparing a digest is the software comparison `ADR-0018` chose the
@@ -47,18 +41,12 @@ use Modules\Kernel\Api\StackName;
  * fingerprint* is then a thing the type system says rather than a thing a
  * reviewer checks.
  *
- * **Re-pairing is deliberately not here.** It is the remedy for
- * a certificate that changed, and it differs from this by one thing: the
- * identity is kept rather than minted, because the machine is the one the
- * operator has been using. Writing it now would mean a second pair of roads —
- * four methods — for a screen this app does not have, which is the argument
- * {@see \Modules\Kernel\Api\Stacks} makes for having no `forget()` yet. It
- * arrives with the screen that offers it.
+ * **Re-pairing is this same road.** Material for a machine already held
+ * carries its identity, so it arrives here exactly as a first pairing does, and
+ * the difference is made where the stack is written down.
  */
 final readonly class Introducing
 {
-    public function __construct(private Entropy $entropy) {}
-
     /**
      * The stack this scanned material describes, under a name the operator picked.
      *
@@ -117,11 +105,11 @@ final readonly class Introducing
         return $this->built($said, $called);
     }
 
-    /** The two things the material carries, under an identity minted for it. */
+    /** What the material carries, under the name the operator picked. */
     private function built(Pairing $said, StackName $called): Stack
     {
         return Stack::of(
-            StackId::of($this->entropy->nonce()),
+            $said->stack(),
             $called,
             $said->at(),
             $said->presenting(),
