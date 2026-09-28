@@ -375,5 +375,5 @@ it('which builder a screen needs is read off its own pattern', function (): void
     ));
 
     expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $needingAService))
-        ->toBe(['Doing', 'Logs', 'RunBack', 'PutBack', 'LetGo', 'WordAbout', 'Trace']);
+        ->toBe(['Doing', 'Logs', 'RunBack', 'PutBack', 'LetGo', 'TakeOut', 'WordAbout', 'Trace']);
 });

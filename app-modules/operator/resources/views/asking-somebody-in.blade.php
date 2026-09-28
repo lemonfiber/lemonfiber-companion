@@ -173,6 +173,12 @@
                     tap="wouldTakeThePasswordOff('{{ $member->name }}')"
                 />
             @endif
+            {{-- Taking them out of the household is its own screen, where
+                 what it would cost is read before anything is agreed to. --}}
+            <x-operator::quiet-action
+                label="{{ __('stacks.removal.would_take_them_out', ['name' => $member->name]) }}"
+                :goes="$this->goes()->whoGetsIn()->takingOut($member->name)"
+            />
         </x-operator::entry>
     @empty
         <x-operator::note>{{ __('stacks.invitation.nobody_in') }}</x-operator::note>

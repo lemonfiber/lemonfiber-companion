@@ -289,11 +289,11 @@ final readonly class Households
      */
     private static function requestsOf(array $member, int $at): array
     {
-        if (! array_key_exists(HouseholdField::Requests->value, $member)) {
+        if (! array_key_exists(WireField::Requests->value, $member)) {
             throw HouseholdIsUnreadable::member($at);
         }
 
-        $rows = $member[HouseholdField::Requests->value];
+        $rows = $member[WireField::Requests->value];
 
         if (! is_array($rows)) {
             throw HouseholdIsUnreadable::member($at);

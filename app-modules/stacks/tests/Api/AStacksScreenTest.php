@@ -13,6 +13,7 @@ use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
@@ -125,6 +126,15 @@ it('refuses a case that needs more than a machine, and one that needs less', fun
         StackId::rememberedAs(A_MACHINE),
         ARun::stamped('1790150000'),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Health->forTheStacksMember(
+        StackId::rememberedAs(A_MACHINE),
+        SomebodyInTheHousehold::called('anna'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
+it('puts a member of the household where a service would go, encoded', function (): void {
+    expect(AStacksScreen::TakeOut->forTheStacksMember(StackId::rememberedAs(A_MACHINE), SomebodyInTheHousehold::called('Anna Maria/2')))
+        ->toBe(sprintf('/stacks/%s/household/Anna%%20Maria%%2F2', A_MACHINE));
 });
 
 it('puts a copy where a service would go, encoded, and taking a copy under the machine alone', function (): void {

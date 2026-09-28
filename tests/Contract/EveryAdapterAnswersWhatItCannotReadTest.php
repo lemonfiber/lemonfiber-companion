@@ -26,6 +26,8 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\ARemoval;
+use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\AWordInUse;
@@ -41,6 +43,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowFarItGoesBack;
+use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
@@ -78,6 +81,7 @@ use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatTheRemovalFound;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
@@ -118,6 +122,7 @@ use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Releasers;
+use Modules\Sdk\Api\Removers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
@@ -352,6 +357,18 @@ function everyAdapterCallThatReads(): array
             => new Releasers($clients, $entropy)->stop($stack, $session, anOfferToLetGoToSpoilTheAnswerTo()),
         'Releasers::whatBecameOf' => static fn(): object
             => new Releasers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Removers::wouldRemove' => static fn(): object
+            => new Removers($clients, $entropy)->wouldRemove($stack, $session, SomebodyInTheHousehold::called('anna')),
+        'Removers::remove' => static fn(): object
+            => new Removers($clients, $entropy)->remove($stack, $session, ARemovalAgreed::after(ARemoval::described(
+                SomebodyInTheHousehold::called('anna'),
+                0,
+                asksThroughTheRequestService: false,
+                revoked: HowFarTheRemovalReached::Nothing,
+                findings: WhatTheRemovalFound::of(),
+            ))),
+        'Removers::whatBecameOf' => static fn(): object
+            => new Removers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Restorers::rehearse' => static fn(): object
             => new Restorers($clients, $entropy)->rehearse($stack, $session, ACopy::named('lemonfiber-20260924-0300-full')),
         'Restorers::putBack' => static fn(): object
@@ -435,9 +452,9 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * answers with, so it is given {@see THE_WORK_AN_INVITATION_BECOMES}.
  * A quality choice is given the quality reading, and a choice for music and an
  * upgrade the envelopes each is answered with. So are a finished copy, the
- * listing a restore answers without a yes, and a finished restore, and what a
- * start, a stop or a restart came to, and both what stopping seeding would
- * cost and what it came to.
+ * listing a restore answers without a yes, and a finished restore, what a
+ * start, a stop or a restart came to, both what stopping seeding would cost
+ * and what it came to, and what taking somebody out came to.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -458,6 +475,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Releasers::whatTheOfferCameTo', $which === 'Releasers::whatBecameOf' => sprintf('%sStopSeedingEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Reversers::whatBecameOf' => sprintf('%sUndoEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Removers::whatBecameOf' => sprintf('%sRemovalEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }
