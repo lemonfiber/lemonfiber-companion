@@ -1,7 +1,7 @@
 <x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->service()->named()])" />
 
 @if ($this->answer()->went->cameBack())
-<x-operator::content>
+<x-operator::content from-the-end>
     {{-- The view is a window rather than the whole, said before the
          lines rather than under them. Both cases have a line — a screen
          silent when the bound cut nothing teaches an operator to read
