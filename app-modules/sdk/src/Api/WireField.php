@@ -433,9 +433,17 @@ enum WireField: string implements NamesAWireField
 
     /**
      * The name a stack gives one listing, quoted back on a yes: a listing of
-     * repairs, and what putting a copy back would do.
+     * repairs, what putting a copy back would do, and what stopping seeding
+     * one download would cost.
      */
     case Agreement = 'agreement';
+
+    /**
+     * What removing a completed download costs, where it costs anything: on
+     * each download the account of the disk lists, and on the one an offer to
+     * stop seeding is about.
+     */
+    case Consequence = 'consequence';
 
     /**
      * A Compose project: the one a set of existing services was started under,

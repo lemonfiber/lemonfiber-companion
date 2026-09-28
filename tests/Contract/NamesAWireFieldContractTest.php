@@ -33,6 +33,7 @@ use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
+use Modules\Sdk\Api\Fields\StopSeedingField;
 use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Api\Fields\TraceField;
@@ -89,6 +90,7 @@ function everyFieldNamedOnTheWire(): array
         ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
         ...StatusField::cases(),
+        ...StopSeedingField::cases(),
         ...StoredField::cases(),
         ...StuckField::cases(),
         ...TraceField::cases(),

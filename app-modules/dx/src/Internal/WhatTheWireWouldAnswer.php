@@ -20,6 +20,7 @@ use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Kernel\Api\WhatToDoWithACopy;
+use Modules\Kernel\Api\WhatToDoWithADownload;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -116,6 +117,18 @@ final readonly class WhatTheWireWouldAnswer
     private const string A_LISTING_OF_A_COPY = 'RestoreEnvelope';
 
     /**
+     * What the work of stopping seeding redeems into.
+     *
+     * The one action whose work a screen draws on its first frame: what
+     * stopping seeding one download would cost arrives as work, and redeemed
+     * into a repair it would draw that screen as a stack that did not answer.
+     * So the stand-in names that work after its action, and redeems work by
+     * that name into the `stop-seeding` envelope, which carries the offer and
+     * what became of it.
+     */
+    private const string WHAT_LETTING_GO_BECOMES = 'StopSeedingEnvelope';
+
+    /**
      * What a door answers a password with.
      *
      * The third endpoint the contract does not write down, and the one that is
@@ -188,13 +201,15 @@ final readonly class WhatTheWireWouldAnswer
         $status = $machine->answersWith();
 
         return new MockClient([
-            '*' => static fn(PendingRequest $asked): MockResponse => self::answersAtOnce($asked)
-                ? new MockResponse(self::oneEnvelope(self::A_LISTING_OF_A_COPY), $status)
-                : self::to(
+            '*' => static fn(PendingRequest $asked): MockResponse => match (true) {
+                self::answersAtOnce($asked) => new MockResponse(self::oneEnvelope(self::A_LISTING_OF_A_COPY), $status),
+                self::isLettingGo($asked) => new MockResponse(self::workNamedFor(self::lettingGo()), $status),
+                default => self::to(
                     $asked->getRequest()->resolveEndpoint(),
                     $status,
                     ...self::theValuesIn($asked->query()->all()),
                 ),
+            },
         ]);
     }
 
@@ -239,6 +254,35 @@ final readonly class WhatTheWireWouldAnswer
             && (!is_array($body) || !array_key_exists(UpdateField::Confirm->value, $body));
     }
 
+    /** Whether this request asks what stopping seeding would cost, or says yes to it. */
+    private static function isLettingGo(PendingRequest $asked): bool
+    {
+        return $asked->getRequest()->resolveEndpoint() === Api::action(WhatToDoWithADownload::StopSeeding->asked());
+    }
+
+    /** lemonfiber's word for stopping seeding, which names the work the stand-in starts for it. */
+    private static function lettingGo(): string
+    {
+        return WhatToDoWithADownload::StopSeeding->asked();
+    }
+
+    /**
+     * A name for work, named after the action that started it.
+     *
+     * The `job` envelope's own declaration, with the action and the work both
+     * given the action's name, so the path the work is redeemed at says which
+     * envelope it redeems into.
+     *
+     * @return array<string, mixed>
+     */
+    private static function workNamedFor(string $action): array
+    {
+        $envelope = self::oneEnvelope(self::A_NAME_FOR_WORK);
+        $envelope['data'] = ['action' => $action, 'job' => $action];
+
+        return $envelope;
+    }
+
     /**
      * The text values a request's query carries, which is what picks between envelopes one endpoint answers with.
      *
@@ -269,15 +313,17 @@ final readonly class WhatTheWireWouldAnswer
      */
     private static function whatThatPathSends(string $endpoint, string ...$asked): array|string
     {
-        // The five paths whose body is not one envelope built from the
-        // contract's declaration, and then everything else. `match` rather than
-        // four early returns, because what this is doing is naming a path
-        // rather than deciding anything (`H8`, `C5`).
+        // The four paths whose body is not one envelope built from the
+        // contract's declaration, the two answers work redeems into, and then
+        // everything else. `match` rather than early returns, because what
+        // this is doing is naming a path rather than deciding anything (`H8`,
+        // `C5`).
         return match (true) {
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
             $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysOneThing(),
+            $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
             default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint, ...$asked)),
         };

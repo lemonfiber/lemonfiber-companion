@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
@@ -97,6 +98,17 @@ final readonly class WhatItKeepsOfItself
     public function room(): string
     {
         return AStacksScreen::Room->forTheStack($this->stack);
+    }
+
+    /**
+     * Stopping seeding one of this machine's completed downloads, by the name the account gave it.
+     *
+     * Text on the way in, because a template holds the names as text, and an
+     * {@see ADownloadHeld} on the way out, which refuses a blank.
+     */
+    public function lettingGo(string $named): string
+    {
+        return AStacksScreen::LetGo->forTheStacksDownload($this->stack, ADownloadHeld::named($named));
     }
 
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */

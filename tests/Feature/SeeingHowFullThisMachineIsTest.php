@@ -231,10 +231,19 @@ it('N12-R3 — draws what removing a download costs inside that download\'s entr
         ->and(is_int($film) && is_int($next) && is_int($cost) && $film < $cost && $cost < $next)->toBeTrue();
 });
 
-it('N12-R4, N12-R9 — offers asking again and nothing else: nothing is selected or proposed', function (): void {
+it('offers stopping seeding on every download alike and asking again, and nothing else: nothing is selected or proposed', function (): void {
     $offers = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft(halted: true))))->offers();
 
-    expect($offers)->toBe([__('health.ask_again')]);
+    expect($offers)->toBe([...array_fill(0, 4, __('stacks.room.stop_seeding')), __('health.ask_again')]);
+});
+
+it('opens stopping seeding on the download whose row it is on, by its own screen', function (): void {
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()));
+    $goes = $screen->goes()->ofItself()->lettingGo('Some.Film.2024');
+
+    expect($goes)->toBe(sprintf('/stacks/%s/room/Some.Film.2024', theStackWhoseRoomIsRead()->id()->stored()))
+        ->and(NativeRouter::resolve($goes))->not->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.room.at_the_machine'));
 });
 
 it('says so where no volume is watched, nothing takes room and no download is on the machine', function (): void {
@@ -334,7 +343,7 @@ it('draws a word the glossary does not carry as it came, and offers nothing for 
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), explaining: AStackThatExplainsItsWords::met(Obstacle::StackDidNotAnswer));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.room.ratio', ['ratio' => '1.25']))
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('health.ask_again')]);
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([...array_fill(0, 4, __('stacks.room.stop_seeding')), __('health.ask_again')]);
 });
 
 it('lets the session go where the stack refuses it the glossary', function (): void {

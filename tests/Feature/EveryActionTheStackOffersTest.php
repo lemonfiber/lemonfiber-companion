@@ -37,7 +37,7 @@ const OFFERED = [
     'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Bundle', 'Clients', 'Config', 'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms',
     'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
     'Music', 'Outbound', 'Preview', 'Provenance', 'Quality', 'Repair', 'Restore', 'SelfUpdate', 'Space', 'Status',
-    'Stored', 'Stuck', 'Trace', 'Update', 'Upgrade',
+    'StopSeeding', 'Stored', 'Stuck', 'Trace', 'Update', 'Upgrade',
     'Walkthrough',
 ];
 
@@ -74,7 +74,7 @@ const ELSEWHERE = [
 const NOT_YET = [
     'Admission', 'Adoption', 'Beside', 'Catalogue', 'Import',
     'Plugins', 'Pull', 'Removal', 'Replacement', 'Reset',
-    'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall', 'Version',
+    'Seed', 'Start', 'Step', 'Substitution', 'Undo', 'Uninstall', 'Version',
     'Watch', 'Wiring', 'Word',
 ];
 

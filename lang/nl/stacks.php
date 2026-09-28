@@ -437,7 +437,27 @@ return [
         'ratio' => 'Ratio :ratio',
         'no_ratio' => 'Geen ratio: er is niets gedownload om door te delen',
         'no_downloads' => 'Er staan geen afgeronde downloads op deze machine',
-        'at_the_machine' => 'Verwijderen gebeurt op de machine, niet vanaf hier',
+        'stop_seeding' => 'Stop met seeden',
+        'stop_seeding_that' => 'Stop met seeden van :download',
+        'at_the_machine' => 'Stoppen met seeden kan hier per download. Al het andere verwijderen gebeurt op de machine, niet vanaf hier',
+    ],
+
+    'let_go' => [
+        'names_no_download' => 'Dit noemt geen download om mee te stoppen met seeden',
+        'see_the_room' => 'Bekijk hoe vol de machine is',
+        'working_it_out' => 'De stack wordt gevraagd wat stoppen met seeden van :download zou kosten',
+        'offer_ended' => 'De stack weet niet meer wat stoppen met seeden van :download zou kosten. Vraag het opnieuw.',
+        'what_it_costs' => 'Wat stoppen met seeden hiervan kost',
+        'its_own_act' => 'Stoppen met seeden is een handeling op zichzelf: de downloadclient wordt gevraagd deze ene download los te laten en niet meer te delen. Verder wordt er niets van de machine verwijderd.',
+        'stop_it' => 'Stop met seeden',
+        'letting_go' => 'Bezig met stoppen met seeden van :download',
+        'no_outcome' => 'De stack weet niet meer wat er geworden is van stoppen met seeden van :download',
+        'no_outcome_action' => 'Misschien heeft de client hem losgelaten. Hoe vol de machine is laat zien of hij er nog staat.',
+        'a_rehearsal' => 'Een generale repetitie: er is niets losgelaten',
+        'rehearsed' => 'De stack houdt een generale repetitie, dus de client houdt :download nog vast en seedt hem nog.',
+        'nothing_freed' => 'Er is geen ruimte vrijgekomen. Hij neemt nog :figure :unit in.',
+        'let_go' => 'De client heeft :download losgelaten',
+        'occupied' => 'Hij nam :figure :unit in, volgens de client.',
     ],
 
     'keeps' => [

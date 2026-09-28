@@ -14,6 +14,7 @@ use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
@@ -241,6 +242,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // How full it is. Its own screen, because a warning that the disk
             // is filling arrives on its own.
             Router::native(AStacksScreen::Room->value, HowFullThisMachineIs::class);
+
+            // Stopping seeding one download. A screen of its own, reached from
+            // that download's row above, because it states what stopping would
+            // cost before anything is agreed to. A download's name is whatever
+            // the torrent was called, so it is encoded and takes the rest of
+            // the path.
+            Router::native(AStacksScreen::LetGo->value, LettingADownloadGo::class)->where('service', '.+');
 
             // Which version of lemonfiber runs, apart from the services' updates.
             Router::native(AStacksScreen::Itself->value, WhatIsRunningHere::class);

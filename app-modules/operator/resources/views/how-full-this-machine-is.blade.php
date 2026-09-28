@@ -65,7 +65,9 @@
     @endforelse
 
     {{-- Each completed download with where it stands and, on the same row,
-         what removing it would cost. Nothing here is selected. --}}
+         what removing it would cost. Nothing here is selected and nothing is
+         proposed: stopping seeding is offered on each row alike, and opens on
+         what it would cost rather than doing it. --}}
     <x-operator::emphasis>{{ __('stacks.room.downloads') }}</x-operator::emphasis>
     @forelse ($this->answer()->downloads as $download)
         <x-operator::entry>
@@ -81,6 +83,12 @@
             @if ($download->consequence !== '')
                 <x-operator::note>{{ $download->consequence }}</x-operator::note>
             @endif
+
+            <x-operator::action
+                label="{{ __('stacks.room.stop_seeding') }}"
+                answers-to="{{ __('stacks.room.stop_seeding_that', ['download' => $download->name]) }}"
+                :goes="$this->goes()->ofItself()->lettingGo($download->name)"
+            />
         </x-operator::entry>
     @empty
         <x-operator::note>{{ __('stacks.room.no_downloads') }}</x-operator::note>
