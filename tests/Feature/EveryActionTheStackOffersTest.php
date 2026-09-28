@@ -72,7 +72,8 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Catalogue', 'Plugins', 'Pull', 'Removal', 'Reset', 'Start', 'Step', 'StopSeeding', 'Substitution',
+    'Admission', 'Catalogue', 'Certificate', 'Pairing', 'Plugins', 'Pull', 'Removal', 'Reset', 'Start', 'Step',
+    'StopSeeding', 'Substitution',
     'Undo', 'Uninstall', 'Version',
     'Watch', 'Wiring', 'Word',
 ];
