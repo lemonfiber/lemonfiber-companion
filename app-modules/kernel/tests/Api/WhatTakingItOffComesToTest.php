@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
-use function array_keys;
 use function count;
 use function expect;
 use function it;
@@ -168,13 +167,12 @@ it('keeps what it could not read in order, even handed it by name', function ():
     // is read by position, so the reindexing is load-bearing rather than tidy.
     $read = HowMuchWasRead::notEverything(first: 'The downloads folder', then: 'The music library');
 
-    expect(array_keys(iterator_to_array($read)))->toBe([0, 1])
-        ->and(iterator_to_array($read))->toBe(['The downloads folder', 'The music library']);
+    // Kept keys and all: an identical list is one whose keys are 0 and 1.
+    expect(iterator_to_array($read, preserve_keys: true))->toBe(['The downloads folder', 'The music library']);
 });
 
 it('keeps the names a removal reports in order, even handed them by name', function (): void {
     $named = NamedOnTheManifest::under('gone', first: 'jellyfin', then: 'sonarr');
 
-    expect(array_keys(iterator_to_array($named)))->toBe([0, 1])
-        ->and(iterator_to_array($named))->toBe(['jellyfin', 'sonarr']);
+    expect(iterator_to_array($named, preserve_keys: true))->toBe(['jellyfin', 'sonarr']);
 });
