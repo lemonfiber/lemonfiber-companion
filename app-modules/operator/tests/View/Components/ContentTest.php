@@ -42,3 +42,17 @@ it('draws a component in its slot inside the column too', function (): void {
         . '[scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[column{"width":"fill","gap":4}[Inside]]], After]',
     );
 });
+
+it('opens at its top', function (): void {
+    expect(data_get(WhatMarkupDraws::drawn(
+        '<x-operator::content><native:text>Inside</native:text></x-operator::content>',
+    ), 'props.scroll_anchor'))->toBeNull();
+});
+
+it('opens at its end when asked to, around the same column', function (): void {
+    $markup = '<x-operator::content from-the-end><native:text>Inside</native:text></x-operator::content>';
+
+    expect(data_get(WhatMarkupDraws::drawn($markup), 'props.scroll_anchor'))->toBe('bottom')
+        ->and(WhatMarkupDraws::outline($markup))
+        ->toBe('scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]]');
+});

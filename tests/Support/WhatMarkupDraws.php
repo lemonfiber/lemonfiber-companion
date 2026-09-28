@@ -36,6 +36,17 @@ final readonly class WhatMarkupDraws
 {
     public static function outline(string $markup): string
     {
+        return self::outlineOf(self::drawn($markup));
+    }
+
+    /**
+     * The tree the device would draw for a piece of markup, as the renderer
+     * hands it over: types, layouts and props, for what an outline leaves out.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function drawn(string $markup): array
+    {
         $was = NativeTagPrecompiler::setActive(active: true);
 
         try {
@@ -50,7 +61,7 @@ final readonly class WhatMarkupDraws
         $emitted = [];
         $hashes = [];
 
-        return self::outlineOf($tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes));
+        return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
     }
 
     /** One node of the drawn tree, and everything under it, as one line. */
