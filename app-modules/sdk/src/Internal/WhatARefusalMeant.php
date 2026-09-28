@@ -64,6 +64,31 @@ final readonly class WhatARefusalMeant
      */
     private const int ACCOUNT_MAY_NOT_ASK = 403;
 
+    /** The first status that is a refusal at all. */
+    private const int A_REFUSAL = 400;
+
+    /** The first status a stack answers a request it could not carry out with, rather than one it refused. */
+    private const int THE_STACK_ITSELF_FAILED = 500;
+
+    /**
+     * The stack's own sentence for turning a request down, or nothing where the refusal is an obstacle.
+     *
+     * A refused session and an account that may not ask are obstacles with
+     * remedies of their own. Anything else turned down in the asking or the
+     * naming, with a sentence, is the stack's refusal, and that sentence is the
+     * answer. A fault on the stack's side has no sentence to hand on.
+     */
+    public static function inItsOwnWords(RequestFailed $why): ?string
+    {
+        if (self::obstacle($why) !== Obstacle::StackDidNotAnswer) {
+            return null;
+        }
+
+        return $why->status() >= self::A_REFUSAL && $why->status() < self::THE_STACK_ITSELF_FAILED
+            ? $why->said()
+            : null;
+    }
+
     public static function obstacle(CertificateWasRefused|RequestFailed $why): Obstacle
     {
         if ($why instanceof CertificateWasRefused) {

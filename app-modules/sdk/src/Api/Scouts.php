@@ -53,12 +53,6 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Scouts implements MovingIn
 {
-    /** The first status a stack answers a request it could not carry out with, rather than one it refused. */
-    private const int THE_STACK_ITSELF_FAILED = 500;
-
-    /** The first status that is a refusal at all. */
-    private const int A_REFUSAL = 400;
-
     public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function surveyedOn(Stack $stack, Session $session): WhatWasFoundAlreadyHere
@@ -156,29 +150,16 @@ final readonly class Scouts implements MovingIn
     /**
      * What a request the stack turned down means: its own sentence, or an obstacle.
      *
-     * {@see Ushers::refusal()}'s reading: a machine that is not the one paired,
-     * a refused session and an account that may not ask are obstacles with
-     * remedies of their own. Anything else turned down in the asking, with a
-     * sentence, is the stack's refusal, and that sentence is the answer.
+     * Which of the two it is, is {@see WhatARefusalMeant::inItsOwnWords()}'s
+     * to say, once for every adapter that hands a refusal on.
      */
     private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheMove
     {
-        $obstacle = WhatARefusalMeant::obstacle($why);
+        // A machine that is not the one paired never answered in words.
+        $said = $why instanceof RequestFailed ? WhatARefusalMeant::inItsOwnWords($why) : null;
 
-        if ($why instanceof CertificateWasRefused) {
-            return WhatBecameOfTheMove::met($obstacle);
-        }
-
-        $said = $why->said();
-
-        // The SDK trims what the stack said and hands a blank back as
-        // nothing, so a sentence here always has something in it.
-        if ($obstacle !== Obstacle::StackDidNotAnswer || $said === null) {
-            return WhatBecameOfTheMove::met($obstacle);
-        }
-
-        return $why->status() >= self::A_REFUSAL && $why->status() < self::THE_STACK_ITSELF_FAILED
-            ? WhatBecameOfTheMove::refused($said)
-            : WhatBecameOfTheMove::met($obstacle);
+        return $said === null
+            ? WhatBecameOfTheMove::met(WhatARefusalMeant::obstacle($why))
+            : WhatBecameOfTheMove::refused($said);
     }
 }

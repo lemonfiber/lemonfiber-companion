@@ -117,6 +117,12 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::Quality->forTheStack($this->stack);
     }
 
+    /** Wiring the services to each other, and how each connection turned out. */
+    public function wiring(): string
+    {
+        return AStacksScreen::Wiring->forTheStack($this->stack);
+    }
+
     /** What lemonfiber's words mean. */
     public function words(): string
     {

@@ -116,6 +116,7 @@ use Modules\Sdk\Api\TheirOwn;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
+use Modules\Sdk\Api\Wirers;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -342,6 +343,8 @@ function everyAdapterCallThatReads(): array
             => new Upkeepers($clients)->take($stack, $session, anUpdateToSpoilTheAnswerTo()),
         'Upkeepers::whatBecameOf' => static fn(): object
             => new Upkeepers($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Wirers::wire' => static fn(): object => new Wirers($clients, $entropy)->wire($stack, $session),
+        'Wirers::whatBecameOf' => static fn(): object => new Wirers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Ushers::whoIsIn' => static fn(): object => new Ushers($clients, $entropy)->whoIsIn($stack, $session),
         'Ushers::wouldInvite' => static fn(): object
             => new Ushers($clients, $entropy)->wouldInvite($stack, $session, AnInvitationAskedFor::for('anna', TheLibraries::of())),
@@ -394,6 +397,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Graders::choose' => sprintf('%sMusicEnvelope', AN_ENVELOPE_BY_NAME),
         str_starts_with($which, 'Upgraders::') => sprintf('%sUpgradeEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Scouts::whatBecameOf' => sprintf('%sAdoptionEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Wirers::whatBecameOf' => sprintf('%sSeedEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Copiers::whatBecameOf' => sprintf('%sBackupEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Bundlers::whatBecameOf' => sprintf('%sBundleEnvelope', AN_ENVELOPE_BY_NAME),

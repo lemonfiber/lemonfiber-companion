@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
+use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToWalk;
@@ -214,6 +215,10 @@ const VERBS_THE_APP_ASKS_FOR = [
     'migrate-import' => 'carries the old setup\'s own records across, having first said what would and would not come',
     'migrate-beside' => 'stands lemonfiber up beside the setup already here, having first said where each service would listen',
     'migrate-replace' => 'stops the setup already here and stands in its place, having first said what it would stop',
+
+    // Wires the services to each other. It changes nothing already right and
+    // keeps what the operator changed, and it overwrites nothing of theirs.
+    'seed' => 'wires the services to each other, keeping what the operator changed and changing nothing already right',
 ];
 
 /**
@@ -482,6 +487,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
+        ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),

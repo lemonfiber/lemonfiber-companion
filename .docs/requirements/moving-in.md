@@ -2,10 +2,12 @@
 
 What is already on a stack's machine before lemonfiber moves in beside it or
 takes it over, what may be done about it, and moving in. The code is the `N7`
-half of `app-modules/kernel` and `app-modules/sdk`, drawn by
-`WhatIsAlreadyOnThisMachine`: one screen, reading the survey once when its
-frame is built, and asking about a mode, and agreeing to it, from the modes
-list.
+half of `app-modules/kernel` and `app-modules/sdk`, drawn by two screens.
+`WhatIsAlreadyOnThisMachine` reads the survey once when its frame is built, and
+asks about a mode, and agrees to it, from the modes list.
+`HowTheServicesAreWired` opens on the services the stack runs, which are what a
+run wires to each other, and starts a run and follows it to how each
+connection turned out.
 
 Each row says what the requirement asks and what in this repository answers it.
 The spec is canonical; where this page and a requirement disagree, the
@@ -24,6 +26,12 @@ requirement is right and this page is a defect.
 | `N7-R3` | A refusal is shown with the stack's reason, and never as a generic failure or a retry prompt | A move turned away arrives as `AMove::blocked()`, which cannot be built without the stack's reason; a request the stack turned down arrives as `WhatBecameOfTheMove::refused()` with its words, which `Scouts` reads off the answer. The screen draws either with the reason and offers leaving it, and nothing to try again |
 | `N7-R4` | Where the stack would take something over destructively and wants a copy first, that is said before the decision is agreed to | `WhatMovingInCameTo` reads each service adopting would open with a newer version into `AServiceAdopted`, with both versions and whether it wants a copy first, and the paths copied first into `TheAdoption::backUp()`. `HowAMoveReads` draws them under their own heading above the yes, and only on a pending answer; `AMoveAgreed` can be built only from one |
 | `N7-R9` | An import that carried nothing is told apart from one that has not run | `HowAMoveReads` gives the three quiet answers of an import three sentences: a pending one has not run and draws what it would carry, an unchanged one ran and found nothing to carry, and an applied one that carried nothing says it ran and carried nothing, with what was left behind leading |
+| `N7-R15` | A wiring run is offered, each connection is shown in the state the stack gave it, *skipped* is never drawn as failed, and a connection kept because the operator changed it is never drawn as wired or as drift to repair | `HowThisStackIs` offers the run and `HowTheServicesAreWired` starts it. `WhatTheWiringCameTo` reads each of the `seed` envelope's thirteen states into `WhereAConnectionStands` and refuses a word outside them. `HowTheWiringReads` gives each state a sentence of its own: *skipped* says a later run finishes it, and *drifted* says it was kept as the operator changed it |
+| `N7-R16` | A connection kept because the operator changed it is said to be kept; where both values moved, what the service holds is shown beside what lemonfiber would write; nothing offers to overwrite the operator's value | `HowAConnectionEnded::conflicted()` cannot be built without lemonfiber's value, and carries the service's where the stack sent it. The screen draws both, each named for whose it is. The only thing the screen offers is another run, which changes nothing already right and keeps what the operator changed |
+| `N7-R17` | A write a service rejected is shown in the service's own words, never paraphrased | `HowAConnectionEnded::failed()` cannot be built without the stack's `detail`, which `AConnectionAsShown` carries as it came and the screen draws beneath the state's sentence |
+| `N7-R7` | A wiring the stack could not assess is its own answer, never drawn as sound | `WhatTheWiringCameTo` reads the run's `assessment` into `HowDriftWasJudged`. The screen says whether drift could be judged before any connection, and an unassessable run says the record could not be read rather than that nothing drifted |
+| `N7-R8` | Where a wiring carries a severity, what would break and what would put it right are both shown | `WhatItWouldBreak::warning()` cannot be built without both, and `WhatTheWiringCameTo` refuses a warning that leaves either out. The screen draws the two together under the connection |
+| `N7-R10` | A rehearsed wiring run is labelled as one, on the same terms as `N6-R1` | `TheWiring::rehearsed()` carries a run that only said what it would do. The screen labels it before anything else it draws about the run, and a run that wrote carries no such label |
 
 A survey that could not be read at all is an obstacle, drawn as one, and never
 an empty machine.
@@ -34,6 +42,12 @@ asks the stack what it would come to and does nothing. The yes is
 with work to follow, and `MovingIn::whatBecameOf()` follows it to where the
 move stands. A mode the survey offers under a word none of the four acts
 carries offers nothing to press.
+
+A wiring run is `WiringTheServices::wire()`, sent with nothing but an
+idempotency key. The stack answers with work to follow, and
+`WiringTheServices::whatBecameOf()` follows it to `TheWiring`: every connection
+the run attempted, in the stack's order, with what the run could not wire and
+why.
 
 ## What the contract does not carry
 
@@ -48,11 +62,12 @@ shape.
 stack offers carries it out, so there is no act to offer: the remedy is drawn
 as words and nothing more.
 
+`N7-R7` is written about a wiring. The `seed` envelope carries `assessment`
+once for the whole run, not per connection, so whether drift could be judged
+is said once, above every connection it is about.
+
 ## Asked for, and not drawn yet
 
 The survey reads what adopting each service would come to and what no mode
 carries, and draws neither: asking about a mode draws what that mode would
 come to.
-
-`N7-R7` to `N7-R10` and `N7-R15` to `N7-R17` are about wiring the services
-together, which is the `seed` action, and it is not offered here.
