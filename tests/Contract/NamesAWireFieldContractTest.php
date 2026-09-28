@@ -45,6 +45,7 @@ use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Api\Fields\TraceField;
 use Modules\Sdk\Api\Fields\UndoField;
+use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\UpgradeField;
 use Modules\Sdk\Api\Fields\WalkthroughField;
@@ -110,6 +111,7 @@ function everyFieldNamedOnTheWire(): array
         ...StuckField::cases(),
         ...TraceField::cases(),
         ...UndoField::cases(),
+        ...UninstallField::cases(),
         ...UpdateField::cases(),
         ...UpgradeField::cases(),
         ...WalkthroughField::cases(),

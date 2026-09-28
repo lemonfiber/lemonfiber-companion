@@ -23,7 +23,4 @@ enum StopSeedingField: string implements NamesAWireField
 
     /** What goes with it, in the stack's words. */
     case Goes = 'goes';
-
-    /** What became of an answered offer, absent where the offer is all there is. */
-    case Gone = 'gone';
 }

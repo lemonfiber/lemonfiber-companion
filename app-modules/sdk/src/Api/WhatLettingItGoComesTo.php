@@ -63,8 +63,8 @@ final readonly class WhatLettingItGoComesTo
      */
     public static function goneIn(Envelope $envelope): ADownloadLetGo
     {
-        $where = StopSeedingField::Gone->value;
-        $gone = self::table(self::data($envelope), $where, StopSeedingField::Gone);
+        $where = WireField::Gone->value;
+        $gone = self::table(self::data($envelope), $where, WireField::Gone);
 
         return ADownloadLetGo::reported(
             self::text($gone, self::path($where, WireField::Name), WireField::Name),

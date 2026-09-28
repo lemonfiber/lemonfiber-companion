@@ -164,6 +164,20 @@ enum WireField: string implements NamesAWireField
     case Stopped = 'stopped';
 
     /**
+     * What is gone: what became of an answered offer to stop seeding, absent
+     * where the offer is all there is, and what taking lemonfiber off removed,
+     * by the name its reading gave it.
+     */
+    case Gone = 'gone';
+
+    /**
+     * What was left: what putting a run back did not put back, or could not
+     * promise, each with why, and what taking lemonfiber off could not take,
+     * with how to finish it by hand.
+     */
+    case Left = 'left';
+
+    /**
      * One of lemonfiber's words, on each word of the `glossary` and on the
      * one `word` asked for, which is also what the word is asked for by.
      */
@@ -608,4 +622,16 @@ enum WireField: string implements NamesAWireField
 
     /** Whether the operator said yes, so something was changed rather than only described. */
     case Confirmed = 'confirmed';
+
+    /** What something would do or did, listed: a copy's own account of itself, or what a removal reaches. */
+    case Manifest = 'manifest';
+
+    /** How sure a reading is: of the item a trace followed, or of how much of a removal was read. */
+    case Confidence = 'confidence';
+
+    /**
+     * What is kept: each thing a stack keeps on its machine, or why one line
+     * of a removal stays where it is.
+     */
+    case Kept = 'kept';
 }

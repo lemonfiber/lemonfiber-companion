@@ -20,9 +20,6 @@ enum UndoField: string implements NamesAWireField
     /** What putting a run back reversed, or would, in the order it did. */
     case Reversed = 'reversed';
 
-    /** What it did not put back, or could not promise, each with why. */
-    case Left = 'left';
-
     /** What going back means beyond the changes themselves; absent where nothing does. */
     case Noted = 'noted';
 }

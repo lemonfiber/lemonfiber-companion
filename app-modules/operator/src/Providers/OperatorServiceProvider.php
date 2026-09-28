@@ -23,6 +23,7 @@ use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
+use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
 use Modules\Operator\Internal\Screens\TakingSomebodyOut;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
@@ -301,6 +302,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // Wiring the services to each other. Its own screen, because a run
             // is an act with a report of its own, one connection at a time.
             Router::native(AStacksScreen::Wiring->value, HowTheServicesAreWired::class);
+
+            // Taking lemonfiber off the machine. Its own screen, because each
+            // removal is read and agreed to on its own, and the last of them
+            // takes what nothing can fetch again.
+            Router::native(AStacksScreen::Uninstall->value, TakingItOffThisMachine::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);

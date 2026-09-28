@@ -60,7 +60,7 @@ final readonly class TheRunPutBack
         return ARunPutBack::reported(
             self::rehearsed($data),
             WhatWentBack::these(...self::reversed($data)),
-            ChangesAndWhy::these(...self::said($data, UndoField::Left)),
+            ChangesAndWhy::these(...self::said($data, WireField::Left)),
             ChangesAndWhy::these(...self::noted($data)),
         );
     }
@@ -154,7 +154,7 @@ final readonly class TheRunPutBack
      * @param  array<mixed>        $data
      * @return list<AChangeAndWhy>
      */
-    private static function said(array $data, UndoField $list): array
+    private static function said(array $data, NamesAWireField $list): array
     {
         $found = [];
         $position = 0;
@@ -182,7 +182,7 @@ final readonly class TheRunPutBack
      * @param  array<mixed> $data
      * @return array<mixed>
      */
-    private static function rows(array $data, UndoField $list): array
+    private static function rows(array $data, NamesAWireField $list): array
     {
         if (! array_key_exists($list->value, $data) || ! is_array($data[$list->value])) {
             throw UndoIsUnreadable::missing($list);
@@ -196,7 +196,7 @@ final readonly class TheRunPutBack
      *
      * @param array<mixed> $row
      */
-    private static function text(array $row, UndoField $list, NamesAWireField $field, int $position): string
+    private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
         if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
             throw UndoIsUnreadable::entry($list, $field, $position);

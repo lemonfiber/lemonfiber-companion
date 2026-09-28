@@ -75,6 +75,7 @@ use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
+use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\UpgradingTheLibrary;
@@ -94,6 +95,7 @@ use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
@@ -436,6 +438,10 @@ final class CompositionRoot extends ServiceProvider
         // is already here, which is its own act.
         $this->app->bind(ChoosingQuality::class, Graders::class);
         $this->app->bind(UpgradingTheLibrary::class, Upgraders::class);
+
+        // Taking lemonfiber off the machine: a reading, and the removal agreed
+        // against it, bound beside the rest for the same reason.
+        $this->app->bind(TakingLemonfiberOff::class, Dismantlers::class);
 
         $this->app->bind(Explaining::class, Explainers::class);
         $this->app->bind(Rehearsing::class, Rehearsers::class);

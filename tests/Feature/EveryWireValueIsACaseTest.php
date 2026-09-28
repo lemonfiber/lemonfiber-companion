@@ -50,6 +50,7 @@ use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
@@ -60,9 +61,11 @@ use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereTheUninstallStands;
 use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
@@ -865,6 +868,27 @@ it('everywhere taking somebody out can have reached has a case', function (): vo
     expect(valuesOf(HowFarTheRemovalReached::cases()))->toBe($words);
 });
 
+it('every removal taking lemonfiber off can be, and every sort of thing it reaches, has a case', function (): void {
+    $tiers = unionIn(theGeneratedEnvelope('UninstallEnvelope'), 'tier');
+    $sorts = unionIn(theGeneratedEnvelope('UninstallEnvelope'), 'sort');
+
+    expect($tiers)->not->toBe([], 'no tier union was found in the generated envelope')
+        ->and($sorts)->not->toBe([], 'no sort union was found in the generated envelope');
+    expect(valuesOf(WhichRemoval::cases()))->toBe($tiers)
+        ->and(valuesOf(WhatSortItIs::cases()))->toBe($sorts);
+});
+
+it('everywhere taking lemonfiber off can have got has a case', function (): void {
+    // Tags on objects of their own rather than a union joined by `|`, because
+    // the four carry different fields, so they are gathered by tag.
+    preg_match_all("/\\bstate: '([a-z_-]+)'/", theGeneratedEnvelope('UninstallEnvelope'), $found);
+    $states = array_values(array_unique($found[1]));
+    sort($states);
+
+    expect($states)->not->toBe([], 'no state tag was found in the generated envelope');
+    expect(valuesOf(WhereTheUninstallStands::cases()))->toBe($states);
+});
+
 it('everything a quality choice can become has a case, on both envelopes that carry it', function (): void {
     // The one where a missing case would be worst: a disposition drawn as the
     // nearest one could call a held choice recorded, and nobody would be asked
@@ -1023,6 +1047,8 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhatBecomesOfUnrated::class => 'unrated',
     HowFarTheRemovalReached::class => 'revoked',
     WhatBecameOfTheChoice::class => 'disposition',
+    WhichRemoval::class => 'tier',
+    WhatSortItIs::class => 'sort',
     WhereTheAskingStands::class => 'state',
     WalkthroughStep::class => 'step',
     WhereTheWalkthroughIs::class => 'state',
