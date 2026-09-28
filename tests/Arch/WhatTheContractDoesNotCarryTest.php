@@ -159,6 +159,55 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'the answer they arrived on, and says nothing of a decline, which the contract does not carry.',
     ],
     [
+        'requirement' => 'N13-R7',
+        'asks' => 'to carry, on taking somebody out of the household, an agreement naming the reading it was given for',
+        // Named, because the reading an agreement would name is this payload
+        // and nowhere else. `agreement` is the word the uninstall's reading
+        // already names itself by, and a person's removal gaining one would
+        // most plausibly use it too.
+        'envelope' => 'RemovalEnvelope',
+        'field' => 'agreement',
+        'shape' => null,
+        'raised' => 'The `remove` action takes a name and a bare `confirm`, and the `removal` envelope names '
+            . 'nothing a yes could quote. So nothing on the wire can say which reading of what taking '
+            . 'somebody out costs was agreed to, or tell one agreement from another: a yes sent after the '
+            . 'cost moved is carried out against whatever it costs by then. The screen asks every time, '
+            . 'holds the reading only while it is in front of the operator, and sends the yes only beneath '
+            . 'it, which is as much of `N13-R7` as a bare `confirm` allows. What closes this row is the '
+            . 'reading naming itself and the action taking that name back, as an uninstall\'s does.',
+    ],
+    [
+        'requirement' => 'N13-R10',
+        'asks' => 'to label a rehearsed removal of somebody from the household as a rehearsal',
+        // Named, and watched for the word the invitation already marks a
+        // rehearsal with: a person's removal able to be rehearsed would have to
+        // say so on this payload, and `confirmed: false` cannot.
+        'envelope' => 'RemovalEnvelope',
+        'field' => 'rehearsed',
+        'shape' => null,
+        'raised' => 'No action argument on the HTTP route asks for a rehearsal, so none can arrive, and the '
+            . '`removal` envelope carries no marker of one: `confirmed: false` is a reading nobody agreed '
+            . 'to and a rehearsal alike. The screen labels that reading as what taking them out would cost, '
+            . 'with nobody taken out, and never as a rehearsal, because nothing on the wire says one ran. '
+            . 'What closes this row is a rehearsal the route can be asked for and the payload saying it was one.',
+    ],
+    [
+        'requirement' => 'N13-R19',
+        'asks' => 'to state what taking somebody out of the household does to their watch history',
+        // Named, and watched as a whole payload: the effect could arrive as a
+        // sentence, a flag or a count, under any name, and the payload saying
+        // anything it does not say now is what closes this.
+        'envelope' => 'RemovalEnvelope',
+        'field' => null,
+        'shape' => 'array{\'asks-through-the-request-service\': bool, confirmed: bool, findings: list<string>, name: string, requests: int, revoked: \'everywhere\'|\'media-server-only\'|\'nothing\'}',
+        'raised' => '`D6-R9` has the effect on watch history stated before a removal is confirmed. The `removal` '
+            . 'envelope carries what could not be done in `findings` and how many requests are destroyed '
+            . 'in `requests`, and nothing that says the watch history goes with the account. A sentence '
+            . 'written here would be this app asserting what the media server does with an account it '
+            . 'removes, which `N2-R14` refuses. The screen states the requests as the stack counts them and '
+            . 'every finding in its words, and says nothing about watch history.',
+    ],
+    [
         'requirement' => 'N7-R11',
         'asks' => 'to show where each service the survey found keeps its configuration and its library',
         // Named, and watched as a whole payload: the answer could arrive as a

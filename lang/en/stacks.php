@@ -408,6 +408,35 @@ return [
         'never_mind' => 'Leave it as it is',
     ],
 
+    // Taking one member out of the household: what it would cost, the yes,
+    // and how far it reached.
+    'removal' => [
+        'would_take_them_out' => 'Take :name out of the household',
+        'names_nobody' => 'This names nobody to take out of the household. Choose somebody from who is in',
+        'back_to_who_is_in' => 'Back to who is in',
+        'taking_out' => 'Taking :name out of the household',
+        'reading' => 'Asking this stack what taking :name out would cost',
+        'removing' => 'This stack is taking :name out of the household',
+        'not_yet' => 'Nobody has been taken out. This is what taking :name out would cost',
+        'revoked' => [
+            'everywhere' => ':name is out of the household: gone from the media server and from the request service',
+            'media-server-only' => ':name can no longer watch or ask, and the request service still holds an account for them. This is not finished: taking them out again removes it',
+            'nothing' => 'Nobody has been taken out',
+        ],
+        'requests_go' => '{0} They have no requests to lose|{1} :count request of theirs goes with them. It is destroyed, not handed to anybody|[2,*] :count requests of theirs go with them. They are destroyed, not handed to anybody',
+        'requests_went' => '{0} They had no requests to lose|{1} :count request of theirs went with them. It was destroyed, not handed to anybody|[2,*] :count requests of theirs went with them. They were destroyed, not handed to anybody',
+        'asks' => 'They ask for things through the request service, so their account there is taken too',
+        'does_not_ask' => 'They have no account on the request service, so there is nothing of theirs to take there',
+        'found' => 'What this stack found',
+        'found_nothing' => 'Nothing it could not do, and nothing else to tell you',
+        'take_them_out' => 'Take :name out of the household',
+        'read_again' => 'Ask what taking :name out would cost now',
+        'refused' => 'This stack would not take :name out of the household',
+        'no_outcome' => 'What taking :name out would cost could not be read: this stack has no outcome for it any more',
+        'no_outcome_after_yes' => 'Whether :name was taken out could not be read: this stack has no outcome for it any more. That is not the same as it not having happened',
+        'unread_after_yes' => 'Whether :name was taken out could not be read. That is not the same as it not having happened',
+    ],
+
     // What is already on the machine, before anything is moved in.
     'already_here' => [
         'road_in' => 'What is already on this machine',

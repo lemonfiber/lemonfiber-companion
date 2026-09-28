@@ -5,7 +5,9 @@ somebody choose a new password. The code is `AskingSomebodyIn`, the `Inviting`
 port and its adapter `Ushers`, the `Invitations` reader and
 `Households::whoIsIn()`, and the `codes` module, whose `QrCodes` draws an
 address as a code. The rows for what an invitation states
-before it is sent (`N9-R5`, `N9-R6`) are kept on [who gets in](who-gets-in.md).
+before it is sent (`N9-R5`, `N9-R6`) are kept on [who gets in](who-gets-in.md),
+and taking a member out, which each member here offers, on
+[taking somebody out](taking-somebody-out.md).
 
 Each row says what the requirement asks and what in this repository answers it.
 The spec is canonical; where this page and a requirement disagree, the

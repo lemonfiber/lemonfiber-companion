@@ -58,6 +58,7 @@ use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Rehearsing;
+use Modules\Kernel\Api\RemovingSomebody;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
@@ -105,6 +106,7 @@ use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
+use Modules\Sdk\Api\Removers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Scouts;
@@ -383,6 +385,10 @@ final class CompositionRoot extends ServiceProvider
         // that reaches nothing: it is handed the address and draws squares.
         $this->app->bind(Inviting::class, Ushers::class);
         $this->app->bind(Encoding::class, QrCodes::class);
+
+        // Taking somebody out of the household goes through the same door,
+        // said as what it would cost before it is agreed to.
+        $this->app->bind(RemovingSomebody::class, Removers::class);
 
         // What is already on the machine, before anything is moved in, read
         // beside the rest and bound for the same reason.

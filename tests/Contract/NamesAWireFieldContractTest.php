@@ -31,6 +31,7 @@ use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\QualityField;
+use Modules\Sdk\Api\Fields\RemovalField;
 use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Api\Fields\ReplacementField;
 use Modules\Sdk\Api\Fields\RestoreField;
@@ -91,6 +92,7 @@ function everyFieldNamedOnTheWire(): array
         ...PreviewField::cases(),
         ...ProvenanceField::cases(),
         ...QualityField::cases(),
+        ...RemovalField::cases(),
         ...RepairField::cases(),
         ...ReplacementField::cases(),
         ...RestoreField::cases(),
@@ -107,8 +109,10 @@ function everyFieldNamedOnTheWire(): array
 }
 
 it('names each field by a word the wire could carry', function (): void {
+    // A hyphen as well as an underscore: the `removal` envelope spells one of
+    // its fields `asks-through-the-request-service`, and the word is the wire's.
     foreach (everyFieldNamedOnTheWire() as $field) {
-        expect(preg_match('/^[a-z][a-z_]*$/', $field->value))->toBe(1, sprintf('%s::%s is `%s`', $field::class, $field->name, $field->value));
+        expect(preg_match('/^[a-z][a-z_-]*$/', $field->value))->toBe(1, sprintf('%s::%s is `%s`', $field::class, $field->name, $field->value));
     }
 });
 

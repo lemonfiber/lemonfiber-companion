@@ -351,6 +351,34 @@ return [
         'never_mind' => 'Laat het zoals het is',
     ],
 
+    // Iemand uit het huishouden halen: wat het kost, het ja, en hoe ver het kwam.
+    'removal' => [
+        'would_take_them_out' => ':name uit het huishouden halen',
+        'names_nobody' => 'Hier staat niemand die uit het huishouden gehaald kan worden. Kies iemand bij wie erin zit',
+        'back_to_who_is_in' => 'Terug naar wie erin zit',
+        'taking_out' => ':name uit het huishouden halen',
+        'reading' => 'Deze stack vragen wat het kost om :name eruit te halen',
+        'removing' => 'Deze stack haalt :name uit het huishouden',
+        'not_yet' => 'Er is nog niemand uitgehaald. Dit is wat het kost om :name eruit te halen',
+        'revoked' => [
+            'everywhere' => ':name zit niet meer in het huishouden: weg van de mediaserver en van de verzoekdienst',
+            'media-server-only' => ':name kan niet meer kijken of vragen, en de verzoekdienst heeft nog een account voor hen. Dit is niet klaar: nog een keer eruit halen haalt het weg',
+            'nothing' => 'Er is niemand uitgehaald',
+        ],
+        'requests_go' => '{0} Ze hebben geen verzoeken die verloren gaan|{1} :count verzoek van hen gaat mee. Het wordt vernietigd, niet aan iemand anders gegeven|[2,*] :count verzoeken van hen gaan mee. Ze worden vernietigd, niet aan iemand anders gegeven',
+        'requests_went' => '{0} Ze hadden geen verzoeken die verloren gingen|{1} :count verzoek van hen is meegegaan. Het is vernietigd, niet aan iemand anders gegeven|[2,*] :count verzoeken van hen zijn meegegaan. Ze zijn vernietigd, niet aan iemand anders gegeven',
+        'asks' => 'Ze vragen dingen aan via de verzoekdienst, dus hun account daar gaat ook weg',
+        'does_not_ask' => 'Ze hebben geen account bij de verzoekdienst, dus daar valt niets van hen weg te halen',
+        'found' => 'Wat deze stack vond',
+        'found_nothing' => 'Niets wat niet lukte, en verder niets te melden',
+        'take_them_out' => ':name uit het huishouden halen',
+        'read_again' => 'Vragen wat het nu kost om :name eruit te halen',
+        'refused' => 'Deze stack wilde :name niet uit het huishouden halen',
+        'no_outcome' => 'Wat het kost om :name eruit te halen kon niet worden gelezen: deze stack heeft er geen uitkomst meer voor',
+        'no_outcome_after_yes' => 'Of :name eruit is gehaald kon niet worden gelezen: deze stack heeft er geen uitkomst meer voor. Dat is niet hetzelfde als dat het niet is gebeurd',
+        'unread_after_yes' => 'Of :name eruit is gehaald kon niet worden gelezen. Dat is niet hetzelfde als dat het niet is gebeurd',
+    ],
+
     'already_here' => [
         'road_in' => 'Wat al op deze machine staat',
         'found' => 'Wat lemonfiber hier al zag draaien',

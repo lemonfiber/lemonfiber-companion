@@ -552,4 +552,13 @@ enum WireField: string implements NamesAWireField
      * survey, and what an import could not bring.
      */
     case NotCarried = 'not_carried';
+
+    /**
+     * What one member has asked their stack for: the requests themselves on a
+     * reading of the household, and how many go with them on a removal.
+     */
+    case Requests = 'requests';
+
+    /** Whether the operator said yes, so something was changed rather than only described. */
+    case Confirmed = 'confirmed';
 }

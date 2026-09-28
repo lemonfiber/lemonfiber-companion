@@ -8,6 +8,7 @@ use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatToFollow;
 
@@ -180,6 +181,14 @@ enum AStacksScreen: string
     /** Asking somebody in: what an invitation would grant, sending it, and handing it over. */
     case Invite = '/stacks/{stack}/invite';
 
+    /**
+     * Taking one member out of the household, said as what it would cost before it is agreed to.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the name the member's account is held under.
+     */
+    case TakeOut = '/stacks/{stack}/household/{service}';
+
     /** What is already on this machine that is not lemonfiber's, and what may be done about it. */
     case AlreadyHere = '/stacks/{stack}/already-here';
 
@@ -313,6 +322,21 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($copy->name())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one member of the household on one machine.
+     *
+     * Encoded for {@see self::forTheStacksWord()}'s reason: nothing about the
+     * name an account is held under promises it is a path segment.
+     */
+    public function forTheStacksMember(StackId $stack, SomebodyInTheHousehold $member): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($member->name())], $this->value);
     }
 
     /**

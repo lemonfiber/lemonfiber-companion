@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowAVolumeWasRead;
 use Modules\Kernel\Api\HowFarItGoesBack;
+use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
@@ -820,6 +821,13 @@ it('everything that can become of unrated material has a case', function (): voi
     expect(valuesOf(WhatBecomesOfUnrated::cases()))->toBe($words);
 });
 
+it('everywhere taking somebody out can have reached has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('RemovalEnvelope'), 'revoked');
+
+    expect($words)->not->toBe([], 'no revoked union was found in the generated envelope');
+    expect(valuesOf(HowFarTheRemovalReached::cases()))->toBe($words);
+});
+
 it('everything a quality choice can become has a case, on both envelopes that carry it', function (): void {
     // The one where a missing case would be worst: a disposition drawn as the
     // nearest one could call a held choice recorded, and nobody would be asked
@@ -976,6 +984,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhereTheInvitationStands::class => 'standing',
     WhetherTheyCanAsk::class => 'linked',
     WhatBecomesOfUnrated::class => 'unrated',
+    HowFarTheRemovalReached::class => 'revoked',
     WhatBecameOfTheChoice::class => 'disposition',
     WhereTheAskingStands::class => 'state',
     WalkthroughStep::class => 'step',
