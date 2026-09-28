@@ -151,7 +151,7 @@ enum WireField: string implements NamesAWireField
      * Forms, in the two senses the wire uses the word: the forms a stack
      * declares, listed on the `forms` envelope and named by an action, and
      * the forms lemonfiber writes one of its words in, on each word of the
-     * `glossary`.
+     * `glossary` and on the one `word` asked for.
      */
     case Forms = 'forms';
 
@@ -162,6 +162,21 @@ enum WireField: string implements NamesAWireField
      * the forms it was guarding, on the `watch`.
      */
     case Stopped = 'stopped';
+
+    /**
+     * One of lemonfiber's words, on each word of the `glossary` and on the
+     * one `word` asked for, which is also what the word is asked for by.
+     */
+    case Word = 'word';
+
+    /** What a word means, in a line, on the `glossary` and the `word`. */
+    case Short = 'short';
+
+    /** What a word means at length, on the `glossary` and the `word`. */
+    case Deep = 'deep';
+
+    /** What else a word is called, on the `glossary` and the `word`. */
+    case AlsoCalled = 'also_called';
 
     /**
      * The services the forms asked for left out, each with what it would

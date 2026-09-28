@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function count;
 use function implode;
 
 use Modules\Kernel\Api\AWord;
@@ -11,6 +12,7 @@ use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheGlossary;
+use Modules\Operator\Internal\ViewModels\AWordAskedAbout;
 use Modules\Operator\Internal\ViewModels\AWordAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheWordsTurnedOutToBe;
@@ -20,6 +22,10 @@ use Modules\Operator\Internal\ViewModels\TheWordsTurnedOutToBe;
  *
  * `F2`: data in, view model out. The search narrows what is shown and never
  * what was fetched.
+ *
+ * **A word searched for that the glossary has no entry for may be asked for.**
+ * Offered for that one word, and not again once the stack has said it has no
+ * entry either: that is its answer, and the word is then shown as it came.
  */
 final readonly class HowTheWordsRead
 {
@@ -29,8 +35,12 @@ final readonly class HowTheWordsRead
         return new TheWordsTurnedOutToBe(HowTheReadingWent::theSessionEnded(), [], isSearching: false);
     }
 
-    /** The stack answered, and these are its words, narrowed by what is looked for, with the one named open. */
-    public function this(TheGlossary $glossary, LookingFor $looking, string $open): TheWordsTurnedOutToBe
+    /**
+     * The stack answered, and these are its words, narrowed by what is looked
+     * for, with the one named open, and what asking for the word looked for
+     * came to where it was asked for.
+     */
+    public function this(TheGlossary $glossary, LookingFor $looking, string $open, ?AWordAskedAbout $asked = null): TheWordsTurnedOutToBe
     {
         $shown = [];
 
@@ -38,7 +48,21 @@ final readonly class HowTheWordsRead
             $shown[] = $this->shown($word, $open);
         }
 
-        return new TheWordsTurnedOutToBe(HowTheReadingWent::itCameBack(), $shown, $looking->isSearching());
+        if (! $looking->isSearching() || count($glossary->explaining(AWordInUse::named($looking->typed()))) > 0) {
+            return new TheWordsTurnedOutToBe(HowTheReadingWent::itCameBack(), $shown, $looking->isSearching());
+        }
+
+        $answered = $asked instanceof AWordAskedAbout && AWordInUse::named($asked->word)->is(AWordInUse::named($looking->typed())) ? $asked : null;
+        $unexplained = $answered instanceof AWordAskedAbout && $answered->unexplained;
+
+        return new TheWordsTurnedOutToBe(
+            HowTheReadingWent::itCameBack(),
+            $shown,
+            isSearching: true,
+            mayAsk: $unexplained ? '' : $looking->typed(),
+            unexplained: $unexplained ? $looking->typed() : '',
+            askingMet: $answered instanceof AWordAskedAbout ? $answered->met : '',
+        );
     }
 
     /** It did not, and this is what the operator met. */

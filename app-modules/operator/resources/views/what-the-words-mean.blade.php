@@ -36,6 +36,19 @@
         @endif
     @endforelse
 
+    {{-- A word searched for that the held glossary has no entry for. Asking
+         is the operator's, for that one word; the stack saying it has none
+         either is its answer, and the word stands as it came. --}}
+    @if ($this->answer()->unexplained !== '')
+        <x-operator::note>{{ __('stacks.words.unexplained', ['word' => $this->answer()->unexplained]) }}</x-operator::note>
+    @endif
+    @if ($this->answer()->askingMet !== '')
+        <native:text>{{ __($this->answer()->askingMet) }}</native:text>
+    @endif
+    @if ($this->answer()->mayAsk !== '')
+        <x-operator::quiet-action label="{{ __('stacks.words.ask', ['word' => $this->answer()->mayAsk]) }}" tap="askTheStack()" />
+    @endif
+
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 </x-operator::content>
 @else

@@ -11,6 +11,7 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\GlossaryEnvelope;
+use Lemonfiber\Sdk\Generated\WordEnvelope;
 use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WhatElseItIsCalled;
@@ -20,10 +21,11 @@ use Modules\Sdk\Internal\Wire;
 use function trim;
 
 /**
- * Reads the `glossary` envelope into every word lemonfiber explains.
+ * Reads the `glossary` envelope into every word lemonfiber explains, and the
+ * `word` envelope into the one word asked for.
  *
- * Every word and short gloss is required, and every other name and every
- * form must be one.
+ * Both carry a word in one shape. Every word and short gloss is required, and
+ * every other name and every form must be one.
  * Anything else is refused with {@see GlossaryIsUnreadable}, never defaulted;
  * the longer gloss is optional and arrives as `null` or absent where there is
  * none.
@@ -63,6 +65,22 @@ final readonly class TheWordsExplained
     }
 
     /**
+     * The one word the stack was asked for.
+     *
+     * @param Envelope<mixed> $envelope the `word` envelope, as the client returned it
+     */
+    public static function one(Envelope $envelope): AWord
+    {
+        $data = self::entry(Wire::checked($envelope));
+
+        if (! is_array($data)) {
+            throw GlossaryIsUnreadable::asked(WireField::Data);
+        }
+
+        return self::word($data, null);
+    }
+
+    /**
      * The payload, as it actually arrived.
      *
      * `mixed` deliberately, for {@see Records::payload()}'s reason.
@@ -75,17 +93,28 @@ final readonly class TheWordsExplained
     }
 
     /**
-     * One word of the glossary.
+     * The one word's payload, as it actually arrived, for {@see payload()}'s reason.
+     *
+     * @param Envelope<mixed> $envelope
+     */
+    private static function entry(Envelope $envelope): mixed
+    {
+        return WordEnvelope::in($envelope)->data;
+    }
+
+    /**
+     * One word, whether the glossary listed it or it was asked for alone.
      *
      * @param array<array-key, mixed> $row
+     * @param int|null $position where the glossary listed it, or `null` for the one word asked for
      */
-    private static function word(array $row, int $position): AWord
+    private static function word(array $row, ?int $position): AWord
     {
         return AWord::explained(
-            self::text($row, GlossaryField::Word, $position),
-            self::text($row, GlossaryField::Short, $position),
+            self::text($row, WireField::Word, $position),
+            self::text($row, WireField::Short, $position),
             self::deep($row, $position),
-            ...self::names($row, GlossaryField::AlsoCalled, $position),
+            ...self::names($row, WireField::AlsoCalled, $position),
         )->writtenAs(WhatElseItIsCalled::formsOf(...self::names($row, WireField::Forms, $position)));
     }
 
@@ -94,13 +123,13 @@ final readonly class TheWordsExplained
      *
      * @param array<array-key, mixed> $row
      */
-    private static function deep(array $row, int $position): string
+    private static function deep(array $row, ?int $position): string
     {
-        if (! array_key_exists(GlossaryField::Deep->value, $row) || $row[GlossaryField::Deep->value] === null) {
+        if (! array_key_exists(WireField::Deep->value, $row) || $row[WireField::Deep->value] === null) {
             return '';
         }
 
-        return self::text($row, GlossaryField::Deep, $position);
+        return self::text($row, WireField::Deep, $position);
     }
 
     /**
@@ -110,23 +139,23 @@ final readonly class TheWordsExplained
      * @param array<array-key, mixed> $row
      * @return list<string>
      */
-    private static function names(array $row, NamesAWireField $field, int $position): array
+    private static function names(array $row, NamesAWireField $field, ?int $position): array
     {
         if (! array_key_exists($field->value, $row)) {
-            throw GlossaryIsUnreadable::word($position, $field);
+            throw self::unreadable($position, $field);
         }
 
         $names = $row[$field->value];
 
         if (! is_array($names) || ! array_is_list($names)) {
-            throw GlossaryIsUnreadable::word($position, $field);
+            throw self::unreadable($position, $field);
         }
 
         $read = [];
 
         foreach ($names as $name) {
             if (! is_string($name) || trim($name) === '') {
-                throw GlossaryIsUnreadable::word($position, $field);
+                throw self::unreadable($position, $field);
             }
 
             $read[] = $name;
@@ -144,18 +173,24 @@ final readonly class TheWordsExplained
      *
      * @param array<array-key, mixed> $row
      */
-    private static function text(array $row, GlossaryField $field, int $position): string
+    private static function text(array $row, WireField $field, ?int $position): string
     {
         if (! array_key_exists($field->value, $row)) {
-            throw GlossaryIsUnreadable::word($position, $field);
+            throw self::unreadable($position, $field);
         }
 
         $said = $row[$field->value];
 
         if (! is_string($said) || trim($said) === '') {
-            throw GlossaryIsUnreadable::word($position, $field);
+            throw self::unreadable($position, $field);
         }
 
         return $said;
+    }
+
+    /** What a word that is not one is refused with: by its place in the glossary, or as the word asked for. */
+    private static function unreadable(?int $position, NamesAWireField $field): GlossaryIsUnreadable
+    {
+        return $position === null ? GlossaryIsUnreadable::asked($field) : GlossaryIsUnreadable::word($position, $field);
     }
 }
