@@ -227,6 +227,9 @@ enum AStacksScreen: string
     /** Wiring the services to each other, and how each connection turned out. */
     case Wiring = '/stacks/{stack}/wiring';
 
+    /** Taking lemonfiber off this machine, one removal at a time, each read before it is agreed to. */
+    case Uninstall = '/stacks/{stack}/uninstall';
+
     /** What lemonfiber's words mean. */
     case Words = '/stacks/{stack}/words';
 

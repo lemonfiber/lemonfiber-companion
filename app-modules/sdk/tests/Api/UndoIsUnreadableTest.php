@@ -7,17 +7,16 @@ namespace Modules\Sdk\Tests\Api;
 use function expect;
 use function it;
 
-use Modules\Sdk\Api\Fields\UndoField;
 use Modules\Sdk\Api\UndoIsUnreadable;
 use Modules\Sdk\Api\WireField;
 
 it('names the field an undo report left out', function (): void {
-    expect(UndoIsUnreadable::missing(UndoField::Left)->getMessage())
+    expect(UndoIsUnreadable::missing(WireField::Left)->getMessage())
         ->toBe('The undo envelope has no `left`, or it is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.');
 });
 
 it('names the list, the row and the field of a row it could not read', function (): void {
-    expect(UndoIsUnreadable::entry(UndoField::Left, WireField::Because, 2)->getMessage())
+    expect(UndoIsUnreadable::entry(WireField::Left, WireField::Because, 2)->getMessage())
         ->toBe('Row 2 of `left` in the undo envelope has no readable `because`. It is refused rather than dropped: a report one row short says something went back that did not.');
 });
 

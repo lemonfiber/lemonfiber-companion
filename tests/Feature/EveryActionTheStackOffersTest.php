@@ -40,7 +40,8 @@ const OFFERED = [
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting',
     'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'Outbound', 'Preview',
     'Provenance', 'Quality', 'Removal', 'Repair', 'Replacement', 'Restore', 'Seed', 'SelfUpdate', 'Space', 'Start',
-    'Status', 'StopSeeding', 'Stored', 'Stuck', 'Trace', 'Undo', 'Update', 'Upgrade', 'Walkthrough', 'Watch', 'Word',
+    'Status', 'StopSeeding', 'Stored', 'Stuck', 'Trace', 'Undo', 'Uninstall', 'Update', 'Upgrade', 'Walkthrough',
+    'Watch', 'Word',
 ];
 
 /**
@@ -92,7 +93,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Certificate', 'Pairing', 'Plugins', 'Reset', 'Step', 'Substitution', 'Uninstall', 'Version', 'Wiring',
+    'Certificate', 'Pairing', 'Plugins', 'Reset', 'Step', 'Substitution', 'Version', 'Wiring',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {

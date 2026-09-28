@@ -153,6 +153,12 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::Wiring->forTheStack($this->stack);
     }
 
+    /** Taking lemonfiber off this machine, one removal at a time. */
+    public function takingItOff(): string
+    {
+        return AStacksScreen::Uninstall->forTheStack($this->stack);
+    }
+
     /** What lemonfiber's words mean. */
     public function words(): string
     {

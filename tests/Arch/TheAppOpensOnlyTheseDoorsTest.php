@@ -16,6 +16,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
@@ -226,6 +227,10 @@ const VERBS_THE_APP_ASKS_FOR = [
     // agreement built from the record's own rows for that run — and a run the
     // record says cannot go back builds none.
     'undo' => 'puts back one run the record shows, named by its stamp, after the record\'s rows for it were agreed to',
+    // One removal at a time, and only against the reading of it the operator
+    // was shown: the yes quotes that reading by name, so a reading that has
+    // moved on is refused by the stack rather than carried out.
+    'uninstall' => 'takes one of the four removals off the machine, against the reading of it the operator was shown and agreed to',
 
     // The one verb that fetches something. It names at most a title, and
     // with none the stack chooses something likely to work; the stack
@@ -529,6 +534,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
         ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
+        ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),

@@ -33,9 +33,6 @@ enum RestoreField: string implements NamesAWireField
     /** What putting it back did, absent where nothing was put back. */
     case Done = 'done';
 
-    /** The copy's own account of itself. */
-    case Manifest = 'manifest';
-
     /** When the copy was taken. */
     case CreatedAt = 'created_at';
 

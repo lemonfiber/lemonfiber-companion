@@ -112,16 +112,16 @@ final readonly class WhatIsStored
 
         $position = 0;
 
-        foreach (self::rows($data, StoredField::Kept) as $row) {
+        foreach (self::rows($data, WireField::Kept) as $row) {
             if (! is_array($row)) {
-                throw StoredIsUnreadable::row(StoredField::Kept, $position);
+                throw StoredIsUnreadable::row(WireField::Kept, $position);
             }
 
             $found[] = SomethingKept::kept(
-                self::text($row, StoredField::Kept, WireField::What, $position),
-                self::text($row, StoredField::Kept, WireField::At, $position),
-                self::text($row, StoredField::Kept, WireField::Why, $position),
-                WhetherItHoldsASecret::said(secret: self::flag($row, StoredField::Kept, WireField::Secret, $position)),
+                self::text($row, WireField::Kept, WireField::What, $position),
+                self::text($row, WireField::Kept, WireField::At, $position),
+                self::text($row, WireField::Kept, WireField::Why, $position),
+                WhetherItHoldsASecret::said(secret: self::flag($row, WireField::Kept, WireField::Secret, $position)),
             );
             $position++;
         }
