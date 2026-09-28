@@ -138,6 +138,12 @@ const VERBS_THE_APP_ASKS_FOR = [
     // that asks for no confirmation.
     'up' => 'starts a form, or a service inside one',
 
+    // A fetch takes nothing away and brings nothing up: a form's images are
+    // brought onto the machine ahead of a start. It is said before it runs
+    // that it may take long and use a lot of the line, and it names a form,
+    // never one service.
+    'pull' => 'fetches a form\'s images ahead of starting it',
+
     // The verb a confirmation exists for: it takes something away from
     // everybody in the house until somebody says otherwise.
     'down' => 'stops a form, or a service inside one',

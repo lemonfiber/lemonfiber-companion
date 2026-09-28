@@ -78,6 +78,10 @@ const ELSEWHERE = [
     // waits below with everything else nobody has offered yet.
     'Setup' => 'N1-R4 — setup settles at the machine, and the app says so rather than offering it',
     'Wizard' => 'N1-R4 — the wizard is setup asking its questions, which happens at the machine',
+    // Fetching a form's images is offered, through the `pull` action, whose
+    // outcome is `lifecycle`. The `pull` kind is something else: the lines the
+    // command line prints while it fetches, which no endpoint serves.
+    'Pull' => 'N2-R24 — fetching is offered through the `pull` action, which answers `lifecycle`; the `pull` kind is the command line\'s own output and is served by no endpoint',
 ];
 
 /**
@@ -87,8 +91,8 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Catalogue', 'Plugins', 'Pull', 'Removal', 'Reset', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo',
-    'Uninstall', 'Version',
+    'Catalogue', 'Plugins', 'Removal', 'Reset', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall',
+    'Version',
     'Watch', 'Wiring', 'Word',
 ];
 

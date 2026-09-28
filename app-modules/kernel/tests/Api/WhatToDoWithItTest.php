@@ -61,3 +61,26 @@ it('a start and a restart are meant to leave services up, and a stop is not', fu
         ->and(WhatToDoWithIt::Restart->bringsSomethingUp())->toBeTrue()
         ->and(WhatToDoWithIt::Stop->bringsSomethingUp())->toBeFalse();
 });
+
+it('fetches ahead without taking anything away or bringing anything up', function (): void {
+    expect(WhatToDoWithIt::Pull->asked())->toBe('pull')
+        ->and(WhatToDoWithIt::Pull->saidOnTheScreen())->toBe('health.do.pull')
+        ->and(WhatToDoWithIt::Pull->takesSomethingAway())->toBeFalse()
+        ->and(WhatToDoWithIt::Pull->bringsSomethingUp())->toBeFalse();
+});
+
+it('asks first about what takes something away and about a fetch, and sends a start on the tap', function (): void {
+    $asksFirst = array_map(static fn(WhatToDoWithIt $doing): bool => $doing->asksFirst(), WhatToDoWithIt::cases());
+    $fetches = array_map(static fn(WhatToDoWithIt $doing): bool => $doing->fetchesAhead(), WhatToDoWithIt::cases());
+
+    expect(array_combine(array_map(static fn(WhatToDoWithIt $doing): string => $doing->value, WhatToDoWithIt::cases()), $asksFirst))
+        ->toBe(['start' => false, 'stop' => true, 'restart' => true, 'pull' => true])
+        ->and($fetches)->toBe([false, false, false, true]);
+});
+
+it('reaches one service with every verb but a fetch, which is by form', function (): void {
+    expect(WhatToDoWithIt::Start->reachesAService())->toBeTrue()
+        ->and(WhatToDoWithIt::Stop->reachesAService())->toBeTrue()
+        ->and(WhatToDoWithIt::Restart->reachesAService())->toBeTrue()
+        ->and(WhatToDoWithIt::Pull->reachesAService())->toBeFalse();
+});

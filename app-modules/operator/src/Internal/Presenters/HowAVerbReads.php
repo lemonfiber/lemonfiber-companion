@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Awaiting;
+use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\WhatItTakesAway;
+use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
 
 /**
@@ -17,6 +19,24 @@ use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
  */
 final readonly class HowAVerbReads
 {
+    /**
+     * What this verb takes away on the reading, as a line.
+     *
+     * A fetch has no bound on the wire, so its line is the one that says it
+     * may take long and use a lot of the line, with no figure of this app's own.
+     */
+    public function against(Disturbances $disturbs, WhatToDoWithIt $doing): WhatAVerbTakesAwaySays
+    {
+        return $disturbs->forThe(
+            $doing,
+            said: $this->of(...),
+            unreported: static fn(): WhatAVerbTakesAwaySays => new WhatAVerbTakesAwaySays(
+                said: 'health.fetch_may_take_long',
+                seconds: null,
+            ),
+        );
+    }
+
     public function of(WhatItTakesAway $takes): WhatAVerbTakesAwaySays
     {
         return $takes->either(

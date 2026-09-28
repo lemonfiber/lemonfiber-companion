@@ -278,6 +278,37 @@ it('N2-R8 — a stop and a restart are not held to the same clock', function ():
         ->and($restarting)->toBe(180);
 });
 
+it('asks before fetching a form\'s images, saying it may take long and use the line, with no figure', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
+    $screen = theThingScreen($supervising, 'library');
+
+    $screen->wouldYouLike(WhatToDoWithIt::Pull->value);
+
+    expect($supervising->whatItWasToldToDo())->toBe([])
+        ->and($screen->asking()?->doing())->toBe(WhatToDoWithIt::Pull)
+        ->and($screen->whatItTakesAway()?->said)->toBe('health.fetch_may_take_long')
+        ->and($screen->whatItTakesAway()?->seconds)->toBeNull();
+
+    $screen->agree();
+    $told = $supervising->whatItWasToldToDo();
+
+    expect($told)->toHaveCount(1)
+        ->and($told[0]->doing())->toBe(WhatToDoWithIt::Pull)
+        ->and($told[0]->isAboutAForm())->toBeTrue()
+        ->and($told[0]->named())->toBe('library');
+});
+
+it('offers no fetch for one service, and acts on none asked for there', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
+    $screen = theThingScreen($supervising);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Pull->value);
+
+    expect($screen->thing()->verbs)->not->toContain(WhatToDoWithIt::Pull)
+        ->and($screen->asking())->toBeNull()
+        ->and($supervising->whatItWasToldToDo())->toBe([]);
+});
+
 it('N2-R8 — nothing is stated where nothing is being asked', function (): void {
     // Absent because there is no question, not because the stack said nothing.
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
@@ -471,6 +502,16 @@ it('the way back to the machine and on to the logs are routes as well', function
 
     expect(NativeRouter::resolve($screen->goes()->services()))->not->toBeNull()
         ->and(NativeRouter::resolve($screen->goes()->logsOf(ServiceId::called('sonarr'))))->not->toBeNull();
+});
+
+it('draws the fetch\'s warning where a length would stand, and no length', function (): void {
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()), 'library');
+    $screen->wouldYouLike(WhatToDoWithIt::Pull->value);
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('health.fetch_may_take_long'))
+        ->and($drawn)->toContain(__('health.do.pull'))
+        ->and($drawn)->toContain(__('health.about_to_form'));
 });
 
 it('renders its own view', function (): void {

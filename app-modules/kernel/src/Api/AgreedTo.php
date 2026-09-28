@@ -60,7 +60,7 @@ final readonly class AgreedTo
         return new self($doing, $form);
     }
 
-    /** Which of the three was agreed to. */
+    /** Which verb was agreed to. */
     public function doing(): WhatToDoWithIt
     {
         return $this->doing;

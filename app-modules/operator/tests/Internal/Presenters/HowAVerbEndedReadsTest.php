@@ -116,6 +116,13 @@ it('says a declined start with its reason, and names nothing as not back', funct
         ->and($read->namesWhatDidNotComeBack)->toBeFalse();
 });
 
+it('says a fetch was carried out, apart from a stop, and does not judge it by what came back', function (): void {
+    $read = new HowAVerbEndedReads()->done(aRestartThatLeftOneBehind(WhetherItWasRehearsed::CarriedOut), WhatToDoWithIt::Pull);
+
+    expect($read->cameToSaid)->toBe('health.came_to.fetched')
+        ->and($read->namesWhatDidNotComeBack)->toBeFalse();
+});
+
 it('says a stop was carried out, and does not judge it by what came back', function (): void {
     $read = new HowAVerbEndedReads()->done(aRestartThatLeftOneBehind(WhetherItWasRehearsed::CarriedOut), WhatToDoWithIt::Stop);
 
