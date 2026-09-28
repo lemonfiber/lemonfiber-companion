@@ -17,6 +17,11 @@ use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\PairingIsNotReadable;
 use Modules\Kernel\Api\PairingIsSpent;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
+
+use function sprintf;
+use function str_repeat;
+
 use Tests\Support\Fakes\FrozenClock;
 
 const A_STACKS_DIGEST = '3b8c1f09a7d24e6b5c0f81a2d93e47b6c8150af2937d6e4b1c05a8f39d27e64b';
@@ -126,6 +131,32 @@ it('refuses material that does not say which machine it is for', function (): vo
         ->toThrow(PairingIsNotReadable::class, 'read by scanned carried no stack')
         ->and(fn(): Pairing => Pairing::read(material(stack: '  '), HowItWasRead::Typed, whenItIsRead()))
         ->toThrow(PairingIsNotReadable::class, 'read by typed carried no stack');
+});
+
+it('refuses material whose stack is not a string', function (): void {
+    expect(fn(): Pairing => Pairing::read(material(stack: null, also: ['stack' => 42]), HowItWasRead::Scanned, whenItIsRead()))
+        ->toThrow(PairingIsNotReadable::class, 'read by scanned carried no stack');
+});
+
+it('refuses material naming its stack in a shape no stack mints', function (): void {
+    // Read into the identifier's own refusal rather than the envelope's, the
+    // way a malformed address or digest is: the key is there, and what it
+    // holds is not an identifier.
+    expect(fn(): Pairing => Pairing::read(material(stack: 'the-loft'), HowItWasRead::Typed, whenItIsRead()))
+        ->toThrow(StackIsUnidentified::class, 'the 32 lower-case hexadecimal characters a stack mints');
+});
+
+it('reads material in the exact form a stack writes it', function (): void {
+    $digest = sprintf('5adc06f2%s63aea', str_repeat('0', 51));
+    $written = sprintf(
+        '{"address":"https://the-loft.local:8443","fingerprint":"%s","expires":1790621817,"stack":"5e1d0a7b3c9f4e2d8a6b1c0f9e8d7c6b"}',
+        $digest,
+    );
+
+    $said = Pairing::read($written, HowItWasRead::Scanned, whenItIsRead());
+
+    expect($said->stack()->stored())->toBe('5e1d0a7b3c9f4e2d8a6b1c0f9e8d7c6b')
+        ->and($said->presenting()->forComparingByEye())->toBe($digest);
 });
 
 it('refuses a half that is present and empty', function (): void {

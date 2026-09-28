@@ -44,9 +44,9 @@ requirement is right and this page is a defect.
 | `N1-R20` | A changed certificate becomes *this is not the machine you were introduced to* | `Fingerprint` |
 | `N1-R48` | The fingerprint is the certificate that address will present, and an unencrypted address proves nothing | `Pairing` |
 | `N1-R49` | Material past its moment is its own screen | `Pairing` |
-| `N1-R62` | Pairing material carries an identifier that is the stack's own and survives a re-issue, a change of address and a replacement of the certificate | `Pairing`, reading `WhatPairingMaterialSays::Stack` into `StackId::saidBy()` |
-| `N1-R63` | The app decides which machine from that identifier alone, and material naming one it holds replaces rather than adds | `Introducing`, which takes the stack's identity from the material, and `Configured::with()` |
-| `N1-R64` | A re-pairing that changes the pinned fingerprint discards the session; one that does not keeps it | `Remembering`, through `Configured::wouldRepin()`, forgetting the session only once the new pin is written |
+| `N1-R62` | Pairing material carries an identifier that is the stack's own and survives a re-issue, a change of address and a replacement of the certificate | `Pairing`, reading `WhatPairingMaterialSays::Stack` into `StackId::saidBy()`, which takes only the 32 lower-case hexadecimal characters a stack mints and refuses material naming anything else |
+| `N1-R63` | The app decides which machine from that identifier alone, and material naming one it holds replaces rather than adds | `Introducing`, which takes the stack's identity from the material, and `Configured::with()`; `Remembering` tells a machine already held from a new one by that identifier alone, and answers `HowThePairingWent::PairedAgain` rather than `Paired` |
+| `N1-R64` | A re-pairing that changes the pinned fingerprint discards the session; one that does not keeps it | `Remembering`, through `Configured::wouldRepin()`, forgetting the session only once the new pin is written and answering `HowThePairingWent::PairedAgainOnANewCertificate`, which tells the operator to sign in again |
 | `N1-R50`, `N1-R51` | A short form to check at a glance, derived from the whole fingerprint — two constraints that pull against each other | `AtAGlance` |
 | `N1-R10` | A refusal is an obstacle rather than a type of its own | `Admitted` |
 | `N1-R44` | An ended session is a screen, not a port's business | `Admitting` |
