@@ -325,6 +325,7 @@ return [
         'start' => 'Start it',
         'stop' => 'Stop it',
         'restart' => 'Restart it',
+        'pull' => 'Fetch its images ahead of starting it',
     ],
 
 
@@ -352,6 +353,7 @@ return [
     // What a stop disturbs. Said before the yes and not after it.
     'about_to' => 'About to change :what',
     'about_to_form' => 'This is every service in that form, not just one of them.',
+    'fetch_may_take_long' => 'Fetching can take a long time and can use a lot of your line. The stack says nothing beforehand about how long or how much, so nothing is guessed here.',
     'would_not_help' => 'It is already restarting over and over. Another restart joins the queue.',
     'leaning_on_it' => 'These will not work while it is off:',
     'nothing_leans_on_it' => 'Nothing else in the stack depends on it.',
@@ -396,6 +398,7 @@ return [
         'everything_back' => 'Everything it was to bring up is running.',
         'not_everything_back' => 'It did not bring everything back.',
         'stopped' => 'The stack carried out the stop.',
+        'fetched' => 'The stack fetched what it could. What it says it came to is below.',
         'unsaid' => 'The stack did not say what those services amount to.',
         'not_back' => ':name did not come back: :runs',
         'none_named' => 'The stack named no service as short of running.',

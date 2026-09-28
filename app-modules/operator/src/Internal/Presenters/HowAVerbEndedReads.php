@@ -101,6 +101,7 @@ final readonly class HowAVerbEndedReads
     {
         return match (true) {
             $rehearsed => 'health.came_to.rehearsed',
+            $verb->fetchesAhead() => 'health.came_to.fetched',
             ! $verb->bringsSomethingUp() => 'health.came_to.stopped',
             $report->broughtEverythingBack() => 'health.came_to.everything_back',
             default => 'health.came_to.not_everything_back',

@@ -321,6 +321,7 @@ return [
         'start' => 'Starten',
         'stop' => 'Stoppen',
         'restart' => 'Opnieuw starten',
+        'pull' => 'De images alvast ophalen, voor het starten',
     ],
 
 
@@ -348,6 +349,7 @@ return [
     // What a stop disturbs. Said before the yes and not after it.
     'about_to' => 'Op het punt :what te wijzigen',
     'about_to_form' => 'Dit is elke dienst in die form, niet alleen die ene.',
+    'fetch_may_take_long' => 'Ophalen kan lang duren en kan veel van je lijn gebruiken. De stack zegt vooraf niet hoe lang of hoeveel, dus hier wordt niets geschat.',
     'would_not_help' => 'Hij start al keer op keer opnieuw. Nog een herstart komt in de rij.',
     'leaning_on_it' => 'Deze werken niet zolang hij uit staat:',
     'nothing_leans_on_it' => 'Niets anders in de stack heeft hem nodig.',
@@ -392,6 +394,7 @@ return [
         'everything_back' => 'Alles wat het moest opstarten draait.',
         'not_everything_back' => 'Het heeft niet alles teruggebracht.',
         'stopped' => 'De stack heeft de stop uitgevoerd.',
+        'fetched' => 'De stack heeft opgehaald wat hij kon. Wat het volgens hem opleverde staat hieronder.',
         'unsaid' => 'De stack zei niet wat die diensten samen zijn.',
         'not_back' => ':name kwam niet terug: :runs',
         'none_named' => 'De stack noemde geen dienst die niet draait.',

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use Closure;
+
 /**
  * What each verb takes away, as the stack reported it on the reading.
  *
@@ -35,18 +37,32 @@ final readonly class Disturbances
     }
 
     /**
-     * What this verb takes away.
+     * Say what this verb takes away, or that the stack reports nothing for it.
      *
-     * A `match` over the verb rather than three accessors, so a case added to
+     * A `match` over the verb rather than accessors, so a case added to
      * {@see WhatToDoWithIt} stops compiling here until somebody has said what
      * it costs — which is the same refusal the stack makes on its own side.
+     *
+     * A fetch takes the second arm: the stack reports what starting, stopping
+     * and restarting disturb, and no bound for fetching. Two arms rather than
+     * a nullable answer, so the caller says what a missing bound means instead
+     * of a screen drawing it as free.
+     *
+     * @template TSaid of object
+     * @template TNothing of object
+     *
+     * @param Closure(WhatItTakesAway): TSaid $said
+     * @param Closure(): TNothing             $unreported
+     *
+     * @return TSaid|TNothing
      */
-    public function forThe(WhatToDoWithIt $doing): WhatItTakesAway
+    public function forThe(WhatToDoWithIt $doing, Closure $said, Closure $unreported): object
     {
         return match ($doing) {
-            WhatToDoWithIt::Start => $this->starting,
-            WhatToDoWithIt::Stop => $this->stopping,
-            WhatToDoWithIt::Restart => $this->restarting,
+            WhatToDoWithIt::Start => $said($this->starting),
+            WhatToDoWithIt::Stop => $said($this->stopping),
+            WhatToDoWithIt::Restart => $said($this->restarting),
+            WhatToDoWithIt::Pull => $unreported(),
         };
     }
 }
