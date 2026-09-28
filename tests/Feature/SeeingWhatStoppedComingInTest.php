@@ -385,12 +385,13 @@ it('draws a queue it could not ask as the obstacle, and never as nothing stopped
     'a stack that did not answer' => [Obstacle::StackDidNotAnswer],
 ]);
 
-it('offers asking again and following an item, and nothing that acts on the queue or sets it up', function (): void {
+it('offers asking again, following an item and asking what an unexplained stage means, and nothing that acts on the queue or sets it up', function (): void {
     $screen = theStalledScreen(AStackThatStalled::with(aQueueItCouldNotReach(
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
     )));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([
+        __('stacks.words.ask_in_place', ['word' => 'searching']),
         __('health.trace.road_in', ['item' => 'A film nobody has seen']),
         __('health.ask_again'),
     ]);

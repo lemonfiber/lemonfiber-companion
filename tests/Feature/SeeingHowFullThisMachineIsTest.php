@@ -231,10 +231,10 @@ it('N12-R3 — draws what removing a download costs inside that download\'s entr
         ->and(is_int($film) && is_int($next) && is_int($cost) && $film < $cost && $cost < $next)->toBeTrue();
 });
 
-it('N12-R4, N12-R9 — offers asking again and nothing else: nothing is selected or proposed', function (): void {
+it('N12-R4, N12-R9 — offers asking again and asking what a word means, and nothing else: nothing is selected or proposed', function (): void {
     $offers = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft(halted: true))))->offers();
 
-    expect($offers)->toBe([__('health.ask_again')]);
+    expect(array_values(array_filter($offers, static fn(string $offer): bool => $offer !== __('stacks.words.ask_in_place', ['word' => 'ratio']))))->toBe([__('health.ask_again')]);
 });
 
 it('says so where no volume is watched, nothing takes room and no download is on the machine', function (): void {
@@ -330,11 +330,11 @@ it('explains the ratio where it is drawn, once asked for however many downloads 
         ->and($explaining->askings())->toBe(1);
 });
 
-it('draws a word the glossary does not carry as it came, and offers nothing for it', function (): void {
+it('draws a word the glossary does not carry as it came, and offers only asking the stack what it means', function (): void {
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), explaining: AStackThatExplainsItsWords::met(Obstacle::StackDidNotAnswer));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.room.ratio', ['ratio' => '1.25']))
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('health.ask_again')]);
+        ->and(array_values(array_unique(WhatTheDeviceWouldDraw::by($screen)->offers())))->toBe([__('stacks.words.ask_in_place', ['word' => 'ratio']), __('health.ask_again')]);
 });
 
 it('lets the session go where the stack refuses it the glossary', function (): void {

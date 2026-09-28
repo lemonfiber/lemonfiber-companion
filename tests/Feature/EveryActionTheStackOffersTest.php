@@ -38,7 +38,7 @@ const OFFERED = [
     'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration',
     'Music', 'Outbound', 'Preview', 'Provenance', 'Quality', 'Repair', 'Restore', 'SelfUpdate', 'Space', 'Status',
     'Stored', 'Stuck', 'Trace', 'Update', 'Upgrade',
-    'Walkthrough',
+    'Walkthrough', 'Word',
 ];
 
 /**
@@ -75,7 +75,7 @@ const NOT_YET = [
     'Admission', 'Adoption', 'Beside', 'Catalogue', 'Import',
     'Plugins', 'Pull', 'Removal', 'Replacement', 'Reset',
     'Seed', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall', 'Version',
-    'Watch', 'Wiring', 'Word',
+    'Watch', 'Wiring',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {

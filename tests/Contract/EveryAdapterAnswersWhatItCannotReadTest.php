@@ -21,6 +21,7 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
@@ -260,6 +261,8 @@ function everyAdapterCallThatReads(): array
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
+        'Explainers::wordOn' => static fn(): object
+            => new Explainers($clients)->wordOn($stack, $session, AWordInUse::named('seed')),
         'Followers::tracedOn' => static fn(): object
             => new Followers($clients)->tracedOn($stack, $session, WhatToFollow::called('sonarr')),
         'Graders::inForceOn' => static fn(): object => new Graders($clients)->inForceOn($stack, $session),

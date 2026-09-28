@@ -255,6 +255,9 @@ return [
         'less' => 'Less about ‘:word’',
         'nothing_matched' => 'No word, and nothing else a word is called, matches that',
         'none' => 'This machine explains no words',
+        'ask' => 'Ask this machine what ‘:word’ means',
+        'unexplained' => 'This machine has no entry for ‘:word’ either, so it is shown as it came',
+        'ask_in_place' => 'Ask what ‘:word’ means',
     ],
 
     // The credentials the machine holds to let services in. No line here

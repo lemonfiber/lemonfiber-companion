@@ -19,4 +19,12 @@ interface Explaining
      * requires.
      */
     public function glossaryOn(Stack $stack, Session $session): WhatWasFoundOfTheWords;
+
+    /**
+     * Ask a stack for its entry for one word, or come away with a reason.
+     *
+     * The stack matches the word against every form it writes it in, so an
+     * inflection it sent is answered with the word it belongs to.
+     */
+    public function wordOn(Stack $stack, Session $session, AWordInUse $word): WhatWasSaidOfOneWord;
 }

@@ -10,6 +10,7 @@ use function implode;
 use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Sdk\Api\GlossaryIsUnreadable;
@@ -108,3 +109,34 @@ it('finds a word by every form lemonfiber writes it in, and not by one it does n
         ->and($glossary->explaining(AWordInUse::named('Seeded')))->toHaveCount(1)
         ->and($glossary->explaining(AWordInUse::named('seeder')))->toHaveCount(0);
 });
+
+/**
+ * A `word` envelope holding whatever the case under test is about.
+ *
+ * @return Envelope<mixed>
+ */
+function oneWordSaying(mixed $data): Envelope
+{
+    return new Envelope(1, 'word', $data);
+}
+
+it('stands in for a stack asked for one word with a payload the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('WordEnvelope', ['api_version' => 1, 'kind' => 'word', 'data' => aWordInFull()]))->toBe([]);
+});
+
+it('reads the one word asked for with both glosses, every other name and every form', function (): void {
+    $word = TheWordsExplained::one(oneWordSaying(aWordInFull()));
+
+    expect(sprintf('%s|%s|%s|%s', $word->word(), $word->short(), $word->deep(), implode(',', [...$word->alsoCalled()])))
+        ->toBe('seed|Sharing a finished download|Uploading pieces to peers|sharing')
+        ->and($word->explains(AWordInUse::named('seeded')))->toBeTrue();
+});
+
+it('refuses one word asked for that is not one, naming the field', function (mixed $data, string $field): void {
+    expect(fn(): AWord => TheWordsExplained::one(oneWordSaying($data)))
+        ->toThrow(GlossaryIsUnreadable::class, sprintf('The word asked for has no readable `%s`', $field));
+})->with([
+    ['nothing', 'data'],
+    [array_diff_key(aWordInFull(), ['short' => true]), 'short'],
+    [[...aWordInFull(), 'forms' => 'seeding'], 'forms'],
+]);

@@ -32,8 +32,15 @@ it('offers the way to the longer gloss only where the glossary has one', functio
         ->and(new HowAGlossReads()->of($glossary, AWordInUse::named('grab'), whereTheGlossedStackIs())->goes)->toBe('');
 });
 
-it('draws a word the glossary does not carry as it came, with no gloss and nowhere to go', function (): void {
+it('draws a word the glossary does not carry as it came, with no gloss, and the way to ask the stack for it', function (): void {
     $gloss = new HowAGlossReads()->of(TheGlossary::of(), AWordInUse::named('Grabber'), whereTheGlossedStackIs());
 
-    expect([$gloss->word, $gloss->short, $gloss->goes])->toBe(['Grabber', '', '']);
+    expect([$gloss->word, $gloss->short, $gloss->goes])->toBe(['Grabber', '', ''])
+        ->and($gloss->asks)->toBe(whereTheGlossedStackIs()->ofItself()->wordAbout(AWordInUse::named('Grabber')));
+});
+
+it('offers no asking for a word the glossary carries', function (): void {
+    $glossary = TheGlossary::of(AWord::explained('grab', 'Taking a release', ''));
+
+    expect(new HowAGlossReads()->of($glossary, AWordInUse::named('grab'), whereTheGlossedStackIs())->asks)->toBe('');
 });
