@@ -329,6 +329,7 @@ it('a finished yes that does not say what became of the download is a stack that
     'said as nothing' => [null],
     'without saying whether it was rehearsed' => [['bytes' => 4_000, 'name' => 'Show.Season1']],
     'naming nothing' => [['bytes' => 4_000, 'name' => ' ', 'rehearsed' => false]],
+    'without a name at all' => [['bytes' => 4_000, 'rehearsed' => false]],
     'of a size below nothing' => [['bytes' => -1, 'name' => 'Show.Season1', 'rehearsed' => false]],
 ]);
 

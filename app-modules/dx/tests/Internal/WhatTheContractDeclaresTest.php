@@ -32,3 +32,10 @@ it('answers nothing for an envelope the contract does not have', function (): vo
 it('answers nothing for a kind no envelope carries', function (): void {
     expect(WhatTheContractDeclares::envelopeOfKind('nothing-reads-this'))->toBe('');
 });
+
+it('reads only the fields of a shape, not the mark that leaves it open', function (): void {
+    // An unsealed shape ends in `...`, which names no field; reading it as one
+    // would report a field the wire never carries.
+    expect(WhatTheContractDeclares::fieldsOf('array{name: string, ...}'))->toBe(['name' => [false, 'string']])
+        ->and(WhatTheContractDeclares::fieldsOf('array{}'))->toBe([]);
+});
