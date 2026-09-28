@@ -65,12 +65,13 @@ function theRunAgreedTo(): ARunAgreedTo
 
 /**
  * What a stack answers about putting a run back, changed where a case says,
- * and without `noted` at all where a case says it leaves it out.
+ * and without the fields a case leaves out altogether.
  *
  * @param  array<mixed>         $changed
+ * @param  list<string>         $without
  * @return array<string, mixed>
  */
-function whatAStackSaysOfPuttingARunBack(array $changed = [], bool $noting = true): array
+function whatAStackSaysOfPuttingARunBack(array $changed = [], array $without = []): array
 {
     $data = [
         'reversed' => [
@@ -83,8 +84,8 @@ function whatAStackSaysOfPuttingARunBack(array $changed = [], bool $noting = tru
         ...$changed,
     ];
 
-    if (! $noting) {
-        unset($data['noted']);
+    foreach ($without as $field) {
+        unset($data[$field]);
     }
 
     return ['api_version' => 1, 'kind' => 'undo', 'data' => $data];
@@ -223,7 +224,7 @@ it('reads a rehearsal as one, and a report that left nothing as leaving nothing'
 
 it('reads a report that leaves out what was noted as noting nothing', function (): void {
     MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack(noting: false)))]);
+    MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack(without: ['noted'])))]);
 
     expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))
         ->toBe('carried_out|restore lemonfiber, delete sonarr|left sonarr: the service that made it did not answer|noted ');
@@ -250,6 +251,20 @@ it('a report this app cannot read is a stack that did not answer, never a shorte
     'a reversal doing nothing it names' => [['reversed' => [['target' => 'sonarr', 'action' => ['path' => '/srv']]]]],
     'a reversal doing something this app has no word for' => [['reversed' => [['target' => 'sonarr', 'action' => ['does' => 'rewind']]]]],
 ]);
+
+it('a report leaving out a list, or whether it was a rehearsal, is a stack that did not answer', function (string $field): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack(without: [$field])))]);
+
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+})->with(['reversed', 'left', 'rehearsed']);
+
+it('a reversal that leaves out what it does is a stack that did not answer', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfPuttingARunBack(['reversed' => [['target' => 'sonarr']]])))]);
+
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+});
 
 it('a run still going back is its own answer', function (): void {
     foreach (everyWayOfPuttingARunBack(aRunTakenOn(), HowPuttingARunBackIsGoing::stillRunning()) as $which => $build) {
@@ -294,6 +309,6 @@ it('stands in for a stack with payloads the contract would accept', function ():
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n")
         ->and(WhatTheContractAccepts::complaintsAbout('UndoEnvelope', whatAStackSaysOfPuttingARunBack(['rehearsed' => true, 'left' => [], 'noted' => []])))
         ->toBe([])
-        ->and(WhatTheContractAccepts::complaintsAbout('UndoEnvelope', whatAStackSaysOfPuttingARunBack(noting: false)))
+        ->and(WhatTheContractAccepts::complaintsAbout('UndoEnvelope', whatAStackSaysOfPuttingARunBack(without: ['noted'])))
         ->toBe([]);
 });
