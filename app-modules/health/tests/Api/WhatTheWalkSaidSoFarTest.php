@@ -49,6 +49,7 @@ it('holds no step before it has listened, and may listen at once', function (): 
 
     expect(theStepHeld($heard))->toBe('none')
         ->and($heard->isListening())->toBeFalse()
+        ->and($heard->hasBroken())->toBeFalse()
         ->and($heard->mayListen(secondsIntoTheWalk(0)))->toBeTrue()
         ->and($heard->hasGoneQuiet(secondsIntoTheWalk(3_600)))->toBeFalse();
 });
@@ -107,6 +108,7 @@ it('holds a step from before a close as of when it arrived, and waits out the br
 
     expect(theStepHeld($heard))->toBe('importing as of 0')
         ->and($heard->isListening())->toBeFalse()
+        ->and($heard->hasBroken())->toBeTrue()
         ->and($heard->hasGoneQuiet(secondsIntoTheWalk(3_600)))->toBeFalse()
         ->and($heard->mayListen(secondsIntoTheWalk(29)))->toBeFalse()
         ->and($heard->mayListen(secondsIntoTheWalk(30)))->toBeTrue();
@@ -119,6 +121,7 @@ it('holds a step as not current once the stream could not be read, and waits out
 
     expect(theStepHeld($heard))->toBe('scanning as of 0')
         ->and($heard->isListening())->toBeFalse()
+        ->and($heard->hasBroken())->toBeTrue()
         ->and($heard->mayListen(secondsIntoTheWalk(49)))->toBeFalse()
         ->and($heard->mayListen(secondsIntoTheWalk(50)))->toBeTrue();
 });
@@ -131,17 +134,22 @@ it('keeps the old step not current when the stream opens again, until a new one 
 
     expect(theStepHeld($opened))->toBe('choosing as of 0')
         ->and($opened->isListening())->toBeTrue()
+        ->and($opened->hasBroken())->toBeFalse()
         ->and($opened->mayListen(secondsIntoTheWalk(20)))->toBeTrue()
         ->and(theStepHeld($opened->after(aStepAt(WalkthroughStep::Available), secondsIntoTheWalk(25))))->toBe('current available');
 });
 
-it('holds nothing as current once nobody can see it, and opens again the moment somebody can', function (): void {
+it('holds nothing as current once nobody can see it, and opens again the moment somebody can, which is no break', function (): void {
+    // Let go of as nobody could see it: the stream answers the letting go as
+    // closed, and going away is still not a break.
     $heard = WhatTheWalkSaidSoFar::nothingYet()
         ->after(aStepAt(WalkthroughStep::Downloading), secondsIntoTheWalk(0))
+        ->after(WhatTheWalkSaid::closed(), secondsIntoTheWalk(5))
         ->wentAway();
 
     expect(theStepHeld($heard))->toBe('downloading as of 0')
         ->and($heard->isListening())->toBeFalse()
+        ->and($heard->hasBroken())->toBeFalse()
         ->and($heard->mayListen(secondsIntoTheWalk(5)))->toBeTrue()
         ->and($heard->hasGoneQuiet(secondsIntoTheWalk(3_600)))->toBeFalse();
 });

@@ -27,17 +27,17 @@ final readonly class HowTheStageReads
 {
     public function of(WhatTheWalkSaidSoFar $heard, Instant $now): TheStageAsShown
     {
-        $listening = $heard->isListening();
+        $broke = $heard->hasBroken();
 
         return $heard->step(
-            none: static fn(): TheStageAsShown => new TheStageAsShown('', '', '', AgoAsShown::live(), $listening),
-            current: fn(ALineItSaid $line): TheStageAsShown => $this->at($line, AgoAsShown::live(), $listening),
+            none: static fn(): TheStageAsShown => new TheStageAsShown('', '', '', AgoAsShown::live(), $broke),
+            current: fn(ALineItSaid $line): TheStageAsShown => $this->at($line, AgoAsShown::live(), $broke),
             asOf: fn(ALineItSaid $line, Instant $at): TheStageAsShown
-                => $this->at($line, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $listening),
+                => $this->at($line, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $broke),
         );
     }
 
-    private function at(ALineItSaid $line, AgoAsShown $ago, bool $listening): TheStageAsShown
+    private function at(ALineItSaid $line, AgoAsShown $ago, bool $broke): TheStageAsShown
     {
         return new TheStageAsShown(
             $line->step()->value,
@@ -47,7 +47,7 @@ final readonly class HowTheStageReads
                 nothing: static fn(): AsText => AsText::nothing(),
             )->said,
             $ago,
-            $listening,
+            $broke,
         );
     }
 }

@@ -21,6 +21,11 @@ use Modules\Kernel\Api\WhatTheWalkSaid;
  * the stage reads as not known. A subscription that closed, or that could not be
  * opened, leaves the step in the same position.
  *
+ * **Not listening yet is not a break.** A screen that has not opened the
+ * subscription, or that let go of it because nobody could see it, has had
+ * nothing fail: until the next wake opens it, a stage not heard is one not
+ * said yet, and a stage held is the last one heard.
+ *
  * **A step is replaced, never accumulated.** The screen shows the stage the walk
  * is at, and the lines it said arrive whole with its record once it finishes,
  * so the newest step is all this holds. A later step at an earlier stage is
@@ -79,6 +84,17 @@ final readonly class WhatTheWalkSaidSoFar
     public function hasGoneQuiet(Instant $now): bool
     {
         return $this->lastSignOfLife instanceof Instant && ! WhatWasHeardSoFar::isStillCurrent($this->lastSignOfLife, $now);
+    }
+
+    /**
+     * Whether the subscription broke, closed or could not be opened, and has not been opened since.
+     *
+     * Only then could the stage not be heard, and only then is the screen
+     * waiting out {@see HowOften::AfterABreak}.
+     */
+    public function hasBroken(): bool
+    {
+        return $this->closedAt instanceof Instant;
     }
 
     /** Whether a subscription is open, so the screen can say which cadence it is keeping. */
