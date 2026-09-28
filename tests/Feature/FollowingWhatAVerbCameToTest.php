@@ -316,6 +316,21 @@ it('says nothing about a verb where none was sent, and asks after none', functio
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(whatTheCatalogueSays('health.came_to.heading'));
 });
 
+it('does not ask after a handle it holds without the verb it was sent for', function (): void {
+    // A route parameter fills the public property of the same name when the
+    // screen mounts, so a handle can be held that this screen never sent. A
+    // report is judged against the verb it answers, and with no verb there is
+    // nothing to judge it by.
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+    $screen->setParams(['stack' => theMachineAVerbIsFollowedOn()->id()->stored(), 'service' => 'sonarr', 'took' => AStackThatSupervises::THE_JOB]);
+    $screen->mountComponent();
+
+    expect($screen->took)->toBe(AStackThatSupervises::THE_JOB)
+        ->and($screen->whatItCameTo()->wasAsked)->toBeFalse()
+        ->and($supervising->followed())->toBe([]);
+});
+
 it('says what stood in the way of a verb that could not be delivered', function (): void {
     $supervising = AStackThatSupervises::withButRefusing(
         WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial),
