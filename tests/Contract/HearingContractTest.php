@@ -575,3 +575,58 @@ it('tells a session the stack refused from a stack that could not be heard, whil
         }
     }
 });
+
+/**
+ * What a stream still open after the given lines sends, up to the read that
+ * finds nothing.
+ *
+ * The SDK reads a stream 8192 bytes at a time and only learns it ended on the
+ * read after the last byte. A body of exactly one read ends in a read that
+ * comes back empty, which is what a stream that is still open looks like
+ * between two lines. The padding is an event-stream comment, which carries
+ * nothing.
+ */
+function aStreamStillOpenAfter(string $said): string
+{
+    return sprintf("%s:%s\n", $said, str_repeat(' ', 8192 - strlen($said) - 2));
+}
+
+it('opens a start stream once while it runs, and takes what arrived after that without asking again', function (): void {
+    // Only the adapter can be asked this. A wake that reopened the stream to
+    // read it would be a request to the stack every time the screen settles.
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([MockResponse::make(aStreamStillOpenAfter(aStartLine('Waiting for the database'))), MockResponse::make('')]);
+
+    expect(whatWakesHearOfAStart(new Listeners(new PinnedClients()), 2))
+        ->toBe(['saying "Waiting for the database"', 'nothing new']);
+
+    $stack->assertSentCount(1);
+});
+
+it('opens a start stream that ended again on the next ask', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aStreamStillOpenAfter(aStartLine('Waiting for the database'))),
+        MockResponse::make(aStartLine('Waiting for sonarr to answer')),
+    ]);
+
+    expect(whatWakesHearOfAStart(new Listeners(new PinnedClients()), 3))
+        ->toBe(['saying "Waiting for the database"', 'nothing new', 'saying "Waiting for sonarr to answer"']);
+
+    $stack->assertSentCount(2);
+});
+
+it('holds no start stream after a line it could not read, so the next ask opens again', function (): void {
+    // The stream is still open when the unreadable line arrives, so nothing
+    // but the refusal itself lets go of it.
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aStreamStillOpenAfter(aStartLine('   '))),
+        MockResponse::make(aStartLine('Waiting for sonarr to answer')),
+    ]);
+
+    expect(whatWakesHearOfAStart(new Listeners(new PinnedClients()), 2))
+        ->toBe([Obstacle::StackDidNotAnswer->value, 'saying "Waiting for sonarr to answer"']);
+
+    $stack->assertSentCount(2);
+});
