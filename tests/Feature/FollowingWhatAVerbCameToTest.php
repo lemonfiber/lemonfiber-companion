@@ -505,6 +505,23 @@ it('listens for what a start waits on only while a start or a restart it sent ru
         ->and($screen->waitsOn)->toBe('');
 });
 
+it('lets go rather than listening where the verb it sent comes back from the device emptied', function (): void {
+    // What was sent is the screen's public state, so it comes back from the
+    // device on the next request and can come back empty. A running start is
+    // then one this screen can no longer say it sent, and it listens to nothing.
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->sent = null;
+    $screen->whileItSettles();
+
+    expect($hearing->asked())->toBe(0)
+        ->and($hearing->lettingsGo())->toBe(1)
+        ->and($screen->waitsOn)->toBe('');
+});
+
 it('clears the last line when another verb is sent', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
     $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
