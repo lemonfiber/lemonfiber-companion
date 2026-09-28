@@ -286,7 +286,7 @@ return [
     'the_whole_of_it' => 'All :count lines this stack has for this service.',
     'search_label' => 'Find in these lines',
     'search_placeholder' => 'A word from the line you want',
-    'search_is_over_the_window' => 'Searching what is shown above, not the whole scrollback.',
+    'search_is_over_the_window' => 'Searches these lines only, not the whole scrollback.',
     'matched_count' => '{0} Nothing here matches|{1} One line matches|[2,*] :count lines match',
     'nothing_matched' => 'No line in this window holds that.',
     'nothing_matched_action' => 'It may be further back than this window reaches. Clear the search to see the whole window again.',

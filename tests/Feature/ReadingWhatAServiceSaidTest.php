@@ -25,6 +25,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AServiceThatSpoke;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Logs offered as a bounded, searchable read that names the service
 // and states the view is a window rather than the whole.
@@ -111,6 +112,34 @@ function everyLineOnTheScreen(WhatThisServiceSaid $screen): string
 
     return implode(' | ', $rows);
 }
+
+/**
+ * Where each scroll view on a drawn log screen opens, outermost first.
+ *
+ * @return list<string>
+ */
+function whereTheLogScreenOpens(mixed $node): array
+{
+    if (! is_array($node)) {
+        return [];
+    }
+
+    $anchor = data_get($node, 'props.scroll_anchor');
+    $found = $node['type'] === 'scroll_view' ? [is_string($anchor) ? $anchor : 'top'] : [];
+    $children = data_get($node, 'children');
+
+    foreach (is_array($children) ? $children : [] as $child) {
+        $found = [...$found, ...whereTheLogScreenOpens($child)];
+    }
+
+    return $found;
+}
+
+it('opens at the last line, where a service says why it stopped', function (): void {
+    expect(whereTheLogScreenOpens(WhatTheDeviceWouldDraw::tree(
+        theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading())),
+    )))->toBe(['bottom']);
+});
 
 it('N2-R10 — shows the lines, oldest first, with the mouth each came out of', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));

@@ -91,6 +91,17 @@ final readonly class WhatTheDeviceWouldDraw
     /** Render this screen the way the device renders it. */
     public static function by(NativeComponent $screen): self
     {
+        return new self(self::collect(self::tree($screen)));
+    }
+
+    /**
+     * The tree this screen hands the device, whole: types, layouts and props,
+     * for what the words on it leave out.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function tree(NativeComponent $screen): array
+    {
         $was = NativeTagPrecompiler::setActive(active: true);
 
         try {
@@ -103,7 +114,7 @@ final readonly class WhatTheDeviceWouldDraw
         $emitted = [];
         $hashes = [];
 
-        return new self(self::collect($tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes)));
+        return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
     }
 
     /**

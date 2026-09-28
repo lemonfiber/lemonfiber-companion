@@ -282,7 +282,7 @@ return [
     'the_whole_of_it' => 'Alle :count regels die deze stack voor deze dienst heeft.',
     'search_label' => 'Zoek in deze regels',
     'search_placeholder' => 'Een woord uit de regel die je zoekt',
-    'search_is_over_the_window' => 'Doorzoekt wat hierboven staat, niet de hele scrollback.',
+    'search_is_over_the_window' => 'Doorzoekt alleen deze regels, niet de hele scrollback.',
     'matched_count' => '{0} Hier past niets bij|{1} Eén regel past|[2,*] :count regels passen',
     'nothing_matched' => 'Geen regel in dit venster bevat dat.',
     'nothing_matched_action' => 'Het kan verder terug liggen dan dit venster reikt. Wis de zoekopdracht om het hele venster weer te zien.',
