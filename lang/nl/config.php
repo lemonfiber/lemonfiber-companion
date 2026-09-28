@@ -7,6 +7,11 @@ return [
 
     'listing_is_the_stacks' => 'Dit is de lijst die de stack stuurde, in de volgorde waarin hij hem stuurde.',
 
+    'what_setup_settled' => 'Wat de installatie besliste toen deze stack voor het eerst werd ingesteld, staat tussen deze instellingen, zoals de stack het nu heeft. Hier iets aanpassen is een instelling wijzigen, niet de stack opnieuw installeren.',
+
+    'first_run_setup' => 'De eerste installatie gebeurt niet vanuit deze app',
+    'first_run_setup_why' => 'Een stack instellen is wat hem vanaf een telefoon bereikbaar maakt, dus dat gebeurt op de machine zelf.',
+
     'nothing_is_set' => 'Hier is nog niets ingesteld',
     'nothing_is_set_action' => 'Instellingen verschijnen hier zodra deze stack ze heeft.',
 

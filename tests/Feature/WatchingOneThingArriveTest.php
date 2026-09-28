@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -22,6 +23,7 @@ use Modules\Kernel\Api\TheLinesItSaid;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Kernel\Api\WhatTheServicesWereSaying;
+use Modules\Kernel\Api\WhatTheWalkSaid;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasWalked;
@@ -36,10 +38,14 @@ use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereItStoppedAsShown;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
+use Tests\Support\Fakes\AStackThatNarrates;
 use Tests\Support\Fakes\AStackThatWalksThrough;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\Tree;
 use Tests\Support\WalkthroughsToFollow;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -66,6 +72,9 @@ function theWalkthroughScreen(
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
     ?AStackThatExplainsItsWords $explaining = null,
+    ?AStackThatNarrates $narrating = null,
+    ?FrozenClock $clock = null,
+    ?ACaptureInMemory $capture = null,
 ): WatchingOneArrive {
     $stack = theStackAWalkRunsOn();
     $keychain ??= AKeychainInMemory::working();
@@ -74,10 +83,24 @@ function theWalkthroughScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WatchingOneArrive($walking, $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, StacksInMemory::holding($stack));
+    $screen = new WatchingOneArrive(
+        $walking,
+        $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()),
+        $keychain,
+        StacksInMemory::holding($stack),
+        $narrating ?? AStackThatNarrates::holdingOpen(),
+        $clock ?? FrozenClock::at(secondsIntoFollowingAWalk(0)),
+        $capture ?? ACaptureInMemory::inFront(),
+    );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
+}
+
+/** A moment while a walk is followed, counted in seconds from one a test starts at. */
+function secondsIntoFollowingAWalk(int $seconds): Instant
+{
+    return Instant::atEpochSeconds(1_790_000_000 + $seconds);
 }
 
 /** A screen that started a walkthrough of `Big Buck Bunny` and has asked after it once. */
@@ -251,6 +274,242 @@ it('asks again when asked to', function (): void {
 
     expect($walking->followed())->toHaveCount(2)
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.ask_again'));
+});
+
+/** A step the walk says on the stream, as the adapter hands it over. */
+function aStepTheWalkSaid(WalkthroughStep $step, string $said, string $detail = ''): WhatTheWalkSaid
+{
+    return WhatTheWalkSaid::said($detail === ''
+        ? ALineItSaid::withoutDetail($step, $said)
+        : ALineItSaid::withDetail($step, $said, $detail));
+}
+
+it('opens the stream as a walk starts and draws the stage it says in the stack\'s word, never a bar', function (): void {
+    $narrating = AStackThatNarrates::holdingOpen(aStepTheWalkSaid(WalkthroughStep::Searching, 'Searching the indexers for Big Buck Bunny', 'Two indexers answered'));
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
+        AWord::explained('search', 'Looking through the indexers for a release', '')->writtenAs(WhatElseItIsCalled::formsOf('searching')),
+    ));
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), explaining: $explaining, narrating: $narrating);
+    $screen->looking = 'Big Buck Bunny';
+
+    $screen->walk();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($narrating->asked())->toBe(1)
+        ->and($drawn)->toContain(
+            __('health.walkthrough.at_stage_now', ['stage' => 'search']),
+            __('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']),
+            'Searching the indexers for Big Buck Bunny',
+            'Two indexers answered',
+            __('health.walkthrough.lines_when_done'),
+        )
+        ->and($drawn)->not->toContain(
+            __('health.walkthrough.stage_not_said_yet'),
+            __('health.walkthrough.stage_unheard'),
+            __('health.walkthrough.listening_again', ['count' => 10]),
+        );
+
+    // A stage is what the walk is doing; a bar would say only that it was
+    // doing something, so the screen has none to draw.
+    $template = (string) file_get_contents(Tree::at('app-modules/operator/resources/views/watching-one-arrive.blade.php'));
+
+    expect($template)->not->toContain('progress')
+        ->and($template)->not->toContain('activity-indicator');
+});
+
+it('draws a stage with nothing particular to say without a detail', function (): void {
+    $screen = theWalkthroughScreen(
+        AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
+        narrating: AStackThatNarrates::holdingOpen(aStepTheWalkSaid(WalkthroughStep::Downloading, 'Downloading Big Buck Bunny')),
+    );
+
+    $screen->walk();
+
+    expect($screen->stage()->step)->toBe('downloading')
+        ->and($screen->stage()->said)->toBe('Downloading Big Buck Bunny')
+        ->and($screen->stage()->detail)->toBe('')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.walkthrough.at_stage_now', ['stage' => 'downloading']));
+});
+
+it('says the stack has not named a stage yet while it listens and has heard none', function (): void {
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()));
+
+    $screen->walk();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('health.walkthrough.stage_not_said_yet'))
+        ->and($drawn)->not->toContain(__('health.walkthrough.stage_unheard'), __('health.walkthrough.listening_again', ['count' => 10]));
+});
+
+it('says the stage could not be heard, rather than drawing an idle walk, and when it listens again', function (): void {
+    $screen = theWalkthroughScreen(
+        AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
+        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::StackDidNotAnswer)),
+    );
+
+    $screen->walk();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(
+        __('health.walkthrough.walking'),
+        __('health.walkthrough.stage_unheard'),
+        __('health.walkthrough.listening_again', ['count' => 10]),
+    )
+        ->and($drawn)->not->toContain(__('health.walkthrough.stage_not_said_yet'))
+        ->and($screen->listensAgain())->toBe(HowOften::AfterABreak);
+});
+
+it('takes the stage on the wakes that ask after the walk, and draws the newest, earlier or not', function (): void {
+    $running = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning());
+    $narrating = AStackThatNarrates::holdingOpen(
+        aStepTheWalkSaid(WalkthroughStep::Grabbing, 'Sending the release to the download client'),
+        WhatTheWalkSaid::nothing(),
+        aStepTheWalkSaid(WalkthroughStep::Searching, 'Searching again for a better release'),
+    );
+    $screen = theWalkthroughScreen($running, narrating: $narrating);
+    $screen->walk();
+    $screen->answer();
+
+    $screen->whileItRuns();
+    $screen->answer();
+
+    expect($screen->stage()->step)->toBe('grabbing');
+
+    $screen->whileItRuns();
+    $screen->answer();
+
+    expect($narrating->asked())->toBe(3)
+        ->and($running->followed())->toHaveCount(2)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.walkthrough.at_stage_now', ['stage' => 'searching']));
+});
+
+it('says a stage heard before the stream went quiet is not where the walk is now, and waits out the break', function (): void {
+    $clock = FrozenClock::at(secondsIntoFollowingAWalk(0));
+    $narrating = AStackThatNarrates::holdingOpen(aStepTheWalkSaid(WalkthroughStep::Importing, 'Moving it into the library'));
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), narrating: $narrating, clock: $clock);
+    $screen->walk();
+
+    $clock->moveTo(secondsIntoFollowingAWalk(30));
+    $screen->whileItRuns();
+
+    expect($screen->stage()->ago->said)->toBe('')
+        ->and($narrating->lettingsGo())->toBe(1);
+
+    $clock->moveTo(secondsIntoFollowingAWalk(31));
+    $screen->whileItRuns();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(
+        __('health.walkthrough.stage_unheard'),
+        __('health.walkthrough.last_at_stage', ['stage' => 'importing', 'ago' => trans_choice('health.ago.minutes', 0)]),
+        __('health.walkthrough.listening_again', ['count' => 10]),
+    )
+        ->and($drawn)->not->toContain(__('health.walkthrough.at_stage_now', ['stage' => 'importing']))
+        ->and($narrating->lettingsGo())->toBe(2)
+        ->and($narrating->asked())->toBe(3);
+
+    $clock->moveTo(secondsIntoFollowingAWalk(40));
+    $screen->whileItRuns();
+
+    expect($narrating->asked())->toBe(3);
+
+    $clock->moveTo(secondsIntoFollowingAWalk(41));
+    $screen->whileItRuns();
+
+    expect($narrating->asked())->toBe(4);
+});
+
+it('lets go of the stream once the walk is over, and only once', function (): void {
+    $narrating = AStackThatNarrates::holdingOpen();
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::done(WalkthroughsToFollow::aWalkThatWorked())), narrating: $narrating);
+    $screen->walk();
+    $screen->whileItRuns();
+    $screen->answer();
+
+    // One let go as the walk began, before anything was held.
+    expect($narrating->lettingsGo())->toBe(1)
+        ->and($narrating->asked())->toBe(2);
+
+    $screen->whileItRuns();
+    $screen->whileItRuns();
+
+    expect($narrating->lettingsGo())->toBe(2)
+        ->and($narrating->asked())->toBe(2)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.walkthrough.stage_not_said_yet'));
+});
+
+it('lets go of the stream when nobody can see it, opens it again when somebody can, and when the screen is left', function (): void {
+    $capture = ACaptureInMemory::away();
+    $narrating = AStackThatNarrates::holdingOpen(aStepTheWalkSaid(WalkthroughStep::Scanning, 'Telling the media server to look'));
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), narrating: $narrating, capture: $capture);
+
+    $screen->walk();
+
+    expect($narrating->asked())->toBe(0)
+        ->and($narrating->lettingsGo())->toBe(2)
+        ->and($screen->stage()->listening)->toBeFalse();
+
+    $capture->cameBack();
+    $screen->answer();
+    $screen->whileItRuns();
+
+    expect($narrating->asked())->toBe(1)
+        ->and($screen->stage()->step)->toBe('scanning')
+        ->and($screen->stage()->ago->said)->toBe('');
+
+    $screen->stop();
+
+    expect($narrating->lettingsGo())->toBe(3)
+        ->and($screen->stage()->ago->said)->not->toBe('');
+});
+
+it('lets go of a session the stream refuses while a walk runs, and keeps one the stack only failed to answer on', function (): void {
+    $refusing = AKeychainInMemory::working();
+    theWalkthroughScreen(
+        AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
+        keychain: $refusing,
+        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::CredentialWasRefused)),
+    )->walk();
+
+    $unanswering = AKeychainInMemory::working();
+    theWalkthroughScreen(
+        AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()),
+        keychain: $unanswering,
+        narrating: AStackThatNarrates::holdingOpen(WhatTheWalkSaid::met(Obstacle::StackDidNotAnswer)),
+    )->walk();
+
+    expect($refusing->isHolding(theStackAWalkRunsOn()->id()))->toBeFalse()
+        ->and($unanswering->isHolding(theStackAWalkRunsOn()->id()))->toBeTrue();
+});
+
+it('forgets the stage an earlier walk said when another is started', function (): void {
+    $narrating = AStackThatNarrates::holdingOpen(aStepTheWalkSaid(WalkthroughStep::Available, 'It is in the library'));
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), narrating: $narrating);
+    $screen->walk();
+
+    expect($screen->stage()->step)->toBe('available');
+
+    $screen->walk();
+
+    expect($screen->stage()->step)->toBe('')
+        ->and($screen->stage()->listening)->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.walkthrough.stage_not_said_yet'));
+});
+
+it('hears nothing about a walk on a phone whose session has gone, and holds the stage as not current', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $narrating = AStackThatNarrates::holdingOpen(aStepTheWalkSaid(WalkthroughStep::Choosing, 'Choosing something likely to work'));
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), keychain: $keychain, narrating: $narrating);
+    $screen->walk();
+    $screen->answer();
+    $keychain->forget(theStackAWalkRunsOn()->id());
+
+    $screen->whileItRuns();
+
+    expect($narrating->asked())->toBe(1)
+        ->and($screen->stage()->listening)->toBeFalse()
+        ->and($screen->stage()->step)->toBe('choosing')
+        ->and($screen->stage()->ago->said)->not->toBe('');
 });
 
 it('draws every line as said and in the order said, as a record', function (): void {

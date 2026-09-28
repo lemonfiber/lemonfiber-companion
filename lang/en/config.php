@@ -11,6 +11,16 @@ return [
     // showing the stack's list and not one of its own.
     'listing_is_the_stacks' => 'This is the list the stack sent, in the order it sent it.',
 
+    // What setup decided when the stack was first set up is among the
+    // settings the stack lists, shown as it holds them now. The stack does not
+    // say which of them setup wrote, so this names none of them.
+    'what_setup_settled' => 'What setup decided when this stack was first set up is among these settings, as the stack holds it now. Changing one here is changing a setting, not setting the stack up again.',
+
+    // First-run setup is declined in words, where somebody looking for it
+    // would look, rather than left out for them to wonder about.
+    'first_run_setup' => 'First-run setup is not done from this app',
+    'first_run_setup_why' => 'Setting a stack up is what makes it reachable from a phone at all, so it is done at the machine itself.',
+
     'nothing_is_set' => 'Nothing is set here yet',
     'nothing_is_set_action' => 'Settings appear here once this stack has some.',
 

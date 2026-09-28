@@ -217,6 +217,44 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'asserting what the core does with a choice, which is the core\'s to say. The screen offers '
             . 'upgrading as its own act and says nothing about what choosing does to the library.',
     ],
+    [
+        'requirement' => 'N15-R1',
+        'asks' => 'to show what setup settled — where the library lives, which protocols are on, who the stack runs as — as setup\'s own decisions',
+        // Named, and watched as a whole payload: `wizard` is what setup's own
+        // read answers with, and the settled facts arriving there is the
+        // likeliest way this closes. A field row cannot watch them: `data_root`,
+        // `protocols` and `service_user` are all carried today, by `setup`,
+        // which nothing serves over HTTP.
+        'envelope' => 'WizardEnvelope',
+        'field' => null,
+        'shape' => 'array{asks: bool, at: \'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\', offered: bool, phase: \'in-progress\'|\'reviewing\'|\'applying\'|\'applied\', plan: list<array{key: string, origin: array{origin: \'bundled\'}|array{origin: \'operator\'}|array{named: string, origin: \'plugin\'}|array{origin: \'unknown\', why: string}|array{named: string, origin: \'overridden\', replaced: array{from: mixed, value?: string|null, withheld: bool}}|array{named: string, origin: \'orphaned\'}, secret: bool, value: string}>, proof?: array{observed: string, outcome: \'valid\'}|array{detail: string, outcome: \'rejected\'}|array{detail: string, outcome: \'unreachable\'}|array{detail: string, outcome: \'degraded\'}|null, ready_for_review: bool, unanswered: list<\'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\'>, written: list<string>}',
+        'raised' => 'What setup settled is carried whole only by `setup` — `data_root`, `protocols`, '
+            . '`service_user` — and only the command line writes that kind; no read, action or endpoint '
+            . 'answers with it. Setup\'s own read, `GET /api/setup`, answers with `wizard`, whose `plan` '
+            . 'is what applying *will* write and is empty once setup has applied, and the SDK names no '
+            . 'path for that read at all, so this app cannot ask it. The settings listing, `config`, '
+            . 'carries what setup wrote among every other setting, each with its origin, and nothing '
+            . 'on it says which ones setup settled. The settings screen says setup\'s decisions are '
+            . 'among the settings it draws and that changing one is reconfiguration; it singles none '
+            . 'out, because a list of setup\'s keys kept here would be a second copy of the core\'s '
+            . 'plan that goes stale the day it changes, which `N2-R14` refuses.',
+    ],
+    [
+        'requirement' => 'N15-R5',
+        'asks' => 'to tie a stage said on the event stream to the job it is about',
+        // Named, and watched as a whole payload: a job's name could arrive under
+        // any word, and `job` is spent on this wire already, on the `job`
+        // envelope itself.
+        'envelope' => 'StepEnvelope',
+        'field' => null,
+        'shape' => 'array{detail: string, said: string, step: \'choosing\'|\'searching\'|\'grabbing\'|\'downloading\'|\'importing\'|\'scanning\'|\'available\'}',
+        'raised' => 'A `step` carries the stage, what was said and the detail, and nothing naming the walk '
+            . 'it belongs to. The screen following a walk takes every step heard while its walk runs '
+            . 'as that walk\'s, which holds while one walk runs at a time; a second walk started from '
+            . 'another surface meanwhile would be heard as this one. No other job carries a stage at '
+            . 'all: the `job` envelope is `action` and `job`, so a repair, an update or a copy is shown '
+            . 'as running and never as at a stage.',
+    ],
 ];
 
 /**

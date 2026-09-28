@@ -98,6 +98,7 @@ use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
+use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
@@ -289,6 +290,7 @@ function everyAdapterCallThatReads(): array
         'Keepers::handOver' => static fn(): object
             => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
         'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
+        'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
@@ -564,10 +566,34 @@ function theEnvelopesAPathSends(string $endpoint, string ...$asked): array
     return $lines;
 }
 
-/** What one event on the stream carries, which is the envelope after `data: `. */
+/**
+ * What each event on the stream carries, which is the envelope after `data: `, one a line.
+ *
+ * Every event, because the stand-in's stream carries one of each kind a screen
+ * holds it for, and each adapter reading the stream reads its own kind of them.
+ */
 function anEventsData(string $stream): string
 {
-    return preg_match('/^data: (.*)$/m', $stream, $data) === 1 ? $data[1] : '';
+    preg_match_all('/^data: (.*)$/m', $stream, $data);
+
+    return implode("\n", $data[1]);
+}
+
+/**
+ * The stream an adapter is answered with: every envelope, each framed as an event of its own kind.
+ *
+ * @param list<array<mixed>> $envelopes
+ */
+function aStreamOf(array $envelopes): string
+{
+    $said = '';
+
+    foreach ($envelopes as $envelope) {
+        $kind = array_key_exists('kind', $envelope) && is_string($envelope['kind']) ? $envelope['kind'] : '';
+        $said = sprintf("%sevent: %s\ndata: %s\n\n", $said, $kind, (string) json_encode($envelope));
+    }
+
+    return $said;
 }
 
 /**
@@ -591,7 +617,7 @@ function answerEverythingSpoiledAt(string $which, ?array $at): void
                     static fn(array $envelope): string => (string) json_encode($envelope),
                     $envelopes,
                 ))),
-                Api::EVENTS_ENDPOINT => MockResponse::make(sprintf("event: dashboard\ndata: %s\n\n", (string) json_encode($envelopes[0]))),
+                Api::EVENTS_ENDPOINT => MockResponse::make(aStreamOf($envelopes)),
                 default => MockResponse::make($envelopes[0]),
             };
         },
@@ -809,6 +835,7 @@ function adapterCallsThatAskNothing(): array
 {
     return [
         'Listeners::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
+        'Narrators::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
     ];
 }
 
