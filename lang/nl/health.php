@@ -357,4 +357,25 @@ return [
             'torrent' => 'daarvoor zijn torrentgegevens nodig, en die heeft deze stack niet',
         ],
     ],
+    // Wat een start, een stop of een herstart vanaf het scherm over één ding
+    // opleverde, uit het eigen verslag van de stack. Een start of herstart die
+    // niet alles terugbracht heet nooit klaar, en wat niet terugkwam wordt
+    // genoemd.
+    'came_to' => [
+        'heading' => 'Wat het laatste verzoek hier opleverde',
+        'running' => 'De stack voert het uit.',
+        'no_outcome' => 'De stack heeft hier geen uitkomst meer van. Het kan best gelukt zijn; wat er nu draait staat hieronder.',
+        'a_rehearsal' => 'Een generale repetitie: er is niets gestart of gestopt',
+        'rehearsed' => 'Dit is wat de stack zegt dat hij gedaan zou hebben.',
+        'declined' => 'De stack heeft niets gestart: :why',
+        'everything_back' => 'Alles wat het moest opstarten draait.',
+        'not_everything_back' => 'Het heeft niet alles teruggebracht.',
+        'stopped' => 'De stack heeft de stop uitgevoerd.',
+        'unsaid' => 'De stack zei niet wat die diensten samen zijn.',
+        'not_back' => ':name kwam niet terug: :runs',
+        'none_named' => 'De stack noemde geen dienst die niet draait.',
+        'left_out' => ':name is overgeslagen: :needs',
+        'would_be_left_out' => ':name zou worden overgeslagen: :needs',
+        'port_held' => 'Poort :port is bezet door :held_by, en :wanted_by wil hem',
+    ],
 ];

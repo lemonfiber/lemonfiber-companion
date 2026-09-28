@@ -297,6 +297,8 @@ function everyAdapterCallThatReads(): array
             $session,
             AgreedTo::theService(WhatToDoWithIt::Stop, ServiceId::called('sonarr')),
         ),
+        'Supervisors::whatBecameOf' => static fn(): object
+            => new Supervisors($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Surveyors::measuredOn' => static fn(): object => new Surveyors($clients)->measuredOn($stack, $session),
         'TheirOwn::toHandOver' => static fn(): object => new TheirOwn($clients)->toHandOver($stack, $session),
         'TheirOwn::whatTheyAsked' => static fn(): object => new TheirOwn($clients)->whatTheyAsked($stack, $session),
@@ -347,7 +349,8 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * answers with, so it is given {@see THE_WORK_AN_INVITATION_BECOMES}.
  * A quality choice is given the quality reading, and a choice for music and an
  * upgrade the envelopes each is answered with. So are a finished copy, the
- * listing a restore answers without a yes, and a finished restore.
+ * listing a restore answers without a yes, and a finished restore, and what a
+ * start, a stop or a restart came to.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -360,6 +363,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Graders::choose' => sprintf('%sMusicEnvelope', AN_ENVELOPE_BY_NAME),
         str_starts_with($which, 'Upgraders::') => sprintf('%sUpgradeEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Copiers::whatBecameOf' => sprintf('%sBackupEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };

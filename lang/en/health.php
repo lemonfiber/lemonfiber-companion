@@ -361,4 +361,25 @@ return [
             'torrent' => 'it needs torrent credentials, which this stack does not have',
         ],
     ],
+    // What a start, a stop or a restart sent from the screen about one thing
+    // came to, from the stack's own report of it. A start or a restart that
+    // did not bring everything back is never said as done, and what did not
+    // come back is named.
+    'came_to' => [
+        'heading' => 'What the last request here came to',
+        'running' => 'The stack is carrying it out.',
+        'no_outcome' => 'The stack no longer has an outcome for it. It may well have worked; what is running now is below.',
+        'a_rehearsal' => 'A rehearsal: nothing has been started or stopped',
+        'rehearsed' => 'This is what the stack says it would have done.',
+        'declined' => 'The stack declined to start anything: :why',
+        'everything_back' => 'Everything it was to bring up is running.',
+        'not_everything_back' => 'It did not bring everything back.',
+        'stopped' => 'The stack carried out the stop.',
+        'unsaid' => 'The stack did not say what those services amount to.',
+        'not_back' => ':name did not come back: :runs',
+        'none_named' => 'The stack named no service as short of running.',
+        'left_out' => ':name was left out: :needs',
+        'would_be_left_out' => ':name would be left out: :needs',
+        'port_held' => 'Port :port is held by :held_by, and :wanted_by wants it',
+    ],
 ];

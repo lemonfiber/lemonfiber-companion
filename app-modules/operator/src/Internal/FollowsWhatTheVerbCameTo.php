@@ -1,0 +1,108 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Operator\Internal;
+
+use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhatTheVerbCameTo;
+use Modules\Operator\Internal\Presenters\HowAVerbEndedReads;
+use Modules\Operator\Internal\ViewModels\HowTheVerbWent;
+use Native\Mobile\Edge\NativeComponent;
+
+/**
+ * A screen that sends a start, a stop or a restart and follows it to the stack's report.
+ *
+ * A verb answers a handle, and what it came to arrives only through that
+ * handle: a listing read afterwards says where the services stand, and cannot
+ * say that a start was declined, that it was a rehearsal, or which of the
+ * services it waited for never came back. So the handle is held, asked after
+ * while the verb runs, and the report drawn once it finishes. The cadence is
+ * the using screen's, which polls while this says the verb is working.
+ *
+ * **It reads the using screen's own `$supervising` and `$storage`**, for the
+ * reason {@see LetsGoOfARefusedSession} gives, and lets go of a session the
+ * stack refused through that trait, which the screen also uses.
+ *
+ * @phpstan-require-extends NativeComponent
+ */
+trait FollowsWhatTheVerbCameTo
+{
+    /** The verb that was sent, so its report is judged against what it was for. */
+    public ?AgreedTo $sent = null;
+
+    /** The handle sending it answered. Not shown, and never kept past this screen. */
+    public ?string $took = null;
+
+    /** What became of it, once this frame has asked. */
+    public ?HowTheVerbWent $cameTo = null;
+
+    /** What became of the verb sent here, or that none was. */
+    public function whatItCameTo(): HowTheVerbWent
+    {
+        return $this->cameTo ??= $this->followed();
+    }
+
+    abstract public function stack(): Stack;
+
+    /**
+     * Send the verb agreed to, and hold what to follow it by.
+     *
+     * Just sent, it is running, and the cadence asks after it from there. A
+     * refusal is kept as what became of it, so the screen says what stood in
+     * the way rather than carrying on as though the verb were running.
+     */
+    private function tellIt(AgreedTo $agreed): void
+    {
+        $stack = $this->stack();
+        $this->took = null;
+        $this->sent = $agreed;
+
+        $this->cameTo = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): HowTheVerbWent => $this->supervising->told($stack, $session, $agreed)->either(
+                started: function (Job $job): HowTheVerbWent {
+                    $this->took = $job->shown();
+
+                    return new HowAVerbEndedReads()->running();
+                },
+                met: fn(Obstacle $why): HowTheVerbWent => $this->refusedWhileFollowing($why, $stack),
+            ),
+            notHeld: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->signedOut(),
+        );
+    }
+
+    /** Ask the stack what became of the verb sent, or say that none was. */
+    private function followed(): HowTheVerbWent
+    {
+        $took = $this->took;
+        $sent = $this->sent;
+
+        if ($took === null || ! $sent instanceof AgreedTo) {
+            return new HowAVerbEndedReads()->notAsked();
+        }
+
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): HowTheVerbWent => $this->supervising->whatBecameOf($stack, $session, Job::named($took))->either(
+                stillRunning: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->running(),
+                done: static fn(WhatTheVerbCameTo $report): HowTheVerbWent => new HowAVerbEndedReads()->done($report, $sent->doing()),
+                ended: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->ended(),
+                met: fn(Obstacle $why): HowTheVerbWent => $this->refusedWhileFollowing($why, $stack),
+            ),
+            notHeld: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->signedOut(),
+        );
+    }
+
+    /** What the operator met, letting go of a session the stack refused. */
+    private function refusedWhileFollowing(Obstacle $why, Stack $stack): HowTheVerbWent
+    {
+        $this->letGoOfTheSession($why, $stack);
+
+        return new HowAVerbEndedReads()->met($why);
+    }
+}

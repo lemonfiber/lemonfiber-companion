@@ -13,7 +13,6 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HowOften;
-use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\SecureStorage;
@@ -26,7 +25,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
-use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
@@ -77,9 +76,17 @@ use function view;
  * screen that asked about a start would be teaching an operator to confirm
  * without reading, which is what makes the stop confirmation worth anything.
  *
- * **It polls only while something is settling.** A service that is
- * starting becomes a running one on its own, and *ask again* as the only road
- * to finding out is the reliance on leaving and returning that rule refuses.
+ * **A verb is followed to what it came to.** Its handle is asked after until
+ * the stack reports, and the report is drawn: what those services amount to,
+ * every service a start or a restart did not bring back, a start the stack
+ * declined with its reason, a rehearsal as one, what was left out and which
+ * ports something else holds. A restart that brought back four services of
+ * five is said as not having brought everything back, and the one is named.
+ *
+ * **It polls only while a verb runs or something is settling.** A service
+ * that is starting becomes a running one on its own, and *ask again* as the
+ * only road to finding out is the reliance on leaving and returning that rule
+ * refuses.
  *
  * `Concealed` for the reason every stack-facing screen here is: what a house
  * runs is the household's business, and a diagnostic report is
@@ -91,6 +98,7 @@ use function view;
 final class WhatToDoWithThis extends NativeComponent
 {
     use AsksWhatTheStackIsRunning;
+    use FollowsWhatTheVerbCameTo;
 
     /** What the operator has been asked about, where a verb is waiting on a yes. */
     public ?AgreedTo $asking = null;
@@ -250,19 +258,30 @@ final class WhatToDoWithThis extends NativeComponent
     /**
      * Look again while the machine is settling into what it was told.
      *
-     * It does nothing unless something is actually settling, which is what
-     * keeps this from being the polling that is refused: a stack whose
-     * services are all in standing states answers the same thing however often
-     * it is read.
+     * It does nothing unless a verb sent here is still running or something
+     * is actually settling, which is what keeps this from being the polling
+     * that is refused: a finished report and a stack whose services are all
+     * in standing states answer the same thing however often they are read.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItSettles(): void
     {
-        if (! $this->answer()->isSettling) {
-            return;
+        if ($this->whatItCameTo()->isWorking || $this->answer()->isSettling) {
+            $this->again();
         }
+    }
 
-        $this->again();
+    /**
+     * Ask the stack again: what it runs, and what the verb sent here came to.
+     *
+     * Both, because a verb that finished changed what the listing says, and a
+     * report that could not be asked after is one the operator can ask for
+     * again rather than one they leave the screen to retry.
+     */
+    public function again(): void
+    {
+        $this->answered = null;
+        $this->cameTo = null;
     }
 
     /**
@@ -302,47 +321,13 @@ final class WhatToDoWithThis extends NativeComponent
      * Send it, and forget what was read.
      *
      * The listing in front of the operator is about the machine as it was
-     * before they said anything, so the next accessor asks again.
-     *
-     * **What the verb answered is not kept.** A job name has nothing to be
-     * redeemed for on this screen — what the operator wants to know is whether
-     * the service is running, which the listing says — and a verb that could
-     * not be delivered shows as the obstacle the next read meets, because it is
-     * the same obstacle.
+     * before they said anything, so the next accessor asks again. What the
+     * verb came to is {@see FollowsWhatTheVerbCameTo}'s to follow.
      */
     private function send(AgreedTo $agreed): void
     {
-        $stack = $this->stack();
-
-        $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): AsText => $this->tell($stack, $session, $agreed),
-            notHeld: static fn(): AsText => AsText::nothing(),
-        );
-
+        $this->tellIt($agreed);
         $this->answered = null;
-    }
-
-    /**
-     * Hand it to the port, and fold both arms to the same shape.
-     *
-     * Split out because `either()` wants two arms answering one type and a
-     * closure that assigned a property in one of them would be doing the work
-     * where the shape is being decided.
-     */
-    private function tell(Stack $stack, Session $session, AgreedTo $agreed): AsText
-    {
-        return $this->supervising->told($stack, $session, $agreed)->either(
-            started: static fn(Job $job): AsText => AsText::of($job->shown()),
-            met: function (Obstacle $why) use ($stack): AsText {
-                // The verb's refusal lets go of the session too, and not only
-                // the reading's. A stack that refuses a credential on a stop is
-                // the same signed-out device as one that refuses it on a read,
-                // and this is the call that happens the moment somebody taps.
-                $this->letGoOfTheSession($why, $stack);
-
-                return AsText::of($why->said());
-            },
-        );
     }
 
     /** Ask the stack to rehearse starting that form, or say what stood in the way. */

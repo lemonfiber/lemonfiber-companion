@@ -439,4 +439,26 @@ enum WireField: string implements NamesAWireField
      * walkthrough is asked to walk by.
      */
     case Item = 'item';
+
+    /**
+     * What a set of services amounts to, as one word: the whole stack on a
+     * reading of what is running, and the services a verb acted on in its
+     * report.
+     */
+    case Condition = 'condition';
+
+    /**
+     * Two things held under one word: every credential a stack holds, and why
+     * a start the stack declined ran nothing.
+     */
+    case Held = 'held';
+
+    /** The host port a conflict is about, on a survey and on a verb's report. */
+    case Port = 'port';
+
+    /** The lemonfiber service that would publish a port already held. */
+    case WantedBy = 'wanted_by';
+
+    /** The project already holding it. */
+    case HeldBy = 'held_by';
 }

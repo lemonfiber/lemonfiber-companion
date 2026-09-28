@@ -66,6 +66,67 @@
 @else
     <x-operator::heading>{{ $this->thing()->service?->name ?? $this->thing()->named }}</x-operator::heading>
 
+    @if ($this->whatItCameTo()->wasAsked)
+        {{-- What the last verb sent from here came to, from the stack's own
+             report of it. The listing below says where things stand; this
+             says what the verb did, which the listing cannot. --}}
+        <x-operator::emphasis>{{ __('health.came_to.heading') }}</x-operator::emphasis>
+
+        @if (! $this->whatItCameTo()->went->cameBack())
+            <x-operator::what-stopped-the-reading
+                :went="$this->whatItCameTo()->went"
+                :sign-in-goes-to="$this->goes()->signIn()"
+            />
+        @elseif ($this->whatItCameTo()->isWorking)
+            <native:text>{{ __('health.came_to.running') }}</native:text>
+            <x-operator::note>
+                {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
+            </x-operator::note>
+        @elseif ($this->whatItCameTo()->hasEnded)
+            {{-- Not a failure: it may well have worked, and the listing is
+                 where to look. --}}
+            <native:text>{{ __('health.came_to.no_outcome') }}</native:text>
+        @else
+            @if ($this->whatItCameTo()->wasRehearsed)
+                {{-- A rehearsal changed nothing, and every sentence below is
+                     worded as what would happen. --}}
+                <x-operator::emphasis>{{ __('health.came_to.a_rehearsal') }}</x-operator::emphasis>
+            @endif
+
+            <native:text>{{ __($this->whatItCameTo()->cameToSaid, ['why' => $this->whatItCameTo()->because]) }}</native:text>
+            <x-operator::note>{{ __($this->whatItCameTo()->amountsToSaid) }}</x-operator::note>
+
+            @if ($this->whatItCameTo()->namesWhatDidNotComeBack)
+                {{-- Every service short of running, by name and with where it
+                     stood: a restart that brought back four of five is never
+                     a completed start, and the fifth is the one to go to. --}}
+                @forelse ($this->whatItCameTo()->notBack as $service)
+                    <x-operator::note>{{ __('health.came_to.not_back', ['name' => $service->name, 'runs' => __($service->runsSaid)]) }}</x-operator::note>
+                @empty
+                    <x-operator::note>{{ __('health.came_to.none_named') }}</x-operator::note>
+                @endforelse
+            @endif
+
+            @forelse ($this->whatItCameTo()->leftOut as $left)
+                {{-- Left out on purpose, with what it needed, so a service
+                     filtered by the configuration never reads as one that
+                     failed. --}}
+                <x-operator::note>{{ __($this->whatItCameTo()->leftOutSaid, ['name' => $left->name, 'needs' => __($left->needsSaid)]) }}</x-operator::note>
+            @empty
+                {{-- Nothing left out is nothing to say about the verb. --}}
+            @endforelse
+
+            @forelse ($this->whatItCameTo()->portsHeld as $held)
+                {{-- The stack goes ahead where a port is shared, and names
+                     both sides so a service that cannot bind can be traced
+                     to what holds its port. --}}
+                <x-operator::note>{{ __('health.came_to.port_held', ['port' => $held->port, 'wanted_by' => $held->wantedBy, 'held_by' => $held->heldBy]) }}</x-operator::note>
+            @empty
+                {{-- No port it wanted was held, which is the ordinary case. --}}
+            @endforelse
+        @endif
+    @endif
+
     @if ($this->thing()->isAForm)
         {{-- What a form is, said once, because the verbs below reach every
              service in it and that is more than the word suggests. --}}

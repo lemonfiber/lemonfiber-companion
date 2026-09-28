@@ -150,14 +150,14 @@ final readonly class Rosters
      */
     private static function condition(array $data): HowTheStackIsRunning
     {
-        if (! array_key_exists(StatusField::Condition->value, $data)) {
-            throw RosterIsUnreadable::missing(StatusField::Condition);
+        if (! array_key_exists(WireField::Condition->value, $data)) {
+            throw RosterIsUnreadable::missing(WireField::Condition);
         }
 
-        $said = $data[StatusField::Condition->value];
+        $said = $data[WireField::Condition->value];
 
         if (! is_string($said)) {
-            throw RosterIsUnreadable::missing(StatusField::Condition);
+            throw RosterIsUnreadable::missing(WireField::Condition);
         }
 
         return HowTheStackIsRunning::tryFrom($said) ?? throw RosterIsUnreadable::condition($said);

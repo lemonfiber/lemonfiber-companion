@@ -170,3 +170,30 @@ it('B2-R10 — the seven states an operator must be told apart are each here', f
         implode(', ', $said),
     ));
 });
+
+it('counts a service as back only where it is up, or where the host runs it', function (): void {
+    // The whole table, for the reason the verbs above are read as one: a state
+    // that quietly started counting as back is a restart naming one fewer
+    // service than did not come back, and only a row that stopped matching
+    // would say so.
+    $back = [];
+
+    foreach (HowAServiceRuns::cases() as $runs) {
+        $back[$runs->value] = $runs->cameBack();
+    }
+
+    expect($back)->toBe([
+        'failed' => false,
+        'crash-looping' => false,
+        // Up and answering badly is not back: the household meets the badly.
+        'unhealthy' => false,
+        'absent' => false,
+        'stopped' => false,
+        // Still on its way when the stack stopped waiting.
+        'starting' => false,
+        'running' => true,
+        'healthy' => true,
+        // The host's to bring back, not this stack's.
+        'host-managed' => true,
+    ]);
+});

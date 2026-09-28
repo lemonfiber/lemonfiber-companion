@@ -39,7 +39,8 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N2-R7` | Start, stop and restart, by service and by form | `WhatThisStackRuns`, `WhatToDoWithThis`. The forms offered are the ones the stack's own list names, read by `Repertoires` — the `forms` on the status reading are only the forms that reading asked about, which is none — and a service's compose `profile` is not read, so no row shows one and none is asked for as a form (`B1-R8`) |
+| `N2-R7` | Start, stop and restart, by service and by form | `WhatThisStackRuns`, `WhatToDoWithThis`. The forms offered are the ones the stack's own list names, read by `Repertoires` — the `forms` on the status reading are only the forms that reading asked about, which is none — and a service's compose `profile` is not read, so no row shows one and none is asked for as a form (`B1-R8`). A verb sent from `WhatToDoWithThis` is followed to what the stack reports it came to, by `FollowsWhatTheVerbCameTo` through `Supervising::whatBecameOf()`, and drawn under the thing's name |
+| `N16-R6` | A restart that did not bring everything back names what did not come back, and is never a completed start | `WhatToDoWithThis`, drawing `HowAVerbEndedReads`: *it did not bring everything back* and each service short of running with where it stood, unless the stack called those services `active` and named none of them |
 | `N2-R8` | A disruptive action states what it disturbs, and for how long, before the yes | the yes is built from the listing and never from the tap |
 | `N2-R4` | What this machine would put right, stated before any yes | `WhatWouldBePutRight` |
 | `N2-R5` | Agreeing is a separate act against a named listing | `Confirmed` is built and unreachable until then |

@@ -17,9 +17,6 @@ enum CredentialsField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Every credential the stack holds, whether or not it is present. */
-    case Held = 'held';
-
     /** Everything that authenticates with one credential. */
     case Consumers = 'consumers';
 

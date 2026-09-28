@@ -35,6 +35,11 @@ requirement is right and this page is a defect.
 | `N2-R21` | Something the machine's own configuration never declared is not presented as part of the stack | `SomethingElseRunning`, a type of its own rather than a `Daemon` with a flag |
 | `N1-R27` | A state that resolves on its own is the one a stated cadence exists for | `HowAServiceRuns` |
 | `B2-R15` | A service the host runs is reported as host-managed and is never started or stopped from here | `HowAServiceRuns::HostManaged`, with no control drawn beside it. The rule elsewhere is *offer the action and report the refusal*; this is the narrow case where there is no action to offer, because the control does not exist rather than being out of reach |
+| `N16-R6` | A restart that did not bring everything back names what did not come back, and is not reported as a completed start | `WhatTheVerbCameTo::broughtEverythingBack()`, true only where the stack called the services `active` and named none of them short of up, so a report that leaves the condition out is not a completed start either. `whatDidNotComeBack()` asks `HowAServiceRuns::cameBack()` of each service the stack waited for: back is running or healthy, and a service the host runs is not this stack's to bring back. `Lifecycles` reads the report a verb's handle is redeemed for, and `HowAVerbEndedReads` says *it did not bring everything back* and names each service with where it stood. A start the stack declined is `WhatTheVerbCameTo::declined()`, which refuses a blank reason, and `whetherItRan()` hands the reason to its own arm, drawn rather than said as nothing |
+| `N6-R1` | A rehearsed verb is labelled as one and not described as having happened | `WhatTheVerbCameTo::was()`, which `Lifecycles` requires rather than defaults. `HowAVerbEndedReads` heads the report as a rehearsal, words what was left out as what *would be*, and names nothing as not having come back, because nothing was brought up |
+| `N18-R3` | A service a verb's plan filtered out is shown as filtered, with its reason | `WhatTheVerbCameTo::leftOut()`, read from `plan.filtered` by the same `WhatWasLeftOut` the listing and the rehearsal read theirs with |
+| `N7-R5` | A port a verb wanted that something else holds names what holds it | `WhatTheVerbCameTo::portsHeld()`, read from `port_conflicts` into the `APortHeld` the survey uses: the port, the service that wants it and the project holding it |
+| `N1-R27` | A verb sent is followed on a stated cadence until the stack reports | `WhatToDoWithThis::whileItSettles()` asks again while `FollowsWhatTheVerbCameTo` says the verb is running, and the cadence is stated beside it. `Supervisors::whatBecameOf()` reads `NoSuchJob` as ended, which the screen says as no outcome rather than as a failure |
 | `B2-R16` | An operation says what it will disturb before it acts, and names the bound rather than leaving it to be guessed | `AgreedTo`, which `Supervising::told()` is the only way past and which cannot be constructed without the thing, the verb and what the operator was shown — so rendering a listing produces none. `WhatLeansOnIt` is the bound it names, *stopping this will also stop these*, carried as a type rather than an array so the sentence cannot come out empty |
 
 ## Keeping up to date
@@ -95,10 +100,13 @@ command's name alone, and an install of the guard reaches the operator as the
 stack's own refusal, in its words, through `HowTheHandoverWent::refused()`.
 `N1-R17` is why it is not guessed from the command's name.
 
-`N16-R5` to `N16-R7` are not answered here. They are about the stack's own
-autostart (`B8`) — whether it is configured, and what a restart did and did not
-bring back — and no envelope reports it. `hosting` is a different subject, and
-`N1-R17` is why its standings are not offered as an answer to these.
+`N16-R5` and `N16-R7` are not answered here. They are about the stack's own
+autostart (`B8`) — whether it is configured, and whether a check after a boot
+ran — and no envelope reports either. `N16-R6` is answered under *Starting and
+stopping* for a start or a restart sent from this app; a start the machine made
+on its own at a boot is not one this app holds a handle for. `hosting` is a
+different subject, and `N1-R17` is why its standings are not offered as an
+answer to these.
 
 ## What a machine is set to, and who put things there
 
