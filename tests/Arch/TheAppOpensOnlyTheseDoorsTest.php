@@ -104,17 +104,17 @@ const DOORS_THE_APP_OPENS = [
     // something through — which this app cannot add a name to at a call site.
     'act' => 'asks for one of the verbs the list below explains, by a name the rule below holds it to',
 
-    // The one door that does nothing to anybody's machine: it hands back the
-    // client's own transport. Opened in exactly one place and for the opposite
-    // of the usual reason — `Modules\Dx\Api\ClientsThatReachNothing` takes the
-    // transport to put a mock under it, so that a build somebody is looking at
-    // answers every screen without a stack and without a socket.
+    // The one door that does nothing to anybody's machine: it answers every
+    // request from a mock, so none reaches a stack. Opened in exactly one place
+    // and for the opposite of the usual reason — `Modules\Dx\Api\ClientsThatReachNothing`
+    // uses it so that a build somebody is looking at answers every screen
+    // without a stack and without a socket.
     //
     // Listed rather than exempted, because the rule is about what this app *can*
-    // do and reaching a client's transport is a real capability. What bounds it
-    // is the pinning rule: the transport can be taken but not built, and a request
-    // written through it still carries the pin that stack was introduced under.
-    'connector' => 'takes the client\'s own transport, so a stand-in can answer from the contract instead of the network',
+    // do and standing a mock in for a stack is a real capability. What bounds it
+    // is the SDK: the client still refuses a request for anywhere but its own
+    // stack, and still holds that stack to the pin it was introduced under.
+    'withMockClient' => 'answers every request from the contract instead of the network, so a stand-in reaches no stack',
 ];
 
 /** Every verb this application can ask a stack for, and why that one. */

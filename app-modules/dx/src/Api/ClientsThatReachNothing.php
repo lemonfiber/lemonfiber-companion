@@ -73,7 +73,7 @@ final readonly class ClientsThatReachNothing implements Clients
         // Which machine it is decides what it answers with, and a stack this
         // module has never heard of behaves as the working one —
         // {@see AStandInStack} says why that, rather than a decision made here.
-        $client->connector()->withMockClient(
+        $client->withMockClient(
             WhatTheWireWouldAnswer::asFarAs(AStandInStack::howAStackOfThisIdentityBehaves($stack->id())),
         );
 
