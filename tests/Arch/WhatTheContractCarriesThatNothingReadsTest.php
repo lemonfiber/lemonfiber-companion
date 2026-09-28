@@ -1067,6 +1067,13 @@ it('N1-R17 — every envelope a reader opens is one the reading was seated on', 
     $lost = [];
 
     foreach ($opened as $envelope) {
+        // A payload the contract declares as a bare value, such as a start's
+        // one line, has no field for a reach to seat on and no path the
+        // register could be told is unread. Reading it is taking the value.
+        if (in_array(WhatTheContractDeclares::shapeOf($envelope), ['string', 'int', 'bool'], strict: true)) {
+            continue;
+        }
+
         if (! in_array($envelope, $seated, strict: true)) {
             $lost[] = $envelope;
         }

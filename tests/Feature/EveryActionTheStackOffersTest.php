@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Generated\Kind;
+use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Tree;
 use Tests\Support\WhatTheReadersRead;
 
@@ -38,8 +39,8 @@ const OFFERED = [
     'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Clients', 'Config', 'Credentials',
     'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household',
     'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'Outbound', 'Preview', 'Provenance',
-    'Quality', 'Repair', 'Replacement', 'Restore', 'Seed', 'SelfUpdate', 'Space', 'Status', 'Stored', 'Stuck', 'Trace',
-    'Update', 'Upgrade', 'Walkthrough',
+    'Quality', 'Repair', 'Replacement', 'Restore', 'Seed', 'SelfUpdate', 'Space', 'Start', 'Status', 'Stored', 'Stuck',
+    'Trace', 'Update', 'Upgrade', 'Walkthrough',
 ];
 
 /**
@@ -91,8 +92,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Catalogue', 'Plugins', 'Removal', 'Reset', 'Start', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall',
-    'Version',
+    'Catalogue', 'Plugins', 'Removal', 'Reset', 'Step', 'StopSeeding', 'Substitution', 'Undo', 'Uninstall', 'Version',
     'Watch', 'Wiring', 'Word',
 ];
 
@@ -145,6 +145,19 @@ function everyKindThisAppOpens(): array
         $kinds[] = str_replace('Envelope', '', $envelope);
     }
 
+    // A payload the contract declares as one bare value has no field for the
+    // following to seat on, so a reader of one is found by where it opens it.
+    foreach (Tree::filesUnder(Tree::at('app-modules/sdk/src'), '.php') as $file) {
+        preg_match_all('/\b([A-Z][A-Za-z]+)Envelope::in\(/', (string) file_get_contents($file), $opened);
+
+        foreach ($opened[1] as $kind) {
+            if (in_array(WhatTheContractDeclares::shapeOf(sprintf('%sEnvelope', $kind)), ['string', 'int', 'bool'], strict: true)) {
+                $kinds[] = $kind;
+            }
+        }
+    }
+
+    $kinds = array_values(array_unique($kinds));
     sort($kinds);
 
     return $kinds;
