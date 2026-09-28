@@ -10,6 +10,7 @@ use function array_values;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatWasHeard;
 
 /**
@@ -32,6 +33,11 @@ final class AStackThatSpeaksUp implements Hearing
 
     private int $lettingsGo = 0;
 
+    private int $nextLine = 0;
+
+    /** @var list<WhatAStartWaitsOn> */
+    private array $lines = [];
+
     /** @param list<WhatWasHeard> $script */
     private function __construct(
         private array $script,
@@ -48,6 +54,31 @@ final class AStackThatSpeaksUp implements Hearing
     public static function thenEnding(WhatWasHeard ...$said): self
     {
         return new self(array_values($said), WhatWasHeard::closed());
+    }
+
+    /**
+     * A stream that says these about a running start in turn, and then nothing new.
+     *
+     * Separate from the summaries, because one screen asks one question of a
+     * stream: a screen following a start never asks for the health summary.
+     */
+    public static function whileItStarts(WhatAStartWaitsOn ...$said): self
+    {
+        $stream = new self([], WhatWasHeard::nothing());
+        $stream->lines = array_values($said);
+
+        return $stream;
+    }
+
+    public function whatAStartWaitsOn(Stack $stack, Session $session): WhatAStartWaitsOn
+    {
+        $this->asked++;
+
+        if (! array_key_exists($this->nextLine, $this->lines)) {
+            return WhatAStartWaitsOn::nothingNew();
+        }
+
+        return $this->lines[$this->nextLine++];
     }
 
     public function howItIs(Stack $stack, Session $session): WhatWasHeard

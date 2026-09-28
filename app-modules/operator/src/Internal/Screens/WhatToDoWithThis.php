@@ -12,6 +12,7 @@ use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rehearsing;
@@ -29,6 +30,7 @@ use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
+use Modules\Operator\Internal\ViewModels\AStartLineAsShown;
 use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 use Modules\Operator\Internal\ViewModels\WhatOneThingIs;
@@ -107,11 +109,20 @@ final class WhatToDoWithThis extends NativeComponent
     /** What starting this form would come to, once the frame has asked. Public for {@see HowCurrentThisStackIs::$answered}'s reason. */
     public ?WhatStartingItWouldShow $rehearsed = null;
 
+    /**
+     * The stack's last line for what a start sent from here is waiting for.
+     *
+     * Kept between frames because the newest line replaces the one before,
+     * and a wake that heard nothing new still has the last one to show.
+     */
+    public string $waitsOn = '';
+
     public function __construct(
         private readonly Supervising $supervising,
         private readonly Rehearsing $rehearsing,
         private readonly SecureStorage $storage,
         private readonly Stacks $stacks,
+        private readonly Hearing $hearing,
     ) {}
 
     /**
@@ -267,6 +278,8 @@ final class WhatToDoWithThis extends NativeComponent
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItSettles(): void
     {
+        $this->listenWhileItStarts();
+
         if ($this->whatItCameTo()->isWorking || $this->answer()->isSettling) {
             $this->again();
         }
@@ -327,8 +340,41 @@ final class WhatToDoWithThis extends NativeComponent
      */
     private function send(AgreedTo $agreed): void
     {
+        $this->waitsOn = '';
         $this->tellIt($agreed);
         $this->answered = null;
+    }
+
+    /**
+     * Take the stack's newest line for what a running start waits on.
+     *
+     * Only while a start or a restart sent from here runs: that is when the
+     * stack says what the wait is for, and its line is drawn in place of this
+     * screen's own. Once the verb has finished the stream is let go of. A
+     * stream that could not be heard keeps the last line, because the verb's
+     * own report is what says whether anything stood in the way.
+     */
+    private function listenWhileItStarts(): void
+    {
+        $stack = $this->stack();
+        $sent = $this->sent;
+
+        if (! $this->whatItCameTo()->isWorking || ! $sent instanceof AgreedTo || ! $sent->doing()->bringsSomethingUp()) {
+            $this->hearing->letGo();
+
+            return;
+        }
+
+        $kept = new AStartLineAsShown($this->waitsOn);
+
+        $this->waitsOn = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): AStartLineAsShown => $this->hearing->whatAStartWaitsOn($stack, $session)->either(
+                saying: static fn(string $line): AStartLineAsShown => new AStartLineAsShown($line),
+                nothingNew: static fn(): AStartLineAsShown => $kept,
+                met: static fn(): AStartLineAsShown => $kept,
+            ),
+            notHeld: static fn(): AStartLineAsShown => $kept,
+        )->said;
     }
 
     /** Ask the stack to rehearse starting that form, or say what stood in the way. */

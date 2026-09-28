@@ -35,6 +35,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatRehearses;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
@@ -83,7 +84,7 @@ function theThingScreen(
     }
 
     $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none())));
-    $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, StacksInMemory::holding($stack), AStackThatSpeaksUp::whileItStarts());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
     return $screen;
