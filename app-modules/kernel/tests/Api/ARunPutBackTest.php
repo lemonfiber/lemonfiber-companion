@@ -16,8 +16,10 @@ use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\UndoSaysNothing;
 use Modules\Kernel\Api\WhatGoingBackDoes;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWentBack;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyItWasNotPutBack;
 
 use function sprintf;
 
@@ -44,6 +46,7 @@ function whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing $going): string
     return $going->either(
         stillRunning: static fn(): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo('running'),
         done: static fn(ARunPutBack $report): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('done, %s', $report->rehearsed()->value)),
+        refused: static fn(WhyItWasNotPutBack $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('refused, %s', $why->summary())),
         ended: static fn(): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo('ended'),
         met: static fn(Obstacle $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo($why->name),
     )->said;
@@ -103,9 +106,12 @@ it('is complete only where nothing was left', function (): void {
         ->and(aRunPutBackLeaving(ChangesAndWhy::these(AChangeAndWhy::said('sonarr', 'it did not answer')))->leftNothing())->toBeFalse();
 });
 
-it('follows a run going back to each of its four arms', function (): void {
+it('follows a run going back to each of its five arms', function (): void {
+    $refused = WhyItWasNotPutBack::said('Nothing was changed at 1790150000', '', WhatTheRefusalNamed::nothing());
+
     expect(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::stillRunning()))->toBe('running')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::done(aRunPutBackLeaving(ChangesAndWhy::these(), WhetherItWasRehearsed::Rehearsed))))->toBe('done, rehearsed')
+        ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::refused($refused)))->toBe('refused, Nothing was changed at 1790150000')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::ended()))->toBe('ended')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::met(Obstacle::StackDidNotAnswer)))->toBe(Obstacle::StackDidNotAnswer->name);
 });

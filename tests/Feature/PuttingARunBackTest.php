@@ -23,10 +23,12 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\WhatGoingBackDoes;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWentBack;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Operator\Internal\Presenters\HowTheRecordReads;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
@@ -194,6 +196,7 @@ function everythingPuttingTheRunBackShows(HowPuttingARunBackWent $went): array
         'reversed' => array_map(static fn(AChangeGoneBackAsShown $row): array => [$row->target, $row->doesSaid], $went->reversed),
         'left' => array_map(static fn(AChangeAndWhyAsShown $row): array => [$row->target, $row->because], $went->left),
         'noted' => array_map(static fn(AChangeAndWhyAsShown $row): array => [$row->target, $row->because], $went->noted),
+        'refused' => [$went->refused, $went->refusedMeaning, $went->refusedNamed],
     ];
 }
 
@@ -218,6 +221,7 @@ function nothingReportedOfTheRun(array $changed): array
         'reversed' => [],
         'left' => [],
         'noted' => [],
+        'refused' => ['', '', ''],
         ...$changed,
     ];
 }
@@ -494,6 +498,46 @@ it('says what stood in the way of a yes the stack refused, and reads the record 
         ->and($screen->answer()->went->cameBack())->toBeTrue()
         ->and($history->askings())->toBe(2)
         ->and($puttingBack->followed())->toBe([]);
+});
+
+it('says a run the stack would not put back in its words, apart from a stack that could not be reached, and does not offer asking again', function (): void {
+    $why = WhyItWasNotPutBack::said(
+        "A region lemonfiber wrote into one of the stack's files could not be taken out",
+        'Everything before it was put back; this region is still in the file.',
+        WhatTheRefusalNamed::as('/srv/stack/compose.yaml: permission denied'),
+    );
+    $screen = aRunAgreedToAndAskedAfter(HowPuttingARunBackIsGoing::refused($why));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $unreachable = thePuttingARunBackScreen(AStackThatKeepsARecord::with(aRecordHoldingTheRun()), AStackThatPutsRunsBack::met(Obstacle::StackDidNotAnswer));
+    $unreachable->answer();
+    $unreachable->agree();
+
+    expect(everythingPuttingTheRunBackShows($screen->done()))->toBe(nothingReportedOfTheRun(['refused' => [
+        "A region lemonfiber wrote into one of the stack's files could not be taken out",
+        'Everything before it was put back; this region is still in the file.',
+        '/srv/stack/compose.yaml: permission denied',
+    ]]))
+        ->and($screen->isWorking())->toBeFalse()
+        ->and($drawn->said())->toContain(__('stacks.run_back.refused'))
+        ->and($drawn->said())->toContain("A region lemonfiber wrote into one of the stack's files could not be taken out")
+        ->and($drawn->said())->toContain('Everything before it was put back; this region is still in the file.')
+        ->and($drawn->said())->toContain(__('stacks.run_back.refused_named', ['named' => '/srv/stack/compose.yaml: permission denied']))
+        ->and($drawn->said())->toContain(__('stacks.run_back.refused_same_answer'))
+        ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->offers())->toContain(__('stacks.record.road_in'))
+        ->and($drawn->offers())->not->toContain(__('health.ask_again'))
+        ->and(WhatTheDeviceWouldDraw::by($unreachable)->said())->not->toContain(__('stacks.run_back.refused'))
+        ->and(WhatTheDeviceWouldDraw::by($unreachable)->offers())->toContain(__('health.ask_again'));
+});
+
+it('draws only the stack\'s sentence where it meant and named nothing more', function (): void {
+    $why = WhyItWasNotPutBack::said('Nothing was changed at 1790150000', '', WhatTheRefusalNamed::nothing());
+    $said = WhatTheDeviceWouldDraw::by(aRunAgreedToAndAskedAfter(HowPuttingARunBackIsGoing::refused($why)))->said();
+
+    expect(whereOnTheFrameItIsSaid($said, __('stacks.run_back.refused_same_answer')) - whereOnTheFrameItIsSaid($said, __('stacks.run_back.refused')))
+        ->toBe(2)
+        ->and(whereOnTheFrameItIsSaid($said, 'Nothing was changed at 1790150000'))
+        ->toBe(whereOnTheFrameItIsSaid($said, __('stacks.run_back.refused')) + 1);
 });
 
 it('asks after the same handle when asked again after a yes the stack took on', function (): void {

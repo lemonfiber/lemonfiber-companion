@@ -24,9 +24,11 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\WhatGoingBackDoes;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWentBack;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Reversers;
 use Saloon\Http\Faking\MockClient;
@@ -170,9 +172,64 @@ function whatBecameOfPuttingARunBack(PuttingARunBack $puttingBack): string
                 changesAndWhySaid($report->noted()),
             ));
         },
+        refused: static fn(WhyItWasNotPutBack $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid(sprintf(
+            'refused: %s | %s | %s',
+            $why->summary(),
+            $why->meaning(),
+            $why->named()->forTheOperator(),
+        )),
         ended: static fn(): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid('ended'),
         met: static fn(Obstacle $why): WhatPuttingARunBackSaid => new WhatPuttingARunBackSaid($why->name),
     )->said;
+}
+
+/**
+ * The problem a stack stops putting a run back on, as the error envelope it answers asking after it with.
+ *
+ * @return array<string, mixed>
+ */
+function aProblemThatStoppedTheRun(string $code, string $summary, string $meaning, ?string $detail = null): array
+{
+    $problem = [
+        'code' => $code,
+        'severity' => 'error',
+        'state' => 'actionable',
+        'summary' => $summary,
+        'meaning' => $meaning,
+        'remedies' => [['action' => 'Deal with that change first, or restore from a backup']],
+    ];
+
+    return ['api_version' => 1, 'kind' => 'error', 'data' => $detail === null ? $problem : [...$problem, 'detail' => $detail]];
+}
+
+/**
+ * Every problem the stack documents stopping `undo` on, each with the line it folds to.
+ *
+ * The four the undo command raises before it touches anything, and a change
+ * that could not be reversed part of the way through, which names the file.
+ *
+ * @return array<string, array{array<string, mixed>, WhyItWasNotPutBack, string}>
+ */
+function everyProblemARunStopsOn(): array
+{
+    $table = [
+        'no run under the stamp' => ['UNDO-1', 'Nothing was changed at 1790150000', 'No run in the record carries the stamp 1790150000. It may have fallen outside the horizon the record keeps, or the stamp may be mistyped. Nothing was put back.', null],
+        'more than one run under the stamp' => ['UNDO-2', 'More than one run is stamped 1790150000', '1790150000 names add and pin, and putting back the wrong one is not something to guess at. Nothing was put back.', null],
+        'a change that cannot be reversed' => ['UNDO-3', 'The run stamped 1790150000 cannot be put back', 'One of its changes, against sonarr, cannot be reversed: the service was removed since. A run goes back whole or not at all, so nothing was put back.', null],
+        'nowhere to look' => ['UNDO-4', 'This run has nowhere it knows to look for what was changed', 'What lemonfiber changed is recorded in its own directory, and this machine would not say where that is. Nothing was put back.', null],
+        'a region that could not be taken out' => ['SETUP-12', "A region lemonfiber wrote into one of the stack's files could not be taken out", 'Everything before it was put back; this region is still in the file.', '/srv/stack/compose.yaml: permission denied'],
+    ];
+    $cases = [];
+
+    foreach ($table as $name => [$code, $summary, $meaning, $detail]) {
+        $cases[$name] = [
+            aProblemThatStoppedTheRun($code, $summary, $meaning, $detail),
+            WhyItWasNotPutBack::said($summary, $meaning, $detail === null ? WhatTheRefusalNamed::nothing() : WhatTheRefusalNamed::as($detail)),
+            sprintf('refused: %s | %s | %s', $summary, $meaning, $detail ?? ''),
+        ];
+    }
+
+    return $cases;
 }
 
 /** What a stack answers a yes it took on with. */
@@ -295,6 +352,39 @@ it('asking after a run tells a refused session from a stack that is not answerin
     }
 });
 
+it('a run the stack would not put back is its refusal, in its words, with what it meant and named', function (): void {
+    foreach (everyProblemARunStopsOn() as $case => [$body, $why, $said]) {
+        foreach (everyWayOfPuttingARunBack(MockResponse::make((string) json_encode($body), 500), HowPuttingARunBackIsGoing::refused($why)) as $which => $build) {
+            expect(whatBecameOfPuttingARunBack($build()))->toBe($said, sprintf('%s, %s', $case, $which));
+        }
+    }
+});
+
+it('a problem at a status that says who may ask is still what was met', function (): void {
+    $body = (string) json_encode(aProblemThatStoppedTheRun('UNDO-1', 'Nothing was changed at 1790150000', 'Nothing was put back.'));
+    $table = [
+        [MockResponse::make($body, 401), Obstacle::CredentialWasRefused],
+        [MockResponse::make($body, 403), Obstacle::NotForThisAccount],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        MockClient::destroyGlobal();
+        MockClient::global([$answered]);
+        expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->name);
+    }
+});
+
+it('an answer holding no problem the stack wrote is a stack that did not answer, not a refusal', function (MockResponse $answered): void {
+    MockClient::destroyGlobal();
+    MockClient::global([$answered]);
+
+    expect(whatBecameOfPuttingARunBack(new Reversers(new PinnedClients(), SequencedEntropy::counting())))->toBe(Obstacle::StackDidNotAnswer->name);
+})->with([
+    'a sentence with no problem around it' => [MockResponse::make('This machine would not supply the randomness a job needs to be named.', 500, ['Content-Type' => 'text/plain'])],
+    'a problem with a blank summary' => [MockResponse::make((string) json_encode(aProblemThatStoppedTheRun('UNDO-1', ' ', 'Nothing was put back.')), 500)],
+    'a problem missing its remedies' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'error', 'data' => ['code' => 'UNDO-1', 'severity' => 'error', 'state' => 'actionable', 'summary' => 'Nothing was changed at 1790150000', 'meaning' => 'Nothing was put back.']]), 500)],
+]);
+
 it('the fake remembers the run agreed to and the handle followed', function (): void {
     $puttingBack = AStackThatPutsRunsBack::saying(HowPuttingARunBackIsGoing::stillRunning());
     howPuttingARunBackWasAgreed($puttingBack);
@@ -311,4 +401,8 @@ it('stands in for a stack with payloads the contract would accept', function ():
         ->toBe([])
         ->and(WhatTheContractAccepts::complaintsAbout('UndoEnvelope', whatAStackSaysOfPuttingARunBack(without: ['noted'])))
         ->toBe([]);
+
+    foreach (everyProblemARunStopsOn() as $case => [$body]) {
+        expect(WhatTheContractAccepts::complaintsAbout('ErrorEnvelope', $body))->toBe([], $case);
+    }
 });
