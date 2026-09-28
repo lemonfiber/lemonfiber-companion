@@ -370,6 +370,18 @@ it('asking again reads the services afresh and keeps the report a run came to', 
         ->and($wiring->asked())->toBe(['wire', 'after:j-1']);
 });
 
+it('asking again before anything was drawn reads the services, and starts nothing', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
+    $wiring = AStackThatWires::answering();
+    $screen = theWiringScreen($wiring, supervising: $supervising);
+    $screen->again();
+
+    expect($screen->going)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.wiring.wire'), __('health.ask_again')])
+        ->and($supervising->askings())->toBe(1)
+        ->and($wiring->asked())->toBe([]);
+});
+
 it('asking again lets go of an obstacle met starting a run, and does not start one', function (): void {
     $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::met(Obstacle::StackDidNotAnswer));
     $screen = theWiringScreen($wiring);
