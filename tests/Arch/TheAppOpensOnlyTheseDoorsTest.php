@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Kernel\Api\WhatToDoWithADownload;
+use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasDecided;
@@ -201,6 +202,11 @@ const VERBS_THE_APP_ASKS_FOR = [
     // download go. There is no blanket yes: the offer's own name is the only
     // one the stack takes.
     'stop-seeding' => 'says what stopping seeding one download would cost, and stops it only against that offer',
+    // One run the record shows, named by its stamp. It takes no yes and offers
+    // no rehearsal over the wire, so the only thing that spells it is an
+    // agreement built from the record's own rows for that run — and a run the
+    // record says cannot go back builds none.
+    'undo' => 'puts back one run the record shows, named by its stamp, after the record\'s rows for it were agreed to',
 
     // The one verb that fetches something. It names at most a title, and
     // with none the stack chooses something likely to work; the stack
@@ -497,6 +503,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
         ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
         ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),
+        ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),

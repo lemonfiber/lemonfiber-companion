@@ -49,6 +49,7 @@ use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
+use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
@@ -409,6 +410,10 @@ function everyDerivedKey(): array
         WhereADownloadStands::class => aPairPerCase(
             WhereADownloadStands::cases(),
             static fn(WhereADownloadStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatGoingBackDoes::class => aPairPerCase(
+            WhatGoingBackDoes::cases(),
+            static fn(WhatGoingBackDoes $case): array => [$case->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by

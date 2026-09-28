@@ -17,9 +17,6 @@ enum RepairField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** What one repair would do, said in the stack's own words. */
-    case Does = 'does';
-
     /** What else that repair touches on its way. */
     case Effects = 'effects';
 

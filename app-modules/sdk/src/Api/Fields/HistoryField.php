@@ -32,9 +32,6 @@ enum HistoryField: string implements NamesAWireField
     /** The operation that made one change — a seed, a reconfigure, an applied fix. */
     case Operation = 'operation';
 
-    /** What one change was made to. */
-    case Target = 'target';
-
     /**
      * How many changes the operation behind one change made, it among them.
      *
