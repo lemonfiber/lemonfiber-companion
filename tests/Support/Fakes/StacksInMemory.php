@@ -59,6 +59,21 @@ final class StacksInMemory implements Stacks
         return $device;
     }
 
+    /**
+     * This device, holding what it holds, and refusing every write from here on.
+     *
+     * A pairing refused over a machine already held is the case where the old
+     * pin still stands, so a test needs both at once: something held, and a
+     * store that will not write the replacement.
+     */
+    public function thenRefusing(WhyAStackCannotBeRemembered $why): self
+    {
+        $device = new self($why);
+        $device->held = $this->held;
+
+        return $device;
+    }
+
     /** A device that cannot write one down, and says which nothing stopped it. */
     public static function refusing(WhyAStackCannotBeRemembered $why): self
     {

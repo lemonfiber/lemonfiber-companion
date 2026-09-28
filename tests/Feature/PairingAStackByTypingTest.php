@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
+use Modules\Connection\Api\Remembering;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
@@ -12,8 +13,8 @@ use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\FrozenClock;
-use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Fakes\StacksInMemory;
 
 // Pairing without a camera, and the comparison that makes it
@@ -40,6 +41,7 @@ function typedCode(mixed $digest = null, mixed $expires = 2_000): string
         'address' => 'https://192.168.1.42',
         'fingerprint' => $digest ?? str_repeat('a', Fingerprint::CHARACTERS),
         'expires' => $expires,
+        'stack' => '7f3c9a1e5b2d4086a9c1e3f5b7d90246',
     ]);
 }
 
@@ -47,10 +49,13 @@ function typedCode(mixed $digest = null, mixed $expires = 2_000): string
 function pairingScreen(?WhyAStackCannotBeRemembered $refusing = null): PairByTyping
 {
     return new PairByTyping(
-        new Introducing(SequencedEntropy::counting()),
-        $refusing instanceof WhyAStackCannotBeRemembered
-            ? StacksInMemory::refusing($refusing)
-            : StacksInMemory::working(),
+        new Introducing(),
+        new Remembering(
+            $refusing instanceof WhyAStackCannotBeRemembered
+                ? StacksInMemory::refusing($refusing)
+                : StacksInMemory::working(),
+            AKeychainInMemory::working(),
+        ),
         FrozenClock::at(Instant::atEpochSeconds(READ_AT)),
     );
 }
@@ -113,6 +118,7 @@ it('reads a code naming an unencrypted address as one it cannot use', function (
         'address' => 'http://192.168.1.42',
         'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
         'expires' => 2_000,
+        'stack' => '7f3c9a1e5b2d4086a9c1e3f5b7d90246',
     ]));
 
     expect($screen->isUnreadable())->toBeTrue()

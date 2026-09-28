@@ -16,10 +16,12 @@ use Modules\Kernel\Api\InstantIsBeforeTheEpoch;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\PairingIsNotReadable;
 use Modules\Kernel\Api\PairingIsSpent;
+use Modules\Kernel\Api\StackId;
 use Tests\Support\Fakes\FrozenClock;
 
 const A_STACKS_DIGEST = '3b8c1f09a7d24e6b5c0f81a2d93e47b6c8150af2937d6e4b1c05a8f39d27e64b';
 const A_STACKS_ADDRESS = 'https://stack.local';
+const A_STACKS_OWN_NAME_FOR_ITSELF = '7f3c9a1e5b2d4086a9c1e3f5b7d90246';
 
 /** The moment every test in this file happens at. */
 const NOW = 1_757_808_000;
@@ -36,6 +38,7 @@ function material(
     ?string $address = A_STACKS_ADDRESS,
     ?string $fingerprint = A_STACKS_DIGEST,
     ?int $expires = WHILE_IT_IS_GOOD,
+    ?string $stack = A_STACKS_OWN_NAME_FOR_ITSELF,
     array $also = [],
 ): string {
     $said = [];
@@ -50,6 +53,10 @@ function material(
 
     if ($expires !== null) {
         $said['expires'] = $expires;
+    }
+
+    if ($stack !== null) {
+        $said['stack'] = $stack;
     }
 
     return (string) json_encode([...$said, ...$also]);
@@ -104,6 +111,21 @@ it('names which half was missing, and how it was read', function (): void {
 
     expect(fn(): Pairing => Pairing::read(material(address: null), HowItWasRead::Scanned, whenItIsRead()))
         ->toThrow(PairingIsNotReadable::class, 'read by scanned carried no address');
+});
+
+it('names the machine as the stack names itself', function (): void {
+    $said = Pairing::read(material(), HowItWasRead::Scanned, whenItIsRead());
+
+    expect($said->stack()->is(StackId::saidBy(A_STACKS_OWN_NAME_FOR_ITSELF)))->toBeTrue();
+});
+
+it('refuses material that does not say which machine it is for', function (): void {
+    // Without it the app cannot tell a machine it holds from a new one, and
+    // pairing the same machine twice would put it on the list twice.
+    expect(fn(): Pairing => Pairing::read(material(stack: null), HowItWasRead::Scanned, whenItIsRead()))
+        ->toThrow(PairingIsNotReadable::class, 'read by scanned carried no stack')
+        ->and(fn(): Pairing => Pairing::read(material(stack: '  '), HowItWasRead::Typed, whenItIsRead()))
+        ->toThrow(PairingIsNotReadable::class, 'read by typed carried no stack');
 });
 
 it('refuses a half that is present and empty', function (): void {

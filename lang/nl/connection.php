@@ -71,5 +71,6 @@ return [
     'stack_is_open' => 'Aangemeld',
     'stack_wants_a_password' => 'Vraagt om je wachtwoord',
     'session_has_ended' => 'Je bent afgemeld bij deze stack.',
+    'pair_again' => 'Opnieuw koppelen',
     'start_over' => 'Probeer opnieuw aan te melden',
 ];

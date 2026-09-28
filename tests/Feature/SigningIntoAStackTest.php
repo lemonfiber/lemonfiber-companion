@@ -15,6 +15,7 @@ use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
@@ -175,23 +176,44 @@ it('N1-R10 — tells the three things the operator can meet at a door apart', fu
     }
 });
 
-it('answers a stack that cannot be reached as one that did not answer', function (): void {
-    // Two of `Obstacle`'s six describe something that happened before any
-    // credential was offered and that the operator answers at the machine. On
-    // this screen they are the same situation: they did not get in, nothing
-    // about their password is known, and the thing to look at is the stack.
-    foreach ([
-        Obstacle::DeviceHasNoNetwork,
-        Obstacle::StackIsNotTheOnePaired,
-    ] as $met) {
-        $screen = typedPassword(
-            signInScreen(ADoorThatWasKnockedOn::refusing($met)),
-            'the-operators-password',
-        );
+it('answers a device with no network as a stack that did not answer', function (): void {
+    // On this screen they are the same situation: the operator did not get in,
+    // nothing about their password is known, and the thing to look at is the
+    // machine and the network it is on.
+    $screen = typedPassword(
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::DeviceHasNoNetwork)),
+        'the-operators-password',
+    );
 
-        $screen->offer();
+    $screen->offer();
 
-        expect($screen->went())->toBe(HowTheSignInWent::StackDidNotAnswer, $met->value);
+    expect($screen->went())->toBe(HowTheSignInWent::StackDidNotAnswer);
+});
+
+it('says a changed certificate is not the machine paired, and offers pairing it again', function (): void {
+    // Something answered, and it is not the machine this device was introduced
+    // to. Checking the machine is on would send the operator to one that is
+    // working; offering the password would send it to whatever is answering.
+    $screen = typedPassword(
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::StackIsNotTheOnePaired)),
+        'the-operators-password',
+    );
+
+    $screen->offer();
+
+    expect($screen->went())->toBe(HowTheSignInWent::TheMachineIsNotTheOnePaired)
+        ->and($screen->went()->said())->toBe('connection.fingerprint_changed')
+        ->and($screen->mayTry())->toBeFalse()
+        ->and($screen->mayStartOver())->toBeFalse()
+        ->and($screen->mayPairAgain())->toBeTrue()
+        ->and($screen->pairAgainAt())->toBe(AScreenWithoutAStack::PairByScanning->value)
+        ->and(__('connection.pair_again'))->not->toBe('connection.pair_again');
+});
+
+it('offers pairing again for a changed certificate and for nothing else', function (): void {
+    foreach (HowTheSignInWent::cases() as $went) {
+        expect($went->asksForAnotherPairing())
+            ->toBe($went === HowTheSignInWent::TheMachineIsNotTheOnePaired, $went->value);
     }
 });
 
@@ -278,6 +300,8 @@ it('offers the password field only where typing one could help', function (): vo
         // No field and no way back: the remedy is in the phone's settings, so
         // both controls this screen could offer would do nothing.
         [HowTheSignInWent::TheNetworkIsNotPermitted, false, true],
+        // No field and no way back either: its button is pairing it again.
+        [HowTheSignInWent::TheMachineIsNotTheOnePaired, false, false],
     ];
 
     expect($offered)->toHaveCount(count(HowTheSignInWent::cases()));
@@ -300,12 +324,13 @@ it('N1-R10 — takes the kernel\'s judgement about what a button can help with',
     // spellings of one judgement, and the screen's was written in passing.
     //
     // Held here rather than merged into one type, because they are not the same
-    // set: three of the six obstacles cannot arise from signing in at all. What
+    // set: some obstacles cannot arise from signing in at all. What
     // must hold is that where both have an opinion, it is the same one.
     foreach ([
         Obstacle::CredentialWasRefused,
         Obstacle::TooManyAttempts,
         Obstacle::StackDidNotAnswer,
+        Obstacle::StackIsNotTheOnePaired,
     ] as $why) {
         expect(HowTheSignInWent::met($why)->standing())->toBe($why->standing(), $why->value);
     }
