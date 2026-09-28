@@ -194,6 +194,16 @@ it('asks again when the operator asks it to', function (): void {
     expect($arranging->askings())->toBe(2);
 });
 
+it('offers putting the configuration back on a listing that came back, holding settings or none, and on no other', function (AStackThatIsSet $arranging, bool $offered): void {
+    $offers = WhatTheDeviceWouldDraw::by(theSettingsScreen($arranging))->offers();
+
+    expect(in_array(__('config.put_it_all_back'), $offers, strict: true))->toBe($offered);
+})->with([
+    'holding settings' => [AStackThatIsSet::to(whatTheLoftIsSetTo()), true],
+    'holding none' => [AStackThatIsSet::toNothing(), true],
+    'not answering' => [AStackThatIsSet::met(Obstacle::StackDidNotAnswer), false],
+]);
+
 it('shows the sign-in prompt rather than a listing when the session has gone', function (): void {
     $arranging = AStackThatIsSet::to(whatTheLoftIsSetTo());
     $screen = theSettingsScreen($arranging, signedIn: false);

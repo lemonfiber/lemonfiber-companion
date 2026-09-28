@@ -13,9 +13,10 @@ use function trim;
  *
  * The problem's `detail`: the settings a bundle would have shown, the room it
  * needed, the file a change could not be taken back out of, the file a restore
- * could not write, and, where a bundle would have carried a credential out,
- * the file on the machine and the line the credential sits in. That last is
- * exactly what the operator needs to act on, and exactly what must not travel: a pointer to
+ * could not write, whatever a reset stopped on, and, where a bundle would have
+ * carried a credential out, the file on the machine and the line the
+ * credential sits in. The credential's place is exactly what the operator
+ * needs to act on, and exactly what must not travel: a pointer to
  * where a key is kept is half of the key's way out. So this is drawn on the
  * screen that asked, and redacted the way {@see Address} is from every other
  * reader.

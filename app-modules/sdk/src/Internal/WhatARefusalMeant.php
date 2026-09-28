@@ -124,7 +124,7 @@ final readonly class WhatARefusalMeant
 
         return $obstacle !== Obstacle::StackDidNotAnswer || $said === null || ! $problem instanceof Refusal
             ? $met($obstacle)
-            : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::named($problem)));
+            : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::namedIn($problem)));
     }
 
     public static function obstacle(CertificateWasRefused|RequestFailed $why): Obstacle
@@ -140,10 +140,23 @@ final readonly class WhatARefusalMeant
         };
     }
 
-    /** What the problem named in `detail`, or nothing where it named nothing. */
-    private static function named(Refusal $problem): WhatTheRefusalNamed
+    /**
+     * What a refusal's problem document named in its `detail`, or nothing
+     * where the refusal was prose or named nothing.
+     *
+     * Asked only of a refusal the stack made about the work — a bundle it
+     * would not write, a reset it would not carry out — where what it named
+     * is what the operator acts on.
+     */
+    public static function named(RequestFailed $why): WhatTheRefusalNamed
     {
-        $detail = $problem->detail();
+        return self::namedIn($why->refusal());
+    }
+
+    /** What a problem document named in `detail`, or nothing where there is none or it named nothing. */
+    private static function namedIn(?Refusal $problem): WhatTheRefusalNamed
+    {
+        $detail = $problem instanceof Refusal ? $problem->detail() : null;
 
         return is_string($detail) ? WhatTheRefusalNamed::as($detail) : WhatTheRefusalNamed::nothing();
     }

@@ -247,6 +247,9 @@ enum AStacksScreen: string
     /** Watching one thing arrive, narrated end to end, and the record of what was said. */
     case Walkthrough = '/stacks/{stack}/walkthrough';
 
+    /** Putting the configuration back to lemonfiber's own, previewed file by file before any yes. */
+    case Reset = '/stacks/{stack}/reset';
+
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 

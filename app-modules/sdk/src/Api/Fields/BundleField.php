@@ -44,9 +44,6 @@ enum BundleField: string implements NamesAWireField
     /** The version of the stack it was taken from. */
     case Stack = 'stack';
 
-    /** Where it was written. Absent on a run that only described it. */
-    case Path = 'path';
-
     /** Where it would be written, on a run that only described it. */
     case WouldGo = 'would_go';
 

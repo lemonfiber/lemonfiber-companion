@@ -53,5 +53,8 @@ return [
     'services_will_restart' => 'De betrokken diensten starten opnieuw op.',
     'worth_reading_twice' => 'Deze kan gegevens verplaatsen of een dienst wegnemen.',
 
+    // Waar het terugzetten van elk bewerkt bestand wordt aangeboden.
+    'put_it_all_back' => 'Zet de configuratie terug',
+
     'ask_again' => 'Opnieuw vragen',
 ];

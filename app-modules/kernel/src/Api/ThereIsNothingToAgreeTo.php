@@ -13,7 +13,8 @@ use function sprintf;
  *
  * A confirmation is only ever about something the stack put in front of the
  * operator: a choice it held, an upgrade it described without carrying out,
- * a way of moving in it staged, or a run its record shows can go back.
+ * a way of moving in it staged, a run its record shows can go back, or a
+ * preview of putting the configuration back that would revert something.
  * Building one against anything else means a screen offered a yes it should
  * not have, which is a fault in the surface rather than a situation the
  * operator can resolve.
@@ -51,5 +52,17 @@ final class ThereIsNothingToAgreeTo extends InvalidArgumentException
             'Putting back the run stamped `%s` was agreed to where the record holds none of it or says part of it cannot go back, and the stack puts back a whole run or nothing.',
             $run->stamp(),
         ));
+    }
+
+    /** Putting the configuration back was already carried out, so there is no preview to agree to. */
+    public static function reverted(): self
+    {
+        return new self('A reset was agreed to against one already carried out, and only a preview waits on a yes.');
+    }
+
+    /** The preview reverts no file and no connection, so a yes would agree to nothing. */
+    public static function nothingToRevert(): self
+    {
+        return new self('A reset was agreed to against a preview that reverts nothing, and a yes to nothing is not asked for.');
     }
 }

@@ -620,7 +620,11 @@ enum WireField: string implements NamesAWireField
      */
     case Requests = 'requests';
 
-    /** Whether the operator said yes, so something was changed rather than only described. */
+    /**
+     * Whether the operator said yes: on an upgrade, without it nothing was
+     * asked of any service; on a reset, without it nothing was written; and on
+     * a removal, without it nothing was changed, only described.
+     */
     case Confirmed = 'confirmed';
 
     /** What something would do or did, listed: a copy's own account of itself, or what a removal reaches. */
@@ -634,4 +638,11 @@ enum WireField: string implements NamesAWireField
      * of a removal stays where it is.
      */
     case Kept = 'kept';
+
+    /**
+     * Where a file is: where a support bundle was written, absent on a run
+     * that only described it, and a file a reset reverts, within the stack
+     * directory.
+     */
+    case Path = 'path';
 }

@@ -1,0 +1,78 @@
+<x-operator::screen-opens :title="$this->stack()->name()->shown()" />
+
+@if ($this->answer()->went->cameBack())
+<x-operator::content>
+    <x-operator::heading>{{ __('stacks.reset.heading') }}</x-operator::heading>
+
+@if ($this->answer()->isWorking)
+    <x-operator::emphasis>{{ __($this->answer()->words->working) }}</x-operator::emphasis>
+
+    {{-- The stack says nothing of a job until it finishes, so the screen
+         says how often it asks rather than drawing progress. --}}
+    <x-operator::note>
+        {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
+    </x-operator::note>
+@elseif ($this->answer()->hasEnded)
+    {{-- Not a failure. After a yes the files may well have gone back, and
+         the settings are where to look before asking for anything again. --}}
+    <x-operator::emphasis>{{ __($this->answer()->words->ended) }}</x-operator::emphasis>
+@elseif ($this->answer()->isRefused)
+    {{-- The stack's answer, in its words, and what it named where it named
+         anything. --}}
+    <x-operator::emphasis>{{ __($this->answer()->words->refusal) }}</x-operator::emphasis>
+    <native:text>{{ $this->answer()->refused }}</native:text>
+    @if ($this->answer()->named !== '')
+        <native:text>{{ __('stacks.reset.refused_named', ['named' => $this->answer()->named]) }}</native:text>
+    @endif
+@elseif ($this->answer()->changesNothing)
+    {{-- Said in as many words, and nothing is offered: a yes here would be a
+         yes to nothing. --}}
+    <x-operator::emphasis>{{ __($this->answer()->words->heading) }}</x-operator::emphasis>
+    <native:text>{{ __($this->answer()->words->nothing) }}</native:text>
+@else
+    {{-- Worded in the stack's own tense: a preview in the conditional, and
+         only a report the stack says it carried out in the past. --}}
+    <x-operator::emphasis>{{ __($this->answer()->words->heading) }}</x-operator::emphasis>
+
+    <native:text>{{ __($this->answer()->words->files) }}</native:text>
+    @forelse ($this->answer()->edits as $edit)
+        <x-operator::entry>
+            <x-operator::emphasis>{{ $edit->path }}</x-operator::emphasis>
+            @forelse ($edit->lines as $line)
+                <x-operator::note>{{ __($line->said, ['line' => $line->line]) }}</x-operator::note>
+            @empty
+                <x-operator::note>{{ __($this->answer()->words->noLine) }}</x-operator::note>
+            @endforelse
+        </x-operator::entry>
+    @empty
+        <x-operator::note>{{ __($this->answer()->words->noFile) }}</x-operator::note>
+    @endforelse
+
+    {{-- The connections are part of what it does, not a footnote to it. --}}
+    <native:text>{{ __($this->answer()->words->connections) }}</native:text>
+    @forelse ($this->answer()->connections as $connection)
+        <x-operator::note>{{ $connection }}</x-operator::note>
+    @empty
+        <x-operator::note>{{ __($this->answer()->words->noConnection) }}</x-operator::note>
+    @endforelse
+
+    @if ($this->answer()->mayBeAgreedTo)
+        <x-operator::action label="{{ __('stacks.reset.put_them_back') }}" tap="agree()" />
+    @endif
+@endif
+
+@if ($this->wasAgreedTo())
+    <x-operator::action label="{{ __('stacks.reset.see_the_settings') }}" :goes="$this->goes()->settings()" />
+@endif
+    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+</x-operator::content>
+@else
+    {{-- The stack could not be asked, so there is nothing to agree to and
+         nothing is offered. --}}
+    <x-operator::what-stopped-the-reading
+        :went="$this->answer()->went"
+        :sign-in-goes-to="$this->goes()->signIn()"
+    />
+@endif
+
+<x-operator::screen-closes :goes="$this->goes()" here="health" />
