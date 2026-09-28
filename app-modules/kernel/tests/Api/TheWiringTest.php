@@ -48,6 +48,14 @@ it('keeps every connection in the stack\'s order, with how drift was judged, whe
         ->and($connections)->toBe(['SABnzbd into Sonarr', 'qBittorrent into Radarr'])
         ->and(array_keys(iterator_to_array($wiring, preserve_keys: true)))->toBe([0, 1])
         ->and($wiring)->toHaveCount(2);
+
+    $written = TheWiring::written(
+        HowDriftWasJudged::Assessed,
+        WhatIsUnsupported::none(),
+        ...['a' => aConnectionThat(HowAConnectionEnded::plainly(WhereAConnectionStands::Wired)), 'b' => aConnectionThat(HowAConnectionEnded::failed('401 Unauthorized'), 'qBittorrent into Radarr')],
+    );
+
+    expect(array_keys(iterator_to_array($written, preserve_keys: true)))->toBe([0, 1]);
 });
 
 it('keeps what a connection connects, how serious it is, and how it ended, and refuses one that will not say what it connects', function (): void {
