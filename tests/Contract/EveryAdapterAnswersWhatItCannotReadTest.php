@@ -93,6 +93,7 @@ use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Bundlers;
+use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doorkeepers;
@@ -282,6 +283,7 @@ function everyAdapterCallThatReads(): array
         'Advisers::advisedBy' => static fn(): object => new Advisers($clients)->advisedBy($stack, $session),
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
+        'Cataloguers::describedOn' => static fn(): object => new Cataloguers($clients)->describedOn($stack, $session),
         'Copiers::take' => static fn(): object
             => new Copiers($clients, $entropy)->take($stack, $session, ACopyAsked::ofTheWholeStack()),
         'Copiers::whatBecameOf' => static fn(): object

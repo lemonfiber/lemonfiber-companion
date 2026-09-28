@@ -36,11 +36,11 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Clients', 'Config', 'Credentials',
-    'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household',
-    'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'Outbound', 'Preview', 'Provenance',
-    'Quality', 'Repair', 'Replacement', 'Restore', 'Seed', 'SelfUpdate', 'Space', 'Start', 'Status', 'StopSeeding',
-    'Stored', 'Stuck', 'Trace', 'Undo', 'Update', 'Upgrade', 'Walkthrough',
+    'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Config',
+    'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting',
+    'Household', 'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'Outbound', 'Preview',
+    'Provenance', 'Quality', 'Repair', 'Replacement', 'Restore', 'Seed', 'SelfUpdate', 'Space', 'Start', 'Status',
+    'StopSeeding', 'Stored', 'Stuck', 'Trace', 'Undo', 'Update', 'Upgrade', 'Walkthrough',
 ];
 
 /**
@@ -92,8 +92,8 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Catalogue', 'Certificate', 'Pairing', 'Plugins', 'Removal', 'Reset', 'Step', 'Substitution', 'Uninstall',
-    'Version', 'Watch', 'Wiring', 'Word',
+    'Certificate', 'Pairing', 'Plugins', 'Removal', 'Reset', 'Step', 'Substitution', 'Uninstall', 'Version', 'Watch',
+    'Wiring', 'Word',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {

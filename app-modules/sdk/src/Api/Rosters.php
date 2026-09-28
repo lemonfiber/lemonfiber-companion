@@ -121,7 +121,7 @@ final readonly class Rosters
 
             $found[] = SomethingElseRunning::called(
                 id: WhatTheEngineCallsIt::called(self::text($row, WireField::Id, $position)),
-                describes: self::text($row, StatusField::Describes, $position),
+                describes: self::text($row, WireField::Describes, $position),
                 runs: self::runs($row, $position),
             );
         }
@@ -301,7 +301,7 @@ final readonly class Rosters
      */
     private static function matters(array $row, int $position): HowMuchItMatters
     {
-        $said = self::text($row, StatusField::Criticality, $position);
+        $said = self::text($row, WireField::Criticality, $position);
 
         return HowMuchItMatters::tryFrom($said) ?? throw RosterIsUnreadable::matters($said, $position);
     }
