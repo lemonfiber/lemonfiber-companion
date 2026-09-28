@@ -355,6 +355,17 @@ it('names which service it could not read', function (): void {
     ])))->toThrow(RosterIsUnreadable::class, 'Service 1');
 });
 
+it('names which service needs something it could not read', function (): void {
+    // What a row needs is read across every row before any service is built,
+    // and the refusal still names the row that said it.
+    expect(fn(): object => theRosterIn(aRosterSaying([
+        'disturbs' => whatTheseVerbsCostOnTheWire(),
+        'condition' => 'active',
+        'forms' => [],
+        'services' => [aServiceSaying(), aServiceSaying(['id' => 'radarr', 'depends_on' => [41]])],
+    ])))->toThrow(RosterIsUnreadable::class, 'Service 1 in the status envelope names something in `depends_on`');
+});
+
 it('refuses a row that is not a service at all', function (): void {
     expect(fn(): object => theRosterIn(aRosterSaying([
         'disturbs' => whatTheseVerbsCostOnTheWire(),
@@ -369,7 +380,7 @@ it('refuses a dependency that is only spacing', function (): void {
     // The dependencies are decided after trimming, so one padded into looking
     // like a word is refused here rather than becoming a `ServiceId` that
     // renders as nothing everywhere it is shown — a row leaning on a blank
-    // understates what a stop disturbs, which is the reading `leaning()`'s own
+    // understates what a stop disturbs, which is the reading the refusal's own
     // message says it exists to prevent.
     expect(fn(): object => theRosterIn(aRosterSaying(aRosterOf(['depends_on' => ['jellyfin', "\t"]]))))
         ->toThrow(RosterIsUnreadable::class, 'depends_on');
@@ -382,14 +393,62 @@ it('refuses a dependency that is not a name', function (): void {
         ->toThrow(RosterIsUnreadable::class, 'depends_on');
 });
 
-it('reads what leans on a service', function (): void {
-    $daemons = theRosterIn(aRosterSaying(aRosterOf(['depends_on' => ['jellyfin', 'prowlarr']])));
+/**
+ * Each service's id, and the ids of the services that stop with it.
+ *
+ * @return array<string, list<string>>
+ */
+function whatStopsWithEach(Daemons $daemons): array
+{
+    $said = [];
 
     foreach ($daemons as $daemon) {
-        expect($daemon->whatLeansOnIt()->count())->toBe(2);
+        $said[$daemon->id()->named()] = [];
+
+        foreach ($daemon->whatLeansOnIt() as $leaning) {
+            $said[$daemon->id()->named()][] = $leaning->named();
+        }
     }
 
+    return $said;
+}
+
+it('reads what leans on a service from the services that need it, not from what it needs', function (): void {
+    // The wire says it from the side that needs: `depends_on` on a row names
+    // what that service cannot run without. Stopping the tunnel takes the
+    // download client with it; stopping the download client takes nothing.
+    $daemons = theRosterIn(aRosterSaying([...aRosterOf(), 'services' => [
+        aServiceSaying(['id' => 'gluetun', 'name' => 'Gluetun', 'depends_on' => []]),
+        aServiceSaying(['id' => 'qbittorrent', 'name' => 'qBittorrent', 'depends_on' => ['gluetun']]),
+    ]]));
+
+    expect(whatStopsWithEach($daemons))->toBe(['gluetun' => ['qbittorrent'], 'qbittorrent' => []]);
+});
+
+it('names every service that needs one, in the order the stack listed them', function (): void {
+    $daemons = theRosterIn(aRosterSaying([...aRosterOf(), 'services' => [
+        aServiceSaying(['id' => 'sonarr', 'name' => 'Sonarr', 'depends_on' => ['prowlarr', 'qbittorrent']]),
+        aServiceSaying(['id' => 'prowlarr', 'name' => 'Prowlarr', 'depends_on' => []]),
+        aServiceSaying(['id' => 'radarr', 'name' => 'Radarr', 'depends_on' => ['prowlarr']]),
+        aServiceSaying(['id' => 'qbittorrent', 'name' => 'qBittorrent', 'depends_on' => []]),
+    ]]));
+
+    expect(whatStopsWithEach($daemons))->toBe([
+        'sonarr' => [],
+        'prowlarr' => ['sonarr', 'radarr'],
+        'radarr' => [],
+        'qbittorrent' => ['sonarr'],
+    ]);
+});
+
+it('leans nothing on a service a row needs and the listing does not hold', function (): void {
+    $daemons = theRosterIn(aRosterSaying(aRosterOf(['depends_on' => ['jellyfin', 'prowlarr']])));
+
     expect($daemons->count())->toBe(1);
+
+    foreach ($daemons as $daemon) {
+        expect($daemon->whatLeansOnIt()->count())->toBe(0);
+    }
 });
 
 it('refuses a listing with no services field at all', function (): void {
