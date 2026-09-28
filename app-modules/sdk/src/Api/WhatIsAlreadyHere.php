@@ -70,7 +70,7 @@ final readonly class WhatIsAlreadyHere
             choices: WhatMayBeDone::offered(
                 TheModes::of(...self::modes($data)),
                 WhatAdoptingWouldDo::of(...self::carrying($data)),
-                WhatIsUnsupported::these(...self::limits($data, MigrationField::NotCarried)),
+                WhatIsUnsupported::these(...self::limits($data, WireField::NotCarried)),
             ),
         );
     }
@@ -131,7 +131,7 @@ final readonly class WhatIsAlreadyHere
 
             $found[] = AServiceStanding::found(
                 Required::text($row, WireField::Service, MigrationIsUnreadable::service($at, $position, WireField::Service)),
-                ThePortsItPublishes::of(...self::ports($row, MigrationIsUnreadable::service($at, $position, MigrationField::Ports))),
+                ThePortsItPublishes::of(...self::ports($row, MigrationIsUnreadable::service($at, $position, WireField::Ports))),
                 Required::flag($row, WireField::Running, MigrationIsUnreadable::service($at, $position, WireField::Running)),
                 Required::flag($row, MigrationField::Adoptable, MigrationIsUnreadable::service($at, $position, MigrationField::Adoptable)),
             );
@@ -151,7 +151,7 @@ final readonly class WhatIsAlreadyHere
     {
         $ports = [];
 
-        foreach (Required::rows($service, MigrationField::Ports, $refused) as $port) {
+        foreach (Required::rows($service, WireField::Ports, $refused) as $port) {
             if (! is_int($port)) {
                 throw $refused;
             }
@@ -289,7 +289,7 @@ final readonly class WhatIsAlreadyHere
             $found[] = WhatAdoptingOneWouldDo::said(
                 Required::text($row, WireField::Service, MigrationIsUnreadable::entry(MigrationField::Carrying, $position, WireField::Service)),
                 Required::text($row, WireField::Because, MigrationIsUnreadable::entry(MigrationField::Carrying, $position, WireField::Because)),
-                Required::flag($row, MigrationField::BackupFirst, MigrationIsUnreadable::entry(MigrationField::Carrying, $position, MigrationField::BackupFirst)),
+                Required::flag($row, WireField::BackupFirst, MigrationIsUnreadable::entry(MigrationField::Carrying, $position, WireField::BackupFirst)),
                 Required::flag($row, WireField::Refused, MigrationIsUnreadable::entry(MigrationField::Carrying, $position, WireField::Refused)),
             );
             $position++;

@@ -70,7 +70,9 @@
     @endif
 
     {{-- The modes last, in the stack's order, each with whether it disturbs
-         what is running. Chosen already only where the survey says so. --}}
+         what is running. Chosen already only where the survey says so. Each
+         the app can carry out is asked about first, and nothing is moved by
+         asking. --}}
     <x-operator::heading>{{ __('stacks.already_here.modes') }}</x-operator::heading>
     @forelse ($this->answer()->modes as $mode)
         <x-operator::entry>
@@ -80,12 +82,84 @@
             @if ($mode->preselected)
                 <x-operator::note>{{ __('stacks.already_here.preselected') }}</x-operator::note>
             @endif
+            @if ($mode->askSaid !== '')
+                <x-operator::quiet-action label="{{ __($mode->askSaid) }}" tap="wouldMoveIn('{{ $mode->mode }}')" />
+            @endif
         </x-operator::entry>
     @empty
         <x-operator::note>{{ __('stacks.already_here.no_modes') }}</x-operator::note>
     @endforelse
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    @if ($this->howTheMoveIsGoing()->went->cameBack())
+        @if ($this->howTheMoveIsGoing()->mode !== '')
+            <x-operator::heading>{{ __('stacks.moving_in.about', ['mode' => $this->howTheMoveIsGoing()->mode]) }}</x-operator::heading>
+        @endif
+        @if ($this->howTheMoveIsGoing()->isWorking)
+            <native:text>{{ __('stacks.moving_in.working') }}</native:text>
+            <x-operator::note>
+                {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
+            </x-operator::note>
+        @elseif ($this->howTheMoveIsGoing()->hasEnded)
+            {{-- Not a failure and not a refusal: the stack has no outcome for
+                 it any more. --}}
+            <native:text>{{ __('stacks.moving_in.no_outcome') }}</native:text>
+            <x-operator::quiet-action label="{{ __('stacks.moving_in.leave_it') }}" tap="leaveIt()" />
+        @elseif ($this->howTheMoveIsGoing()->refusal !== '')
+            {{-- The stack's answer, drawn as the reason it is rather than as
+                 something to try again. --}}
+            <x-operator::emphasis>{{ __('stacks.moving_in.refused') }}</x-operator::emphasis>
+            <native:text>{{ $this->howTheMoveIsGoing()->refusal }}</native:text>
+            <x-operator::quiet-action label="{{ __('stacks.moving_in.leave_it') }}" tap="leaveIt()" />
+        @elseif ($this->howTheMoveIsGoing()->move !== null)
+            {{-- What did not come across leads, with the reason for each,
+                 before where the move stands and before what did. --}}
+            @if ($this->howTheMoveIsGoing()->move->leftBehindSaid !== '')
+                <x-operator::heading>{{ __($this->howTheMoveIsGoing()->move->leftBehindSaid) }}</x-operator::heading>
+                @forelse ($this->howTheMoveIsGoing()->move->leftBehind as $line)
+                    <x-operator::emphasis>{{ __($line->said, $line->with) }}</x-operator::emphasis>
+                @empty
+                    <x-operator::note>{{ __('stacks.moving_in.nothing_left_behind') }}</x-operator::note>
+                @endforelse
+            @endif
+
+            {{-- Where it stands, as the stack gave it; a move turned away
+                 carries the stack's reason and nothing to try again. --}}
+            <x-operator::emphasis>{{ __($this->howTheMoveIsGoing()->move->stanceSaid) }}</x-operator::emphasis>
+            @if ($this->howTheMoveIsGoing()->move->refusal !== '')
+                <native:text>{{ $this->howTheMoveIsGoing()->move->refusal }}</native:text>
+            @endif
+            @forelse ($this->howTheMoveIsGoing()->move->lines as $line)
+                <native:text>{{ __($line->said, $line->with) }}</native:text>
+            @empty
+                <x-operator::note>{{ __('stacks.moving_in.nothing_listed') }}</x-operator::note>
+            @endforelse
+
+            @if ($this->howTheMoveIsGoing()->move->agreeSaid !== '')
+                {{-- What is copied first, said before the yes rather than
+                     after it. --}}
+                <x-operator::heading>{{ __('stacks.moving_in.before_you_agree') }}</x-operator::heading>
+                @forelse ($this->howTheMoveIsGoing()->move->copyFirst as $line)
+                    <native:text>{{ __($line->said, $line->with) }}</native:text>
+                @empty
+                    <x-operator::note>{{ __('stacks.moving_in.nothing_copied_first') }}</x-operator::note>
+                @endforelse
+                <x-operator::action label="{{ __($this->howTheMoveIsGoing()->move->agreeSaid) }}" tap="moveIn()" />
+            @endif
+            <x-operator::quiet-action label="{{ __('stacks.moving_in.leave_it') }}" tap="leaveIt()" />
+        @endif
+    @else
+        {{-- Asking, or asking after it, met something: said where the answer
+             would have been, with the way back. --}}
+        <x-operator::what-stopped-the-reading
+            :went="$this->howTheMoveIsGoing()->went"
+            :sign-in-goes-to="$this->goes()->signIn()"
+        />
+    @endif
+
+    {{-- Looking again reads the survey, and asks after work still being
+         followed. It is not a retry of anything the stack refused, and is
+         named for what it does. --}}
+    <x-operator::action label="{{ __('stacks.already_here.look_again') }}" tap="again()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

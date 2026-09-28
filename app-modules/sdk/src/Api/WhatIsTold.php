@@ -127,14 +127,14 @@ final readonly class WhatIsTold
      */
     private static function kind(array $row, int $position): string
     {
-        if (! array_key_exists(AlertsField::Kind->value, $row)) {
-            throw AlertsAreUnreadable::said(AlertsField::Kind, $position);
+        if (! array_key_exists(WireField::Kind->value, $row)) {
+            throw AlertsAreUnreadable::said(WireField::Kind, $position);
         }
 
-        $said = $row[AlertsField::Kind->value];
+        $said = $row[WireField::Kind->value];
 
         if (! is_string($said) || trim($said) === '') {
-            throw AlertsAreUnreadable::said(AlertsField::Kind, $position);
+            throw AlertsAreUnreadable::said(WireField::Kind, $position);
         }
 
         return $said;

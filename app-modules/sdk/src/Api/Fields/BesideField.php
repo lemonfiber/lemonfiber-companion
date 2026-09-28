@@ -8,15 +8,15 @@ use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\SaysWhereItSits;
 
 /**
- * What the wire calls each field of the `alerts` envelope that no other envelope this module reads carries.
+ * What the wire calls each field of the `beside` envelope that no other envelope this module reads carries.
  *
  * {@see \Modules\Sdk\Api\WireField} holds the words more than one envelope
  * carries; this holds the rest of this one's.
  */
-enum AlertsField: string implements NamesAWireField
+enum BesideField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The events set apart from an alert preset. */
-    case Exceptions = 'exceptions';
+    /** Where the Compose file saying where each service listens was written. */
+    case Written = 'written';
 }

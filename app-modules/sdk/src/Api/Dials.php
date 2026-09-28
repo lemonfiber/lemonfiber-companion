@@ -91,7 +91,7 @@ final readonly class Dials
         // and taking the sentence would show an operator a reason a change did
         // not happen underneath the word saying it did.
         return $stance === Stance::Blocked
-            ? WhereTheChangeStands::blocked($change, self::text($review, ConfigField::Refusal))
+            ? WhereTheChangeStands::blocked($change, self::text($review, WireField::Refusal))
             : WhereTheChangeStands::at($change, $stance);
     }
 
@@ -183,10 +183,10 @@ final readonly class Dials
      */
     private static function stance(array $review): Stance
     {
-        $said = Stance::tryFrom(self::text($review, ConfigField::Stance));
+        $said = Stance::tryFrom(self::text($review, WireField::Stance));
 
         if ($said === null) {
-            throw SettingIsUnreadable::missing(ConfigField::Stance);
+            throw SettingIsUnreadable::missing(WireField::Stance);
         }
 
         return $said;

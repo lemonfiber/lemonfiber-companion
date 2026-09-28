@@ -490,4 +490,66 @@ enum WireField: string implements NamesAWireField
      * and a count in the other, which is why the readers say which they read.
      */
     case Items = 'items';
+
+    /**
+     * Where a proposed change stands: a setting's, on a `config` review, and
+     * each of the four ways of moving in beside what is already on a machine.
+     */
+    case Stance = 'stance';
+
+    /**
+     * Why nothing was written, where the reason is not that nobody said yes:
+     * on a setting's review, and on each of the four ways of moving in.
+     *
+     * A different word on the wire from `refused`, which this enum already
+     * carries for a request a household member was turned down for. Two cases
+     * because they are two fields, and one case serving both would be this app
+     * deciding they are the same thing.
+     */
+    case Refusal = 'refusal';
+
+    /**
+     * A kind, by the name the stack gives it: the kind of event set apart
+     * from an alert preset, and the kind of record an import carries across.
+     *
+     * A row's field, not the envelope's `kind`, which the transport reads
+     * before this app ever sees a payload.
+     */
+    case Kind = 'kind';
+
+    /**
+     * A judgement: how a single check turned out, as a tagged union, and
+     * which of two versions of a service is the later, in one word.
+     */
+    case Verdict = 'verdict';
+
+    /**
+     * lemonfiber's own: every request it makes on its own account, and the
+     * version it pins for a service it would adopt.
+     */
+    case Ours = 'ours';
+
+    /**
+     * What stopped: where and why a walkthrough stopped, and the services
+     * stopped to stand in place of a setup already here.
+     */
+    case Stopped = 'stopped';
+
+    /**
+     * Host ports: every port an existing service publishes, and where each
+     * service would listen to stand beside what is already here.
+     */
+    case Ports = 'ports';
+
+    /**
+     * Whether a service's database must be copied before lemonfiber opens it:
+     * in a survey, and in what adopting the setup came to.
+     */
+    case BackupFirst = 'backup_first';
+
+    /**
+     * What could not be carried across, and why: what no mode carries, in a
+     * survey, and what an import could not bring.
+     */
+    case NotCarried = 'not_carried';
 }

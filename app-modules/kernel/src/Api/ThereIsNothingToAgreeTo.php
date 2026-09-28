@@ -12,7 +12,8 @@ use function sprintf;
  * A yes was built against an answer that asked for none.
  *
  * A confirmation is only ever about something the stack put in front of the
- * operator: a choice it held, or an upgrade it described without carrying out.
+ * operator: a choice it held, an upgrade it described without carrying out,
+ * or a way of moving in it staged.
  * Building one against anything else means a screen offered a yes it should
  * not have, which is a fault in the surface rather than a situation the
  * operator can resolve.
@@ -32,5 +33,14 @@ final class ThereIsNothingToAgreeTo extends InvalidArgumentException
     public static function described(): self
     {
         return new self('An upgrade was agreed to against one already carried out, and only a described upgrade waits on a yes.');
+    }
+
+    /** A way of moving in was not staged, so nothing waits on a yes. */
+    public static function staged(Stance $stance): self
+    {
+        return new self(sprintf(
+            'A way of moving in was agreed to where the stack answered `%s`, and only a pending move waits on a yes.',
+            $stance->value,
+        ));
     }
 }

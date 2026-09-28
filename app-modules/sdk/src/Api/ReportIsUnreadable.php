@@ -101,7 +101,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function outcome(string $said): self
     {
-        return self::word(WireField::Outcome->under(DoctorField::Verdict), $said, array_map(
+        return self::word(WireField::Outcome->under(WireField::Verdict), $said, array_map(
             static fn(Conclusion $conclusion): string => $conclusion->value,
             Conclusion::cases(),
         ));
@@ -109,7 +109,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function severity(string $said): self
     {
-        return self::word(WireField::Severity->under(DoctorField::Verdict), $said, array_map(
+        return self::word(WireField::Severity->under(WireField::Verdict), $said, array_map(
             static fn(Severity $severity): string => $severity->value,
             Severity::cases(),
         ));
@@ -117,7 +117,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
 
     public static function standing(string $said): self
     {
-        return self::word(WireField::State->under(DoctorField::Verdict), $said, array_map(
+        return self::word(WireField::State->under(WireField::Verdict), $said, array_map(
             static fn(Standing $standing): string => $standing->value,
             Standing::cases(),
         ));

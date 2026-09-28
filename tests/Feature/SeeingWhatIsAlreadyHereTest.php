@@ -213,7 +213,7 @@ it('shows what a layout that cannot link costs and how to fix it, as words with 
         ->toBe(['Downloads and the library are on two filesystems', 'Every import is a second copy', 'Keep both under one mount', 'ext4, nfs'])
         ->and($drawn->said())->toContain('Keep both under one mount')
         ->and($drawn->said())->toContain(__('stacks.already_here.remedy_is_yours'))
-        ->and($drawn->offers())->toBe([__('health.ask_again')]);
+        ->and($drawn->offers())->toBe([__('stacks.moving_in.ask.adopt'), __('stacks.moving_in.ask.replace'), __('stacks.already_here.look_again')]);
 });
 
 it('says where nothing is in the way, and draws nothing about linking where the layout links', function (): void {

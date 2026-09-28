@@ -14,6 +14,8 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AHeldChoice;
+use Modules\Kernel\Api\AMove;
+use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
@@ -33,6 +35,7 @@ use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
@@ -50,7 +53,9 @@ use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheAdoption;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
@@ -66,6 +71,7 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhatToWalk;
+use Modules\Kernel\Api\WhatWasNamed;
 use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
@@ -197,6 +203,12 @@ function anInvitationToSpoilTheAnswerTo(): AnInvitationAgreed
     ));
 }
 
+/** A way of moving in the stack staged, for agreeing to against a spoiled answer. */
+function aMoveToSpoilTheAnswerTo(): AMoveAgreed
+{
+    return AMoveAgreed::after(AMove::at(Stance::Pending, TheAdoption::of('media', WhatWasNamed::of('back_up'), '')));
+}
+
 /** A choice the stack held, for confirming against a spoiled answer. */
 function aHeldChoiceToSpoilTheAnswerTo(): AHeldChoice
 {
@@ -300,7 +312,10 @@ function everyAdapterCallThatReads(): array
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
         'Requests::decided' => static fn(): object
             => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::numbered(1))),
-        'Scouts::surveyedOn' => static fn(): object => new Scouts($clients)->surveyedOn($stack, $session),
+        'Scouts::surveyedOn' => static fn(): object => new Scouts($clients, $entropy)->surveyedOn($stack, $session),
+        'Scouts::wouldMoveIn' => static fn(): object => new Scouts($clients, $entropy)->wouldMoveIn($stack, $session, MovingInBy::Adopting),
+        'Scouts::moveIn' => static fn(): object => new Scouts($clients, $entropy)->moveIn($stack, $session, aMoveToSpoilTheAnswerTo()),
+        'Scouts::whatBecameOf' => static fn(): object => new Scouts($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Scrollbacks::saidBy' => static fn(): object
             => new Scrollbacks($clients)->saidBy($stack, $session, ServiceId::called('sonarr'), HowManyLines::of(3)),
         'Shelves::theShelfOf' => static fn(): object
@@ -378,6 +393,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Graders::confirm' => Api::QUALITY_ENDPOINT,
         $which === 'Graders::choose' => sprintf('%sMusicEnvelope', AN_ENVELOPE_BY_NAME),
         str_starts_with($which, 'Upgraders::') => sprintf('%sUpgradeEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Scouts::whatBecameOf' => sprintf('%sAdoptionEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Copiers::whatBecameOf' => sprintf('%sBackupEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Bundlers::whatBecameOf' => sprintf('%sBundleEnvelope', AN_ENVELOPE_BY_NAME),

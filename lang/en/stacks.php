@@ -440,6 +440,64 @@ return [
         'disturbs' => 'Stops or alters what is already running',
         'disturbs_nothing' => 'Leaves what is already running as it is',
         'preselected' => 'Offered already chosen',
+        'look_again' => 'Look at what is on this machine again',
+    ],
+
+    // Moving in beside what is already on the machine: asking what a mode
+    // would come to, and agreeing to it.
+    'moving_in' => [
+        'ask' => [
+            'adopt' => 'What would taking it over come to?',
+            'import' => 'What would importing its records come to?',
+            'beside' => 'What would standing beside it come to?',
+            'replace' => 'What would standing in its place come to?',
+        ],
+        'about' => 'Moving in: :mode',
+        'working' => 'The machine is working out where this stands',
+        'no_outcome' => 'The machine no longer has an answer for this',
+        'refused' => 'The machine turned this down',
+        'leave_it' => 'Leave it',
+        // Where a move stands, as the stack gave it. Only applied says
+        // anything was done.
+        'stance' => [
+            'unchanged' => 'Nothing needed doing, and nothing was done',
+            'pending' => 'Nothing has been done yet',
+            'blocked' => 'The machine turned this away, and nothing was done',
+            'applied' => 'Done',
+        ],
+        // An import that carried nothing and one that has not run are both
+        // quiet, and mean opposite things.
+        'import' => [
+            'not_run' => 'Nothing has been carried across yet: this is what importing would do',
+            'nothing_to_carry' => 'It ran, and there was nothing to carry: lemonfiber already holds what the old setup held',
+            'carried_nothing' => 'It ran, and carried nothing across',
+        ],
+        'left_behind' => 'What did not come across',
+        'would_leave_behind' => 'What would not come across',
+        'not_carried' => ':what: :because',
+        'nothing_left_behind' => 'Nothing is left behind',
+        'nothing_listed' => 'The machine listed nothing more about it',
+        'upgrade' => ':service is :existing here and :ours in lemonfiber (:verdict). :because',
+        'upgrade_refused' => ':service will not be taken over: it is :existing here and :ours in lemonfiber (:verdict). :because',
+        'backed_up' => 'A copy was written to :path before anything was opened',
+        'would_carry' => ':service would take :name (:kind)',
+        'carried' => ':service took :name (:kind)',
+        'listens' => ':service is on port :to instead of :from',
+        'written' => 'Where each service listens is written in :path',
+        'would_stop' => ':service would be stopped, and not deleted',
+        'stopped' => ':service was stopped, and not deleted',
+        'still_running' => ':service would not stop, and is still running',
+        // Said with the decision rather than after it.
+        'before_you_agree' => 'Before you agree',
+        'copy_first' => ':service\'s database is upgraded when lemonfiber opens it, so it wants a copy first: :because',
+        'copies' => 'A copy is taken of :path before anything is opened',
+        'nothing_copied_first' => 'Nothing here wants a copy first',
+        'agree' => [
+            'adopt' => 'Take it over',
+            'import' => 'Carry these across',
+            'beside' => 'Stand beside it',
+            'replace' => 'Stop it and stand in its place',
+        ],
     ],
 
     // How full the machine is, and where the room went.

@@ -50,9 +50,6 @@ enum WalkthroughField: string implements NamesAWireField
     /** What to do next, in order, under the handover. */
     case Next = 'next';
 
-    /** Where and why it stopped. */
-    case Stopped = 'stopped';
-
     /**
      * What the services involved were saying when it stopped.
      *

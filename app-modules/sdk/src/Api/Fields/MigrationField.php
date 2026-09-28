@@ -20,9 +20,6 @@ enum MigrationField: string implements NamesAWireField
     /** Whether the engine answered at all, which is what tells an empty machine from an unread one. */
     case Read = 'read';
 
-    /** Every host port an existing service publishes. */
-    case Ports = 'ports';
-
     /** Whether lemonfiber knows an existing service and could take it over as it stands. */
     case Adoptable = 'adoptable';
 
@@ -46,10 +43,4 @@ enum MigrationField: string implements NamesAWireField
 
     /** What adopting each recognised service would come to. */
     case Carrying = 'carrying';
-
-    /** Whether a service's database must be backed up before lemonfiber opens it. */
-    case BackupFirst = 'backup_first';
-
-    /** What no migration carries across, whatever mode it runs in. */
-    case NotCarried = 'not_carried';
 }

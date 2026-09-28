@@ -1,10 +1,11 @@
 # Moving in
 
 What is already on a stack's machine before lemonfiber moves in beside it or
-takes it over, and what may be done about it. The code is the `N7` half of
-`app-modules/kernel` and `app-modules/sdk`, drawn by
+takes it over, what may be done about it, and moving in. The code is the `N7`
+half of `app-modules/kernel` and `app-modules/sdk`, drawn by
 `WhatIsAlreadyOnThisMachine`: one screen, reading the survey once when its
-frame is built.
+frame is built, and asking about a mode, and agreeing to it, from the modes
+list.
 
 Each row says what the requirement asks and what in this repository answers it.
 The spec is canonical; where this page and a requirement disagree, the
@@ -16,11 +17,23 @@ requirement is right and this page is a defect.
 | `N7-R12` | The modes are offered in the stack's order, each with what it comes to and whether it disturbs what is running, and nothing is preselected that the stack did not preselect, replacement least of all | `TheModes` keeps the stack's order and `AMode` carries each mode's word, what it comes to and whether it disturbs. `AMode::isPreselected()` is true only where the stack preselected a mode and it disturbs nothing, so a mode that stops what is running is never drawn as chosen |
 | `N7-R5` | A conflict names what already holds the port | `APortHeld` cannot be built without the project holding the port and the service wanting it, and the screen draws both in one sentence |
 | `N7-R6` | A port a service was moved to stays reachable | `APortMoved` carries the port each service would take instead of its own, and the screen draws every one on each reading |
-| `N7-R13` | A layout that cannot hold a hardlink says why, what it costs and the remedy, and the remedy is offered only as an act of its own | `WhatLinkingCosts` carries why, what it costs, the remedy and the filesystems, or nothing where the layout links. The screen draws the remedy as words, says it is the operator's to do on their own disks, and offers nothing but asking again |
+| `N7-R13` | A layout that cannot hold a hardlink says why, what it costs and the remedy, and the remedy is offered only as an act of its own | `WhatLinkingCosts` carries why, what it costs, the remedy and the filesystems, or nothing where the layout links. The screen draws the remedy as words, says it is the operator's to do on their own disks, and offers nothing to press beside it |
 | `N7-R14` | A service the survey found and cannot take over is named as unsupported, with the reason | The survey's `unsupported` list is read into `Unsupported`, which cannot be built without what and why, and each is drawn. A row that cannot be read is an obstacle rather than a shorter list |
+| `N7-R1` | What an import could not carry is shown with the reason for each, and never subordinated to a success message | `WhatMovingInCameTo` reads the `import` envelope's `not_carried` into `TheImport::notCarried()`, each an `Unsupported` that cannot be built without what and why. `HowAMoveReads` gives it a heading and a list of its own, and the screen draws both before the stance and before what was carried |
+| `N7-R2` | A move's stance is rendered as given, and *unchanged*, *pending* or *blocked* is never presented as *applied* | `WhatAMoveCarries::came()` reads each of the four envelopes' `stance` into `Stance` and refuses a word outside the four. `AMove` carries it as given, and `HowAMoveReads` draws each with a sentence of its own, only *applied* saying anything was done. The yes is offered only beneath *pending* |
+| `N7-R3` | A refusal is shown with the stack's reason, and never as a generic failure or a retry prompt | A move turned away arrives as `AMove::blocked()`, which cannot be built without the stack's reason; a request the stack turned down arrives as `WhatBecameOfTheMove::refused()` with its words, which `Scouts` reads off the answer. The screen draws either with the reason and offers leaving it, and nothing to try again |
+| `N7-R4` | Where the stack would take something over destructively and wants a copy first, that is said before the decision is agreed to | `WhatMovingInCameTo` reads each service adopting would open with a newer version into `AServiceAdopted`, with both versions and whether it wants a copy first, and the paths copied first into `TheAdoption::backUp()`. `HowAMoveReads` draws them under their own heading above the yes, and only on a pending answer; `AMoveAgreed` can be built only from one |
+| `N7-R9` | An import that carried nothing is told apart from one that has not run | `HowAMoveReads` gives the three quiet answers of an import three sentences: a pending one has not run and draws what it would carry, an unchanged one ran and found nothing to carry, and an applied one that carried nothing says it ran and carried nothing, with what was left behind leading |
 
 A survey that could not be read at all is an obstacle, drawn as one, and never
 an empty machine.
+
+Each mode is asked about first, without the yes: `MovingIn::wouldMoveIn()`
+asks the stack what it would come to and does nothing. The yes is
+`MovingIn::moveIn()`, which takes an `AMoveAgreed`. The stack answers both
+with work to follow, and `MovingIn::whatBecameOf()` follows it to where the
+move stands. A mode the survey offers under a word none of the four acts
+carries offers nothing to press.
 
 ## What the contract does not carry
 
@@ -37,11 +50,9 @@ as words and nothing more.
 
 ## Asked for, and not drawn yet
 
-`N7-R1` to `N7-R4` are about carrying out a mode: what an import could not
-carry, the stance of a move, a refusal, and a copy wanted before something is
-taken over destructively. The survey already reads what adopting each service
-would come to and what no mode carries, and draws neither until a mode can be
-chosen here.
+The survey reads what adopting each service would come to and what no mode
+carries, and draws neither: asking about a mode draws what that mode would
+come to.
 
 `N7-R7` to `N7-R10` and `N7-R15` to `N7-R17` are about wiring the services
 together, which is the `seed` action, and it is not offered here.
