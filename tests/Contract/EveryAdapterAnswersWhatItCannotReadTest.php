@@ -11,6 +11,8 @@ use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ADownloadHeld;
+use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AHeldChoice;
@@ -65,6 +67,7 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -103,6 +106,7 @@ use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
+use Modules\Sdk\Api\Releasers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Scouts;
@@ -237,6 +241,12 @@ function aListingToSpoilTheAnswerTo(): WhatPuttingItBackWouldDo
     );
 }
 
+/** An offer to stop seeding, to agree against. */
+function anOfferToLetGoToSpoilTheAnswerTo(): WhatLettingItGoCosts
+{
+    return WhatLettingItGoCosts::offered(ADownloadOnDisk::neverImported('Show.Season1', 1), 'It goes', 'an-agreement');
+}
+
 /**
  * Every adapter call that reads an answer, by what it asks.
  *
@@ -304,6 +314,14 @@ function everyAdapterCallThatReads(): array
         'Recorders::recordedOn' => static fn(): object => new Recorders($clients)->recordedOn($stack, $session),
         'Rehearsers::whatStarting' => static fn(): object
             => new Rehearsers($clients)->whatStarting($stack, $session, Form::called('media')),
+        'Releasers::whatItWouldCost' => static fn(): object
+            => new Releasers($clients, $entropy)->whatItWouldCost($stack, $session, ADownloadHeld::named('Show.Season1')),
+        'Releasers::whatTheOfferCameTo' => static fn(): object
+            => new Releasers($clients, $entropy)->whatTheOfferCameTo($stack, $session, Job::named('a-job')),
+        'Releasers::stop' => static fn(): object
+            => new Releasers($clients, $entropy)->stop($stack, $session, anOfferToLetGoToSpoilTheAnswerTo()),
+        'Releasers::whatBecameOf' => static fn(): object
+            => new Releasers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Restorers::rehearse' => static fn(): object
             => new Restorers($clients, $entropy)->rehearse($stack, $session, ACopy::named('lemonfiber-20260924-0300-full')),
         'Restorers::putBack' => static fn(): object
@@ -364,9 +382,9 @@ const THE_WORK_AN_INVITATION_BECOMES = 'the work an invitation becomes';
  * Where an answer is built from an envelope's declaration rather than asked of a path.
  *
  * The stand-in answers every action as work, and no path it serves answers
- * with the `music`, `upgrade`, `backup` or `restore` envelope, so a call
- * answered with one of those is given the envelope itself, built by the
- * stand-in from the contract.
+ * with the `music`, `upgrade`, `backup`, `restore` or `stop-seeding`
+ * envelope, so a call answered with one of those is given the envelope
+ * itself, built by the stand-in from the contract.
  */
 const AN_ENVELOPE_BY_NAME = 'envelope:';
 
@@ -375,7 +393,7 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  *
  * The stand-in answers a change to a setting as work, which leaves nothing
  * here for the reader to refuse, so the change is given the listing, reviewed.
- * The stand-in answers every job as a repair's, which an update's reader
+ * The stand-in answers an update's job as a repair's, which an update's reader
  * refuses as the wrong kind, so an update's job is given the update's reading.
  * The stand-in answers handing a command over as work too, where the stack
  * answers it with the `hosting` envelope, so that act is given the reading.
@@ -384,7 +402,8 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * A quality choice is given the quality reading, and a choice for music and an
  * upgrade the envelopes each is answered with. So are a finished copy, the
  * listing a restore answers without a yes, and a finished restore, and what a
- * start, a stop or a restart came to.
+ * start, a stop or a restart came to, and both what stopping seeding would
+ * cost and what it came to.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -402,6 +421,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Bundlers::whatBecameOf' => sprintf('%sBundleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Releasers::whatTheOfferCameTo', $which === 'Releasers::whatBecameOf' => sprintf('%sStopSeedingEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }

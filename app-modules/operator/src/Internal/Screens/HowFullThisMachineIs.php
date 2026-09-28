@@ -38,9 +38,11 @@ use function view;
  * somebody asks when a phone says the disk is filling.
  *
  * **It reads and removes nothing.** Nothing is selected and nothing is
- * proposed: which downloads to remove is the operator's decision, made at the
- * machine. It asks once, when the frame is built, and reads the clock once
- * per answer so a network share's age is counted from one moment.
+ * proposed: each download carries a way to {@see LettingADownloadGo}, which
+ * states what stopping seeding that one would cost before anything is agreed
+ * to, and anything else is removed at the machine. It asks once, when the
+ * frame is built, and reads the clock once per answer so a network share's
+ * age is counted from one moment.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */

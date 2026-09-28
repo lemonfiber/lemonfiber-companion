@@ -67,6 +67,7 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Standings;
+use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
@@ -107,6 +108,7 @@ use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
+use Modules\Sdk\Api\Releasers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Scouts;
@@ -381,6 +383,10 @@ final class CompositionRoot extends ServiceProvider
         // How full the machine is, read beside the rest and bound for the
         // same reason.
         $this->app->bind(Measuring::class, Surveyors::class);
+
+        // Stopping seeding one download, beside how full the machine is and
+        // bound for the same reason.
+        $this->app->bind(StoppingSeeding::class, Releasers::class);
 
         // The running copy of lemonfiber, read beside the rest and bound for
         // the same reason.

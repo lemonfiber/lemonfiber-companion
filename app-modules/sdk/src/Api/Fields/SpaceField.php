@@ -67,7 +67,4 @@ enum SpaceField: string implements NamesAWireField
 
     /** The completed downloads on a machine. */
     case Candidates = 'candidates';
-
-    /** What removing a download costs, where it costs anything. */
-    case Consequence = 'consequence';
 }

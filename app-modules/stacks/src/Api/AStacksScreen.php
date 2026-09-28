@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Stacks\Api;
 
 use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
@@ -165,6 +166,14 @@ enum AStacksScreen: string
     /** How full this machine is, and where the room went. */
     case Room = '/stacks/{stack}/room';
 
+    /**
+     * Stopping seeding one completed download, with what it costs before anything is agreed to.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the name the account of the disk gave a download.
+     */
+    case LetGo = '/stacks/{stack}/room/{service}';
+
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
     case Itself = '/stacks/{stack}/itself';
 
@@ -316,6 +325,21 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($copy->name())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one completed download on one machine.
+     *
+     * Encoded for {@see self::forTheStacksWord()}'s reason: a download's name
+     * is whatever the torrent was called, spaces and slashes included.
+     */
+    public function forTheStacksDownload(StackId $stack, ADownloadHeld $download): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($download->name())], $this->value);
     }
 
     /**
