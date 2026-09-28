@@ -43,7 +43,7 @@ final readonly class DoorsThatOpenOnNothing implements Doors
         // from the contract and no socket is opened. The door has a connector
         // of its own, separate from the client's, which is why standing in at
         // one of them left the other reaching the network.
-        $door->connector()->withMockClient(
+        $door->withMockClient(
             WhatTheWireWouldAnswer::asFarAs(AStandInStack::howAStackOfThisIdentityBehaves($stack->id())),
         );
 

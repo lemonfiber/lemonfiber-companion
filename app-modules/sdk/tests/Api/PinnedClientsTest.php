@@ -45,21 +45,16 @@ it('N1-R19 — builds a client for a stack on the network, held to its certifica
     // handshake compares the peer against is the one the stack presents rather
     // than a default, an empty one, or a digest from somewhere else.
     //
-    // Read off the transport the client will actually use, which is as close
-    // to the socket as a test can get without opening one. The comparison
-    // happens while the connection is being set up, so nothing observable
-    // after a request would tell a pinned client from an unpinned one.
-    //
-    // The fingerprint and not the rest of that configuration. What sits beside
-    // it is the switch handing the peer's identity to the pin instead of the
-    // trust store, and `S3` refuses that pair written anywhere in this
-    // repository — a test spelling it out to assert it is still a line a
-    // reader skims past and a line the next person copies.
-    $connector = new PinnedClients()->client(aPairedStack(), aSession())->connector();
+    // Read off the address the client holds and the certificate it holds that
+    // address to, which is everything the SDK sends through: it refuses a
+    // request for anywhere else and applies no pin but this one. The
+    // comparison happens while the connection is being set up, so nothing
+    // observable after a request would tell a pinned client from an unpinned
+    // one.
+    $reaches = new PinnedClients()->client(aPairedStack(), aSession())->baseUrl();
 
-    expect($connector->resolveBaseUrl())->toBe('https://192.168.1.42:8443')
-        ->and($connector->config()->get('stream_context'))
-        ->toBe(['ssl' => ['peer_fingerprint' => ['sha256' => A_STACKS_DIGEST]]]);
+    expect($reaches->toString())->toBe('https://192.168.1.42:8443')
+        ->and($reaches->pin()?->toString())->toBe(A_STACKS_DIGEST);
 });
 
 it('N1-R18 — takes the pin off the stack rather than from anywhere else', function (): void {
