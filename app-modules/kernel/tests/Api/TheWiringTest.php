@@ -100,7 +100,8 @@ it('carries a service\'s rejection in its own words, and refuses a failure witho
     $failed = HowAConnectionEnded::failed('401 Unauthorized: the API key is wrong');
 
     expect([$failed->state(), $failed->said(), $failed->ours(), $failed->yours()])->toBe([WhereAConnectionStands::Failed, '401 Unauthorized: the API key is wrong', '', ''])
-        ->and(static fn(): HowAConnectionEnded => HowAConnectionEnded::failed(''))->toThrow(TheWiringSaysNothing::class, '`detail`');
+        ->and(static fn(): HowAConnectionEnded => HowAConnectionEnded::failed(''))->toThrow(TheWiringSaysNothing::class, '`detail`')
+        ->and(static fn(): HowAConnectionEnded => HowAConnectionEnded::failed('   '))->toThrow(TheWiringSaysNothing::class, '`detail`');
 });
 
 it('carries lemonfiber\'s value beside the operator\'s, and refuses a conflict without lemonfiber\'s', function (): void {
