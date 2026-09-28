@@ -29,6 +29,8 @@ use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
+use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
+use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -321,6 +323,8 @@ it('draws the description whole, what it reveals and what is missing among it, a
         stack: '2026.09',
     ))
         ->and($screen->answer()->isWritten)->toBeFalse()
+        ->and($screen->answer()->refused)->toBe('')
+        ->and($screen->answer()->named)->toBe('')
         ->and($drawn->said())->toContain(__('stacks.help.described'))
         ->and($drawn->said())->toContain(__('stacks.help.would_go', ['path' => WhatABundleSays::WOULD_GO]))
         ->and($drawn->said())->toContain(trans_choice('stacks.help.bytes', 48_213))
@@ -552,6 +556,28 @@ it('offers no handing over of a bundle only described, and a tap there fetches n
         ->and($helping->fetched())->toBe([])
         ->and($sheet->handedOver())->toBe([])
         ->and($screen->handing)->toBe('');
+});
+
+it('fetches nothing for a bundle said to be written that the screen holds no bundle for', function (): void {
+    $helping = AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written()));
+    $sheet = AShareSheetThatWasOffered::working();
+    $screen = theHelpScreen($helping, sheet: $sheet);
+    $screen->went = new HowTheBundleWent(
+        went: HowTheReadingWent::itCameBack(),
+        wasAsked: true,
+        isWorking: false,
+        hasEnded: false,
+        refused: '',
+        named: '',
+        isWritten: true,
+        bundle: null,
+    );
+    $screen->handOver();
+
+    expect($helping->fetched())->toBe([])
+        ->and($sheet->handedOver())->toBe([])
+        ->and($screen->handing)->toBe('')
+        ->and($screen->handingLeaves)->toBe('');
 });
 
 it('says why the sheet was not reached, and that nothing left the phone', function (WhyNothingWasShared $why, string $said): void {
