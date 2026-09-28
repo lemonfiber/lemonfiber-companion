@@ -766,6 +766,17 @@ return [
         'put_back' => 'Put back :scope, from a copy taken by lemonfiber :version',
         'moved' => 'Its data went to :now, not to :was where it was taken.',
         'where_it_was' => 'Its data went back where it was taken from.',
+        // The stack's own answer, told apart from a stack that could not be
+        // reached. Asking the same again is answered the same way.
+        'would_not_list' => 'The stack will not put this copy back, and says why',
+        'refused' => 'The stack did not finish putting this copy back, and says why',
+        'same_answer' => 'Asking again gets the same answer until what it says has changed.',
+        'look_again' => 'Read what putting it back would do now',
+    ],
+
+    // A stack's refusal in its own words, on whichever screen asked.
+    'refusal' => [
+        'named' => 'It names :named',
     ],
 
     // How the machine shares its line with the household.

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ACopyPutBack;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\ARelocationAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
@@ -36,7 +38,14 @@ final readonly class HowPuttingItBackReads
             contents: [...$listing->contents()],
             isOlder: $listing->isOlder(),
             relocation: $this->relocation($listing->whereTheDataGoes()),
+            refused: null,
         );
+    }
+
+    /** The stack would not list the copy, and said why in its own words. */
+    public function refusedToList(ARefusalInItsWords $why): WhatPuttingItBackWouldShow
+    {
+        return $this->nothingListed(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** The stack would not list the copy, and this is what stood in the way. */
@@ -69,6 +78,12 @@ final readonly class HowPuttingItBackReads
         return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
     }
 
+    /** The stack did not finish putting it back, and said why in its own words. */
+    public function refused(ARefusalInItsWords $why): HowPuttingItBackWent
+    {
+        return $this->following(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
+    }
+
     /** Putting it back, or asking after it, met this instead. */
     public function met(Obstacle $why): HowPuttingItBackWent
     {
@@ -91,6 +106,7 @@ final readonly class HowPuttingItBackReads
             scope: new HowAScopeReads()->of($report->scope()),
             takenBy: $report->takenBy(),
             relocation: $this->relocation($report->whereTheDataWent()),
+            refused: null,
         );
     }
 
@@ -108,9 +124,12 @@ final readonly class HowPuttingItBackReads
         return $shown instanceof ARelocationAsShown ? $shown : null;
     }
 
-    /** A listing that did not come back, with nothing in it. */
-    private function nothingListed(HowTheReadingWent $went, bool $namesACopy = true): WhatPuttingItBackWouldShow
-    {
+    /** A listing that did not come back, with nothing in it but why, where the stack said. */
+    private function nothingListed(
+        HowTheReadingWent $went,
+        bool $namesACopy = true,
+        ?ARefusalAsShown $refused = null,
+    ): WhatPuttingItBackWouldShow {
         return new WhatPuttingItBackWouldShow(
             went: $went,
             namesACopy: $namesACopy,
@@ -120,6 +139,7 @@ final readonly class HowPuttingItBackReads
             contents: [],
             isOlder: false,
             relocation: null,
+            refused: $refused,
         );
     }
 
@@ -128,6 +148,7 @@ final readonly class HowPuttingItBackReads
         HowTheReadingWent $went,
         bool $isWorking = false,
         bool $hasEnded = false,
+        ?ARefusalAsShown $refused = null,
     ): HowPuttingItBackWent {
         return new HowPuttingItBackWent(
             went: $went,
@@ -136,6 +157,7 @@ final readonly class HowPuttingItBackReads
             scope: null,
             takenBy: null,
             relocation: null,
+            refused: $refused,
         );
     }
 }

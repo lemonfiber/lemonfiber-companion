@@ -20,6 +20,7 @@ final readonly class HowPuttingItBackWent
      * @param ?AScopeAsShown      $scope      what it restored
      * @param ?string             $takenBy    the version of lemonfiber that took the copy
      * @param ?ARelocationAsShown $relocation where the data went instead of where it came from, and nothing where it went back
+     * @param ?ARefusalAsShown    $refused    why the stack did not finish putting it back, in its words, and nothing unless it refused
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -28,5 +29,6 @@ final readonly class HowPuttingItBackWent
         public ?AScopeAsShown $scope,
         public ?string $takenBy,
         public ?ARelocationAsShown $relocation,
+        public ?ARefusalAsShown $refused,
     ) {}
 }

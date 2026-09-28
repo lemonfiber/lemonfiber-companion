@@ -9,13 +9,13 @@ use JsonSerializable;
 use function trim;
 
 /**
- * What a stack named when it refused a support bundle, or stopped putting a run back, in its words.
+ * What a stack named when it refused work, in its words.
  *
  * The problem's `detail`: the settings a bundle would have shown, the room it
- * needed, the file a change could not be taken back out of, and, where a
- * bundle would have carried a credential out, the file on the machine and the
- * line the credential sits in. That last is exactly what the
- * operator needs to act on, and exactly what must not travel: a pointer to
+ * needed, the file a change could not be taken back out of, the file a restore
+ * could not write, and, where a bundle would have carried a credential out,
+ * the file on the machine and the line the credential sits in. That last is
+ * exactly what the operator needs to act on, and exactly what must not travel: a pointer to
  * where a key is kept is half of the key's way out. So this is drawn on the
  * screen that asked, and redacted the way {@see Address} is from every other
  * reader.

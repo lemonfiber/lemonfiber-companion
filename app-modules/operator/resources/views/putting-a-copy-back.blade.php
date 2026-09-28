@@ -7,6 +7,14 @@
          nothing to agree to. The copies are where one is chosen. --}}
     <x-operator::emphasis>{{ __('stacks.put_back.names_no_copy') }}</x-operator::emphasis>
     <x-operator::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
+@elseif ($this->answer()->refused !== null)
+    {{-- The stack's answer, in its words, and not a fault: nothing is listed,
+         so nothing can be agreed to, and asking the same again is answered
+         the same way. The copies are the road offered. --}}
+    <x-operator::heading>{{ __('stacks.put_back.would_not_list') }}</x-operator::heading>
+    <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
+    <native:text>{{ __('stacks.put_back.same_answer') }}</native:text>
+    <x-operator::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the
          listing above it, so a rehearsal cannot read as a restore. --}}
@@ -24,6 +32,14 @@
         <x-operator::note>
             {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
         </x-operator::note>
+    @elseif ($this->done()->refused !== null)
+        {{-- The stack's answer about the yes, in its words. Asking after the
+             same work is answered the same way; reading the listing again is
+             a new question, and the one road offered. --}}
+        <x-operator::heading>{{ __('stacks.put_back.refused') }}</x-operator::heading>
+        <x-operator::refused-in-its-words :refused="$this->done()->refused" />
+        <native:text>{{ __('stacks.put_back.same_answer') }}</native:text>
+        <x-operator::action label="{{ __('stacks.put_back.look_again') }}" tap="lookAgain()" />
     @elseif ($this->done()->hasEnded)
         {{-- Not a failure: it may well have been put back, and the machine's
              health is where to look. --}}
@@ -49,7 +65,9 @@
         <x-operator::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
     @endif
 
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    @if ($this->done()->refused === null)
+        <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    @endif
 @else
     {{-- A rehearsal, and said to be one before anything else: nothing below
          has happened, and nothing is worded as though it had. --}}
