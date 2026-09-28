@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Obstacle;
@@ -115,6 +116,8 @@ final class WhatEachServiceIsFor extends NativeComponent
         return $this->catalogue->describedOn($stack, $session)->either(
             catalogue: static fn(TheCatalogue $catalogue): TheCatalogueTurnedOutToBe
                 => new HowTheCatalogueReads()->this($catalogue),
+            refused: static fn(ARefusalInItsWords $why): TheCatalogueTurnedOutToBe
+                => new HowTheCatalogueReads()->refused($why),
             met: function (Obstacle $why) use ($stack): TheCatalogueTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

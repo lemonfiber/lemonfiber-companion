@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AServiceDropped;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowMuchItMatters;
@@ -16,6 +17,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheCatalogue;
 use Modules\Kernel\Api\WhatAServiceIsFor;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheServicesAreFor;
 use Modules\Kernel\Api\WhatWasDropped;
 use Modules\Kernel\Api\Whose;
@@ -144,6 +146,34 @@ it('a stack that could not be asked is not a stack that declares nothing', funct
         ->and($screen->answer()->services)->toBe([])
         ->and($screen->answer()->dropped)->toBe([])
         ->and($said)->not->toContain(__('stacks.catalogue.nothing_declared'));
+});
+
+it('says a stack that cannot read its own description in its words, apart from one that could not be asked, and does not offer asking again', function (): void {
+    $why = ARefusalInItsWords::said(
+        'This stack file could not be read',
+        'A stack.toml is written in a strict format, and this one breaks it — so nothing in the file has been read at all.',
+        WhatTheRefusalNamed::as('expected `=`, found newline at line 3 column 9'),
+    );
+    $keychain = AKeychainInMemory::working();
+    $screen = theCatalogueScreen(AStackThatCatalogues::refusing($why), $keychain);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $unreachable = WhatTheDeviceWouldDraw::by(theCatalogueScreen(AStackThatCatalogues::met(Obstacle::StackDidNotAnswer)));
+
+    expect($screen->answer()->went->cameBack())->toBeTrue()
+        ->and($screen->answer()->refused?->said)->toBe('This stack file could not be read')
+        ->and($screen->answer()->refused?->named)->toBe('expected `=`, found newline at line 3 column 9')
+        ->and($screen->answer()->services)->toBe([])
+        ->and($drawn->said())->toContain(__('stacks.catalogue.refused'))
+        ->and($drawn->said())->toContain('This stack file could not be read')
+        ->and($drawn->said())->toContain('A stack.toml is written in a strict format, and this one breaks it — so nothing in the file has been read at all.')
+        ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => 'expected `=`, found newline at line 3 column 9']))
+        ->and($drawn->said())->toContain(__('stacks.catalogue.same_answer'))
+        ->and($drawn->said())->not->toContain(__('stacks.catalogue.nothing_declared'))
+        ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->offers())->not->toContain(__('health.ask_again'))
+        ->and($unreachable->said())->not->toContain(__('stacks.catalogue.refused'))
+        ->and($unreachable->offers())->toContain(__('health.ask_again'))
+        ->and($keychain->isHolding(theStackWhoseCatalogueIsShown()->id()))->toBeTrue();
 });
 
 it('asks for a session where this device holds none, and asks the stack nothing', function (): void {

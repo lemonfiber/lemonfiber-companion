@@ -14,10 +14,12 @@ final readonly class TheCatalogueTurnedOutToBe
     /**
      * @param list<AServiceAsCatalogued>   $services every service the stack declares, in its order
      * @param list<AServiceDroppedAsShown> $dropped  every service it dropped, in the order it records them
+     * @param ?ARefusalAsShown             $refused  why the stack could not say, in its words, and nothing unless it refused
      */
     public function __construct(
         public HowTheReadingWent $went,
         public array $services,
         public array $dropped,
+        public ?ARefusalAsShown $refused,
     ) {}
 }

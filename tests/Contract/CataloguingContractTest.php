@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AServiceDropped;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\Fingerprint;
@@ -16,6 +17,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheCatalogue;
 use Modules\Kernel\Api\WhatAServiceIsFor;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheServicesAreFor;
 use Modules\Kernel\Api\WhatWasDropped;
 use Modules\Sdk\Api\Cataloguers;
@@ -136,8 +138,49 @@ function whatTheStacksCatalogueComesTo(Cataloguing $catalogue): string
 
             return new WhatTheCatalogueWasSaid(implode(' | ', $said));
         },
+        refused: static fn(ARefusalInItsWords $why): WhatTheCatalogueWasSaid => new WhatTheCatalogueWasSaid(sprintf(
+            'refused: %s | %s | %s',
+            $why->summary(),
+            $why->meaning(),
+            $why->named()->forTheOperator(),
+        )),
         met: static fn(Obstacle $why): WhatTheCatalogueWasSaid => new WhatTheCatalogueWasSaid($why->name),
     )->said;
+}
+
+/**
+ * Every problem the stack answers the catalogue with where it cannot read its own manifest.
+ *
+ * Keyed by what each is; each holds its code, severity, state, summary,
+ * meaning, remedy and detail, as the stack words them.
+ *
+ * @return array<string, array{string, string, string, string, string, string, string}>
+ */
+function everyManifestTheStackCannotRead(): array
+{
+    return [
+        'no stack there' => ['STACK-1', 'error', 'guided', 'No stack was found at /srv/stack', 'A stack directory holds a stack.toml beside its compose files. Without one there is nothing describing what would be started.', 'Point at a directory containing stack.toml', 'No such file or directory (os error 2)'],
+        'written for another version' => ['STACK-2', 'error', 'guided', 'This stack was written for a different version of lemonfiber', 'Stacks and lemonfiber are versioned separately so each can move on its own. This pairing does not line up, and guessing at the difference would fail later in a way that looks unrelated.', 'Update lemonfiber, or point at a stack this version reads', 'the stack asks for lemonfiber 2, and this is 1'],
+        'not intact' => ['STACK-3', 'critical', 'unknown', 'This build of lemonfiber is not intact', 'The stack that ships inside the binary is missing, which the build is supposed to make impossible.', 'Send a diagnostic bundle so this can be investigated', ''],
+        'things that cannot work' => ['STACK-6', 'error', 'guided', 'This stack describes 2 things that cannot work', 'The file is well-formed, so this is not a typo — it says things about itself that contradict each other, and starting it would fail somewhere unrelated.', 'Fix the faults listed below, all of which were found in one pass', "sonarr needs qbittorrent, which is not declared
+radarr listens on 7878, which sonarr already holds"],
+        'not written in the format' => ['STACK-7', 'error', 'guided', 'This stack file could not be read', 'A stack.toml is written in a strict format, and this one breaks it — so nothing in the file has been read at all. The detail below is where the reader stopped, and that line is where the answer is.', 'Fix the file at the line named below', 'expected `=`, found newline at line 3 column 9'],
+        'names this build does not know' => ['STACK-8', 'error', 'guided', 'This stack declares 2 names this build does not know', 'The file is well-formed and says things about itself in words this version has no meaning for — usually a stack from a newer lemonfiber, or a fork that has added something of its own. Starting it would quietly leave out whatever was named.', 'Update lemonfiber, or change the names listed below to ones it knows', "form.tiny
+service.whisparr"],
+    ];
+}
+
+/**
+ * One of those problems, as the error envelope the stack answers with.
+ *
+ * @return array<string, mixed>
+ */
+function aManifestTheStackCannotRead(string $which): array
+{
+    [$code, $severity, $state, $summary, $meaning, $remedy, $detail] = everyManifestTheStackCannotRead()[$which];
+    $problem = ['code' => $code, 'severity' => $severity, 'state' => $state, 'summary' => $summary, 'meaning' => $meaning, 'remedies' => [['action' => $remedy]]];
+
+    return ['api_version' => 1, 'kind' => 'error', 'data' => $detail === '' ? $problem : [...$problem, 'detail' => $detail]];
 }
 
 it('reads what each service is for and what the house goes without, and what became of each it dropped', function (): void {
@@ -210,6 +253,29 @@ it('tells a refused session from a stack that is not answering', function (): vo
     }
 });
 
+it('a stack that cannot read its own manifest is its refusal, in its words, with what it named', function (): void {
+    foreach (everyManifestTheStackCannotRead() as $which => [, , , $summary, $meaning, , $detail]) {
+        MockClient::destroyGlobal();
+        MockClient::global([MockResponse::make((string) json_encode(aManifestTheStackCannotRead($which)), 500)]);
+        $why = ARefusalInItsWords::said($summary, $meaning, $detail === '' ? WhatTheRefusalNamed::nothing() : WhatTheRefusalNamed::as($detail));
+        $said = sprintf('refused: %s | %s | %s', $summary, $meaning, $detail);
+
+        expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe($said, sprintf('%s, the adapter', $which))
+            ->and(whatTheStacksCatalogueComesTo(AStackThatCatalogues::refusing($why)))->toBe($said, sprintf('%s, the fake', $which));
+    }
+});
+
+it('a manifest problem at a status that says who may ask, or a sentence with no problem around it, is what was met', function (MockResponse $answered, Obstacle $why): void {
+    MockClient::destroyGlobal();
+    MockClient::global([$answered]);
+
+    expect(whatTheStacksCatalogueComesTo(new Cataloguers(new PinnedClients())))->toBe($why->name);
+})->with([
+    'a refused session' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 401), Obstacle::CredentialWasRefused],
+    'an account that may not ask' => [MockResponse::make((string) json_encode(aManifestTheStackCannotRead('not written in the format')), 403), Obstacle::NotForThisAccount],
+    'a sentence' => [MockResponse::make('This answer could not be rendered.', 500, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
+]);
+
 it('asks the catalogue endpoint', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not json at all')]);
@@ -230,4 +296,8 @@ it('the fake remembers the stack it was asked about', function (): void {
 it('stands in for a stack with a payload the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('CatalogueEnvelope', whatAStackSaysOfItsCatalogue()))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+
+    foreach (array_keys(everyManifestTheStackCannotRead()) as $which) {
+        expect(WhatTheContractAccepts::complaintsAbout('ErrorEnvelope', aManifestTheStackCannotRead($which)))->toBe([], $which);
+    }
 });
