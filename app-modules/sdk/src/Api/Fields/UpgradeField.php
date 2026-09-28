@@ -17,9 +17,6 @@ enum UpgradeField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Whether the operator said yes; without it nothing was asked of any service. */
-    case Confirmed = 'confirmed';
-
     /** The kinds of media an upgrade covers. */
     case Media = 'media';
 

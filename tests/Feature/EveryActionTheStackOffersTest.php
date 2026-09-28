@@ -37,8 +37,8 @@ const OFFERED = [
     'Adoption', 'Alerts', 'Archives', 'Backup', 'Bandwidth', 'Beside', 'Bundle', 'Catalogue', 'Clients', 'Config', 'Credentials',
     'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Held', 'History', 'Hosting', 'Household',
     'Import', 'Invitation', 'Job', 'Lifecycle', 'Log', 'Migration', 'Music', 'Outbound', 'Preview', 'Provenance',
-    'Quality', 'Repair', 'Replacement', 'Restore', 'Seed', 'SelfUpdate', 'Space', 'Status', 'StopSeeding', 'Stored',
-    'Stuck', 'Trace', 'Undo', 'Update', 'Upgrade', 'Walkthrough', 'Watch', 'Word',
+    'Quality', 'Removal', 'Repair', 'Replacement', 'Restore', 'Seed', 'SelfUpdate', 'Space', 'Status', 'StopSeeding',
+    'Stored', 'Stuck', 'Trace', 'Undo', 'Update', 'Upgrade', 'Walkthrough', 'Watch', 'Word',
 ];
 
 /**
@@ -72,8 +72,8 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Admission', 'Certificate', 'Pairing', 'Plugins', 'Pull', 'Removal', 'Reset', 'Start', 'Step', 'Substitution',
-    'Uninstall', 'Version', 'Wiring',
+    'Admission', 'Certificate', 'Pairing', 'Plugins', 'Pull', 'Reset', 'Start', 'Step', 'Substitution', 'Uninstall',
+    'Version', 'Wiring',
 ];
 
 it('N1-R2 — every kind the stack offers has been looked at', function (): void {

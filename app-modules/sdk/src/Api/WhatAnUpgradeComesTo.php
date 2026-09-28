@@ -66,11 +66,11 @@ final readonly class WhatAnUpgradeComesTo
      */
     private static function confirmed(array $data): bool
     {
-        if (! array_key_exists(UpgradeField::Confirmed->value, $data) || ! is_bool($data[UpgradeField::Confirmed->value])) {
-            throw QualityIsUnreadable::missing(UpgradeEnvelope::KIND->value, UpgradeField::Confirmed);
+        if (! array_key_exists(WireField::Confirmed->value, $data) || ! is_bool($data[WireField::Confirmed->value])) {
+            throw QualityIsUnreadable::missing(UpgradeEnvelope::KIND->value, WireField::Confirmed);
         }
 
-        return $data[UpgradeField::Confirmed->value];
+        return $data[WireField::Confirmed->value];
     }
 
     /**

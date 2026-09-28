@@ -16,6 +16,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
@@ -181,6 +182,11 @@ const VERBS_THE_APP_ASKS_FOR = [
     'invite' => 'says what an invitation would grant and when it lapses, and makes the account only when that same request is agreed to',
 
     'reissue' => 'takes a member\'s password off so they choose the next one, naming the person and never a password',
+
+    // Two requests under one name. Without the yes it says what taking
+    // somebody out would cost and takes nobody out; with it, it takes out the
+    // person that reading named, and nobody else.
+    'remove' => 'says what taking one member out of the household would cost, and takes them out only on a yes given beneath that reading',
     // Unconfirmed it records the choice, or holds one this machine would
     // transcode in software; confirmed it records a held one. The yes is only
     // ever sent with a choice the stack held, which is the one thing
@@ -510,6 +516,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatWasDecided $decided): string => $decided->asked(), WhatWasDecided::cases()),
         ...array_map(static fn(WhatToChange $change): string => $change->asked(), WhatToChange::cases()),
         ...array_map(static fn(AskingThemIn $asking): string => $asking->asked(), AskingThemIn::cases()),
+        ...array_map(static fn(TakingThemOut $out): string => $out->asked(), TakingThemOut::cases()),
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),

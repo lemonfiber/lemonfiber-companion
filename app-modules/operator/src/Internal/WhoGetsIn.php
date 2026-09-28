@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -11,9 +12,10 @@ use Modules\Stacks\Api\AStacksScreen;
  * Where the screens are that answer who gets in to one machine.
  *
  * What it holds to let services in, which app the household watches on,
- * where the household comes in, and asking somebody in. Apart from {@see WhereAStackIs} for
- * {@see WhatItKeepsOfItself}'s reason: one accessor there hands out this, and
- * the next screen of this kind costs it nothing.
+ * where the household comes in, asking somebody in, and taking somebody out.
+ * Apart from {@see WhereAStackIs} for {@see WhatItKeepsOfItself}'s reason: one
+ * accessor there hands out this, and the next screen of this kind costs it
+ * nothing.
  *
  * `Internal`, for {@see WhereAStackIs}' reason.
  */
@@ -49,5 +51,16 @@ final readonly class WhoGetsIn
     public function invite(): string
     {
         return AStacksScreen::Invite->forTheStack($this->stack);
+    }
+
+    /**
+     * Where one member is taken out of the household, by the name their account is held under.
+     *
+     * Text on the way in, because a template holds the names as text, and a
+     * {@see SomebodyInTheHousehold} on the way out, which refuses a blank.
+     */
+    public function takingOut(string $named): string
+    {
+        return AStacksScreen::TakeOut->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
     }
 }

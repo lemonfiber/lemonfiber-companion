@@ -23,6 +23,7 @@ use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
+use Modules\Operator\Internal\Screens\TakingSomebodyOut;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
@@ -281,6 +282,12 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Clients->value, WhichAppToWatchOn::class);
             Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);
             Router::native(AStacksScreen::Invite->value, AskingSomebodyIn::class);
+
+            // Taking one member out. A screen of its own, reached from who is
+            // in, because what taking them out would cost is read and drawn
+            // before anything is agreed to. A name can hold anything the media
+            // server allows, so it is encoded and takes the rest of the path.
+            Router::native(AStacksScreen::TakeOut->value, TakingSomebodyOut::class)->where('service', '.+');
 
             // What is already on the machine, before anything is moved in. Its
             // own screen, because the survey is read before any mode is chosen.

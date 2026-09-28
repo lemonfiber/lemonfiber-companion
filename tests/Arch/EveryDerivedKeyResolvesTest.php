@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowFarItGoesBack;
+use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItStands;
@@ -366,6 +367,10 @@ function everyDerivedKey(): array
         WhereTheFrontDoorStands::class => aPairPerCase(
             WhereTheFrontDoorStands::cases(),
             static fn(WhereTheFrontDoorStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        HowFarTheRemovalReached::class => aPairPerCase(
+            HowFarTheRemovalReached::cases(),
+            static fn(HowFarTheRemovalReached $case): array => [$case->saidOnTheScreen()],
         ),
         WhereTheInvitationStands::class => aPairPerCase(
             WhereTheInvitationStands::cases(),
