@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AChangeAndWhy;
 use Modules\Kernel\Api\AChangePutBack;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ARunToPutBack;
 use Modules\Kernel\Api\ChangesAndWhy;
@@ -14,9 +15,9 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
-use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AChangeGoneBackAsShown;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatPuttingARunBackWouldShow;
@@ -97,14 +98,9 @@ final readonly class HowARunBackReads
     }
 
     /** The stack answered and would not put the run back, and this is what it said and named. */
-    public function refused(WhyItWasNotPutBack $why): HowPuttingARunBackWent
+    public function refused(ARefusalInItsWords $why): HowPuttingARunBackWent
     {
-        return $this->following(
-            HowTheReadingWent::itCameBack(),
-            refused: $why->summary(),
-            refusedMeaning: $why->meaning(),
-            refusedNamed: $why->named()->forTheOperator(),
-        );
+        return $this->following(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** This device no longer holds a session for the stack it was put back on. */
@@ -143,9 +139,7 @@ final readonly class HowARunBackReads
             reversed: $reversed,
             left: $this->saidOf($report->left()),
             noted: $this->saidOf($report->noted()),
-            refused: '',
-            refusedMeaning: '',
-            refusedNamed: '',
+            refused: null,
         );
     }
 
@@ -197,9 +191,7 @@ final readonly class HowARunBackReads
         HowTheReadingWent $went,
         bool $isWorking = false,
         bool $hasEnded = false,
-        string $refused = '',
-        string $refusedMeaning = '',
-        string $refusedNamed = '',
+        ?ARefusalAsShown $refused = null,
     ): HowPuttingARunBackWent {
         return new HowPuttingARunBackWent(
             went: $went,
@@ -215,8 +207,6 @@ final readonly class HowARunBackReads
             left: [],
             noted: [],
             refused: $refused,
-            refusedMeaning: $refusedMeaning,
-            refusedNamed: $refusedNamed,
         );
     }
 }

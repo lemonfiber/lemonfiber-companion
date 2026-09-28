@@ -10,6 +10,7 @@ use function iterator_to_array;
 
 use Modules\Kernel\Api\AChangeAndWhy;
 use Modules\Kernel\Api\AChangePutBack;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ChangesAndWhy;
 use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
@@ -19,7 +20,6 @@ use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWentBack;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
-use Modules\Kernel\Api\WhyItWasNotPutBack;
 
 use function sprintf;
 
@@ -46,7 +46,7 @@ function whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing $going): string
     return $going->either(
         stillRunning: static fn(): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo('running'),
         done: static fn(ARunPutBack $report): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('done, %s', $report->rehearsed()->value)),
-        refused: static fn(WhyItWasNotPutBack $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('refused, %s', $why->summary())),
+        refused: static fn(ARefusalInItsWords $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo(sprintf('refused, %s', $why->summary())),
         ended: static fn(): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo('ended'),
         met: static fn(Obstacle $why): WhatPuttingTheRunBackCameTo => new WhatPuttingTheRunBackCameTo($why->name),
     )->said;
@@ -107,7 +107,7 @@ it('is complete only where nothing was left', function (): void {
 });
 
 it('follows a run going back to each of its five arms', function (): void {
-    $refused = WhyItWasNotPutBack::said('Nothing was changed at 1790150000', '', WhatTheRefusalNamed::nothing());
+    $refused = ARefusalInItsWords::said('Nothing was changed at 1790150000', '', WhatTheRefusalNamed::nothing());
 
     expect(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::stillRunning()))->toBe('running')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::done(aRunPutBackLeaving(ChangesAndWhy::these(), WhetherItWasRehearsed::Rehearsed))))->toBe('done, rehearsed')

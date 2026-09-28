@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\ARunPutBack;
@@ -25,7 +26,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheRecord;
-use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowARunBackReads;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
@@ -277,7 +277,7 @@ final class PuttingThatRunBack extends NativeComponent
             held: fn(Session $session): HowPuttingARunBackWent => $this->puttingBack->whatBecameOf($stack, $session, Job::named($held))->either(
                 stillRunning: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->running(),
                 done: static fn(ARunPutBack $report): HowPuttingARunBackWent => new HowARunBackReads()->done($report),
-                refused: static fn(WhyItWasNotPutBack $why): HowPuttingARunBackWent => new HowARunBackReads()->refused($why),
+                refused: static fn(ARefusalInItsWords $why): HowPuttingARunBackWent => new HowARunBackReads()->refused($why),
                 ended: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->ended(),
                 met: fn(Obstacle $why): HowPuttingARunBackWent => $this->refused($why, $stack),
             ),

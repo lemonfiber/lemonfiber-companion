@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\AChangeAndWhy;
 use Modules\Kernel\Api\AChangePutBack;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\Change;
@@ -28,11 +29,11 @@ use Modules\Kernel\Api\WhatWentBack;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
-use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Operator\Internal\Presenters\HowTheRecordReads;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AChangeGoneBackAsShown;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\WhatOneRecordedChangeSays;
 use Modules\Operator\Internal\ViewModels\WhatPuttingARunBackWouldShow;
@@ -196,7 +197,7 @@ function everythingPuttingTheRunBackShows(HowPuttingARunBackWent $went): array
         'reversed' => array_map(static fn(AChangeGoneBackAsShown $row): array => [$row->target, $row->doesSaid], $went->reversed),
         'left' => array_map(static fn(AChangeAndWhyAsShown $row): array => [$row->target, $row->because], $went->left),
         'noted' => array_map(static fn(AChangeAndWhyAsShown $row): array => [$row->target, $row->because], $went->noted),
-        'refused' => [$went->refused, $went->refusedMeaning, $went->refusedNamed],
+        'refused' => $went->refused instanceof ARefusalAsShown ? [$went->refused->said, $went->refused->meaning, $went->refused->named] : null,
     ];
 }
 
@@ -221,7 +222,7 @@ function nothingReportedOfTheRun(array $changed): array
         'reversed' => [],
         'left' => [],
         'noted' => [],
-        'refused' => ['', '', ''],
+        'refused' => null,
         ...$changed,
     ];
 }
@@ -501,7 +502,7 @@ it('says what stood in the way of a yes the stack refused, and reads the record 
 });
 
 it('says a run the stack would not put back in its words, apart from a stack that could not be reached, and does not offer asking again', function (): void {
-    $why = WhyItWasNotPutBack::said(
+    $why = ARefusalInItsWords::said(
         "A region lemonfiber wrote into one of the stack's files could not be taken out",
         'Everything before it was put back; this region is still in the file.',
         WhatTheRefusalNamed::as('/srv/stack/compose.yaml: permission denied'),
@@ -521,7 +522,7 @@ it('says a run the stack would not put back in its words, apart from a stack tha
         ->and($drawn->said())->toContain(__('stacks.run_back.refused'))
         ->and($drawn->said())->toContain("A region lemonfiber wrote into one of the stack's files could not be taken out")
         ->and($drawn->said())->toContain('Everything before it was put back; this region is still in the file.')
-        ->and($drawn->said())->toContain(__('stacks.run_back.refused_named', ['named' => '/srv/stack/compose.yaml: permission denied']))
+        ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => '/srv/stack/compose.yaml: permission denied']))
         ->and($drawn->said())->toContain(__('stacks.run_back.refused_same_answer'))
         ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(__('stacks.record.road_in'))
@@ -531,7 +532,7 @@ it('says a run the stack would not put back in its words, apart from a stack tha
 });
 
 it('draws only the stack\'s sentence where it meant and named nothing more', function (): void {
-    $why = WhyItWasNotPutBack::said('Nothing was changed at 1790150000', '', WhatTheRefusalNamed::nothing());
+    $why = ARefusalInItsWords::said('Nothing was changed at 1790150000', '', WhatTheRefusalNamed::nothing());
     $said = WhatTheDeviceWouldDraw::by(aRunAgreedToAndAskedAfter(HowPuttingARunBackIsGoing::refused($why)))->said();
 
     expect(whereOnTheFrameItIsSaid($said, __('stacks.run_back.refused_same_answer')) - whereOnTheFrameItIsSaid($said, __('stacks.run_back.refused')))
