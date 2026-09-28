@@ -240,7 +240,7 @@ it('offers stopping seeding on every download alike, asking again and asking wha
 
 it('opens stopping seeding on the download whose row it is on, by its own screen', function (): void {
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()));
-    $goes = $screen->goes()->ofItself()->lettingGo('Some.Film.2024');
+    $goes = $screen->goes()->ofItself()->changing()->lettingGo('Some.Film.2024');
 
     expect($goes)->toBe(sprintf('/stacks/%s/room/Some.Film.2024', theStackWhoseRoomIsRead()->id()->stored()))
         ->and(NativeRouter::resolve($goes))->not->toBeNull()

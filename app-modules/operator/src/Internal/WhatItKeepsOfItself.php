@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
-use Modules\Kernel\Api\ACopy;
-use Modules\Kernel\Api\ADownloadHeld;
-use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
@@ -15,11 +12,11 @@ use Modules\Stacks\Api\AStacksScreen;
  * Where the screens are that read what one machine keeps about itself.
  *
  * What it changed, where what it runs came from, what it sends, what it will
- * wake somebody for, how it shares the line, what else already stands on it,
- * how good the media it fetches should be and putting its configuration back
- * to lemonfiber's own — screens answering one kind of
+ * wake somebody for, how it shares the line, what else already stands on it
+ * and how good the media it fetches should be — screens answering one kind of
  * question, which is what the machine does and keeps on its own account while
  * nobody is looking — and the record it keeps of walking one thing through.
+ * The screens that change what it keeps are {@see WhatItIsAskedToChange}'s.
  * Apart from {@see WhereAStackIs} because that is where the questions change
  * subject, and because that class had reached the twenty-method ceiling `H3`
  * refuses: one accessor there hands out this, and the next screen of this kind
@@ -41,17 +38,6 @@ final readonly class WhatItKeepsOfItself
     public function record(): string
     {
         return AStacksScreen::Record->forTheStack($this->stack);
-    }
-
-    /**
-     * Putting back one run the record shows, by the stamp it keeps it under.
-     *
-     * Text on the way in, because a template holds the stamp as text, and an
-     * {@see ARun} on the way out, which refuses a blank.
-     */
-    public function puttingARunBack(string $stamp): string
-    {
-        return AStacksScreen::RunBack->forTheStacksRun($this->stack, ARun::stamped($stamp));
     }
 
     /** Where every service on this machine comes from. */
@@ -90,21 +76,13 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::Keeps->forTheStack($this->stack);
     }
 
-    /** Taking a copy of this machine's stack. */
-    public function copy(): string
-    {
-        return AStacksScreen::Copy->forTheStack($this->stack);
-    }
-
     /**
-     * Putting one of this machine's copies back, by the name it was listed under.
-     *
-     * Text on the way in, because a template holds the names as text, and an
-     * {@see ACopy} on the way out, which refuses a blank.
+     * Where the screens are that change what this machine keeps, on a yes:
+     * its copies, its runs, a download, its configuration, and lemonfiber itself.
      */
-    public function puttingBack(string $named): string
+    public function changing(): WhatItIsAskedToChange
     {
-        return AStacksScreen::PutBack->forTheStacksCopy($this->stack, ACopy::named($named));
+        return WhatItIsAskedToChange::of($this->stack);
     }
 
     /** Asking for help with this machine: a support bundle, described before it is written. */
@@ -117,17 +95,6 @@ final readonly class WhatItKeepsOfItself
     public function room(): string
     {
         return AStacksScreen::Room->forTheStack($this->stack);
-    }
-
-    /**
-     * Stopping seeding one of this machine's completed downloads, by the name the account gave it.
-     *
-     * Text on the way in, because a template holds the names as text, and an
-     * {@see ADownloadHeld} on the way out, which refuses a blank.
-     */
-    public function lettingGo(string $named): string
-    {
-        return AStacksScreen::LetGo->forTheStacksDownload($this->stack, ADownloadHeld::named($named));
     }
 
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
@@ -160,6 +127,7 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::Uninstall->forTheStack($this->stack);
     }
 
+
     /** What lemonfiber's words mean. */
     public function words(): string
     {
@@ -182,11 +150,5 @@ final readonly class WhatItKeepsOfItself
     public function walkthrough(): string
     {
         return AStacksScreen::Walkthrough->forTheStack($this->stack);
-    }
-
-    /** Putting this machine's configuration back to lemonfiber's own, previewed before any yes. */
-    public function reset(): string
-    {
-        return AStacksScreen::Reset->forTheStack($this->stack);
     }
 }

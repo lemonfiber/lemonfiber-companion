@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\WhatItIsAskedToChange;
 use Modules\Operator\Internal\WhatItKeepsOfItself;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhoGetsIn;
@@ -166,9 +167,10 @@ it('every way this app asks where a machine is hands back a path the router know
     //
     // An accessor may hand out a further set of paths rather than one —
     // `ofItself()` does, for the screens about what a machine keeps of itself,
-    // and `whoGetsIn()`, for who gets in to it — and the sweep follows each,
-    // so a route moved there is still read here rather than falling out of
-    // sight with the move.
+    // and `changing()` on that, for the screens that change it, and
+    // `whoGetsIn()`, for who gets in to it — and the sweep follows each, so a
+    // route moved there is still read here rather than falling out of sight
+    // with the move.
     $where = WhereAStackIs::rememberedAs(Screens::aStackInTheUri());
     $unknown = [];
     $asked = 0;
@@ -186,7 +188,7 @@ it('every way this app asks where a machine is hands back a path the router know
 
             $path = $method->invoke($holder);
 
-            if ($path instanceof WhatItKeepsOfItself || $path instanceof WhoGetsIn) {
+            if ($path instanceof WhatItKeepsOfItself || $path instanceof WhatItIsAskedToChange || $path instanceof WhoGetsIn) {
                 $toSweep[] = $path;
 
                 continue;
@@ -207,7 +209,7 @@ it('every way this app asks where a machine is hands back a path the router know
     }
 
     // And the one that needs a run, for the same reason.
-    if (NativeRouter::resolve($where->ofItself()->puttingARunBack('1790150000')) === null) {
+    if (NativeRouter::resolve($where->ofItself()->changing()->puttingARunBack('1790150000')) === null) {
         $unknown[] = 'puttingARunBack() hands back a path the router does not know';
     }
 

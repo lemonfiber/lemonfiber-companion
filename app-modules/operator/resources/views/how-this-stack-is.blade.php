@@ -348,7 +348,7 @@
 
     {{-- Taking lemonfiber off this machine, one removal at a time, each
          read before it is agreed to. --}}
-    <x-operator::quiet-action label="{{ __('uninstall.road_in') }}" :goes="$this->goes()->ofItself()->takingItOff()" />
+    <x-operator::quiet-action label="{{ __('uninstall.road_in') }}" :goes="$this->goes()->ofItself()->changing()->takingItOff()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

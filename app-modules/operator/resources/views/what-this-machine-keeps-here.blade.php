@@ -48,7 +48,7 @@
                 <x-operator::action
                     label="{{ __('stacks.keeps.put_back') }}"
                     answers-to="{{ __('stacks.keeps.put_back_that', ['copy' => $name]) }}"
-                    :goes="$this->goes()->ofItself()->puttingBack($name)"
+                    :goes="$this->goes()->ofItself()->changing()->puttingBack($name)"
                 />
             </x-operator::entry>
         @empty
@@ -70,7 +70,7 @@
         @endif
     @endif
 
-    <x-operator::action label="{{ __('stacks.keeps.take_a_copy') }}" :goes="$this->goes()->ofItself()->copy()" />
+    <x-operator::action label="{{ __('stacks.keeps.take_a_copy') }}" :goes="$this->goes()->ofItself()->changing()->copy()" />
 
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
 </x-operator::content>

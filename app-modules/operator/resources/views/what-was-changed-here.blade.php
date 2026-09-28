@@ -46,7 +46,7 @@
         <x-operator::action
             label="{{ __('stacks.record.put_back') }}"
             answers-to="{{ __('stacks.record.put_back_that', ['did' => $moment->leadsWith, 'when' => trans_choice($moment->whenSaid, $moment->whenCount)]) }}"
-            :goes="$this->goes()->ofItself()->puttingARunBack($moment->stamp)"
+            :goes="$this->goes()->ofItself()->changing()->puttingARunBack($moment->stamp)"
         />
     @empty
         {{-- The stack answered and has changed nothing within the horizon

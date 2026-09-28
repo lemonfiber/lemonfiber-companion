@@ -507,5 +507,5 @@ it('renders its own view, and the way back is a route', function (): void {
 
     expect($screen->render()->name())->toBe('operator::letting-a-download-go')
         ->and(NativeRouter::resolve($screen->goes()->ofItself()->room()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->lettingGo('Some Film/2024')))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->ofItself()->changing()->lettingGo('Some Film/2024')))->not->toBeNull();
 });

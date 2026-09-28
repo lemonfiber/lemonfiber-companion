@@ -152,7 +152,7 @@
          before anything is agreed to. Offered on every reading that came
          back: which files differ is the stack's to say, and this listing of
          settings does not. --}}
-    <x-operator::quiet-action label="{{ __('config.put_it_all_back') }}" :goes="$this->goes()->ofItself()->reset()" />
+    <x-operator::quiet-action label="{{ __('config.put_it_all_back') }}" :goes="$this->goes()->ofItself()->changing()->reset()" />
 
     {{-- Last, under what it is about, for the reason every other reading
          screen puts it there: somebody who has just changed something in the

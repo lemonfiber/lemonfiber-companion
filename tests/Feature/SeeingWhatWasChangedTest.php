@@ -300,5 +300,5 @@ it('leads from each moment to putting back what was done then, by the stamp the 
         ->and(array_map(static fn(AMomentOnTheRecord $moment): string => $moment->leadsWith, $moments))
         ->toBe(['Pointed Sonarr at the new library', 'Wrote the first configuration'])
         ->and($ways)->toHaveCount(2)
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->puttingARunBack($moments[0]->stamp)))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->ofItself()->changing()->puttingARunBack($moments[0]->stamp)))->not->toBeNull();
 });
