@@ -171,6 +171,7 @@ final readonly class Rosters
      */
     private static function services(array $data): array
     {
+        $leaning = self::leaning($data);
         $daemons = [];
         $position = 0;
 
@@ -179,7 +180,7 @@ final readonly class Rosters
                 throw RosterIsUnreadable::item($position);
             }
 
-            $daemons[] = self::daemon($row, $position);
+            $daemons[] = self::daemon($row, $position, $leaning);
             $position++;
         }
 
@@ -214,15 +215,16 @@ final readonly class Rosters
     /**
      * One service, by whichever of the two constructors its payload calls for.
      *
-     * @param array<mixed> $row
+     * @param array<mixed>                   $row
+     * @param array<string, list<ServiceId>> $leaningOnEach what leans on each service, by the id it goes by
      */
-    private static function daemon(array $row, int $position): Daemon
+    private static function daemon(array $row, int $position, array $leaningOnEach): Daemon
     {
         $name = self::text($row, WireField::Name, $position);
         $id = ServiceId::called(self::text($row, WireField::Id, $position));
         $runs = self::runs($row, $position);
         $matters = self::matters($row, $position);
-        $leaning = self::leaning($row, $position);
+        $leaning = self::leaningOn($id, $leaningOnEach);
 
         $code = self::howItEnded($row, $position);
 
@@ -307,23 +309,84 @@ final readonly class Rosters
     }
 
     /**
-     * What one service will not work without.
+     * What leans on each service, read across the whole listing.
      *
-     * @param array<mixed> $row
+     * The wire says it from the side that needs: a row's `depends_on` names
+     * what that service cannot run without, never what cannot run without it.
+     * Stopping one takes the others with it, so that is the direction a screen
+     * asking before a stop needs, and it can only be read with every row in
+     * hand. A row that is not a shape is left to the reading that refuses it.
+     *
+     * @param  array<mixed>                   $data
+     * @return array<string, list<ServiceId>>
      */
-    private static function leaning(array $row, int $position): WhatLeansOnIt
+    private static function leaning(array $data): array
     {
         $leaning = [];
+        $position = 0;
+
+        foreach (self::listed($data, WireField::Services) as $row) {
+            $leaning = self::alsoLeaning($leaning, $row, $position);
+            $position++;
+        }
+
+        return $leaning;
+    }
+
+    /**
+     * The same, with what one more row needs added to it.
+     *
+     * @param  array<string, list<ServiceId>> $leaning
+     * @return array<string, list<ServiceId>>
+     */
+    private static function alsoLeaning(array $leaning, mixed $row, int $position): array
+    {
+        if (! is_array($row)) {
+            return $leaning;
+        }
+
+        $needing = ServiceId::called(self::text($row, WireField::Id, $position));
+
+        foreach (self::needs($row, $position) as $needed) {
+            $leaning[$needed->named()][] = $needing;
+        }
+
+        return $leaning;
+    }
+
+    /**
+     * What one service will not work without, as its row says.
+     *
+     * @param  array<mixed>    $row
+     * @return list<ServiceId>
+     */
+    private static function needs(array $row, int $position): array
+    {
+        $needs = [];
 
         foreach (self::listed($row, StatusField::DependsOn) as $said) {
             if (! is_string($said) || trim($said) === '') {
                 throw RosterIsUnreadable::leaning($position);
             }
 
-            $leaning[] = ServiceId::called($said);
+            $needs[] = ServiceId::called($said);
         }
 
-        return $leaning === [] ? WhatLeansOnIt::nothing() : WhatLeansOnIt::these(...$leaning);
+        return $needs;
+    }
+
+    /**
+     * The services that stop with this one, in the order the stack listed them.
+     *
+     * @param array<string, list<ServiceId>> $leaning
+     */
+    private static function leaningOn(ServiceId $id, array $leaning): WhatLeansOnIt
+    {
+        if (! array_key_exists($id->named(), $leaning)) {
+            return WhatLeansOnIt::nothing();
+        }
+
+        return WhatLeansOnIt::these(...$leaning[$id->named()]);
     }
 
     /**
