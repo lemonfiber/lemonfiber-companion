@@ -21,6 +21,8 @@ use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
+use Modules\Kernel\Api\AnUninstall;
+use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\AWrittenBundle;
@@ -33,6 +35,7 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HostingAgreed;
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\MovingInBy;
@@ -65,17 +68,25 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatIsNotLemonfibers;
+use Modules\Kernel\Api\WhatIsStillComing;
+use Modules\Kernel\Api\WhatItCannotTake;
+use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasNamed;
 use Modules\Kernel\Api\WhatWroteACopy;
+use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhetherToWait;
+use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
@@ -86,6 +97,7 @@ use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
@@ -236,6 +248,26 @@ function aListingToSpoilTheAnswerTo(): WhatPuttingItBackWouldDo
     );
 }
 
+/** A reading of the services, to agree against. */
+function anUninstallToSpoilTheAnswerTo(): AnUninstallAgreed
+{
+    return AnUninstallAgreed::after(AnUninstall::of(
+        WhatTakingItOffComesTo::read(
+            WhichRemoval::Services,
+            'The containers and the images',
+            'Your configuration and your library',
+            WhatItReaches::of(),
+            0,
+            WhatIsNotLemonfibers::of(),
+            WhatIsStillComing::of(),
+            WhatItCannotTake::of(),
+            HowMuchWasRead::everything(),
+            'services-0-lines',
+        ),
+        WhereTakingItOffGot::surveyed(),
+    ), WhetherToWait::GoAheadNow, acknowledgedTheVolume: false);
+}
+
 /**
  * Every adapter call that reads an answer, by what it asks.
  *
@@ -269,6 +301,12 @@ function everyAdapterCallThatReads(): array
             => new Bundlers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Bundlers::fetch' => static fn(): object
             => new Bundlers($clients, $entropy)->fetch($stack, $session, AWrittenBundle::at('/home/op/bundles/lemonfiber-support.tar.gz')),
+        'Dismantlers::surveyed' => static fn(): object
+            => new Dismantlers($clients, $entropy)->surveyed($stack, $session, WhichRemoval::Services),
+        'Dismantlers::takeItOff' => static fn(): object
+            => new Dismantlers($clients, $entropy)->takeItOff($stack, $session, anUninstallToSpoilTheAnswerTo()),
+        'Dismantlers::whatBecameOf' => static fn(): object
+            => new Dismantlers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
@@ -380,8 +418,8 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * answers with, so it is given {@see THE_WORK_AN_INVITATION_BECOMES}.
  * A quality choice is given the quality reading, and a choice for music and an
  * upgrade the envelopes each is answered with. So are a finished copy, the
- * listing a restore answers without a yes, and a finished restore, and what a
- * start, a stop or a restart came to.
+ * listing a restore answers without a yes, and a finished restore, what a
+ * start, a stop or a restart came to, and what taking lemonfiber off came to.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -398,6 +436,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Bundlers::whatBecameOf' => sprintf('%sBundleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Dismantlers::whatBecameOf' => sprintf('%sUninstallEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }

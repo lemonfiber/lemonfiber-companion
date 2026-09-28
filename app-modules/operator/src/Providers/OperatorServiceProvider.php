@@ -19,6 +19,7 @@ use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
+use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
@@ -261,6 +262,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // is asked about what comes next and upgrading about what is
             // already here, and both are decided in front of what each costs.
             Router::native(AStacksScreen::Quality->value, ChoosingHowGood::class);
+
+            // Taking lemonfiber off the machine. Its own screen, because each
+            // removal is read and agreed to on its own, and the last of them
+            // takes what nothing can fetch again.
+            Router::native(AStacksScreen::Uninstall->value, TakingItOffThisMachine::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);

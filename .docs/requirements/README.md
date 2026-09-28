@@ -78,6 +78,7 @@ lookup stops being wrong.
 | [asking-somebody-in.md](asking-somebody-in.md) | Inviting somebody, handing the invitation over, and letting somebody choose a new password |
 | [moving-in.md](moving-in.md) | What is already on a machine before lemonfiber moves in beside it, and what may be done about it |
 | [what-a-machine-keeps.md](what-a-machine-keeps.md) | What the stack keeps on its machine, where and why, the copies the machine holds, taking a copy and putting one back |
+| [taking-lemonfiber-off.md](taking-lemonfiber-off.md) | Taking lemonfiber off a machine: four removals, each read and agreed to on its own, and followed to what it took and left |
 | [asking-for-help.md](asking-for-help.md) | A support bundle, chosen, described before it is written, and read here before anyone else reads it |
 | [what-was-done-here.md](what-was-done-here.md) | What a machine has changed about itself, how far back that record goes, and where every service it runs comes from |
 | [what-this-device-keeps-to-itself.md](what-this-device-keeps-to-itself.md) | Permissions, notifications, the lock, and what never leaves |

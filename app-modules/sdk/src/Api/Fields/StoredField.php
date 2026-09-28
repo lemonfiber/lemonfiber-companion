@@ -19,7 +19,4 @@ enum StoredField: string implements NamesAWireField
 
     /** The directories everything a stack keeps sits under. */
     case Roots = 'roots';
-
-    /** Each thing a stack keeps on its machine. */
-    case Kept = 'kept';
 }

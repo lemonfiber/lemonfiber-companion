@@ -159,6 +159,23 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'the answer they arrived on, and says nothing of a decline, which the contract does not carry.',
     ],
     [
+        'requirement' => 'N13-R10',
+        'asks' => 'to ask for a rehearsal of taking lemonfiber off, and label what it answers as one',
+        // Named, and watched as a whole payload. What is missing is an
+        // argument on the action's route, which no payload can show; the
+        // payload a rehearsal answers with is where a route that can be asked
+        // for one would say so, and anything it says that it does not say now
+        // sends somebody to read this row.
+        'envelope' => 'UninstallEnvelope',
+        'field' => null,
+        'shape' => 'array{manifest: array{agreement: string, backup?: string|null, bytes: int, coming: list<array{name: string, progress: int}>, confidence: array{complete: bool, unread: list<string>}, foreign: list<array{at: string, bytes: int, files: int}>, items: list<array{bytes?: int|null, kept?: string|null, name: string, secret: bool, sort: \'container\'|\'network\'|\'image\'|\'path\', what: string}>, keeps: string, outside: list<array{by_hand: string, found: bool, what: string, why: string}>, removes: string, tier: \'stop\'|\'services\'|\'configuration\'|\'media\', volume?: string|null}, removal: array{state: \'surveyed\'}|array{state: \'confirmed\'}|array{credentials: list<string>, gone: list<string>, state: \'complete\'}|array{credentials: list<string>, gone: list<string>, left: list<array{by_hand: string, name: string, why: string}>, state: \'partial\'}}',
+        'raised' => 'The `removal` state `confirmed` is the state an uninstall rehearsal ends in, and the screen '
+            . 'labels it as a rehearsal where it arrives. None can be asked for: the `uninstall` action '
+            . 'takes `tier`, `confirm`, `offer` and `wait`, and no argument on the HTTP route asks for a '
+            . 'rehearsal, so none arrives from this app. What closes this row is a rehearsal the route '
+            . 'can be asked for.',
+    ],
+    [
         'requirement' => 'N7-R11',
         'asks' => 'to show where each service the survey found keeps its configuration and its library',
         // Named, and watched as a whole payload: the answer could arrive as a

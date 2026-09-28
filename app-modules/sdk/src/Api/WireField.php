@@ -552,4 +552,15 @@ enum WireField: string implements NamesAWireField
      * survey, and what an import could not bring.
      */
     case NotCarried = 'not_carried';
+    /** What something would do or did, listed: a copy's own account of itself, or what a removal reaches. */
+    case Manifest = 'manifest';
+
+    /** How sure a reading is: of the item a trace followed, or of how much of a removal was read. */
+    case Confidence = 'confidence';
+
+    /**
+     * What is kept: each thing a stack keeps on its machine, or why one line
+     * of a removal stays where it is.
+     */
+    case Kept = 'kept';
 }

@@ -186,6 +186,9 @@ enum AStacksScreen: string
     /** How good this machine's media should be, and upgrading what is already here. */
     case Quality = '/stacks/{stack}/quality';
 
+    /** Taking lemonfiber off this machine, one removal at a time, each read before it is agreed to. */
+    case Uninstall = '/stacks/{stack}/uninstall';
+
     /** What lemonfiber's words mean. */
     case Words = '/stacks/{stack}/words';
 

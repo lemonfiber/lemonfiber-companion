@@ -54,6 +54,7 @@ use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereACredentialStands;
@@ -71,6 +72,7 @@ use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSetIt;
@@ -365,6 +367,14 @@ function everyDerivedKey(): array
         WhereTheFrontDoorStands::class => aPairPerCase(
             WhereTheFrontDoorStands::cases(),
             static fn(WhereTheFrontDoorStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhichRemoval::class => aPairPerCase(
+            WhichRemoval::cases(),
+            static fn(WhichRemoval $case): array => [$case->saidOnTheScreen(), $case->agreedToAs()],
+        ),
+        WhatSortItIs::class => aPairPerCase(
+            WhatSortItIs::cases(),
+            static fn(WhatSortItIs $case): array => [$case->saidOnTheScreen()],
         ),
         WhereTheInvitationStands::class => aPairPerCase(
             WhereTheInvitationStands::cases(),

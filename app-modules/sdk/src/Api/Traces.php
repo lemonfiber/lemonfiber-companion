@@ -98,10 +98,10 @@ final readonly class Traces
     /** @param array<array-key, mixed> $data */
     private static function sure(array $data): HowSureTheTraceIs
     {
-        $said = self::text($data, TraceField::Confidence);
+        $said = self::text($data, WireField::Confidence);
 
         return HowSureTheTraceIs::tryFrom($said)
-            ?? throw TraceIsUnreadable::word(TraceField::Confidence, $said, ...array_map(static fn(HowSureTheTraceIs $case): string => $case->value, HowSureTheTraceIs::cases()));
+            ?? throw TraceIsUnreadable::word(WireField::Confidence, $said, ...array_map(static fn(HowSureTheTraceIs $case): string => $case->value, HowSureTheTraceIs::cases()));
     }
 
     /** @param array<array-key, mixed> $row */

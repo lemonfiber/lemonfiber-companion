@@ -14,6 +14,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
@@ -192,6 +193,11 @@ const VERBS_THE_APP_ASKS_FOR = [
     // the listing the operator was shown, and nothing else, because the yes
     // quotes that listing by name.
     'restore' => 'says what putting one copy back would do, and puts it back only against that listing',
+
+    // One removal at a time, and only against the reading of it the operator
+    // was shown: the yes quotes that reading by name, so a reading that has
+    // moved on is refused by the stack rather than carried out.
+    'uninstall' => 'takes one of the four removals off the machine, against the reading of it the operator was shown and agreed to',
 
     // The one verb that fetches something. It names at most a title, and
     // with none the stack chooses something likely to work; the stack
@@ -482,6 +488,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
+        ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),
