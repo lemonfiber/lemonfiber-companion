@@ -81,9 +81,10 @@ const DOORS_THE_APP_OPENS = [
     'logs' => 'reads the tail of one service, bounded and named',
 
     // The event stream, which is where the core publishes the health summary
-    // and nowhere else. It reads and changes nothing, and a screen holds it
-    // only while somebody can see it.
-    'eventSource' => 'listens to the stack\'s event stream for the health summary, changing nothing',
+    // and nowhere else, and where it says each step of a running walk as it
+    // happens. It reads and changes nothing, and a screen holds it only while
+    // somebody can see it.
+    'eventSource' => 'listens to the stack\'s event stream for the health summary and the steps of a running walk, changing nothing',
 
     // The one read whose answer is a file rather than an envelope: a support
     // bundle the stack already wrote, fetched by the name its path ends in so

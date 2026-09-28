@@ -29,8 +29,6 @@ use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Internal\AStreamHeldOpen;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
-use function sprintf;
-
 /**
  * The one place this application holds a stack's event stream open.
  *
@@ -43,8 +41,8 @@ use function sprintf;
  *
  * **It never waits on the stack.** The stream is opened with a wait of one
  * millisecond, so a read that finds nothing comes back with nothing almost at
- * once. Each call takes chunks until one comes back empty, reads the last
- * `dashboard` event among them, and hands that back. The wait for the next
+ * once. Each call takes what {@see AStreamHeldOpen::taken()} finds, reads the
+ * last `dashboard` event among it, and hands that back. The wait for the next
  * event is spent between calls, on the screen's cadence, rather than inside
  * one.
  *
@@ -106,7 +104,7 @@ final class Listeners implements Hearing
     private function heardFrom(Stack $stack, Session $session): WhatWasHeard
     {
         try {
-            return $this->taken($this->held ??= $this->opened($stack, $session));
+            return $this->heard($this->held ??= $this->opened($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
         } catch (
@@ -129,61 +127,22 @@ final class Listeners implements Hearing
         );
     }
 
-    /**
-     * Everything that has arrived, up to the first read that found nothing.
-     *
-     * A chunk is taken and the reader moved on before the chunk is looked at,
-     * so the read that comes back empty is the last one this call waits on and
-     * whatever the move found is the first thing the next call takes. A stream
-     * that runs out before any read comes back empty has ended.
-     */
-    private function taken(AStreamHeldOpen $held): WhatWasHeard
-    {
-        $arrived = '';
-
-        while ($held->chunks->valid()) {
-            $chunk = $held->chunks->current();
-            $held->chunks->next();
-
-            if ($chunk === '') {
-                return $this->heard($held, $arrived, ended: false);
-            }
-
-            $arrived = sprintf('%s%s', $arrived, $chunk);
-        }
-
-        return $this->heard($held, $arrived, ended: true);
-    }
-
     /** What arrived, as what was heard, letting go of a stream that ended. */
-    private function heard(AStreamHeldOpen $held, string $arrived, bool $ended): WhatWasHeard
+    private function heard(AStreamHeldOpen $held): WhatWasHeard
     {
-        $latest = $this->theLastSummaryIn($held->parser->feed($arrived));
+        $arrived = $held->taken();
+        $latest = $arrived->theLast(DashboardEnvelope::KIND);
 
-        if ($ended) {
+        if ($arrived->ended) {
             $this->held = null;
-            $this->ended = $arrived !== '';
+            $this->ended = $arrived->anything;
         }
 
         return match (true) {
             $latest instanceof ServerEvent => WhatWasHeard::said(Summaries::in(new EnvelopeReader()->read($latest->data))),
-            $arrived !== '' => WhatWasHeard::aSignOfLife(),
-            $ended => WhatWasHeard::closed(),
+            $arrived->anything => WhatWasHeard::aSignOfLife(),
+            $arrived->ended => WhatWasHeard::closed(),
             default => WhatWasHeard::nothing(),
         };
-    }
-
-    /** @param list<ServerEvent> $events */
-    private function theLastSummaryIn(array $events): ?ServerEvent
-    {
-        $latest = null;
-
-        foreach ($events as $event) {
-            if ($event->kind === DashboardEnvelope::KIND->value) {
-                $latest = $event;
-            }
-        }
-
-        return $latest;
     }
 }

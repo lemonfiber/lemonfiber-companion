@@ -44,6 +44,7 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
@@ -111,6 +112,7 @@ use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
+use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Quartermasters;
@@ -257,6 +259,11 @@ final class CompositionRoot extends ServiceProvider
         // own, and a screen letting go of its connection lets go of nobody
         // else's.
         $this->app->bind(Hearing::class, Listeners::class);
+
+        // Holding the same stream for the steps a running walk says, which the
+        // stack narrates there as they happen. Bound rather than a singleton,
+        // for the reason above: the screen following a walk holds its own.
+        $this->app->bind(HearingTheWalk::class, Narrators::class);
 
         // Handing a diagnostic report to the operator, which is the only way
         // one leaves this device. The app assembles and does not transmit, and

@@ -169,6 +169,26 @@ it('reports what stood in the way rather than an empty listing', function (): vo
         ->and($screen->answer()->howMany())->toBe(0);
 });
 
+it('says what setup decided is among the settings, as facts, and that changing one is not setting up again', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo())))->said();
+
+    expect($drawn)->toContain(__('config.what_setup_settled'), '/data/media')
+        ->and($drawn)->not->toContain(__('onboarding.at_the_machine'));
+});
+
+it('declines first-run setup with the reason, rather than leaving it out, on a stack with settings and one with none', function (Settings $set): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to($set));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__('config.first_run_setup'), __('config.first_run_setup_why'))
+        // Declined in words and never offered: nothing on the screen is a way
+        // into setup, only the changes a stack already set up can take.
+        ->and($drawn->offers())->not->toContain(__('config.first_run_setup'));
+})->with([
+    'with settings' => [whatTheLoftIsSetTo()],
+    'with none' => [Settings::of()],
+]);
+
 it('asks the stack it is on, once, however many rows are drawn', function (): void {
     $arranging = AStackThatIsSet::to(whatTheLoftIsSetTo());
     $screen = theSettingsScreen($arranging);

@@ -196,8 +196,14 @@ final readonly class WhatTheWireWouldAnswer
      */
     private const int A_FEW_LINES = 3;
 
-    /** The kind of the one event a stand-in stream carries. */
-    private const string WHAT_THE_STREAM_CARRIES = 'dashboard';
+    /**
+     * The kinds of the events a stand-in stream carries, in the order it says them.
+     *
+     * The two a screen holds the stream for: the dashboard the health summary
+     * is read out of, and a step of a running walk. Each screen takes the last
+     * event of its own kind and reads the other as a sign of life.
+     */
+    private const array WHAT_THE_STREAM_CARRIES = ['dashboard', 'step'];
 
     /**
      * A mock for every request this app can make.
@@ -334,7 +340,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
-            $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysOneThing(),
+            $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysWhatItCarries(),
             $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
             $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),
             $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),
@@ -521,23 +527,28 @@ final readonly class WhatTheWireWouldAnswer
     }
 
     /**
-     * An event stream that says one dashboard and ends.
+     * An event stream that says one of each thing it carries and ends.
      *
-     * A stand-in answers a request and is done, so its stream is one event long:
-     * the dashboard the contract declares, framed the way the core frames an
-     * event, with the envelope's kind as the event's name. A screen holding the
-     * stream reads the summary out of it, finds the stream ended, and opens it
-     * again on its stated cadence, which is the path a stack that restarted
-     * takes too.
+     * A stand-in answers a request and is done, so its stream is one event of
+     * each kind long: the envelope the contract declares for each, framed the
+     * way the core frames an event, with the envelope's kind as the event's
+     * name. A screen holding the stream reads what it holds the stream for out
+     * of it, finds the stream ended, and opens it again on its stated cadence,
+     * which is the path a stack that restarted takes too.
      */
-    private static function aStreamThatSaysOneThing(): string
+    private static function aStreamThatSaysWhatItCarries(): string
     {
-        $envelope = self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(self::WHAT_THE_STREAM_CARRIES));
+        $said = '';
 
-        return sprintf(
-            "event: %s\ndata: %s\n\n",
-            self::WHAT_THE_STREAM_CARRIES,
-            json_encode($envelope, JSON_THROW_ON_ERROR),
-        );
+        foreach (self::WHAT_THE_STREAM_CARRIES as $kind) {
+            $said = sprintf(
+                "%sevent: %s\ndata: %s\n\n",
+                $said,
+                $kind,
+                json_encode(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind($kind)), JSON_THROW_ON_ERROR),
+            );
+        }
+
+        return $said;
     }
 }

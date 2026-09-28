@@ -6,6 +6,7 @@ use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
 use Modules\Sdk\Api\Listeners;
+use Modules\Sdk\Api\Narrators;
 use Tests\Support\Imports;
 use Tests\Support\Kind;
 use Tests\Support\Module;
@@ -82,6 +83,9 @@ const MUTABLE_BY_DESIGN = [
     // the rest of it; letting go is a mutation, and it is how the connection is
     // closed.
     Listeners::class,
+    // The same stream held for the steps a running walk says, which is the
+    // only place they arrive while it runs. Mutable for the reason above.
+    Narrators::class,
 ];
 
 foreach ($modules as $module) {

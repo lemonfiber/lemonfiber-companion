@@ -12,6 +12,7 @@ use function is_bool;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Lemonfiber\Sdk\Generated\StepEnvelope;
 use Lemonfiber\Sdk\Generated\WalkthroughEnvelope;
 use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\AWalkthrough;
@@ -34,12 +35,18 @@ use Modules\Sdk\Internal\Wire;
 use function trim;
 
 /**
- * Reads the `walkthrough` envelope into what a walkthrough did.
+ * Reads the `walkthrough` envelope into what a walkthrough did, and the `step` envelope into one line of one.
  *
  * Every word is required to be one this app has a case for, and every
  * sentence the contract requires to be one; anything else is refused with
  * {@see WalkthroughIsUnreadable}, never defaulted. The lines are taken in the
  * order they arrived and handed on unaltered.
+ *
+ * **Two envelopes in one class, because a step is a line.** The stack says
+ * each step of a walk on its event stream as it happens, in the shape the
+ * finished record carries its lines in, so one reading serves both: a line
+ * read here from the stream and the same line read from the record are the
+ * same value.
  */
 final readonly class Walkthroughs
 {
@@ -54,6 +61,24 @@ final readonly class Walkthroughs
 
         try {
             return self::read($data);
+        } catch (TheWalkthroughSaysNothing $why) {
+            throw WalkthroughIsUnreadable::because($why);
+        }
+    }
+
+    /**
+     * One step a running walk said on the event stream.
+     *
+     * @param Envelope<mixed> $envelope the `step` envelope, as the event carried it
+     */
+    public static function said(Envelope $envelope): ALineItSaid
+    {
+        // The generated envelope declares `data` a table and does not check
+        // that it is one, so `table()` refuses a `data` that is not.
+        $data = StepEnvelope::in(Wire::checked($envelope))->data;
+
+        try {
+            return self::line(self::table($data, WireField::Data));
         } catch (TheWalkthroughSaysNothing $why) {
             throw WalkthroughIsUnreadable::because($why);
         }
@@ -113,17 +138,18 @@ final readonly class Walkthroughs
     /** @param array<array-key, mixed> $row */
     private static function step(array $row): WalkthroughStep
     {
-        $said = self::text($row, WalkthroughField::Step);
+        $said = self::text($row, WireField::Step);
 
         return WalkthroughStep::tryFrom($said)
-            ?? throw WalkthroughIsUnreadable::word(WalkthroughField::Step, $said, ...array_map(static fn(WalkthroughStep $case): string => $case->value, WalkthroughStep::cases()));
+            ?? throw WalkthroughIsUnreadable::word(WireField::Step, $said, ...array_map(static fn(WalkthroughStep $case): string => $case->value, WalkthroughStep::cases()));
     }
 
     /**
      * Every line, in the order the stack said them.
      *
      * An empty detail is the stack having nothing particular to say, which is
-     * a line without one rather than a line with a blank one.
+     * a line without one rather than a line with a blank one; {@see line()}
+     * reads it so for a line from the record and a step from the stream alike.
      *
      * @param array<array-key, mixed> $data
      */
@@ -132,17 +158,26 @@ final readonly class Walkthroughs
         $lines = [];
 
         foreach (self::rows($data, WalkthroughField::Lines) as $row) {
-            $line = self::table($row, WalkthroughField::Lines);
-            $step = self::step($line);
-            $said = self::text($line, WalkthroughField::Said);
-            $detail = self::sentence($line, WireField::Detail);
-
-            $lines[] = $detail === ''
-                ? ALineItSaid::withoutDetail($step, $said)
-                : ALineItSaid::withDetail($step, $said, $detail);
+            $lines[] = self::line(self::table($row, WalkthroughField::Lines));
         }
 
         return TheLinesItSaid::of(...$lines);
+    }
+
+    /**
+     * One line: the step, what it was doing, and what was particular about it.
+     *
+     * @param array<array-key, mixed> $line
+     */
+    private static function line(array $line): ALineItSaid
+    {
+        $step = self::step($line);
+        $said = self::text($line, WireField::Said);
+        $detail = self::sentence($line, WireField::Detail);
+
+        return $detail === ''
+            ? ALineItSaid::withoutDetail($step, $said)
+            : ALineItSaid::withDetail($step, $said, $detail);
     }
 
     /**
