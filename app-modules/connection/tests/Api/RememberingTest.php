@@ -6,11 +6,12 @@ namespace Modules\Connection\Tests\Api;
 
 use function expect;
 use function it;
+use function iterator_to_array;
 
+use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Remembering;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\Remembered;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -43,28 +44,13 @@ function signedIntoTheLoft(): AKeychainInMemory
     return $sessions;
 }
 
-/** Whether a pairing was written down, as a word a test can compare. */
-function whetherItWasKept(Remembered $remembered): string
-{
-    return $remembered->either(
-        remembered: static fn(): WhatBecameOfIt => new WhatBecameOfIt('remembered'),
-        refused: static fn(WhyAStackCannotBeRemembered $why): WhatBecameOfIt => new WhatBecameOfIt($why->name),
-    )->said;
-}
-
-/** One word carried out of an arm. */
-final readonly class WhatBecameOfIt
-{
-    public function __construct(public string $said) {}
-}
-
 it('lets go of the session where a re-pairing changes the certificate', function (): void {
     $sessions = signedIntoTheLoft();
     $stacks = StacksInMemory::holding(theLoftPresenting('a'));
 
-    $remembered = new Remembering($stacks, $sessions)->stack(theLoftPresenting('b'));
+    $went = new Remembering($stacks, $sessions)->stack(theLoftPresenting('b'));
 
-    expect(whetherItWasKept($remembered))->toBe('remembered')
+    expect($went)->toBe(HowThePairingWent::PairedAgainOnANewCertificate)
         ->and($sessions->isHolding(theLoftPresenting('a')->id()))->toBeFalse()
         ->and($stacks->configured()->stack(theLoftPresenting('a')->id())->presents()->is(theLoftPresenting('b')->presents()))->toBeTrue();
 });
@@ -73,9 +59,10 @@ it('keeps the session where a re-pairing keeps the certificate, wherever the mac
     $sessions = signedIntoTheLoft();
     $stacks = StacksInMemory::holding(theLoftPresenting('a'));
 
-    new Remembering($stacks, $sessions)->stack(theLoftPresenting('a', 'https://192.168.1.77'));
+    $went = new Remembering($stacks, $sessions)->stack(theLoftPresenting('a', 'https://192.168.1.77'));
 
-    expect($sessions->isHolding(theLoftPresenting('a')->id()))->toBeTrue()
+    expect($went)->toBe(HowThePairingWent::PairedAgain)
+        ->and($sessions->isHolding(theLoftPresenting('a')->id()))->toBeTrue()
         ->and($stacks->configured()->stack(theLoftPresenting('a')->id())->at()->forTheClient())->toContain('192.168.1.77');
 });
 
@@ -83,9 +70,9 @@ it('keeps the session where the new certificate could not be written down, since
     $sessions = signedIntoTheLoft();
     $stacks = StacksInMemory::holding(theLoftPresenting('a'))->thenRefusing(WhyAStackCannotBeRemembered::StoreWouldNotOpen);
 
-    $remembered = new Remembering($stacks, $sessions)->stack(theLoftPresenting('b'));
+    $went = new Remembering($stacks, $sessions)->stack(theLoftPresenting('b'));
 
-    expect(whetherItWasKept($remembered))->toBe('StoreWouldNotOpen')
+    expect($went)->toBe(HowThePairingWent::TheStoreWouldNotOpen)
         ->and($sessions->isHolding(theLoftPresenting('a')->id()))->toBeTrue();
 });
 
@@ -93,9 +80,50 @@ it('pairs a machine for the first time without touching any session', function (
     $sessions = signedIntoTheLoft();
     $stacks = StacksInMemory::working();
 
-    $remembered = new Remembering($stacks, $sessions)->stack(theLoftPresenting('b'));
+    $went = new Remembering($stacks, $sessions)->stack(theLoftPresenting('b'));
 
-    expect(whetherItWasKept($remembered))->toBe('remembered')
+    expect($went)->toBe(HowThePairingWent::Paired)
         ->and($stacks->configured()->knows(theLoftPresenting('b')->id()))->toBeTrue()
+        ->and($sessions->isHolding(theLoftPresenting('a')->id()))->toBeTrue();
+});
+
+it('says a machine already held was updated where the same certificate comes back', function (): void {
+    $sessions = signedIntoTheLoft();
+    $stacks = StacksInMemory::holding(theLoftPresenting('a'));
+
+    $went = new Remembering($stacks, $sessions)->stack(theLoftPresenting('a'));
+
+    expect($went)->toBe(HowThePairingWent::PairedAgain)
+        ->and($sessions->isHolding(theLoftPresenting('a')->id()))->toBeTrue();
+});
+
+it('decides which machine from the identifier alone, whatever address and certificate come with it', function (): void {
+    // Another machine answering at the loft's address with the loft's
+    // certificate is still another machine: it is added, and the loft and its
+    // session are left as they were.
+    $sessions = signedIntoTheLoft();
+    $stacks = StacksInMemory::holding(theLoftPresenting('a'));
+    $theCupboard = Stack::of(
+        StackId::saidBy('0a1b2c3d4e5f60718293a4b5c6d7e8f9'),
+        StackName::of('The cupboard'),
+        Address::of('https://192.168.1.42'),
+        Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS)),
+    );
+
+    $went = new Remembering($stacks, $sessions)->stack($theCupboard);
+
+    expect($went)->toBe(HowThePairingWent::Paired)
+        ->and(iterator_to_array($stacks->configured(), preserve_keys: false))->toHaveCount(2)
+        ->and($stacks->configured()->stack(theLoftPresenting('a')->id())->name()->shown())->toBe('The loft')
+        ->and($sessions->isHolding(theLoftPresenting('a')->id()))->toBeTrue();
+});
+
+it('says a device with no store paired nothing, and leaves every session standing', function (): void {
+    $sessions = signedIntoTheLoft();
+    $stacks = StacksInMemory::holding(theLoftPresenting('a'))->thenRefusing(WhyAStackCannotBeRemembered::DeviceHasNoSecureStorage);
+
+    $went = new Remembering($stacks, $sessions)->stack(theLoftPresenting('b'));
+
+    expect($went)->toBe(HowThePairingWent::NoStoreOnThisDevice)
         ->and($sessions->isHolding(theLoftPresenting('a')->id()))->toBeTrue();
 });

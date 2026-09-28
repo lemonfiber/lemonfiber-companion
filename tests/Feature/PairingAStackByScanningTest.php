@@ -5,9 +5,15 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\Remembering;
+use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\AScreenWithoutAStack;
@@ -344,4 +350,91 @@ it('offers a way out of pairing at any point', function (): void {
     $screen->scan();
 
     expect($screen->theListIsAt())->toBe(AScreenWithoutAStack::TheList->value);
+});
+
+/** The loft as this device already holds it, before a second code is scanned. */
+function theLoftAsHeld(): Stack
+{
+    return Stack::of(
+        StackId::saidBy('7f3c9a1e5b2d4086a9c1e3f5b7d90246'),
+        StackName::of('The loft'),
+        Address::of('https://192.168.1.42'),
+        Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS)),
+    );
+}
+
+/** A second code from the loft, from wherever it now answers and with whichever certificate. */
+function theLoftSaidAgain(string $at, string $digest): string
+{
+    return (string) json_encode([
+        'address' => $at,
+        'fingerprint' => str_repeat($digest, Fingerprint::CHARACTERS),
+        'expires' => 2_000,
+        'stack' => '7f3c9a1e5b2d4086a9c1e3f5b7d90246',
+    ]);
+}
+
+/** The screen over a device that already holds the loft, named anew. */
+function scanningAgain(string $code, StacksInMemory $stacks, AKeychainInMemory $sessions): PairByScanning
+{
+    return named(new PairByScanning(
+        ACameraInMemory::reading($code),
+        new Introducing(),
+        new Remembering($stacks, $sessions),
+        FrozenClock::at(Instant::atEpochSeconds(SCANNED_AT)),
+    ), 'The attic');
+}
+
+/** A keychain holding a session for the loft. */
+function signedIntoTheLoftAlready(): AKeychainInMemory
+{
+    $sessions = AKeychainInMemory::working();
+    $sessions->keep(theLoftAsHeld()->id(), Session::of('a-session-for-the-loft'), Whose::theOperator());
+
+    return $sessions;
+}
+
+it('says a machine already held was updated rather than added, and keeps its session', function (): void {
+    $stacks = StacksInMemory::holding(theLoftAsHeld());
+    $sessions = signedIntoTheLoftAlready();
+    $screen = scanningAgain(theLoftSaidAgain('https://192.168.1.42', 'a'), $stacks, $sessions);
+
+    $screen->scan();
+
+    expect($screen->went())->toBe(HowThePairingWent::PairedAgain)
+        ->and($screen->headline())->toBe('connection.paired_again')
+        ->and($screen->supporting())->toBe('connection.paired_again_action')
+        ->and(iterator_to_array($stacks->configured(), preserve_keys: false))->toHaveCount(1)
+        ->and($stacks->configured()->stack(theLoftAsHeld()->id())->name()->shown())->toBe('The attic')
+        ->and($sessions->isHolding(theLoftAsHeld()->id()))->toBeTrue();
+});
+
+it('moves a machine already held to where it now answers, without a second row', function (): void {
+    $stacks = StacksInMemory::holding(theLoftAsHeld());
+    $sessions = signedIntoTheLoftAlready();
+    $screen = scanningAgain(theLoftSaidAgain('https://192.168.1.77', 'a'), $stacks, $sessions);
+
+    $screen->scan();
+
+    expect($screen->went())->toBe(HowThePairingWent::PairedAgain)
+        ->and(iterator_to_array($stacks->configured(), preserve_keys: false))->toHaveCount(1)
+        ->and($stacks->configured()->stack(theLoftAsHeld()->id())->at()->forTheClient())->toContain('192.168.1.77')
+        ->and($sessions->isHolding(theLoftAsHeld()->id()))->toBeTrue();
+});
+
+it('says a machine already held has a new certificate, and asks for a sign-in again', function (): void {
+    $stacks = StacksInMemory::holding(theLoftAsHeld());
+    $sessions = signedIntoTheLoftAlready();
+    $screen = scanningAgain(theLoftSaidAgain('https://192.168.1.42', 'b'), $stacks, $sessions);
+
+    $screen->scan();
+
+    expect($screen->went())->toBe(HowThePairingWent::PairedAgainOnANewCertificate)
+        ->and($screen->headline())->toBe('connection.paired_again_on_a_new_certificate')
+        ->and($screen->supporting())->toBe('connection.paired_again_on_a_new_certificate_action')
+        ->and(iterator_to_array($stacks->configured(), preserve_keys: false))->toHaveCount(1)
+        ->and($stacks->configured()->stack(theLoftAsHeld()->id())->presents()->forComparingByEye())
+        ->toBe(str_repeat('b', Fingerprint::CHARACTERS))
+        ->and($sessions->isHolding(theLoftAsHeld()->id()))->toBeFalse()
+        ->and($screen->onwardsTo())->toEndWith('/sign-in');
 });

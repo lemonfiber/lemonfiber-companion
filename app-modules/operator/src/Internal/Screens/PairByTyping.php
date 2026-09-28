@@ -16,7 +16,6 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -311,9 +310,6 @@ final class PairByTyping extends NativeComponent
         $stack = $this->introducing->confirmed($said, StackName::of($this->called), $by);
         $this->paired = $stack->id()->stored();
 
-        return $this->remembering->stack($stack)->either(
-            remembered: static fn(): HowThePairingWent => HowThePairingWent::Paired,
-            refused: static fn(WhyAStackCannotBeRemembered $why): HowThePairingWent => HowThePairingWent::refused($why),
-        );
+        return $this->remembering->stack($stack);
     }
 }

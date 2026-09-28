@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Api;
 
-use Modules\Kernel\Api\Remembered;
+use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stacks;
@@ -20,6 +20,11 @@ use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
  * re-pairing that changes the pin lets go of the session and the operator signs
  * in again. One that keeps the pin keeps the session, because nothing it was
  * agreed under has changed.
+ *
+ * **A re-pairing is told from a first pairing here.** The identifier the
+ * material carries decides it and nothing else does: an address or a
+ * certificate that differs from the one held is what re-pairing exists to
+ * change, so neither can say whether this is a machine the device already holds.
  *
  * **Both pairing roads come through here.** Deciding it on each screen would be
  * the same rule written twice, and the copy nobody tests is the one that keeps
@@ -37,20 +42,40 @@ final readonly class Remembering
         private SecureStorage $sessions,
     ) {}
 
-    /** Write the stack down, letting go of its session where its certificate changed. */
-    public function stack(Stack $stack): Remembered
+    /**
+     * Write the stack down, letting go of its session where its certificate changed.
+     *
+     * Answers what became of it in the operator's terms, which is where a
+     * re-pairing is told from a first one: a machine already held is updated
+     * rather than added, and the screen says so rather than announcing a second.
+     */
+    public function stack(Stack $stack): HowThePairingWent
     {
-        $repinned = $this->stacks->configured()->wouldRepin($stack);
+        $went = $this->whatItIs($this->stacks->configured(), $stack);
 
         return $this->stacks->remember($stack)->either(
-            remembered: function () use ($stack, $repinned): Remembered {
-                if ($repinned) {
-                    $this->sessions->forget($stack->id());
-                }
-
-                return Remembered::safely();
-            },
-            refused: static fn(WhyAStackCannotBeRemembered $why): Remembered => Remembered::refused($why),
+            remembered: fn(): HowThePairingWent => $this->settled($stack, $went),
+            refused: static fn(WhyAStackCannotBeRemembered $why): HowThePairingWent => HowThePairingWent::refused($why),
         );
+    }
+
+    /** A first pairing, or a machine already held paired again with or without a new certificate. */
+    private function whatItIs(Configured $held, Stack $stack): HowThePairingWent
+    {
+        if ($held->wouldRepin($stack)) {
+            return HowThePairingWent::PairedAgainOnANewCertificate;
+        }
+
+        return $held->knows($stack->id()) ? HowThePairingWent::PairedAgain : HowThePairingWent::Paired;
+    }
+
+    /** The session let go of where the certificate it was agreed under is gone. */
+    private function settled(Stack $stack, HowThePairingWent $went): HowThePairingWent
+    {
+        if ($went === HowThePairingWent::PairedAgainOnANewCertificate) {
+            $this->sessions->forget($stack->id());
+        }
+
+        return $went;
     }
 }

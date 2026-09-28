@@ -22,7 +22,24 @@ it('opens having neither paired nor refused', function (): void {
 it('says a stack is paired only when it was written down', function (): void {
     // A pairing that could not be written down has not happened: the operator
     // would find nothing on the next launch.
-    expect(HowThePairingWent::Paired->isPaired())->toBeTrue();
+    expect(HowThePairingWent::Paired->isPaired())->toBeTrue()
+        ->and(HowThePairingWent::NoStoreOnThisDevice->isPaired())->toBeFalse()
+        ->and(HowThePairingWent::TheStoreWouldNotOpen->isPaired())->toBeFalse();
+});
+
+it('says a machine already held and paired again is paired, whatever became of its certificate', function (): void {
+    expect(HowThePairingWent::PairedAgain->isPaired())->toBeTrue()
+        ->and(HowThePairingWent::PairedAgainOnANewCertificate->isPaired())->toBeTrue()
+        ->and(HowThePairingWent::PairedAgain->isNotYet())->toBeFalse();
+});
+
+it('tells a first pairing apart from a machine paired again, and a kept certificate from a new one', function (): void {
+    expect(HowThePairingWent::PairedAgain->remedy())
+        ->toBe('connection.paired_again_action')
+        ->and(HowThePairingWent::PairedAgainOnANewCertificate->remedy())
+        ->toBe('connection.paired_again_on_a_new_certificate_action')
+        ->and(HowThePairingWent::Paired->remedy())
+        ->toBe('connection.paired_action');
 });
 
 it('tells a device with no store apart from a store that would not open', function (): void {

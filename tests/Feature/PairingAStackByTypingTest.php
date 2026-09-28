@@ -5,10 +5,16 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\Remembering;
+use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
+use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\PairByTyping;
@@ -280,4 +286,55 @@ it('offers a way out of pairing at any point', function (): void {
     // typed road is where somebody lands when the camera is refused, and being
     // able to abandon it is what keeps that from being a trap.
     expect(pairingScreen()->theListIsAt())->toBe(AScreenWithoutAStack::TheList->value);
+});
+
+it('reads a code naming its stack in a shape no stack mints as no pairing code at all', function (): void {
+    $screen = typedInto(pairingScreen(), (string) json_encode([
+        'address' => 'https://192.168.1.42',
+        'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
+        'expires' => 2_000,
+        'stack' => 'the-loft',
+    ]));
+
+    expect($screen->isUnreadable())->toBeTrue()
+        ->and($screen->mayPair())->toBeFalse();
+});
+
+it('reads a code that does not say which machine it is for as no pairing code at all', function (): void {
+    $screen = typedInto(pairingScreen(), (string) json_encode([
+        'address' => 'https://192.168.1.42',
+        'fingerprint' => str_repeat('a', Fingerprint::CHARACTERS),
+        'expires' => 2_000,
+    ]));
+
+    expect($screen->isUnreadable())->toBeTrue()
+        ->and($screen->mayPair())->toBeFalse();
+});
+
+it('says a machine already held and typed in again was updated, and lets go of a session its new certificate ends', function (): void {
+    $theLoft = Stack::of(
+        StackId::saidBy('7f3c9a1e5b2d4086a9c1e3f5b7d90246'),
+        StackName::of('The loft'),
+        Address::of('https://192.168.1.42'),
+        Fingerprint::of(str_repeat('a', Fingerprint::CHARACTERS)),
+    );
+    $stacks = StacksInMemory::holding($theLoft);
+    $sessions = AKeychainInMemory::working();
+    $sessions->keep($theLoft->id(), Session::of('a-session-for-the-loft'), Whose::theOperator());
+    $screen = typedInto(
+        new PairByTyping(
+            new Introducing(),
+            new Remembering($stacks, $sessions),
+            FrozenClock::at(Instant::atEpochSeconds(READ_AT)),
+        ),
+        typedCode(digest: str_repeat('c', Fingerprint::CHARACTERS)),
+    );
+
+    $screen->confirm();
+
+    expect($screen->went())->toBe(HowThePairingWent::PairedAgainOnANewCertificate)
+        ->and($screen->headline())->toBe('connection.paired_again_on_a_new_certificate')
+        ->and($screen->supporting())->toBe('connection.paired_again_on_a_new_certificate_action')
+        ->and(iterator_to_array($stacks->configured(), preserve_keys: false))->toHaveCount(1)
+        ->and($sessions->isHolding($theLoft->id()))->toBeFalse();
 });

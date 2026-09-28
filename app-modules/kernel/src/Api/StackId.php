@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 use function hash_equals;
+use function preg_match;
 use function trim;
 
 /**
@@ -55,19 +56,22 @@ final readonly class StackId
      * The identity a stack gave itself in the material it issued.
      *
      * Its own constructor rather than {@see rememberedAs()}, because the two
-     * fail in different places and a refusal has to say which: blank material
-     * is the stack's to reissue, and a blank retained entry is this device's
-     * state gone wrong.
+     * fail in different places and a refusal has to say which: material naming
+     * no identifier a stack mints is the stack's to reissue, and a blank
+     * retained entry is this device's state gone wrong.
+     *
+     * Exactly the shape a stack mints: sixteen bytes written as thirty-two
+     * lower-case hexadecimal characters. Anything else did not come from a
+     * stack, and taking it would key a machine on a value no second code from
+     * that machine would repeat.
      */
     public static function saidBy(string $said): self
     {
-        $trimmed = trim($said);
-
-        if ($trimmed === '') {
+        if (preg_match('/\A[0-9a-f]{32}\z/', $said) !== 1) {
             throw StackIsUnidentified::byItsOwnMaterial();
         }
 
-        return new self($trimmed);
+        return new self($said);
     }
 
     /**

@@ -18,6 +18,8 @@ requirement is right and this page is a defect.
 | `N1-R38` | What the *operator* did is held on the screen; the reading of it is computed per frame | `YourStacks`, with `ReadingACode` |
 | `N1-R49` | Expiry, and every refusal along the way, is true of both roads | one parser, not two |
 | `N1-R50` | Typed pairing requires the fingerprint to be confirmed | `FingerprintWasConfirmed`, which may only exist where a person confirmed one |
+| `N1-R63` | Pairing a machine already held updates it rather than adding a second, and the screen says so | `PairByScanning`, `PairByTyping`, through `Remembering`; `HowThePairingWent::PairedAgain` |
+| `N1-R64` | A re-pairing that changed the certificate ends the session, and the screen says to sign in again | `HowThePairingWent::PairedAgainOnANewCertificate` |
 | `N4-R1` | The platform's prompt is raised at the point of first use, not on launch | the camera opens when the operator asks for it |
 | `N4-R2` | The app's own sentence goes up first, in front of a button; the button is what opens the camera | `PairByScanning` |
 | `N4-R4` | Something declined is not re-asked for automatically | there is a button rather than an automatic retry |
