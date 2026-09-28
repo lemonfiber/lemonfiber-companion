@@ -2,6 +2,15 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+@if ($this->answer()->refused !== null)
+    {{-- The stack answered and could not read its own description: its words,
+         and not a machine that is not answering. Asking again is answered
+         the same way until what it names is put right, so it is not
+         offered. --}}
+    <x-operator::heading>{{ __('stacks.catalogue.refused') }}</x-operator::heading>
+    <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
+    <native:text>{{ __('stacks.catalogue.same_answer') }}</native:text>
+@else
     {{-- Said once, over the list: every sentence below is the stack's own
          description of itself, read with nothing started. --}}
     <x-operator::note>{{ __('stacks.catalogue.as_declared') }}</x-operator::note>
@@ -45,6 +54,7 @@
     @endforelse
 
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+@endif
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

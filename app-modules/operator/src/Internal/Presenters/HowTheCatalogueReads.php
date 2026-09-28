@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AServiceDropped;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheCatalogue;
@@ -29,7 +30,7 @@ final readonly class HowTheCatalogueReads
      */
     public function signedOut(): TheCatalogueTurnedOutToBe
     {
-        return new TheCatalogueTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), services: [], dropped: []);
+        return new TheCatalogueTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), services: [], dropped: [], refused: null);
     }
 
     /** The stack answered, and this is its catalogue. */
@@ -46,13 +47,24 @@ final readonly class HowTheCatalogueReads
             $dropped[] = $this->dropped($went);
         }
 
-        return new TheCatalogueTurnedOutToBe(went: HowTheReadingWent::itCameBack(), services: $services, dropped: $dropped);
+        return new TheCatalogueTurnedOutToBe(went: HowTheReadingWent::itCameBack(), services: $services, dropped: $dropped, refused: null);
+    }
+
+    /** The stack answered, and could not say what its services are for, and this is why in its words. */
+    public function refused(ARefusalInItsWords $why): TheCatalogueTurnedOutToBe
+    {
+        return new TheCatalogueTurnedOutToBe(
+            went: HowTheReadingWent::itCameBack(),
+            services: [],
+            dropped: [],
+            refused: new HowARefusalReads()->inItsWords($why),
+        );
     }
 
     /** It did not, and this is what the operator met. */
     public function met(Obstacle $why): TheCatalogueTurnedOutToBe
     {
-        return new TheCatalogueTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), services: [], dropped: []);
+        return new TheCatalogueTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), services: [], dropped: [], refused: null);
     }
 
     /** One service, as the row that draws it. */

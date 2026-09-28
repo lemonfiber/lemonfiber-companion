@@ -157,6 +157,8 @@ return [
         'replaced_by' => 'Vervangen door :by',
         'not_replaced' => 'Niets heeft de plaats ingenomen',
         'nothing_dropped' => 'Deze stack heeft geen dienst weggelaten',
+        'refused' => 'De stack antwoordde, en kon niet zeggen waar zijn diensten voor zijn',
+        'same_answer' => 'Opnieuw vragen geeft hetzelfde antwoord totdat wat hij noemt op de machine is rechtgezet.',
     ],
     'origins' => [
         'road_in' => 'Waar dit vandaan komt',

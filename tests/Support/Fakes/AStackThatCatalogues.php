@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Closure;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -35,6 +36,12 @@ final class AStackThatCatalogues implements Cataloguing
     public static function with(TheCatalogue $catalogue): self
     {
         return new self(static fn(): WhatTheCatalogueSaid => WhatTheCatalogueSaid::catalogue($catalogue));
+    }
+
+    /** A stack that answered and could not read its own description, and says why. */
+    public static function refusing(ARefusalInItsWords $why): self
+    {
+        return new self(static fn(): WhatTheCatalogueSaid => WhatTheCatalogueSaid::refused($why));
     }
 
     /** A stack the operator could not reach, for the reason given. */

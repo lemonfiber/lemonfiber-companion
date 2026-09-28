@@ -195,6 +195,10 @@ return [
         // Nothing did, which is the commonest answer.
         'not_replaced' => 'Nothing took its place',
         'nothing_dropped' => 'This stack has not dropped any service',
+        // The stack's own answer, told apart from a machine that is not
+        // answering: it could not read the description of itself.
+        'refused' => 'The stack answered, and could not say what its services are for',
+        'same_answer' => 'Asking again gets the same answer until what it names is put right on the machine.',
     ],
 
     // Where each service on the machine comes from.

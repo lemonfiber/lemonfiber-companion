@@ -27,6 +27,12 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  *
  * **A catalogue that could not be read is never an empty one.** Both would
  * draw the same blank screen, and only one of them is an answer.
+ *
+ * **A stack that cannot read its own description says so.** The catalogue is
+ * read from the stack's manifest, and a manifest missing, malformed, written
+ * for another version or naming things this build does not know is answered
+ * with the problem document, which {@see WhatARefusalMeant::inItsWords()}
+ * carries as the stack's refusal in its own words.
  */
 final readonly class Cataloguers implements Cataloguing
 {
@@ -43,7 +49,11 @@ final readonly class Cataloguers implements Cataloguing
             // {@see Recorders::recordedOn()} makes.
             return WhatTheCatalogueSaid::catalogue(Catalogues::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatTheCatalogueSaid::met(WhatARefusalMeant::obstacle($why));
+            return WhatARefusalMeant::inItsWords(
+                $why,
+                refused: WhatTheCatalogueSaid::refused(...),
+                met: WhatTheCatalogueSaid::met(...),
+            );
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|CatalogueIsUnreadable) {
             return WhatTheCatalogueSaid::met(Obstacle::StackDidNotAnswer);
         }
