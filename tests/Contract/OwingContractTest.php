@@ -98,6 +98,7 @@ function whatAStackSendsOneMember(array $owed): array
             'members' => [[
                 'name' => 'Robin',
                 'claimed' => true,
+                'standing' => 'active',
                 'requests' => [],
                 // Written out although nothing here reads it, for the reason
                 // the household suite gives: a fixture holding only what its
@@ -138,6 +139,7 @@ function whatAStackSendsOneMemberWhoHasAsked(array $requests): array
             'members' => [[
                 'name' => 'Robin',
                 'claimed' => true,
+                'standing' => 'active',
                 'requests' => $requests,
                 'access' => [
                     'administrator' => false,

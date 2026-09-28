@@ -155,11 +155,31 @@ final readonly class WhatTheReadersRead
     /**
      * Every path read, and every reach that was placed to read it.
      *
+     * Worked out once for each tree of readers and held for the rest of the
+     * process, because one rule asks it several questions and the answer to
+     * each is the same following. Nothing writes the readers while a suite
+     * runs: the Guards suite plants its violations in a copy, which is a tree
+     * of its own and a process of its own.
+     *
      * @return array{read: array<string, true>, seated: array<string, true>}
      */
     private static function reading(): array
     {
-        $readers = EveryReaderOfTheWire::all();
+        /** @var array<string, array{read: array<string, true>, seated: array<string, true>}> $held */
+        static $held = [];
+
+        return $held[Tree::at(EveryReaderOfTheWire::WHERE)] ??= self::readingOf(EveryReaderOfTheWire::all());
+    }
+
+    /**
+     * Every path one set of readers reads, and every reach placed to read it.
+     *
+     * @param Readers $readers
+     *
+     * @return array{read: array<string, true>, seated: array<string, true>}
+     */
+    private static function readingOf(array $readers): array
+    {
         $following = self::followed($readers);
         $read = [];
         $seated = [];

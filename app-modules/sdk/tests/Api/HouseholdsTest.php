@@ -73,6 +73,7 @@ function aMember(string $name, array $requests): array
         'name' => $name,
         'access' => whatOneMemberMayReach(),
         'claimed' => true,
+        'standing' => 'active',
         'to_hand_over' => [],
         'requests' => $requests,
     ];

@@ -534,6 +534,21 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'this app describing a message it neither sent nor can see.',
     ],
     [
+        'path' => 'HouseholdEnvelope.members[].standing',
+        'because' => 'Where a member stands: invited, expired, active or suspended. No requirement asks a '
+            . 'screen here for it. The one that comes nearest, `N9-R7`, asks for an invitation that lapsed '
+            . 'to be told apart from one the invitee declined, and `declined` is not one of these four, so '
+            . 'reading `expired` alone would answer half of it and look like all of it. `N1-R17` has the '
+            . 'field wait for a requirement.',
+    ],
+    [
+        'path' => 'InvitationEnvelope.suspended',
+        'because' => 'The resets the stack switched off on the way past because they lapsed, each account '
+            . 'kept. `N21-R10` has the invitations it withdrew on the way past shown, and N21 maps that '
+            . 'requirement to `withdrawn` alone; nothing in the spec says yet whether a lapsed reset is '
+            . 'one of them. That is raised against the spec before this app reads it (`N1-R17`).',
+    ],
+    [
         'path' => 'JobEnvelope.action',
         'because' => 'Which action the stack acknowledged. The caller already knows — it is the one that '
             . 'just asked — so reading it to check would be this app telling a stack what it had been asked, '

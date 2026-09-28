@@ -71,6 +71,7 @@ function aHouseholdTellingWhose(array $row): array
         'findings' => [],
         'members' => [[
             'claimed' => true,
+            'standing' => 'active',
             'requests' => [],
             'access' => whatAMemberOwedSomethingMayReach(),
             ...$row,
@@ -97,6 +98,7 @@ function aHouseholdTelling(array $owed): array
         'members' => [[
             'name' => 'Robin',
             'claimed' => true,
+            'standing' => 'active',
             'requests' => [],
             'access' => whatAMemberOwedSomethingMayReach(),
             'to_hand_over' => $owed,
@@ -167,8 +169,8 @@ it('names which member it could not read, counting from the first', function ():
         'available' => true,
         'findings' => [],
         'members' => [
-            ['name' => 'Sam', 'claimed' => true, 'requests' => [], 'access' => whatAMemberOwedSomethingMayReach(), 'to_hand_over' => []],
-            ['name' => 'Robin', 'claimed' => true, 'requests' => [], 'access' => whatAMemberOwedSomethingMayReach(), 'to_hand_over' => []],
+            ['name' => 'Sam', 'claimed' => true, 'standing' => 'active', 'requests' => [], 'access' => whatAMemberOwedSomethingMayReach(), 'to_hand_over' => []],
+            ['name' => 'Robin', 'claimed' => true, 'standing' => 'active', 'requests' => [], 'access' => whatAMemberOwedSomethingMayReach(), 'to_hand_over' => []],
             'not a member at all',
         ],
     ];
