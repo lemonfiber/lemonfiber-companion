@@ -23,7 +23,7 @@ use Override;
  * calls and drifts silently when the real shape changes, and this fails to
  * compile.
  *
- * It exists because the three adapters over the store cannot otherwise be run
+ * It exists because the four adapters over the store cannot otherwise be run
  * at all. There is no keychain behind a PHP process on a laptop, so without
  * this they are files nothing executes, and what they actually decide — which
  * key a stack gets, which refusal a failure is, that forgetting ignores the

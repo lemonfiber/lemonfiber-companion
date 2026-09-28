@@ -177,6 +177,8 @@ return [
         'walk' => 'Start',
         'walking' => 'The stack is walking through it now.',
         'lines_when_done' => 'What it says at each step appears here, whole, once it has finished.',
+        'leaving' => 'Leaving this screen does not stop it. Come back and it shows where it got to.',
+        'leaving_not_noted' => 'Leaving this screen does not stop it, but this phone could not note which walk it is, so coming back here will not find it.',
         'no_outcome' => 'The stack no longer has an outcome for this walkthrough.',
         'no_outcome_action' => 'It may well have worked. Look at what stopped coming in, or start another.',
         'already_here' => '“:item” was already here, so nothing was fetched again.',

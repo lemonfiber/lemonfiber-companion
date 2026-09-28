@@ -173,6 +173,8 @@ return [
         'walk' => 'Beginnen',
         'walking' => 'De stack loopt het nu door.',
         'lines_when_done' => 'Wat hij bij elke stap zegt, staat hier in zijn geheel zodra hij klaar is.',
+        'leaving' => 'Dit scherm verlaten stopt hem niet. Kom terug en je ziet hoe ver hij is.',
+        'leaving_not_noted' => 'Dit scherm verlaten stopt hem niet, maar deze telefoon kon niet onthouden welke walkthrough het is, dus als je hier terugkomt, vind je hem niet terug.',
         'no_outcome' => 'De stack heeft geen uitkomst meer voor deze walkthrough.',
         'no_outcome_action' => 'Misschien is het gewoon gelukt. Kijk bij wat niet meer binnenkomt, of begin een nieuwe.',
         'already_here' => '“:item” was er al, dus er is niets opnieuw opgehaald.',

@@ -12,6 +12,7 @@ use Modules\Dx\Api\ASessionThisRunKeeps;
 use Modules\Dx\Api\AStackThatIsNotThere;
 use Modules\Dx\Api\StandingsThisRunKeeps;
 use Modules\Dx\Api\StandsIn;
+use Modules\Dx\Api\WorkLeftRunningThisRunKeeps;
 
 /**
  * Everything this module can take the place of.
@@ -47,7 +48,7 @@ final readonly class TheStandIns
      */
     public static function all(): array
     {
-        // One store for the three ports that sit on one. The device's keychain
+        // One store for the four ports that sit on one. The device's keychain
         // is a single place, and stand-ins that each held their own would
         // disagree with each other about what this device knows — a session
         // kept under a stack the session store had never heard of.
@@ -60,6 +61,7 @@ final readonly class TheStandIns
             new ADeviceAlreadyPaired($store),
             new ASessionThisRunKeeps($store),
             new StandingsThisRunKeeps($store),
+            new WorkLeftRunningThisRunKeeps($store),
         ];
     }
 }

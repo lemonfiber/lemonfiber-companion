@@ -74,7 +74,7 @@ const NOTHING_HOLDS_IT_YET = [
         . 'whole registry and asserts no two claim the same port, that the port claimed is an '
         . 'interface, and that `which()` answers an instance of it; '
         . '`EveryPayloadTheStandInBuildsFitsTheContractTest` holds what each one builds against '
-        . 'the wire contract. Six implementations, and a third reading of the same registry is '
+        . 'the wire contract. Seven implementations, and a third reading of the same registry is '
         . 'what a file here would be.',
     'Doors' => 'A gap, and the one worth closing next. `PinnedDoors` opens the door the '
         . 'operator\'s password goes through and `DoorsThatOpenOnNothing` stands in for it, '

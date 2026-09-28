@@ -8,9 +8,9 @@ namespace Lemonfiber\Native;
  * Somewhere values may be kept, read back and forgotten.
  *
  * The device's secure store as the things above it need one: four questions in
- * keys and strings, with no notion of a session, a stack or a verdict. {@see
- * Storage} is what a shipped build resolves this to, and the only implementation
- * that reaches a device.
+ * keys and strings, with no notion of a session, a stack, a verdict or a job.
+ * {@see Storage} is what a shipped build resolves this to, and the only
+ * implementation that reaches a device.
  *
  * **A role rather than a second port.** The application's own port for this is
  * `Modules\Kernel\Api\SecureStorage`, which speaks in sessions and refusals a
@@ -19,14 +19,15 @@ namespace Lemonfiber\Native;
  * consumes this — which is the ordinary shape rather than two abstractions over
  * one thing.
  *
- * **It exists because three adapters share one store and one of them has to be
- * replaceable.** `PlatformKeychain`, `PlatformStacks` and `PlatformStandings`
- * all write here, and a development build runs every one of them over a store
- * that touches no device — so the real key separation, the real JSON and the
- * real re-pairing rule are what a laptop exercises. Substituting below this,
- * at the bridge call itself, is the other way to arrange it and it is wrong
- * here: that seam is global, so a stand-in contracted to replace the store
- * would silently replace notifications and scanning too.
+ * **It exists because four adapters share one store and one of them has to be
+ * replaceable.** `PlatformKeychain`, `PlatformStacks`, `PlatformStandings` and
+ * `PlatformWorkLeftRunning` all write here, and a development build runs every
+ * one of them over a store that touches no device — so the real key separation,
+ * the real JSON and the real re-pairing rule are what a laptop exercises.
+ * Substituting below this, at the bridge call itself, is the other way to
+ * arrange it and it is wrong here: that seam is global, so a stand-in
+ * contracted to replace the store would silently replace notifications and
+ * scanning too.
  */
 interface Keeps
 {

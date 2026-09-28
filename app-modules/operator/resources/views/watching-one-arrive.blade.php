@@ -8,6 +8,15 @@
              walk has finished. --}}
         <x-operator::emphasis>{{ __('health.walkthrough.walking') }}</x-operator::emphasis>
         <native:text>{{ __('health.walkthrough.lines_when_done') }}</native:text>
+        {{-- Leaving does not stop it, said while it runs because that is when
+             somebody decides whether to wait for it. Where this device would
+             not keep the handle, coming back will not find it, and that is
+             said too. --}}
+        @if ($this->willBeFoundAgain)
+            <native:text>{{ __('health.walkthrough.leaving') }}</native:text>
+        @else
+            <native:text>{{ __('health.walkthrough.leaving_not_noted') }}</native:text>
+        @endif
         <x-operator::note>
             {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
         </x-operator::note>
