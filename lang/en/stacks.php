@@ -147,6 +147,11 @@ return [
         'no_progress_while_running' => 'The stack says what it put back once it has finished, and nothing about how far it has got while it runs.',
         'no_outcome' => 'The stack no longer knows what became of putting it back',
         'no_outcome_action' => 'It may have gone back. The record says what is there now.',
+        // The stack's own answer, told apart from a stack that could not be
+        // reached. Asking after the same work is answered the same way.
+        'refused' => 'The stack answered, and did not put this run back',
+        'refused_named' => 'It names :named',
+        'refused_same_answer' => 'Asking again gets the same answer. The record says what is there now, and the run can be chosen there again once what the stack said has changed.',
         // A rehearsal is said to be one, and nothing about it is in the past tense.
         'a_rehearsal' => 'A rehearsal: nothing has been put back',
         // What was left leads, in the report's tense.

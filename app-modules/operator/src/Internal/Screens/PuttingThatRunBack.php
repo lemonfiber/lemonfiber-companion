@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheRecord;
+use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowARunBackReads;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
@@ -50,6 +51,11 @@ use function view;
  * runs, as putting a copy back is. The report leads with what was left and why,
  * because a run believed undone with part of it still standing is the machine
  * nobody has been told about. A rehearsal is labelled as one.
+ *
+ * **A run the stack would not put back is its answer, not a fault.** It is
+ * drawn in the stack's words, apart from a stack that could not be reached,
+ * and asking again is not offered, because the same work is answered the same
+ * way. The road offered is back to the record, which says what stands now.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -179,7 +185,7 @@ final class PuttingThatRunBack extends NativeComponent
      * Ask again, because the operator said so.
      *
      * After a yes the stack took on, it asks after the same handle. Otherwise
-     * — before a yes, or after one the stack refused — it reads the record
+     * — before a yes, or after one the stack did not take on — it reads the record
      * afresh, since the record can move on and a refused yes put nothing back.
      */
     public function again(): void
@@ -271,6 +277,7 @@ final class PuttingThatRunBack extends NativeComponent
             held: fn(Session $session): HowPuttingARunBackWent => $this->puttingBack->whatBecameOf($stack, $session, Job::named($held))->either(
                 stillRunning: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->running(),
                 done: static fn(ARunPutBack $report): HowPuttingARunBackWent => new HowARunBackReads()->done($report),
+                refused: static fn(WhyItWasNotPutBack $why): HowPuttingARunBackWent => new HowARunBackReads()->refused($why),
                 ended: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->ended(),
                 met: fn(Obstacle $why): HowPuttingARunBackWent => $this->refused($why, $stack),
             ),

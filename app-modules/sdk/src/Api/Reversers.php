@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use function is_string;
+
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
@@ -13,6 +15,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Refusal;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\HowPuttingARunBackIsGoing;
@@ -24,7 +27,9 @@ use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatToDoWithARun;
+use Modules\Kernel\Api\WhyItWasNotPutBack;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
 /**
@@ -37,6 +42,17 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  *
  * **Asking carries a key, because it changes a stack.** Following asks after
  * work already named and changes nothing, so it carries none.
+ *
+ * **A refusal of the run is the stack's answer, not a fault.** The action is
+ * taken on as a job whatever stamp it names, and the job is what stops on a
+ * problem: no run under that stamp, more than one, a change that cannot be
+ * reversed, or one that could not be. Asking after it is then answered with
+ * that problem, and it is carried as {@see HowPuttingARunBackIsGoing::refused()},
+ * as {@see Bundlers} carries a refused bundle. Only a refused session, an
+ * account that may not ask, a machine that is not the one paired, and an
+ * answer holding no problem document are obstacles: a sentence with no
+ * document around it may have come from anything standing in front of the
+ * stack, and is not taken as the stack's reason.
  */
 final readonly class Reversers implements PuttingARunBack
 {
@@ -66,10 +82,33 @@ final readonly class Reversers implements PuttingARunBack
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return HowPuttingARunBackIsGoing::met(WhatARefusalMeant::obstacle($why));
+            return $this->refusal($why);
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|UndoIsUnreadable) {
             return HowPuttingARunBackIsGoing::met(Obstacle::StackDidNotAnswer);
         }
+    }
+
+    /**
+     * What a refusal of the run comes to: the stack's problem where it sent
+     * one with a sentence in it, and what was met everywhere else.
+     */
+    private function refusal(CertificateWasRefused|RequestFailed $why): HowPuttingARunBackIsGoing
+    {
+        $met = WhatARefusalMeant::obstacle($why);
+        $said = $why instanceof RequestFailed ? $why->said() : null;
+        $refusal = $why instanceof RequestFailed ? $why->refusal() : null;
+
+        return $met !== Obstacle::StackDidNotAnswer || $said === null || ! $refusal instanceof Refusal
+            ? HowPuttingARunBackIsGoing::met($met)
+            : HowPuttingARunBackIsGoing::refused(WhyItWasNotPutBack::said($said, $refusal->meaning(), $this->named($refusal)));
+    }
+
+    /** What the problem named in `detail`, or nothing where it named nothing. */
+    private function named(Refusal $refusal): WhatTheRefusalNamed
+    {
+        $detail = $refusal->detail();
+
+        return is_string($detail) ? WhatTheRefusalNamed::as($detail) : WhatTheRefusalNamed::nothing();
     }
 
     /**
