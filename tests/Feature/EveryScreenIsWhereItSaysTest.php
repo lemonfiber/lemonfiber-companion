@@ -206,6 +206,11 @@ it('every way this app asks where a machine is hands back a path the router know
         $unknown[] = 'logsOf() hands back a path the router does not know';
     }
 
+    // And the one that needs a run, for the same reason.
+    if (NativeRouter::resolve($where->ofItself()->puttingARunBack('1790150000')) === null) {
+        $unknown[] = 'puttingARunBack() hands back a path the router does not know';
+    }
+
     expect($asked)->toBeGreaterThan(1, 'no accessor was read off `WhereAStackIs`, so this rule read nothing');
 
     expect($unknown)->toBe([], sprintf(
@@ -370,5 +375,5 @@ it('which builder a screen needs is read off its own pattern', function (): void
     ));
 
     expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $needingAService))
-        ->toBe(['Doing', 'Logs', 'PutBack', 'WordAbout', 'Trace']);
+        ->toBe(['Doing', 'Logs', 'RunBack', 'PutBack', 'WordAbout', 'Trace']);
 });

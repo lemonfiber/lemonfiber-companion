@@ -19,6 +19,7 @@ use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatToDoWithACopy;
+use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasDecided;
@@ -192,6 +193,12 @@ const VERBS_THE_APP_ASKS_FOR = [
     // the listing the operator was shown, and nothing else, because the yes
     // quotes that listing by name.
     'restore' => 'says what putting one copy back would do, and puts it back only against that listing',
+
+    // One run the record shows, named by its stamp. It takes no yes and offers
+    // no rehearsal over the wire, so the only thing that spells it is an
+    // agreement built from the record's own rows for that run — and a run the
+    // record says cannot go back builds none.
+    'undo' => 'puts back one run the record shows, named by its stamp, after the record\'s rows for it were agreed to',
 
     // The one verb that fetches something. It names at most a title, and
     // with none the stack chooses something likely to work; the stack
@@ -482,6 +489,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
+        ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),

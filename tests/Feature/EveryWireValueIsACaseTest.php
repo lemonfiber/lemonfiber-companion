@@ -41,6 +41,7 @@ use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
+use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
@@ -593,6 +594,15 @@ it('N1-R13 — every way a change can be put back has a case', function (): void
     expect(valuesOf(HowFarItGoesBack::cases()))->toBe($reversals);
 });
 
+it('everything putting one change back can do has a case', function (): void {
+    // `does` tags each arm of the action a reversal carries, so the words are
+    // gathered by arm rather than read as one union.
+    $does = theArmsIn(theGeneratedEnvelope('UndoEnvelope'), 'does');
+
+    expect($does)->not->toBe([], 'no reversal arm was found in the generated envelope');
+    expect(valuesOf(WhatGoingBackDoes::cases()))->toBe($does);
+});
+
 it('N1-R13 — every request lemonfiber makes on its own account has a case', function (): void {
     // `reach` on the wire, and the closed set is the stack's claim: an eighth
     // request is one somebody decided to add, and this is where the app hears
@@ -984,6 +994,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     HowTheImportLinked::class => 'link',
     WhyTheWalkthroughStopped::class => 'reason',
     WhatToDoNext::class => 'next',
+    WhatGoingBackDoes::class => 'does',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

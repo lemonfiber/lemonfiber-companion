@@ -54,6 +54,7 @@ use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Provenance;
+use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
@@ -107,6 +108,7 @@ use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Restorers;
+use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -363,6 +365,10 @@ final class CompositionRoot extends ServiceProvider
         // A support bundle, described and written, asked beside the rest and
         // bound for the same reason.
         $this->app->bind(AskingForHelp::class, Bundlers::class);
+
+        // Putting back one run the record shows, bound beside putting a copy
+        // back for the same reason.
+        $this->app->bind(PuttingARunBack::class, Reversers::class);
 
         // How full the machine is, read beside the rest and bound for the
         // same reason.

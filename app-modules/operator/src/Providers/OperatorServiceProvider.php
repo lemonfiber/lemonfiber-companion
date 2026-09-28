@@ -17,6 +17,7 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
+use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
@@ -201,6 +202,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // than a section of the settings, because a setting is how the
             // machine stands now and this is how it came to stand there.
             Router::native(AStacksScreen::Record->value, WhatWasChangedHere::class);
+
+            // Putting back one run the record shows. Its own screen, reached
+            // from the record, because what goes with the run is said before
+            // anything is agreed to.
+            Router::native(AStacksScreen::RunBack->value, PuttingThatRunBack::class);
 
             // Where every service comes from. Its own screen rather than a
             // section of the record, because the record is what was done and

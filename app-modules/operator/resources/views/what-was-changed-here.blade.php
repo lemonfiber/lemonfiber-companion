@@ -39,6 +39,15 @@
                  its changes says so rather than leaving a *when* over a blank. --}}
             <x-operator::note>{{ __('stacks.record.nothing_changed') }}</x-operator::note>
         @endforelse
+
+        {{-- The way to putting back what was done then. It leads to a screen
+             that says what goes with it before anything is agreed to; nothing
+             is put back from here. --}}
+        <x-operator::action
+            label="{{ __('stacks.record.put_back') }}"
+            answers-to="{{ __('stacks.record.put_back_that', ['did' => $moment->leadsWith, 'when' => trans_choice($moment->whenSaid, $moment->whenCount)]) }}"
+            :goes="$this->goes()->ofItself()->puttingARunBack($moment->stamp)"
+        />
     @empty
         {{-- The stack answered and has changed nothing within the horizon
              below. Not the same screen as a stack that could not be asked,

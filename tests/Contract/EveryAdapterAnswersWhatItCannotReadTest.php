@@ -23,7 +23,10 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\ARun;
+use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\AWrittenBundle;
+use Modules\Kernel\Api\Change;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Decided;
@@ -32,6 +35,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HostingAgreed;
+use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
@@ -59,6 +63,7 @@ use Modules\Kernel\Api\TheAdoption;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
+use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
@@ -73,6 +78,7 @@ use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasNamed;
 use Modules\Kernel\Api\WhatWroteACopy;
+use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
@@ -105,6 +111,7 @@ use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Restorers;
+use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -236,6 +243,14 @@ function aListingToSpoilTheAnswerTo(): WhatPuttingItBackWouldDo
     );
 }
 
+/** A run the record shows, to put back against. */
+function aRunToSpoilTheAnswerTo(): ARunAgreedTo
+{
+    $change = Change::made('Set LIBRARY_PATH', 'reconfigure', 'lemonfiber', WhenItWasMade::unreadable(), HowFarItGoesBack::Whole, 1);
+
+    return ARunAgreedTo::by(TheRecord::reaching('the last 50 runs', $change)->theRun(ARun::stamped('0')));
+}
+
 /**
  * Every adapter call that reads an answer, by what it asks.
  *
@@ -309,6 +324,10 @@ function everyAdapterCallThatReads(): array
             => new Restorers($clients, $entropy)->putBack($stack, $session, aListingToSpoilTheAnswerTo()),
         'Restorers::whatBecameOf' => static fn(): object
             => new Restorers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Reversers::putBack' => static fn(): object
+            => new Reversers($clients, $entropy)->putBack($stack, $session, aRunToSpoilTheAnswerTo()),
+        'Reversers::whatBecameOf' => static fn(): object
+            => new Reversers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
         'Requests::decided' => static fn(): object
             => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::numbered(1))),
@@ -398,6 +417,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Bundlers::whatBecameOf' => sprintf('%sBundleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Reversers::whatBecameOf' => sprintf('%sUndoEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }

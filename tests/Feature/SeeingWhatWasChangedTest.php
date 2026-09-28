@@ -21,12 +21,14 @@ use Modules\Kernel\Api\WhereItStopsShort;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Presenters\HowTheRecordReads;
 use Modules\Operator\Internal\Screens\WhatWasChangedHere;
+use Modules\Operator\Internal\ViewModels\AMomentOnTheRecord;
 use Modules\Operator\Internal\ViewModels\WhatOneRecordedChangeSays;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsARecord;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What this machine has changed about itself, and how far each change goes back.
 //
@@ -278,4 +280,25 @@ it('renders its own view', function (): void {
     $screen = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching('the last 50 runs')));
 
     expect($screen->render()->name())->toBe('operator::what-was-changed-here');
+});
+
+it('leads from each moment to putting back what was done then, by the stamp the stack keeps it under', function (): void {
+    $screen = theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching(
+        'the last 50 runs',
+        aChangeMadeBefore('Pointed Sonarr at the new library', 120),
+        aChangeMadeBefore('Made the library directory', 120),
+        aChangeNobodyDated('Wrote the first configuration'),
+    )));
+    $moments = $screen->answer()->moments;
+    $ways = array_filter(
+        WhatTheDeviceWouldDraw::by($screen)->offers(),
+        static fn(string $offered): bool => $offered === __('stacks.record.put_back'),
+    );
+
+    expect(array_map(static fn(AMomentOnTheRecord $moment): string => $moment->stamp, $moments))
+        ->toBe([(string) (THE_RECORD_IS_READ_AT - 120), '0'])
+        ->and(array_map(static fn(AMomentOnTheRecord $moment): string => $moment->leadsWith, $moments))
+        ->toBe(['Pointed Sonarr at the new library', 'Wrote the first configuration'])
+        ->and($ways)->toHaveCount(2)
+        ->and(NativeRouter::resolve($screen->goes()->ofItself()->puttingARunBack($moments[0]->stamp)))->not->toBeNull();
 });

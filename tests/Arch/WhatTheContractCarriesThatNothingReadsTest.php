@@ -92,6 +92,50 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'Whether the copy carries credentials, as its own account of itself records it. The copy\'s report says so when it is taken, and every capture the stack takes carries them; `N6` asks nothing of a restore\'s listing about it.',
     ],
     [
+        'path' => 'UndoEnvelope.reversed[].action.id',
+        'because' => 'The identifier, inside a service, of what a removal or a reconfigure is about. What each reversal was against is drawn from `target` and what going back did from `does`; an identifier inside a service names nothing an operator can look up from a phone.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.resource',
+        'because' => 'The kind of resource, inside a service, a removal or a reconfigure is about. `target` names the service and `does` what going back did, and both are drawn; the resource kind is the instruction the stack carried out with.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.key',
+        'because' => 'The setting a restore put back, or the file key a withdrawal took a region out of. `target` and `does` are drawn for every reversal; the key is the instruction the stack carried out with.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.value',
+        'because' => 'What a setting was put back to. A value can be a credential, and this app draws no value a reversal carries, which is the line `N6-R7` draws for what the stack holds.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.wrote',
+        'because' => 'What lemonfiber had written to a setting, carried so the stack can tell its own work from the operator\'s before it acts, and a value that can be a credential. A setting somebody chose since is reported in `left` with why, which is read.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.path',
+        'because' => 'The file a deletion or a withdrawal acted on. `target` names what the change was against and is drawn; the path is on a machine the operator has no filesystem in front of.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.owner',
+        'because' => 'Whose region a withdrawal takes out, as the file\'s markers name it: the stack\'s check that the region is its own. A region edited since is reported in `left` with why, which is read.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.written',
+        'because' => 'The checksum of the region a withdrawal takes out: the stack\'s check that it is still its own work, and a number that means nothing on a screen.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.current',
+        'because' => 'The version a run moved a service to, which a repin checks is still running. The stack carries no repin out: a run carried out reports it in `left` with why, which is read, and a rehearsal names it with `does`, which is drawn.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.previous',
+        'because' => 'The version a repin would put back, for `UndoEnvelope.reversed[].action.current`\'s reason.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.field',
+        'because' => 'The field of a service\'s own resource a reconfigure puts back. `target` names the service and `does` says its own setting went back, and both are drawn; a service that did not answer is reported in `left` with why, which is read.',
+    ],
+    [
         'path' => 'BandwidthEnvelope.applied',
         'because' => 'Whether the call that answered wrote limits to the clients or only read them. This app reads the line and never writes a limit, so every answer it asks for says it only read, and a screen showing that would be reporting on an act it did not perform.',
     ],

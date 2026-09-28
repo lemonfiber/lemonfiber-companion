@@ -24,10 +24,14 @@ final readonly class AMomentOnTheRecord
      * @param string                          $whenSaid  the key for when, or for the clock not saying
      * @param int                             $whenCount how many of that unit, where there is a unit
      * @param list<WhatOneRecordedChangeSays> $changes   every change made then, in the stack's order
+     * @param string                          $stamp     the stamp the stack keeps what was done then under, which is how putting it back is asked for
+     * @param string                          $leadsWith what the first change made then did, which tells one moment's way back from another's to somebody being read to
      */
     public function __construct(
         public string $whenSaid,
         public int $whenCount,
         public array $changes,
+        public string $stamp,
+        public string $leadsWith,
     ) {}
 }

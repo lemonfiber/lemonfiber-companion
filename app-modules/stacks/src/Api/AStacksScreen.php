@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Stacks\Api;
 
 use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
@@ -124,6 +125,14 @@ enum AStacksScreen: string
      * as it stands now, and this is how it came to stand there.
      */
     case Record = '/stacks/{stack}/record';
+
+    /**
+     * Putting back one run the record shows, agreed to before anything is asked.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the stamp the record keeps the run under.
+     */
+    case RunBack = '/stacks/{stack}/record/{service}';
 
     /**
      * Where every service on this machine comes from.
@@ -313,6 +322,20 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($copy->name())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one run on one machine's record.
+     *
+     * Encoded for {@see self::forTheStacksCopy()}'s reason.
+     */
+    public function forTheStacksRun(StackId $stack, ARun $run): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($run->stamp())], $this->value);
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
@@ -38,6 +39,17 @@ final readonly class WhatItKeepsOfItself
     public function record(): string
     {
         return AStacksScreen::Record->forTheStack($this->stack);
+    }
+
+    /**
+     * Putting back one run the record shows, by the stamp it keeps it under.
+     *
+     * Text on the way in, because a template holds the stamp as text, and an
+     * {@see ARun} on the way out, which refuses a blank.
+     */
+    public function puttingARunBack(string $stamp): string
+    {
+        return AStacksScreen::RunBack->forTheStacksRun($this->stack, ARun::stamped($stamp));
     }
 
     /** Where every service on this machine comes from. */
