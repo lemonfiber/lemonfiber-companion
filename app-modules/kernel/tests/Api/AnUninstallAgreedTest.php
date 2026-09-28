@@ -12,11 +12,13 @@ use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\NamedOnTheManifest;
 use Modules\Kernel\Api\UninstallWasNotSurveyed;
+use Modules\Kernel\Api\WhatGoesAndWhatStays;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
+use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
@@ -26,16 +28,20 @@ function theLibraryReading(string $volume): WhatTakingItOffComesTo
 {
     return WhatTakingItOffComesTo::read(
         WhichRemoval::Media,
-        'The library and the downloads',
-        'Nothing',
+        WhatGoesAndWhatStays::said(
+            'The library and the downloads',
+            'Nothing',
+        ),
         WhatItReaches::of(),
         4096,
-        WhatIsNotLemonfibers::of(),
-        WhatIsStillComing::of(),
-        WhatItCannotTake::of(),
+        WhatToKnowFirst::said(
+            WhatIsNotLemonfibers::of(),
+            WhatIsStillComing::of(),
+            WhatItCannotTake::of(),
+            volume: $volume,
+        ),
         HowMuchWasRead::everything(),
         'media-4096',
-        volume: $volume,
     );
 }
 

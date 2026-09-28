@@ -23,12 +23,14 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\WhatBecameOfTheUninstall;
+use Modules\Kernel\Api\WhatGoesAndWhatStays;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
+use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhatWasFoundOfTheUninstall;
 use Modules\Kernel\Api\WhatWasLeftBehind;
 use Modules\Kernel\Api\WhereTakingItOffGot;
@@ -74,23 +76,27 @@ function theConfigurationReading(): WhatTakingItOffComesTo
 {
     return WhatTakingItOffComesTo::read(
         WhichRemoval::Configuration,
-        'Each service\'s configuration and lemonfiber\'s own state',
-        'Your library and your downloads',
+        WhatGoesAndWhatStays::said(
+            'Each service\'s configuration and lemonfiber\'s own state',
+            'Your library and your downloads',
+        ),
         WhatItReaches::of(
             OneThingItReaches::going('/srv/lemonfiber/config/gluetun', WhatSortItIs::Path, 'The VPN\'s settings', holdsACredential: true, size: AnAmountOfRoom::of(2048, 'bytes')),
             OneThingItReaches::kept('ghcr.io/example/shared:1', WhatSortItIs::Image, 'An image another project uses', holdsACredential: false, size: AnAmountOfRoom::unread(), because: 'Another project stands on it'),
         ),
         2048,
-        WhatIsNotLemonfibers::of(SomethingNotLemonfibers::at('photos', 12, 4096)),
-        WhatIsStillComing::of(SomethingStillComing::named('A film', 40)),
-        WhatItCannotTake::of(
-            SomethingItCannotTake::found('Docker', 'lemonfiber did not install it', 'Uninstall Docker Desktop'),
-            SomethingItCannotTake::notFound('Tailscale', 'It is a separate client', 'Remove the Tailscale app'),
+        WhatToKnowFirst::said(
+            WhatIsNotLemonfibers::of(SomethingNotLemonfibers::at('photos', 12, 4096)),
+            WhatIsStillComing::of(SomethingStillComing::named('A film', 40)),
+            WhatItCannotTake::of(
+                SomethingItCannotTake::found('Docker', 'lemonfiber did not install it', 'Uninstall Docker Desktop'),
+                SomethingItCannotTake::notFound('Tailscale', 'It is a separate client', 'Remove the Tailscale app'),
+            ),
+            volume: 'The data location is on a network share',
+            copyFirst: 'A copy of the configuration is taken first',
         ),
         HowMuchWasRead::notEverything('The container engine did not answer'),
         'configuration-2-lines',
-        volume: 'The data location is on a network share',
-        copyFirst: 'A copy of the configuration is taken first',
     );
 }
 

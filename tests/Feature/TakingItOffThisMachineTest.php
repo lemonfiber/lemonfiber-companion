@@ -24,12 +24,14 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatBecameOfTheUninstall;
+use Modules\Kernel\Api\WhatGoesAndWhatStays;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
+use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhatWasLeftBehind;
 use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhichRemoval;
@@ -107,24 +109,28 @@ function aReadingOfTakingItOff(
 ): WhatTakingItOffComesTo {
     return WhatTakingItOffComesTo::read(
         $tier,
-        'The containers and the images',
-        'Your configuration and your library',
+        WhatGoesAndWhatStays::said(
+            'The containers and the images',
+            'Your configuration and your library',
+        ),
         WhatItReaches::of(
             OneThingItReaches::going('lemonfiber-gluetun', WhatSortItIs::Container, 'The VPN', holdsACredential: true, size: AnAmountOfRoom::of(3_221_225_472, 'bytes')),
             OneThingItReaches::going('lemonfiber-net', WhatSortItIs::Network, 'The stack\'s network', holdsACredential: false, size: AnAmountOfRoom::unread()),
             OneThingItReaches::kept('ghcr.io/example/shared:1', WhatSortItIs::Image, 'A shared image', holdsACredential: false, size: AnAmountOfRoom::of(1_073_741_824, 'bytes'), because: 'Another project stands on it'),
         ),
         3_221_225_472,
-        WhatIsNotLemonfibers::of(SomethingNotLemonfibers::at('photos', 12, 2_147_483_648)),
-        WhatIsStillComing::of(...$coming),
-        WhatItCannotTake::of(
-            SomethingItCannotTake::found('Docker', 'lemonfiber did not install it', 'Uninstall Docker Desktop'),
-            SomethingItCannotTake::notFound('Tailscale', 'It is a separate client', 'Remove the Tailscale app'),
+        WhatToKnowFirst::said(
+            WhatIsNotLemonfibers::of(SomethingNotLemonfibers::at('photos', 12, 2_147_483_648)),
+            WhatIsStillComing::of(...$coming),
+            WhatItCannotTake::of(
+                SomethingItCannotTake::found('Docker', 'lemonfiber did not install it', 'Uninstall Docker Desktop'),
+                SomethingItCannotTake::notFound('Tailscale', 'It is a separate client', 'Remove the Tailscale app'),
+            ),
+            volume: $volume,
+            copyFirst: $copyFirst,
         ),
         $confidence ?? HowMuchWasRead::everything(),
         sprintf('%s-3-lines', $tier->value),
-        volume: $volume,
-        copyFirst: $copyFirst,
     );
 }
 
@@ -386,7 +392,7 @@ it('names what is not lemonfiber\'s apart, and what it cannot take with whether 
 });
 
 it('says so where nothing goes, nothing is kept, nothing is foreign and nothing is outside', function (): void {
-    $empty = WhatTakingItOffComesTo::read(WhichRemoval::Stop, 'Nothing', 'Everything', WhatItReaches::of(), 0, WhatIsNotLemonfibers::of(), WhatIsStillComing::of(), WhatItCannotTake::of(), HowMuchWasRead::everything(), 'stop-0');
+    $empty = WhatTakingItOffComesTo::read(WhichRemoval::Stop, WhatGoesAndWhatStays::said('Nothing', 'Everything'), WhatItReaches::of(), 0, WhatToKnowFirst::said(WhatIsNotLemonfibers::of(), WhatIsStillComing::of(), WhatItCannotTake::of()), HowMuchWasRead::everything(), 'stop-0');
     $said = WhatTheDeviceWouldDraw::by(aRemovalChosenAndRead(aStackReadingTheRemoval($empty), WhichRemoval::Stop))->said();
 
     expect($said)->toContain(__('uninstall.nothing_going'))

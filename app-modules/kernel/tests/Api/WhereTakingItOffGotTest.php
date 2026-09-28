@@ -15,12 +15,14 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\UninstallSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheUninstall;
+use Modules\Kernel\Api\WhatGoesAndWhatStays;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
+use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhatWasFoundOfTheUninstall;
 use Modules\Kernel\Api\WhatWasLeftBehind;
 use Modules\Kernel\Api\WhereTakingItOffGot;
@@ -62,7 +64,7 @@ function theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall $became): string
 function aReadingOfStopping(): AnUninstall
 {
     return AnUninstall::of(
-        WhatTakingItOffComesTo::read(WhichRemoval::Stop, 'Nothing', 'Everything', WhatItReaches::of(), 0, WhatIsNotLemonfibers::of(), WhatIsStillComing::of(), WhatItCannotTake::of(), HowMuchWasRead::everything(), 'stop-0'),
+        WhatTakingItOffComesTo::read(WhichRemoval::Stop, WhatGoesAndWhatStays::said('Nothing', 'Everything'), WhatItReaches::of(), 0, WhatToKnowFirst::said(WhatIsNotLemonfibers::of(), WhatIsStillComing::of(), WhatItCannotTake::of()), HowMuchWasRead::everything(), 'stop-0'),
         WhereTakingItOffGot::surveyed(),
     );
 }
