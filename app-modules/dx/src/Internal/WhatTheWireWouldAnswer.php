@@ -19,6 +19,7 @@ use const JSON_THROW_ON_ERROR;
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Dx\Api\AStandInStack;
+use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithACopy;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Saloon\Http\Faking\MockClient;
@@ -114,6 +115,17 @@ final readonly class WhatTheWireWouldAnswer
      * and answers with the name.
      */
     private const string A_LISTING_OF_A_COPY = 'RestoreEnvelope';
+
+    /**
+     * What putting the configuration back finishes as.
+     *
+     * The reset screen asks for work the moment it opens — what putting the
+     * configuration back would revert, before anything is agreed to — and that
+     * work finishes as a `reset` rather than as a repair. So a reset is
+     * answered with work named for it, and that name redeems into this
+     * envelope rather than into {@see WHAT_WORK_BECOMES}.
+     */
+    private const string WHAT_A_RESET_BECOMES = 'ResetEnvelope';
 
     /**
      * What a door answers a password with.
@@ -278,6 +290,8 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
             $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysOneThing(),
+            $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamed(WhatToChange::BackToItsOwn->asked()),
+            $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
             default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint, ...$asked)),
         };
@@ -389,6 +403,74 @@ final readonly class WhatTheWireWouldAnswer
             ...array_filter(is_array($change) ? $change : [], is_string(...), ARRAY_FILTER_USE_KEY),
             'at' => self::WHEN_A_CHANGE_WAS_MADE,
         ];
+    }
+
+    /**
+     * Work the stack took on, named so that asking after it finds what it becomes.
+     *
+     * The `job` envelope's own declaration with the name replaced, which is
+     * the one field of it a reader keys on.
+     *
+     * @return array<string, mixed>
+     */
+    private static function workNamed(string $name): array
+    {
+        $envelope = self::oneEnvelope(self::A_NAME_FOR_WORK);
+        $data = $envelope['data'];
+        // One line for the door's reason: `data` is always an array.
+        $envelope['data'] = [...(is_array($data) ? $data : []), 'job' => $name];
+
+        return $envelope;
+    }
+
+    /**
+     * A reset whose diffs read the way the stack writes them, and which wrote nothing.
+     *
+     * The `reset` envelope's own declaration, corrected in the two fields the
+     * generated type leaves open. Each diff is the declaration's own text
+     * marked once each way, the operator's `-` and lemonfiber's `+`, because
+     * a line marked neither way is one a reader refuses. And it is a preview
+     * whatever was asked: a stand-in writes nothing, so its reset says it did
+     * not carry anything out.
+     *
+     * @return array<string, mixed>
+     */
+    private static function aResetThatReads(): array
+    {
+        $envelope = self::oneEnvelope(self::WHAT_A_RESET_BECOMES);
+        $data = $envelope['data'];
+        // One line for the door's reason: `data` is always an array.
+        $report = is_array($data) ? $data : [];
+        // `reverted` is required by the declaration, so the key is always
+        // there; what is not known to the analyser is that it holds a list.
+        $reverted = $report['reverted'];
+        $corrected = [];
+
+        foreach (is_array($reverted) ? $reverted : [] as $edit) {
+            $corrected[] = self::anEditThatReads($edit);
+        }
+
+        $report['reverted'] = $corrected;
+        $report['confirmed'] = false;
+        $envelope['data'] = $report;
+
+        return $envelope;
+    }
+
+    /**
+     * One synthesised edit, its diff marked each way.
+     *
+     * @return array<string, mixed>
+     */
+    private static function anEditThatReads(mixed $edit): array
+    {
+        // An edit's fields are named, so only its named keys are carried.
+        $named = array_filter(is_array($edit) ? $edit : [], is_string(...), ARRAY_FILTER_USE_KEY);
+        // `diff` is required by the declaration and typed as text, and one
+        // line for the door's reason.
+        $diff = is_string($named['diff']) ? $named['diff'] : '';
+
+        return [...$named, 'diff' => sprintf("- %s\n+ %s\n", $diff, $diff)];
     }
 
     /**

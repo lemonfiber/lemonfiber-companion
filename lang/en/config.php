@@ -61,5 +61,8 @@ return [
     'services_will_restart' => 'The services this affects will restart.',
     'worth_reading_twice' => 'This one may move data or take a service away.',
 
+    // Where putting every edited file back is offered from.
+    'put_it_all_back' => 'Put the configuration back',
+
     'ask_again' => 'Ask again',
 ];
