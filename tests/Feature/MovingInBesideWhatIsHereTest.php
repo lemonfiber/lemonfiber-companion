@@ -259,7 +259,8 @@ it('says so where nothing wants a copy first', function (): void {
     expect(theMoveDrawn($screen)->copyFirst)->toBe([])
         ->and($drawn)->toContain(__('stacks.moving_in.nothing_copied_first'))
         ->and($drawn)->toContain(__('stacks.already_here.moved', ['service' => 'sonarr', 'from' => '8989', 'to' => '8990']))
-        ->and(theMoveDrawn($screen)->agreeSaid)->toBe('stacks.moving_in.agree.beside');
+        ->and(theMoveDrawn($screen)->agreeSaid)->toBe('stacks.moving_in.agree.beside')
+        ->and(theKeysOf(theMoveDrawn($screen)->lines))->toBe(['stacks.already_here.moved']);
 });
 
 it('leads with what did not come across, before where the import stands and before what did', function (): void {
@@ -338,6 +339,7 @@ it('says what replacing would stop, or what it stopped and what would not stop',
     $applied = theMoveDrawn(theScreenAfterAsking('replace', aStackAnsweringTheMove(WhatBecameOfTheMove::answered(aReplacementAt(Stance::Applied)))));
 
     expect(theKeysOf($pending->lines))->toBe(['stacks.already_here.project', 'stacks.moving_in.would_stop'])
+        ->and($pending->lines[0]->with)->toBe(['project' => 'media'])
         ->and($pending->lines[1]->with)->toBe(['service' => 'sonarr'])
         ->and(theKeysOf($applied->lines))->toBe(['stacks.already_here.project', 'stacks.moving_in.stopped', 'stacks.moving_in.still_running'])
         ->and([$applied->lines[1]->with, $applied->lines[2]->with])->toBe([['service' => 'radarr'], ['service' => 'tautulli']]);
@@ -462,6 +464,22 @@ it('sends no yes without a pending answer on the screen', function (): void {
     $screen->moveIn();
 
     expect($movingIn->acts())->toBe(['would:adopt', 'after:j-1']);
+});
+
+it('lets go of an answer waiting on a yes once another mode is asked about', function (): void {
+    $movingIn = aStackAnsweringTheMove(WhatBecameOfTheMove::answered(anAdoptionAt(Stance::Pending)), WhatBecameOfTheMove::underway(Job::named('j-2')));
+    $screen = theScreenAfterAsking('adopt', $movingIn);
+    $screen->howTheMoveIsGoing();
+
+    expect($screen->staged)->not->toBeNull();
+
+    $screen->wouldMoveIn('replace');
+    $screen->moveIn();
+
+    expect($screen->staged)->toBeNull()
+        ->and($screen->about)->toBe('replace')
+        ->and($screen->following)->toBe('j-2')
+        ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'would:replace']);
 });
 
 it('leaves an answer where it is and moves nothing', function (): void {
