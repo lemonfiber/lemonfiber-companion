@@ -51,6 +51,15 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  *
  * The rehearsal carries no key, because it changes nothing; the yes carries
  * one, because it does.
+ *
+ * **A refusal of the copy is the stack's answer, not a fault.** The rehearsal
+ * is answered at once, so a copy the stack will not restore — one it cannot
+ * read, one from a newer lemonfiber, one it does not manage — is refused
+ * there. The yes is taken on as a job whatever it names, and the job is what
+ * stops on a problem: a listing that moved on, a stack still running, a copy
+ * that could not be unpacked. Both are carried in the stack's words, by
+ * {@see WhatARefusalMeant::inItsWords()}; the yes itself is refused only in
+ * prose, so it has nothing to carry.
  */
 final readonly class Restorers implements PuttingBack
 {
@@ -68,7 +77,11 @@ final readonly class Restorers implements PuttingBack
 
             return WhatTheRestoreRehearsalFound::listed(TheRestore::listedIn($envelope, $copy));
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatTheRestoreRehearsalFound::met(WhatARefusalMeant::obstacle($why));
+            return WhatARefusalMeant::inItsWords(
+                $why,
+                refused: WhatTheRestoreRehearsalFound::refused(...),
+                met: WhatTheRestoreRehearsalFound::met(...),
+            );
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
             return WhatTheRestoreRehearsalFound::met(Obstacle::StackDidNotAnswer);
         }
@@ -103,7 +116,11 @@ final readonly class Restorers implements PuttingBack
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return HowPuttingItBackIsGoing::met(WhatARefusalMeant::obstacle($why));
+            return WhatARefusalMeant::inItsWords(
+                $why,
+                refused: HowPuttingItBackIsGoing::refused(...),
+                met: HowPuttingItBackIsGoing::met(...),
+            );
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|RestoreIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed) {
             return HowPuttingItBackIsGoing::met(Obstacle::StackDidNotAnswer);
         }

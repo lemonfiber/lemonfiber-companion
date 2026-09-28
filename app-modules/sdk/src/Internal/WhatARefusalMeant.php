@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Internal;
 
+use Closure;
+
+use function is_string;
+
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
+use Lemonfiber\Sdk\Refusal;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 
 /**
  * What the operator met, given what the far end refused with.
@@ -38,6 +45,14 @@ use Modules\Kernel\Api\Obstacle;
  * it: nothing about that is the account's doing, the door stays open, and what
  * it wants is another go.
  *
+ * **Where the stack refused the work itself, it says why.** A problem
+ * document at any status but `401` and `403` is the stack's answer about what
+ * was asked — a copy it will not restore, work that stopped on a problem — and
+ * {@see inItsWords()} carries it as {@see ARefusalInItsWords} for the ports
+ * whose work can be refused that way. A sentence with no document around it
+ * may have come from anything standing in front of the stack, and a document
+ * with no sentence says nothing, so both stay the obstacle.
+ *
  * `Internal` because which status means what is a detail of how this module
  * talks to a stack; the {@see Obstacle} it answers with is the shared word.
  */
@@ -64,6 +79,29 @@ final readonly class WhatARefusalMeant
      */
     private const int ACCOUNT_MAY_NOT_ASK = 403;
 
+    /**
+     * The stack's refusal in its own words where it sent a problem document
+     * with a sentence in it, and the obstacle everywhere else.
+     *
+     * @template TRefused of object
+     * @template TMet of object
+     *
+     * @param Closure(ARefusalInItsWords): TRefused $refused
+     * @param Closure(Obstacle): TMet               $met
+     *
+     * @return TRefused|TMet
+     */
+    public static function inItsWords(CertificateWasRefused|RequestFailed $why, Closure $refused, Closure $met): object
+    {
+        $obstacle = self::obstacle($why);
+        $said = $why instanceof RequestFailed ? $why->said() : null;
+        $problem = $why instanceof RequestFailed ? $why->refusal() : null;
+
+        return $obstacle !== Obstacle::StackDidNotAnswer || $said === null || ! $problem instanceof Refusal
+            ? $met($obstacle)
+            : $refused(ARefusalInItsWords::said($said, $problem->meaning(), self::named($problem)));
+    }
+
     public static function obstacle(CertificateWasRefused|RequestFailed $why): Obstacle
     {
         if ($why instanceof CertificateWasRefused) {
@@ -75,5 +113,13 @@ final readonly class WhatARefusalMeant
             self::ACCOUNT_MAY_NOT_ASK => Obstacle::NotForThisAccount,
             default => Obstacle::StackDidNotAnswer,
         };
+    }
+
+    /** What the problem named in `detail`, or nothing where it named nothing. */
+    private static function named(Refusal $problem): WhatTheRefusalNamed
+    {
+        $detail = $problem->detail();
+
+        return is_string($detail) ? WhatTheRefusalNamed::as($detail) : WhatTheRefusalNamed::nothing();
     }
 }

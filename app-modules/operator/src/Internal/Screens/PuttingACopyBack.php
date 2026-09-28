@@ -10,6 +10,7 @@ use function is_string;
 
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
@@ -50,6 +51,13 @@ use function view;
  * **Putting it back answers a handle,** followed on a stated cadence while it
  * runs, as taking an update is. The report says what was restored and where
  * the data went.
+ *
+ * **A copy the stack will not restore is its answer, not a fault.** Refused
+ * at the listing or while being put back, it is drawn in the stack's words,
+ * apart from a stack that could not be reached, and asking again is not
+ * offered, because the same question is answered the same way. A refused
+ * listing offers the copies; a refused yes offers reading what putting it back
+ * would do now, which is a new question.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -194,6 +202,22 @@ final class PuttingACopyBack extends NativeComponent
     }
 
     /**
+     * Read what putting the copy back would do now, leaving a yes the stack
+     * refused behind.
+     *
+     * The listing is asked for afresh and nothing is agreed to, so a yes is
+     * only ever sent against a listing the operator has just read.
+     */
+    public function lookAgain(): void
+    {
+        $this->agreed = false;
+        $this->handle = null;
+        $this->carriedOut = null;
+        $this->listed = null;
+        $this->answered = null;
+    }
+
+    /**
      * Ask after the copy being put back while the stack is doing it.
      *
      * It does nothing unless that is running, so a rehearsal and a finished
@@ -246,6 +270,7 @@ final class PuttingACopyBack extends NativeComponent
 
                 return new HowPuttingItBackReads()->listing($listing);
             },
+            refused: static fn(ARefusalInItsWords $why): WhatPuttingItBackWouldShow => new HowPuttingItBackReads()->refusedToList($why),
             met: function (Obstacle $why) use ($stack): WhatPuttingItBackWouldShow {
                 $this->letGoOfTheSession($why, $stack);
 
@@ -269,6 +294,7 @@ final class PuttingACopyBack extends NativeComponent
             held: fn(Session $session): HowPuttingItBackWent => $this->puttingBack->whatBecameOf($stack, $session, Job::named($held))->either(
                 stillRunning: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->running(),
                 done: static fn(ACopyPutBack $report): HowPuttingItBackWent => new HowPuttingItBackReads()->done($report),
+                refused: static fn(ARefusalInItsWords $why): HowPuttingItBackWent => new HowPuttingItBackReads()->refused($why),
                 ended: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->ended(),
                 met: fn(Obstacle $why): HowPuttingItBackWent => $this->refused($why, $stack),
             ),

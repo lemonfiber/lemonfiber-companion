@@ -682,10 +682,11 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     ],
     [
         'path' => 'ErrorEnvelope.detail',
-        'because' => 'The same reading, and the same answer. `N2-R3` has a finding carry its meaning in '
-            . 'the words the core produced, and that arrives on the `doctor` envelope where a screen can '
-            . 'show it; an error body reaches the operator as an obstacle, which is one of four sentences '
-            . 'this app has written.',
+        'because' => 'No reader here opens it: the SDK\'s `Refusal` does, and it quotes what a service '
+            . 'said, fit to show to the person who asked and not to log, report or forward. A refused '
+            . 'bundle and a copy the stack will not restore carry it from there to the screen that asked '
+            . 'as `WhatTheRefusalNamed`, and every other refusal reaches the operator as an obstacle, '
+            . 'which is one of four sentences this app has written.',
     ],
     [
         'path' => 'HeldEnvelope.id',
