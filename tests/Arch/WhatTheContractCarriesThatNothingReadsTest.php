@@ -217,6 +217,15 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'it becomes readable on the same day.',
     ],
     [
+        'path' => 'WatchEnvelope.would',
+        'because' => 'The guard a run would keep — the data location, how often it looks, and the command it '
+            . 'would run — which is exactly what a guard is owed before it starts. It is answered only by a '
+            . 'rehearsal, and no argument the watch action takes over the web API asks for one, so no answer '
+            . 'this app can ask for carries it: a guard started here is a real one, and its answer arrives '
+            . 'without this. The gap is in `WhatTheContractDoesNotCarryTest`, and this is read the day an '
+            . 'answer this app can ask for carries it.',
+    ],
+    [
         'path' => 'ConfigEnvelope.review.findings',
         'because' => 'What a change comes to on this machine beyond the value it changes — the services it '
             . 'would stop, the library paths it would invalidate, the clients mid-transfer. Read by nothing '

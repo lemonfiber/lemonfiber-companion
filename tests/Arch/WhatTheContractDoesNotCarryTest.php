@@ -208,6 +208,41 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'asserting what the core does with a choice, which is the core\'s to say. The screen offers '
             . 'upgrading as its own act and says nothing about what choosing does to the library.',
     ],
+    [
+        'requirement' => 'N23-R11',
+        'asks' => 'to say, before a guard starts, the data location it would guard, how often it looks and the command it would run',
+        // Named, and watched as a whole payload: the name a guard is started
+        // under is the one answer this app has before it runs, and the watch
+        // could as well come to carry what it would guard there. A rehearsal
+        // argument on the action is the other way it could close, and the SDK
+        // generates no request shapes for a row to watch.
+        'envelope' => 'JobEnvelope',
+        'field' => null,
+        'shape' => 'array{action: string, job: string}',
+        'raised' => '`watch.would` carries the root, the interval and the command, and it is answered only '
+            . 'by a rehearsal; no argument the watch action takes over the web API asks for one. So the '
+            . 'app cannot read from the stack, before the guard runs, which location it would guard, how '
+            . 'often it looks, or what it would run. It does not take the location from a setting or '
+            . 'state an interval of its own: the screen says what a guard does in general, says that the '
+            . 'stack does not say those three beforehand, and starts the guard only on a yes naming the '
+            . 'forms it would stop.',
+    ],
+    [
+        'requirement' => 'N23-R13',
+        'asks' => 'to tell a guard another client released from one the stack let go because nothing asked about it',
+        // Named, and watched as a whole payload, for the row above's reason:
+        // both answer this envelope at `200`, and the distinction would arrive
+        // as a word it does not carry now.
+        'envelope' => 'JobEnvelope',
+        'field' => null,
+        'shape' => 'array{action: string, job: string}',
+        'raised' => 'A guard released and a guard let go for want of asking both answer `job` at `200`, the '
+            . 'standing `JobStanding` reads as ended. This app releases a guard only as its screen is left, '
+            . 'so it never draws its own release; what it can draw is a guard that ended without seeing '
+            . 'anything, told apart from one that saw the data location go, one that never started and one '
+            . 'the stack no longer knows, and it says it was released or not asked about without saying '
+            . 'which.',
+    ],
 ];
 
 /**

@@ -140,6 +140,11 @@
          the stuck screen's reason: somebody who has just started something at
          the machine is looking at a screen they want to ask again. --}}
     <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+
+    {{-- A guard held by a screen of this app, apart from everything above:
+         it outlives nothing, and it is never one of the hosted rows. --}}
+    <x-operator::note>{{ __('stacks.guard.apart') }}</x-operator::note>
+    <x-operator::quiet-action label="{{ __('stacks.guard.road_in') }}" :goes="$this->goes()->ofItself()->guard()" />
 @endif
 </x-operator::content>
 @else
