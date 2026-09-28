@@ -61,17 +61,13 @@
     {{-- Not a failure: the stack no longer says what became of it. --}}
     <x-operator::emphasis>{{ __('stacks.help.no_outcome') }}</x-operator::emphasis>
     <x-operator::quiet-action label="{{ __('stacks.help.start_over') }}" tap="startOver()" />
-@elseif ($this->answer()->refused !== '')
+@elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words, and not a fault: asking the same
          again is refused the same way, so the one road offered is back to
-         the choices. --}}
+         the choices. What it names is where the credential sits, which is
+         what to act on. --}}
     <x-operator::heading>{{ __('stacks.help.refused') }}</x-operator::heading>
-    <x-operator::emphasis>{{ $this->answer()->refused }}</x-operator::emphasis>
-    {{-- What it names is where the credential sits, which is what to act on,
-         and this screen is the only place it is drawn. --}}
-    @if ($this->answer()->named !== '')
-        <native:text>{{ __('stacks.help.refused_named', ['named' => $this->answer()->named]) }}</native:text>
-    @endif
+    <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
     <native:text>{{ __('stacks.help.refused_wrote_nothing') }}</native:text>
     <x-operator::quiet-action label="{{ __('stacks.help.start_over') }}" tap="startOver()" />
 @elseif ($this->answer()->bundle !== null)

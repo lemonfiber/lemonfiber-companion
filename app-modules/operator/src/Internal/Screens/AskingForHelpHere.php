@@ -11,6 +11,7 @@ use function is_string;
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ABundleFile;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Concealed;
@@ -23,7 +24,6 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
-use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
@@ -307,7 +307,7 @@ final class AskingForHelpHere extends NativeComponent
             held: fn(Session $session): HowTheBundleWent => $this->helping->whatBecameOf($stack, $session, Job::named($handle))->either(
                 stillRunning: static fn(): HowTheBundleWent => new HowABundleReads()->running(),
                 done: static fn(ABundle $bundle): HowTheBundleWent => new HowABundleReads()->done($bundle),
-                refused: static fn(string $said, WhatTheRefusalNamed $named): HowTheBundleWent => new HowABundleReads()->refused($said, $named),
+                refused: static fn(ARefusalInItsWords $why): HowTheBundleWent => new HowABundleReads()->refused($why),
                 ended: static fn(): HowTheBundleWent => new HowABundleReads()->ended(),
                 met: fn(Obstacle $why): HowTheBundleWent => $this->refused($why, $stack),
             ),

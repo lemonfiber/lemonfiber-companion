@@ -46,9 +46,11 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * The preview carries no key, because it changes nothing; the yes carries one,
  * because it does.
  *
- * **A refusal of the reset is the stack's answer, not a fault,** carried as
- * {@see HowTheResetIsGoing::refused()} with its sentence and what it named,
- * as {@see Bundlers} carries a refused bundle.
+ * **A refusal of the reset is the stack's answer, not a fault.** Both asks
+ * are taken on as work, and the work is what stops on a problem — a recorded
+ * choice it could not read, a file it could not write — so a refused reset
+ * follows {@see WhatARefusalMeant::inItsWords()} and is carried as
+ * {@see HowTheResetIsGoing::refused()}, as a refused bundle is.
  */
 final readonly class Resetters implements ResettingTheConfiguration
 {
@@ -92,29 +94,16 @@ final readonly class Resetters implements ResettingTheConfiguration
         try {
             return $this->outcome($stack, $session, $job);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return $this->refusal($why);
+            return WhatARefusalMeant::inItsWords(
+                $why,
+                refused: HowTheResetIsGoing::refused(...),
+                met: HowTheResetIsGoing::met(...),
+            );
         } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|ResetIsUnreadable|ARevertCannotBeShown) {
             return HowTheResetIsGoing::met(Obstacle::StackDidNotAnswer);
         }
     }
 
-    /**
-     * What a refusal of the reset comes to.
-     *
-     * A session refused, an account that may not ask, or a machine that is not
-     * the one paired is what the operator met; so is an answer carrying no
-     * sentence, which is no refusal the stack made. Anything else carries the
-     * stack's own words and what its problem document named.
-     */
-    private function refusal(CertificateWasRefused|RequestFailed $why): HowTheResetIsGoing
-    {
-        $met = WhatARefusalMeant::obstacle($why);
-        $said = $why instanceof RequestFailed ? $why->said() : null;
-
-        return $met !== Obstacle::StackDidNotAnswer || $said === null
-            ? HowTheResetIsGoing::met($met)
-            : HowTheResetIsGoing::refused($said, WhatARefusalMeant::named($why));
-    }
 
     /**
      * What the stack says about the reset, with only `NoSuchJob` caught, for

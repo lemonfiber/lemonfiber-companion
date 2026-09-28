@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEditReverted;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\Fingerprint;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
 use Modules\Operator\Internal\ViewModels\ADiffLineAsShown;
 use Modules\Operator\Internal\ViewModels\AnEditAsShown;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatResets;
@@ -103,9 +105,7 @@ function everythingTheResetShows(AResetAsShown $shown): array
         'met' => $shown->went->met,
         'isWorking' => $shown->isWorking,
         'hasEnded' => $shown->hasEnded,
-        'isRefused' => $shown->isRefused,
-        'refused' => $shown->refused,
-        'named' => $shown->named,
+        'refused' => $shown->refused instanceof ARefusalAsShown ? [$shown->refused->said, $shown->refused->meaning, $shown->refused->named] : null,
         'isReported' => $shown->isReported,
         'changesNothing' => $shown->changesNothing,
         'mayBeAgreedTo' => $shown->mayBeAgreedTo,
@@ -185,9 +185,7 @@ function nothingReportedOfTheReset(bool $afterTheYes, array $changed): array
         'met' => '',
         'isWorking' => false,
         'hasEnded' => false,
-        'isRefused' => false,
-        'refused' => '',
-        'named' => '',
+        'refused' => null,
         'isReported' => false,
         'changesNothing' => false,
         'mayBeAgreedTo' => false,
@@ -338,18 +336,18 @@ it('says a preview the stack no longer has a job for is not known, and a preview
 })->with([
     'ended' => [HowTheResetIsGoing::ended(), ['hasEnded' => true], 'stacks.reset.no_preview'],
     'refused' => [
-        HowTheResetIsGoing::refused('The recorded quality choice could not be read', WhatTheRefusalNamed::as('quality.json')),
-        ['isRefused' => true, 'refused' => 'The recorded quality choice could not be read', 'named' => 'quality.json'],
+        HowTheResetIsGoing::refused(ARefusalInItsWords::said('The recorded quality choice could not be read', '', WhatTheRefusalNamed::as('quality.json'))),
+        ['refused' => ['The recorded quality choice could not be read', '', 'quality.json']],
         'stacks.reset.refused_preview',
     ],
 ]);
 
 it('draws the stack\'s words for a refusal, and what it named only where it named anything', function (WhatTheRefusalNamed $named, bool $drawsTheName): void {
-    $screen = thePuttingItAllBackScreen(AStackThatResets::previewing(HowTheResetIsGoing::refused('A stack file could not be written', $named), HowTheResetIsGoing::stillRunning()));
+    $screen = thePuttingItAllBackScreen(AStackThatResets::previewing(HowTheResetIsGoing::refused(ARefusalInItsWords::said('A stack file could not be written', '', $named)), HowTheResetIsGoing::stillRunning()));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($drawn)->toContain('A stack file could not be written')
-        ->and(in_array(__('stacks.reset.refused_named', ['named' => 'compose.yaml']), $drawn, strict: true))->toBe($drawsTheName);
+        ->and(in_array(__('stacks.refusal.named', ['named' => 'compose.yaml']), $drawn, strict: true))->toBe($drawsTheName);
 })->with([
     'named' => [WhatTheRefusalNamed::as('compose.yaml'), true],
     'naming nothing' => [WhatTheRefusalNamed::nothing(), false],
@@ -481,8 +479,8 @@ it('says a reset the stack has no outcome for may have been done, and a refused 
 })->with([
     'ended' => [HowTheResetIsGoing::ended(), ['hasEnded' => true], 'stacks.reset.no_outcome'],
     'refused' => [
-        HowTheResetIsGoing::refused('A stack file could not be written', WhatTheRefusalNamed::as('compose.yaml')),
-        ['isRefused' => true, 'refused' => 'A stack file could not be written', 'named' => 'compose.yaml'],
+        HowTheResetIsGoing::refused(ARefusalInItsWords::said('A stack file could not be written', '', WhatTheRefusalNamed::as('compose.yaml'))),
+        ['refused' => ['A stack file could not be written', '', 'compose.yaml']],
         'stacks.reset.refused',
     ],
 ]);

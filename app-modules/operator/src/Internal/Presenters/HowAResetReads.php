@@ -6,11 +6,12 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ALineOfADiff;
 use Modules\Kernel\Api\AnEditReverted;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheReset;
-use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Operator\Internal\ViewModels\ADiffLineAsShown;
 use Modules\Operator\Internal\ViewModels\AnEditAsShown;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsWorded;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
@@ -65,10 +66,10 @@ final readonly class HowAResetReads
         return $this->following(HowTheReadingWent::theSessionEnded());
     }
 
-    /** The stack refused, and this is what it said and what it named. */
-    public function refused(string $said, WhatTheRefusalNamed $named): AResetAsShown
+    /** The stack refused, and this is why, in its words. */
+    public function refused(ARefusalInItsWords $why): AResetAsShown
     {
-        return $this->following(HowTheReadingWent::itCameBack(), refused: $said, named: $named);
+        return $this->following(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** The stack's report: what putting the configuration back would revert, or reverted. */
@@ -84,9 +85,7 @@ final readonly class HowAResetReads
             went: HowTheReadingWent::itCameBack(),
             isWorking: false,
             hasEnded: false,
-            isRefused: false,
-            refused: '',
-            named: '',
+            refused: null,
             isReported: true,
             changesNothing: $reset->changesNothing(),
             mayBeAgreedTo: ! $this->afterTheYes && $reset->mayBeAgreedTo(),
@@ -168,16 +167,13 @@ final readonly class HowAResetReads
         HowTheReadingWent $went,
         bool $isWorking = false,
         bool $hasEnded = false,
-        string $refused = '',
-        ?WhatTheRefusalNamed $named = null,
+        ?ARefusalAsShown $refused = null,
     ): AResetAsShown {
         return new AResetAsShown(
             went: $went,
             isWorking: $isWorking,
             hasEnded: $hasEnded,
-            isRefused: $named instanceof WhatTheRefusalNamed,
             refused: $refused,
-            named: $named instanceof WhatTheRefusalNamed ? $named->forTheOperator() : '',
             isReported: false,
             changesNothing: false,
             mayBeAgreedTo: false,

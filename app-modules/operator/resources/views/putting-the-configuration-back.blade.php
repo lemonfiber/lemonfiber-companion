@@ -16,14 +16,11 @@
     {{-- Not a failure. After a yes the files may well have gone back, and
          the settings are where to look before asking for anything again. --}}
     <x-operator::emphasis>{{ __($this->answer()->words->ended) }}</x-operator::emphasis>
-@elseif ($this->answer()->isRefused)
+@elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words, and what it named where it named
          anything. --}}
     <x-operator::emphasis>{{ __($this->answer()->words->refusal) }}</x-operator::emphasis>
-    <native:text>{{ $this->answer()->refused }}</native:text>
-    @if ($this->answer()->named !== '')
-        <native:text>{{ __('stacks.reset.refused_named', ['named' => $this->answer()->named]) }}</native:text>
-    @endif
+    <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
 @elseif ($this->answer()->changesNothing)
     {{-- Said in as many words, and nothing is offered: a yes here would be a
          yes to nothing. --}}

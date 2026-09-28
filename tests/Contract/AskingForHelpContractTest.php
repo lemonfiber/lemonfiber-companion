@@ -6,6 +6,7 @@ use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Fingerprint;
@@ -96,7 +97,7 @@ function whatBecameOfTheBundle(AskingForHelp $helping): string
     return $helping->whatBecameOf(aStackAskedForABundle(), Session::of('a-session-not-a-secret'), Job::named(AStackThatBundles::THE_JOB))->either(
         stillRunning: static fn(): WhatAskingForABundleSaid => new WhatAskingForABundleSaid('still running'),
         done: static fn(ABundle $bundle): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(WhatABundleSays::of($bundle)),
-        refused: static fn(string $said, WhatTheRefusalNamed $named): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('refused: %s (%s)', $said, $named->forTheOperator())),
+        refused: static fn(ARefusalInItsWords $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
         ended: static fn(): WhatAskingForABundleSaid => new WhatAskingForABundleSaid('ended'),
         met: static fn(Obstacle $why): WhatAskingForABundleSaid => new WhatAskingForABundleSaid($why->name),
     )->said;
@@ -166,7 +167,7 @@ it('a bundle the stack refused is its refusal, in its words, with what it named'
         'detail' => WhatABundleSays::A_LEAK_NAMES,
     ]]), 500);
 
-    foreach (everyWayOfAskingForABundle($refused, HowTheBundleIsGoing::refused(WhatABundleSays::A_LEAK, WhatTheRefusalNamed::as(WhatABundleSays::A_LEAK_NAMES))) as $which => $build) {
+    foreach (everyWayOfAskingForABundle($refused, HowTheBundleIsGoing::refused(ARefusalInItsWords::said(WhatABundleSays::A_LEAK, 'Nothing has been written.', WhatTheRefusalNamed::as(WhatABundleSays::A_LEAK_NAMES)))) as $which => $build) {
         expect(whatBecameOfTheBundle($build()))->toBe(sprintf('refused: %s (%s)', WhatABundleSays::A_LEAK, WhatABundleSays::A_LEAK_NAMES), $which);
     }
 });

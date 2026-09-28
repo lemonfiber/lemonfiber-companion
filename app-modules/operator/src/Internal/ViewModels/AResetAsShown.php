@@ -19,9 +19,7 @@ final readonly class AResetAsShown
      * @param HowTheReadingWent   $went           whether the stack answered, and what stood in the way where it did not
      * @param bool                $isWorking      whether the stack is still at it
      * @param bool                $hasEnded       whether the stack has no outcome for it any more
-     * @param bool                $isRefused      whether the stack refused, in its own words
-     * @param string              $refused        what it said when it refused
-     * @param string              $named          what its refusal named, blank where it named nothing
+     * @param ?ARefusalAsShown    $refused        why the stack refused, in its words, and nothing unless it refused
      * @param bool                $isReported     whether there is a report to draw
      * @param bool                $changesNothing whether the report reverts no file and no connection
      * @param bool                $mayBeAgreedTo  whether it is a preview a yes may be given for
@@ -33,9 +31,7 @@ final readonly class AResetAsShown
         public HowTheReadingWent $went,
         public bool $isWorking,
         public bool $hasEnded,
-        public bool $isRefused,
-        public string $refused,
-        public string $named,
+        public ?ARefusalAsShown $refused,
         public bool $isReported,
         public bool $changesNothing,
         public bool $mayBeAgreedTo,

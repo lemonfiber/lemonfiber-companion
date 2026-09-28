@@ -940,7 +940,6 @@ return [
         'no_outcome' => 'The stack no longer says what became of this bundle.',
         'start_over' => 'Change what goes in',
         'refused' => 'The stack refused this bundle',
-        'refused_named' => 'It names :named',
         'refused_wrote_nothing' => 'Nothing was written. The stack gives the same answer until what it names has changed.',
         'written' => 'The bundle is written',
         'described' => 'Nothing has been written yet',
@@ -990,7 +989,6 @@ return [
         'no_outcome' => 'The stack no longer says what became of putting the configuration back. It may have been done. Asking again opens a fresh preview of what still differs.',
         'refused_preview' => 'The stack would not say what putting the configuration back would change:',
         'refused' => 'The stack would not put the configuration back:',
-        'refused_named' => 'It names :named',
         'see_the_settings' => 'See the settings',
     ],
 ];
