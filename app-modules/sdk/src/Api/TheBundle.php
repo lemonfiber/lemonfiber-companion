@@ -121,7 +121,7 @@ final readonly class TheBundle
      */
     private static function where(array $data): WhereABundleIs
     {
-        $path = self::place($data, BundleField::Path);
+        $path = self::place($data, WireField::Path);
 
         if ($path !== null) {
             return WhereABundleIs::writtenAt(AWrittenBundle::at($path));

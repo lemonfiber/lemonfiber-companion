@@ -23,10 +23,13 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
+use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\Decided;
+use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
@@ -59,6 +62,7 @@ use Modules\Kernel\Api\TheAdoption;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
+use Modules\Kernel\Api\TheReset;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
@@ -104,6 +108,7 @@ use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Resetters;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
@@ -122,6 +127,7 @@ use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Tree;
 use Tests\Support\WalkthroughsToFollow;
+use Tests\Support\WhatAResetSays;
 
 // A malformed answer reaches a screen as an obstacle, whichever adapter read it,
 // and so do a stack that could not be asked at all and a machine that is not the
@@ -309,6 +315,11 @@ function everyAdapterCallThatReads(): array
             => new Restorers($clients, $entropy)->putBack($stack, $session, aListingToSpoilTheAnswerTo()),
         'Restorers::whatBecameOf' => static fn(): object
             => new Restorers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Resetters::wouldRevert' => static fn(): object => new Resetters($clients, $entropy)->wouldRevert($stack, $session),
+        'Resetters::revert' => static fn(): object
+            => new Resetters($clients, $entropy)->revert($stack, $session, AResetAgreed::to(TheReset::previewed(EditsReverted::these(), ConnectionsReverted::these('sonarr → qbittorrent')))),
+        'Resetters::whatBecameOf' => static fn(): object
+            => new Resetters($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
         'Requests::decided' => static fn(): object
             => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::numbered(1))),
@@ -417,15 +428,19 @@ function theStandInsAnswerTo(string $endpoint, string ...$asked): MockResponse
  *
  * The stand-in answers every job as a repair's, and no path answers with a
  * walkthrough, so a walkthrough's job is sent the record a finished walk
- * answers with.
+ * answers with. A reset's job is sent a reset with its diff in the stack's
+ * own shape, which the contract types only as text and a payload built from
+ * the declaration cannot be.
  *
  * @return list<array<mixed>>
  */
 function theEnvelopesACallIsSent(string $which, string $endpoint, string ...$asked): array
 {
-    return $which === 'Guides::whatBecameOf'
-        ? [WalkthroughsToFollow::whatAStackSaysOfTheWalkThatWorked()]
-        : theEnvelopesAPathSends(theAnswerACallIsGiven($which, $endpoint), ...$asked);
+    return match ($which) {
+        'Guides::whatBecameOf' => [WalkthroughsToFollow::whatAStackSaysOfTheWalkThatWorked()],
+        'Resetters::whatBecameOf' => [WhatAResetSays::envelope(confirmed: false)],
+        default => theEnvelopesAPathSends(theAnswerACallIsGiven($which, $endpoint), ...$asked),
+    };
 }
 
 /**
@@ -624,7 +639,7 @@ function everySpoilingOf(string $which, Closure $ask): array
                 }
             }
 
-            return $which === 'Guides::whatBecameOf'
+            return in_array($which, ['Guides::whatBecameOf', 'Resetters::whatBecameOf'], strict: true)
                 ? MockResponse::make($sent[0])
                 : theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked));
         },

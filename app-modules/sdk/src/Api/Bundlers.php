@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function is_string;
-
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
@@ -15,7 +13,6 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
-use Lemonfiber\Sdk\Refusal;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ABundleFetched;
 use Modules\Kernel\Api\ABundleFile;
@@ -32,7 +29,6 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFilenamesShow;
-use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Sdk\Api\Fields\BundleField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\WalkthroughField;
@@ -152,16 +148,7 @@ final readonly class Bundlers implements AskingForHelp
 
         return $met !== Obstacle::StackDidNotAnswer || $said === null
             ? HowTheBundleIsGoing::met($met)
-            : HowTheBundleIsGoing::refused($said, $this->named($why));
-    }
-
-    /** What the refusal's problem document named, or nothing where it was prose or named nothing. */
-    private function named(RequestFailed $why): WhatTheRefusalNamed
-    {
-        $refusal = $why->refusal();
-        $detail = $refusal instanceof Refusal ? $refusal->detail() : null;
-
-        return is_string($detail) ? WhatTheRefusalNamed::as($detail) : WhatTheRefusalNamed::nothing();
+            : HowTheBundleIsGoing::refused($said, WhatARefusalMeant::named($why));
     }
 
     /**

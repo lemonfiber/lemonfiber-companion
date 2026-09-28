@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Internal;
 
+use function is_string;
+
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
+use Lemonfiber\Sdk\Refusal;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 
 /**
  * What the operator met, given what the far end refused with.
@@ -75,5 +79,21 @@ final readonly class WhatARefusalMeant
             self::ACCOUNT_MAY_NOT_ASK => Obstacle::NotForThisAccount,
             default => Obstacle::StackDidNotAnswer,
         };
+    }
+
+    /**
+     * What a refusal's problem document named in its `detail`, or nothing
+     * where the refusal was prose or named nothing.
+     *
+     * Asked only of a refusal the stack made about the work — a bundle it
+     * would not write, a reset it would not carry out — where what it named
+     * is what the operator acts on.
+     */
+    public static function named(RequestFailed $why): WhatTheRefusalNamed
+    {
+        $refusal = $why->refusal();
+        $detail = $refusal instanceof Refusal ? $refusal->detail() : null;
+
+        return is_string($detail) ? WhatTheRefusalNamed::as($detail) : WhatTheRefusalNamed::nothing();
     }
 }

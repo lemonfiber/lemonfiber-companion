@@ -552,4 +552,17 @@ enum WireField: string implements NamesAWireField
      * survey, and what an import could not bring.
      */
     case NotCarried = 'not_carried';
+
+    /**
+     * Whether the operator said yes: on an upgrade, without it nothing was
+     * asked of any service, and on a reset, without it nothing was written.
+     */
+    case Confirmed = 'confirmed';
+
+    /**
+     * Where a file is: where a support bundle was written, absent on a run
+     * that only described it, and a file a reset reverts, within the stack
+     * directory.
+     */
+    case Path = 'path';
 }

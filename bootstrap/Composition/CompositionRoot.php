@@ -58,6 +58,7 @@ use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Rehearsing;
+use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
@@ -106,6 +107,7 @@ use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Resetters;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
@@ -359,6 +361,10 @@ final class CompositionRoot extends ServiceProvider
         // copies for the same reason.
         $this->app->bind(TakingCopies::class, Copiers::class);
         $this->app->bind(PuttingBack::class, Restorers::class);
+
+        // Putting the configuration back, bound beside putting a copy back:
+        // both are asked what they would do before a yes.
+        $this->app->bind(ResettingTheConfiguration::class, Resetters::class);
 
         // A support bundle, described and written, asked beside the rest and
         // bound for the same reason.
