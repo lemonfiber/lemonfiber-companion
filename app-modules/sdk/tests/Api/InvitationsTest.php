@@ -44,6 +44,7 @@ function aPlainInvitation(): array
         'linked' => 'not-tried',
         'rehearsed' => true,
         'standing' => 'made',
+        'suspended' => [],
         'withdrawn' => [],
     ];
 }
@@ -128,6 +129,7 @@ it('reads an invitation carried out, with its caution, what it granted, and who 
         'standing' => 'waiting',
         'linked' => 'made',
         'caution' => 'The number can change',
+        'suspended' => [],
         'withdrawn' => ['bob', 'carol'],
         'applied' => whatAnInvitationApplied(),
     ];

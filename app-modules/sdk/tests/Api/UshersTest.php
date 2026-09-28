@@ -186,6 +186,7 @@ function thePasswordTakenOffAnna(array $otherwise = []): array
             'linked' => 'made',
             'rehearsed' => false,
             'standing' => 'reset',
+            'suspended' => [],
             'withdrawn' => [],
             ...$otherwise,
         ],
@@ -331,7 +332,7 @@ it('stands in for a stack with payloads the contract would accept', function ():
 
 it('reads who is in off the household the operator\'s requests are read from, and answers what it cannot read', function (): void {
     $household = ['api_version' => 1, 'kind' => 'household', 'data' => ['available' => true, 'findings' => [], 'members' => [
-        ['name' => 'anna', 'access' => ['administrator' => false, 'disabled' => false, 'every_library' => true, 'libraries' => [], 'restriction' => 'unrestricted', 'unrated' => 'let-through'], 'claimed' => true, 'to_hand_over' => [], 'requests' => []],
+        ['name' => 'anna', 'access' => ['administrator' => false, 'disabled' => false, 'every_library' => true, 'libraries' => [], 'restriction' => 'unrestricted', 'unrated' => 'let-through'], 'claimed' => true, 'standing' => 'active', 'to_hand_over' => [], 'requests' => []],
     ]]];
     $table = [
         [MockResponse::make((string) json_encode($household)), 'anna'],

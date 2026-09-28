@@ -85,6 +85,7 @@ function whatAStackSaysOfTheInvitation(): array
             'linked' => 'not-yet',
             'rehearsed' => false,
             'standing' => 'made',
+            'suspended' => [],
             'withdrawn' => ['bob'],
             'applied' => ['libraries' => ['Films'], 'limit' => 'PG-13', 'unrated' => 'held-back', 'requesting' => 'not-yet', 'filtering' => 'A limit is not a lock'],
         ],
@@ -234,8 +235,8 @@ it('stands in for a stack with a payload the contract would accept', function ()
 
 it('reads who is in, joined or still invited', function (): void {
     $household = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'household', 'data' => ['available' => true, 'findings' => [], 'members' => [
-        ['name' => 'anna', 'access' => ['administrator' => false, 'disabled' => false, 'every_library' => true, 'libraries' => [], 'restriction' => 'unrestricted', 'unrated' => 'let-through'], 'claimed' => true, 'to_hand_over' => [], 'requests' => []],
-        ['name' => 'bob', 'access' => ['administrator' => false, 'disabled' => false, 'every_library' => true, 'libraries' => [], 'restriction' => 'unrestricted', 'unrated' => 'let-through'], 'claimed' => false, 'to_hand_over' => [], 'requests' => []],
+        ['name' => 'anna', 'access' => ['administrator' => false, 'disabled' => false, 'every_library' => true, 'libraries' => [], 'restriction' => 'unrestricted', 'unrated' => 'let-through'], 'claimed' => true, 'standing' => 'active', 'to_hand_over' => [], 'requests' => []],
+        ['name' => 'bob', 'access' => ['administrator' => false, 'disabled' => false, 'every_library' => true, 'libraries' => [], 'restriction' => 'unrestricted', 'unrated' => 'let-through'], 'claimed' => false, 'standing' => 'invited', 'to_hand_over' => [], 'requests' => []],
     ]]]));
     $ways = [
         'the fake' => static fn(): Inviting => AStackThatInvites::answering()->holding(TheMembers::of(AMember::joined('anna'), AMember::stillInvited('bob'))),

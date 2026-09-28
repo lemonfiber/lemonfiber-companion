@@ -96,6 +96,7 @@ function whatAHouseholdThatAskedSends(): array
                     'name' => 'Sam',
                     'access' => whatAMemberMayReach(),
                     'claimed' => true,
+                    'standing' => 'active',
                     'to_hand_over' => [],
                     'requests' => [[
                         'id' => 41,
@@ -108,6 +109,7 @@ function whatAHouseholdThatAskedSends(): array
                     'name' => 'Robin',
                     'access' => whatAMemberMayReach(everyLibrary: false),
                     'claimed' => true,
+                    'standing' => 'active',
                     'to_hand_over' => [],
                     // No estimate at all, which the contract permits and
                     // which is answered with *we do not know* rather
