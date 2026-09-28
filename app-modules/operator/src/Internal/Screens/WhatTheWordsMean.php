@@ -8,6 +8,8 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Kernel\Api\AWord;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\LookingFor;
@@ -20,6 +22,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheWordsRead;
+use Modules\Operator\Internal\ViewModels\AWordAskedAbout;
 use Modules\Operator\Internal\ViewModels\TheWordsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -40,6 +43,12 @@ use function view;
  *
  * The glossary is asked for once and held, so typing narrows what is shown
  * without asking the machine again.
+ *
+ * **A word the held glossary has no entry for can be asked for alone.** The
+ * operator asks, for the one word searched for, and only then: typing never
+ * reaches the machine. A word the stack explains joins the glossary held here
+ * and is drawn as every other word is; one it has no entry for either is shown
+ * as it came, and not offered again.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -62,6 +71,9 @@ final class WhatTheWordsMean extends NativeComponent
 
     /** The word whose longer gloss is open, by any name it goes by, or empty. By name, so a search does not move it to another word. */
     public string $open = '';
+
+    /** What asking the stack for one word came to, where it did not explain it. */
+    public ?AWordAskedAbout $asked = null;
 
     public function __construct(
         private readonly Explaining $explaining,
@@ -115,10 +127,41 @@ final class WhatTheWordsMean extends NativeComponent
         }
     }
 
-    /** Ask the machine again, forgetting the glossary it gave. */
+    /**
+     * Ask the machine for the one word searched for.
+     *
+     * Only where the held glossary has no entry for it and the stack has not
+     * already said it has none either; anything else asks nothing. A session
+     * this device no longer holds lets go of the glossary, so the next frame
+     * says the session ended.
+     */
+    public function askTheStack(): void
+    {
+        $held = $this->held;
+        $looking = LookingFor::text($this->looking);
+
+        if (! $held instanceof TheGlossary || new HowTheWordsRead()->this($held, $looking, $this->open, $this->asked)->mayAsk === '') {
+            return;
+        }
+
+        $stack = $this->stack();
+        $word = AWordInUse::named($looking->typed());
+
+        $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): TheGlossary => $this->toldOf($stack, $session, $word, $held),
+            notHeld: function (): TheGlossary {
+                $this->held = null;
+
+                return TheGlossary::of();
+            },
+        );
+    }
+
+    /** Ask the machine again, forgetting the glossary it gave and every word asked for. */
     public function again(): void
     {
         $this->held = null;
+        $this->asked = null;
     }
 
     /** Where this machine's screens are. */
@@ -138,7 +181,7 @@ final class WhatTheWordsMean extends NativeComponent
         $held = $this->held;
 
         if ($held instanceof TheGlossary) {
-            return new HowTheWordsRead()->this($held, LookingFor::text($this->looking), $this->open);
+            return new HowTheWordsRead()->this($held, LookingFor::text($this->looking), $this->open, $this->asked);
         }
 
         return $this->ask();
@@ -168,6 +211,32 @@ final class WhatTheWordsMean extends NativeComponent
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowTheWordsRead()->met($why);
+            },
+        );
+    }
+
+    /**
+     * What the machine said of one word, held as the glossary it now makes.
+     *
+     * A word it explained is added to the glossary held, which is how it is
+     * drawn and found; anything else is held as what asking came to.
+     */
+    private function toldOf(Stack $stack, Session $session, AWordInUse $word, TheGlossary $held): TheGlossary
+    {
+        $this->asked = null;
+
+        return $this->explaining->wordOn($stack, $session, $word)->either(
+            explained: fn(AWord $entry): TheGlossary => $this->held = TheGlossary::of(...[...$held, $entry]),
+            unexplained: function () use ($word, $held): TheGlossary {
+                $this->asked = new AWordAskedAbout($word->said(), unexplained: true, met: '');
+
+                return $held;
+            },
+            met: function (Obstacle $why) use ($stack, $word, $held): TheGlossary {
+                $this->letGoOfTheSession($why, $stack);
+                $this->asked = new AWordAskedAbout($word->said(), unexplained: false, met: $why->said());
+
+                return $held;
             },
         );
     }

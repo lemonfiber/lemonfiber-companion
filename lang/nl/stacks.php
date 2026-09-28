@@ -287,6 +287,9 @@ return [
         'less' => 'Minder over ‘:word’',
         'nothing_matched' => 'Geen woord, en niets waarmee een woord ook wordt aangeduid, past daarbij',
         'none' => 'Deze machine legt geen woorden uit',
+        'ask' => 'Vraag deze machine wat ‘:word’ betekent',
+        'unexplained' => 'Ook deze machine heeft geen uitleg bij ‘:word’, dus het staat er zoals het kwam',
+        'ask_in_place' => 'Vraag wat ‘:word’ betekent',
     ],
 
     'credentials' => [

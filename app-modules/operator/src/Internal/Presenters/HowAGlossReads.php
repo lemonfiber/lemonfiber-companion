@@ -13,7 +13,9 @@ use Modules\Operator\Internal\WhereAStackIs;
  * What a word a screen draws means, as the fields the gloss beside it draws.
  *
  * `F2`: data in, view model out. The first word the glossary lists for it
- * explains it; none leaves it unexplained, and nothing here makes one up.
+ * explains it; none leaves it unexplained, and nothing here makes one up. An
+ * unexplained word carries the way to the screen where the stack can be asked
+ * for it, which asks nothing until the operator does.
  */
 final readonly class HowAGlossReads
 {
@@ -27,6 +29,6 @@ final readonly class HowAGlossReads
             );
         }
 
-        return new AGlossAsShown(word: $drawn->said(), short: '', goes: '');
+        return new AGlossAsShown(word: $drawn->said(), short: '', goes: '', asks: $goes->ofItself()->wordAbout($drawn));
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AWord;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
@@ -13,6 +14,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheGlossary;
+use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
@@ -162,5 +164,126 @@ it('asks the explain endpoint naming no word, which is how the whole glossary is
 
 it('stands in for a stack with a payload the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('GlossaryEnvelope', whatAStackSaysItsWordsMean()))
-        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n")
+        ->and(WhatTheContractAccepts::complaintsAbout('WordEnvelope', whatAStackSaysOfOneWord()))
+        ->toBe([], "The payload this suite stands in for a stack asked for one word with is not one a stack would send.\n");
+});
+
+/**
+ * The payload a stack sends for the one word `grabbed` is asked for by.
+ *
+ * @return array<string, mixed>
+ */
+function whatAStackSaysOfOneWord(): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'word',
+        'data' => [
+            'word' => 'grab',
+            'short' => 'Sending a release to the download client',
+            'deep' => null,
+            'also_called' => ['snatch'],
+            'forms' => ['grabbed'],
+        ],
+    ];
+}
+
+/**
+ * Both ways of asking for one word, each set up to produce the same answer.
+ *
+ * @return array<string, Closure(): Explaining>
+ */
+function everyWayOfAskingForOneWord(MockResponse $answered, ?Obstacle $why = null): array
+{
+    return [
+        'the fake' => static fn(): Explaining => $why instanceof Obstacle
+            ? AStackThatExplainsItsWords::met($why)
+            : AStackThatExplainsItsWords::with(theSameWords())->alsoExplaining(TheGlossary::of(
+                AWord::explained('grab', 'Sending a release to the download client', '', 'snatch')
+                    ->writtenAs(WhatElseItIsCalled::formsOf('grabbed')),
+            )),
+        'the adapter' => static function () use ($answered): Explaining {
+            MockClient::destroyGlobal();
+            MockClient::global([$answered]);
+
+            return new Explainers(new PinnedClients());
+        },
+    ];
+}
+
+/** Everything asking for one word says, folded to one line. */
+function everythingOneWordSays(Explaining $explaining, string $word): string
+{
+    return $explaining->wordOn(aStackThatExplainsItself(), Session::of('a-session-not-a-secret'), AWordInUse::named($word))->either(
+        explained: static fn(AWord $entry): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay(sprintf(
+            '%s|%s|%s|%s|%s',
+            $entry->word(),
+            $entry->short(),
+            $entry->deep(),
+            implode(',', [...$entry->alsoCalled()]),
+            $entry->explains(AWordInUse::named($word)) ? 'explains it' : 'explains something else',
+        )),
+        unexplained: static fn(): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay('no entry'),
+        met: static fn(Obstacle $why): WhatTheWordsTurnedOutToSay => new WhatTheWordsTurnedOutToSay($why->value),
+    )->said;
+}
+
+it('comes away with the entry for one word, found by a form the stack writes it in', function (): void {
+    $answered = MockResponse::make((string) json_encode(whatAStackSaysOfOneWord()));
+
+    foreach (everyWayOfAskingForOneWord($answered) as $which => $make) {
+        expect(everythingOneWordSays($make(), 'grabbed'))->toBe('grab|Sending a release to the download client||snatch|explains it', $which);
+    }
+});
+
+it('a word the stack does not explain is its answer, never an obstacle', function (): void {
+    $answered = MockResponse::make('{"api_version":1,"kind":"error","data":{"error":"No word goes by that name."}}', 404);
+
+    foreach (everyWayOfAskingForOneWord($answered) as $which => $make) {
+        expect(everythingOneWordSays($make(), 'nothing-by-that-name'))->toBe('no entry', $which);
+    }
+});
+
+it('asking for one word tells a session that has ended from a stack that is not answering', function (): void {
+    $table = [
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        [MockResponse::make('not json at all'), Obstacle::StackDidNotAnswer],
+    ];
+
+    foreach ($table as [$answered, $why]) {
+        foreach (everyWayOfAskingForOneWord($answered, $why) as $which => $make) {
+            expect(everythingOneWordSays($make(), 'grabbed'))->toBe($why->value, sprintf('%s / %s', $which, $why->value));
+        }
+    }
+});
+
+it('a word asked for that this app cannot read is an obstacle, never a word half-explained', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode([...whatAStackSaysOfOneWord(), 'data' => ['word' => 'grab']]))]);
+
+    expect(everythingOneWordSays(new Explainers(new PinnedClients()), 'grabbed'))->toBe(Obstacle::StackDidNotAnswer->value);
+});
+
+it('asks the explain endpoint naming the one word, as it was drawn', function (): void {
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfOneWord()))]);
+
+    everythingOneWordSays(new Explainers(new PinnedClients()), 'grabbed');
+
+    $sent = $mock->getLastPendingRequest();
+
+    expect($sent?->getUrl())->toContain('/api/explain')
+        ->and($sent?->query()->all())->toBe(['word' => 'grabbed']);
+});
+
+it('the fake remembers every word it was asked for alone', function (): void {
+    $fake = AStackThatExplainsItsWords::with(theSameWords());
+
+    everythingOneWordSays($fake, 'grabbed');
+    everythingOneWordSays($fake, 'pin');
+
+    expect($fake->wordsAsked())->toBe(['grabbed', 'pin'])
+        ->and($fake->askedAbout()?->name()->shown())->toBe('The loft');
 });

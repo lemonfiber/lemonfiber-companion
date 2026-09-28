@@ -14,6 +14,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheGlossary;
+use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\ViewModels\AWordAsShown;
@@ -233,6 +234,146 @@ it('carries a word with a space or a slash to the screen as it was drawn', funct
     foreach (['port forwarding', 'AC/DC', 'Dune: Part Two'] as $word) {
         expect(NativeRouter::resolve($screen->goes()->ofItself()->wordAbout(AWordInUse::named($word))))->toHaveKey('params.service', $word);
     }
+});
+
+/** What the stack explains when asked for one word its glossary does not list. */
+function aWordOnlyAskedFor(): TheGlossary
+{
+    return TheGlossary::of(
+        AWord::explained('grab', 'Sending a release to the download client', 'The indexer found it; the client has it now.', 'snatch')
+            ->writtenAs(WhatElseItIsCalled::formsOf('grabbed')),
+    );
+}
+
+it('offers to ask the stack for a word the glossary it holds has no entry for, and asks nothing until tapped', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(aFewWords())->alsoExplaining(aWordOnlyAskedFor());
+    $screen = theWordsScreen($explaining);
+    $screen->looking = 'grabbed ';
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.words.ask', ['word' => 'grabbed']), __('health.ask_again')])
+        ->and($explaining->wordsAsked())->toBe([]);
+});
+
+it('offers nothing to ask where the glossary it holds explains the word, or nothing is looked for', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(aFewWords())->alsoExplaining(aWordOnlyAskedFor());
+    $screen = theWordsScreen($explaining);
+
+    foreach (['PIN', 'uploading', ''] as $looking) {
+        $screen->looking = $looking;
+        $screen->askTheStack();
+
+        expect($screen->answer()->mayAsk)->toBe('', $looking);
+    }
+
+    expect($explaining->wordsAsked())->toBe([]);
+});
+
+it('asks nothing before the glossary has been read', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(aFewWords())->alsoExplaining(aWordOnlyAskedFor());
+    $screen = theWordsScreen($explaining);
+    $screen->looking = 'grabbed';
+
+    $screen->askTheStack();
+
+    expect($explaining->wordsAsked())->toBe([])
+        ->and($explaining->askings())->toBe(0);
+});
+
+it('a word the stack explains joins the words, drawn, searched and opened as every other word is', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(aFewWords())->alsoExplaining(aWordOnlyAskedFor());
+    $screen = theWordsScreen($explaining);
+    $screen->looking = 'grabbed';
+    $screen->answer();
+
+    $screen->askTheStack();
+
+    expect(array_map(static fn(AWordAsShown $word): string => $word->word, $screen->answer()->words))->toBe(['grab'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Sending a release to the download client')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.words.also_called', ['names' => 'snatch']))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.words.more', ['word' => 'grab']), __('health.ask_again')])
+        ->and($explaining->wordsAsked())->toBe(['grabbed'])
+        ->and($explaining->askings())->toBe(1);
+
+    $screen->looking = 'snatch';
+    $screen->toggle('0');
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('The indexer found it; the client has it now.');
+});
+
+it('a word the stack has no entry for either is shown as it came, and not offered again', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(aFewWords());
+    $screen = theWordsScreen($explaining);
+    $screen->looking = 'Grabber';
+    $screen->answer();
+
+    $screen->askTheStack();
+    $screen->askTheStack();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.words.unexplained', ['word' => 'Grabber']))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('health.ask_again')])
+        ->and($explaining->wordsAsked())->toBe(['Grabber']);
+});
+
+it('what one word came to is not said of another word looked for next', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(aFewWords());
+    $screen = theWordsScreen($explaining);
+    $screen->looking = 'Grabber';
+    $screen->answer();
+    $screen->askTheStack();
+
+    $screen->looking = 'indexer';
+
+    expect($screen->answer()->unexplained)->toBe('')
+        ->and($screen->answer()->mayAsk)->toBe('indexer');
+});
+
+it('what stood in the way of asking is said, and asking stays offered', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(aFewWords())->meetingWhenAskedAlone(Obstacle::StackDidNotAnswer);
+    $screen = theWordsScreen($explaining);
+    $screen->looking = 'grabbed';
+    $screen->answer();
+
+    $screen->askTheStack();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.words.ask', ['word' => 'grabbed']), __('health.ask_again')]);
+});
+
+it('a credential the stack refused while asking for one word lets the session go', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords())->meetingWhenAskedAlone(Obstacle::CredentialWasRefused), $keychain);
+    $screen->looking = 'grabbed';
+    $screen->answer();
+
+    $screen->askTheStack();
+
+    expect($keychain->isHolding(theStackWhoseWordsAreRead()->id()))->toBeFalse();
+});
+
+it('a session that ended before asking for one word asks nothing, and the screen says it ended', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $explaining = AStackThatExplainsItsWords::with(aFewWords())->alsoExplaining(aWordOnlyAskedFor());
+    $screen = theWordsScreen($explaining, $keychain);
+    $screen->looking = 'grabbed';
+    $screen->answer();
+    $keychain->forget(theStackWhoseWordsAreRead()->id());
+
+    $screen->askTheStack();
+
+    expect($explaining->wordsAsked())->toBe([])
+        ->and($screen->answer()->went->isSignedIn)->toBeFalse();
+});
+
+it('asking again forgets what asking for one word came to', function (): void {
+    $screen = theWordsScreen(AStackThatExplainsItsWords::with(aFewWords()));
+    $screen->looking = 'Grabber';
+    $screen->answer();
+    $screen->askTheStack();
+
+    $screen->again();
+
+    expect($screen->asked)->toBeNull()
+        ->and($screen->answer()->mayAsk)->toBe('Grabber');
 });
 
 it('hands what is typed to the search box', function (): void {
