@@ -148,13 +148,35 @@ final readonly class TheWireNameAtASubscript
      * name and the case, `SpaceField::Volumes`, because that is what a reader
      * writes.
      *
+     * Read once for each tree it is asked about and held for the rest of the
+     * process. A following asks this for every case it meets, tens of thousands
+     * of times, and reading three dozen files for each would be nearly all of
+     * what the following costs. Nothing writes these sources while a suite
+     * runs: the Guards suite plants its violations in a copy, which is a tree of
+     * its own and a process of its own.
+     *
      * @return array<string, string>
      */
     private static function theVocabulary(): array
     {
+        /** @var array<string, array<string, string>> $held */
+        static $held = [];
+
+        $where = Tree::at(EveryReaderOfTheWire::WHERE);
+
+        return $held[$where] ??= self::theVocabularyUnder($where);
+    }
+
+    /**
+     * Every case of every wire vocabulary under one tree of readers.
+     *
+     * @return array<string, string>
+     */
+    private static function theVocabularyUnder(string $where): array
+    {
         $files = [
-            Tree::at(sprintf('%s/Api/WireField.php', EveryReaderOfTheWire::WHERE)),
-            ...Tree::filesUnder(Tree::at(sprintf('%s/Api/Fields', EveryReaderOfTheWire::WHERE)), '.php'),
+            sprintf('%s/Api/WireField.php', $where),
+            ...Tree::filesUnder(sprintf('%s/Api/Fields', $where), '.php'),
         ];
         $vocabulary = [];
 
