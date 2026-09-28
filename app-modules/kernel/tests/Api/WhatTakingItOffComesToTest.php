@@ -18,12 +18,14 @@ use Modules\Kernel\Api\SomethingLeftBehind;
 use Modules\Kernel\Api\SomethingNotLemonfibers;
 use Modules\Kernel\Api\SomethingStillComing;
 use Modules\Kernel\Api\UninstallSaysNothing;
+use Modules\Kernel\Api\WhatGoesAndWhatStays;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
+use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhatWasLeftBehind;
 use Modules\Kernel\Api\WhichRemoval;
 
@@ -34,13 +36,17 @@ function theServicesReading(string $removes = 'The containers', string $keeps = 
 {
     return WhatTakingItOffComesTo::read(
         WhichRemoval::Services,
-        $removes,
-        $keeps,
+        WhatGoesAndWhatStays::said(
+            $removes,
+            $keeps,
+        ),
         WhatItReaches::of(),
         $bytes,
-        WhatIsNotLemonfibers::of(),
-        WhatIsStillComing::of(),
-        WhatItCannotTake::of(),
+        WhatToKnowFirst::said(
+            WhatIsNotLemonfibers::of(),
+            WhatIsStillComing::of(),
+            WhatItCannotTake::of(),
+        ),
         HowMuchWasRead::everything(),
         $agreement,
     );
@@ -52,6 +58,36 @@ it('says nothing of a volume or a copy the stack said nothing about', function (
     expect($read->volume())->toBe('')
         ->and($read->copyFirst())->toBe('')
         ->and($read->bytes())->toBe(0);
+});
+
+it('answers each question from the part it was read with', function (): void {
+    $items = WhatItReaches::of();
+    $foreign = WhatIsNotLemonfibers::of();
+    $coming = WhatIsStillComing::of();
+    $outside = WhatItCannotTake::of();
+    $confidence = HowMuchWasRead::everything();
+    $read = WhatTakingItOffComesTo::read(
+        WhichRemoval::Configuration,
+        WhatGoesAndWhatStays::said('The configuration', 'The library'),
+        $items,
+        2048,
+        WhatToKnowFirst::said($foreign, $coming, $outside, volume: 'On a network share', copyFirst: 'A copy is taken first'),
+        $confidence,
+        'configuration-2048',
+    );
+
+    expect($read->tier())->toBe(WhichRemoval::Configuration)
+        ->and($read->removes())->toBe('The configuration')
+        ->and($read->keeps())->toBe('The library')
+        ->and($read->items())->toBe($items)
+        ->and($read->bytes())->toBe(2048)
+        ->and($read->foreign())->toBe($foreign)
+        ->and($read->coming())->toBe($coming)
+        ->and($read->outside())->toBe($outside)
+        ->and($read->confidence())->toBe($confidence)
+        ->and($read->agreement())->toBe('configuration-2048')
+        ->and($read->volume())->toBe('On a network share')
+        ->and($read->copyFirst())->toBe('A copy is taken first');
 });
 
 it('refuses a word it owes left blank, and a figure below none', function (): void {

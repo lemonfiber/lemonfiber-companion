@@ -85,6 +85,7 @@ use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatGoesAndWhatStays;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
@@ -96,6 +97,7 @@ use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatTheRemovalFound;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
+use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasNamed;
@@ -297,13 +299,17 @@ function anUninstallToSpoilTheAnswerTo(): AnUninstallAgreed
     return AnUninstallAgreed::after(AnUninstall::of(
         WhatTakingItOffComesTo::read(
             WhichRemoval::Services,
-            'The containers and the images',
-            'Your configuration and your library',
+            WhatGoesAndWhatStays::said(
+                'The containers and the images',
+                'Your configuration and your library',
+            ),
             WhatItReaches::of(),
             0,
-            WhatIsNotLemonfibers::of(),
-            WhatIsStillComing::of(),
-            WhatItCannotTake::of(),
+            WhatToKnowFirst::said(
+                WhatIsNotLemonfibers::of(),
+                WhatIsStillComing::of(),
+                WhatItCannotTake::of(),
+            ),
             HowMuchWasRead::everything(),
             'services-0-lines',
         ),

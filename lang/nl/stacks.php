@@ -439,8 +439,8 @@ return [
         'would_take_them_out' => ':name uit het huishouden halen',
         'names_nobody' => 'Hier staat niemand die uit het huishouden gehaald kan worden. Kies iemand bij wie erin zit',
         'back_to_who_is_in' => 'Terug naar wie erin zit',
-        'taking_out' => ':name uit het huishouden halen',
-        'reading' => 'Deze stack vragen wat het kost om :name eruit te halen',
+        'taking_out' => 'Het uit het huishouden halen van :name',
+        'reading' => 'Deze stack wordt gevraagd wat het kost om :name eruit te halen',
         'removing' => 'Deze stack haalt :name uit het huishouden',
         'not_yet' => 'Er is nog niemand uitgehaald. Dit is wat het kost om :name eruit te halen',
         'revoked' => [

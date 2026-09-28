@@ -23,12 +23,14 @@ use Modules\Kernel\Api\SomethingItCannotTake;
 use Modules\Kernel\Api\SomethingLeftBehind;
 use Modules\Kernel\Api\SomethingNotLemonfibers;
 use Modules\Kernel\Api\SomethingStillComing;
+use Modules\Kernel\Api\WhatGoesAndWhatStays;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
+use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhatWasLeftBehind;
 use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhereTheUninstallStands;
@@ -109,17 +111,21 @@ final readonly class Uninstalls
         return WhatTakingItOffComesTo::read(
             WhichRemoval::tryFrom($tier)
                 ?? throw UninstallIsUnreadable::word(UninstallField::Tier, $tier, ...array_map(static fn(WhichRemoval $case): string => $case->value, WhichRemoval::cases())),
-            self::text($manifest, UninstallField::Removes),
-            self::text($manifest, UninstallField::Keeps),
+            WhatGoesAndWhatStays::said(
+                self::text($manifest, UninstallField::Removes),
+                self::text($manifest, UninstallField::Keeps),
+            ),
             WhatItReaches::of(...self::items($manifest)),
             self::number($manifest, WireField::Bytes),
-            WhatIsNotLemonfibers::of(...self::foreign($manifest)),
-            WhatIsStillComing::of(...self::coming($manifest)),
-            WhatItCannotTake::of(...self::outside($manifest)),
+            WhatToKnowFirst::said(
+                WhatIsNotLemonfibers::of(...self::foreign($manifest)),
+                WhatIsStillComing::of(...self::coming($manifest)),
+                WhatItCannotTake::of(...self::outside($manifest)),
+                volume: self::sentence($manifest, UninstallField::Volume),
+                copyFirst: self::sentence($manifest, UninstallField::Backup),
+            ),
             self::confidence(self::table($manifest, WireField::Confidence)),
             self::text($manifest, WireField::Agreement),
-            volume: self::sentence($manifest, UninstallField::Volume),
-            copyFirst: self::sentence($manifest, UninstallField::Backup),
         );
     }
 

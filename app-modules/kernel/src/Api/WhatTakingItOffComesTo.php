@@ -24,50 +24,33 @@ final readonly class WhatTakingItOffComesTo
 {
     private function __construct(
         private WhichRemoval $tier,
-        private string $removes,
-        private string $keeps,
+        private WhatGoesAndWhatStays $words,
         private WhatItReaches $items,
         private int $bytes,
-        private WhatIsNotLemonfibers $foreign,
-        private WhatIsStillComing $coming,
-        private WhatItCannotTake $outside,
+        private WhatToKnowFirst $first,
         private HowMuchWasRead $confidence,
         private string $agreement,
-        private string $volume,
-        private string $copyFirst,
     ) {}
 
-    /**
-     * The stack's reading of one removal; a blank word it owes, or a figure below none, is refused.
-     *
-     * `volume` and `copyFirst` are the stack's sentences where it said one,
-     * and empty where it said none.
-     */
+    /** The stack's reading of one removal; a blank agreement, or a figure below none, is refused. */
     public static function read(
         WhichRemoval $tier,
-        string $removes,
-        string $keeps,
+        WhatGoesAndWhatStays $words,
         WhatItReaches $items,
         int $bytes,
-        WhatIsNotLemonfibers $foreign,
-        WhatIsStillComing $coming,
-        WhatItCannotTake $outside,
+        WhatToKnowFirst $first,
         HowMuchWasRead $confidence,
         string $agreement,
-        string $volume = '',
-        string $copyFirst = '',
     ): self {
-        foreach (['removes' => $removes, 'keeps' => $keeps, 'agreement' => $agreement] as $field => $word) {
-            if (trim($word) === '') {
-                throw UninstallSaysNothing::about($field);
-            }
+        if (trim($agreement) === '') {
+            throw UninstallSaysNothing::about('agreement');
         }
 
         if ($bytes < 0) {
             throw UninstallSaysNothing::outside('bytes', $bytes);
         }
 
-        return new self($tier, $removes, $keeps, $items, $bytes, $foreign, $coming, $outside, $confidence, $agreement, $volume, $copyFirst);
+        return new self($tier, $words, $items, $bytes, $first, $confidence, $agreement);
     }
 
     /** Which removal this is. */
@@ -79,13 +62,13 @@ final readonly class WhatTakingItOffComesTo
     /** What it takes, in the operator's words. */
     public function removes(): string
     {
-        return $this->removes;
+        return $this->words->removes();
     }
 
     /** What it leaves alone, in the operator's words. */
     public function keeps(): string
     {
-        return $this->keeps;
+        return $this->words->keeps();
     }
 
     /** Every line it reaches, going and kept. */
@@ -103,19 +86,19 @@ final readonly class WhatTakingItOffComesTo
     /** What beneath the data location is not lemonfiber's. */
     public function foreign(): WhatIsNotLemonfibers
     {
-        return $this->foreign;
+        return $this->first->foreign();
     }
 
     /** What is still coming down, which stopping would interrupt. */
     public function coming(): WhatIsStillComing
     {
-        return $this->coming;
+        return $this->first->coming();
     }
 
     /** What lemonfiber cannot take, each with how to take it by hand. */
     public function outside(): WhatItCannotTake
     {
-        return $this->outside;
+        return $this->first->outside();
     }
 
     /** How much of this was read, and what could not be. */
@@ -133,12 +116,12 @@ final readonly class WhatTakingItOffComesTo
     /** The stack's sentence about the data location being on a network share or a drive that unplugs, or nothing where it said none. */
     public function volume(): string
     {
-        return $this->volume;
+        return $this->first->volume();
     }
 
     /** The stack's sentence about the copy it takes before configuration goes, or nothing where it said none. */
     public function copyFirst(): string
     {
-        return $this->copyFirst;
+        return $this->first->copyFirst();
     }
 }
