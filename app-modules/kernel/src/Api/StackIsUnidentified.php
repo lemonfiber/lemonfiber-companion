@@ -21,4 +21,9 @@ final class StackIsUnidentified extends InvalidArgumentException
     {
         return new self('Retained state named a stack with a blank identifier, so nothing it holds can be told from another stack\'s.');
     }
+
+    public static function byItsOwnMaterial(): self
+    {
+        return new self('Pairing material named its stack with a blank identifier, so the machine it describes cannot be told from another.');
+    }
 }

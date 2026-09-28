@@ -18,7 +18,7 @@ namespace Modules\Kernel\Api;
  * requirement is that material must not carry a credential. Enforcing it by
  * refusing `credential`, `token`, `password` is wrong the first time somebody
  * picks a name nobody thought of, and it fails *open*: the app pairs happily,
- * having been handed a secret out of band. Three cases are defined and a fourth
+ * having been handed a secret out of band. Four cases are defined and a fifth
  * key is refused whatever it is called, which needs no list to stay current.
  *
  * A stack with something new to say says it by raising the {@see WireVersion},
@@ -35,4 +35,14 @@ enum WhatPairingMaterialSays: string
 
     /** When the invitation stops being one. */
     case Expires = 'expires';
+
+    /**
+     * Which machine this is, in the stack's own words.
+     *
+     * An identifier the stack minted once and keeps across re-issued material,
+     * a new address and a replaced certificate. It is the one field a re-pairing
+     * does not change, which is why the app decides from it alone which machine
+     * it already holds.
+     */
+    case Stack = 'stack';
 }

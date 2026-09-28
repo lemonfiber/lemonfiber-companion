@@ -18,6 +18,13 @@
         <x-operator::action label="{{ __('connection.start_over') }}" tap="startOver()" />
     @endif
 
+    @if ($this->mayPairAgain())
+        {{-- A new code from the machine replaces the certificate pinned for
+             this stack; the password field stays away, because whatever is
+             answering is not the machine that was paired. --}}
+        <x-operator::action label="{{ __('connection.pair_again') }}" :goes="$this->pairAgainAt()" />
+    @endif
+
     @if ($this->mayTry())
         <native:outlined-text-input
             native:model="typed"

@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Modules\Connection\Api\FingerprintWasConfirmed;
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
+use Modules\Connection\Api\Remembering;
 use Modules\Connection\Api\WhatTheCodeSaysSoFar;
 use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Kernel\Api\Clock;
@@ -15,7 +16,6 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -106,7 +106,7 @@ final class PairByTyping extends NativeComponent
 
     public function __construct(
         private readonly Introducing $introducing,
-        private readonly Stacks $stacks,
+        private readonly Remembering $remembering,
         private readonly Clock $clock,
     ) {}
 
@@ -311,7 +311,7 @@ final class PairByTyping extends NativeComponent
         $stack = $this->introducing->confirmed($said, StackName::of($this->called), $by);
         $this->paired = $stack->id()->stored();
 
-        return $this->stacks->remember($stack)->either(
+        return $this->remembering->stack($stack)->either(
             remembered: static fn(): HowThePairingWent => HowThePairingWent::Paired,
             refused: static fn(WhyAStackCannotBeRemembered $why): HowThePairingWent => HowThePairingWent::refused($why),
         );

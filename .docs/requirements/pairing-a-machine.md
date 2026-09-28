@@ -19,7 +19,7 @@ requirement is right and this page is a defect.
 | `N1-R49` | Pairing material expires, and expiry is not reported as a typing mistake | `WhatTheCodeSaysSoFar` — telling somebody to check the characters sends them to look for a mistake that is not there |
 | `N1-R50` | Typed pairing requires the fingerprint to be confirmed, and the app may not proceed without it | `FingerprintWasConfirmed`, which is a type rather than a `bool` |
 | `N1-R51` | The confirmation carries a short form derived from the whole fingerprint — what was compared, not merely that something was | `FingerprintWasConfirmed` |
-| `N1-R20` | Re-pairing is the remedy for a certificate that changed, and is deliberately a different act from first pairing | `Introducing` does not offer it |
+| `N1-R20` | A changed certificate is refused, reported as this not being the machine paired, and answered by pairing it again | `HowTheSignInWent::TheMachineIsNotTheOnePaired`, whose way on is the pairing screen; material for a machine already held replaces its pin through `Introducing` and `Remembering` |
 | `N1-R10` | A device offering no store at all and a store that refused are different things with different remedies | `HowThePairingWent` |
 
 | `N1-R47` | The stack produces pairing material on demand, from a surface the operator is already admitted to, and does not require this app to have one first | Nothing here produces it, which is the point: this app reads a code the operator brings and never mints one. `PairingAStackByScanningTest` and `PairingAStackByTypingTest` are the two ways it arrives. The stack produces it with `lemonfiber companion pair` and serves it as the `pairing` envelope; a paired phone showing it so another can pair is not offered yet, which is `Pairing` in `NOT_YET` |

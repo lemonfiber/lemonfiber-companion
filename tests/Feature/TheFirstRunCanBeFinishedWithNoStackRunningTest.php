@@ -86,6 +86,23 @@ it('N1-R6 — the camera sees a code for a machine this device has not met', fun
     );
 });
 
+it('holds one machine for one code scanned twice, rather than a second row for it', function (): void {
+    withNoCameraAndNoStack();
+
+    $before = howManyMachinesAreHeld();
+
+    foreach (['The one in the cupboard', 'The cupboard, again'] as $called) {
+        $screen = theScanningScreen();
+        $screen->__syncProperty('called', $called);
+        $screen->scan();
+    }
+
+    expect(howManyMachinesAreHeld())->toBe(
+        $before + 1,
+        'the second code names the machine the first did, so it replaces what is held rather than adding to it',
+    );
+});
+
 it('N1-R56 — a device that has paired opens on its machines rather than the sequence', function (): void {
     withNoCameraAndNoStack();
 

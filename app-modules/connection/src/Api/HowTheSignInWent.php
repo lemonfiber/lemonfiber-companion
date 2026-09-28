@@ -34,14 +34,18 @@ use function sprintf;
  * arm, so a case added to either fails by name rather than falling silently
  * into whichever was written last.
  *
- * **All six of `Obstacle`'s cases are named, and three share an answer.** No
- * network, a refused local network and a changed fingerprint all describe
- * something that happened before any credential was offered; on this screen
- * they are what a stack that did not answer is — the operator did not get in,
- * nothing about their password is known, and *check the machine is on and on
- * this network* is the right remedy for each. They are written out rather than
- * swept into a `default` arm, because a default is what lets a seventh case
- * arrive and be answered by the one written last.
+ * **Every one of `Obstacle`'s cases is named, and some share an answer.** No
+ * network, a stack that did not answer and an account-level refusal the door
+ * cannot give all read as a stack that did not answer: the operator did not
+ * get in, nothing about their password is known, and *check the machine is on
+ * and on this network* is the right remedy for each. They are written out
+ * rather than swept into a `default` arm, because a default is what lets a new
+ * case arrive and be answered by the one written last.
+ *
+ * **A changed certificate is not one of them.** The machine answered, and it
+ * is not the one this device was introduced to. Checking that it is switched
+ * on sends the operator to a machine that is working; the remedy is to pair it
+ * again, which replaces the pinned certificate for the stack already held.
  */
 enum HowTheSignInWent: string
 {
@@ -83,6 +87,15 @@ enum HowTheSignInWent: string
     case TheNetworkIsNotPermitted = 'local_network_refused';
 
     /**
+     * Something answered with a certificate other than the one pinned for this stack.
+     *
+     * Refused rather than warned about, and never offered a password: a
+     * password typed here would go to whatever is answering. The remedy is
+     * pairing it again from the machine's own screen.
+     */
+    case TheMachineIsNotTheOnePaired = 'fingerprint_changed';
+
+    /**
      * Whether the operator is in, with a session that will survive the launch.
      *
      * Deleted once as unused and back with a caller: the screen shows the way
@@ -108,6 +121,18 @@ enum HowTheSignInWent: string
     public function isWorthAnotherAttempt(): bool
     {
         return $this === self::CredentialWasRefused;
+    }
+
+    /**
+     * Whether pairing the machine again is the way on.
+     *
+     * The one state whose button is not on this screen: what gets somebody
+     * past it is the pairing screen, where a new code replaces the certificate
+     * pinned for the stack.
+     */
+    public function asksForAnotherPairing(): bool
+    {
+        return $this === self::TheMachineIsNotTheOnePaired;
     }
 
     /**
@@ -188,6 +213,9 @@ enum HowTheSignInWent: string
             // and the remedy is one screen further away than any other state
             // here, in the phone's own settings rather than on the machine.
             self::TheNetworkIsNotPermitted => Standing::Guided,
+            // `Actionable`, as the kernel judges the obstacle: there is a
+            // button, and it leads to pairing rather than to a password field.
+            self::TheMachineIsNotTheOnePaired => Standing::Actionable,
         };
     }
 
@@ -199,10 +227,14 @@ enum HowTheSignInWent: string
      * already made the same judgement — and had made it differently. A stack
      * that is not answering was being offered a password field, which is the
      * screen offering to do something it cannot do.
+     *
+     * A changed certificate offers a button too, and it is not this one:
+     * a password typed toward a machine that is not the one paired goes to
+     * whatever is answering.
      */
     public function mayTry(): bool
     {
-        return $this->standing()->offersAButton();
+        return $this->standing()->offersAButton() && ! $this->asksForAnotherPairing();
     }
 
     /**
@@ -234,9 +266,9 @@ enum HowTheSignInWent: string
             // everywhere that matters: one is a machine to go and check, the
             // other is a switch on the phone the operator is holding.
             Obstacle::LocalNetworkIsNotPermitted => self::TheNetworkIsNotPermitted,
+            Obstacle::StackIsNotTheOnePaired => self::TheMachineIsNotTheOnePaired,
             Obstacle::StackDidNotAnswer,
             Obstacle::DeviceHasNoNetwork,
-            Obstacle::StackIsNotTheOnePaired,
             // Not a state of its own, because this door cannot answer with it.
             // Entitlement is decided on what an account asks for after it is
             // admitted, and `Admissions` reads every other refusal from the

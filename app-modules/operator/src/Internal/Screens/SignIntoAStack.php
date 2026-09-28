@@ -22,6 +22,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
+use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
 use Native\Mobile\Attributes\Lazy;
@@ -173,6 +174,18 @@ final class SignIntoAStack extends NativeComponent
     public function mayStartOver(): bool
     {
         return $this->went->mayStartOver();
+    }
+
+    /** Whether the way on is pairing this machine again, from its own screen. */
+    public function mayPairAgain(): bool
+    {
+        return $this->went->asksForAnotherPairing();
+    }
+
+    /** Where pairing again starts: the camera, as a first pairing does. */
+    public function pairAgainAt(): string
+    {
+        return AScreenWithoutAStack::PairByScanning->value;
     }
 
     /**

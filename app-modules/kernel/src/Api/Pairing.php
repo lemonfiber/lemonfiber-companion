@@ -15,8 +15,9 @@ use function trim;
 /**
  * What a stack hands somebody out of band so their phone can find it and know it.
  *
- * Two things, and the pairing of them is the whole point: where the stack is,
- * and which certificate it will present. `ADR-0018` is the design —
+ * Where the stack is and which certificate it will present, and the pairing of
+ * those two is the whole point; with them, which stack it is, in its own
+ * words, so a second code for the same machine names the same machine. `ADR-0018` is the design —
  * **the fingerprint comes from this material and never from the network**,
  * because a fingerprint learned from the connection it is meant to
  * validate proves nothing at all. Somebody carries it across the gap by eye or
@@ -40,6 +41,7 @@ final readonly class Pairing
     private function __construct(
         private Address $at,
         private Fingerprint $presenting,
+        private StackId $stack,
         private HowItWasRead $how,
     ) {}
 
@@ -69,7 +71,7 @@ final readonly class Pairing
         }
 
         foreach (array_keys($found) as $key) {
-            // `WhatPairingMaterialSays` is the only place the three keys are
+            // `WhatPairingMaterialSays` is the only place the keys are
             // spelled. A `tryFrom` answering null is read here and nowhere
             // else, which is what keeps the spelling from being written twice.
             //
@@ -116,6 +118,7 @@ final readonly class Pairing
         return new self(
             $at,
             Fingerprint::of(self::halfOf($found, WhatPairingMaterialSays::Fingerprint, $how)),
+            StackId::saidBy(self::halfOf($found, WhatPairingMaterialSays::Stack, $how)),
             $how,
         );
     }
@@ -135,6 +138,17 @@ final readonly class Pairing
     public function presenting(): Fingerprint
     {
         return $this->presenting;
+    }
+
+    /**
+     * Which machine this is, as the stack names itself.
+     *
+     * The same across every code the stack issues, so this is what decides
+     * whether the machine is one this device already holds.
+     */
+    public function stack(): StackId
+    {
+        return $this->stack;
     }
 
     /** How the operator got it in, which decides what a failure should say. */
