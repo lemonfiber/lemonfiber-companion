@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_keys;
 use function count;
 use function expect;
 use function it;
@@ -160,4 +161,20 @@ it('refuses something left behind with a word left blank, and a name on the mani
 
     expect(fn(): NamedOnTheManifest => NamedOnTheManifest::under('credentials', 'a', ' '))->toThrow(UninstallSaysNothing::class, 'its `credentials` blank')
         ->and(fn(): HowMuchWasRead => HowMuchWasRead::everything('a', ''))->toThrow(UninstallSaysNothing::class, 'its `confidence.unread` blank');
+});
+
+it('keeps what it could not read in order, even handed it by name', function (): void {
+    // A variadic collected from named arguments has string keys, and the list
+    // is read by position, so the reindexing is load-bearing rather than tidy.
+    $read = HowMuchWasRead::notEverything(first: 'The downloads folder', then: 'The music library');
+
+    expect(array_keys(iterator_to_array($read)))->toBe([0, 1])
+        ->and(iterator_to_array($read))->toBe(['The downloads folder', 'The music library']);
+});
+
+it('keeps the names a removal reports in order, even handed them by name', function (): void {
+    $named = NamedOnTheManifest::under('gone', first: 'jellyfin', then: 'sonarr');
+
+    expect(array_keys(iterator_to_array($named)))->toBe([0, 1])
+        ->and(iterator_to_array($named))->toBe(['jellyfin', 'sonarr']);
 });
