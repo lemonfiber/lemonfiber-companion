@@ -277,9 +277,10 @@ jobs:
     # So the condition asks the result as well as the output.
     if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.code == 'true') }}
     runs-on: ubuntu-latest
-    # The planted suite takes about nine and a half minutes on a hosted runner,
-    # and the ten this job had cancelled runs whose every test had passed.
-    timeout-minutes: 20
+    # The planted suite takes four to eight minutes on a hosted runner, and a
+    # slow runner has taken ten. Fifteen leaves that room without letting a hung
+    # run hold a runner the org's other jobs are queued for.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
