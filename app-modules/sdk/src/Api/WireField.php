@@ -443,6 +443,15 @@ enum WireField: string implements NamesAWireField
      */
     case Project = 'project';
 
+    /**
+     * What something is or does, in the machine's words rather than this app's:
+     * what a container is running, and what a service does for the house.
+     */
+    case Describes = 'describes';
+
+    /** How much a household loses when one service is not running, on a reading of what runs and in the catalogue. */
+    case Criticality = 'criticality';
+
     /** The host trees a copy of an existing setup read. */
     case Trees = 'trees';
 

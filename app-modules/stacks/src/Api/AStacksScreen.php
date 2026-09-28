@@ -134,6 +134,14 @@ enum AStacksScreen: string
     case Origins = '/stacks/{stack}/origins';
 
     /**
+     * What each service on this machine is for, and what became of any it dropped.
+     *
+     * Beside where each comes from: that screen is what a service is made of,
+     * and this is what the house goes without while it is down.
+     */
+    case Catalogue = '/stacks/{stack}/catalogue';
+
+    /**
      * Everything that leaves this machine: lemonfiber's own requests, and its
      * services'.
      */

@@ -20,6 +20,7 @@ use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
+use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
@@ -207,6 +208,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // this is what it was done with — two questions asked at different
             // moments.
             Router::native(AStacksScreen::Origins->value, WhereThisComesFrom::class);
+
+            // What each service is for. Its own screen beside the origins,
+            // because that one is what a service is made of and this is what
+            // the house goes without while it is down.
+            Router::native(AStacksScreen::Catalogue->value, WhatEachServiceIsFor::class);
 
             // Everything that leaves the machine. Its own screen, because what
             // it answers is a privacy question asked apart from the others,

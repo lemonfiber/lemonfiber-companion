@@ -46,6 +46,12 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::Origins->forTheStack($this->stack);
     }
 
+    /** What each service on this machine is for, and what became of any it dropped. */
+    public function catalogue(): string
+    {
+        return AStacksScreen::Catalogue->forTheStack($this->stack);
+    }
+
     /** Everything that leaves this machine. */
     public function leaving(): string
     {

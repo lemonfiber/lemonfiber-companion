@@ -109,6 +109,17 @@ return [
         'nothing_changed' => 'Er is niets veranderd',
         'clock_unreadable' => 'Op een moment dat de machine niet kon vertellen',
     ],
+    'catalogue' => [
+        'road_in' => 'Waar elke dienst voor is',
+        'as_declared' => 'Zoals deze machine haar eigen diensten beschrijft, zonder dat er iets gestart is.',
+        'without_it' => 'Zonder: :without',
+        'nothing_declared' => 'Deze machine geeft geen diensten op',
+        'dropped' => 'Niet langer deel van deze stack',
+        'removed_in' => 'Weggelaten in :version: :reason',
+        'replaced_by' => 'Vervangen door :by',
+        'not_replaced' => 'Niets heeft de plaats ingenomen',
+        'nothing_dropped' => 'Deze stack heeft geen dienst weggelaten',
+    ],
     'origins' => [
         'road_in' => 'Waar dit vandaan komt',
         'as_declared' => 'Zoals deze machine het opgeeft. Niets hiervan wordt bij de projecten zelf opgezocht.',
