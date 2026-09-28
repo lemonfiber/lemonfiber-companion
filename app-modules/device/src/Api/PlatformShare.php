@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\Device\Api;
 
 use Lemonfiber\Native\Handover;
+use Lemonfiber\Native\Offered;
 use Lemonfiber\Native\WhyNothingWasHandedOver;
+use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\Handed;
@@ -13,21 +15,22 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\WhyNothingWasShared;
 
 /**
- * The platform's own share sheet, given a report to put in front of somebody.
+ * The platform's own share sheet, given a report, an invitation or a bundle to put in front of somebody.
  *
- * A report handed over rather than sent, made concrete: the app offers the
- * report and stops. Where it goes is a choice a person makes in an app this one
- * does not know about, which is the whole difference between this and the crash
- * reporter this app may not have.
+ * Handed over rather than sent, made concrete: the app offers it and stops.
+ * Where it goes is a choice a person makes in an app this one does not know
+ * about, which is the whole difference between this and the crash reporter
+ * this app may not have.
  *
- * **Nothing is written to disk.** Both platforms' sheets will take a file, and
- * taking one would mean this application writing a diagnostic report into a
- * cache directory and leaving it there — nothing on this side ever learns when
- * the chosen app is done with it, so a file deleted at the right moment is a
- * file the chosen app cannot read, and one deleted at no moment is residue.
- * The report is text and travels as text.
+ * **Text travels as text, and a bundle as one swept file.** A report and an
+ * invitation are handed to the sheet as text, and nothing is written. A
+ * support bundle is an archive: the bridge writes it into one app-private
+ * directory used for nothing else, grants the chosen app read access to that
+ * one file, and empties the directory before every new handover and on the next
+ * launch. At most one bundle is ever on the device, and only until one of those
+ * comes round.
  *
- * **The covering line is the report's own name rather than a sentence**, and
+ * **The covering line is the thing's own name rather than a sentence**, and
  * deliberately: whatever the operator picks will put this where somebody reads
  * it, and a sentence this app wrote about somebody else's fault is a sentence
  * that is wrong as often as it is right.
@@ -42,18 +45,23 @@ final readonly class PlatformShare implements Sharing
 
     public function hand(Assembled $assembled): Handed
     {
-        return $this->offering($assembled->named(), $assembled->text());
+        return $this->handed($this->sheet->offer($assembled->named(), $assembled->text()));
     }
 
     public function passOn(AnInvitationToPassOn $invitation): Handed
     {
-        return $this->offering($invitation->named(), $invitation->text());
+        return $this->handed($this->sheet->offer($invitation->named(), $invitation->text()));
     }
 
-    /** The sheet, offered a title and a text, and what it answered in this application's terms. */
-    private function offering(string $title, string $text): Handed
+    public function handOver(ABundleFile $bundle): Handed
     {
-        return $this->sheet->offer($title, $text)->either(
+        return $this->handed($this->sheet->offerFile($bundle->named(), $bundle->named(), $bundle->bytes()));
+    }
+
+    /** What the sheet answered, in this application's terms. */
+    private function handed(Offered $offered): Handed
+    {
+        return $offered->either(
             offered: static fn(): Handed => Handed::over(),
             refused: static fn(WhyNothingWasHandedOver $why): Handed => Handed::refused(self::meaning($why)),
         );

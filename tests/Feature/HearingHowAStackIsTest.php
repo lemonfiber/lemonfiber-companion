@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAffectedItem;
+use Modules\Kernel\Api\AStoppage;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
@@ -12,6 +13,7 @@ use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
@@ -28,12 +30,14 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatFollowedFromIt;
+use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Native\Mobile\Edge\NativeComponent;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -75,6 +79,7 @@ function aSummaryOfAFillingDisk(): TheHealthSummary
         HowItStands::Broken,
         1,
         'The disk is full',
+        WhatStoppedMoving::nothing(),
         AnAffectedItem::of(
             Check::of('disk.space'),
             Severity::Error,
@@ -180,7 +185,7 @@ it('opens the stream once the screen is up, and draws the summary it hears', fun
 it('takes what arrived on every wake, and draws the newest summary', function (): void {
     $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(
         WhatWasHeard::nothing(),
-        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '')),
+        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())),
     ));
 
     $listening->wakesAt(0);
@@ -351,7 +356,7 @@ it('keeps each word it hears for the list, with when it was heard', function ():
     $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(
         WhatWasHeard::said(aSummaryOfAFillingDisk()),
         WhatWasHeard::nothing(),
-        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '')),
+        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())),
     ));
 
     $listening->wakesAt(0);
@@ -400,4 +405,93 @@ it('draws the summary it heard where the device would not keep the word', functi
     $screen->listen();
 
     expect($screen->summary()->said)->toBe(HowItStands::Broken->saidOnTheScreen());
+});
+
+/**
+ * Where on the frame a line is drawn, counted from the top.
+ *
+ * @param list<string> $said
+ */
+function whereOnTheHealthScreen(array $said, string $line): int
+{
+    $at = array_search($line, $said, strict: true);
+
+    return is_int($at) ? $at : throw new RuntimeException(sprintf('"%s" is not drawn.', $line));
+}
+
+/**
+ * Where on the frame the line a catalogue key names is drawn.
+ *
+ * @param list<string> $said
+ */
+function whereTheHeadingIsDrawn(array $said, string $key): int
+{
+    $line = __($key);
+
+    return whereOnTheHealthScreen($said, is_string($line) ? $line : $key);
+}
+
+/** A summary whose queue has one cause holding twenty items, one orphan, and one slow download. */
+function aSummaryOfAStoppedQueue(): TheHealthSummary
+{
+    return TheHealthSummary::of(
+        HowItStands::Degraded,
+        0,
+        '',
+        WhatStoppedMoving::of(
+            AStoppage::of(HowItStopped::RepeatedImportFailure, 'Permission denied on /media/films', 20, 'Access to the path is denied.', 10_800),
+            AStoppage::of(HowItStopped::Orphaned, 'Heat', 1, '', 172_800),
+            AStoppage::of(HowItStopped::Slow, 'Dune', 1, '', 600),
+        ),
+    );
+}
+
+it('draws what stopped moving by kind, one row per cause, with the service\'s words and how long', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAStoppedQueue())));
+    $listening->wakesAt(0);
+
+    $said = WhatTheDeviceWouldDraw::by($listening->screen)->said();
+
+    expect($said)->toContain(__('health.stopped_heading'))
+        ->and($said)->toContain(__('health.stopped.repeated-import-failure'))
+        ->and($said)->toContain('Permission denied on /media/films')
+        ->and($said)->toContain(trans_choice('health.stopped_stands_for', 20))
+        ->and($said)->toContain(__('health.stopped_blocking', ['words' => 'Access to the path is denied.']))
+        ->and($said)->toContain(trans_choice('health.held_for.hours', 3))
+        ->and($said)->toContain(__('health.stopped.orphaned'))
+        ->and($said)->toContain(trans_choice('health.held_for.days', 2));
+});
+
+it('draws slow apart from and after what is stuck, under a heading that says it needs no fix', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAStoppedQueue())));
+    $listening->wakesAt(0);
+
+    $said = WhatTheDeviceWouldDraw::by($listening->screen)->said();
+
+    expect($said)->toContain(__('health.slow_explained'))
+        ->and(whereOnTheHealthScreen($said, 'Heat'))->toBeGreaterThan(whereTheHeadingIsDrawn($said, 'health.stopped_heading'))
+        ->and(whereOnTheHealthScreen($said, 'Heat'))->toBeLessThan(whereTheHeadingIsDrawn($said, 'health.slow_heading'))
+        ->and(whereOnTheHealthScreen($said, 'Dune'))->toBeGreaterThan(whereTheHeadingIsDrawn($said, 'health.slow_heading'));
+});
+
+it('offers the trace of a stopped item, and of no cause several items share', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAStoppedQueue())));
+    $listening->wakesAt(0);
+
+    $offers = WhatTheDeviceWouldDraw::by($listening->screen)->offers();
+
+    expect($offers)->toContain(__('health.trace.road_in', ['item' => 'Heat']))
+        ->and($offers)->toContain(__('health.trace.road_in', ['item' => 'Dune']))
+        ->and($offers)->not->toContain(__('health.trace.road_in', ['item' => 'Permission denied on /media/films']))
+        ->and(NativeRouter::resolve($listening->screen->traceOf('Heat')))->toHaveKey('params.service', 'Heat');
+});
+
+it('draws no stopped heading and no slow heading where nothing has stopped', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
+    $listening->wakesAt(0);
+
+    $said = WhatTheDeviceWouldDraw::by($listening->screen)->said();
+
+    expect($said)->not->toContain(__('health.stopped_heading'))
+        ->and($said)->not->toContain(__('health.slow_heading'));
 });

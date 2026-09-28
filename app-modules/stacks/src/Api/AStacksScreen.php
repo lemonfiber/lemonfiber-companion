@@ -159,6 +159,9 @@ enum AStacksScreen: string
      */
     case PutBack = '/stacks/{stack}/copies/{service}';
 
+    /** Asking for help: a support bundle, described before it is written. */
+    case Help = '/stacks/{stack}/help';
+
     /** How full this machine is, and where the room went. */
     case Room = '/stacks/{stack}/room';
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\ImageDigest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -21,6 +22,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatNamesItsOrigins;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Where every service on this machine comes from.
 //
@@ -189,4 +191,19 @@ it('renders its own view', function (): void {
     $screen = theOriginsScreen(AStackThatNamesItsOrigins::with(twoServicesAndWhereTheyComeFrom()));
 
     expect($screen->render()->name())->toBe('operator::where-this-comes-from');
+});
+
+it('draws the digest an image is pinned to beside its version, and says so where the stack names none', function (): void {
+    $digest = sprintf('sha256:%s', str_repeat('b', 64));
+    $screen = theOriginsScreen(AStackThatNamesItsOrigins::with(WhereTheServicesComeFrom::declaring(
+        WhereItComesFrom::declared(ServiceId::called('sonarr'), 'Sonarr', 'lscr.io/linuxserver/sonarr', '4.0.15', 'https://github.com/Sonarr/Sonarr', 'GPL-3.0-only')->pinnedAt(ImageDigest::of($digest)),
+        WhereItComesFrom::declared(ServiceId::called('gluetun'), 'Gluetun', 'qmcgaw/gluetun', 'v3.40.0', 'https://github.com/qdm12/gluetun', 'MIT'),
+    )));
+
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->answer()->services[0]->digest)->toBe($digest)
+        ->and($screen->answer()->services[1]->digest)->toBe('')
+        ->and($said)->toContain(__('stacks.origins.digest', ['digest' => $digest]))
+        ->and($said)->toContain(__('stacks.origins.no_digest'));
 });

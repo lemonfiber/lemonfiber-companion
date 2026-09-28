@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
@@ -61,9 +62,10 @@ function annasInvitation(bool $rehearsed, WhereTheInvitationStands $standing = W
     $toHand = AnInvitationToHand::to('anna', AnAddressToHand::at('http://192.168.1.42:8096', 'The number can change when the router restarts'), 72);
     $linked = $rehearsed ? WhetherTheyCanAsk::NotTried : WhetherTheyCanAsk::NotYet;
     $withdrawn = WhoWasTakenBack::of('bob');
+    $suspended = WhoWasSwitchedOff::of('carol');
     $invitation = $rehearsed
-        ? AnInvitation::rehearsed($toHand, $standing, $linked, $withdrawn)
-        : AnInvitation::carriedOut($toHand, $standing, $linked, $withdrawn);
+        ? AnInvitation::rehearsed($toHand, $standing, $linked, $withdrawn, $suspended)
+        : AnInvitation::carriedOut($toHand, $standing, $linked, $withdrawn, $suspended);
 
     return $invitation->granting(WhatWasGranted::granted(TheLibraries::of('Films', 'Kids'), WhatBecomesOfUnrated::HeldBack, $linked, 'A limit holds back what is rated above it, and nothing else', 'PG-13'));
 }
@@ -224,6 +226,9 @@ it('says what the invitation would grant, and when it lapses, before anything is
         ->and($drawn->said())->toContain(trans_choice('stacks.invitation.lapses', 72))
         ->and($drawn->said())->toContain(__('stacks.invitation.would_withdraw'))
         ->and($drawn->said())->toContain('bob')
+        ->and($drawn->said())->toContain(__('stacks.invitation.would_switch_off'))
+        ->and($drawn->said())->toContain('carol')
+        ->and($drawn->said())->not->toContain(__('stacks.invitation.switched_off'))
         ->and($drawn->offers())->toContain(__('stacks.invitation.send', ['name' => 'anna']));
 });
 
@@ -266,6 +271,9 @@ it('hands over the address the stack gave, with its caution, as text, as a code,
         ->and($drawn->said())->toContain(__('stacks.invitation.code'))
         ->and($drawn->said())->toContain(__(WhetherTheyCanAsk::NotYet->saidOnTheScreen()))
         ->and($drawn->said())->toContain(__('stacks.invitation.withdrew'))
+        ->and($drawn->said())->toContain(__('stacks.invitation.switched_off'))
+        ->and($drawn->said())->not->toContain(__('stacks.invitation.would_switch_off'))
+        ->and($drawn->said())->toContain('carol')
         ->and($drawn->offers())->toContain(__('stacks.invitation.pass_on'))
         ->and($drawn->offers())->not->toContain(__('stacks.invitation.send', ['name' => 'anna']))
         ->and($encoding->given()?->url())->toBe('http://192.168.1.42:8096')
@@ -350,6 +358,7 @@ it('says an invitation wrote nothing about access, rather than that it opens eve
         WhereTheInvitationStands::Waiting,
         WhetherTheyCanAsk::Made,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     );
     $open = $bare->granting(WhatWasGranted::granted(TheLibraries::of(), WhatBecomesOfUnrated::LetThrough, WhetherTheyCanAsk::Made, 'A limit is not a lock', ''));
     $drawnBare = WhatTheDeviceWouldDraw::by(anInvitationAnsweredWith($bare))->said();
@@ -359,6 +368,7 @@ it('says an invitation wrote nothing about access, rather than that it opens eve
         ->and($drawnBare)->not->toContain(__('stacks.invitation.every_library'))
         ->and($drawnBare)->toContain(trans_choice('stacks.invitation.lapses', 1))
         ->and($drawnBare)->toContain(__('stacks.invitation.nobody_withdrawn'))
+        ->and($drawnBare)->toContain(__('stacks.invitation.nobody_switched_off'))
         ->and($drawnOpen)->toContain(__('stacks.invitation.every_library'))
         ->and($drawnOpen)->toContain(__('stacks.invitation.no_limit'))
         ->and($drawnOpen)->not->toContain(__('stacks.invitation.grants_nothing'));

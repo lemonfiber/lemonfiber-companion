@@ -272,10 +272,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'Free space, how long until it runs out, and whether imports link or copy. Read from `SpaceEnvelope` for how full the machine is.',
     ],
     [
-        'path' => 'DashboardEnvelope.stuck',
-        'because' => 'The stalled items. Read from `StuckEnvelope` for what stopped coming in.',
-    ],
-    [
         'path' => 'DashboardEnvelope.telemetry',
         'because' => 'Whether the core\'s own view of the stack is live, degraded or disconnected. The summary\'s word is already `unknown` where the core cannot tell, and whether this app\'s own reading is current is decided by the stream\'s heartbeat, which is about the connection this app holds rather than about the core\'s.',
     ],
@@ -540,13 +536,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'to be told apart from one the invitee declined, and `declined` is not one of these four, so '
             . 'reading `expired` alone would answer half of it and look like all of it. `N1-R17` has the '
             . 'field wait for a requirement.',
-    ],
-    [
-        'path' => 'InvitationEnvelope.suspended',
-        'because' => 'The resets the stack switched off on the way past because they lapsed, each account '
-            . 'kept. `N21-R10` has the invitations it withdrew on the way past shown, and N21 maps that '
-            . 'requirement to `withdrawn` alone; nothing in the spec says yet whether a lapsed reset is '
-            . 'one of them. That is raised against the spec before this app reads it (`N1-R17`).',
     ],
     [
         'path' => 'JobEnvelope.action',

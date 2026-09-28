@@ -34,6 +34,7 @@ final readonly class WhereItComesFrom
         private string $pinned,
         private string $upstream,
         private string $licence,
+        private string $digest,
     ) {}
 
     /** One service's origin, every word of it required. */
@@ -52,6 +53,7 @@ final readonly class WhereItComesFrom
             self::said('pinned', $pinned),
             self::said('upstream', $upstream),
             self::said('licence', $licence),
+            '',
         );
     }
 
@@ -89,6 +91,24 @@ final readonly class WhereItComesFrom
     public function licence(): string
     {
         return $this->licence;
+    }
+
+    /**
+     * The same origin, with the digest the image is pinned to.
+     *
+     * Added rather than required, because the contract carries it only where
+     * the stack's manifest names one: an image pinned by tag alone has none,
+     * and that is a fact about the stack a screen says rather than a blank.
+     */
+    public function pinnedAt(ImageDigest $digest): self
+    {
+        return new self($this->service, $this->name, $this->image, $this->pinned, $this->upstream, $this->licence, $digest->said());
+    }
+
+    /** The digest the image is pinned to, or empty where the stack names none. */
+    public function digest(): string
+    {
+        return $this->digest;
     }
 
     /** A word, refused where it is blank. */

@@ -10,6 +10,7 @@ use function it;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 
 use function sprintf;
@@ -35,7 +36,7 @@ function whichArmWasHeard(WhatWasHeard $heard): string
 it('keeps the five things a subscription can answer apart', function (): void {
     expect(whichArmWasHeard(WhatWasHeard::nothing()))->toBe('nothing')
         ->and(whichArmWasHeard(WhatWasHeard::aSignOfLife()))->toBe('alive')
-        ->and(whichArmWasHeard(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Stopped, 0, ''))))->toBe('said stopped')
+        ->and(whichArmWasHeard(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Stopped, 0, '', WhatStoppedMoving::nothing()))))->toBe('said stopped')
         ->and(whichArmWasHeard(WhatWasHeard::closed()))->toBe('closed')
         ->and(whichArmWasHeard(WhatWasHeard::met(Obstacle::CredentialWasRefused)))->toBe('met credential_refused');
 });

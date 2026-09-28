@@ -22,6 +22,7 @@ final readonly class AnInvitationAsShown
      * @param AnInvitationToHandAsShown $toHand       the name, the address, its caution, the hours and whether to hand it over
      * @param WhatWasGrantedAsShown $granted      what it writes on the account
      * @param list<string>          $withdrawn    the invitations taken back on the way past, or that would be
+     * @param list<string>          $suspended    the lapsed resets switched off on the way past and kept, or that would be
      */
     public function __construct(
         public bool $rehearsed,
@@ -31,5 +32,6 @@ final readonly class AnInvitationAsShown
         public AnInvitationToHandAsShown $toHand,
         public WhatWasGrantedAsShown $granted,
         public array $withdrawn,
+        public array $suspended,
     ) {}
 }

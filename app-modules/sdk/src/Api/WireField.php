@@ -128,6 +128,22 @@ enum WireField: string implements NamesAWireField
     /** When something happened, where the thing that wrote it said so. */
     case At = 'at';
 
+    /**
+     * When something was taken: the line's measurement, in seconds since the
+     * epoch, and a support bundle, with the versions it came from.
+     */
+    case Taken = 'taken';
+
+    /**
+     * What is not there: the program a hosted command's definition names where
+     * nothing is there any more, and what a support bundle could not collect.
+     *
+     * On a hosted command it is read only on the `orphaned` arm. On every other
+     * standing the wire carries nothing here and there is nothing to carry — a
+     * row that is running has no missing program.
+     */
+    case Missing = 'missing';
+
     /** The services a stack has, each with its own state. */
     case Services = 'services';
 
@@ -461,4 +477,17 @@ enum WireField: string implements NamesAWireField
 
     /** The project already holding it. */
     case HeldBy = 'held_by';
+
+    /**
+     * Which kind of stopped something is: on a trace, why one item stopped,
+     * and on the dashboard, the category a stopped row is in.
+     */
+    case Stall = 'stall';
+
+    /**
+     * The rows of the stuck listing, and on the dashboard, how many items one
+     * stopped row stands for. One word on the wire for a list in one envelope
+     * and a count in the other, which is why the readers say which they read.
+     */
+    case Items = 'items';
 }

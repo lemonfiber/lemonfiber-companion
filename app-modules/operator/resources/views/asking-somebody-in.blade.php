@@ -126,6 +126,22 @@
                 <x-operator::note>{{ __('stacks.invitation.nobody_withdrawn') }}</x-operator::note>
             @endforelse
 
+            {{-- The other half of what went on the way past: resets that
+                 lapsed are switched off rather than removed, so the account
+                 and what they watched are still there, and asking them in
+                 again switches it back on. Apart from the list above, because
+                 one of the two is gone and the other is waiting. --}}
+            @if ($this->howItIsGoing()->invitation->rehearsed)
+                <x-operator::heading>{{ __('stacks.invitation.would_switch_off') }}</x-operator::heading>
+            @else
+                <x-operator::heading>{{ __('stacks.invitation.switched_off') }}</x-operator::heading>
+            @endif
+            @forelse ($this->howItIsGoing()->invitation->suspended as $suspended)
+                <native:text>{{ $suspended }}</native:text>
+            @empty
+                <x-operator::note>{{ __('stacks.invitation.nobody_switched_off') }}</x-operator::note>
+            @endforelse
+
             <x-operator::quiet-action label="{{ __('stacks.invitation.start_again') }}" tap="startAgain()" />
         @else
             <x-operator::action label="{{ __('stacks.invitation.what_would_it_grant') }}" tap="offer()" />

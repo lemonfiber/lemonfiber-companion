@@ -87,6 +87,12 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::PutBack->forTheStacksCopy($this->stack, ACopy::named($named));
     }
 
+    /** Asking for help with this machine: a support bundle, described before it is written. */
+    public function help(): string
+    {
+        return AStacksScreen::Help->forTheStack($this->stack);
+    }
+
     /** How full this machine is, and where the room went. */
     public function room(): string
     {

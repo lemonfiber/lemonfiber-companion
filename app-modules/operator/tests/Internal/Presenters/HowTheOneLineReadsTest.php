@@ -9,8 +9,10 @@ use function it;
 
 use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\AnAffectedItem;
+use Modules\Kernel\Api\AStoppage;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
@@ -19,9 +21,11 @@ use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatFollowedFromIt;
+use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Presenters\HowTheOneLineReads;
+use Modules\Operator\Internal\ViewModels\AStoppageAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
 
 /** A moment, counted in minutes from one a test starts at. */
@@ -37,6 +41,7 @@ function aSummaryCountingOne(HowItStands $standing): TheHealthSummary
         $standing,
         1,
         'The disk is nearly full',
+        WhatStoppedMoving::nothing(),
         AnAffectedItem::of(
             Check::of('disk.space'),
             Severity::Warning,
@@ -138,7 +143,7 @@ it('says each word in its own sentence, and counts the way the word asks', funct
 });
 
 it('counts nothing where the core counted nothing, and names nothing', function (): void {
-    $line = theLineAfter(minutesIn(0), WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '')));
+    $line = theLineAfter(minutesIn(0), WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())));
 
     expect($line->said)->toBe('health.standing.healthy')
         ->and($line->counted)->toBe('')
@@ -192,6 +197,8 @@ it('says a kept word with when it was heard, and nothing it did not keep', funct
         remedy: '',
         listening: false,
         affected: [],
+        stopped: [],
+        slow: [],
     ));
 });
 
@@ -214,5 +221,87 @@ it('says a stack never heard cannot be told, with no age', function (): void {
         remedy: '',
         listening: false,
         affected: [],
+        stopped: [],
+        slow: [],
     ));
+});
+
+/**
+ * The names on stopped rows, in the order they are drawn.
+ *
+ * @param list<AStoppageAsShown> $rows
+ *
+ * @return list<string>
+ */
+function theNamesOn(array $rows): array
+{
+    $names = [];
+
+    foreach ($rows as $row) {
+        $names[] = $row->name;
+    }
+
+    return $names;
+}
+
+/** A summary with nothing counted, and these rows of what stopped moving. */
+function aSummaryWhereThisStopped(AStoppage ...$rows): TheHealthSummary
+{
+    return TheHealthSummary::of(HowItStands::Degraded, 0, '', WhatStoppedMoving::of(...$rows));
+}
+
+it('draws what stopped moving apart from what is only slow, each in the order the stack sent', function (): void {
+    $line = theLineAfter(minutesIn(0), WhatWasHeard::said(aSummaryWhereThisStopped(
+        AStoppage::of(HowItStopped::RedownloadLoop, 'Arrival', 1, '', 7_200),
+        AStoppage::of(HowItStopped::Slow, 'Dune', 1, '', 600),
+        AStoppage::of(HowItStopped::Orphaned, 'Heat', 1, '', 90_000),
+        AStoppage::of(HowItStopped::Slow, 'Alien', 1, '', 60),
+    )));
+
+    expect(theNamesOn($line->stopped))->toBe(['Arrival', 'Heat'])
+        ->and(theNamesOn($line->slow))->toBe(['Dune', 'Alien']);
+});
+
+it('draws a row standing for several items once, naming the cause and the service\'s words, with nothing to follow', function (): void {
+    $line = theLineAfter(minutesIn(0), WhatWasHeard::said(aSummaryWhereThisStopped(
+        AStoppage::of(HowItStopped::RepeatedImportFailure, 'Permission denied', 20, 'Access to the path is denied.', 10_800),
+    )));
+
+    expect($line->stopped)->toEqual([new AStoppageAsShown(
+        kindSaid: 'health.stopped.repeated-import-failure',
+        name: 'Permission denied',
+        items: 20,
+        blocking: 'Access to the path is denied.',
+        heldSaid: 'health.held_for.hours',
+        heldCount: 3,
+        follows: '',
+    )]);
+});
+
+it('gives a row standing for one item that item to follow, and says how long in the unit it fills', function (): void {
+    $line = theLineAfter(minutesIn(0), WhatWasHeard::said(aSummaryWhereThisStopped(
+        AStoppage::of(HowItStopped::Slow, 'Dune', 1, '', 150),
+    )));
+
+    expect($line->slow)->toEqual([new AStoppageAsShown(
+        kindSaid: 'health.stopped.slow',
+        name: 'Dune',
+        items: 1,
+        blocking: '',
+        heldSaid: 'health.held_for.minutes',
+        heldCount: 2,
+        follows: 'Dune',
+    )]);
+});
+
+it('keeps what stopped moving from a summary that is no longer current, beside when it was heard', function (): void {
+    $line = theLineAfter(
+        minutesIn(5),
+        WhatWasHeard::said(aSummaryWhereThisStopped(AStoppage::of(HowItStopped::Orphaned, 'Heat', 1, '', 60))),
+        WhatWasHeard::closed(),
+    );
+
+    expect($line->said)->toBe('health.standing.unknown')
+        ->and($line->stopped)->toHaveCount(1)
+        ->and($line->ago->said)->toBe('health.ago.minutes');
 });

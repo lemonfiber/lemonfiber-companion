@@ -6,12 +6,14 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\AnAffectedItem;
+use Modules\Kernel\Api\AStoppage;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Operator\Internal\ViewModels\AnAffectedItemAsShown;
+use Modules\Operator\Internal\ViewModels\AStoppageAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
 use Modules\Operator\Internal\ViewModels\WhyNothingWasSaid;
 
@@ -88,6 +90,8 @@ final readonly class HowTheOneLineReads
             remedy: '',
             listening: false,
             affected: [],
+            stopped: [],
+            slow: [],
         );
     }
 
@@ -103,6 +107,8 @@ final readonly class HowTheOneLineReads
             remedy: $why->remedy,
             listening: $listening,
             affected: [],
+            stopped: [],
+            slow: [],
         );
     }
 
@@ -112,6 +118,19 @@ final readonly class HowTheOneLineReads
 
         foreach ($summary as $item) {
             $affected[] = $this->item($item);
+        }
+
+        $stopped = [];
+        $slow = [];
+
+        foreach ($summary->stopped() as $row) {
+            if ($row->how()->wantsAFix()) {
+                $stopped[] = $this->stoppage($row);
+
+                continue;
+            }
+
+            $slow[] = $this->stoppage($row);
         }
 
         return new WhatTheOneLineSays(
@@ -124,6 +143,8 @@ final readonly class HowTheOneLineReads
             remedy: $why->remedy,
             listening: $listening,
             affected: $affected,
+            stopped: $stopped,
+            slow: $slow,
         );
     }
 
@@ -157,6 +178,28 @@ final readonly class HowTheOneLineReads
             meaning: $item->meaning(),
             remedies: $remedies,
             downstream: $downstream,
+        );
+    }
+
+    /**
+     * One stopped row, with how long it has been that way in words.
+     *
+     * A row standing for several items names their shared cause, and a trace
+     * follows an item rather than a cause, so only a row standing for one is
+     * given something to follow.
+     */
+    private function stoppage(AStoppage $row): AStoppageAsShown
+    {
+        $held = $row->heldFor();
+
+        return new AStoppageAsShown(
+            kindSaid: $row->how()->saidOnTheScreen(),
+            name: $row->name(),
+            items: $row->items(),
+            blocking: $row->blocking(),
+            heldSaid: $held->unit()->heldOnTheScreen(),
+            heldCount: $held->howMany(),
+            follows: $row->items() === 1 ? $row->name() : '',
         );
     }
 }

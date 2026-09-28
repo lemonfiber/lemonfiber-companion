@@ -17,6 +17,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 
 /** One line carried out of an arm. */
@@ -43,16 +44,17 @@ function whatItGranted(AnInvitation $invitation): string
 it('keeps everything a rehearsal was answered with, and says it was one', function (): void {
     $toHand = anInvitationForAnna();
     $withdrawn = WhoWasTakenBack::of('bob');
-    $invitation = AnInvitation::rehearsed($toHand, WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, $withdrawn);
+    $suspended = WhoWasSwitchedOff::of('carol');
+    $invitation = AnInvitation::rehearsed($toHand, WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, $withdrawn, $suspended);
 
-    expect([$invitation->toHand(), $invitation->standing(), $invitation->linked(), $invitation->withdrawn(), $invitation->wasRehearsed()])
-        ->toBe([$toHand, WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, $withdrawn, true]);
+    expect([$invitation->toHand(), $invitation->standing(), $invitation->linked(), $invitation->withdrawn(), $invitation->suspended(), $invitation->wasRehearsed()])
+        ->toBe([$toHand, WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, $withdrawn, $suspended, true]);
 });
 
 it('keeps everything an invitation carried out was answered with, and says it was not rehearsed', function (): void {
     $toHand = anInvitationForAnna();
     $withdrawn = WhoWasTakenBack::of();
-    $invitation = AnInvitation::carriedOut($toHand, WhereTheInvitationStands::Waiting, WhetherTheyCanAsk::NotYet, $withdrawn);
+    $invitation = AnInvitation::carriedOut($toHand, WhereTheInvitationStands::Waiting, WhetherTheyCanAsk::NotYet, $withdrawn, WhoWasSwitchedOff::of());
 
     expect([$invitation->toHand(), $invitation->standing(), $invitation->linked(), $invitation->withdrawn(), $invitation->wasRehearsed()])
         ->toBe([$toHand, WhereTheInvitationStands::Waiting, WhetherTheyCanAsk::NotYet, $withdrawn, false]);
@@ -61,7 +63,7 @@ it('keeps everything an invitation carried out was answered with, and says it wa
 it('says it granted nothing until it is given what it granted, and keeps the rest when it is', function (): void {
     $toHand = anInvitationForAnna();
     $withdrawn = WhoWasTakenBack::of('bob');
-    $bare = AnInvitation::rehearsed($toHand, WhereTheInvitationStands::Reset, WhetherTheyCanAsk::Made, $withdrawn);
+    $bare = AnInvitation::rehearsed($toHand, WhereTheInvitationStands::Reset, WhetherTheyCanAsk::Made, $withdrawn, WhoWasSwitchedOff::of());
     $granting = $bare->granting(WhatWasGranted::granted(TheLibraries::of(), WhatBecomesOfUnrated::HeldBack, WhetherTheyCanAsk::Made, 'A limit is not a lock', ''));
 
     expect(whatItGranted($bare))->toBe('nothing')
@@ -101,9 +103,10 @@ it('refuses a grant with no word on what a limit is, or a limit that is blank ra
         ->toThrow(InvitationSaysNothing::class, 'its `limit` blank');
 });
 
-it('holds libraries and names taken back in the order given, and refuses a blank one', function (): void {
+it('holds libraries and names taken back or switched off in the order given, and refuses a blank one', function (): void {
     $libraries = TheLibraries::of(...['b' => 'Films', 'a' => 'Kids']);
     $withdrawn = WhoWasTakenBack::of(...['b' => 'bob', 'a' => 'carol']);
+    $suspended = WhoWasSwitchedOff::of(...['b' => 'dave', 'a' => 'erin']);
 
     expect(iterator_to_array($libraries, preserve_keys: true))->toBe(['Films', 'Kids'])
         ->and($libraries)->toHaveCount(2)
@@ -111,7 +114,11 @@ it('holds libraries and names taken back in the order given, and refuses a blank
         ->and($withdrawn)->toHaveCount(2)
         ->and(fn(): TheLibraries => TheLibraries::of('Films', ' '))->toThrow(InvitationSaysNothing::class, 'its `libraries` blank')
         ->and(fn(): WhoWasTakenBack => WhoWasTakenBack::of(''))->toThrow(InvitationSaysNothing::class, 'its `withdrawn` blank')
-        ->and(fn(): WhoWasTakenBack => WhoWasTakenBack::of('bob', ' '))->toThrow(InvitationSaysNothing::class, 'its `withdrawn` blank');
+        ->and(fn(): WhoWasTakenBack => WhoWasTakenBack::of('bob', ' '))->toThrow(InvitationSaysNothing::class, 'its `withdrawn` blank')
+        ->and(iterator_to_array($suspended, preserve_keys: true))->toBe(['dave', 'erin'])
+        ->and($suspended)->toHaveCount(2)
+        ->and(fn(): WhoWasSwitchedOff => WhoWasSwitchedOff::of(''))->toThrow(InvitationSaysNothing::class, 'its `suspended` blank')
+        ->and(fn(): WhoWasSwitchedOff => WhoWasSwitchedOff::of('dave', ' '))->toThrow(InvitationSaysNothing::class, 'its `suspended` blank');
 });
 
 it('leaves something to hand over for everybody but somebody who has joined', function (): void {

@@ -5,10 +5,12 @@ declare(strict_types=1);
 use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAffectedItem;
+use Modules\Kernel\Api\AStoppage;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remedies;
@@ -20,6 +22,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatFollowedFromIt;
+use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
@@ -101,23 +104,24 @@ function whatAHealthyStackSaysOfItsHealth(): array
 }
 
 /**
- * A whole dashboard carrying one health summary.
+ * A whole dashboard carrying one health summary, and what stopped moving.
  *
  * The rest of the dashboard is what the stand-in builds from the contract,
  * because it is read by nothing here and only has to be a dashboard a stack
  * could send.
  *
  * @param  array<string, mixed>  $health
+ * @param  list<array<string, mixed>>  $stuck
  * @return array<string, mixed>
  */
-function aDashboardCarrying(array $health): array
+function aDashboardCarrying(array $health, array $stuck = []): array
 {
     $rest = WhatAStackWouldSay::inside('DashboardEnvelope');
 
     return [
         'api_version' => 1,
         'kind' => 'dashboard',
-        'data' => [...(is_array($rest) ? $rest : []), 'health' => $health],
+        'data' => [...(is_array($rest) ? $rest : []), 'health' => $health, 'stuck' => $stuck],
     ];
 }
 
@@ -128,13 +132,14 @@ function anEvent(string $kind, string $data): string
 }
 
 /**
- * One dashboard event carrying one health summary.
+ * One dashboard event carrying one health summary, and what stopped moving.
  *
  * @param  array<string, mixed>  $health
+ * @param  list<array<string, mixed>>  $stuck
  */
-function aDashboardEvent(array $health): string
+function aDashboardEvent(array $health, array $stuck = []): string
 {
-    return anEvent('dashboard', json_encode(aDashboardCarrying($health), JSON_THROW_ON_ERROR));
+    return anEvent('dashboard', json_encode(aDashboardCarrying($health, $stuck), JSON_THROW_ON_ERROR));
 }
 
 /** The summary both implementations answer with, where a filling stack speaks. */
@@ -144,6 +149,7 @@ function theFillingSummary(): TheHealthSummary
         HowItStands::Degraded,
         1,
         'The disk is nearly full',
+        WhatStoppedMoving::nothing(),
         AnAffectedItem::of(
             Check::of('disk.space'),
             Severity::Warning,
@@ -155,10 +161,26 @@ function theFillingSummary(): TheHealthSummary
     );
 }
 
+/**
+ * One stopped row, a cause several items share, as a stack sends it.
+ *
+ * @return array<string, mixed>
+ */
+function aStoppedQueueRow(): array
+{
+    return [
+        'stall' => 'repeated-import-failure',
+        'name' => 'Permission denied on /media/films',
+        'items' => 20,
+        'blocking' => 'Access to the path is denied.',
+        'held_for' => 10_800,
+    ];
+}
+
 /** The summary both answer with, where a healthy stack speaks. */
 function theHealthySummary(): TheHealthSummary
 {
-    return TheHealthSummary::of(HowItStands::Healthy, 0, '');
+    return TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing());
 }
 
 /**
@@ -222,12 +244,19 @@ function aSummaryAsAWord(TheHealthSummary $summary): string
         );
     }
 
+    $stopped = [];
+
+    foreach ($summary->stopped() as $row) {
+        $stopped[] = sprintf('%s/%s/%d/%s/%ds', $row->how()->value, $row->name(), $row->items(), $row->blocking(), $row->heldFor()->inSeconds());
+    }
+
     return sprintf(
-        '%s, %d wanting, worst "%s", {%s}',
+        '%s, %d wanting, worst "%s", {%s}%s',
         $summary->standing()->value,
         $summary->wantingAttention(),
         $summary->worst(),
         implode(';', $items),
+        $stopped === [] ? '' : sprintf(', stopped {%s}', implode(';', $stopped)),
     );
 }
 
@@ -320,11 +349,15 @@ it('tells a session the stack refused from a stack that could not be heard', fun
 it('cannot hear a summary it cannot read, and says so as a stack that did not answer', function (): void {
     $unknownWord = [...whatAHealthyStackSaysOfItsHealth(), 'standing' => 'splendid'];
     $belowNothing = [...whatAHealthyStackSaysOfItsHealth(), 'wanting_attention' => -1];
+    $anUnknownStall = [...aStoppedQueueRow(), 'stall' => 'sulking'];
+    $aRowForNothing = [...aStoppedQueueRow(), 'items' => 0];
 
     foreach ([
         anEvent('dashboard', 'not json at all'),
         aDashboardEvent($unknownWord),
         aDashboardEvent($belowNothing),
+        aDashboardEvent(whatAHealthyStackSaysOfItsHealth(), [$anUnknownStall]),
+        aDashboardEvent(whatAHealthyStackSaysOfItsHealth(), [$aRowForNothing]),
     ] as $said) {
         foreach (everyWayOfListening(
             [MockResponse::make($said)],
@@ -424,5 +457,26 @@ it('stands in for a stack with dashboards the contract would accept', function (
     foreach ([whatAFillingStackSaysOfItsHealth(), whatAHealthyStackSaysOfItsHealth()] as $health) {
         expect(WhatTheContractAccepts::complaintsAbout('DashboardEnvelope', aDashboardCarrying($health)))
             ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+    }
+});
+
+it('hears what stopped moving with the summary, in the order the stack sent it', function (): void {
+    $slow = ['stall' => 'slow', 'name' => 'Dune', 'items' => 1, 'blocking' => null, 'held_for' => 600];
+
+    foreach (everyWayOfListening(
+        [MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth(), [aStoppedQueueRow(), $slow]))],
+        [WhatWasHeard::said(TheHealthSummary::of(
+            HowItStands::Healthy,
+            0,
+            '',
+            WhatStoppedMoving::of(
+                AStoppage::of(HowItStopped::RepeatedImportFailure, 'Permission denied on /media/films', 20, 'Access to the path is denied.', 10_800),
+                AStoppage::of(HowItStopped::Slow, 'Dune', 1, '', 600),
+            ),
+        ))],
+    ) as $which => $make) {
+        expect(whatWakesHear($make(), 1))->toBe([
+            'healthy, 0 wanting, worst "", {}, stopped {repeated-import-failure/Permission denied on /media/films/20/Access to the path is denied./10800s;slow/Dune/1//600s}',
+        ], $which);
     }
 });

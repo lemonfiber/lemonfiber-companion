@@ -3,14 +3,18 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Client;
+use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
+use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatToDoWithACopy;
@@ -72,6 +76,12 @@ const DOORS_THE_APP_OPENS = [
     // and nowhere else. It reads and changes nothing, and a screen holds it
     // only while somebody can see it.
     'eventSource' => 'listens to the stack\'s event stream for the health summary, changing nothing',
+
+    // The one read whose answer is a file rather than an envelope: a support
+    // bundle the stack already wrote, fetched by the name its path ends in so
+    // the operator can hand it over through the device's own sharing. It
+    // changes nothing on the machine, and nothing is sent back through it.
+    'bundle' => 'reads one support bundle the stack wrote, by its name, changing nothing',
 
     // The one thing this app can ask a stack to change,
     // and it takes a `Repair` the stack itself offered rather than an endpoint
@@ -187,6 +197,12 @@ const VERBS_THE_APP_ASKS_FOR = [
     // refuses to grab outside the tunnel and never re-fetches what is
     // already here, so what it can do is what an operator asked to watch.
     'walkthrough' => 'fetches one thing while the operator watches, narrated end to end, on a stack already set up',
+
+    // A support bundle, described and then written. Described, it writes
+    // nothing; written, it is a file on the stack's own machine, holding
+    // what the description listed. A setting is shown as it is only where
+    // the operator named it and agreed to it on its own.
+    'support' => 'describes a support bundle, and writes the one described on a second yes',
 ];
 
 /**
@@ -456,6 +472,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
+        ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
 

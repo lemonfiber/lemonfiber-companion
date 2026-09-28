@@ -22,7 +22,7 @@ use function sprintf;
  * thirty-two hours old changes nothing an operator does, and precision that
  * changes nothing is noise on a phone.
  *
- * **Declared finest first**, which {@see self::of()} reads by walking the cases
+ * **Declared finest first**, which {@see self::over()} reads by walking the cases
  * backwards: the coarsest unit an age fills at least one of is the one it is
  * said in. The order is the meaning, so moving a case is a failing test rather
  * than a screen that quietly starts counting in days.
@@ -57,11 +57,22 @@ enum HowLongAgo: string
      */
     public static function since(Instant $read, Instant $now): self
     {
-        $ago = self::secondsBetween($read, $now);
+        return self::over(self::secondsBetween($read, $now));
+    }
 
+    /**
+     * The unit a span of this many seconds is said in.
+     *
+     * The same bands as an age, because *how long it has been stuck* and *how
+     * long ago it was heard* are both a length of time an operator weighs, and
+     * two tables would come to disagree about where an hour starts.
+     * {@see HowLong} is what reads a span through this.
+     */
+    public static function over(int $seconds): self
+    {
         $filled = array_find(
             array_reverse(self::cases()),
-            static fn(self $unit): bool => $ago >= $unit->seconds(),
+            static fn(self $unit): bool => $seconds >= $unit->seconds(),
         );
 
         return $filled ?? self::Minutes;
@@ -95,6 +106,12 @@ enum HowLongAgo: string
     public function saidOnTheScreen(): string
     {
         return sprintf('health.ago.%s', $this->value);
+    }
+
+    /** What a span in this unit is called on a screen, as a key: *for three hours*. */
+    public function heldOnTheScreen(): string
+    {
+        return sprintf('health.held_for.%s', $this->value);
     }
 
     /**

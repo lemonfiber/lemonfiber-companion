@@ -16,6 +16,7 @@ use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowLongAgo;
@@ -183,7 +184,11 @@ function everyDerivedKey(): array
         ),
         HowLongAgo::class => aPairPerCase(
             HowLongAgo::cases(),
-            static fn(HowLongAgo $unit): array => [$unit->saidOnTheScreen()],
+            static fn(HowLongAgo $unit): array => [$unit->saidOnTheScreen(), $unit->heldOnTheScreen()],
+        ),
+        HowItStopped::class => aPairPerCase(
+            HowItStopped::cases(),
+            static fn(HowItStopped $how): array => [$how->saidOnTheScreen()],
         ),
         HowItStands::class => aPairPerCase(
             HowItStands::cases(),

@@ -29,7 +29,7 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N11-R6` | A service's provenance shows its image, the digest it is pinned to, its upstream and its licence | `WhereItComesFrom`, which cannot be built with any of its words blank — `OriginSaysNothing` names the one that was, and `Origins` refuses the row first so it reaches the screen as an obstacle rather than a raise. The image and the version are kept apart as the stack keeps them and drawn together, because a version without its image names nothing that can be fetched. **The digest is not drawn**: see below |
+| `N11-R6` | A service's provenance shows its image, the digest it is pinned to, its upstream and its licence | `WhereItComesFrom`, which cannot be built with any of its words blank — `OriginSaysNothing` names the one that was, and `Origins` refuses the row first so it reaches the screen as an obstacle rather than a raise. The image and the version are kept apart as the stack keeps them and drawn together, because a version without its image names nothing that can be fetched. The digest is `ImageDigest`, added with `pinnedAt()` where the envelope carries one, and drawn beside the version; an image pinned by tag alone is said to be, rather than left blank |
 | `N11-R7` | A licence is shown for every service, not only where it is unusual | The licence is a required word of `WhereItComesFrom`, and `WhereThisComesFrom` draws it on every row, whatever it says |
 | `N11-R8` | Where an upstream cannot be reached, the pin and the licence are still shown | Nothing here reaches an upstream. `Provenance` asks the stack and nothing else, and every word on the screen is one the stack declared — which the screen says once, over the list, so a licence is not read as a check made today |
 
@@ -41,9 +41,9 @@ and nothing about why it was made. `WhereItStopsShort` is not that reason — it
 is why putting a change back stops short — and the screen says so in its own
 words rather than letting one stand in for the other.
 
-`N11-R6` asks for the digest a service is pinned to, and the screen draws its
-version instead. The stack does not carry a digest: its manifest pins each image
-by tag, and the `provenance` envelope's `pinned` is that tag. `E1-R1` requires
-every image pinned to an immutable digest with the tag beside it, so the gap is
-the stack's to close first; when the envelope carries a digest, it is drawn
-beside the version rather than in place of it.
+`N11-R6` asks for the digest a service is pinned to. The `provenance` envelope
+carries it as `digest` beside `pinned`, the tag, where the stack's manifest names
+one (`E1-R1`), and the screen draws it beside the version rather than in its
+place: the version is what a person recognises, and the digest is what makes the
+pin immutable. Where the manifest names none, the row says the image is pinned by
+tag alone.

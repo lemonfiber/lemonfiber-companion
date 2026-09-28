@@ -55,6 +55,7 @@ final readonly class HowTheOriginsRead
             name: $origin->name(),
             image: $origin->image(),
             pinned: $origin->pinned(),
+            digest: $origin->digest(),
             upstream: $origin->upstream(),
             licence: $origin->licence(),
         );

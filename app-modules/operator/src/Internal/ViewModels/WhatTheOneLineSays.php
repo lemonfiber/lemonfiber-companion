@@ -11,7 +11,12 @@ use Modules\Operator\Internal\Presenters\AgoAsShown;
  *
  * Every state carries every field, and a field with nothing to say is empty
  * rather than invented: a screen that has heard nothing yet has no count, no
- * worst thing and no affected items, and says that it is waiting.
+ * worst thing, no affected items and nothing stopped, and says that it is
+ * waiting.
+ *
+ * **Slow is its own list.** It is on the stack's list of what stopped moving
+ * because it has been watched, and it needs time rather than a fix, so it is
+ * never drawn under the heading that says something is stuck.
  */
 final readonly class WhatTheOneLineSays
 {
@@ -25,6 +30,8 @@ final readonly class WhatTheOneLineSays
      * @param string                      $remedy    the key for what to do about that, or empty
      * @param bool                        $listening whether a subscription is open, which decides which cadence is said
      * @param list<AnAffectedItemAsShown> $affected  every thing counted as wrong, worst first
+     * @param list<AStoppageAsShown>      $stopped   what stopped in the queue and wants a fix, in the stack's order
+     * @param list<AStoppageAsShown>      $slow      what is slow and still moving, in the stack's order
      */
     public function __construct(
         public string $said,
@@ -36,5 +43,7 @@ final readonly class WhatTheOneLineSays
         public string $remedy,
         public bool $listening,
         public array $affected,
+        public array $stopped,
+        public array $slow,
     ) {}
 }

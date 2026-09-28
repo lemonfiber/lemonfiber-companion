@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\SummaryCountsBelowNothing;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatFollowedFromIt;
+use Modules\Kernel\Api\WhatStoppedMoving;
 
 /** One affected item, named by its check. */
 function anItemCalled(string $check): AnAffectedItem
@@ -33,7 +34,7 @@ function anItemCalled(string $check): AnAffectedItem
 }
 
 it('holds the word, the count and the worst thing as the core sent them', function (): void {
-    $summary = TheHealthSummary::of(HowItStands::Broken, 2, 'Downloads have stopped', anItemCalled('queue.stalled'), anItemCalled('disk.space'));
+    $summary = TheHealthSummary::of(HowItStands::Broken, 2, 'Downloads have stopped', WhatStoppedMoving::nothing(), anItemCalled('queue.stalled'), anItemCalled('disk.space'));
 
     expect($summary->standing())->toBe(HowItStands::Broken)
         ->and($summary->wantingAttention())->toBe(2)
@@ -43,7 +44,7 @@ it('holds the word, the count and the worst thing as the core sent them', functi
 it('walks the affected items in the order the core put them in', function (): void {
     $checks = [];
 
-    foreach (TheHealthSummary::of(HowItStands::Broken, 2, '', anItemCalled('queue.stalled'), anItemCalled('disk.space')) as $item) {
+    foreach (TheHealthSummary::of(HowItStands::Broken, 2, '', WhatStoppedMoving::nothing(), anItemCalled('queue.stalled'), anItemCalled('disk.space')) as $item) {
         $checks[] = $item->check()->shown();
     }
 
@@ -53,11 +54,11 @@ it('walks the affected items in the order the core put them in', function (): vo
 it('walks the affected items by position, whatever they were handed over keyed by', function (): void {
     $keyed = ['first' => anItemCalled('queue.stalled'), 'second' => anItemCalled('disk.space')];
 
-    expect(array_keys(iterator_to_array(TheHealthSummary::of(HowItStands::Broken, 2, '', ...$keyed), preserve_keys: true)))->toBe([0, 1]);
+    expect(array_keys(iterator_to_array(TheHealthSummary::of(HowItStands::Broken, 2, '', WhatStoppedMoving::nothing(), ...$keyed), preserve_keys: true)))->toBe([0, 1]);
 });
 
 it('holds nothing to walk and nothing named where nothing is wrong', function (): void {
-    $summary = TheHealthSummary::of(HowItStands::Healthy, 0, '');
+    $summary = TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing());
 
     expect(iterator_to_array($summary, preserve_keys: false))->toBe([])
         ->and($summary->wantingAttention())->toBe(0)
@@ -65,9 +66,9 @@ it('holds nothing to walk and nothing named where nothing is wrong', function ()
 });
 
 it('refuses a count below nothing, and takes nothing as a count', function (): void {
-    expect(static fn(): TheHealthSummary => TheHealthSummary::of(HowItStands::Healthy, -1, ''))
+    expect(static fn(): TheHealthSummary => TheHealthSummary::of(HowItStands::Healthy, -1, '', WhatStoppedMoving::nothing()))
         ->toThrow(SummaryCountsBelowNothing::class, 'said -1 things')
-        ->and(TheHealthSummary::of(HowItStands::Healthy, 0, '')->wantingAttention())->toBe(0);
+        ->and(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())->wantingAttention())->toBe(0);
 });
 
 it('holds every part of an affected item as the core sent it', function (): void {

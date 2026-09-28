@@ -87,6 +87,12 @@ final readonly class HowTheInvitationReads
             $withdrawn[] = $name;
         }
 
+        $suspended = [];
+
+        foreach ($invitation->suspended() as $name) {
+            $suspended[] = $name;
+        }
+
         return new TheInvitationTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             isWorking: false,
@@ -113,6 +119,7 @@ final readonly class HowTheInvitationReads
                     nothing: WhatWasGrantedAsShown::nothing(...),
                 ),
                 withdrawn: $withdrawn,
+                suspended: $suspended,
             ),
         );
     }

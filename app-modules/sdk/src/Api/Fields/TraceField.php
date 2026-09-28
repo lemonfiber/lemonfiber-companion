@@ -35,9 +35,6 @@ enum TraceField: string implements NamesAWireField
     /** The notable events in its history, oldest first. */
     case History = 'history';
 
-    /** Why it stopped, where it plainly has. */
-    case Stall = 'stall';
-
     /** How much of a series is here, season by season. */
     case Coverage = 'coverage';
 

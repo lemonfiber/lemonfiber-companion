@@ -28,18 +28,21 @@ use function sprintf;
  *
  * Built by hand rather than fetched, because what is under test is what
  * happens when the wire says something the contract does not allow. The rest
- * of the dashboard is left out: the reader reads the summary and nothing else,
- * and `HearingContractTest` holds a whole dashboard against the contract.
+ * of the dashboard is left out: the reader reads the summary and what stopped
+ * moving and nothing else, and `HearingContractTest` holds a whole dashboard
+ * against the contract. Nothing has stopped unless a case says what has;
+ * `StoppedRowsTest` reads those rows.
  *
  * `dashboard` is stood in for and not judged: every case here is a payload the contract refuses, which is the point of it.
  *
  * @param array<mixed> $health
+ * @param array<mixed> $stuck
  *
  * @return Envelope<mixed>
  */
-function aDashboardSaying(array $health): Envelope
+function aDashboardSaying(array $health, array $stuck = []): Envelope
 {
-    return new Envelope(1, 'dashboard', ['health' => $health]);
+    return new Envelope(1, 'dashboard', ['health' => $health, 'stuck' => $stuck]);
 }
 
 /**
@@ -226,4 +229,24 @@ it('hands a blank check, a blank remedy and a count below nothing to the values 
         ->toThrow(RemedySaysNothing::class)
         ->and(static fn(): TheHealthSummary => Summaries::in(aDashboardSaying(aHealthSummary(['wanting_attention' => -1]))))
         ->toThrow(SummaryCountsBelowNothing::class);
+});
+
+it('hands what stopped moving over with the summary, in the order it came', function (): void {
+    $summary = Summaries::in(aDashboardSaying(aHealthSummary(), [
+        ['stall' => 'orphaned', 'name' => 'Arrival', 'items' => 1, 'held_for' => 7_200],
+        ['stall' => 'slow', 'name' => 'Dune', 'items' => 1, 'held_for' => 600],
+    ]));
+
+    $names = [];
+
+    foreach ($summary->stopped() as $row) {
+        $names[] = $row->name();
+    }
+
+    expect($names)->toBe(['Arrival', 'Dune']);
+});
+
+it('refuses a dashboard with no stopped list, rather than reading it as nothing stopped', function (): void {
+    expect(whyTheSummaryWasRefused(new Envelope(1, 'dashboard', ['health' => aHealthSummary()])))->toContain('`stuck`')
+        ->and(whyTheSummaryWasRefused(new Envelope(1, 'dashboard', ['health' => aHealthSummary(), 'stuck' => 'nothing'])))->toContain('`stuck`');
 });

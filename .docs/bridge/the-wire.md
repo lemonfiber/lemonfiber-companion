@@ -13,8 +13,8 @@ Lemonfiber.Scanning.Read         Lemonfiber.Telling.CancelAll
                                  Lemonfiber.Telling.Pending
 Lemonfiber.Link.Status           Lemonfiber.Telling.ClearBadge
                                  Lemonfiber.Telling.Standing
-Lemonfiber.Handover.File         Lemonfiber.Telling.Ask
-Lemonfiber.Handover.Url
+Lemonfiber.Handover.Offer        Lemonfiber.Telling.Ask
+Lemonfiber.Handover.OfferFile
 ```
 
 Capture protection and the app lock keep flat names — `Lemonfiber.Conceal`,

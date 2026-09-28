@@ -7,6 +7,7 @@ use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
+use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
@@ -20,6 +21,7 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\Decided;
@@ -43,6 +45,7 @@ use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -56,6 +59,7 @@ use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
+use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -67,11 +71,13 @@ use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
+use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Doorkeepers;
@@ -187,6 +193,7 @@ function anInvitationToSpoilTheAnswerTo(): AnInvitationAgreed
         WhereTheInvitationStands::Made,
         WhetherTheyCanAsk::NotTried,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     ));
 }
 
@@ -241,6 +248,15 @@ function everyAdapterCallThatReads(): array
             => new Copiers($clients, $entropy)->take($stack, $session, ACopyAsked::ofTheWholeStack()),
         'Copiers::whatBecameOf' => static fn(): object
             => new Copiers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Bundlers::ask' => static fn(): object => new Bundlers($clients, $entropy)->ask(
+            $stack,
+            $session,
+            ABundleAsked::described(HowManyLines::of(200), WhatFilenamesShow::Replaced, SettingsToReveal::none()),
+        ),
+        'Bundlers::whatBecameOf' => static fn(): object
+            => new Bundlers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Bundlers::fetch' => static fn(): object
+            => new Bundlers($clients, $entropy)->fetch($stack, $session, AWrittenBundle::at('/home/op/bundles/lemonfiber-support.tar.gz')),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
@@ -364,6 +380,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         str_starts_with($which, 'Upgraders::') => sprintf('%sUpgradeEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Copiers::whatBecameOf' => sprintf('%sBackupEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Bundlers::whatBecameOf' => sprintf('%sBundleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };

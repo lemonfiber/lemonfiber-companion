@@ -53,6 +53,10 @@ enum WalkthroughField: string implements NamesAWireField
     /** Where and why it stopped. */
     case Stopped = 'stopped';
 
-    /** What the services involved were saying when it stopped. */
+    /**
+     * What the services involved were saying when it stopped.
+     *
+     * Sent under the same word, it is how many lines a support bundle takes from each service.
+     */
     case Logs = 'logs';
 }

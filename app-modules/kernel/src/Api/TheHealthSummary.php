@@ -19,6 +19,10 @@ use Traversable;
  * back and computes none of it, which is what makes the line the same here as
  * on the machine.
  *
+ * What stopped moving in the queue travels with it, because the core sends it
+ * in the same event: a summary saying downloads have stopped, heard without the
+ * rows saying which kind of stopped, would be a line with nothing under it.
+ *
  * Iterating it walks the affected items in the order the core put them in.
  *
  * @implements IteratorAggregate<int, AnAffectedItem>
@@ -30,6 +34,7 @@ final readonly class TheHealthSummary implements IteratorAggregate
         private HowItStands $standing,
         private int $wantingAttention,
         private string $worst,
+        private WhatStoppedMoving $stopped,
         private array $affected,
     ) {}
 
@@ -39,13 +44,18 @@ final readonly class TheHealthSummary implements IteratorAggregate
      * `$worst` is empty where the core named nothing, which it does where nothing
      * is wrong.
      */
-    public static function of(HowItStands $standing, int $wantingAttention, string $worst, AnAffectedItem ...$affected): self
-    {
+    public static function of(
+        HowItStands $standing,
+        int $wantingAttention,
+        string $worst,
+        WhatStoppedMoving $stopped,
+        AnAffectedItem ...$affected,
+    ): self {
         if ($wantingAttention < 0) {
             throw SummaryCountsBelowNothing::wanting($wantingAttention);
         }
 
-        return new self($standing, $wantingAttention, $worst, array_values($affected));
+        return new self($standing, $wantingAttention, $worst, $stopped, array_values($affected));
     }
 
     public function standing(): HowItStands
@@ -61,6 +71,12 @@ final readonly class TheHealthSummary implements IteratorAggregate
     public function worst(): string
     {
         return $this->worst;
+    }
+
+    /** What the queue says has stopped moving, worst first. */
+    public function stopped(): WhatStoppedMoving
+    {
+        return $this->stopped;
     }
 
     /** @return Traversable<int, AnAffectedItem> */

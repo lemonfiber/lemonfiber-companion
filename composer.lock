@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "409fa3f83e1071582d87f687eb70a1d8",
+    "content-hash": "b727a646342633d206b00f268bdf6d5a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3068,9 +3068,10 @@
             "dist": {
                 "type": "path",
                 "url": "bridge",
-                "reference": "0155bb7bc6fb227e5e41952535e48963662bae4d"
+                "reference": "9143919b0d648fe63d7c4b3b92a2086fbd184f30"
             },
             "require": {
+                "ext-sodium": "*",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
             },
@@ -3111,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "1c000de0756c063823ba3505d0d97b3bdd2fa90a"
+                "reference": "a57286403174b1dfe825ef8b4a6476658de9f870"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/1c000de0756c063823ba3505d0d97b3bdd2fa90a",
-                "reference": "1c000de0756c063823ba3505d0d97b3bdd2fa90a",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/a57286403174b1dfe825ef8b4a6476658de9f870",
+                "reference": "a57286403174b1dfe825ef8b4a6476658de9f870",
                 "shasum": ""
             },
             "require": {
@@ -3248,7 +3249,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-09-28T09:15:53+00:00"
+            "time": "2026-09-28T10:07:49+00:00"
         },
         {
             "name": "marc-mabe/php-enum",

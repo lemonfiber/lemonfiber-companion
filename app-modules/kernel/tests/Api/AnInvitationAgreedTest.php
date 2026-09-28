@@ -16,6 +16,7 @@ use Modules\Kernel\Api\InvitationWasNotOffered;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 
 /** A rehearsal for this name, finding what is given. */
@@ -26,6 +27,7 @@ function aRehearsalFor(string $name, WhereTheInvitationStands $standing): AnInvi
         $standing,
         WhetherTheyCanAsk::NotTried,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     );
 }
 
@@ -46,6 +48,7 @@ it('refuses an answer that was carried out, and somebody already in', function (
         WhereTheInvitationStands::Made,
         WhetherTheyCanAsk::Made,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     );
 
     expect(fn(): AnInvitationAgreed => AnInvitationAgreed::after($asked, $carriedOut))->toThrow(InvitationWasNotOffered::class, 'already been carried out')

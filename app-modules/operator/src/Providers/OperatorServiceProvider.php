@@ -7,6 +7,7 @@ namespace Modules\Operator\Providers;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
@@ -232,6 +233,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // the stack wrote, so it is encoded and takes the rest of the path.
             Router::native(AStacksScreen::Copy->value, TakingACopyHere::class);
             Router::native(AStacksScreen::PutBack->value, PuttingACopyBack::class)->where('service', '.+');
+
+            // Asking for help. A screen of its own, because a bundle is
+            // described before it is written and read before it is handed on.
+            Router::native(AStacksScreen::Help->value, AskingForHelpHere::class);
 
             // How full it is. Its own screen, because a warning that the disk
             // is filling arrives on its own.

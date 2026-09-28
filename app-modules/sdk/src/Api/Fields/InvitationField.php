@@ -37,4 +37,7 @@ enum InvitationField: string implements NamesAWireField
 
     /** The age above which the media server holds things back, as an invitation is asked for. */
     case AgeLimit = 'age_limit';
+
+    /** Resets that lapsed, switched off on the way past and kept, by account name. */
+    case Suspended = 'suspended';
 }

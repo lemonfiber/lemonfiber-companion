@@ -12,6 +12,7 @@ use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 
 use function sprintf;
@@ -25,7 +26,7 @@ function secondsIn(int $seconds): Instant
 /** A summary, told apart from another by its word. */
 function aSummaryThatSays(HowItStands $standing): TheHealthSummary
 {
-    return TheHealthSummary::of($standing, 0, '');
+    return TheHealthSummary::of($standing, 0, '', WhatStoppedMoving::nothing());
 }
 
 /** One line carried out of an arm. */

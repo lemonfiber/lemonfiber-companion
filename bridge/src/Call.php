@@ -126,6 +126,16 @@ enum Call: string
     case Offer = 'Lemonfiber.Handover.Offer';
 
     /**
+     * Write one file into the share cache, offer it to whoever the operator
+     * picks, and answer whether the sheet was reached.
+     *
+     * Nothing learns when the chosen app is done reading the file, so it is
+     * bounded rather than tracked: one app-private directory used for nothing
+     * else, swept before every new handover and on the next launch.
+     */
+    case OfferFile = 'Lemonfiber.Handover.OfferFile';
+
+    /**
      * Say whether anything is reachable from this device right now.
      *
      * The whole of the capability. What the link is, whether it is metered and

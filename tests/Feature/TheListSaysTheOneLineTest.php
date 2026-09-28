@@ -15,6 +15,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
@@ -210,7 +211,7 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
         AStackThatWasAsked::met(Obstacle::StackDidNotAnswer),
         $keychain,
         StacksInMemory::holding($stack),
-        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note'))),
+        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note', WhatStoppedMoving::nothing()))),
         FrozenClock::at(Instant::atEpochSeconds(NOW - 3)),
         ACaptureInMemory::inFront(),
         $standings,

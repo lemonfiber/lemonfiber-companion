@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\Handed;
@@ -29,6 +30,9 @@ final class AShareSheetThatWasOffered implements Sharing
     /** The invitation it was handed to pass on, or nothing where it never was. */
     private ?AnInvitationToPassOn $passed = null;
 
+    /** @var list<ABundleFile> every bundle's file it was handed, in order */
+    private array $handedOver = [];
+
     private function __construct(private readonly ?WhyNothingWasShared $refusing) {}
 
     /** A sheet that opens. */
@@ -53,6 +57,20 @@ final class AShareSheetThatWasOffered implements Sharing
     public function passed(): ?AnInvitationToPassOn
     {
         return $this->passed;
+    }
+
+    /** @return list<ABundleFile> every bundle's file it was handed, for a test to read every byte of */
+    public function handedOver(): array
+    {
+        return $this->handedOver;
+    }
+
+    public function handOver(ABundleFile $bundle): Handed
+    {
+        // Recorded on both arms, for the reason `hand()` records a report.
+        $this->handedOver[] = $bundle;
+
+        return $this->answered();
     }
 
     public function passOn(AnInvitationToPassOn $invitation): Handed

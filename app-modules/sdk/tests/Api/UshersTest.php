@@ -35,6 +35,7 @@ use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Ushers;
@@ -207,6 +208,7 @@ function theRehearsalAnnaWasShown(): AnInvitation
         WhereTheInvitationStands::Made,
         WhetherTheyCanAsk::NotTried,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     );
 }
 

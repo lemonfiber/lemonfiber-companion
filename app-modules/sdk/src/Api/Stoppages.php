@@ -203,14 +203,14 @@ final readonly class Stoppages
      */
     private static function rows(array $data): array
     {
-        if (! array_key_exists(StuckField::Items->value, $data)) {
-            throw StuckIsUnreadable::missing(StuckField::Items);
+        if (! array_key_exists(WireField::Items->value, $data)) {
+            throw StuckIsUnreadable::missing(WireField::Items);
         }
 
-        $rows = $data[StuckField::Items->value];
+        $rows = $data[WireField::Items->value];
 
         if (! is_array($rows)) {
-            throw StuckIsUnreadable::missing(StuckField::Items);
+            throw StuckIsUnreadable::missing(WireField::Items);
         }
 
         return $rows;

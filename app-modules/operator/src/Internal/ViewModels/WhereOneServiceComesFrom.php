@@ -18,6 +18,7 @@ final readonly class WhereOneServiceComesFrom
      * @param string $name     what it is called in front of an operator
      * @param string $image    the image it runs, without a version
      * @param string $pinned   the exact version this stack pins it at
+     * @param string $digest   the digest the image is pinned to, or empty where the stack names none
      * @param string $upstream the project it is built from
      * @param string $licence  the licence it is published under
      */
@@ -25,6 +26,7 @@ final readonly class WhereOneServiceComesFrom
         public string $name,
         public string $image,
         public string $pinned,
+        public string $digest,
         public string $upstream,
         public string $licence,
     ) {}

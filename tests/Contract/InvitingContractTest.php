@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Ushers;
@@ -64,6 +65,7 @@ function theSameInvitation(): AnInvitation
         WhereTheInvitationStands::Made,
         WhetherTheyCanAsk::NotYet,
         WhoWasTakenBack::of('bob'),
+        WhoWasSwitchedOff::of(),
     )->granting(WhatWasGranted::granted(TheLibraries::of('Films'), WhatBecomesOfUnrated::HeldBack, WhetherTheyCanAsk::NotYet, 'A limit is not a lock', 'PG-13'));
 }
 
@@ -171,7 +173,7 @@ it('takes a password off, and follows the work to the invitation to hand over', 
 it('rehearses and invites, each answered with the work to follow', function (): void {
     $handle = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'invite']]), 202);
     $asked = AnInvitationAskedFor::for('anna', TheLibraries::of('Films'));
-    $offered = AnInvitation::rehearsed(AnInvitationToHand::to('anna', AnAddressToHand::at('http://192.168.1.42:8096', ''), 72), WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, WhoWasTakenBack::of());
+    $offered = AnInvitation::rehearsed(AnInvitationToHand::to('anna', AnAddressToHand::at('http://192.168.1.42:8096', ''), 72), WhereTheInvitationStands::Made, WhetherTheyCanAsk::NotTried, WhoWasTakenBack::of(), WhoWasSwitchedOff::of());
 
     foreach (everyWayOfInviting($handle, $handle) as $which => $make) {
         $inviting = $make();

@@ -56,6 +56,34 @@
         @endforelse
     @endif
 
+    {{-- What stopped moving in the queue, as the stack ranked it: by kind,
+         worst first, one row per cause where several items share one. Slow
+         is drawn apart and after, under its own heading, because it needs
+         time rather than a fix and shown as stuck it teaches an operator to
+         read past the whole list. --}}
+    @unless ($this->summary()->stopped === [])
+        <x-operator::emphasis>{{ __('health.stopped_heading') }}</x-operator::emphasis>
+    @endunless
+
+    @forelse ($this->summary()->stopped as $row)
+        <x-operator::stopped-row :row="$row" :trace="$row->follows === '' ? '' : $this->traceOf($row->follows)" />
+    @empty
+        {{-- Deliberately nothing. Nothing in the queue wants a fix, and the
+             one line above already says how the stack stands; a sentence
+             saying the queue is clear would be one the stack did not send. --}}
+    @endforelse
+
+    @unless ($this->summary()->slow === [])
+        <x-operator::emphasis>{{ __('health.slow_heading') }}</x-operator::emphasis>
+        <native:text>{{ __('health.slow_explained') }}</native:text>
+    @endunless
+
+    @forelse ($this->summary()->slow as $row)
+        <x-operator::stopped-row :row="$row" :trace="$row->follows === '' ? '' : $this->traceOf($row->follows)" />
+    @empty
+        {{-- Deliberately nothing: nothing is only slow. --}}
+    @endforelse
+
     <x-operator::note>{{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}</x-operator::note>
 
     {{-- The families this run has something to say about, so that a
@@ -284,6 +312,10 @@
 
     {{-- What it keeps on the machine, and the copies it holds. --}}
     <x-operator::quiet-action label="{{ __('stacks.keeps.road_in') }}" :goes="$this->goes()->ofItself()->keeps()" />
+
+    {{-- Asking somebody else for help: a support bundle, described before it
+         is written and read here before it is handed to anyone. --}}
+    <x-operator::quiet-action label="{{ __('stacks.help.road_in') }}" :goes="$this->goes()->ofItself()->help()" />
 
     {{-- How full it is, and where the room went. --}}
     <x-operator::quiet-action label="{{ __('stacks.room.road_in') }}" :goes="$this->goes()->ofItself()->room()" />

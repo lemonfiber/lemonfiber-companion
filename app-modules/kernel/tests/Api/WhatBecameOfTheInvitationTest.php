@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
 
 use function sprintf;
@@ -44,6 +45,7 @@ it('takes the arm it was made on, and carries what it was made with', function (
         WhereTheInvitationStands::Made,
         WhetherTheyCanAsk::Made,
         WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
     );
 
     expect(whichArmItTook(WhatBecameOfTheInvitation::underway(Job::named('j-1'))))->toBe('underway:j-1')
