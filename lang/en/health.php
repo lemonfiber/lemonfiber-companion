@@ -309,11 +309,11 @@ return [
         'host-managed' => 'Run by the machine, not by this stack',
     ],
     'matters' => [
-        'critical' => 'Nothing else works without it',
-        'core' => 'Part of the stack itself',
-        'important' => 'The house would notice today',
-        'enhancing' => 'The house would notice eventually',
-        'optional' => 'Nobody would notice',
+        'critical' => 'If it fails, the harm reaches beyond this stack',
+        'core' => 'The stack cannot do its job without it',
+        'important' => 'Without it, the stack loses much of what it does',
+        'enhancing' => 'Makes life nicer; the stack works without it',
+        'optional' => 'Only there if you asked for it',
     ],
     'running' => [
         'inactive' => 'Nothing is running',

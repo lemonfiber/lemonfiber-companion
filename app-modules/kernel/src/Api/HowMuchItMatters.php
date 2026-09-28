@@ -7,12 +7,12 @@ namespace Modules\Kernel\Api;
 use function sprintf;
 
 /**
- * How much of the stack stops working if this service does.
+ * What it costs when this service fails, as the stack's catalogue rates it.
  *
  * An enum for `D4`'s reason — `status.services[].criticality` is exactly these
  * five — and carried rather than dropped because it is the whole of what makes
- * a list of nineteen services readable. Without it every row is equally loud,
- * and the operator scanning for the one that matters reads all nineteen.
+ * a list of twenty services readable. Without it every row is equally loud,
+ * and the operator scanning for the one that matters reads all twenty.
  *
  * **It is not a severity and not a state.** {@see Severity} says how much a
  * *finding* costs and comes from a check that decided something;
@@ -26,19 +26,19 @@ use function sprintf;
  */
 enum HowMuchItMatters: string
 {
-    /** Nothing else works without it. */
+    /** Its failure has consequences beyond the stack. */
     case Critical = 'critical';
 
-    /** The stack's own machinery; things break in ways that look unrelated. */
+    /** The stack cannot do its job without it. */
     case Core = 'core';
 
-    /** Something the household would notice within the day. */
+    /** Without it, a significant capability is lost. */
     case Important = 'important';
 
-    /** Something they would notice eventually, and live without. */
+    /** Quality of life; the stack does its job without it. */
     case Enhancing = 'enhancing';
 
-    /** Nobody would notice. */
+    /** Off unless the operator asked for it. */
     case Optional = 'optional';
 
     /**
@@ -61,8 +61,8 @@ enum HowMuchItMatters: string
      * an optional service disturbs nobody, and stopping a critical one takes
      * the house's evening with it.
      *
-     * `Core` is included with `Critical` deliberately. A core service is the
-     * stack's own machinery, and what it takes down when it goes is other
+     * `Core` is included with `Critical` deliberately. Without a core service
+     * the stack cannot do its job, and what it takes down when it goes is other
      * things — which an operator reads as unrelated breakage, and is the worst
      * kind of surprise to have agreed to without being told.
      */
