@@ -23,12 +23,6 @@ enum StatusField: string implements NamesAWireField
     /** Containers on the machine that the stack's own configuration does not declare. */
     case Undeclared = 'undeclared';
 
-    /** What a container is running, in the machine's words rather than this app's. */
-    case Describes = 'describes';
-
-    /** How much a household loses when one service is not running. */
-    case Criticality = 'criticality';
-
     /** The services one service will not work without. */
     case DependsOn = 'depends_on';
 

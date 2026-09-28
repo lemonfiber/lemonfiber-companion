@@ -34,6 +34,7 @@ use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\Capture;
+use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
@@ -87,6 +88,7 @@ use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Bundlers;
+use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
@@ -355,6 +357,10 @@ final class CompositionRoot extends ServiceProvider
         // Where a stack's services come from, the other half of what it keeps
         // about itself, and bound beside the record for the same reason.
         $this->app->bind(Provenance::class, Archivists::class);
+
+        // What each service is for, read out of the same stack description as
+        // where it comes from, and bound beside it for the same reason.
+        $this->app->bind(Cataloguing::class, Cataloguers::class);
 
         // What leaves a stack, bound beside what it keeps about itself for the
         // same reason: one place decides whether a certificate is checked.

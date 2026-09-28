@@ -180,6 +180,24 @@ return [
         ],
     ],
 
+    // What each service on the machine is for, and what became of any the
+    // stack dropped. What it does and what the house goes without lead; the
+    // name follows.
+    'catalogue' => [
+        'road_in' => 'What each service is for',
+        'as_declared' => 'As this machine describes its own services, with nothing started.',
+        'without_it' => 'Without it: :without',
+        'nothing_declared' => 'This machine declares no services',
+        'dropped' => 'No longer part of this stack',
+        'removed_in' => 'Dropped in :version: :reason',
+        // Where something took its place, named so somebody looking for the
+        // old one is answered.
+        'replaced_by' => 'Replaced by :by',
+        // Nothing did, which is the commonest answer.
+        'not_replaced' => 'Nothing took its place',
+        'nothing_dropped' => 'This stack has not dropped any service',
+    ],
+
     // Where each service on the machine comes from.
     'origins' => [
         // The road in, naming the question rather than the mechanism.

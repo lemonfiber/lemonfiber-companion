@@ -298,6 +298,11 @@
          before this one. --}}
     <x-operator::quiet-action label="{{ __('stacks.origins.road_in') }}" :goes="$this->goes()->ofItself()->origins()" />
 
+    {{-- What each of them is for, and what the house goes without while it is
+         down. Beside where each comes from, which is the other thing somebody
+         asks about a service they did not choose. --}}
+    <x-operator::quiet-action label="{{ __('stacks.catalogue.road_in') }}" :goes="$this->goes()->ofItself()->catalogue()" />
+
     {{-- What it says to the world while nobody is watching. With the other
          two, because all three are what the machine keeps about itself. --}}
     <x-operator::quiet-action label="{{ __('stacks.outbound.road_in') }}" :goes="$this->goes()->ofItself()->leaving()" />
