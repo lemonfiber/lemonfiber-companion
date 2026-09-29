@@ -167,8 +167,8 @@ final readonly class FloorsAndRules
             Fixture::edit(
                 'F15',
                 'app-modules/operator/resources/views/sign-into-a-stack.blade.php',
-                '<native:text>{{ __($this->went()->remedy()) }}</native:text>',
-                '<native:text>{{ $nothingSuppliesThis }}</native:text>',
+                '<x-design::body>{{ __($this->went()->remedy()) }}</x-design::body>',
+                '<x-design::body>{{ $nothingSuppliesThis }}</x-design::body>',
                 'every screen the router serves draws',
                 'nothingSuppliesThis',
             ),

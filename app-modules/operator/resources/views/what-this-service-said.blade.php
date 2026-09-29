@@ -8,13 +8,9 @@
          silence, and silence is also what a screen that lost the claim
          produces. --}}
     @if ($this->answer()->isAWindow)
-        <x-operator::note>
-            {{ __('health.window_of', ['count' => $this->answer()->arrived]) }}
-        </x-operator::note>
+        <x-design::note>{{ __('health.window_of', ['count' => $this->answer()->arrived]) }}</x-design::note>
     @else
-        <x-operator::note>
-            {{ __('health.the_whole_of_it', ['count' => $this->answer()->arrived]) }}
-        </x-operator::note>
+        <x-design::note>{{ __('health.the_whole_of_it', ['count' => $this->answer()->arrived]) }}</x-design::note>
     @endif
 
     {{-- Searchable. Over the window, and the line below says so —
@@ -25,57 +21,53 @@
         label="{{ __('health.search_label') }}"
         placeholder="{{ __('health.search_placeholder') }}"
     />
-    <x-operator::note>{{ __('health.search_is_over_the_window') }}</x-operator::note>
+    <x-design::note>{{ __('health.search_is_over_the_window') }}</x-design::note>
 
     @if ($this->answer()->isSearching)
-        <x-operator::emphasis>
-            {{ trans_choice('health.matched_count', $this->howMany()) }}
-        </x-operator::emphasis>
+        <x-design::strong>{{ trans_choice('health.matched_count', $this->howMany()) }}</x-design::strong>
     @endif
 
-    @forelse ($this->answer()->lines as $line)
-        <x-operator::entry>
-            {{-- Two branches with a literal class each rather than one
-                 element with a computed one (F9). The stream is not a
-                 severity — plenty of well-behaved services write progress
-                 to `stderr` — so this is weight, not a red mark. --}}
+    {{-- The lines on one card, as the service wrote them, each with when and
+         on which stream under it. --}}
+    <x-design::card>
+        @forelse ($this->answer()->lines as $line)
+            {{-- The stream is not a severity — plenty of well-behaved
+                 services write progress to `stderr` — so a line worth
+                 noticing is drawn in weight, not with a mark. --}}
             @if ($line->worthNoticing)
-                <x-operator::emphasis>{{ $line->line }}</x-operator::emphasis>
+                <x-design::strong>{{ $line->line }}</x-design::strong>
             @else
-                <native:text>{{ $line->line }}</native:text>
+                <x-design::verbatim>{{ $line->line }}</x-design::verbatim>
             @endif
-            <x-operator::note>
+            <x-design::note>
                 @if ($line->hasAMoment)
                     {{ $line->at }}
                 @else
                     {{ __('health.no_moment') }}
                 @endif
                 · {{ __($line->streamSaid) }}
-            </x-operator::note>
-        </x-operator::entry>
-    @empty
-        @if ($this->answer()->isSearching)
-            {{-- Not the same as a silent service, and the difference is the
-                 whole reason both lines exist. --}}
-            <x-operator::emphasis>{{ __('health.nothing_matched') }}</x-operator::emphasis>
-            <native:text>{{ __('health.nothing_matched_action') }}</native:text>
-        @else
-            <x-operator::emphasis>{{ __('health.service_said_nothing') }}</x-operator::emphasis>
-            <native:text>{{ __('health.service_said_nothing_action') }}</native:text>
-        @endif
-    @endforelse
+            </x-design::note>
+        @empty
+            @if ($this->answer()->isSearching)
+                {{-- Not the same as a silent service, and the difference is the
+                     whole reason both lines exist. --}}
+                <x-design::strong>{{ __('health.nothing_matched') }}</x-design::strong>
+                <x-design::body>{{ __('health.nothing_matched_action') }}</x-design::body>
+            @else
+                <x-design::strong>{{ __('health.service_said_nothing') }}</x-design::strong>
+                <x-design::body>{{ __('health.service_said_nothing_action') }}</x-design::body>
+            @endif
+        @endforelse
+    </x-design::card>
 
-    {{-- A screen an operator cannot ask again is a screen that relies
-         on being left and returned to, which is the one thing the requirement
-         names. It sat on the obstacle arm only — so a reading that failed could
-         be retried and a reading that came back could not, which is the wrong
-         way round: somebody watching a stuck download or an update land is
-         looking at a screen they want to ask again.
+    {{-- A screen an operator cannot ask again is a screen that relies on
+         being left and returned to: somebody watching a stuck download or an
+         update land is looking at a screen they want to ask again.
 
          Last, under what it is about, for the health screen's reason: somebody
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. --}}
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

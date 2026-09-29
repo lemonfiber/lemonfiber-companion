@@ -2,7 +2,7 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    <x-operator::emphasis>{{ __('stacks.words.heading') }}</x-operator::emphasis>
+    <x-design::title>{{ __('stacks.words.heading') }}</x-design::title>
 
     {{-- Over the words and what else they are called, which is what somebody
          arriving from another tool searches for. --}}
@@ -13,26 +13,26 @@
     />
 
     @forelse ($this->answer()->words as $place => $word)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $word->word }}</x-operator::emphasis>
-            <native:text>{{ $word->short }}</native:text>
+        <x-design::card>
+            <x-design::strong>{{ $word->word }}</x-design::strong>
+            <x-design::body>{{ $word->short }}</x-design::body>
             @if ($word->alsoCalled !== '')
-                <x-operator::note>{{ __('stacks.words.also_called', ['names' => $word->alsoCalled]) }}</x-operator::note>
+                <x-design::note>{{ __('stacks.words.also_called', ['names' => $word->alsoCalled]) }}</x-design::note>
             @endif
 
             {{-- The longer gloss is there for whoever asks, and does not lead. --}}
             @if ($word->isOpen)
-                <native:text>{{ $word->deep }}</native:text>
-                <x-operator::quiet-action label="{{ __('stacks.words.less', ['word' => $word->word]) }}" tap="toggle('{{ $place }}')" />
+                <x-design::body>{{ $word->deep }}</x-design::body>
+                <x-design::link label="{{ __('stacks.words.less', ['word' => $word->word]) }}" tap="toggle('{{ $place }}')" />
             @elseif ($word->deep !== '')
-                <x-operator::quiet-action label="{{ __('stacks.words.more', ['word' => $word->word]) }}" tap="toggle('{{ $place }}')" />
+                <x-design::link label="{{ __('stacks.words.more', ['word' => $word->word]) }}" tap="toggle('{{ $place }}')" />
             @endif
-        </x-operator::entry>
+        </x-design::card>
     @empty
         @if ($this->answer()->isSearching)
-            <x-operator::emphasis>{{ __('stacks.words.nothing_matched') }}</x-operator::emphasis>
+            <x-design::body>{{ __('stacks.words.nothing_matched') }}</x-design::body>
         @else
-            <x-operator::emphasis>{{ __('stacks.words.none') }}</x-operator::emphasis>
+            <x-design::body>{{ __('stacks.words.none') }}</x-design::body>
         @endif
     @endforelse
 
@@ -40,16 +40,16 @@
          is the operator's, for that one word; the stack saying it has none
          either is its answer, and the word stands as it came. --}}
     @if ($this->answer()->unexplained !== '')
-        <x-operator::note>{{ __('stacks.words.unexplained', ['word' => $this->answer()->unexplained]) }}</x-operator::note>
+        <x-design::note>{{ __('stacks.words.unexplained', ['word' => $this->answer()->unexplained]) }}</x-design::note>
     @endif
     @if ($this->answer()->askingMet !== '')
-        <native:text>{{ __($this->answer()->askingMet) }}</native:text>
+        <x-design::body>{{ __($this->answer()->askingMet) }}</x-design::body>
     @endif
     @if ($this->answer()->mayAsk !== '')
-        <x-operator::quiet-action label="{{ __('stacks.words.ask', ['word' => $this->answer()->mayAsk]) }}" tap="askTheStack()" />
+        <x-design::action label="{{ __('stacks.words.ask', ['word' => $this->answer()->mayAsk]) }}" tap="askTheStack()" tone="tonal" />
     @endif
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

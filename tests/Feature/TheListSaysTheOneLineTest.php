@@ -81,7 +81,8 @@ it('opens on the word the stack\'s screen last heard, and says when it was heard
     $standings = StandingsInMemory::working()
         ->lastHeard($stack->id(), HowItStands::Degraded, Instant::atEpochSeconds(NOW - 10));
 
-    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $standings))->said();
+    // The row says the word and its age on the one line under its name.
+    $drawn = implode("\n", WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $standings))->said());
 
     expect(whatTheRowSays($stack, $standings))->toBe('health.standing.degraded|health.ago.minutes|0')
         ->and($drawn)->toContain(__(HowItStands::Degraded->saidOnTheScreen()))
@@ -91,7 +92,7 @@ it('opens on the word the stack\'s screen last heard, and says when it was heard
 it('says a stack whose one line was never heard cannot be told, and never that it is fine', function (): void {
     $stack = aStackToOpenOn();
 
-    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack))->said();
+    $drawn = implode("\n", WhatTheDeviceWouldDraw::by(theOpeningScreen($stack))->said());
 
     expect(whatTheRowSays($stack, StandingsInMemory::working()))->toBe('health.standing.unknown||0')
         ->and($drawn)->toContain(__(HowItStands::Unknown->saidOnTheScreen()))
@@ -107,7 +108,7 @@ it('reads a word heard longer ago than a stream may be silent as unknown, with w
     $heardAt = static fn(int $ago): StandingsInMemory => StandingsInMemory::working()
         ->lastHeard($stack->id(), HowItStands::Healthy, Instant::atEpochSeconds(NOW - $ago));
 
-    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $heardAt(7_200)))->said();
+    $drawn = implode("\n", WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $heardAt(7_200)))->said());
 
     expect(whatTheRowSays($stack, $heardAt(30)))->toBe('health.standing.healthy|health.ago.minutes|0')
         ->and(whatTheRowSays($stack, $heardAt(31)))->toBe('health.standing.unknown|health.ago.minutes|0')
