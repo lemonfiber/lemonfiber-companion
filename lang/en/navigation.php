@@ -28,6 +28,7 @@ return [
     'menu' => [
         'open' => 'Menu',
         'requests' => 'Requests',
+        'allowance' => 'Allowance',
         'stuck_downloads' => 'Stuck downloads',
         'follow_a_download' => 'Follow a download',
         'invite_someone' => 'Invite someone',

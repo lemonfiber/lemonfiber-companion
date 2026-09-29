@@ -42,6 +42,7 @@ use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhereTappingLeads;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Modules\Operator\Internal\WhetherItIsHeld;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -388,7 +389,7 @@ final class YourStacks extends NativeComponent
         return match ($leads) {
             WhereTappingLeads::TheSignIn => $this->signInAt($stack),
             WhereTappingLeads::TheReport => $where->health(),
-            WhereTappingLeads::WhatTheyAreOwed => $where->yours(),
+            WhereTappingLeads::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($stack->id()),
         };
     }
 

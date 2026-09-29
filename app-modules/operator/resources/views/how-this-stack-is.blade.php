@@ -169,10 +169,6 @@
     {{-- Under the findings: somebody who has just fixed something scrolls to
          the end of what was wrong, and that is where they ask whether it took. --}}
     <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
-
-    {{-- What this machine says the operator is owed, as a member of the
-         household: the one reading of theirs that is not in the menu. --}}
-    <x-design::row :headline="__('household.yours')" :goes="$this->goes()->yours()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

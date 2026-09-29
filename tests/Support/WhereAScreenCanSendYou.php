@@ -26,6 +26,8 @@ use Native\Mobile\Edge\NativeRouter;
 use function preg_match;
 use function preg_match_all;
 
+use const PREG_SET_ORDER;
+
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -382,8 +384,24 @@ final readonly class WhereAScreenCanSendYou
     {
         return array_values(array_unique([
             ...$this->throughATypeIn($php),
+            ...$this->namedOutright($php),
             ...$this->throughTheScreensOwn($screen, $php, $seen),
         ]));
+    }
+
+    /**
+     * The cases a body builds a path from by name, with no accessor between.
+     *
+     * A screen that sends somebody to a screen another surface draws names the
+     * case itself, because the accessors here are this surface's own screens.
+     *
+     * @return list<string>
+     */
+    private function namedOutright(string $php): array
+    {
+        preg_match_all('/\b(AStacksScreen|AScreenWithoutAStack)::(\w+)->for\w*\(/', $php, $named, PREG_SET_ORDER);
+
+        return array_map(static fn(array $case): string => sprintf('%s::%s', $case[1], $case[2]), $named);
     }
 
     /**
