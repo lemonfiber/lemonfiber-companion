@@ -67,6 +67,16 @@ const WHAT_A_COMPONENT_IS = [
     'row' => false,
     'rect' => false,
 
+    // A glyph beside the words that say the same thing: furniture, because the
+    // words are what a reader hears, and a glyph announced before them is the
+    // same news twice.
+    'icon' => false,
+
+    // The platform's list row. Furniture by kind, because a row that goes
+    // nowhere is a line read out as its headline; one given `@press` or
+    // `@navigate` is a control by the second reading below, and owes a name.
+    'list-item' => false,
+
     // A row that is the tap target for everything inside it. A control, and
     // one with no label of its own — what it says is whatever is inside it,
     // so `F5` reaches it through `a11y-label` and nothing else.
@@ -76,6 +86,8 @@ const WHAT_A_COMPONENT_IS = [
     'outlined-text-input' => true,
     // Tapped to go somewhere, which is the whole of what it is for.
     'bottom-nav-item' => true,
+    // Tapped to choose which part of a list is showing.
+    'chip' => true,
 ];
 
 /**

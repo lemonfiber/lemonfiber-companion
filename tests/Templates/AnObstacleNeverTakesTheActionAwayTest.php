@@ -133,7 +133,10 @@ function offersSomethingToDo(string $markup): bool
     // quiet exactly when the screens improve.
     return str_contains($markup, '@tap=')
         || str_contains($markup, '@navigate=')
-        || str_contains($markup, '<x-operator::action');
+        || str_contains($markup, '<x-operator::action')
+        || str_contains($markup, '<x-design::action')
+        || str_contains($markup, '<x-design::link')
+        || str_contains($markup, '<x-design::row');
 }
 
 /** Enough of a branch to find it by, on one line. */

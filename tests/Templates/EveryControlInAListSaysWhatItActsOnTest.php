@@ -39,7 +39,7 @@ use Tests\Support\Template;
 const WHAT_A_LOOP_IS_MADE_OF = [
     'opens' => '/@(?:forelse|foreach)\s*\(/',
     'closes' => '/@(?:endforelse|endforeach)\b/',
-    'control' => '/<x-operator::action\b.*?\/>/s',
+    'control' => '/<x-(?:operator::action|design::(?:action|link|row|chip))\b.*?\/>/s',
 ];
 
 /**

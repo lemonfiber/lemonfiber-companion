@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Design\View\Tone;
 use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\AStoppage;
@@ -82,6 +83,7 @@ final readonly class HowTheOneLineReads
     {
         return new WhatTheOneLineSays(
             said: $shown->saidOnTheScreen(),
+            tone: $this->toneOf($shown),
             counted: '',
             howMany: 0,
             worst: '',
@@ -99,6 +101,7 @@ final readonly class HowTheOneLineReads
     {
         return new WhatTheOneLineSays(
             said: $why->met === '' ? self::WAITING : HowItStands::Unknown->saidOnTheScreen(),
+            tone: $why->met === '' ? Tone::Working->value : Tone::Unknown->value,
             counted: '',
             howMany: 0,
             worst: '',
@@ -135,6 +138,7 @@ final readonly class HowTheOneLineReads
 
         return new WhatTheOneLineSays(
             said: $shown->saidOnTheScreen(),
+            tone: $this->toneOf($shown),
             counted: $summary->wantingAttention() === 0 ? '' : $this->counted($shown),
             howMany: $summary->wantingAttention(),
             worst: $summary->worst(),
@@ -146,6 +150,17 @@ final readonly class HowTheOneLineReads
             stopped: $stopped,
             slow: $slow,
         );
+    }
+
+    /** The glyph a standing is drawn with: fine, something to look at, broken, or not known. */
+    private function toneOf(HowItStands $shown): string
+    {
+        return match ($shown) {
+            HowItStands::Healthy => Tone::Fine->value,
+            HowItStands::Advisory, HowItStands::Degraded, HowItStands::Stopped, HowItStands::Unconfigured => Tone::Attention->value,
+            HowItStands::Broken, HowItStands::Critical => Tone::Trouble->value,
+            HowItStands::Unknown => Tone::Unknown->value,
+        };
     }
 
     private function counted(HowItStands $shown): string

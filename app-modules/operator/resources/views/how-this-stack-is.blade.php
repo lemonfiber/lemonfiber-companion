@@ -2,353 +2,206 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    {{-- The one line, as the core computed it for every surface and sent
-         on its event stream. A line that is not current reads as unknown and
-         says when it was last heard, so a stack nobody can vouch for right
-         now is never drawn as healthy. --}}
-    <x-operator::emphasis>{{ __($this->summary()->said) }}</x-operator::emphasis>
-
-    @if ($this->summary()->ago->said !== '')
-        <x-operator::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->summary()->ago->said, $this->summary()->ago->count)]) }}</x-operator::note>
-    @endif
+    {{-- The one line, as the core computed it for every surface. A line that
+         is not current reads as unknown and says when it was last heard, so a
+         stack nobody can vouch for right now is never drawn as healthy. --}}
+    <x-design::standing
+        :said="__($this->summary()->said)"
+        :tone="$this->summary()->tone"
+        :note="$this->summary()->ago->said === '' ? '' : __('health.summary.as_of', ['ago' => trans_choice($this->summary()->ago->said, $this->summary()->ago->count)])"
+    />
 
     @if ($this->summary()->met !== '')
-        <native:text>{{ __($this->summary()->met) }}</native:text>
-        <x-operator::note>{{ __($this->summary()->remedy) }}</x-operator::note>
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __($this->summary()->met) }}</x-design::strong>
+            <x-design::body>{{ __($this->summary()->remedy) }}</x-design::body>
+        </x-design::notice>
     @endif
 
-    {{-- The worst thing, named in the core's words, so the line says what is
-         wrong rather than only grading it. --}}
+    {{-- The worst thing, in the core's words, so the line says what is wrong
+         rather than only grading it. --}}
     @if ($this->summary()->worst !== '')
-        <native:text>{{ $this->summary()->worst }}</native:text>
+        <x-design::body>{{ $this->summary()->worst }}</x-design::body>
     @endif
 
-    {{-- How many, counted by cause, and the way into what it counts. Offered
-         only where it counts something: a line with nothing to expand to is
-         a control that leads nowhere. --}}
+    {{-- How many, counted by cause, and the way into what it counts; offered
+         only where it counts something. --}}
     @if ($this->summary()->counted !== '')
-        <x-operator::quiet-action label="{{ trans_choice($this->summary()->counted, $this->summary()->howMany) }}" tap="expand()" />
+        <x-design::link label="{{ trans_choice($this->summary()->counted, $this->summary()->howMany) }}" tap="expand()" />
     @endif
 
     @if ($this->expanded)
         @forelse ($this->summary()->affected as $item)
-            <x-operator::entry>
-                <x-operator::note>{{ __($item->severity) }} · {{ $item->check }}</x-operator::note>
-                <x-operator::emphasis>{{ $item->summary }}</x-operator::emphasis>
-                <native:text>{{ $item->meaning }}</native:text>
+            <x-design::card>
+                <x-design::note>{{ __($item->severity) }} · {{ $item->check }}</x-design::note>
+                <x-design::strong>{{ $item->summary }}</x-design::strong>
+                <x-design::body>{{ $item->meaning }}</x-design::body>
 
                 @forelse ($item->remedies as $remedy)
-                    <native:text>{{ $remedy }}</native:text>
+                    <x-design::body>{{ $remedy }}</x-design::body>
                 @empty
-                    <native:text>{{ __('health.nothing_to_try') }}</native:text>
+                    <x-design::body>{{ __('health.nothing_to_try') }}</x-design::body>
                 @endforelse
 
                 @forelse ($item->downstream as $also)
-                    <x-operator::note>{{ __('health.summary.also', ['what' => $also]) }}</x-operator::note>
+                    <x-design::note>{{ __('health.summary.also', ['what' => $also]) }}</x-design::note>
                 @empty
-                    {{-- Deliberately nothing. An item that took nothing else
-                         down with it has nothing to add, and a sentence
-                         saying so would be one more line to read past. --}}
+                    {{-- Nothing: an item that took nothing else down with it has
+                         nothing to add. --}}
                 @endforelse
-            </x-operator::entry>
+            </x-design::card>
         @empty
-            <native:text>{{ __('health.no_findings') }}</native:text>
+            <x-design::body>{{ __('health.no_findings') }}</x-design::body>
         @endforelse
     @endif
 
-    {{-- What stopped moving in the queue, as the stack ranked it: by kind,
-         worst first, one row per cause where several items share one. Slow
-         is drawn apart and after, under its own heading, because it needs
-         time rather than a fix and shown as stuck it teaches an operator to
-         read past the whole list. --}}
+    {{-- What stopped moving in the queue, worst first, one row per cause.
+         Slow is drawn apart and after, because it needs time rather than a
+         fix, and shown as stuck it teaches an operator to read past the list. --}}
     @unless ($this->summary()->stopped === [])
-        <x-operator::emphasis>{{ __('health.stopped_heading') }}</x-operator::emphasis>
+        <x-design::heading>{{ __('health.stopped_heading') }}</x-design::heading>
     @endunless
 
     @forelse ($this->summary()->stopped as $row)
         <x-operator::stopped-row :row="$row" :trace="$row->follows === '' ? '' : $this->traceOf($row->follows)" />
     @empty
-        {{-- Deliberately nothing. Nothing in the queue wants a fix, and the
-             one line above already says how the stack stands; a sentence
-             saying the queue is clear would be one the stack did not send. --}}
+        {{-- Nothing: the one line above already says how the stack stands, and
+             a sentence saying the queue is clear is one the stack did not send. --}}
     @endforelse
 
     @unless ($this->summary()->slow === [])
-        <x-operator::emphasis>{{ __('health.slow_heading') }}</x-operator::emphasis>
-        <native:text>{{ __('health.slow_explained') }}</native:text>
+        <x-design::heading>{{ __('health.slow_heading') }}</x-design::heading>
+        <x-design::body>{{ __('health.slow_explained') }}</x-design::body>
     @endunless
 
     @forelse ($this->summary()->slow as $row)
         <x-operator::stopped-row :row="$row" :trace="$row->follows === '' ? '' : $this->traceOf($row->follows)" />
     @empty
-        {{-- Deliberately nothing: nothing is only slow. --}}
+        {{-- Nothing: nothing is only slow. --}}
     @endforelse
 
-    <x-operator::note>{{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}</x-operator::note>
+    <x-design::note>{{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}</x-design::note>
 
-    {{-- The families this run has something to say about, so that a
-         stuck queue or a provider gone quiet is one tap away rather than
-         eight rows of scrolling. Only the families with findings are
-         offered — a control leading to a blank screen teaches an operator
-         that the row is not worth reading — and the one being read is also
-         the way back out, so there is no separate "all" to go and find. --}}
-    <native:column class="w-full gap-2">
+    {{-- The families this run has something to say about, as chips: the one
+         being read is chosen, and choosing it again is the way back to all of
+         them. Only families with findings are offered. --}}
+    <x-design::chips>
         @forelse ($this->families() as $family)
-            <x-operator::entry>
-                <x-operator::action label="{{ __('health.family_and_count', ['family' => __($family->said), 'count' => $family->howMany]) }}" tap="read('{{ $family->family }}')" />
-
-                {{-- The accent is a fill, a bar, a selected state, and
-                     never text (DES-R15). Written as its own element with
-                     a static class rather than as a colour chosen inside a
-                     ternary: the vocabulary check drops any class token
-                     holding a runtime expression, and an EDGE class it
-                     cannot read is one a typo turns into nothing at all,
-                     silently, on a device. --}}
-                @if ($family->isOpen)
-                    <native:column class="w-full h-1 bg-theme-accent" />
-                @endif
-            </x-operator::entry>
+            <x-design::chip
+                label="{{ __('health.family_and_count', ['family' => __($family->said), 'count' => $family->howMany]) }}"
+                tap="read('{{ $family->family }}')"
+                :chosen="$family->isOpen"
+            />
         @empty
-            {{-- Deliberately nothing. No family has anything to say only
-                 where the run found nothing at all, and the list below
-                 says so — a second sentence here would be this app filling
-                 space with a line somebody has to translate. --}}
+            {{-- Nothing: no family has anything to say only where the run found
+                 nothing at all, and the list below says so. --}}
         @endforelse
-    </native:column>
+    </x-design::chips>
 
     @forelse ($this->findings() as $finding)
-        <x-operator::entry>
-            {{-- Which part of the machine, and which service under it. The
-                 same check runs against whichever service fills a role, so
-                 the title never names one — an operator with nineteen of
-                 them needs the name beside it. Rendered rather than
-                 translated: it is the stack's own name for the service. --}}
-            <x-operator::note>
-                {{ __($finding->about) }}@if ($finding->service !== '') · {{ $finding->service }}@endif
-            </x-operator::note>
-            <x-operator::emphasis>{{ $finding->title }}</x-operator::emphasis>
-            {{-- Who put the check there, beside the title, so reading the row
-                 and reading whose it is are one act. Only where it is not the
-                 stack's own: nearly every check is, and a word repeated on
-                 every row is a word nobody reads — so the report says once,
-                 under the list, what an unmarked row is. *Unknown* is always
-                 marked, which is the reading that must never pass for the
-                 stack's own. --}}
+        <x-design::card>
+            {{-- Which check, and which service it was about: the same check
+                 runs against whichever service fills a role. --}}
+            <x-design::note>{{ __($finding->about) }}@if ($finding->service !== '') · {{ $finding->service }}@endif</x-design::note>
+            <x-design::strong>{{ $finding->title }}</x-design::strong>
+
+            {{-- Whose finding it is, only where it is not the stack's own;
+                 unknown is always marked. --}}
             @unless ($finding->from->isTheStacksOwn())
                 <x-operator::came-from :from="$finding->from" :said="$finding->from->came->ofACheck()" />
             @endunless
-            {{-- The verdict and what it costs, on one line. They answer
-                 different questions and a row showing only the first makes
-                 two failures look alike where one puts data at risk. A row
-                 with nothing graded — a pass, or a check that could not run
-                 — carries no cost and shows the verdict alone. --}}
-            <native:text>{{ __($finding->verdict) }}</native:text>
 
+            <x-design::body>{{ __($finding->verdict) }}</x-design::body>
             @if ($finding->cost !== '')
-                <native:text class="text-sm font-bold">{{ __($finding->cost) }}</native:text>
+                <x-design::strong>{{ __($finding->cost) }}</x-design::strong>
             @endif
 
-            {{-- What the core said about it, in the core's own
-                 words. Rendered rather than translated — these are the
-                 machine's sentences about the machine, and putting them
-                 through the catalogue would mean this app inventing a
-                 line for a check it has never heard of. --}}
-            {{-- What explains this one, where the run says something does.
-                 Without it an operator reads five broken things; with it
-                 they read one broken thing and four services that noticed,
-                 which is the row they should go and fix. --}}
             @if ($finding->because !== '')
-                <x-operator::note>{{ __('health.because_of', ['title' => $finding->because]) }}</x-operator::note>
+                <x-design::note>{{ __('health.because_of', ['title' => $finding->because]) }}</x-design::note>
             @endif
 
             @if ($finding->explainsItself())
-                <native:text>{{ $finding->meaning }}</native:text>
-                <x-operator::note>{{ $finding->code }}</x-operator::note>
-
-                {{-- A failure may carry no remedy at all, and that is a
-                     sentence rather than blank space: the operator is
-                     being told the machine knows what is wrong and has
-                     nothing to suggest, which is what sends them to the
-                     machine itself. --}}
+                <x-design::body>{{ $finding->meaning }}</x-design::body>
+                @if ($finding->code !== '')
+                    <x-design::verbatim>{{ $finding->code }}</x-design::verbatim>
+                @endif
                 @forelse ($finding->remedies as $remedy)
-                    <native:text>{{ $remedy->action() }}</native:text>
+                    <x-design::body>{{ $remedy->action() }}</x-design::body>
                 @empty
-                    <native:text>{{ __('health.nothing_to_try') }}</native:text>
+                    <x-design::body>{{ __('health.nothing_to_try') }}</x-design::body>
                 @endforelse
             @endif
 
+            {{-- The technical detail, available and not leading: last on the
+                 card, under the plain explanation and what to try. --}}
             @if ($finding->underneath !== '')
-                {{-- The technical detail, available and not leading.
-                     Last on the row, under the plain explanation and under
-                     what to try — which is what *must not lead* means on a
-                     surface with one column. Somebody who knows what the
-                     line says now has it; everybody else has already read
-                     the sentence that was written for them. --}}
-                <x-operator::note>{{ __('health.what_it_says_underneath') }}</x-operator::note>
-                <x-operator::note>{{ $finding->underneath }}</x-operator::note>
+                <x-design::note>{{ __('health.what_it_says_underneath') }}</x-design::note>
+                <x-design::verbatim>{{ $finding->underneath }}</x-design::verbatim>
             @endif
 
-            {{-- The logs, offered from the finding that is already
-                 about this service. Only where there is one — a check about
-                 the machine itself has no scrollback to read, and a button
-                 that led to an empty window would be the row teaching an
-                 operator not to trust the row. --}}
+            {{-- The logs, from the finding already about this service; a check
+                 about the machine itself has no scrollback to read. --}}
             @if ($finding->service !== '')
-                <x-operator::action
+                <x-design::link
                     label="{{ __('health.what_a_service_said') }}"
                     answers-to="{{ __('health.what_that_service_said', ['service' => $finding->service]) }}"
                     :goes="$this->logsOf($finding->service)"
                 />
             @endif
-        </x-operator::entry>
+        </x-design::card>
     @empty
-        <native:text>{{ __('health.no_findings') }}</native:text>
+        <x-design::body>{{ __('health.no_findings') }}</x-design::body>
     @endforelse
 
-    {{-- Said once, and only where a row is marked, so what the unmarked rows
-         are is never left to be inferred from the marked ones. --}}
+    {{-- Said once, and only where a row is marked, so what an unmarked row
+         is never has to be inferred. --}}
     @if ($this->answer()->marksAnOrigin)
-        <x-operator::note>{{ __('health.origin.legend') }}</x-operator::note>
+        <x-design::note>{{ __('health.origin.legend') }}</x-design::note>
     @endif
 
-    {{-- Under the findings rather than above them: somebody who has just
-         fixed something scrolls to the end of what was wrong, and that is
-         where they want to ask whether it took.
+    {{-- Under the findings: somebody who has just fixed something scrolls to
+         the end of what was wrong, and that is where they ask whether it took. --}}
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 
-         Quiet, with the three roads below it. What is filled on this frame is
-         the family filters, because those act on what is in front of the
-         operator; everything under the findings is a way onward, and seven
-         identical bars make none of them the way forward. --}}
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    {{-- The readings the bar under this screen has no room for, grouped by
+         what they are about. Services, repairs and updates are the bar's own. --}}
+    <x-design::section :label="__('health.roads.house')">
+        <x-design::row :headline="__('household.asked_for')" :goes="$this->goes()->requests()" />
+        <x-design::row :headline="__('household.yours')" :goes="$this->goes()->yours()" />
+        <x-design::row :headline="__('health.what_stopped')" :goes="$this->goes()->stuck()" />
+        <x-design::row :headline="__('health.walkthrough.road_in')" :goes="$this->goes()->ofItself()->walkthrough()" />
+    </x-design::section>
 
-    {{-- The three readings the bar under this screen does not carry.
+    <x-design::section :label="__('health.roads.people')">
+        <x-design::row :headline="__('stacks.credentials.road_in')" :goes="$this->goes()->whoGetsIn()->credentials()" />
+        <x-design::row :headline="__('stacks.clients.road_in')" :goes="$this->goes()->whoGetsIn()->clients()" />
+        <x-design::row :headline="__('stacks.front_door.road_in')" :goes="$this->goes()->whoGetsIn()->frontDoor()" />
+        <x-design::row :headline="__('stacks.invitation.road_in')" :goes="$this->goes()->whoGetsIn()->invite()" />
+    </x-design::section>
 
-         `N2-R7`'s services, `N2-R4`'s repairs and `N2-R15`'s updates are three
-         of the bar's four items, and this screen used to repeat all three as
-         full-width buttons — the same destinations offered twice, once where
-         the platform draws navigation and once in the middle of the reading.
-         Seven controls under the findings, four of them leading somewhere the
-         bar already leads.
+    <x-design::section :label="__('health.roads.machine')">
+        <x-design::row :headline="__('health.what_else_is_running')" :goes="$this->goes()->elsewhere()" />
+        <x-design::row :headline="__('stacks.already_here.road_in')" :goes="$this->goes()->ofItself()->alreadyHere()" />
+        <x-design::row :headline="__('stacks.what_keeps_running')" :goes="$this->goes()->keepsRunning()" />
+        <x-design::row :headline="__('config.what_this_is_set_to')" :goes="$this->goes()->settings()" />
+        <x-design::row :headline="__('stacks.record.road_in')" :goes="$this->goes()->ofItself()->record()" />
+        <x-design::row :headline="__('stacks.origins.road_in')" :goes="$this->goes()->ofItself()->origins()" />
+        <x-design::row :headline="__('stacks.catalogue.road_in')" :goes="$this->goes()->ofItself()->catalogue()" />
+        <x-design::row :headline="__('stacks.outbound.road_in')" :goes="$this->goes()->ofItself()->leaving()" />
+        <x-design::row :headline="__('stacks.alerts.road_in')" :goes="$this->goes()->ofItself()->told()" />
+        <x-design::row :headline="__('stacks.line.road_in')" :goes="$this->goes()->ofItself()->line()" />
+        <x-design::row :headline="__('stacks.keeps.road_in')" :goes="$this->goes()->ofItself()->keeps()" />
+        <x-design::row :headline="__('stacks.room.road_in')" :goes="$this->goes()->ofItself()->room()" />
+        <x-design::row :headline="__('stacks.itself.road_in')" :goes="$this->goes()->ofItself()->itself()" />
+        <x-design::row :headline="__('quality.road_in')" :goes="$this->goes()->ofItself()->quality()" />
+        <x-design::row :headline="__('stacks.wiring.road_in')" :goes="$this->goes()->ofItself()->wiring()" />
+        <x-design::row :headline="__('uninstall.road_in')" :goes="$this->goes()->ofItself()->changing()->takingItOff()" />
+    </x-design::section>
 
-         The bar is how a person moves between the readings of one machine.
-         These three are the readings it has no room for, and they stay.
-         {@see \Tests\Support\WhereAScreenCanSendYou} reads the bar as edges,
-         so `F12` is what says removing the other three stranded nothing — a
-         walk blind to the bar would have insisted they stay.
-
-         N2-R11: what the house asked for, one tap from the machine it is
-         about. Here rather than on the list because requests belong to one
-         stack and the list is about several — and an operator looking at a
-         machine is already holding the question the household asks them. --}}
-    <x-operator::quiet-action label="{{ __('household.asked_for') }}" :goes="$this->goes()->requests()" />
-
-    {{-- What this machine says the person holding the session can ask for.
-         Offered from here because this surface owns every road into the
-         application — a device opens on the list of stacks — and a member's
-         own reading with nothing pointing at it is a screen nobody can reach.
-         Which of the two readings the person gets is the core's answer and not
-         this screen's: what comes back about one member is one member's. --}}
-    <x-operator::quiet-action label="{{ __('household.yours') }}" :goes="$this->goes()->yours()" />
-
-    {{-- What stopped coming in. Reachable from the machine it is
-         about rather than from the list, for the reason the requests button
-         is — and reachable at all is the requirement: a stack passing every
-         check and a household getting nothing are not a contradiction, so
-         this cannot live under the verdict above. --}}
-    <x-operator::quiet-action label="{{ __('health.what_stopped') }}" :goes="$this->goes()->stuck()" />
-
-    {{-- Watching one thing arrive, narrated end to end. Beside what stopped
-         coming in, because both are about content reaching the house, and
-         this is where somebody who wants to see the whole road once looks. --}}
-    <x-operator::quiet-action label="{{ __('health.walkthrough.road_in') }}" :goes="$this->goes()->ofItself()->walkthrough()" />
-
-    {{-- What is running here that this machine never declared. The
-         requirement asks for these to be reachable, and this is where from
-         — beside what the stack runs rather than inside it, because a
-         container nobody declared is not one of the things this stack runs
-         and the screen it leads to offers no verb against one. --}}
-    <x-operator::quiet-action label="{{ __('health.what_else_is_running') }}" :goes="$this->goes()->elsewhere()" />
-
-    {{-- What is already here that lemonfiber could move in beside or take
-         over: the survey, offered before any mode. --}}
-    <x-operator::quiet-action label="{{ __('stacks.already_here.road_in') }}" :goes="$this->goes()->ofItself()->alreadyHere()" />
-
-    {{-- What survives a restart. Beside what is running rather than inside it,
-         because the two answer different questions about the same machine: that
-         screen says what is running now, and this one says what would still be
-         running after a reboot nobody was there for. An operator who has just
-         had a power cut is looking for the second and would read the first as
-         an answer to it. --}}
-    <x-operator::quiet-action label="{{ __('stacks.what_keeps_running') }}" :goes="$this->goes()->keepsRunning()" />
-
-    {{-- Everything this machine is set to. Beside what is running rather than
-         under one of the services, because a setting belongs to the machine
-         and an operator looking for one does not know which service owns it —
-         and should not have to. Quiet, with the other roads: it is somewhere
-         to go and not the thing this screen is about. --}}
-    <x-operator::quiet-action label="{{ __('config.what_this_is_set_to') }}" :goes="$this->goes()->settings()" />
-
-    {{-- How it came to be set that way. Beside the settings rather than under
-         them, because an operator who finds something moved is asking what
-         changed it, and the settings only say where it stands now. --}}
-    <x-operator::quiet-action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
-
-    {{-- What it was changed with: every service's image, pin, upstream and
-         licence. Beside the record, which is the question somebody asks just
-         before this one. --}}
-    <x-operator::quiet-action label="{{ __('stacks.origins.road_in') }}" :goes="$this->goes()->ofItself()->origins()" />
-
-    {{-- What each of them is for, and what the house goes without while it is
-         down. Beside where each comes from, which is the other thing somebody
-         asks about a service they did not choose. --}}
-    <x-operator::quiet-action label="{{ __('stacks.catalogue.road_in') }}" :goes="$this->goes()->ofItself()->catalogue()" />
-
-    {{-- What it says to the world while nobody is watching. With the other
-         two, because all three are what the machine keeps about itself. --}}
-    <x-operator::quiet-action label="{{ __('stacks.outbound.road_in') }}" :goes="$this->goes()->ofItself()->leaving()" />
-
-    {{-- What it will wake somebody for, which is the last of what the
-         machine does while nobody is watching. --}}
-    <x-operator::quiet-action label="{{ __('stacks.alerts.road_in') }}" :goes="$this->goes()->ofItself()->told()" />
-
-    {{-- How it shares the line, which is the one of these the household asks
-         about, when the internet is slow. --}}
-    <x-operator::quiet-action label="{{ __('stacks.line.road_in') }}" :goes="$this->goes()->ofItself()->line()" />
-
-    {{-- What it keeps on the machine, and the copies it holds. --}}
-    <x-operator::quiet-action label="{{ __('stacks.keeps.road_in') }}" :goes="$this->goes()->ofItself()->keeps()" />
-
-    {{-- Asking somebody else for help: a support bundle, described before it
-         is written and read here before it is handed to anyone. --}}
-    <x-operator::quiet-action label="{{ __('stacks.help.road_in') }}" :goes="$this->goes()->ofItself()->help()" />
-
-    {{-- How full it is, and where the room went. --}}
-    <x-operator::quiet-action label="{{ __('stacks.room.road_in') }}" :goes="$this->goes()->ofItself()->room()" />
-
-    {{-- Which version of lemonfiber runs, and whether a newer one exists. --}}
-    <x-operator::quiet-action label="{{ __('stacks.itself.road_in') }}" :goes="$this->goes()->ofItself()->itself()" />
-
-    {{-- Who gets in: what it holds to let services in, which app to watch
-         on, where the household comes in, and asking somebody in. --}}
-    <x-operator::quiet-action label="{{ __('stacks.credentials.road_in') }}" :goes="$this->goes()->whoGetsIn()->credentials()" />
-    <x-operator::quiet-action label="{{ __('stacks.clients.road_in') }}" :goes="$this->goes()->whoGetsIn()->clients()" />
-    <x-operator::quiet-action label="{{ __('stacks.front_door.road_in') }}" :goes="$this->goes()->whoGetsIn()->frontDoor()" />
-    <x-operator::quiet-action label="{{ __('stacks.invitation.road_in') }}" :goes="$this->goes()->whoGetsIn()->invite()" />
-
-    {{-- How good the media it fetches should be, and upgrading what is
-         already here. --}}
-    <x-operator::quiet-action label="{{ __('quality.road_in') }}" :goes="$this->goes()->ofItself()->quality()" />
-
-    {{-- Wiring the services to each other, and how each connection turned
-         out. --}}
-    <x-operator::quiet-action label="{{ __('stacks.wiring.road_in') }}" :goes="$this->goes()->ofItself()->wiring()" />
-
-    {{-- What lemonfiber's words mean. --}}
-    <x-operator::quiet-action label="{{ __('stacks.words.road_in') }}" :goes="$this->goes()->ofItself()->words()" />
-
-    {{-- Taking lemonfiber off this machine, one removal at a time, each
-         read before it is agreed to. --}}
-    <x-operator::quiet-action label="{{ __('uninstall.road_in') }}" :goes="$this->goes()->ofItself()->changing()->takingItOff()" />
+    <x-design::section :label="__('health.roads.help')">
+        <x-design::row :headline="__('stacks.help.road_in')" :goes="$this->goes()->ofItself()->help()" />
+        <x-design::row :headline="__('stacks.words.road_in')" :goes="$this->goes()->ofItself()->words()" />
+    </x-design::section>
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
