@@ -147,7 +147,7 @@
     <x-operator::emphasis>{{ __('updates.last_update') }}</x-operator::emphasis>
 
     @if (! $this->lastUpdate()->went->cameBack())
-        <x-operator::what-stopped-the-reading
+        <x-operator::what-stood-in-the-way
             :went="$this->lastUpdate()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />

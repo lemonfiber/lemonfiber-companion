@@ -13,7 +13,7 @@
     <x-operator::action label="{{ __('health.never_mind') }}" tap="neverMind()" />
 @elseif ($this->lastCopy()->wasAsked)
     @if (! $this->lastCopy()->went->cameBack())
-        <x-operator::what-stopped-the-reading
+        <x-operator::what-stood-in-the-way
             :went="$this->lastCopy()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />

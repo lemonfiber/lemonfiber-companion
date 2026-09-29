@@ -73,7 +73,7 @@
         <x-operator::emphasis>{{ __('health.came_to.heading') }}</x-operator::emphasis>
 
         @if (! $this->whatItCameTo()->went->cameBack())
-            <x-operator::what-stopped-the-reading
+            <x-operator::what-stood-in-the-way
                 :went="$this->whatItCameTo()->went"
                 :sign-in-goes-to="$this->goes()->signIn()"
             />
@@ -140,7 +140,7 @@
         <x-operator::note>{{ __('health.rehearsal.nothing_started') }}</x-operator::note>
 
         @if (! $this->rehearsal()->went->cameBack())
-            <x-operator::what-stopped-the-reading
+            <x-operator::what-stood-in-the-way
                 :went="$this->rehearsal()->went"
                 :sign-in-goes-to="$this->goes()->signIn()"
             />

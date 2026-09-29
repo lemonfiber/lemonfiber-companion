@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Modules\Operator\View\Components\WhatStoppedTheReading;
+use Modules\Operator\View\Components\WhatStoodInTheWay;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
 
@@ -68,7 +68,7 @@ function whatEachScreenThatCanBeAskedAgainSays(): array
  */
 function theRetryTheObstacleArmOffers(): string
 {
-    $handed = new ReflectionClass(WhatStoppedTheReading::class)
+    $handed = new ReflectionClass(WhatStoodInTheWay::class)
         ->getConstructor()
         ?->getParameters() ?? [];
 

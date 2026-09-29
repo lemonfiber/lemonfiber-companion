@@ -86,7 +86,7 @@
         <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
     @else
         {{-- Starting a run, or asking after one, met something in the way. --}}
-        <x-operator::what-stopped-the-reading
+        <x-operator::what-stood-in-the-way
             :went="$this->howItIsGoing()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />

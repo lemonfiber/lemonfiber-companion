@@ -180,7 +180,7 @@ final readonly class FloorsAndRules
             // other.
             Fixture::edit(
                 'F14',
-                'app-modules/operator/resources/views/components/what-stopped-the-reading.blade.php',
+                'app-modules/operator/resources/views/components/what-stood-in-the-way.blade.php',
                 '{{ __($went->remedy) }}',
                 '{{ __($went->remedyish) }}',
                 'every step a component takes',
