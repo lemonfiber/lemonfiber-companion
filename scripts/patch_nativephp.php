@@ -773,10 +773,29 @@ const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites i
  */
 const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %s is not there.\n\nThe package no longer ships the file this patch rewrites. Either it was renamed, in which case point that entry at the new path, or it is gone, in which case delete the entry — and if it was the last one, this script and the two `composer.json` hooks that call it. Skipping it quietly leaves a build fatalling on a device with nothing having said so. Do not ignore this.\n";
 
+/**
+ * The package directory the bundle leaves out, so its copy of this tree has none.
+ *
+ * A build copies this tree without it, as `BundleExclusions::VENDOR_PATHS`
+ * says, and runs `composer install` in the copy, which runs this script again.
+ * The native project is built from this tree's own copy of that directory,
+ * which the first run patched, so in the bundle's copy there is nothing of it
+ * to patch. Where the directory is here and a file under it is not, the file
+ * moved, and that is still refused.
+ */
+const WHAT_THE_BUNDLE_LEAVES_OUT = '/../vendor/nativephp/mobile/resources';
+
 $rewritten = 0;
 
 foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => $becomes]) {
     $path = sprintf('%s%s', __DIR__, $where);
+
+    $leftOutOfThisCopy = str_starts_with($where, sprintf('%s/', WHAT_THE_BUNDLE_LEAVES_OUT))
+        && ! is_dir(sprintf('%s%s', __DIR__, WHAT_THE_BUNDLE_LEAVES_OUT));
+
+    if ($leftOutOfThisCopy) {
+        continue;
+    }
 
     if (! file_exists($path)) {
         fwrite(STDERR, sprintf(WHEN_THE_FILE_IS_NOT_THERE, $path));
