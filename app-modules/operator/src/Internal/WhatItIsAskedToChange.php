@@ -77,10 +77,4 @@ final readonly class WhatItIsAskedToChange
     {
         return AStacksScreen::Reset->forTheStack($this->stack);
     }
-
-    /** Taking lemonfiber off this machine, one removal at a time. */
-    public function takingItOff(): string
-    {
-        return AStacksScreen::Uninstall->forTheStack($this->stack);
-    }
 }

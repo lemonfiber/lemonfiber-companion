@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhatIsReleased;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
+use Modules\Operator\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -195,7 +196,7 @@ it('the way here and the way back are routes', function (): void {
     $screen = theCopyScreen(AStackThatChecksItself::with(aCopyWithANewerVersion()));
 
     expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->itself()))->not->toBeNull();
+        ->and(NativeRouter::resolve(TheMenu::About->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

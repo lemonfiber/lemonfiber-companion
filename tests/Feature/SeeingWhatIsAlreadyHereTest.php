@@ -29,6 +29,7 @@ use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
+use Modules\Operator\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -333,7 +334,7 @@ it('the way here and the way back are routes', function (): void {
     $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::with(aSurveyOfAMachineInUse()));
 
     expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->alreadyHere()))->not->toBeNull();
+        ->and(NativeRouter::resolve(TheMenu::AlreadyInstalled->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

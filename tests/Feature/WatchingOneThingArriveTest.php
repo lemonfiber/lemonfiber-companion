@@ -34,6 +34,7 @@ use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
+use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\ViewModels\AStepOnAsShown;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
@@ -1027,8 +1028,8 @@ it('starts and follows nothing on a phone whose session ended', function (): voi
 it('is where it says it is', function (): void {
     $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()));
 
-    expect(NativeRouter::resolve($screen->goes()->ofItself()->walkthrough()))->toHaveKey('params.stack', theStackAWalkRunsOn()->id()->stored())
-        ->and($screen->goes()->ofItself()->walkthrough())->toBe(sprintf('/stacks/%s/walkthrough', theStackAWalkRunsOn()->id()->stored()));
+    expect(NativeRouter::resolve(TheMenu::FollowADownload->screen()->forTheStack($screen->stack()->id())))->toHaveKey('params.stack', theStackAWalkRunsOn()->id()->stored())
+        ->and(TheMenu::FollowADownload->screen()->forTheStack($screen->stack()->id()))->toBe(sprintf('/stacks/%s/walkthrough', theStackAWalkRunsOn()->id()->stored()));
 });
 
 it('refuses a route parameter that is not text', function (): void {

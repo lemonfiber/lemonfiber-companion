@@ -102,12 +102,6 @@ return [
     'nothing_to_do_with_it' => 'There is nothing to do with it from here.',
     'nothing_to_try' => 'The stack did not suggest anything to try for this.',
     'ask_again' => 'Check again',
-    'roads' => [
-        'house' => 'What reaches the house',
-        'people' => 'Who gets in',
-        'machine' => 'This machine',
-        'help' => 'Help',
-    ],
     'see_how_it_is' => 'See how this stack is doing',
     'working_it_out' => 'This stack is working out what it could put right.',
     'working_it_out_action' => 'It takes a moment. Ask again shortly.',
@@ -182,7 +176,6 @@ return [
         'follow' => 'Follow it',
     ],
     'walkthrough' => [
-        'road_in' => 'Watch one thing arrive',
         'offer' => 'Watch one thing arrive, from the search to the library',
         'offer_explained' => 'The stack fetches one thing and says what it is doing at each step, so you see the whole road once. If a step is broken, this is where it shows.',
         'road' => 'The road a walk takes:',
@@ -282,11 +275,9 @@ return [
     'undeclared_explained' => 'These are running on the machine, and this stack\'s own configuration does not mention them. lemonfiber did not start them and will not stop them.',
     'nothing_undeclared' => 'Nothing else is running here.',
     'nothing_undeclared_action' => 'Everything on this machine is something this stack declared.',
-    'what_else_is_running' => 'What else is running here',
 
     'nothing_stopped' => 'Nothing has stopped coming in.',
     'nothing_stopped_action' => 'Everything the house asked for is on its way or already here.',
-    'what_stopped' => 'What stopped coming in',
 
     // A bounded, searchable read that names the service and says the
     // view is a window rather than the whole.

@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhatTheChoiceCameTo;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
+use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\ViewModels\APresetAsShown;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -513,7 +514,7 @@ it('the way here and the way back are routes', function (): void {
     $screen = theQualityScreen(AStackThatChoosesQuality::met(Obstacle::DeviceHasNoNetwork));
 
     expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->quality()))->not->toBeNull();
+        ->and(NativeRouter::resolve(TheMenu::Quality->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
 it('renders its own view, with what was typed', function (): void {

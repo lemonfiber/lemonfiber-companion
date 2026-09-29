@@ -33,6 +33,7 @@ use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
@@ -875,9 +876,9 @@ it('N2-R9 — what stopped coming in is one tap from the machine', function (): 
     // contradiction — a screen under the verdict would be claiming they are.
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunWithAWarning()));
 
-    expect($screen->goes()->stuck())
+    expect(TheMenu::StuckDownloads->screen()->forTheStack($screen->stack()->id()))
         ->toBe(AStacksScreen::Stuck->forTheStack(theStackBeingLookedAt()->id()))
-        ->and(NativeRouter::resolve($screen->goes()->stuck()))->not->toBeNull();
+        ->and(NativeRouter::resolve(TheMenu::StuckDownloads->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
 it('N2-R10 — a finding about a service offers what that service said', function (): void {

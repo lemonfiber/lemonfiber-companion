@@ -148,7 +148,6 @@ return [
         ],
     ],
     'catalogue' => [
-        'road_in' => 'Waar elke dienst voor is',
         'as_declared' => 'Zoals deze machine haar eigen diensten beschrijft, zonder dat er iets gestart is.',
         'without_it' => 'Zonder: :without',
         'nothing_declared' => 'Deze machine geeft geen diensten op',
@@ -171,7 +170,6 @@ return [
         'nothing_declared' => 'Deze machine geeft geen diensten op',
     ],
     'outbound' => [
-        'road_in' => 'Wat deze machine verlaat',
         'asks_for' => [
             'registry' => 'Images van diensten ophalen',
             'guides' => 'De kwaliteitsgidsen controleren',
@@ -214,7 +212,6 @@ return [
         ],
     ],
     'alerts' => [
-        'road_in' => 'Waarover je bericht krijgt',
         'preset' => 'Voorinstelling: :preset',
         'set_apart' => 'Apart gezet van de voorinstelling',
         'heard' => [
@@ -225,7 +222,6 @@ return [
         'changed_at_the_machine' => 'Aan te passen op de machine, niet hier',
     ],
     'itself' => [
-        'road_in' => 'Welke lemonfiber dit is',
         'running' => 'lemonfiber :version',
         'installed' => [
             'homebrew' => 'Geïnstalleerd met Homebrew',
@@ -280,7 +276,6 @@ return [
 
     // Wat de woorden van lemonfiber betekenen, zoals de woordenlijst van de stack ze uitlegt.
     'words' => [
-        'road_in' => 'Wat de woorden van lemonfiber betekenen',
         'heading' => 'Wat de woorden van lemonfiber betekenen',
         'search_label' => 'Zoek een woord',
         'search_placeholder' => 'Een woord, of hoe een andere app het noemt',
@@ -296,7 +291,6 @@ return [
     ],
 
     'credentials' => [
-        'road_in' => 'Wat hij bewaart om services binnen te laten',
         'heading' => 'Credentials',
         'state' => [
             'absent' => 'Ontbreekt: iets hier heeft hem nodig en hij is nooit opgegeven',
@@ -323,7 +317,6 @@ return [
         'at_the_machine' => 'Een credential wordt op de machine ingesteld of vervangen, niet hier.',
     ],
     'clients' => [
-        'road_in' => 'Met welke app kijken',
         'heading' => 'Waarop kijken',
         'support' => [
             'good' => 'Goed ondersteund',
@@ -339,7 +332,6 @@ return [
         'no_trouble' => 'Er staat niets opgesomd voor als het niet werkt',
     ],
     'front_door' => [
-        'road_in' => 'Waar het huishouden binnenkomt',
         'standing' => [
             'established' => 'De voordeur staat open',
             'library-only' => 'De bibliotheek is de voordeur; hier valt niets aan te vragen',
@@ -466,7 +458,6 @@ return [
     ],
 
     'already_here' => [
-        'road_in' => 'Wat al op deze machine staat',
         'found' => 'Wat lemonfiber hier al zag draaien',
         'could_not_look' => 'lemonfiber kon niet kijken wat hier draait, dus dit is geen lege machine',
         'nothing_found' => 'Er staat verder niets op deze machine',
@@ -585,7 +576,6 @@ return [
     ],
 
     'room' => [
-        'road_in' => 'Hoe vol deze machine is',
         'level' => [
             'unknown' => 'Hoe vol hij is kon niet gelezen worden',
             'ample' => 'Ruim voldoende plek',
@@ -747,7 +737,6 @@ return [
     ],
 
     'line' => [
-        'road_in' => 'Hoe de lijn gedeeld wordt',
         'restraint' => [
             'unlimited' => 'Niets houdt de stack tegen',
             'limited' => 'De stack is aan een limiet gebonden',
@@ -797,7 +786,6 @@ return [
 
     // Om hulp vragen: een supportbundel, beschreven voordat hij wordt geschreven.
     'help' => [
-        'road_in' => 'Om hulp vragen',
         'what_goes_in' => 'Wat er in de bundel komt',
         'nothing_leaves' => 'De stack beschrijft de bundel eerst. Er wordt niets geschreven totdat je instemt met die beschrijving, en deze app voegt niets aan de bundel toe en stuurt hem nergens heen: een geschreven bundel geef je zelf door, via het deelmenu van je telefoon.',
         'lines' => '{1} De laatste regel van de logs van elke service|[2,*] De laatste :count regels van de logs van elke service',

@@ -29,22 +29,10 @@ final readonly class WhoGetsIn
         return new self($stack);
     }
 
-    /** The credentials this machine holds, and what uses each. */
-    public function credentials(): string
-    {
-        return AStacksScreen::Credentials->forTheStack($this->stack);
-    }
-
     /** Which app the household should watch on. */
     public function clients(): string
     {
         return AStacksScreen::Clients->forTheStack($this->stack);
-    }
-
-    /** Where the household comes in. */
-    public function frontDoor(): string
-    {
-        return AStacksScreen::FrontDoor->forTheStack($this->stack);
     }
 
     /** Where somebody is asked in. */

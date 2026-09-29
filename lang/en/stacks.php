@@ -183,7 +183,6 @@ return [
     // stack dropped. What it does and what the house goes without lead; the
     // name follows.
     'catalogue' => [
-        'road_in' => 'What each service is for',
         'as_declared' => 'As this machine describes its own services, with nothing started.',
         'without_it' => 'Without it: :without',
         'nothing_declared' => 'This machine declares no services',
@@ -226,7 +225,6 @@ return [
     // Everything that leaves the machine, in two lists that are never merged.
     'outbound' => [
         // The road in, naming the question rather than the mechanism.
-        'road_in' => 'What leaves this machine',
         // Each of lemonfiber's own requests, by what it asks for.
         'asks_for' => [
             'registry' => 'Fetching service images',
@@ -279,7 +277,6 @@ return [
 
     // What the machine will tell its operator about.
     'alerts' => [
-        'road_in' => 'What you are told about',
         // The preset's name is the stack's; what it means is drawn beside it.
         'preset' => 'Preset: :preset',
         'set_apart' => 'Set apart from the preset',
@@ -294,7 +291,6 @@ return [
 
     // Which version of lemonfiber the machine runs.
     'itself' => [
-        'road_in' => 'Which lemonfiber this is',
         'running' => 'lemonfiber :version',
         'installed' => [
             'homebrew' => 'Installed with Homebrew',
@@ -352,7 +348,6 @@ return [
 
     // What lemonfiber's words mean, as the stack's glossary explains them.
     'words' => [
-        'road_in' => 'What lemonfiber\'s words mean',
         'heading' => 'What lemonfiber\'s words mean',
         'search_label' => 'Find a word',
         'search_placeholder' => 'A word, or what another app calls it',
@@ -370,7 +365,6 @@ return [
     // The credentials the machine holds to let services in. No line here
     // offers to set, change or show a value.
     'credentials' => [
-        'road_in' => 'What it holds to let services in',
         'heading' => 'Credentials',
         'state' => [
             'absent' => 'Missing: something here needs it and it was never supplied',
@@ -401,7 +395,6 @@ return [
 
     // Which app to watch on, device by device.
     'clients' => [
-        'road_in' => 'Which app to watch on',
         'heading' => 'What to watch on',
         'support' => [
             'good' => 'Well served',
@@ -420,7 +413,6 @@ return [
 
     // Where the household comes in, and what else they can reach.
     'front_door' => [
-        'road_in' => 'Where the household comes in',
         'standing' => [
             'established' => 'The front door is open',
             'library-only' => 'The library is the front door; there is nothing here to ask for',
@@ -550,7 +542,6 @@ return [
 
     // What is already on the machine, before anything is moved in.
     'already_here' => [
-        'road_in' => 'What is already on this machine',
         'found' => 'What lemonfiber found already running here',
         // Never the same screen as a machine with nothing on it.
         'could_not_look' => 'lemonfiber could not look at what is running here, so this is not an empty machine',
@@ -682,7 +673,6 @@ return [
 
     // How full the machine is, and where the room went.
     'room' => [
-        'road_in' => 'How full this machine is',
         // Where the machine, or one volume, stands.
         'level' => [
             'unknown' => 'How full it is could not be read',
@@ -866,7 +856,6 @@ return [
 
     // How the machine shares its line with the household.
     'line' => [
-        'road_in' => 'How the line is shared',
         'restraint' => [
             'unlimited' => 'Nothing holds the stack back',
             'limited' => 'The stack is held to a limit',
@@ -921,7 +910,6 @@ return [
 
     // Asking for help: a support bundle, described before it is written.
     'help' => [
-        'road_in' => 'Ask for help',
         'what_goes_in' => 'What goes in the bundle',
         'nothing_leaves' => 'The stack describes the bundle first. Nothing is written until you agree to that description, and this app adds nothing to the bundle and sends it nowhere: a written bundle is yours to hand over, through your phone\'s own sharing.',
         'lines' => '{1} The last line of each service\'s logs|[2,*] The last :count lines of each service\'s logs',

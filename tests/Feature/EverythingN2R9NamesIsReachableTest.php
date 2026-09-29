@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
+use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -141,7 +142,7 @@ it('N2-R9 — stuck downloads are reachable, and not by narrowing a run', functi
         . 'not by leaving both.',
     );
 
-    $resolved = NativeRouter::resolve($screen->goes()->stuck());
+    $resolved = NativeRouter::resolve(TheMenu::StuckDownloads->screen()->forTheStack($screen->stack()->id()));
 
     expect($resolved['class'] ?? null)->toBe(WhatStoppedComingIn::class);
 });

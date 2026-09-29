@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhatItWouldBreak;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
+use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\ViewModels\AConnectionAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringAsShown;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
@@ -423,7 +424,7 @@ it('the way here and the way back are routes', function (): void {
     $screen = theWiringScreen(AStackThatWires::answering());
 
     expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->ofItself()->wiring()))->not->toBeNull();
+        ->and(NativeRouter::resolve(TheMenu::Connections->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

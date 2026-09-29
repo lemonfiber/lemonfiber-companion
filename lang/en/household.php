@@ -60,7 +60,6 @@ return [
     'never_mind' => 'Never mind',
     'nothing_asked' => 'Nobody has asked for anything.',
     'nothing_asked_action' => 'What the household asks for shows up here as soon as somebody requests something.',
-    'asked_for' => 'What the household asked for',
     'refused_because' => 'Turned down: :reason',
     'refused_at' => 'Turned down at :when',
     // What the machine says the person holding the session is owed. The

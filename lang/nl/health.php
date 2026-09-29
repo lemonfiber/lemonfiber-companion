@@ -100,12 +100,6 @@ return [
     'nothing_to_do_with_it' => 'Hier valt er niets mee te doen.',
     'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',
     'ask_again' => 'Opnieuw controleren',
-    'roads' => [
-        'house' => 'Wat het huis bereikt',
-        'people' => 'Wie erin komt',
-        'machine' => 'Deze machine',
-        'help' => 'Hulp',
-    ],
     'see_how_it_is' => 'Bekijk hoe deze stack het doet',
     'working_it_out' => 'Deze stack kijkt wat er te herstellen valt.',
     'working_it_out_action' => 'Dit duurt even. Vraag het zo nog eens.',
@@ -178,7 +172,6 @@ return [
         'follow' => 'Volgen',
     ],
     'walkthrough' => [
-        'road_in' => 'Kijk hoe één ding binnenkomt',
         'offer' => 'Kijk hoe één ding binnenkomt, van de zoektocht tot de bibliotheek',
         'offer_explained' => 'De stack haalt één ding op en zegt bij elke stap wat hij doet, zodat je de hele weg één keer ziet. Is er een stap stuk, dan zie je het hier.',
         'road' => 'De weg die een walkthrough aflegt:',
@@ -278,11 +271,9 @@ return [
     'undeclared_explained' => 'Deze draaien op de machine en de configuratie van deze stack noemt ze niet. lemonfiber heeft ze niet gestart en stopt ze niet.',
     'nothing_undeclared' => 'Er draait hier verder niets.',
     'nothing_undeclared_action' => 'Alles op deze machine is iets dat deze stack zelf heeft opgegeven.',
-    'what_else_is_running' => 'Wat draait hier nog meer',
 
     'nothing_stopped' => 'Er is niets blijven steken.',
     'nothing_stopped_action' => 'Alles waar het huishouden om vroeg is onderweg of al binnen.',
-    'what_stopped' => 'Wat niet meer binnenkomt',
 
     // Een begrensde, doorzoekbare weergave die de dienst noemt en
     // zegt dat dit een venster is en niet het geheel.

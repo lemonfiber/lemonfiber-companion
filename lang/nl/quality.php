@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 return [
-    'road_in' => 'Hoe goed de media moet zijn',
 
     // Wat er van de keuze werd. Een repetitie en een tegengehouden keuze hebben
     // elk een eigen zin, en geen van beide zegt dat de keuze is vastgelegd.

@@ -36,6 +36,7 @@ use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
+use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\OneLineItReachesAsShown;
 use Modules\Operator\Internal\ViewModels\SomethingComingAsShown;
@@ -816,9 +817,9 @@ it('the way here and the way to a copy are routes', function (): void {
     $screen = theTakingItOffScreen(aStackReadingTheRemoval(aReadingOfTakingItOff()));
     $stack = theMachineLemonfiberLeaves()->id();
 
-    expect(NativeRouter::resolve($screen->goes()->ofItself()->changing()->takingItOff()))->not->toBeNull()
-        ->and($screen->goes()->ofItself()->changing()->takingItOff())->toBe(AStacksScreen::Uninstall->forTheStack($stack))
-        ->and($screen->goes()->ofItself()->changing()->takingItOff())->toBe(sprintf('/stacks/%s/uninstall', $stack->stored()))
+    expect(NativeRouter::resolve(TheMenu::Uninstall->screen()->forTheStack($screen->stack()->id())))->not->toBeNull()
+        ->and(TheMenu::Uninstall->screen()->forTheStack($screen->stack()->id()))->toBe(AStacksScreen::Uninstall->forTheStack($stack))
+        ->and(TheMenu::Uninstall->screen()->forTheStack($screen->stack()->id()))->toBe(sprintf('/stacks/%s/uninstall', $stack->stored()))
         ->and(NativeRouter::resolve($screen->goes()->ofItself()->changing()->copy()))->not->toBeNull();
 });
 

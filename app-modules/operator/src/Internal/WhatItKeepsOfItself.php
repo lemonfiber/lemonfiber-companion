@@ -85,42 +85,11 @@ final readonly class WhatItKeepsOfItself
         return WhatItIsAskedToChange::of($this->stack);
     }
 
-    /** Asking for help with this machine: a support bundle, described before it is written. */
-    public function help(): string
-    {
-        return AStacksScreen::Help->forTheStack($this->stack);
-    }
-
     /** How full this machine is, and where the room went. */
     public function room(): string
     {
         return AStacksScreen::Room->forTheStack($this->stack);
     }
-
-    /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
-    public function itself(): string
-    {
-        return AStacksScreen::Itself->forTheStack($this->stack);
-    }
-
-    /** What is already on this machine that is not lemonfiber's, before anything is moved in. */
-    public function alreadyHere(): string
-    {
-        return AStacksScreen::AlreadyHere->forTheStack($this->stack);
-    }
-
-    /** How good this machine's media should be, and upgrading what is already here. */
-    public function quality(): string
-    {
-        return AStacksScreen::Quality->forTheStack($this->stack);
-    }
-
-    /** Wiring the services to each other, and how each connection turned out. */
-    public function wiring(): string
-    {
-        return AStacksScreen::Wiring->forTheStack($this->stack);
-    }
-
 
     /** What lemonfiber's words mean. */
     public function words(): string
@@ -138,11 +107,5 @@ final readonly class WhatItKeepsOfItself
     public function guard(): string
     {
         return AStacksScreen::Guard->forTheStack($this->stack);
-    }
-
-    /** Where one thing is fetched while the operator watches, and the record of it is kept. */
-    public function walkthrough(): string
-    {
-        return AStacksScreen::Walkthrough->forTheStack($this->stack);
     }
 }
