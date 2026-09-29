@@ -119,7 +119,9 @@ final readonly class HowTheInvitationReads
                     nothing: WhatWasGrantedAsShown::nothing(...),
                 ),
                 withdrawn: $withdrawn,
+                withdrawnSaid: $invitation->wasRehearsed() ? 'stacks.invitation.would_withdraw' : 'stacks.invitation.withdrew',
                 suspended: $suspended,
+                suspendedSaid: $invitation->wasRehearsed() ? 'stacks.invitation.would_switch_off' : 'stacks.invitation.switched_off',
             ),
         );
     }

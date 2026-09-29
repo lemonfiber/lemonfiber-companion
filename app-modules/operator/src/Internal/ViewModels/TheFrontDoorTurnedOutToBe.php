@@ -11,6 +11,7 @@ final readonly class TheFrontDoorTurnedOutToBe
 {
     /**
      * @param string                      $standingSaid the catalogue key for where the door stands, or empty where nothing came back
+     * @param string                      $tone         the tone its glyph is drawn in, a `Modules\Design\View\Tone` value
      * @param string                      $meaning      what this comes to, in the stack's words
      * @param string                      $chosenSaid   the catalogue key for how the door came to be
      * @param string                      $named        what the operator named as the door, or empty
@@ -20,6 +21,7 @@ final readonly class TheFrontDoorTurnedOutToBe
     public function __construct(
         public HowTheReadingWent $went,
         public string $standingSaid,
+        public string $tone,
         public string $meaning,
         public string $chosenSaid,
         public string $named,

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AServiceBeside;
@@ -132,6 +133,18 @@ it('says a door was worked out rather than chosen, and a chosen one was chosen',
         ->and($named)->toContain(__(WhereTheFrontDoorStands::Stranded->saidOnTheScreen()));
 });
 
+it('draws where the door stands with the glyph it reads by', function (WhereTheFrontDoorStands $standing, Tone $tone): void {
+    $screen = theDoorScreen(AStackWithAFrontDoor::with(aDoorWithNothingAtIt($standing, HowTheDoorCameToBe::derived())));
+
+    expect($screen->answer()->tone)->toBe($tone->value);
+})->with([
+    'open' => [WhereTheFrontDoorStands::Established, Tone::Fine],
+    'the library alone' => [WhereTheFrontDoorStands::LibraryOnly, Tone::Fine],
+    'nobody else can be told the way' => [WhereTheFrontDoorStands::Stranded, Tone::Attention],
+    'nothing open' => [WhereTheFrontDoorStands::None, Tone::Attention],
+    'not answering' => [WhereTheFrontDoorStands::Unreachable, Tone::Trouble],
+]);
+
 it('a stack with nothing open to the household says so, rather than drawing a door', function (): void {
     $screen = theDoorScreen(AStackWithAFrontDoor::with(aDoorWithNothingAtIt(WhereTheFrontDoorStands::None, HowTheDoorCameToBe::derived())));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -157,6 +170,7 @@ it('a stack that could not be asked is not a stack with no door', function (): v
     expect($answer->went->cameBack())->toBeFalse()
         ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
+        ->and($answer->tone)->toBe(Tone::Unknown->value)
         ->and([
             $answer->standingSaid, $answer->meaning, $answer->chosenSaid, $answer->named, $answer->refusal,
             $answer->begins->service, $answer->begins->facingSaid, $answer->begins->url, $answer->begins->caution, $answer->beside,

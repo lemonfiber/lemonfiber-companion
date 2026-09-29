@@ -651,8 +651,14 @@ it('names what to do next where it finished, and what the import did', function 
     $screen = aScreenThatWalked(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::done(WalkthroughsToFollow::aWalkThatWorked())));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    // The one next step this app has a screen for leads there.
-    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.walkthrough.where_to_watch'))
+    // The one next step this app has a screen for is a row that leads there,
+    // saying where; the others are lines that lead nowhere.
+    $offered = WhatTheDeviceWouldDraw::by($screen)->offers();
+
+    expect($offered)->toContain(__(WhatToDoNext::ClientApps->saidOnTheScreen()))
+        ->and($offered)->not->toContain(__(WhatToDoNext::MoreContent->saidOnTheScreen()))
+        ->and($offered)->not->toContain(__(WhatToDoNext::Household->saidOnTheScreen()))
+        ->and($drawn)->toContain(__('health.walkthrough.where_to_watch'))
         ->and(NativeRouter::resolve($screen->goes()->whoGetsIn()->clients()))->not->toBeNull();
 
     expect($drawn)->toContain(

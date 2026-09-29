@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AServiceBeside;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheFrontDoor;
 use Modules\Kernel\Api\WhatItFaces;
+use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Operator\Internal\ViewModels\AServiceBesideAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheFrontDoorTurnedOutToBe;
@@ -40,6 +42,7 @@ final readonly class HowTheFrontDoorReads
         return new TheFrontDoorTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             standingSaid: $door->standing()->saidOnTheScreen(),
+            tone: $this->toneOf($door->standing()),
             meaning: $door->meaning(),
             chosenSaid: $door->chosen()->how()->saidOnTheScreen(),
             named: $door->chosen()->named(),
@@ -63,6 +66,23 @@ final readonly class HowTheFrontDoorReads
         return $this->nothingFrom(HowTheReadingWent::somethingStopped($why));
     }
 
+    /**
+     * How where the door stands reads, as the glyph beside it.
+     *
+     * A library that is the door because there is nothing to ask for is as it
+     * should be, not a door missing. A door nobody else can be told the way to
+     * wants looking at, as does a machine that opens nothing to the household;
+     * a door that does not answer is broken.
+     */
+    private function toneOf(WhereTheFrontDoorStands $standing): string
+    {
+        return match ($standing) {
+            WhereTheFrontDoorStands::Established, WhereTheFrontDoorStands::LibraryOnly => Tone::Fine->value,
+            WhereTheFrontDoorStands::Stranded, WhereTheFrontDoorStands::None => Tone::Attention->value,
+            WhereTheFrontDoorStands::Unreachable => Tone::Trouble->value,
+        };
+    }
+
     /** One service beside the door, as the row that draws it. */
     private function beside(AServiceBeside $service): AServiceBesideAsShown
     {
@@ -81,6 +101,7 @@ final readonly class HowTheFrontDoorReads
         return new TheFrontDoorTurnedOutToBe(
             went: $went,
             standingSaid: '',
+            tone: Tone::Unknown->value,
             meaning: '',
             chosenSaid: '',
             named: '',

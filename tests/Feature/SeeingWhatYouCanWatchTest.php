@@ -123,6 +123,18 @@ it('leaves the year off a holding the core could not date', function (): void {
     expect($years)->toBe(['1999', '', '2012']);
 });
 
+it('draws each holding as a row: its title, its kind under it, and its year at its end where it has one', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree())))->said();
+    $first = array_search('A film', $drawn, strict: true);
+
+    expect($first)->toBeInt()
+        ->and(array_slice($drawn, (int) $first, 8))->toBe([
+            'A film', __('household.medium.film'), '1999',
+            'A series', __('household.medium.series'),
+            'Something else', __('household.medium.other'), '2012',
+        ]);
+});
+
 it('N3-R15 — draws a library out of reach as itself, never as an empty shelf', function (): void {
     // The failure this screen is written around. Both are no rows, and one
     // says *you have nothing* while the other says *your collection could not

@@ -2,56 +2,58 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    <x-operator::emphasis>{{ __('stacks.clients.heading') }}</x-operator::emphasis>
+    <x-design::title>{{ __('stacks.clients.heading') }}</x-design::title>
 
     {{-- True of every device, so said once and before any of them: somebody
          set up on the sofa and sent home has not finished. --}}
-    <native:text>{{ $this->answer()->onlyAtHome }}</native:text>
+    <x-design::body>{{ $this->answer()->onlyAtHome }}</x-design::body>
 
     {{-- Why playback may struggle whatever app is chosen, where anything
          strains it. --}}
     @if ($this->answer()->strainingPreset !== '')
-        <x-operator::note>{{ __('stacks.clients.straining', ['preset' => $this->answer()->strainingPreset]) }}</x-operator::note>
-        <native:text>{{ $this->answer()->strainingCaution }}</native:text>
-        <x-operator::note>{{ $this->answer()->strainingInstead }}</x-operator::note>
+        <x-design::notice>
+            <x-design::strong>{{ __('stacks.clients.straining', ['preset' => $this->answer()->strainingPreset]) }}</x-design::strong>
+            <x-design::body>{{ $this->answer()->strainingCaution }}</x-design::body>
+            <x-design::note>{{ $this->answer()->strainingInstead }}</x-design::note>
+        </x-design::notice>
     @endif
 
     @forelse ($this->answer()->devices as $device)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $device->device }}</x-operator::emphasis>
-            <native:text>{{ $device->client }}</native:text>
+        <x-design::card>
+            <x-design::strong>{{ $device->device }}</x-design::strong>
+            <x-design::body>{{ $device->client }}</x-design::body>
             {{-- Fallback is an answer, drawn in words of its own like the rest. --}}
-            <x-operator::note>{{ __($device->supportSaid) }}</x-operator::note>
+            <x-design::note>{{ __($device->supportSaid) }}</x-design::note>
             @if ($device->caution !== '')
-                <x-operator::note>{{ $device->caution }}</x-operator::note>
+                <x-design::note>{{ $device->caution }}</x-design::note>
             @endif
             @if ($device->instead !== '')
-                <native:text>{{ __('stacks.clients.instead', ['instead' => $device->instead]) }}</native:text>
+                <x-design::body>{{ __('stacks.clients.instead', ['instead' => $device->instead]) }}</x-design::body>
             @endif
-        </x-operator::entry>
+        </x-design::card>
     @empty
-        <x-operator::note>{{ __('stacks.clients.no_devices') }}</x-operator::note>
+        <x-design::body>{{ __('stacks.clients.no_devices') }}</x-design::body>
     @endforelse
 
-    <x-operator::note>{{ $this->answer()->nothingIsInstalled }}</x-operator::note>
+    <x-design::note>{{ $this->answer()->nothingIsInstalled }}</x-design::note>
 
-    <x-operator::emphasis>{{ __('stacks.clients.trouble') }}</x-operator::emphasis>
+    <x-design::heading>{{ __('stacks.clients.trouble') }}</x-design::heading>
     @forelse ($this->answer()->troubles as $trouble)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $trouble->symptom }}</x-operator::emphasis>
+        <x-design::card>
+            <x-design::strong>{{ $trouble->symptom }}</x-design::strong>
             @forelse ($trouble->causes as $cause)
-                <native:text>{{ $cause->because }}</native:text>
-                <x-operator::note>{{ $cause->tell }}</x-operator::note>
-                <x-operator::note>{{ $cause->fix }}</x-operator::note>
+                <x-design::body>{{ $cause->because }}</x-design::body>
+                <x-design::note>{{ $cause->tell }}</x-design::note>
+                <x-design::note>{{ $cause->fix }}</x-design::note>
             @empty
-                <x-operator::note>{{ __('stacks.clients.no_causes') }}</x-operator::note>
+                <x-design::note>{{ __('stacks.clients.no_causes') }}</x-design::note>
             @endforelse
-        </x-operator::entry>
+        </x-design::card>
     @empty
-        <x-operator::note>{{ __('stacks.clients.no_trouble') }}</x-operator::note>
+        <x-design::body>{{ __('stacks.clients.no_trouble') }}</x-design::body>
     @endforelse
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

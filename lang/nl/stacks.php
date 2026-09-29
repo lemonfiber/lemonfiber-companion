@@ -379,9 +379,9 @@ return [
             'let-through' => 'wordt voor hen doorgelaten',
             'left_to_the_stack' => 'laat deze stack beslissen',
         ],
-        'hold_unrated_back' => 'Houd alles zonder keuring tegen',
-        'let_unrated_through' => 'Laat alles zonder keuring door',
-        'leave_unrated_to_the_stack' => 'Laat materiaal zonder keuring aan deze stack over',
+        'hold_unrated_back' => 'Tegenhouden',
+        'let_unrated_through' => 'Doorlaten',
+        'leave_unrated_to_the_stack' => 'Aan deze stack overlaten',
         'needs_a_name' => 'Zeg voor wie dit is: een uitnodiging heeft een naam nodig',
         'age_is_a_number' => 'Een leeftijdsgrens is een heel aantal jaren',
         'what_would_it_grant' => 'Bekijk wat uitnodigen zou doen',
@@ -432,6 +432,7 @@ return [
         'taking_it_off_means' => 'Het wachtwoord dat :name nu heeft werkt niet meer, en ze kiezen een nieuw op het adres dat je hiermee krijgt. Jij ziet het nooit en stelt het nooit in',
         'take_it_off' => 'Haal het wachtwoord van het account van :name',
         'never_mind' => 'Laat het zoals het is',
+        'never_mind_for' => 'Laat het wachtwoord van :name zoals het is',
     ],
 
     // Iemand uit het huishouden halen: wat het kost, het ja, en hoe ver het kwam.
