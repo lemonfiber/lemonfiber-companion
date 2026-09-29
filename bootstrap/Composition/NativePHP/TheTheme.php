@@ -27,17 +27,19 @@ final readonly class TheTheme
      * The widgets (buttons, list rows, fields, the top bar and the bottom bar)
      * read their colours from that store rather than from classes. Every
      * neutral key is mapped, so no widget falls back to the package's own
-     * palette. Material draws a selected tab's label in `secondary`, so it is
-     * the text role; the tab's indicator and a tonal button are painted from
-     * the outline (see `scripts/patch_nativephp.php`). `destructive`, `success` and the package's `accent` are not:
-     * this surface asserts no colour for them, and uses no widget variant that
-     * would.
+     * palette. `secondary` is the tonal button's fill, so it is the line role
+     * with the text role on it: a quiet button beside the accent's filled one.
+     * Material's own `secondary`, which a selected tab's label is drawn in, is
+     * the text role instead, and a selected tab's indicator is the outline
+     * (both in `scripts/patch_nativephp.php`). `destructive`, `success` and
+     * the package's `accent` are not mapped: this surface asserts no colour
+     * for them, and uses no widget variant that would.
      */
     public const array WIDGET_ROLES = [
         'primary' => ThemeToken::Accent,
         'on-primary' => ThemeToken::OnAccent,
-        'secondary' => ThemeToken::Text,
-        'on-secondary' => ThemeToken::Surface,
+        'secondary' => ThemeToken::Line,
+        'on-secondary' => ThemeToken::Text,
         'background' => ThemeToken::Surface,
         'on-background' => ThemeToken::Text,
         'surface' => ThemeToken::Surface,
