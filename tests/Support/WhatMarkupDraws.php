@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function __;
 use function array_map;
 
 use Illuminate\Support\Facades\Blade;
@@ -34,24 +35,27 @@ use function sprintf;
  */
 final readonly class WhatMarkupDraws
 {
-    public static function outline(string $markup): string
+    /** @param array<string, mixed> $data what the markup is rendered with */
+    public static function outline(string $markup, array $data = []): string
     {
-        return self::outlineOf(self::drawn($markup));
+        return self::outlineOf(self::drawn($markup, $data));
     }
 
     /**
      * The tree the device would draw for a piece of markup, as the renderer
      * hands it over: types, layouts and props, for what an outline leaves out.
      *
+     * @param array<string, mixed> $data what the markup is rendered with
+     *
      * @return array<array-key, mixed>
      */
-    public static function drawn(string $markup): array
+    public static function drawn(string $markup, array $data = []): array
     {
         $was = NativeTagPrecompiler::setActive(active: true);
 
         try {
             NativeElementCollector::reset();
-            Blade::render($markup);
+            Blade::render($markup, $data);
             $tree = NativeElementCollector::collect();
         } finally {
             NativeTagPrecompiler::setActive(active: $was);
@@ -62,6 +66,17 @@ final readonly class WhatMarkupDraws
         $hashes = [];
 
         return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
+    }
+
+    /**
+     * The words a translation key draws as a text in the outline, and the key
+     * itself where the catalogue has none, as a screen would draw it.
+     */
+    public static function words(string $key): string
+    {
+        $said = __($key);
+
+        return is_string($said) ? $said : $key;
     }
 
     /** One node of the drawn tree, and everything under it, as one line. */
