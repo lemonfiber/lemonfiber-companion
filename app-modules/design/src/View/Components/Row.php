@@ -6,6 +6,7 @@ namespace Modules\Design\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
+use Modules\Design\View\Tone;
 
 use function view;
 
@@ -18,10 +19,17 @@ use function view;
  * and is 56 wide-pixels tall. A row that does neither shows its trailing
  * value instead. `answersTo` is the name a reader hears where the headline
  * alone would be ambiguous, as in a list of rows that each say "Open".
+ * `tone` puts that tone's glyph at its start, for a row that stands for
+ * something with a state, such as a service; a row without one starts with
+ * its headline.
  */
 final class Row extends Component
 {
     public readonly string $named;
+
+    public readonly ?string $glyph;
+
+    public readonly ?string $iosGlyph;
 
     public function __construct(
         public readonly string $headline,
@@ -30,8 +38,12 @@ final class Row extends Component
         public readonly string $tap = '',
         public readonly string $goes = '',
         string $answersTo = '',
+        string $tone = '',
     ) {
         $this->named = $answersTo === '' ? $headline : $answersTo;
+        $says = $tone === '' ? null : Tone::from($tone);
+        $this->glyph = $says?->glyph();
+        $this->iosGlyph = $says?->iosGlyph();
     }
 
     public function render(): View

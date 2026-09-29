@@ -59,12 +59,25 @@ function everyControlDrawnPerRow(string $source): array
     foreach (everyLoopAndControlIn($source) as $mark) {
         $depth += ['opens' => 1, 'closes' => -1, 'control' => 0][$mark['what']];
 
-        if ($mark['what'] === 'control' && $depth > 0) {
+        if ($mark['what'] === 'control' && $depth > 0 && itIsOperated($mark['tag'])) {
             $drawn[] = ['at' => $mark['at'], 'tag' => $mark['tag']];
         }
     }
 
     return $drawn;
+}
+
+/**
+ * Whether a person operates this tag.
+ *
+ * Every action, link and chip is operated. A row is operated only where it
+ * goes somewhere or does something: a row with neither is a line on a card, and
+ * a reader hears its headline, which already names the row it is.
+ */
+function itIsOperated(string $tag): bool
+{
+    return ! str_starts_with($tag, '<x-design::row')
+        || preg_match('/\s:?(?:goes|tap)\s*=/', $tag) === 1;
 }
 
 /**

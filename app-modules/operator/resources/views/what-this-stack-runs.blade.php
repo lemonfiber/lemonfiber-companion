@@ -5,100 +5,83 @@
     {{-- What it all amounts to, as the stack judged it — said before the
          rows, so an operator who opened this because a film would not play
          reads the answer before the list. --}}
-    <x-operator::emphasis>{{ __($this->answer()->overall) }}</x-operator::emphasis>
+    <x-design::heading>{{ __($this->answer()->overall) }}</x-design::heading>
 
     {{-- The forms asked for, before the services they expand to: a stack
          running part of itself is the operator's intent, and this says which
          part. --}}
     @if ($this->answer()->active !== [])
-        <native:text>{{ __('health.forms_running', ['forms' => implode(', ', $this->answer()->active)]) }}</native:text>
+        <x-design::body>{{ __('health.forms_running', ['forms' => implode(', ', $this->answer()->active)]) }}</x-design::body>
     @else
-        <native:text>{{ __('health.no_form_running') }}</native:text>
+        <x-design::body>{{ __('health.no_form_running') }}</x-design::body>
     @endif
 
     @if ($this->answer()->isSettling)
         {{-- Something here becomes something else on its own, and
              this says how often the screen looks. A screen that refreshes
              silently is one an operator cannot reason about. --}}
-        <x-operator::note>{{ __($this->cadence()->saidOnTheScreen()) }}</x-operator::note>
+        <x-design::note>{{ __($this->cadence()->saidOnTheScreen()) }}</x-design::note>
     @endif
 
-    @forelse ($this->answer()->services as $service)
-        {{-- A row, not a rack. The verbs live behind it, on the screen about
-             that one service — a list is read and a verb is chosen, and the
-             two acts do not want the same frame. What the row carries is what
-             somebody scanning the list is looking for: which thing, and
-             whether it is on. --}}
-        <native:pressable
-            class="w-full min-h-12 justify-center gap-1 py-2"
-            @navigate="$this->goes()->doingWith($service->id)"
-            a11y-label="{{ __('health.open_service', ['name' => $service->name]) }}"
-            :press-opacity="0.6"
-        >
-            <x-operator::emphasis>{{ $service->name }}</x-operator::emphasis>
-            <native:text>{{ __($service->runsSaid) }}</native:text>
-
-            {{-- What brought it, every form that did, so a service is never
-                 shown without why it is there. --}}
-            @if ($service->runsFor !== [])
-                <x-operator::note>{{ __('health.runs_for', ['forms' => implode(', ', $service->runsFor)]) }}</x-operator::note>
-            @else
-                <x-operator::note>{{ __('health.runs_for_no_form') }}</x-operator::note>
-            @endif
-        </native:pressable>
-
-        @unless ($loop->last)
-            <native:divider />
-        @endunless
-    @empty
-        {{-- Not the same screen as a stack that could not be asked. Nothing
-             running is the state the operator came here to change, and
-             saying so is what tells it apart from the obstacle branch. --}}
-        <x-operator::emphasis>{{ __('health.nothing_is_running') }}</x-operator::emphasis>
-    @endforelse
+    {{-- A row, not a rack. The verbs live behind it, on the screen about
+         that one service — a list is read and a verb is chosen, and the two
+         acts do not want the same frame. What the row carries is what somebody
+         scanning the list is looking for: which thing, whether it is on, and
+         every form that brought it, so a service is never shown without why
+         it is there. --}}
+    <x-design::section>
+        @forelse ($this->answer()->services as $service)
+            <x-design::row
+                :headline="$service->name"
+                :supporting="__($service->runsSaid) . ' · ' . ($service->runsFor === [] ? __('health.runs_for_no_form') : __('health.runs_for', ['forms' => implode(', ', $service->runsFor)]))"
+                :tone="$service->tone"
+                :goes="$this->goes()->doingWith($service->id)"
+                :answers-to="__('health.open_service', ['name' => $service->name])"
+            />
+        @empty
+            {{-- Not the same screen as a stack that could not be asked. Nothing
+                 running is the state the operator came here to change, and
+                 saying so is what tells it apart from the obstacle branch. --}}
+            <x-design::row :headline="__('health.nothing_is_running')" />
+        @endforelse
+    </x-design::section>
 
     {{-- Filtered, not failed: each service the forms asked for and the
          stack left out, with what it would need. --}}
-    <x-operator::emphasis>{{ __('health.left_out_heading') }}</x-operator::emphasis>
-
-    @forelse ($this->answer()->leftOut as $left)
-        <x-operator::note>
-            {{ __('health.left_out', ['name' => $left->name, 'forms' => implode(', ', $left->askedBy), 'needs' => __($left->needsSaid)]) }}
-        </x-operator::note>
-    @empty
-        <x-operator::note>{{ __('health.nothing_left_out') }}</x-operator::note>
-    @endforelse
+    <x-design::section :label="__('health.left_out_heading')">
+        @forelse ($this->answer()->leftOut as $left)
+            <x-design::row
+                :headline="$left->name"
+                :supporting="__('health.left_out_by', ['forms' => implode(', ', $left->askedBy), 'needs' => __($left->needsSaid)])"
+            />
+        @empty
+            <x-design::row :headline="__('health.nothing_left_out')" />
+        @endforelse
+    </x-design::section>
 
     {{-- The other granularity. The forms come from the stack's own list
          of the forms it declares rather than from the rows — a row's
          profile is not a form — so the form an operator opened this screen
          to start, the one with nothing running in it, is here. --}}
-    <x-operator::emphasis>{{ __('health.by_form') }}</x-operator::emphasis>
+    <x-design::section :label="__('health.by_form')">
+        @forelse ($this->answer()->forms as $form)
+            <x-design::row
+                :headline="$form"
+                :goes="$this->goes()->doingWithTheForm($form)"
+                :answers-to="__('health.open_form', ['name' => $form])"
+            />
+        @empty
+            {{-- A stack that declares no forms at all, which is not the same as
+                 one whose forms are all stopped — and it is not something *ask
+                 again* fixes. --}}
+            <x-design::row :headline="__('health.no_forms_at_all')" />
+        @endforelse
+    </x-design::section>
 
-    @forelse ($this->answer()->forms as $form)
-        <native:pressable
-            class="w-full min-h-12 justify-center py-2"
-            @navigate="$this->goes()->doingWithTheForm($form)"
-            a11y-label="{{ __('health.open_form', ['name' => $form]) }}"
-            :press-opacity="0.6"
-        >
-            <native:text>{{ $form }}</native:text>
-        </native:pressable>
-
-        @unless ($loop->last)
-            <native:divider />
-        @endunless
-    @empty
-        {{-- A stack that declares no forms at all, which is not the same as
-             one whose forms are all stopped — and it is not something *ask
-             again* fixes. --}}
-        <native:text>{{ __('health.no_forms_at_all') }}</native:text>
-    @endforelse
-
-    {{-- Quiet, because it is not the thing this frame wants anybody to do.
-         The rows are, and a filled bar beside a column of them reads as one
-         more of the same kind of control. --}}
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    {{-- Tonal, because it is not the thing this frame wants anybody to do.
+         The rows are, and a filled bar under a column of them reads as the
+         screen's one answer. --}}
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
