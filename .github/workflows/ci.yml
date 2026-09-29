@@ -150,7 +150,7 @@ jobs:
   # says `no PR range; skipping` in its own log before passing: a reported pass
   # rather than a silent one.
   dco:
-    uses: lemonfiber/spec/.github/workflows/dco.yml@60d130a3d799e4826111f9eeffa932b733bc22c3 # v1.0.16
+    uses: lemonfiber/spec/.github/workflows/dco.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
 
   # Beside `dco` because the two read the same record from opposite directions:
   # that one insists a human attested to the work, this one insists no tool is
@@ -158,7 +158,7 @@ jobs:
   # same way: it checks a pull request's range, and says "no PR range;
   # skipping" on a push to main.
   attribution:
-    uses: lemonfiber/spec/.github/workflows/attribution.yml@60d130a3d799e4826111f9eeffa932b733bc22c3 # v1.0.16
+    uses: lemonfiber/spec/.github/workflows/attribution.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
 
   # `pull-requests: write` is what lets the gate close a pull request whose
   # citation is missing or names an identifier that does not exist, rather than
@@ -171,16 +171,16 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/spec-check.yml@60d130a3d799e4826111f9eeffa932b733bc22c3 # v1.0.16
+    uses: lemonfiber/spec/.github/workflows/spec-check.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
 
   commitlint:
     # `push` stays out: `main` does not require this context, so no name is
     # waiting to be reported there and the runner would be spent for nothing.
     if: github.event_name == 'pull_request'
-    uses: lemonfiber/spec/.github/workflows/commitlint.yml@60d130a3d799e4826111f9eeffa932b733bc22c3 # v1.0.16
+    uses: lemonfiber/spec/.github/workflows/commitlint.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
 
   hygiene:
-    uses: lemonfiber/spec/.github/workflows/hygiene.yml@eef28a9c763d2011bbaae835970e7c29ac844011 # v1.0.22
+    uses: lemonfiber/spec/.github/workflows/hygiene.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
 
   # Every pin this repository holds on a shared workflow, against what the
   # spec's default branch holds now. It fails naming the commits a pin has not
@@ -218,17 +218,17 @@ jobs:
   # the deferral buys and the whole of why it is written down rather than left to
   # look like a repository nobody finished configuring.
   workflow-pins:
-    uses: lemonfiber/spec/.github/workflows/workflow-pins.yml@60d130a3d799e4826111f9eeffa932b733bc22c3 # v1.0.16
+    uses: lemonfiber/spec/.github/workflows/workflow-pins.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
 
   security:
-    uses: lemonfiber/spec/.github/workflows/security.yml@60d130a3d799e4826111f9eeffa932b733bc22c3 # v1.0.16
+    uses: lemonfiber/spec/.github/workflows/security.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
 
   labeler:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/labeler.yml@60d130a3d799e4826111f9eeffa932b733bc22c3 # v1.0.16
+    uses: lemonfiber/spec/.github/workflows/labeler.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
 
   # The rules, before anything slower gets a chance to hide a boundary break.
   #
@@ -831,7 +831,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@60d130a3d799e4826111f9eeffa932b733bc22c3 # v1.0.16
+    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@578850cd7cc9c81ed1664ce7885c9b93aeeab564 # v1.0.23
     with:
       # Nothing, which is now true: `main` carries zero open issues, and the two
       # it did carry went out with the commit that installed this gate.
