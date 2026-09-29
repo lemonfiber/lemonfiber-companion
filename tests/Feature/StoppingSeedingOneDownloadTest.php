@@ -509,3 +509,16 @@ it('renders its own view, and the way back is a route', function (): void {
         ->and(NativeRouter::resolve($screen->goes()->ofItself()->room()))->not->toBeNull()
         ->and(NativeRouter::resolve($screen->goes()->ofItself()->changing()->lettingGo('Some Film/2024')))->not->toBeNull();
 });
+
+it('asked again before anything was read, asks for the offer when the frame reads it, and only then', function (): void {
+    $stopping = aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::stillRunning());
+    $screen = theLettingGoScreen($stopping);
+
+    $screen->again();
+
+    expect($stopping->asked())->toBe([]);
+
+    $screen->answer();
+
+    expect($stopping->asked())->toHaveCount(1);
+});

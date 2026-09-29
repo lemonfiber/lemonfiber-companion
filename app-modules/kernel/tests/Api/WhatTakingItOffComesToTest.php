@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function array_keys;
 use function count;
 use function expect;
 use function it;
@@ -175,4 +176,27 @@ it('keeps the names a removal reports in order, even handed them by name', funct
     $named = NamedOnTheManifest::under('gone', first: 'jellyfin', then: 'sonarr');
 
     expect(iterator_to_array($named, preserve_keys: true))->toBe(['jellyfin', 'sonarr']);
+});
+
+/**
+ * The keys a list of lines hands out, in order.
+ *
+ * @param iterable<mixed, mixed> $list
+ * @return list<int|string>
+ */
+function theKeysOf(iterable $list): array
+{
+    return array_keys(iterator_to_array($list, preserve_keys: true));
+}
+
+it('keeps every list of lines in order, even handed them by name', function (): void {
+    // Each list is read by position, so a spread keyed by name comes out keyed
+    // from nought, the way a list handed over in order does.
+    $size = AnAmountOfRoom::unread();
+
+    expect(theKeysOf(WhatItReaches::of(...['a' => OneThingItReaches::going('a', WhatSortItIs::Container, 'A', holdsACredential: false, size: $size), 'b' => OneThingItReaches::going('b', WhatSortItIs::Path, 'B', holdsACredential: false, size: $size)])))->toBe([0, 1])
+        ->and(theKeysOf(WhatIsNotLemonfibers::of(...['a' => SomethingNotLemonfibers::at('a', 0, 0), 'b' => SomethingNotLemonfibers::at('b', 0, 0)])))->toBe([0, 1])
+        ->and(theKeysOf(WhatIsStillComing::of(...['a' => SomethingStillComing::named('a', 0), 'b' => SomethingStillComing::named('b', 1)])))->toBe([0, 1])
+        ->and(theKeysOf(WhatItCannotTake::of(...['a' => SomethingItCannotTake::found('a', 'b', 'c'), 'b' => SomethingItCannotTake::notFound('d', 'e', 'f')])))->toBe([0, 1])
+        ->and(theKeysOf(WhatWasLeftBehind::of(...['a' => SomethingLeftBehind::named('a', 'b', 'c'), 'b' => SomethingLeftBehind::named('d', 'e', 'f')])))->toBe([0, 1]);
 });

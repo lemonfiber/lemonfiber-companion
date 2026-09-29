@@ -217,6 +217,8 @@ it('tells a session that has ended from a stack that is not answering', function
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+        // A fault on the stack's side, even one with a sentence, is not its refusal.
+        [MockResponse::make('The machine failed', 500, ['Content-Type' => 'text/plain']), Obstacle::StackDidNotAnswer],
         [MockResponse::make('not json at all', 202), Obstacle::StackDidNotAnswer],
     ];
 

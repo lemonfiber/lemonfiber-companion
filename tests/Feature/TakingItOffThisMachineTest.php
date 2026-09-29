@@ -827,3 +827,13 @@ it('the way here and the way to a copy are routes', function (): void {
 it('renders its own view', function (): void {
     expect(theTakingItOffScreen(aStackReadingTheRemoval(aReadingOfTakingItOff()))->render()->name())->toBe('operator::taking-it-off-this-machine');
 });
+
+it('follows a handle the frame holds with no removal agreed to, and ends no session over it', function (): void {
+    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::underway(Job::named('j-1')));
+    $screen = theTakingItOffScreen($removing);
+    $screen->following = 'j-1';
+
+    expect($screen->answer()->isWorking)->toBeTrue()
+        ->and($removing->asked())->toBe(['after:j-1'])
+        ->and($screen->agreedTo)->toBe('');
+});

@@ -324,6 +324,47 @@ it('lets nothing go when the screen is left before a guard started, or after it 
         ->and($ended->letGoOf())->toBe([]);
 });
 
+it('lets the guard go when the screen is left on a frame that has not asked after it yet', function (): void {
+    $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());
+    $screen = aGuardAgreedTo($guarding);
+    $screen->lastGuard = null;
+
+    $screen->unmount();
+
+    expect(array_map(static fn(Job $job): string => $job->shown(), $guarding->letGoOf()))->toBe([AStackThatGuards::THE_JOB]);
+});
+
+it('leaving the screen runs what the framework tears down on the way out, too', function (): void {
+    $screen = theGuardScreen(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()));
+    $torn = [];
+    $screen->registerCleanup(static function () use (&$torn): void {
+        $torn[] = 'down';
+    });
+
+    $screen->unmount();
+
+    expect($torn)->toBe(['down']);
+});
+
+it('a handle held without the guard it was for asks after nothing, and says none was asked for', function (): void {
+    $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());
+    $screen = theGuardScreen($guarding);
+    $screen->took = AStackThatGuards::THE_JOB;
+
+    expect($screen->lastGuard()->wasAsked)->toBeFalse()
+        ->and($guarding->followed())->toBe([]);
+});
+
+it('asks for the forms once a frame, however often the frame reads them', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
+    $screen = theGuardScreen(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()), $supervising);
+    $screen->answer();
+    $screen->answer();
+    $screen->choosing();
+
+    expect($supervising->askings())->toBe(1);
+});
+
 it('lets go through nothing when the session was let go before the screen was left', function (): void {
     $keychain = AKeychainInMemory::working();
     $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());

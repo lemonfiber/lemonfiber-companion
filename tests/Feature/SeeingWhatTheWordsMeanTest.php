@@ -298,6 +298,11 @@ it('a word the stack explains joins the words, drawn, searched and opened as eve
     $screen->toggle('0');
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('The indexer found it; the client has it now.');
+
+    // Joined to the words already held, not in place of them.
+    $screen->looking = '';
+
+    expect(array_map(static fn(AWordAsShown $word): string => $word->word, $screen->answer()->words))->toBe(['pin', 'seeding', 'stack', 'grab']);
 });
 
 it('a word the stack has no entry for either is shown as it came, and not offered again', function (): void {
@@ -310,6 +315,7 @@ it('a word the stack has no entry for either is shown as it came, and not offere
     $screen->askTheStack();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.words.unexplained', ['word' => 'Grabber']))
+        ->and($screen->answer()->askingMet)->toBe('')
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('health.ask_again')])
         ->and($explaining->wordsAsked())->toBe(['Grabber']);
 });
@@ -324,6 +330,7 @@ it('what one word came to is not said of another word looked for next', function
     $screen->looking = 'indexer';
 
     expect($screen->answer()->unexplained)->toBe('')
+        ->and($screen->answer()->askingMet)->toBe('')
         ->and($screen->answer()->mayAsk)->toBe('indexer');
 });
 
