@@ -4,45 +4,43 @@
 <x-operator::content>
     {{-- How many, said before the list. An operator who opened this because
          something looked unfamiliar wants the count before the rows. --}}
-    <x-operator::emphasis>
-        {{ trans_choice('health.undeclared_count', $this->howMany()) }}
-    </x-operator::emphasis>
+    <x-design::title>{{ trans_choice('health.undeclared_count', $this->howMany()) }}</x-design::title>
 
     {{-- What these are, said once and above them. The sentence is
          the whole point of the screen — a list of names an operator does
          not recognise, with nothing saying why they are here, is what this
          replaces. --}}
-    <x-operator::note>{{ __('health.undeclared_explained') }}</x-operator::note>
+    <x-design::note>{{ __('health.undeclared_explained') }}</x-design::note>
 
-    @forelse ($this->answer()->running as $container)
-        <x-operator::entry>
-            {{-- Each is named, and what it is running
-                 to be stated, and for no verb against it. There is no
-                 button on this row and no identifier on the value that a
+    <x-design::section>
+        @forelse ($this->answer()->running as $container)
+            {{-- Each is named, with what it does and what it is running, its
+                 state's glyph at its start, and no verb against it. The row
+                 neither goes nor taps, and the value carries no identifier a
                  verb would accept. --}}
-            <x-operator::emphasis>{{ $container->named }}</x-operator::emphasis>
-            <x-operator::note>{{ $container->describes }}</x-operator::note>
-            <x-operator::note>{{ __($container->runs) }}</x-operator::note>
-        </x-operator::entry>
-    @empty
-        {{-- Not the same screen as a machine that could not be asked.
-             Nothing unaccounted for is the answer the operator wants, and
-             saying so is what tells it apart from the obstacle branch. --}}
-        <x-operator::emphasis>{{ __('health.nothing_undeclared') }}</x-operator::emphasis>
-        <native:text>{{ __('health.nothing_undeclared_action') }}</native:text>
-    @endforelse
+            <x-design::row
+                :headline="$container->named"
+                :supporting="$container->describes"
+                :trailing="__($container->runs)"
+                :tone="$container->tone"
+            />
+        @empty
+            {{-- Not the same screen as a machine that could not be asked.
+                 Nothing unaccounted for is the answer the operator wants, and
+                 saying so is what tells it apart from the obstacle branch. --}}
+            <x-design::row
+                :headline="__('health.nothing_undeclared')"
+                :supporting="__('health.nothing_undeclared_action')"
+            />
+        @endforelse
+    </x-design::section>
 
-    {{-- A screen an operator cannot ask again is a screen that relies
-         on being left and returned to, which is the one thing the requirement
-         names. It sat on the obstacle arm only — so a reading that failed could
-         be retried and a reading that came back could not, which is the wrong
-         way round: somebody watching a stuck download or an update land is
-         looking at a screen they want to ask again.
-
-         Last, under what it is about, for the health screen's reason: somebody
-         who has just changed something scrolls to the end of what they were
-         reading, and that is where they want to ask whether it took. --}}
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    {{-- A screen an operator cannot ask again is a screen that relies on
+         being left and returned to. On both arms, and last, under what it is
+         about, for the health screen's reason: somebody who has just changed
+         something scrolls to the end of what they were reading, and that is
+         where they want to ask whether it took. --}}
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

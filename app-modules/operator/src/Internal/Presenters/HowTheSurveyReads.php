@@ -89,7 +89,7 @@ final readonly class HowTheSurveyReads
         return new AProjectAsFound(project: $project->project(), services: $services);
     }
 
-    /** One service, whether it runs and whether it could be taken over. */
+    /** One service, the ports it publishes, whether it runs and whether it could be taken over. */
     private function service(AServiceStanding $service): AServiceAsFound
     {
         $ports = [];
@@ -101,6 +101,7 @@ final readonly class HowTheSurveyReads
         return new AServiceAsFound(
             service: $service->service(),
             ports: implode(', ', $ports),
+            portsSaid: $ports === [] ? 'stacks.already_here.no_ports' : 'stacks.already_here.ports',
             runningSaid: $service->isRunning() ? 'stacks.already_here.running' : 'stacks.already_here.stopped',
             adoptableSaid: $service->isAdoptable() ? 'stacks.already_here.adoptable' : 'stacks.already_here.not_adoptable',
         );

@@ -20,13 +20,15 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatOneOtherContainerSays
 {
     /**
-     * @param string $named    what the container engine calls it
+     * @param string $named     what the container engine calls it
      * @param string $describes what it does for the operator, in the machine's words
-     * @param string $runs     the key for what it is doing
+     * @param string $runs      the key for what it is doing
+     * @param string $tone      the tone its glyph is drawn in, a `Modules\Design\View\Tone` value
      */
     public function __construct(
         public string $named,
         public string $describes,
         public string $runs,
+        public string $tone,
     ) {}
 }
