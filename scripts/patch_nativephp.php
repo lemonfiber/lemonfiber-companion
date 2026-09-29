@@ -705,6 +705,50 @@ SHIPS,
 }
 BECOMES,
     ],
+    [
+        // A tab carries its own name. The tab bar is laid out to the bottom
+        // edge and padded above the system navigation bar, and on a handset
+        // with three-button navigation the accessibility layer clips the
+        // window above where that padding ends. Each tab's label then falls
+        // outside the clip and is reported with no bounds at all, so the tab a
+        // screen reader focuses has no name of its own and nothing on it can
+        // be found by its label. The name goes on the tab, whose bounds start
+        // at the top of the bar, and the label beside the icon is left to the
+        // eye rather than said a second time.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.platform.LocalLayoutDirection
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+                        NavigationBarItem(
+                            selected = actualIdx == selection,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                        NavigationBarItem(
+                            modifier = Modifier.semantics { contentDescription = label },
+                            selected = actualIdx == selection,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+                            label = { Text(label, fontFamily = chromeFontFamily) },
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                            label = { Text(label, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {}) },
+BECOMES,
+    ],
 ];
 
 /**
