@@ -5,93 +5,80 @@ declare(strict_types=1);
 namespace Modules\Design\Api;
 
 /**
- * Every theme token this surface answers for, and there are two.
+ * Every colour role this surface asserts, each with a light and a dark value.
  *
- * EDGE resolves `bg-theme-*`, `text-theme-*` and `border-theme-*` through a
- * resolver the application provides; the package ships none, so until one is
- * registered every such class is parsed, found to mean nothing, and dropped.
- * The screen renders, looks wrong, and says nothing about why.
+ * EDGE resolves `bg-theme-*`, `text-theme-*` and `border-theme-*` through the
+ * resolvers {@see Theme} builds from these cases. A token that is not a case
+ * resolves to nothing, and `tests/Templates` reports the class as one EDGE
+ * drops.
  *
- * What it answers for is deliberately almost nothing, and the narrowness is the
- * point rather than a gap to be filled in later. `60-brand/surface-mapping.md`
- * decides it: this app's components are the platform's own, which is what buys
- * the accessibility tree, the reader's text size, the system's contrast and
- * reduced-motion settings and its light and dark modes without any of them
- * being built a second time. Overriding that look to reach the web palette
- * would spend exactly what it was chosen for (ADR-0017).
- *
- *   | Brand token   | Companion mapping                                        |
- *   |---------------|----------------------------------------------------------|
- *   | `lemon`       | the accent role — the one place brand colour is asserted  |
- *   | `ink`/`paper` | left to the platform's theme roles                       |
- *   | everything    | not mapped; the platform's spacing, radii, type, elevation |
- *
- * So a token that is not a case here resolves to nothing, `tests/Templates`
- * reports the class as one EDGE drops, and the build fails — which is the
- * correct answer to asking this surface to paint something the platform should
- * own. An enum rather than two string constants because the set really is
- * closed, and a closed set is a type (D4).
+ * `60-brand/surface-mapping.md` decides the set: `lemon` as the accent with
+ * `ink` on it, and the brand's paper, pith, ink, line and muted text as the
+ * surface, raised-surface, text, line and muted-text roles, with the ink
+ * theme's values in dark mode. The renderer paints unstyled text black in both
+ * modes, so a role the app leaves to it is a role nobody chose.
  */
 enum ThemeToken: string
 {
-    /** The brand's `lemon`, and the only colour this surface asserts. */
+    /** The brand's `lemon`: a fill, a bar, a selected state; never text. */
     case Accent = 'accent';
 
-    /** The brand's `ink`, which is the foreground `Accent` is filled behind. */
+    /** The brand's `ink`, set on an `Accent` fill and on nothing else. */
     case OnAccent = 'on-accent';
 
-    /**
-     * The hex this token paints, in light mode and in dark alike.
-     *
-     * Written here rather than read from `resources/tokens.json` because B3
-     * keeps the filesystem in an adapter and A9 keeps a read out of boot — and
-     * copied rather than derived, which is a second source of truth and so is
-     * checked against the first: `ThemeTokenTest` fails the moment either of
-     * these stops matching the brand's own token file. That is the same
-     * arrangement `brand:scripts/check_tokens.py` already makes for
-     * `tokens.css`, which is hand-maintained and checked for the same reason.
-     *
-     * There is no dark companion, and that is a decision rather than an
-     * omission. `TailwindParser` emits one only when a dark resolver is
-     * registered, and registering one would mean naming a dark-mode lemon the
-     * brand has not chosen — `lemon-bright` is documented as the step above
-     * lemon for hover and lift, not as a dark-mode value. The pair below needs
-     * none: ink on lemon measures 10.9:1 whichever way the reader has their
-     * phone set, so the accent carries its own legibility instead of borrowing
-     * the ground's.
-     */
-    public function hex(): string
+    /** The ground every screen is drawn on. */
+    case Surface = 'surface';
+
+    /** A card, a row or a notice raised off the ground. */
+    case Raised = 'raised';
+
+    /** Everything read as text. */
+    case Text = 'text';
+
+    /** Text that says less: an age, a hint, a label beside a value. */
+    case Muted = 'muted';
+
+    /** A hairline between rows, and the edge of a raised surface. */
+    case Line = 'line';
+
+    /** The hex this role paints in light mode, copied from the brand's paper theme. */
+    public function light(): string
     {
         return match ($this) {
-            // brand `lemon`
             self::Accent => '#F0C419',
-            // brand `ink`
-            self::OnAccent => '#17160F',
+            self::OnAccent, self::Text => '#17160F',
+            self::Surface => '#FBF7EA',
+            self::Raised => '#FBF6E7',
+            self::Muted => '#565344',
+            self::Line => '#DAD2BC',
+        };
+    }
+
+    /** The hex this role paints in dark mode, copied from the brand's ink theme. */
+    public function dark(): string
+    {
+        return match ($this) {
+            self::Accent => '#F0C419',
+            self::OnAccent, self::Surface => '#17160F',
+            self::Raised => '#241F14',
+            self::Text => '#FBF7EA',
+            self::Muted => '#ACAA9F',
+            self::Line => '#34322A',
         };
     }
 
     /**
-     * Whether this token may appear in a `text-theme-*` class.
+     * Whether this role may appear in a `text-theme-*` class.
      *
-     * `lemon` on `paper` measures 1.6:1. It is an accent — a fill, a bar, a
-     * selected state — and never text, for the same measured reason amber is
-     * never text. The resolver cannot tell which prefix
-     * asked it, so this is where the distinction is kept and
-     * `tests/Templates` is what enforces it.
-     *
-     * `on-accent` is the other half of that pair and exists to be text: it is
-     * what a label on an accent fill is set in. It is not a general foreground
-     * — ink on the platform's own dark surface would be unreadable — so it
-     * belongs on an element filled with `bg-theme-accent` and nowhere else.
-     * No rule can check that from a class string alone, because the fill is
-     * often on the parent; it is a review note, stated here so it is at least
-     * stated.
+     * `lemon` on paper measures 1.55:1, and a surface or a line is a ground,
+     * not a foreground. `on-accent` is text only on an accent fill; no rule can
+     * see the fill from a class string, because it is often on the parent.
      */
     public function safeAsText(): bool
     {
         return match ($this) {
-            self::Accent => false,
-            self::OnAccent => true,
+            self::Text, self::Muted, self::OnAccent => true,
+            self::Accent, self::Surface, self::Raised, self::Line => false,
         };
     }
 }

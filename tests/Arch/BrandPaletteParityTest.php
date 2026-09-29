@@ -7,41 +7,39 @@ use Tests\Support\Tree;
 
 // The palette is copied, so the copy is checked.
 //
-// `ThemeToken::hex()` writes two hexes out in PHP because the module may not
-// read a file — B3 keeps the filesystem in an adapter, and A9 keeps a read out
-// of boot, where the resolver is registered. That leaves a second copy of two
-// brand values, which is a thing that drifts, so it is checked against the
-// first on every run. The brand repository makes exactly this arrangement for
-// `tokens.css`, which is hand-maintained and checked against `tokens.json` by
-// `brand:scripts/check_tokens.py` for the same reason.
-//
-// The file it checks against is a distribution artefact: `shared/assets.sha256`
-// in the spec repository records its digest with `brand:tokens/tokens.json` as
-// its home, so the hygiene gate fails the moment this copy stops being
-// byte-identical to the brand's own. Two gates in series — the vendored file
-// matches brand, and the PHP matches the vendored file — and neither of them
-// is a person remembering.
+// `ThemeToken` writes its hexes out in PHP because the module may not read a
+// file: B3 keeps the filesystem in an adapter, and A9 keeps a read out of boot,
+// where the resolvers are registered. So each is checked against the brand's
+// own token file on every run. That file is a distribution copy, which the spec
+// repository's `shared/assets.sha256` holds byte-identical to
+// `brand:tokens/tokens.json`.
 
 /**
- * Which brand colour each theme token asserts.
+ * Which brand colour each role asserts, in light mode and in dark.
  *
- * This is the brand decision itself, from `60-brand/surface-mapping.md`, and it
- * is written here rather than derived from the enum so that the test has
- * something of its own to compare against. Deriving it would only re-state the
- * code under test back to itself.
+ * The brand decision itself, from `60-brand/surface-mapping.md`, written here
+ * rather than derived from the enum so the test has something of its own to
+ * compare against. A dark name prefixed `ink:` is read from the ink theme;
+ * an unprefixed one from the brand's core colours.
  *
- * @return array<string, string> theme token => brand token
+ * @return array<string, array{string, string}> role => [light, dark]
  */
 function assertedBrandColours(): array
 {
     return [
-        ThemeToken::Accent->value => 'lemon',
-        ThemeToken::OnAccent->value => 'ink',
+        ThemeToken::Accent->value => ['lemon', 'lemon'],
+        ThemeToken::OnAccent->value => ['ink', 'ink'],
+        ThemeToken::Surface->value => ['paper', 'ink:paper'],
+        ThemeToken::Raised->value => ['pith', 'ink:pith'],
+        ThemeToken::Text->value => ['ink', 'ink:text'],
+        ThemeToken::Muted->value => ['text-muted', 'ink:text-muted'],
+        ThemeToken::Line->value => ['line', 'ink:line'],
     ];
 }
 
 /**
- * The brand's own colours, as the vendored token file carries them.
+ * The brand's colours as the vendored token file carries them: the core colours
+ * by name, and the ink theme's as `ink:<name>`.
  *
  * @return array<string, string>
  */
@@ -53,79 +51,78 @@ function brandColours(): array
     if (! is_string($raw)) {
         throw new RuntimeException(sprintf(
             '%s could not be read. It is the brand\'s token file, vendored here so the '
-            . 'two hexes this application asserts can be checked against it — without it '
-            . 'this rule checks nothing.',
+            . 'hexes this application asserts can be checked against it.',
             $path,
         ));
     }
 
     /** @var mixed $decoded */
     $decoded = json_decode($raw, associative: true, depth: 512, flags: JSON_THROW_ON_ERROR);
-    $colours = is_array($decoded) ? $decoded['color'] ?? null : null;
+    $colours = data_get($decoded, 'color');
+    $ink = data_get($decoded, 'theme.ink');
 
-    if (! is_array($colours) || $colours === []) {
-        throw new RuntimeException(sprintf('%s carries no colours', $path));
+    if (! is_array($colours) || $colours === [] || ! is_array($ink) || $ink === []) {
+        throw new RuntimeException(sprintf('%s carries no colours, or no ink theme', $path));
     }
 
+    return [...namedHexes($colours, ''), ...namedHexes($ink, 'ink:')];
+}
+
+/**
+ * The string-keyed string values of one block of the token file, each key
+ * prefixed.
+ *
+ * @param array<array-key, mixed> $block
+ *
+ * @return array<string, string>
+ */
+function namedHexes(array $block, string $prefix): array
+{
     $found = [];
 
-    foreach ($colours as $name => $value) {
+    foreach ($block as $name => $value) {
         if (is_string($name) && is_string($value)) {
-            $found[$name] = $value;
+            $found[sprintf('%s%s', $prefix, $name)] = $value;
         }
     }
 
     return $found;
 }
 
-it('DES-R24 — every asserted colour is still the brand\'s', function (): void {
+it('paints every role with the brand colour it claims, in both modes', function (): void {
     $brand = brandColours();
+    $stated = assertedBrandColours();
     $drifted = [];
 
-    $stated = assertedBrandColours();
-
-    // Driven off the cases rather than off the table, so that the lookup cannot
-    // raise on a token the table names and the enum does not have. A case the
-    // table has no row for is the other rule's finding, reported there by name.
     foreach (ThemeToken::cases() as $case) {
-        $name = $stated[$case->value] ?? null;
-
-        if ($name === null) {
+        if (! array_key_exists($case->value, $stated)) {
             continue;
         }
 
-        $token = $case->value;
-        $expected = $brand[$name] ?? null;
+        [$lightName, $darkName] = $stated[$case->value];
 
-        if ($expected === null) {
-            $drifted[] = sprintf('%s claims brand `%s`, which the token file does not have', $token, $name);
+        foreach ([[$lightName, $case->light(), 'light'], [$darkName, $case->dark(), 'dark']] as [$name, $hex, $mode]) {
+            if (! array_key_exists($name, $brand)) {
+                $drifted[] = sprintf('%s claims brand `%s` in %s mode, which the token file does not have', $case->value, $name, $mode);
 
-            continue;
-        }
+                continue;
+            }
 
-        if (strtoupper($case->hex()) !== strtoupper($expected)) {
-            $drifted[] = sprintf(
-                '%s answers %s, but brand `%s` is %s',
-                $token,
-                $case->hex(),
-                $name,
-                $expected,
-            );
+            if (strtoupper($hex) !== strtoupper($brand[$name])) {
+                $drifted[] = sprintf('%s answers %s in %s mode, but brand `%s` is %s', $case->value, $hex, $mode, $name, $brand[$name]);
+            }
         }
     }
 
     expect($drifted)->toBe([], sprintf(
         "These no longer paint what the brand says they paint:\n  %s\n\n"
-        . 'The hexes in ThemeToken are a copy of two values the brand owns, kept in PHP '
-        . 'because the module may not read a file (B3, A9). Take the value from '
-        . "app-modules/design/resources/tokens.json, which is the brand's own file.\n"
-        . 'If the brand changed, the vendored copy is refreshed first — the hygiene gate '
-        . 'checks it against brand:tokens/tokens.json by digest — and this follows.',
+        . 'Take the value from app-modules/design/resources/tokens.json, the brand\'s own '
+        . 'file. If the brand changed, the vendored copy is refreshed first, and this follows.',
         implode("\n  ", $drifted),
     ));
 });
 
-it('DES-R24 — no token asserts a colour nobody wrote down', function (): void {
+it('asserts no colour the brand table does not name', function (): void {
     $stated = assertedBrandColours();
 
     $unstated = array_values(array_filter(
@@ -134,12 +131,8 @@ it('DES-R24 — no token asserts a colour nobody wrote down', function (): void 
     ));
 
     expect($unstated)->toBe([], sprintf(
-        "These tokens paint a hex nothing checks:\n  %s\n\n"
-        . 'A case added to ThemeToken without a row in assertedBrandColours() carries a '
-        . 'hex that no longer has to match anything the brand says. Name the brand '
-        . "colour it asserts, and the check above covers it too.\nIf it asserts no brand "
-        . 'colour, it is something the platform should be deciding — which is the whole '
-        . 'of what surface-mapping.md says about this app (DES-R24, DES-R26).',
+        "These roles paint a hex nothing checks:\n  %s\n\nName the brand colour each "
+        . 'asserts in assertedBrandColours(), in both modes.',
         implode("\n  ", $unstated),
     ));
 });

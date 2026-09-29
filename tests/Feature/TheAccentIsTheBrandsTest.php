@@ -2,39 +2,42 @@
 
 declare(strict_types=1);
 
+use Bootstrap\Composition\NativePHP\TheTheme;
 use Modules\Design\Api\ThemeToken;
 
 // Runs the composition root rather than reading it, so its mutants are judged
 // here: see `scripts/mutation.php`.
 pest()->group('holds:bootstrap/Composition');
 
-// One brand colour maps to the accent role, leaving the rest of the
-// palette to the platform. What makes that true of a running app is the widget
-// theme, not a class: a filled button takes `primary` from it and honours no
-// per-instance colour, so a screen painting its own buttons is a screen whose
-// design is silently dropped.
-//
-// Asserted against the token rather than against a hex, so this cannot become
-// the second place the brand is written down — which is the failure it exists
-// to prevent, not one it is allowed to commit.
+// The widgets (filled buttons, list rows, fields, the top and bottom bars) take
+// their colours from mobile-ui's theme store and honour no per-instance colour.
+// So what a booted application holds in that store is what they paint with.
 
-it('DES-R24 — the accent role is the brand accent', function (): void {
-    expect(config('native-ui.theme.light.primary'))->toBe(ThemeToken::Accent->hex())
-        ->and(config('native-ui.theme.light.on-primary'))->toBe(ThemeToken::OnAccent->hex());
+it('fills a primary control with the accent pair in both modes', function (): void {
+    expect(config('native-ui.theme.light.primary'))->toBe(ThemeToken::Accent->light())
+        ->and(config('native-ui.theme.light.on-primary'))->toBe(ThemeToken::OnAccent->light())
+        ->and(config('native-ui.theme.dark.primary'))->toBe(ThemeToken::Accent->dark())
+        ->and(config('native-ui.theme.dark.on-primary'))->toBe(ThemeToken::OnAccent->dark());
 });
 
-it('DES-R24 — a reader in dark mode gets the same measured pair', function (): void {
-    // There is deliberately no dark companion: ink on lemon measures 10.9:1
-    // whichever way a reader has their phone set, so a second palette has
-    // nothing to improve and would be a colour nobody chose.
-    expect(config('native-ui.theme.dark.primary'))->toBe(ThemeToken::Accent->hex())
-        ->and(config('native-ui.theme.dark.on-primary'))->toBe(ThemeToken::OnAccent->hex());
+it('paints the widgets\' grounds and text with paper and ink, and the ink theme in the dark', function (): void {
+    foreach (TheTheme::WIDGET_ROLES as $key => $role) {
+        expect(config(sprintf('native-ui.theme.light.%s', $key)))->toBe($role->light(), $key)
+            ->and(config(sprintf('native-ui.theme.dark.%s', $key)))->toBe($role->dark(), $key);
+    }
+
+    expect(TheTheme::WIDGET_ROLES['background'])->toBe(ThemeToken::Surface)
+        ->and(TheTheme::WIDGET_ROLES['on-background'])->toBe(ThemeToken::Text)
+        ->and(TheTheme::WIDGET_ROLES['surface-variant'])->toBe(ThemeToken::Raised)
+        ->and(TheTheme::WIDGET_ROLES['on-surface-variant'])->toBe(ThemeToken::Muted)
+        ->and(TheTheme::WIDGET_ROLES['secondary'])->toBe(ThemeToken::Text)
+        ->and(TheTheme::WIDGET_ROLES['outline'])->toBe(ThemeToken::Line)
+        ->and(TheTheme::WIDGET_ROLES)->not->toHaveKeys(['destructive', 'success', 'accent']);
 });
 
-it('DES-R24 — the platform keeps the tokens this surface does not assert', function (): void {
-    // The counterfactual for `merge()` rather than `load()`. Overriding two
-    // keys must leave the rest of the package's palette standing; replacing the
-    // block would repaint the app, which is the thing refused.
-    expect(config('native-ui.theme.light.surface'))->not->toBeNull()
-        ->and(config('native-ui.theme.light.secondary'))->not->toBeNull();
+it('leaves the widget colours it does not assert as the package set them', function (): void {
+    // `merge()` rather than `load()`: the keys the design module maps are
+    // replaced, and the rest of the package's palette stays.
+    expect(config('native-ui.theme.light.destructive'))->not->toBeNull()
+        ->and(config('native-ui.theme.light.success'))->not->toBeNull();
 });
