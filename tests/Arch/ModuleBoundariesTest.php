@@ -248,6 +248,27 @@ arch('E3 — the SDK is named in exactly one module, and read by the one that st
     ->expect('Lemonfiber\Sdk')
     ->toOnlyBeUsedIn(['Modules\Sdk', 'Modules\Dx']);
 
+// What the phone keeps is sealed in one module, under a key the platform's
+// secure storage holds. A second module that can build an encrypter is a
+// second place a key can come from, and the nearest one to hand is the
+// framework's own, which is a plain file beside the database it would lock. A
+// second keyed hash is a second way a stack's identity can be written down.
+//
+// One symbol per rule: a list on the left of an expectation is read as "uses
+// all of these", and a class, a facade and a function in one list report
+// nothing at all.
+arch('S4 — the encrypter is named in the seal module and nowhere else')
+    ->expect('Illuminate\Encryption\Encrypter')
+    ->toOnlyBeUsedIn('Modules\Seal');
+
+arch('S5 — the Crypt facade is named in the seal module and nowhere else')
+    ->expect('Illuminate\Support\Facades\Crypt')
+    ->toOnlyBeUsedIn('Modules\Seal');
+
+arch('S6 — a keyed hash is taken in the seal module and nowhere else')
+    ->expect('hash_hmac')
+    ->toOnlyBeUsedIn('Modules\Seal');
+
 it('E3 — only the sdk adapter speaks HTTP', function (): void {
     $offenders = [];
 

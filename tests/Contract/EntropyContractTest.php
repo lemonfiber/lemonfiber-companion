@@ -57,6 +57,17 @@ foreach (sources() as $name => $build) {
     it(sprintf('%s answers a nonce wide enough not to be searched', $name), function () use ($build): void {
         expect(mb_strlen($build()->nonce()->shown()))->toBeGreaterThanOrEqual(Nonce::SHORTEST);
     });
+
+    it(sprintf('%s never answers the same key twice', $name), function () use ($build): void {
+        $source = $build();
+        $seen = [];
+
+        for ($i = 0; $i < HANDED_OUT; $i++) {
+            $seen[] = $source->aKey()->bytes();
+        }
+
+        expect(array_unique($seen))->toHaveCount(HANDED_OUT);
+    });
 }
 
 // Beyond the contract: what each one promises that the other does not.
@@ -84,4 +95,25 @@ it('SequencedEntropy answers in the order a test can predict', function (): void
     expect($source->nonce()->shown())->toEndWith('1')
         ->and($source->nonce()->shown())->toEndWith('2')
         ->and($source->answered())->toBe(2);
+});
+
+it('SystemEntropy varies across the whole key, not just the end of it', function (): void {
+    // The same refusal as for a nonce, for the same reason: a padded counter
+    // answers a different key every time and shares all but its last bytes.
+    $source = new SystemEntropy();
+    $leading = [];
+
+    for ($i = 0; $i < A_HANDFUL; $i++) {
+        $leading[] = mb_substr($source->aKey()->bytes(), 0, A_PREFIX, '8bit');
+    }
+
+    expect(array_unique($leading))->toHaveCount(A_HANDFUL);
+});
+
+it('SequencedEntropy counts keys apart from nonces, in an order a test can predict', function (): void {
+    $source = SequencedEntropy::counting();
+
+    expect($source->aKey()->bytes())->toEndWith('key-1')
+        ->and($source->aKey()->bytes())->toEndWith('key-2')
+        ->and($source->answered())->toBe(0);
 });

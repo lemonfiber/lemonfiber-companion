@@ -39,6 +39,8 @@ app-modules/
   sdk/                    the only module that calls the SDK  (N1-R16)
   device/                 permissions, notifications          (N4)
   vault/                  secure storage, app lock            (N4)
+  codes/                  QR codes another phone can scan
+  seal/                   sealing what the phone keeps
 
   dx/                     stand-ins for a stack, require-dev only
 ```
@@ -501,6 +503,9 @@ None of these is theoretical once the second locale exists.
 | S1 | The dangerous, execution, insecure and non-timing-safe call bundles are on | phpstan `disallowed-calls`, four shipped bundles |
 | S2 | No package with a published advisory resolves | `roave/security-advisories` + `composer audit` |
 | S3 | TLS verification is never weakened | phpstan: own rule (array items) + `disallowed-calls` (the call and curl forms) + test over `config/` and every `.env*` (N1-R21 — the flag may not exist) |
+| S4 | `Illuminate\Encryption\Encrypter` is named in the `seal` module and nowhere else | arch: `ModuleBoundariesTest`, the class only used in `Modules\Seal` |
+| S5 | The `Crypt` facade is named in the `seal` module and nowhere else | arch: `ModuleBoundariesTest`, the facade only used in `Modules\Seal` |
+| S6 | `hash_hmac` is called in the `seal` module and nowhere else | arch: `ModuleBoundariesTest`, the function only used in `Modules\Seal` |
 
 **Q3 and Q4 are about shapes that belong to a different codebase.** Late static
 binding resolves to the class it is written in, because every class here is
@@ -521,6 +526,16 @@ code nothing reaches.
 `roave/security-advisories` is a conflict-only package: it carries no code and
 fails resolution when a dependency matches a published advisory, so the failure
 arrives at `composer update` rather than at `composer audit` in CI a week later.
+
+**Why S4 to S6 put sealing in one module.** Everything the phone keeps is
+sealed before a store sees it, under a key the platform's secure storage holds,
+and `Modules\Seal\Api\EncrypterSeal` is the one class that does it. The other
+key within reach is the framework's own, which NativePHP keeps on Android as a
+plain file in the application's storage beside the database — so an encrypter
+built anywhere else is most likely built with the key that sits next to what it
+locks. `hash_hmac` is the same argument for a stack's
+identity: a second keyed hash is a second place an identity can be written
+down, under whatever key was to hand.
 
 ### Where things go
 
@@ -929,12 +944,12 @@ honestly described: the table reports green and a reader stops checking, which
 is strictly worse than an unchecked area, because an unchecked area gets
 reviewed by a person.
 
-**Why the floors are per tree.** One percentage across sixteen trees is an
+**Why the floors are per tree.** One percentage across seventeen trees is an
 average, and an average is true about what it covered and silent about what it
 covered over: a capability at 100% carries an adapter at 40% and the gate
 reports a pass. The clover report already holds the per-file numbers, so
 splitting it by directory costs nothing at the point of measurement and turns
-one number into sixteen.
+one number into seventeen.
 
 **A tree's floors are declared in the nearest manifest above it.** That is one
 principle applied three times rather than three cases:

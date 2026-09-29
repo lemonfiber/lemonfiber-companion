@@ -5,6 +5,7 @@
     "type": "library",
     "require": {
         "php": "^8.5",
+        "ext-sodium": "*",
         "modules/kernel": "dev-main",
         "nativephp/mobile": "^4.4"
     },
@@ -19,7 +20,7 @@
             "floors": {
                 "coverage": 100,
                 "mutation": 0,
-                "mutation-is-zero-because": "Four adapters over the device's store, each held by its port's contract — SecureStorage, Stacks, Standings and WorkLeftRunning — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest`, `PlatformStandingsTest` and `PlatformWorkLeftRunningTest` over the keys a stack gets and the JSON a row is written as."
+                "mutation-is-zero-because": "Five adapters over the device's store, each held by its port's contract — SecureStorage, Stacks, Standings, WorkLeftRunning and HoldsTheSealKeys — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest`, `PlatformStandingsTest`, `PlatformWorkLeftRunningTest` and `PlatformSealKeysTest` over the keys each is kept under and the form it is written in."
             },
             "kind": "adapter"
         }

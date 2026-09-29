@@ -46,6 +46,7 @@ use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\History;
+use Modules\Kernel\Api\HoldsTheSealKeys;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
@@ -67,6 +68,7 @@ use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
+use Modules\Kernel\Api\Sealed;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\SelfChecking;
 use Modules\Kernel\Api\Sharing;
@@ -137,7 +139,9 @@ use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
 use Modules\Sdk\Api\Wirers;
+use Modules\Seal\Api\EncrypterSeal;
 use Modules\Vault\Api\PlatformKeychain;
+use Modules\Vault\Api\PlatformSealKeys;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
@@ -308,6 +312,23 @@ final class CompositionRoot extends ServiceProvider
             WorkLeftRunning::class,
             static fn(): WorkLeftRunning => new PlatformWorkLeftRunning(new PlatformStore()),
         );
+
+        // The two keys that seal what the phone keeps, in the same store and
+        // bound the same way. Beside the session rather than beside the data
+        // they seal: a key kept in the application's own files would sit next
+        // to what it locks, and this store is the one place on the phone that
+        // is not those files.
+        $this->app->bind(
+            HoldsTheSealKeys::class,
+            static fn(): HoldsTheSealKeys => new PlatformSealKeys(new PlatformStore()),
+        );
+
+        // Sealing itself, named by class. Its two dependencies are ports bound
+        // here, the keys above and the entropy at the top, so the container
+        // builds it from those and the one decision this line makes is which
+        // seal: Laravel's encrypter under the phone's own key, never under the
+        // framework's.
+        $this->app->bind(Sealed::class, EncrypterSeal::class);
 
         // Whether this device is on a network at all, which is the one question
         // about reaching a stack that can be answered without sending anything.
