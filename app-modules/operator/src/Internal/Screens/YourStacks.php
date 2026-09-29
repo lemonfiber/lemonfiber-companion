@@ -270,7 +270,7 @@ final class YourStacks extends NativeComponent
      *
      * **The session itself does not come out of here.** `Resumed::either()` is
      * answered with a boolean and the session is dropped, so the one thing this
-     * screen learns is whether to say *signed in* or *sign in*. An address will
+     * screen learns is whether to say *sign in needed*. An address will
      * not let a session reach a screen, and the shortest way to keep that true
      * is for the screen never to hold one.
      */
@@ -292,8 +292,8 @@ final class YourStacks extends NativeComponent
      *
      * **The core's one line, so every surface says the same word.** The stack's
      * own screen hears it on the event stream and keeps each word it hears in
-     * {@see Standings}, and this row says that word in the sentence that
-     * screen uses for it.
+     * {@see Standings}, and this row says that word as a single word, where
+     * that screen says it in a sentence.
      *
      * **Held, never asked.** This screen opens the app and opening the app is
      * not a reason to talk to four machines — a screen is not a poller and `F4`

@@ -23,7 +23,7 @@ use Native\Mobile\Edge\NativeComponent;
  * The core publishes the summary on its event stream and nowhere else, so this
  * holds a subscription to it, and holding it is the screen's one read of it.
  * The subscription is opened once the first frame is up, and after that the
- * screen takes what has arrived on the cadence it states and never waits for
+ * screen takes what has arrived on the cadence it declares and never waits for
  * more.
  *
  * **It is held only while somebody can see it.** Every wake asks the device
@@ -116,18 +116,6 @@ trait HearsHowTheStackIs
     public function summary(): WhatTheOneLineSays
     {
         return new HowTheOneLineReads()->of($this->heardSoFar(), $this->listensWith()->clock->now());
-    }
-
-    /**
-     * How often this screen looks at what it holds, or how soon it opens again.
-     *
-     * The one the template states is the one this screen is keeping: while a
-     * subscription is open it is looked at on one cadence, and while it is
-     * broken it is opened again on the other.
-     */
-    public function cadence(): HowOften
-    {
-        return $this->heardSoFar()->isListening() ? HowOften::WhileListening : HowOften::AfterABreak;
     }
 
     /**

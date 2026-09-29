@@ -21,9 +21,6 @@
         {{-- The stack says what went back once it has finished, and not while
              it runs. --}}
         <native:text>{{ __('stacks.run_back.no_progress_while_running') }}</native:text>
-        <x-operator::note>
-            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-        </x-operator::note>
     @elseif ($this->done()->refused !== null)
         {{-- The stack's answer, in its words, and not a fault: asking after
              the same work is answered the same way, so the one road offered

@@ -32,7 +32,7 @@ use Modules\Kernel\Api\WhatTheWalkSaid;
  * shown as the stage it is at: the stack does not promise a walk only moves
  * forward, and neither does this.
  *
- * **Opened again on a stated cadence, never sooner.** A subscription that broke
+ * **Opened again on a declared cadence, never sooner.** A subscription that broke
  * waits {@see HowOften::AfterABreak} before it is opened again. A screen the
  * operator left and came back to opens at once.
  */
@@ -97,7 +97,7 @@ final readonly class WhatTheWalkSaidSoFar
         return $this->closedAt instanceof Instant;
     }
 
-    /** Whether a subscription is open, so the screen can say which cadence it is keeping. */
+    /** Whether a subscription is open. */
     public function isListening(): bool
     {
         return $this->lastSignOfLife instanceof Instant;

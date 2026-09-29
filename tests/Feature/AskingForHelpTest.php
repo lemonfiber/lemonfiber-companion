@@ -279,7 +279,6 @@ it('describes the bundle chosen without writing it, and says it is being gathere
         ->and($screen->answer()->bundle)->toBeNull()
         ->and($screen->handle)->toBe(AStackThatBundles::THE_JOB)
         ->and($drawn)->toContain(__('stacks.help.gathering'))
-        ->and($drawn)->toContain(__('health.every.while_work_runs', ['count' => 5]))
         ->and($helping->followed())->toBe([]);
 });
 
@@ -668,8 +667,7 @@ it('is reached from the machine it is about, and goes back to it', function (): 
 
     expect(NativeRouter::resolve($screen->goes()->ofItself()->help()))->not->toBeNull()
         ->and($screen->goes()->ofItself()->help())->toBe(sprintf('/stacks/%s/help', theStackHelpIsAskedAbout()->id()->stored()))
-        ->and($screen->render()->name())->toBe('operator::asking-for-help-here')
-        ->and($screen->cadence()->seconds())->toBe(5);
+        ->and($screen->render()->name())->toBe('operator::asking-for-help-here');
 });
 
 it('refuses a route parameter that is not text', function (): void {

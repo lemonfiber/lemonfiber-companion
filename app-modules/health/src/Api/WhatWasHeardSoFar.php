@@ -28,7 +28,7 @@ use Modules\Kernel\Api\WhatWasHeard;
  * subscription that closed, or that could not be opened, leaves the last
  * summary in the same position.
  *
- * **Opened again on a stated cadence, never sooner.** A subscription that broke
+ * **Opened again on a declared cadence, never sooner.** A subscription that broke
  * waits {@see HowOften::AfterABreak} before it is opened again. A screen the
  * operator left and came back to has nothing to wait for: it opens at once, and
  * shows what it held as not current until something new arrives.
@@ -116,7 +116,7 @@ final readonly class WhatWasHeardSoFar
         return $this->lastSignOfLife instanceof Instant && ! self::isStillCurrent($this->lastSignOfLife, $now);
     }
 
-    /** Whether a subscription is open, so the screen says how often it looks at it. */
+    /** Whether a subscription is open. */
     public function isListening(): bool
     {
         return $this->lastSignOfLife instanceof Instant;

@@ -208,7 +208,7 @@ final class TakingItOffThisMachine extends NativeComponent
      * Ask after the removal again while the stack is carrying it out.
      *
      * Nothing happens unless it is running. The interval is
-     * {@see HowOften}'s, which {@see cadence()} states on the screen.
+     * {@see HowOften}'s.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -216,12 +216,6 @@ final class TakingItOffThisMachine extends NativeComponent
         if ($this->answer()->isWorking) {
             $this->going = null;
         }
-    }
-
-    /** How often this screen asks after a removal running, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\Daemons;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -51,18 +50,6 @@ trait AsksWhatTheStackIsRunning
      * silently stops holding what it thinks it holds.
      */
     protected ?WhatThisStackRunsTurnedOutToBe $answered = null;
-
-    /**
-     * How often a screen about this reading looks again.
-     *
-     * One case for both frames, so the sentence a template builds and the
-     * interval the poll keeps cannot drift apart — and so the two screens
-     * cannot come to state different cadences for one machine.
-     */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
-    }
 
     /**
      * Ask the stack again, because the operator said so.

@@ -25,9 +25,6 @@
     @if ($this->lastGuard()->went->cameBack())
         @if ($this->lastGuard()->isGuarding)
             <x-operator::emphasis>{{ __('stacks.guard.guarding', ['forms' => $this->lastGuard()->named]) }}</x-operator::emphasis>
-            <x-operator::note>
-                {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-            </x-operator::note>
         @endif
 
         @if ($this->lastGuard()->endedSaid !== '')

@@ -48,7 +48,7 @@ use function view;
  *
  * Before one is started it shows the road a walk takes, each step in the
  * glossary's words. Started from here with a title, or with nothing so the
- * stack picks something likely to work. While it runs the handle is asked after at a stated cadence,
+ * stack picks something likely to work. While it runs the handle is asked after at a declared cadence,
  * and the stage it is at is taken on the same wakes from the stack's event
  * stream, {@see HearsWhereTheWalkIs}; once it finishes, what it said is drawn
  * whole, as the record of it, with where it stopped and why, what the import
@@ -188,7 +188,7 @@ final class WatchingOneArrive extends NativeComponent
      * from being polling: a finished record answers the same however often it
      * is read, and the stream is let go of once the walk is over. Taking the
      * stage sends nothing to the stack. The interval is {@see HowOften}'s
-     * constant, which {@see cadence()} states on the screen.
+     * constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -201,12 +201,6 @@ final class WatchingOneArrive extends NativeComponent
 
         $this->answered = null;
         $this->listenToTheWalk();
-    }
-
-    /** How often this screen asks after a walkthrough running, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /** Where this machine's screens are. */

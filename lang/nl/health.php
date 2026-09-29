@@ -50,12 +50,22 @@ return [
         'critical' => 'Dringend: er moet nu iets gebeuren.',
         'unknown' => 'Hoe het met deze stack gaat, is nu niet te zeggen.',
     ],
+    'standing_short' => [
+        'healthy' => 'Goed',
+        'stopped' => 'Gestopt',
+        'unconfigured' => 'Niet ingesteld',
+        'advisory' => 'Met notities',
+        'degraded' => 'Hapert',
+        'broken' => 'Kapot',
+        'critical' => 'Dringend',
+        'unknown' => 'Onbekend',
+    ],
     'summary' => [
         'waiting' => 'Wacht op bericht van deze stack.',
-        'as_of' => 'Laatst gehoord :ago. Wat sindsdien is gezegd, is niet bekend.',
-        'notes' => '{1} Eén opmerking|[2,*] :count opmerkingen',
-        'wanting' => '{1} Eén ding heeft aandacht nodig|[2,*] :count dingen hebben aandacht nodig',
-        'reported' => '{1} Eén ding gemeld|[2,*] :count dingen gemeld',
+        'as_of' => 'Bijgewerkt :ago',
+        'notes' => '{1} 1 opmerking bekijken|[2,*] :count opmerkingen bekijken',
+        'wanting' => '{1} 1 probleem bekijken|[2,*] :count problemen bekijken',
+        'reported' => '{1} 1 onderdeel bekijken|[2,*] :count onderdelen bekijken',
         'also' => 'Ook hierdoor: :what',
     ],
     'because_of' => 'Vanwege: :title',
@@ -182,7 +192,6 @@ return [
         'stage_not_said_yet' => 'De stack heeft nog niet gezegd in welke fase hij is.',
         'stage_unheard' => 'In welke fase hij is, kon niet van de stack worden gehoord.',
         'last_at_stage' => 'Laatst gehoord bij :stage, :ago.',
-        'listening_again' => 'Er wordt elke :count seconden opnieuw naar geluisterd.',
         'lines_when_done' => 'Alles wat hij bij elke stap zegt, staat hier in zijn geheel zodra hij klaar is.',
         'leaving' => 'Dit scherm verlaten stopt hem niet. Kom terug en je ziet hoe ver hij is.',
         'leaving_not_noted' => 'Dit scherm verlaten stopt hem niet, maar deze telefoon kon niet onthouden welke walkthrough het is, dus als je hier terugkomt, vind je hem niet terug.',
@@ -295,11 +304,6 @@ return [
     'service_said_nothing' => 'Deze dienst heeft niets gezegd.',
     'service_said_nothing_action' => 'Hij draait rustig door, of is net gestart.',
     'no_moment' => 'Geen tijd opgegeven',
-    'every' => [
-        'while_work_runs' => 'Kijkt elke :count seconden opnieuw zolang dit loopt.',
-        'while_listening' => 'Luistert naar deze stack, en kijkt elke :count seconden naar wat hij zei.',
-        'after_a_break' => 'Deze stack was niet te horen. Luistert elke :count seconden opnieuw.',
-    ],
 
     // Wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
     // een dienst nu staat; hoeveel het uitmaakt is wat het zou kosten als dat

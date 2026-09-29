@@ -52,17 +52,27 @@ return [
         'critical' => 'Urgent: something needs attention now.',
         'unknown' => 'How this stack is cannot be told right now.',
     ],
+    'standing_short' => [
+        'healthy' => 'Fine',
+        'stopped' => 'Stopped',
+        'unconfigured' => 'Not set up',
+        'advisory' => 'Has notes',
+        'degraded' => 'Struggling',
+        'broken' => 'Broken',
+        'critical' => 'Urgent',
+        'unknown' => 'Unknown',
+    ],
     'summary' => [
         'waiting' => 'Waiting to hear from this stack.',
-        'as_of' => 'Last heard :ago. Nothing said since is known.',
-        'notes' => '{1} One note|[2,*] :count notes',
-        'wanting' => '{1} One thing needs attention|[2,*] :count things need attention',
-        'reported' => '{1} One thing reported|[2,*] :count things reported',
+        'as_of' => 'Updated :ago',
+        'notes' => '{1} See 1 note|[2,*] See :count notes',
+        'wanting' => '{1} See 1 problem|[2,*] See :count problems',
+        'reported' => '{1} See 1 item|[2,*] See :count items',
         'also' => 'Also because of this: :what',
     ],
     'because_of' => 'Because of: :title',
     'ago' => [
-        'minutes' => '{0} moments ago|{1} a minute ago|[2,*] :count minutes ago',
+        'minutes' => '{0} just now|{1} a minute ago|[2,*] :count minutes ago',
         'hours' => '{1} an hour ago|[2,*] :count hours ago',
         'days' => '{1} a day ago|[2,*] :count days ago',
     ],
@@ -186,7 +196,6 @@ return [
         'stage_not_said_yet' => 'The stack has not said which stage it is at yet.',
         'stage_unheard' => 'Which stage it is at could not be heard from the stack.',
         'last_at_stage' => 'Last heard at :stage, :ago.',
-        'listening_again' => 'Listening for it again every :count seconds.',
         'lines_when_done' => 'Everything it says at each step appears here, whole, once it has finished.',
         'leaving' => 'Leaving this screen does not stop it. Come back and it shows where it got to.',
         'leaving_not_noted' => 'Leaving this screen does not stop it, but this phone could not note which walk it is, so coming back here will not find it.',
@@ -299,11 +308,6 @@ return [
     'service_said_nothing' => 'This service has said nothing.',
     'service_said_nothing_action' => 'It is running quietly, or it has only just started.',
     'no_moment' => 'No time given',
-    'every' => [
-        'while_work_runs' => 'Looking again every :count seconds while this runs.',
-        'while_listening' => 'Listening to this stack, and looking at what it said every :count seconds.',
-        'after_a_break' => 'This stack could not be heard. Listening again every :count seconds.',
-    ],
 
     // What is running, and how much each one matters. The state is
     // where a service stands now; how much it matters is what it would cost if

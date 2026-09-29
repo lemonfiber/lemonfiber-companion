@@ -8,7 +8,6 @@ use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowMuchWasRead;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\NamedOnTheManifest;
 use Modules\Kernel\Api\Nonce;
@@ -424,7 +423,6 @@ it('takes it off against the reading on the screen, follows the work, and draws 
 
     expect($screen->answer()->isWorking)->toBeTrue()
         ->and($running->said())->toContain(__('uninstall.removing'))
-        ->and($running->said())->toContain(__(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => HowOften::WhileWorkRuns->seconds()]))
         ->and($screen->surveyed)->toBeNull();
 
     $screen->whileItRuns();
@@ -710,8 +708,7 @@ it('asks after nothing while nothing is running', function (): void {
     $screen->whileItRuns();
     $screen->answer();
 
-    expect($removing->asked())->toBe(['read:services'])
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+    expect($removing->asked())->toBe(['read:services']);
 });
 
 it('a session that has ended asks the stack nothing, before the yes and at it', function (): void {

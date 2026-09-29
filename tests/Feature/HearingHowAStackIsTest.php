@@ -14,7 +14,6 @@ use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -180,8 +179,7 @@ it('opens the stream once the screen is up, and draws the summary it hears', fun
     expect($listening->stream->asked())->toBe(1)
         ->and($listening->screen->summary()->said)->toBe(HowItStands::Broken->saidOnTheScreen())
         ->and($listening->screen->summary()->worst)->toBe('The disk is full')
-        ->and($listening->screen->summary()->howMany)->toBe(1)
-        ->and($listening->screen->cadence())->toBe(HowOften::WhileListening);
+        ->and($listening->screen->summary()->howMany)->toBe(1);
 });
 
 it('takes what arrived on every wake, and draws the newest summary', function (): void {
@@ -235,8 +233,7 @@ it('reads a stream that closed as not knowing, and opens it again only once the 
     $listening->wakesAt(0)->wakesAt(2);
 
     expect($listening->screen->summary()->said)->toBe(HowItStands::Unknown->saidOnTheScreen())
-        ->and($listening->screen->summary()->ago->said)->toBe('health.ago.minutes')
-        ->and($listening->screen->cadence())->toBe(HowOften::AfterABreak);
+        ->and($listening->screen->summary()->ago->said)->toBe('health.ago.minutes');
 
     $listening->wakesAt(11);
 
@@ -258,8 +255,7 @@ it('lets go of a stream that has been silent past twice the heartbeat, and reads
     $listening->wakesAt(31);
 
     expect($listening->stream->lettingsGo())->toBe(1)
-        ->and($listening->screen->summary()->said)->toBe(HowItStands::Unknown->saidOnTheScreen())
-        ->and($listening->screen->cadence())->toBe(HowOften::AfterABreak);
+        ->and($listening->screen->summary()->said)->toBe(HowItStands::Unknown->saidOnTheScreen());
 });
 
 it('lets go of the session a stack refused on the stream, and keeps it for any other obstacle', function (): void {
@@ -281,8 +277,7 @@ it('does not listen without a session, and looks for one again after a break', f
     $listening->wakesAt(0)->wakesAt(2);
 
     expect($listening->stream->asked())->toBe(0)
-        ->and($listening->screen->summary()->said)->toBe('health.summary.waiting')
-        ->and($listening->screen->cadence())->toBe(HowOften::AfterABreak);
+        ->and($listening->screen->summary()->said)->toBe('health.summary.waiting');
 });
 
 it('lets go of the stream when the screen stops, and holds what it heard as not current', function (): void {
@@ -311,15 +306,62 @@ it('opens the line out to what it counts, and folds it back', function (): void 
 
     $listening->screen->expand();
 
+    // The worst thing is the heading, so the word's sentence is not said
+    // beside it; the count is one row; a current line says no age and no
+    // cadence, because it is being listened to.
     expect($listening->screen->expanded)->toBeFalse()
-        ->and($folded)->toContain(__(HowItStands::Broken->saidOnTheScreen()))
         ->and($folded)->toContain('The disk is full')
+        ->and($folded)->not->toContain(__(HowItStands::Broken->saidOnTheScreen()))
         ->and($folded)->toContain(trans_choice('health.summary.wanting', 1))
+        ->and($folded)->not->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]))
         ->and($folded)->not->toContain('Nothing new can be downloaded')
         ->and($expanded)->toContain('Nothing new can be downloaded')
         ->and($expanded)->toContain('Make room')
-        ->and($expanded)->toContain(__('health.summary.also', ['what' => 'Imports are failing']))
-        ->and($expanded)->toContain(__(HowOften::WhileListening->saidOnTheScreen(), ['count' => 2]));
+        ->and($expanded)->toContain(__('health.summary.also', ['what' => 'Imports are failing']));
+});
+
+/**
+ * What a screen reader hears for each glyph on a frame, in the order drawn.
+ *
+ * @param array<array-key, mixed> $tree
+ *
+ * @return list<string>
+ */
+function whatAReaderHearsForAGlyph(array $tree): array
+{
+    $heard = [];
+
+    array_walk_recursive($tree, static function (mixed $value, int|string $prop) use (&$heard): void {
+        if ($prop === 'a11y_label' && is_string($value)) {
+            $heard[] = $value;
+        }
+    });
+
+    return $heard;
+}
+
+it('says how the stack stands in a word under a heading that names the worst thing, and to a reader of its glyph', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())));
+    $listening->wakesAt(0);
+
+    $word = __(HowItStands::Broken->saidInAWord());
+
+    expect(WhatTheDeviceWouldDraw::by($listening->screen)->said())->toContain('The disk is full')
+        ->and(WhatTheDeviceWouldDraw::by($listening->screen)->said())->toContain($word)
+        ->and(whatAReaderHearsForAGlyph(WhatTheDeviceWouldDraw::tree($listening->screen)))->toContain($word);
+});
+
+it('heads a line that names nothing with its own sentence, and says no age while it is current', function (): void {
+    $listening = aScreenListeningTo(AStackThatSpeaksUp::holdingOpen(
+        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())),
+    ));
+    $listening->wakesAt(0);
+
+    $drawn = WhatTheDeviceWouldDraw::by($listening->screen)->said();
+
+    expect($drawn)->toContain(__(HowItStands::Healthy->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(trans_choice('health.summary.wanting', 1))
+        ->and($drawn)->not->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]));
 });
 
 it('draws when a line that is not current was heard, and what stopped the stream', function (): void {
@@ -332,10 +374,12 @@ it('draws when a line that is not current was heard, and what stopped the stream
 
     $drawn = WhatTheDeviceWouldDraw::by($listening->screen)->said();
 
-    expect($drawn)->toContain(__(HowItStands::Unknown->saidOnTheScreen()))
+    // What it last named is still the heading, with the unknown glyph and
+    // when it was updated beside it.
+    expect($drawn)->toContain('The disk is full')
+        ->and($listening->screen->summary()->tone)->toBe('unknown')
         ->and($drawn)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 2)]))
-        ->and($drawn)->toContain(__(Obstacle::StackDidNotAnswer->said()))
-        ->and($drawn)->toContain(__(HowOften::AfterABreak->saidOnTheScreen(), ['count' => 10]));
+        ->and($drawn)->toContain(__(Obstacle::StackDidNotAnswer->said()));
 });
 
 /** What the list would read back for the stack being listened to, flattened to one string. */

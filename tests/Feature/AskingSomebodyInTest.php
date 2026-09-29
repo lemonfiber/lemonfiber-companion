@@ -9,7 +9,6 @@ use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -181,8 +180,7 @@ it('asks for the rehearsal with what was typed, and says it is working while it 
             chosen: static fn(WhatBecomesOfUnrated $unrated): WhatTheScreenSent => new WhatTheScreenSent($unrated->value),
             unsaid: static fn(): WhatTheScreenSent => new WhatTheScreenSent('unsaid'),
         )->said)->toBe(WhatBecomesOfUnrated::HeldBack->value)
-        ->and($drawn)->toContain(__('stacks.invitation.working'))
-        ->and($drawn)->toContain(__(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => HowOften::WhileWorkRuns->seconds()]));
+        ->and($drawn)->toContain(__('stacks.invitation.working'));
 });
 
 it('reads no age and leaves unrated material to the stack where nothing was said of either', function (): void {
@@ -412,8 +410,7 @@ it('asks after running work only while it runs', function (): void {
     $screen->whileItRuns();
     $screen->howItIsGoing();
 
-    expect($inviting->asked())->toBe(['would', 'after:j-1'])
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+    expect($inviting->asked())->toBe(['would', 'after:j-1']);
 });
 
 it('starts again keeping what was typed, and drops what the stack said', function (): void {

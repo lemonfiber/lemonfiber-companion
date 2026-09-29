@@ -45,7 +45,7 @@ use function view;
  * **Only the preview can be agreed to.** The yes is an {@see AResetAgreed},
  * which only a preview that would revert something produces.
  *
- * **Both are work the stack names,** followed on a stated cadence while they
+ * **Both are work the stack names,** followed on a declared cadence while they
  * run. The report after the yes says what went back and which connections
  * went with it, in the past tense only where the stack says it was carried out.
  *
@@ -205,8 +205,7 @@ final class PuttingTheConfigurationBack extends NativeComponent
      * Ask after the preview or the yes while the stack is at it.
      *
      * It does nothing unless one is running, so a finished report is not read
-     * over and over. The interval is {@see HowOften}'s constant, which
-     * {@see cadence()} states on the screen.
+     * over and over. The interval is {@see HowOften}'s constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -220,12 +219,6 @@ final class PuttingTheConfigurationBack extends NativeComponent
     public function isWorking(): bool
     {
         return $this->answer()->isWorking;
-    }
-
-    /** How often this screen asks while the stack is at it, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /** Resume the session and ask for the preview. */

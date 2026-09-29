@@ -17,9 +17,6 @@
         />
     @elseif ($this->done()->isWorking)
         <x-operator::emphasis>{{ __('stacks.let_go.letting_go', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
-        <x-operator::note>
-            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-        </x-operator::note>
     @elseif ($this->done()->hasEnded)
         {{-- Not a failure: the client may well have let it go, and how full
              the machine is says whether it is still there. --}}
@@ -42,11 +39,8 @@
     <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
 @elseif ($this->answer()->isWorking)
     {{-- The stack answers the question as work, so the offer may not be
-         in yet. Said as that, on the cadence it is read again at. --}}
+         in yet. Said as that, and read again on the screen's cadence. --}}
     <x-operator::emphasis>{{ __('stacks.let_go.working_it_out', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
-    <x-operator::note>
-        {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-    </x-operator::note>
     <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
 @elseif ($this->answer()->hasEnded)
     <x-operator::emphasis>{{ __('stacks.let_go.offer_ended', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>

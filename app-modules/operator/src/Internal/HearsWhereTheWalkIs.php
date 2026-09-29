@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Health\Api\WhatTheWalkSaidSoFar;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -54,17 +53,6 @@ trait HearsWhereTheWalkIs
     public function stage(): TheStageAsShown
     {
         return new HowTheStageReads()->of($this->walkHeardSoFar(), $this->followsTheWalkWith()->clock->now());
-    }
-
-    /**
-     * How soon a subscription that broke or could not be opened is opened again.
-     *
-     * Stated on the screen whenever the stage could not be heard, because it is
-     * a cadence this screen keeps beside the one it asks after the walk on.
-     */
-    public function listensAgain(): HowOften
-    {
-        return HowOften::AfterABreak;
     }
 
     /**

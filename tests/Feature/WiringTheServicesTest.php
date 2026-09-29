@@ -7,7 +7,6 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAConnectionEnded;
 use Modules\Kernel\Api\HowDriftWasJudged;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -182,7 +181,6 @@ it('starts a run, says it is working while it runs, and offers no second run mea
     expect($wiring->asked())->toBe(['wire'])
         ->and($screen->following)->toBe('j-1')
         ->and($drawn->said())->toContain(__('stacks.wiring.working'))
-        ->and($drawn->said())->toContain(__(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => HowOften::WhileWorkRuns->seconds()]))
         ->and($drawn->offers())->not->toContain(__('stacks.wiring.wire'));
 });
 
@@ -325,8 +323,7 @@ it('asks after a run only while it runs', function (): void {
     $screen->whileItRuns();
     $screen->howItIsGoing();
 
-    expect($wiring->asked())->toBe(['wire', 'after:j-1', 'after:j-1'])
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+    expect($wiring->asked())->toBe(['wire', 'after:j-1', 'after:j-1']);
 });
 
 it('starts a second run afresh, letting go of the one it followed', function (): void {

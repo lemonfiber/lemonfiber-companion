@@ -49,7 +49,7 @@ use function view;
  * the stack gave it, so what is let go is what was shown; a stack that would
  * not offer offers nothing to agree to, and the screen offers nothing.
  *
- * **Both halves answer a handle,** followed on a stated cadence while either
+ * **Both halves answer a handle,** followed on a declared cadence while either
  * runs, and never anything more: the cadence reads, and only the operator's
  * tap sends the yes. A rehearsed report is labelled as one and says nothing
  * was freed.
@@ -209,8 +209,7 @@ final class LettingADownloadGo extends NativeComponent
      * It does nothing unless one of those is running, so an offer on the
      * screen and a finished report are not read over and over, and it only
      * ever reads: the yes is sent by {@see agree()} and nothing else. The
-     * interval is {@see HowOften}'s constant, which {@see cadence()} states on
-     * the screen.
+     * interval is {@see HowOften}'s constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -232,12 +231,6 @@ final class LettingADownloadGo extends NativeComponent
     public function isWorking(): bool
     {
         return $this->agreed ? $this->done()->isWorking : $this->answer()->isWorking;
-    }
-
-    /** How often this screen reads again while something runs, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /** Resume the session and ask what stopping seeding the download would cost. */

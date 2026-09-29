@@ -7,7 +7,6 @@ use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\AWalkthrough;
 use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
 use Modules\Kernel\Api\Instant;
@@ -243,7 +242,7 @@ it('before a walk, says what stood in the way of reaching the machine, and leave
         ->and($walking->walked())->toBe([]);
 });
 
-it('walks what was typed, empties the box, and says it is running and how often it looks', function (): void {
+it('walks what was typed, empties the box, and says it is running', function (): void {
     $walking = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning());
     $screen = theWalkthroughScreen($walking);
     $screen->looking = '  Big Buck Bunny ';
@@ -260,7 +259,6 @@ it('walks what was typed, empties the box, and says it is running and how often 
         ])
         ->and($drawn->said())->toContain(
             __('health.walkthrough.walking'),
-            __(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => 5]),
         )
         // Running, so there is no second walk to start and no record to draw.
         ->and($drawn->offers())->not->toContain(__('health.walkthrough.walk'))
@@ -292,8 +290,7 @@ it('asks after the handle it was given while the walk runs, and not once it has 
 
     expect($running->followed())->toHaveCount(2)
         ->and($running->followed()[0]->shown())->toBe(AStackThatWalksThrough::THE_JOB)
-        ->and($finished->followed())->toHaveCount(1)
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+        ->and($finished->followed())->toHaveCount(1);
 });
 
 it('asks again when asked to', function (): void {
@@ -350,7 +347,6 @@ it('opens the stream as a walk starts and draws the stage it says in the stack\'
         ->and($drawn)->not->toContain(
             __('health.walkthrough.stage_not_said_yet'),
             __('health.walkthrough.stage_unheard'),
-            __('health.walkthrough.listening_again', ['count' => 10]),
         );
 
     // A stage is what the walk is doing; a bar would say only that it was
@@ -382,7 +378,7 @@ it('says the stack has not named a stage yet while it listens and has heard none
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($drawn)->toContain(__('health.walkthrough.stage_not_said_yet'))
-        ->and($drawn)->not->toContain(__('health.walkthrough.stage_unheard'), __('health.walkthrough.listening_again', ['count' => 10]));
+        ->and($drawn)->not->toContain(__('health.walkthrough.stage_unheard'));
 });
 
 it('says the stage could not be heard, rather than drawing an idle walk, and when it listens again', function (): void {
@@ -397,10 +393,8 @@ it('says the stage could not be heard, rather than drawing an idle walk, and whe
     expect($drawn)->toContain(
         __('health.walkthrough.walking'),
         __('health.walkthrough.stage_unheard'),
-        __('health.walkthrough.listening_again', ['count' => 10]),
     )
-        ->and($drawn)->not->toContain(__('health.walkthrough.stage_not_said_yet'))
-        ->and($screen->listensAgain())->toBe(HowOften::AfterABreak);
+        ->and($drawn)->not->toContain(__('health.walkthrough.stage_not_said_yet'));
 });
 
 it('takes the stage on the wakes that ask after the walk, and draws the newest, earlier or not', function (): void {
@@ -446,7 +440,6 @@ it('says a stage heard before the stream went quiet is not where the walk is now
     expect($drawn)->toContain(
         __('health.walkthrough.stage_unheard'),
         __('health.walkthrough.last_at_stage', ['stage' => 'importing', 'ago' => trans_choice('health.ago.minutes', 0)]),
-        __('health.walkthrough.listening_again', ['count' => 10]),
     )
         ->and($drawn)->not->toContain(__('health.walkthrough.at_stage_now', ['stage' => 'importing']))
         ->and($narrating->lettingsGo())->toBe(2)
@@ -518,7 +511,7 @@ it('says a stage not said yet, never one that could not be heard, while nobody c
 
     expect($narrating->asked())->toBe(0)
         ->and($drawn)->toContain(__('health.walkthrough.stage_not_said_yet'))
-        ->and($drawn)->not->toContain(__('health.walkthrough.stage_unheard'), __('health.walkthrough.listening_again', ['count' => 10]));
+        ->and($drawn)->not->toContain(__('health.walkthrough.stage_unheard'));
 });
 
 it('says the last stage heard, with when, and not that it could not be heard, when the screen is back in front before the next wake', function (): void {
@@ -541,7 +534,6 @@ it('says the last stage heard, with when, and not that it could not be heard, wh
         ->and($drawn)->toContain(__('health.walkthrough.last_at_stage', ['stage' => 'downloading', 'ago' => trans_choice('health.ago.minutes', 0)]))
         ->and($drawn)->not->toContain(
             __('health.walkthrough.stage_unheard'),
-            __('health.walkthrough.listening_again', ['count' => 10]),
             __('health.walkthrough.at_stage_now', ['stage' => 'downloading']),
         );
 
@@ -901,7 +893,7 @@ it('hears the stage a walk left running is at from the first wake after the scre
     expect($returnedTo->answer()->isWorking)->toBeTrue()
         ->and($narrating->asked())->toBe(0)
         ->and($drawn)->toContain(__('health.walkthrough.stage_not_said_yet'))
-        ->and($drawn)->not->toContain(__('health.walkthrough.stage_unheard'), __('health.walkthrough.listening_again', ['count' => 10]));
+        ->and($drawn)->not->toContain(__('health.walkthrough.stage_unheard'));
 
     $returnedTo->whileItRuns();
 

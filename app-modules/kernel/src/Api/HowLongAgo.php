@@ -52,7 +52,7 @@ enum HowLongAgo: string
      * The unit the time since a reading is said in.
      *
      * An age that fills no unit — under a minute — is said in minutes, which
-     * with a count of zero is the catalogue's *moments ago*. A reading from the
+     * with a count of zero is the catalogue's *just now*. A reading from the
      * future lands there too; see {@see self::secondsBetween()} for why.
      */
     public static function since(Instant $read, Instant $now): self
@@ -120,7 +120,7 @@ enum HowLongAgo: string
      * A clock that disagrees with itself — a device whose own has moved
      * backwards, or a stack whose clock is ahead — produces a reading in the
      * future. This app knows such a reading is not old and does not know enough
-     * to say anything else, so it is treated as taken now: *moments ago*, where
+     * to say anything else, so it is treated as taken now: *just now*, where
      * the raw subtraction would put *in three hours* on somebody's screen.
      *
      * **The moment is clamped, not the difference.** `max($now - $read, 0)`
