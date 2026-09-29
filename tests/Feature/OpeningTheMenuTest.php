@@ -80,3 +80,43 @@ it('puts the menu control beside the back button on a screen opened on top of a 
     expect(aTabWithTheMenu()->drawerOverride()->isBesideBack())->toBeFalse()
         ->and(aScreenTheMenuOpens()->drawerOverride()->isBesideBack())->toBeTrue();
 });
+
+it('draws the bar on a tab with that tab marked, and hides it on a screen the menu opens', function (): void {
+    $tab = aTabWithTheMenu();
+    $opened = aScreenTheMenuOpens();
+
+    expect($tab->tabBarOptions())->toBeNull()
+        ->and($tab->itsTab()?->value)->toBe('updates')
+        ->and($opened->tabBarOptions()?->hidden)->toBeTrue()
+        ->and($opened->itsTab())->toBeNull();
+});
+
+
+/**
+ * Every node of a frame, the frame's own first.
+ *
+ * @param array<mixed> $node
+ *
+ * @return list<array<mixed>>
+ */
+function everyNodeOf(array $node): array
+{
+    $found = [$node];
+    $children = array_key_exists('children', $node) && is_array($node['children']) ? $node['children'] : [];
+
+    foreach ($children as $child) {
+        $found = [...$found, ...(is_array($child) ? everyNodeOf($child) : [])];
+    }
+
+    return $found;
+}
+
+it('marks one tab in the bar, the one the screen is under', function (): void {
+    $tabs = array_values(array_filter(
+        everyNodeOf(WhatTheDeviceWouldDraw::tree(aTabWithTheMenu())),
+        static fn(array $node): bool => array_key_exists('type', $node) && $node['type'] === 'bottom_nav_item',
+    ));
+
+    expect(array_column(array_column($tabs, 'props'), 'active', 'id'))
+        ->toBe(['health' => false, 'services' => false, 'updates' => true, 'repairs' => false]);
+});

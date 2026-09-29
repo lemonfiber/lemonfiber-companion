@@ -111,4 +111,4 @@
     />
 @endif
 
-<x-operator::screen-closes :goes="$this->goes()" here="health" />
+<x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" />
