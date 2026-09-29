@@ -168,9 +168,10 @@ it('offers the whole stack and each service the stack runs, and asks nothing yet
     $screen = theCopyingScreen($copying);
     $drawn = WhatTheDeviceWouldDraw::by($screen)->offers();
 
-    expect($drawn)->toContain(__('stacks.copy.the_whole_stack'))
-        ->and($drawn)->toContain(__('stacks.copy.only', ['name' => 'Sonarr']))
-        ->and($drawn)->toContain(__('stacks.copy.only', ['name' => 'Jellyfin']))
+    // Each service is a row that reads its name and answers a screen reader
+    // with what tapping it asks for, which its name alone does not say.
+    expect($drawn)->toBe([__('stacks.copy.the_whole_stack'), 'Sonarr', 'Jellyfin', __('health.ask_again')])
+        ->and(json_encode(WhatTheDeviceWouldDraw::tree($screen)))->toContain(__('stacks.copy.only_this_service', ['name' => 'Sonarr']))
         ->and($screen->askingAbout())->toBeNull()
         ->and(everythingAboutTheCopy($screen->lastCopy()))->toBe(nothingReportedOfTheCopy(['wasAsked' => false]))
         ->and($copying->taken())->toBe([]);

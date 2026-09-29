@@ -27,6 +27,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsARecord;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What this machine has changed about itself, and how far each change goes back.
 //
@@ -127,6 +128,34 @@ it('N11-R2, N11-R3 — every change says what it did, how far it goes back and h
         ->and($row->alongside)->toBe(3)
         ->and($row->because)->toBe('The old library was deleted')
         ->and($row->instead)->toBe('Restore it from the last backup first');
+});
+
+it('draws each change with what it did first, then what did it, how far it goes back and what came with it', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching(
+        'the last 50 runs',
+        aChangeMadeBefore('Pointed Sonarr at the new library', 120, HowFarItGoesBack::Partial, 3)
+            ->stoppingShort(WhereItStopsShort::suggesting('The old library was deleted', 'Restore it from the last backup first')),
+    ))));
+    $said = $drawn->said();
+    $did = array_search('Pointed Sonarr at the new library', $said, strict: true);
+
+    expect(is_int($did) ? array_slice($said, $did, 6) : [])->toBe([
+        'Pointed Sonarr at the new library',
+        __('stacks.record.by', ['operation' => 'reconfigure', 'target' => 'sonarr']),
+        __(HowFarItGoesBack::Partial->saidOnTheScreen()),
+        trans_choice('stacks.record.alongside', 3),
+        __('stacks.record.stops_short', ['because' => 'The old library was deleted']),
+        __('stacks.record.instead', ['instead' => 'Restore it from the last backup first']),
+    ])
+        ->and($said)->toContain(__('stacks.record.horizon', ['horizon' => 'the last 50 runs']))
+        ->and($drawn->offers())->toBe([__('health.ask_again')]);
+});
+
+it('draws a record with nothing in it as saying so, over where it ends', function (): void {
+    $said = WhatTheDeviceWouldDraw::by(theRecordScreen(AStackThatKeepsARecord::with(TheRecord::reaching('the last 50 runs'))))->said();
+
+    expect($said)->toContain(__('stacks.record.nothing_changed'))
+        ->and($said)->toContain(__('stacks.record.horizon', ['horizon' => 'the last 50 runs']));
 });
 
 it('N11-R2 — a change that goes back whole says nothing about stopping short', function (): void {

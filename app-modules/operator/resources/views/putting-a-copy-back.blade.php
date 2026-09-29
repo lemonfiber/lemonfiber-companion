@@ -5,8 +5,10 @@
 @if (! $this->answer()->namesACopy)
     {{-- Opened on no copy at all, so there is nothing to rehearse and
          nothing to agree to. The copies are where one is chosen. --}}
-    <x-operator::emphasis>{{ __('stacks.put_back.names_no_copy') }}</x-operator::emphasis>
-    <x-operator::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
+    <x-design::notice tone="unknown">
+        <x-design::strong>{{ __('stacks.put_back.names_no_copy') }}</x-design::strong>
+    </x-design::notice>
+    <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the
          listing above it, so a rehearsal cannot read as a restore. --}}
@@ -16,78 +18,90 @@
             :sign-in-goes-to="$this->goes()->signIn()"
         />
     @elseif ($this->done()->isWorking)
-        <x-operator::emphasis>{{ __('stacks.put_back.putting_back', ['copy' => $this->copyNamed()]) }}</x-operator::emphasis>
+        <x-design::standing
+            :said="__('stacks.put_back.putting_back', ['copy' => $this->copyNamed()])"
+            tone="working"
+            :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
+        />
 
         {{-- The stack says how far a restore got once it has finished, and
              not while it runs. --}}
-        <native:text>{{ __('stacks.put_back.no_progress_while_running') }}</native:text>
-        <x-operator::note>
-            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-        </x-operator::note>
+        <x-design::body>{{ __('stacks.put_back.no_progress_while_running') }}</x-design::body>
     @elseif ($this->done()->hasEnded)
         {{-- Not a failure: it may well have been put back, and the machine's
              health is where to look. --}}
-        <x-operator::emphasis>{{ __('stacks.put_back.no_outcome') }}</x-operator::emphasis>
-        <native:text>{{ __('stacks.put_back.no_outcome_action') }}</native:text>
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __('stacks.put_back.no_outcome') }}</x-design::strong>
+            <x-design::body>{{ __('stacks.put_back.no_outcome_action') }}</x-design::body>
+        </x-design::notice>
     @else
-        <x-operator::emphasis>{{ __('stacks.put_back.put_back', ['scope' => __($this->done()->scope->said, $this->done()->scope->with), 'version' => $this->done()->takenBy]) }}</x-operator::emphasis>
+        <x-design::card>
+            <x-design::strong>{{ __('stacks.put_back.put_back', ['scope' => __($this->done()->scope->said, $this->done()->scope->with), 'version' => $this->done()->takenBy]) }}</x-design::strong>
 
-        @forelse ($this->done()->scope->trees as $tree)
-            <x-operator::note>{{ $tree }}</x-operator::note>
+            @forelse ($this->done()->scope->trees as $tree)
+                <x-design::verbatim>{{ $tree }}</x-design::verbatim>
+            @empty
+                {{-- Only a copy of an existing setup names the trees it read. --}}
+            @endforelse
+
+            @if ($this->done()->relocation !== null)
+                {{-- Said wherever it happened: a restore that moved a library
+                     without saying so is one its operator believes failed. --}}
+                <x-design::body>{{ __('stacks.put_back.moved', ['was' => $this->done()->relocation->was, 'now' => $this->done()->relocation->now]) }}</x-design::body>
+            @else
+                <x-design::body>{{ __('stacks.put_back.where_it_was') }}</x-design::body>
+            @endif
+        </x-design::card>
+
+        <x-design::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
+    @endif
+
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
+@else
+    {{-- A rehearsal, and said to be one before anything else: nothing below
+         has happened, and nothing is worded as though it had. --}}
+    <x-design::heading>{{ __('stacks.put_back.a_rehearsal') }}</x-design::heading>
+
+    <x-design::card>
+        <x-design::strong>{{ __('stacks.put_back.would_put_back', ['scope' => __($this->answer()->scope->said, $this->answer()->scope->with)]) }}</x-design::strong>
+
+        @forelse ($this->answer()->scope->trees as $tree)
+            <x-design::verbatim>{{ $tree }}</x-design::verbatim>
         @empty
             {{-- Only a copy of an existing setup names the trees it read. --}}
         @endforelse
 
-        @if ($this->done()->relocation !== null)
-            {{-- Said wherever it happened: a restore that moved a library
-                 without saying so is one its operator believes failed. --}}
-            <native:text>{{ __('stacks.put_back.moved', ['was' => $this->done()->relocation->was, 'now' => $this->done()->relocation->now]) }}</native:text>
+        <x-design::note>{{ __('stacks.put_back.taken_by', ['version' => $this->answer()->takenBy, 'at' => $this->answer()->takenAt]) }}</x-design::note>
+
+        {{-- Where the data would land, before the yes rather than after it. --}}
+        @if ($this->answer()->relocation !== null)
+            <x-design::strong>{{ __('stacks.put_back.would_move', ['was' => $this->answer()->relocation->was, 'now' => $this->answer()->relocation->now]) }}</x-design::strong>
         @else
-            <native:text>{{ __('stacks.put_back.where_it_was') }}</native:text>
+            <x-design::body>{{ __('stacks.put_back.would_go_where_it_was') }}</x-design::body>
         @endif
-
-        <x-operator::action label="{{ __('stacks.copy.see_the_copies') }}" :goes="$this->goes()->ofItself()->keeps()" />
-    @endif
-
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
-@else
-    {{-- A rehearsal, and said to be one before anything else: nothing below
-         has happened, and nothing is worded as though it had. --}}
-    <x-operator::heading>{{ __('stacks.put_back.a_rehearsal') }}</x-operator::heading>
-
-    <x-operator::emphasis>{{ __('stacks.put_back.would_put_back', ['scope' => __($this->answer()->scope->said, $this->answer()->scope->with)]) }}</x-operator::emphasis>
-
-    @forelse ($this->answer()->scope->trees as $tree)
-        <x-operator::note>{{ $tree }}</x-operator::note>
-    @empty
-        {{-- Only a copy of an existing setup names the trees it read. --}}
-    @endforelse
-
-    <native:text>{{ __('stacks.put_back.taken_by', ['version' => $this->answer()->takenBy, 'at' => $this->answer()->takenAt]) }}</native:text>
+    </x-design::card>
 
     @if ($this->answer()->isOlder)
-        <x-operator::emphasis>{{ __('stacks.put_back.older') }}</x-operator::emphasis>
+        <x-design::notice>
+            <x-design::body>{{ __('stacks.put_back.older') }}</x-design::body>
+        </x-design::notice>
     @endif
 
-    {{-- Where the data would land, before the yes rather than after it. --}}
-    @if ($this->answer()->relocation !== null)
-        <x-operator::emphasis>{{ __('stacks.put_back.would_move', ['was' => $this->answer()->relocation->was, 'now' => $this->answer()->relocation->now]) }}</x-operator::emphasis>
-    @else
-        <native:text>{{ __('stacks.put_back.would_go_where_it_was') }}</native:text>
-    @endif
+    {{-- What it would overwrite, named, between the listing and the yes. --}}
+    <x-design::notice>
+        <x-design::strong>{{ __('stacks.put_back.would_overwrite') }}</x-design::strong>
 
-    <x-operator::emphasis>{{ __('stacks.put_back.would_overwrite') }}</x-operator::emphasis>
+        @forelse ($this->answer()->contents as $held)
+            <x-design::body>{{ $held }}</x-design::body>
+        @empty
+            <x-design::body>{{ __('stacks.put_back.holds_nothing') }}</x-design::body>
+        @endforelse
+    </x-design::notice>
 
-    @forelse ($this->answer()->contents as $held)
-        <x-operator::note>{{ $held }}</x-operator::note>
-    @empty
-        <x-operator::note>{{ __('stacks.put_back.holds_nothing') }}</x-operator::note>
-    @endforelse
+    <x-design::note>{{ __('stacks.put_back.only_while_stopped') }}</x-design::note>
 
-    <native:text>{{ __('stacks.put_back.only_while_stopped') }}</native:text>
-
-    <x-operator::action label="{{ __('stacks.put_back.put_it_back') }}" tap="agree()" />
-    <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('stacks.put_back.put_it_back') }}" tap="agree()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 @endif
 </x-operator::content>
 @else

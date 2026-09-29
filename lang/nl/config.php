@@ -48,6 +48,7 @@ return [
     'agree_to' => 'Deze wijziging aan :key doorvoeren',
     'what_would_happen_to' => 'Bekijk wat het wijzigen van :key zou doen',
     'change_key' => ':key wijzigen',
+    'never_mind_about' => 'Laat :key zoals het is',
 
     'would_hold' => 'Er zou :value in komen te staan',
     'services_will_restart' => 'De betrokken diensten starten opnieuw op.',

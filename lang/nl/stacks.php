@@ -551,7 +551,6 @@ return [
         'what_to_copy' => 'Waarvan een kopie maken',
         'the_whole_stack' => 'De hele stack',
         'or_one_service' => 'Of één dienst op zichzelf',
-        'only' => 'Alleen :name',
         'only_this_service' => 'Maak alleen een kopie van :name',
         'no_services' => 'De stack draait geen dienst om los te kopiëren',
         'about_to' => 'Op het punt een kopie te maken van :scope',
