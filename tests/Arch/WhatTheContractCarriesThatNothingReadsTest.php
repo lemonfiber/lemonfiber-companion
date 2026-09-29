@@ -60,6 +60,14 @@ use Tests\Support\WhereAShapeHoldsItself;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
+        'path' => 'ClientsEnvelope.devices[].open_source',
+        'because' => 'Whether the client suggested for a device is open source. Which app to watch on is answered with the device, the client, how well it plays there and what to use instead, which are read; no requirement asks the app to say what licence a client carries.',
+    ],
+    [
+        'path' => 'ClientsEnvelope.devices[].deep_link',
+        'because' => 'A link that opens the suggested client. The screen names the client for the person to find on their own device, which is often not the phone holding this app; no requirement asks the app to open another one.',
+    ],
+    [
         'path' => 'BackupEnvelope.path',
         'because' => 'Where the copy was written on the machine. A copy is named on the screen by the name the listing of copies gives it, which is what putting it back is asked for by; a path on a machine the operator has no filesystem in front of names nothing they can use.',
     ],
