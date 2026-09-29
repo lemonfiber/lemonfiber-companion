@@ -293,6 +293,36 @@ it('offers a change on a shown setting and on no withheld one', function (): voi
         ->and($rows[2]->mayBeChanged)->toBeTrue();
 });
 
+it('draws a way to change each shown setting, named for it, and none beside a withheld one', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo())));
+
+    expect($drawn->offers())->toBe([__('config.change_key', ['key' => 'LIBRARY_PATH']), __('config.change_key', ['key' => 'BIND']), __('config.ask_again')])
+        ->and($drawn->said())->toContain('/data/media')
+        ->and($drawn->said())->toContain('set, not shown');
+});
+
+it('draws both sides of a staged change, and offers to make it or to leave it', function (Cost $cost, bool $warned): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
+        ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), $cost),
+        Stance::Pending,
+    )));
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+    $screen->wouldBe('LIBRARY_PATH');
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__('config.holds_now', ['value' => '/data/media']))
+        ->and($drawn->said())->toContain(__('config.would_hold', ['value' => '/data/films']))
+        ->and($drawn->said())->toContain(__($cost->saidOnTheScreen()))
+        ->and($drawn->said())->toContain(__(Stance::Pending->saidOnTheScreen()))
+        ->and(in_array(__('config.worth_reading_twice'), $drawn->said(), strict: true))->toBe($warned)
+        ->and($drawn->offers())->toBe([__('config.agree'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.ask_again')]);
+})->with([
+    'cheap' => [Cost::Cheap, false],
+    'consequential' => [Cost::Consequential, true],
+]);
+
 it('refuses to open a withheld setting even when asked directly', function (): void {
     // The half that does not depend on markup. The template draws no control
     // beside a withheld row, and a screen whose guarantee lived only there

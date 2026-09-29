@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\AMonthlyCap;
 use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowFast;
@@ -13,6 +14,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\WhatTheLineCarries;
+use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\HowTheLineTurnedOutToBe;
@@ -53,6 +55,7 @@ final readonly class HowTheLineReads
         return new HowTheLineTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             standsSaid: $line->stands()->saidOnTheScreen(),
+            tone: $this->toneOf($line->stands()),
             means: $line->means(),
             downSays: $line->downSays(),
             upSays: $line->upSays(),
@@ -77,6 +80,7 @@ final readonly class HowTheLineReads
         return new HowTheLineTurnedOutToBe(
             went: $went,
             standsSaid: '',
+            tone: Tone::Unknown->value,
             means: '',
             downSays: '',
             upSays: '',
@@ -87,6 +91,25 @@ final readonly class HowTheLineReads
             spentCap: '',
             uploadCost: '',
         );
+    }
+
+    /**
+     * The glyph where the line stands is drawn with.
+     *
+     * Every limit, schedule and override is the line doing what somebody set it
+     * to do, and reads as fine. A cap that is near or reached wants looking at:
+     * what reaching it does is about to apply, or applies.
+     */
+    private function toneOf(WhereTheLineStands $stands): string
+    {
+        return match ($stands) {
+            WhereTheLineStands::Unlimited,
+            WhereTheLineStands::Limited,
+            WhereTheLineStands::ScheduledActive,
+            WhereTheLineStands::ScheduledQuiet,
+            WhereTheLineStands::Overridden => Tone::Fine->value,
+            WhereTheLineStands::CapWarning, WhereTheLineStands::CapExceeded => Tone::Attention->value,
+        };
     }
 
     /** What the line was measured to carry, with how long ago against the frame's moment. */

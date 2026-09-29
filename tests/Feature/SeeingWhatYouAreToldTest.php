@@ -22,6 +22,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSaysWhatItTells;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What this machine will tell its operator about.
 //
@@ -77,6 +78,26 @@ it('N10-R8 — shows the preset with what it means and with every exception made
             ['update-available', WhetherItIsHeard::Silenced->saidOnTheScreen()],
             ['disk-low', WhetherItIsHeard::Heard->saidOnTheScreen()],
         ]);
+});
+
+it('draws the preset with what it means, and each event set apart with how it is heard beneath it', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theToldScreen(AStackThatSaysWhatItTells::with(aQuietSettingWithTwoExceptions())));
+    $said = $drawn->said();
+    $quiet = array_search('update-available', $said, strict: true);
+    $heard = array_search('disk-low', $said, strict: true);
+
+    expect($said)->toContain(__('stacks.alerts.preset', ['preset' => 'quiet']))
+        ->and($said)->toContain('Only what needs you today')
+        ->and($said)->toContain(__('stacks.alerts.set_apart'))
+        ->and(is_int($quiet) ? $said[$quiet + 1] : null)->toBe(__(WhetherItIsHeard::Silenced->saidOnTheScreen()))
+        ->and(is_int($heard) ? $said[$heard + 1] : null)->toBe(__(WhetherItIsHeard::Heard->saidOnTheScreen()))
+        ->and($drawn->offers())->toBe([__('health.ask_again')]);
+});
+
+it('draws a preset with nothing set apart as saying so', function (): void {
+    $said = WhatTheDeviceWouldDraw::by(theToldScreen(AStackThatSaysWhatItTells::with(WhatTheOperatorIsTold::byPreset('everything', 'Every event, as it happens', SetApart::of()))))->said();
+
+    expect($said)->toContain(__('stacks.alerts.nothing_set_apart'));
 });
 
 it('a preset with nothing set apart is an answer', function (): void {

@@ -792,7 +792,6 @@ return [
         'what_to_copy' => 'What to take a copy of',
         'the_whole_stack' => 'The whole stack',
         'or_one_service' => 'Or one service on its own',
-        'only' => 'Only :name',
         'only_this_service' => 'Take a copy of :name only',
         'no_services' => 'The stack runs no service to copy on its own',
         'about_to' => 'About to take a copy of :scope',

@@ -261,3 +261,21 @@ it('N10-R4, N10-R6 — the reading reaches the glass, each figure in its own uni
         ->and($drawn)->toContain(__(WhetherItGoesThroughTheTunnel::Beside->saidOnTheScreen()))
         ->and($drawn)->toContain('Nothing holds the stack back');
 });
+
+it('draws where the line stands first, then each direction, the cap and what is outside every limit', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theLineScreen(AStackThatRationsItsLine::with(aCappedLine())));
+    $said = $drawn->said();
+    $stands = array_search(__(WhereTheLineStands::CapWarning->saidOnTheScreen()), $said, strict: true);
+    $down = array_search(__('stacks.line.down', ['says' => 'Half of 100 Mbit/s']), $said, strict: true);
+
+    expect(is_int($stands) ? $said[$stands + 1] : null)->toBe('Close to the month\'s cap')
+        ->and(is_int($stands) && is_int($down) && $stands < $down)->toBeTrue()
+        ->and($said)->toContain(__('stacks.line.down', ['says' => 'Half of 100 Mbit/s']))
+        ->and($said)->toContain(__('stacks.line.up', ['says' => 'No limit']))
+        ->and($said)->toContain(__('stacks.line.upload_cost', ['costs' => 'Seeding back at a quarter slows the ratio']))
+        ->and($said)->toContain(__(WhereTheMonthStands::Warning->saidOnTheScreen()))
+        ->and($said)->toContain('Nothing is being held back yet')
+        ->and($said)->toContain('Plex streams')
+        ->and($said)->toContain('Measured at night')
+        ->and($drawn->offers())->toBe([__('health.ask_again')]);
+});

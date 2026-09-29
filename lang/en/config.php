@@ -66,6 +66,7 @@ return [
     'agree_to' => 'Make this change to :key',
     'what_would_happen_to' => 'See what changing :key would do',
     'change_key' => 'Change :key',
+    'never_mind_about' => 'Leave :key as it is',
 
     'would_hold' => 'It would hold :value',
     'services_will_restart' => 'The services this affects will restart.',
