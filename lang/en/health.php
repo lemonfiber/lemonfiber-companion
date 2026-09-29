@@ -385,6 +385,7 @@ return [
     'no_form_running' => 'No form is running.',
     'runs_for' => 'For :forms',
     'runs_for_no_form' => 'No running form asked for it',
+    'not_installed' => 'Not installed (:count)',
     'left_out_heading' => 'Left out on purpose',
     'left_out_by' => 'Asked for by :forms, but :needs',
     'nothing_left_out' => 'The forms running left nothing out.',

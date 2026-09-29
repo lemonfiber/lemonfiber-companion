@@ -44,11 +44,16 @@ final readonly class HowAServiceReads
             $leaning[] = $this->nameOf($id, $listing);
         }
 
+        $runsFor = new HowWhatWasLeftOutReads()->forms($daemon->whatBroughtItIn());
+        $isInstalled = $daemon->runs() !== HowAServiceRuns::Absent || $runsFor !== [];
+
         return new WhatOneServiceSays(
             id: $daemon->id(),
             name: $daemon->name(),
             runsSaid: $daemon->runs()->saidOnTheScreen(),
-            tone: $this->toneOf($daemon->runs()),
+            // Nothing is wrong with a service nobody asked for, so it is drawn
+            // in the quiet tone rather than the one an absence asked for has.
+            tone: $isInstalled ? $this->toneOf($daemon->runs()) : Tone::Quiet->value,
             mattersSaid: $daemon->matters()->saidOnTheScreen(),
             isSettling: $daemon->runs()->isSettling(),
             isOurs: $daemon->runs()->isThisStacksToRun(),
@@ -66,7 +71,8 @@ final readonly class HowAServiceReads
                 WhatToDoWithIt::cases(),
                 static fn(WhatToDoWithIt $verb): bool => $daemon->runs()->mayTake($verb),
             )),
-            runsFor: new HowWhatWasLeftOutReads()->forms($daemon->whatBroughtItIn()),
+            runsFor: $runsFor,
+            isInstalled: $isInstalled,
         );
     }
 

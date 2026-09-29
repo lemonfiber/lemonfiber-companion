@@ -49,6 +49,7 @@ final readonly class WhatOneServiceSays
      * @param string       $stoppedSaid the key for whether it stopped with an error, or empty where it did not stop
      * @param list<WhatToDoWithIt> $verbs what this state can take, worst-case none
      * @param list<string> $runsFor     every form it is running for, none where no form holding it is up
+     * @param bool         $isInstalled whether it is there or asked for, which a service absent and asked for by no running form is not
      */
     public function __construct(
         public ServiceId $id,
@@ -64,6 +65,7 @@ final readonly class WhatOneServiceSays
         public string $stoppedSaid,
         public array $verbs,
         public array $runsFor,
+        public bool $isInstalled,
     ) {}
 
     /**

@@ -28,6 +28,9 @@ enum Tone: string
     /** Something is under way. */
     case Working = 'working';
 
+    /** Nothing is wrong and nothing is there: a thing nobody asked for. */
+    case Quiet = 'quiet';
+
     /** The Material Symbol drawn on Android. */
     public function glyph(): string
     {
@@ -37,6 +40,7 @@ enum Tone: string
             self::Trouble => 'error',
             self::Unknown => 'help',
             self::Working => 'schedule',
+            self::Quiet => 'radio_button_unchecked',
         };
     }
 
@@ -49,6 +53,7 @@ enum Tone: string
             self::Trouble => 'exclamationmark.octagon.fill',
             self::Unknown => 'questionmark.circle.fill',
             self::Working => 'clock.fill',
+            self::Quiet => 'circle',
         };
     }
 }
