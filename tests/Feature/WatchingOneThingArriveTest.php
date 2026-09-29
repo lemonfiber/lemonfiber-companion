@@ -40,6 +40,7 @@ use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereItStoppedAsShown;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
@@ -96,7 +97,7 @@ function theWalkthroughScreen(
         $walking,
         $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         $left ?? WorkLeftRunningInMemory::working(),
         $narrating ?? AStackThatNarrates::holdingOpen(),
         $clock ?? FrozenClock::at(secondsIntoFollowingAWalk(0)),

@@ -7,9 +7,6 @@ namespace Modules\Operator\Internal\Screens;
 use function array_any;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\Hosting;
@@ -18,13 +15,12 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Kernel\Api\WhatTheHandoverDid;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAHandoverReads;
 use Modules\Operator\Internal\Presenters\HowHostingReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatKeepsRunningTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatOneUnattendedCommandSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHandoverShows;
@@ -100,7 +96,7 @@ final class WhatKeepsRunningHere extends NativeComponent
     public function __construct(
         private readonly Hosting $hosting,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /**
@@ -113,11 +109,7 @@ final class WhatKeepsRunningHere extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /**

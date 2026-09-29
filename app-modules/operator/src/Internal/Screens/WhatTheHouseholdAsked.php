@@ -7,9 +7,6 @@ namespace Modules\Operator\Internal\Screens;
 use function count;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Job;
@@ -19,12 +16,11 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Wanting;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheHouseholdsAskingReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
 use Modules\Operator\Internal\ViewModels\WhatTheHouseholdTurnedOutToWant;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -94,7 +90,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
     public function __construct(
         private readonly Wanting $wanting,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /**
@@ -107,11 +103,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /** How many are shown, which is what the empty state asks. */

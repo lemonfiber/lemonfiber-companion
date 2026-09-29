@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\Concealed;
@@ -18,13 +15,12 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\Presenters\HowACopyReads;
 use Modules\Operator\Internal\Presenters\HowAScopeReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
@@ -82,7 +78,7 @@ final class TakingACopyHere extends NativeComponent
         private readonly TakingCopies $copying,
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /**
@@ -93,11 +89,7 @@ final class TakingACopyHere extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /** Where this machine's screens are. */

@@ -7,9 +7,6 @@ namespace Modules\Operator\Internal\Screens;
 use Closure;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
@@ -25,8 +22,6 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
@@ -34,6 +29,7 @@ use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowTheUnratedChoiceReads;
 use Modules\Operator\Internal\Presenters\HowWhoIsInReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheUnratedChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\WhoIsInTurnedOutToBe;
@@ -128,18 +124,14 @@ final class AskingSomebodyIn extends NativeComponent
         private readonly Encoding $encoding,
         private readonly Sharing $sharing,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
         private readonly Translator $catalogue,
     ) {}
 
     /** The stack this screen is about, read from the route on every frame. */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /**

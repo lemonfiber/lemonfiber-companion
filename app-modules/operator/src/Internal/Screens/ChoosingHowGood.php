@@ -6,9 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\AFormatChoiceMade;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\AnUpgradeDescribed;
@@ -19,8 +16,6 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\UpgradingTheLibrary;
@@ -30,6 +25,7 @@ use Modules\Kernel\Api\WhatTheUpgradeCameTo;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAnUpgradeReads;
 use Modules\Operator\Internal\Presenters\HowTheQualityReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\AFormatChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\TheQualityTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheUpgradeTurnedOutToBe;
@@ -94,7 +90,7 @@ final class ChoosingHowGood extends NativeComponent
         private readonly ChoosingQuality $choosing,
         private readonly UpgradingTheLibrary $upgrades,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /**
@@ -105,11 +101,7 @@ final class ChoosingHowGood extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /**

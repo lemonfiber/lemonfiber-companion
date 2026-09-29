@@ -40,6 +40,7 @@ use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\ViewModels\ALineOfTheSurvey;
 use Modules\Operator\Internal\ViewModels\AModeAsShown;
 use Modules\Operator\Internal\ViewModels\AMoveAsShown;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackWithSomethingAlreadyOnIt;
 use Tests\Support\Fakes\StacksInMemory;
@@ -94,7 +95,7 @@ function theScreenForMovingIn(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatIsAlreadyOnThisMachine($movingIn, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatIsAlreadyOnThisMachine($movingIn, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

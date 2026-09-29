@@ -25,6 +25,7 @@ use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\ViewModels\AServiceAsCatalogued;
 use Modules\Operator\Internal\ViewModels\AServiceDroppedAsShown;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatCatalogues;
 use Tests\Support\Fakes\StacksInMemory;
@@ -88,7 +89,7 @@ function theCatalogueScreen(AStackThatCatalogues $catalogue, ?AKeychainInMemory 
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatEachServiceIsFor($catalogue, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatEachServiceIsFor($catalogue, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

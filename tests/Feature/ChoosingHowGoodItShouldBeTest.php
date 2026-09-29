@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
 use Modules\Operator\Internal\ViewModels\APresetAsShown;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatChoosesQuality;
 use Tests\Support\Fakes\AStackThatUpgrades;
@@ -115,7 +116,7 @@ function theQualityScreen(
         $choosing,
         $upgrades ?? AStackThatUpgrades::describing(anUpgradeOfTwoKinds(), anUpgradeCarriedOut()),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

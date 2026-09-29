@@ -32,6 +32,7 @@ use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\ViewModels\AMemberAsShown;
 use Modules\Operator\Internal\ViewModels\AnUnratedChoiceAsShown;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -108,7 +109,7 @@ function theInvitationScreen(
         $encoding ?? ACodeOfWhatItWasGiven::working(),
         $sharing ?? AShareSheetThatWasOffered::working(),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         app(Translator::class),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);

@@ -24,6 +24,7 @@ use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatGuards;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -75,7 +76,7 @@ function theGuardScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new GuardingWhileYouWatch($guarding, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, StacksInMemory::holding($stack));
+    $screen = new GuardingWhileYouWatch($guarding, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

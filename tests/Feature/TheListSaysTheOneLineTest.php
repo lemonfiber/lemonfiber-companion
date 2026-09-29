@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
@@ -268,7 +269,7 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
     $heard = new HowThisStackIs(
         AStackThatWasAsked::met(Obstacle::StackDidNotAnswer),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note', WhatStoppedMoving::nothing()))),
         FrozenClock::at(Instant::atEpochSeconds(NOW - 3)),
         ACaptureInMemory::inFront(),

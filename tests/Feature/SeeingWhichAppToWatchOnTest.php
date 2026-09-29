@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyPlaybackMayStruggle;
 use Modules\Operator\Internal\Screens\WhichAppToWatchOn;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatAdvises;
 use Tests\Support\Fakes\StacksInMemory;
@@ -82,7 +83,7 @@ function theAdviceScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhichAppToWatchOn($advising, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhichAppToWatchOn($advising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

@@ -24,6 +24,7 @@ use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
@@ -92,7 +93,7 @@ function theAtticsScreen(KeepingTheLastReading $keeping, AStackThatSpeaksUp $str
     $screen = new HowThisStackIs(
         AStackThatWasAsked::saying(Report::of(Overall::Healthy, Findings::of())),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         $stream,
         FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED)),
         ACaptureInMemory::inFront(),

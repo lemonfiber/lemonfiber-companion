@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ABundleFile;
@@ -22,12 +19,11 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowABundleReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
 use Modules\Operator\Internal\WhatHandingOverCameTo;
@@ -99,7 +95,7 @@ final class AskingForHelpHere extends NativeComponent
     public function __construct(
         private readonly AskingForHelp $helping,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
         private readonly Sharing $sharing,
     ) {}
 
@@ -111,11 +107,7 @@ final class AskingForHelpHere extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /** Where this machine's screens are. */

@@ -40,6 +40,7 @@ use Modules\Operator\Internal\ViewModels\ALineAsShown;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\AVolumeAsShown;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatMeasuresItsRoom;
@@ -103,7 +104,7 @@ function theRoomScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowFullThisMachineIs($measuring, $keychain, StacksInMemory::holding($stack), FrozenClock::at(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()));
+    $screen = new HowFullThisMachineIs($measuring, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_ROOM_IS_READ_AT)), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

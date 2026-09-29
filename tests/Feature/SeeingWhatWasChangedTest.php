@@ -24,6 +24,7 @@ use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\ViewModels\AMomentOnTheRecord;
 use Modules\Operator\Internal\ViewModels\WhatOneRecordedChangeSays;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsARecord;
 use Tests\Support\Fakes\FrozenClock;
@@ -84,7 +85,7 @@ function theRecordScreen(
     $screen = new WhatWasChangedHere(
         $history,
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         FrozenClock::at(Instant::atEpochSeconds(THE_RECORD_IS_READ_AT)),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);

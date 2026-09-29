@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\AWalkthrough;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
@@ -21,8 +18,6 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatToWalk;
@@ -32,6 +27,7 @@ use Modules\Operator\Internal\HearsWhereTheWalkIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheWalkIsFollowedWith;
@@ -103,7 +99,7 @@ final class WatchingOneArrive extends NativeComponent
         private readonly WalkingThrough $walking,
         private readonly Explaining $explaining,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
         private readonly WorkLeftRunning $leftRunning,
         private readonly HearingTheWalk $hearingTheWalk,
         private readonly Clock $clock,
@@ -133,11 +129,7 @@ final class WatchingOneArrive extends NativeComponent
     /** The stack this screen is about, read from the route on every frame, for {@see WhatStoppedComingIn::stack()}'s reason. */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /** Walk through what was typed, or, with nothing typed, something the stack picks. */
