@@ -8,6 +8,7 @@ use Illuminate\View\View;
 
 use function is_string;
 
+use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Api\Queries\InCategory;
 use Modules\Health\Api\Queries\TheCauseBeforeItsSymptoms;
 use Modules\Health\Api\Queries\WorstFirst;
@@ -40,6 +41,7 @@ use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Operator\Internal\WhatItListensWith;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
+use Native\Mobile\Edge\Element;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -139,6 +141,7 @@ final class HowThisStackIs extends NativeComponent
         private readonly Clock $clock,
         private readonly Capture $capture,
         private readonly Standings $standings,
+        private readonly KeepingTheLastReading $keeping,
     ) {}
 
     /**
@@ -348,10 +351,30 @@ final class HowThisStackIs extends NativeComponent
         return $this->answered ??= $this->ask();
     }
 
+    /**
+     * The first frame, drawn before the stack is asked anything.
+     *
+     * The summary the phone kept, with when it was read, where it kept one: an
+     * operator opening a stack sees what it last said at once, and the fresh
+     * summary replaces it when the subscription carries one. Only where nothing
+     * was kept is the frame the platform's indicator, which is the one place a
+     * spinner belongs.
+     */
+    protected function placeholder(): Element|View
+    {
+        return $this->heardSoFar()->summary(
+            none: fn(): Element|View => parent::placeholder(),
+            // A summary held on opening is never current, since nothing has
+            // been heard yet; both arms draw what is held, with its age.
+            current: static fn(): View => view('operator::how-this-stack-was'),
+            asOf: static fn(): View => view('operator::how-this-stack-was'),
+        );
+    }
+
     /** The ports the one line is listened for with, which only this screen holds. */
     protected function listensWith(): WhatItListensWith
     {
-        return new WhatItListensWith($this->hearing, $this->clock, $this->capture, $this->standings);
+        return new WhatItListensWith($this->hearing, $this->clock, $this->capture, $this->standings, $this->keeping);
     }
 
     /**

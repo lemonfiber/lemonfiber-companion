@@ -41,6 +41,7 @@ app-modules/
   vault/                  secure storage, app lock            (N4)
   codes/                  QR codes another phone can scan
   seal/                   sealing what the phone keeps
+  health-kept/            the health readings the phone keeps
 
   dx/                     stand-ins for a stack, require-dev only
 ```
@@ -147,7 +148,7 @@ honestly is better than pretending.
 
 | | Rule | Enforced by |
 |---|---|---|
-| A1 | No Eloquent, no Active Record. Persistence is a port; adapters own the storage | arch: no `Illuminate\Database` outside adapters |
+| A1 | No Eloquent, no Active Record. Persistence is a port, and `Illuminate\Database` is named only in a store adapter — an adapter whose manifest requires `illuminate/database` | arch: no Eloquent and no query builder named anywhere (`ArchitectureTest`), and no `Illuminate\Database` in any module but a store or in the composition root (`OnlyAStoreReachesTheDatabaseTest`) |
 | A2 | No facades. Dependencies arrive through constructors | phpstan `disallowed-calls` |
 | A3 | No service location — `app()`, `resolve()`, `Container` | phpstan `disallowed-calls` |
 | A4 | No container-reaching helpers — `config()`, `cache()`, `view()`, `__()` and the rest — outside the composition root, `config/` and tests | phpstan `disallowed-calls` |
@@ -156,12 +157,23 @@ honestly is better than pretending.
 | A7 | `Illuminate\*` forbidden in `kernel` and every `capability` | arch: module kind |
 | A8 | `Native\Mobile\Facades\*` only in `device` and `vault` | phpstan `disallowed-calls` |
 | A9 | A service provider binds and does not work: no read, no request, no resolve in `register()`/`boot()` | phpstan: own rule |
+| A10 | A table belongs to one store: it carries its owner's prefix, is created only in that store's own `database/migrations`, and is named in no other module's code | arch: `OnlyAStoreReachesTheDatabaseTest`, over every module's sources and migrations and the composition root |
 
 **Why A1 is first.** An Eloquent model cannot be constructed without a database,
 so every test that touches one is an integration test wearing a unit test's
 clothes. It is also the single largest source of hidden IO in a Laravel codebase:
 a property access can issue a query. Neither is acceptable in a module that is
 supposed to be pure.
+
+**Why A1 and A10 give every store its own module.** What the phone keeps is
+decided by the capability it belongs to and stored by a small adapter of its
+own — `health` decides and `health-kept` stores — so that no module grows with
+every feature and a capability stays free of the framework. A store is
+recognised by what its manifest requires rather than by a list here, so one
+added tomorrow is governed the moment it declares the database. Its table is
+named for its owner, `health_readings`, so a row on disk says whose it is, and
+no other module names it: one owner that needs another's data asks that
+owner's capability, never its rows.
 
 **Why A7 costs something and is worth it.** Giving up `Collection` in domain code
 is a real loss of convenience. What it buys is a domain that does not move when
@@ -944,12 +956,12 @@ honestly described: the table reports green and a reader stops checking, which
 is strictly worse than an unchecked area, because an unchecked area gets
 reviewed by a person.
 
-**Why the floors are per tree.** One percentage across seventeen trees is an
+**Why the floors are per tree.** One percentage across eighteen trees is an
 average, and an average is true about what it covered and silent about what it
 covered over: a capability at 100% carries an adapter at 40% and the gate
 reports a pass. The clover report already holds the per-file numbers, so
 splitting it by directory costs nothing at the point of measurement and turns
-one number into seventeen.
+one number into eighteen.
 
 **A tree's floors are declared in the nearest manifest above it.** That is one
 principle applied three times rather than three cases:

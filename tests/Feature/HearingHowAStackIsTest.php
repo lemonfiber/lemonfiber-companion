@@ -46,6 +46,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // The one line on the screen the app opens a machine on, held from the core's
 // event stream rather than read.
@@ -150,6 +151,7 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
         $clock,
         $window,
         $standings,
+        WhatThePhoneKeeps::nothingYet(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -400,6 +402,7 @@ it('draws the summary it heard where the device would not keep the word', functi
         FrozenClock::at(secondsAfterOpening(0)),
         ACaptureInMemory::inFront(),
         StandingsInMemory::refusing(),
+        WhatThePhoneKeeps::nothingYet(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->listen();

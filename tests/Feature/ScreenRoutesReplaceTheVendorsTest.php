@@ -27,6 +27,7 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\WhatThePhoneKeeps;
 
 // Runs the composition root rather than reading it, so its mutants are judged
 // here: see `scripts/mutation.php`.
@@ -403,6 +404,8 @@ function aScreen(): YourStacks
         StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
         new Opening(ADeviceThatKnowsYou::willing(), StacksInMemory::working(), ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
     );
 }
 

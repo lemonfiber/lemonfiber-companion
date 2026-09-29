@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\ClearingWhatCannotBeRead;
 use Modules\Connection\Api\Opening;
+use Modules\Connection\Api\WhatWasKeptAtOpening;
+use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
@@ -119,6 +122,15 @@ final class YourStacks extends NativeComponent
      */
     public WhereTheFirstRunIs $firstRunAt = WhereTheFirstRunIs::WhatThisIs;
 
+    /**
+     * What became of the phone's saved data when the app opened, once asked.
+     *
+     * Held so that the opening is asked once per screen: the seal says a key
+     * was made just now exactly once, and a frame that asked again would lose
+     * the one line that says what was cleared.
+     */
+    public ?WhatWasKeptAtOpening $saved = null;
+
     public function __construct(
         private readonly Stacks $stacks,
         private readonly SecureStorage $storage,
@@ -126,6 +138,8 @@ final class YourStacks extends NativeComponent
         private readonly Standings $standings,
         private readonly Clock $clock,
         private readonly Opening $opening,
+        private readonly ClearingWhatCannotBeRead $clearing,
+        private readonly KeepingTheLastReading $keeping,
     ) {}
 
     /**
@@ -458,6 +472,25 @@ final class YourStacks extends NativeComponent
                 return new WhatTheSharingDid();
             },
         );
+    }
+
+    /**
+     * Whether the phone cleared what it kept when the app opened, which is said once.
+     *
+     * The opening's housekeeping, done on the first frame past the lock and
+     * never behind it: nothing kept is read, cleared or drawn while the app is
+     * locked. The seal is asked first, before anything kept is opened, and a
+     * key made afresh clears every store; then every reading kept longer than
+     * a reading is kept for is let go of.
+     */
+    public function savedDataWasCleared(): bool
+    {
+        if (! $this->saved instanceof WhatWasKeptAtOpening) {
+            $this->saved = $this->clearing->onOpening();
+            $this->keeping->forgetTheOld($this->clock->now());
+        }
+
+        return $this->saved === WhatWasKeptAtOpening::Cleared;
     }
 
     /**

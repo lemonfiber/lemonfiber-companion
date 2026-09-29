@@ -27,6 +27,7 @@ use Modules\Device\Api\PlatformShare;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
+use Modules\HealthKept\Api\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Advising;
@@ -42,7 +43,9 @@ use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
+use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\Guarding;
+use Modules\Kernel\Api\HealthReadingsKept;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\History;
@@ -166,6 +169,9 @@ final class CompositionRoot extends ServiceProvider
 {
     /** Where the platform reads what to install this application as. */
     private const string WHAT_THE_PLATFORM_INSTALLS_US_AS = 'nativephp.app_id';
+
+    /** The tag every store of what the phone keeps is registered under. */
+    private const string WHAT_THE_PHONE_KEEPS = 'what-the-phone-keeps';
 
     public function register(): void
     {
@@ -329,6 +335,25 @@ final class CompositionRoot extends ServiceProvider
         // seal: Laravel's encrypter under the phone's own key, never under the
         // framework's.
         $this->app->bind(Sealed::class, EncrypterSeal::class);
+
+        // The newest health reading of each stack, in the app's own database.
+        // Named by class: its one dependency is the database connection the
+        // framework already binds, so the decision this line makes is which
+        // store. What reaches it is sealed first, by `health`, so the database
+        // file beside the framework's own key holds nothing that key could
+        // open.
+        $this->app->bind(HealthReadingsKept::class, HealthReadingsInTheDatabase::class);
+
+        // Every store of what the phone keeps, registered under one tag and
+        // cleared together where the seal's key had to be made afresh: what
+        // was sealed under the old key cannot be opened under the new one. A
+        // store is added to what is cleared by adding it here, and nothing
+        // that clears has to know how many there are.
+        $this->app->tag([HealthReadingsKept::class], self::WHAT_THE_PHONE_KEEPS);
+        $this->app->when(EveryStoreThePhoneKeeps::class)
+            ->needs(ForgetsEverythingKept::class)
+            ->giveTagged(self::WHAT_THE_PHONE_KEEPS);
+        $this->app->bind(ForgetsEverythingKept::class, EveryStoreThePhoneKeeps::class);
 
         // Whether this device is on a network at all, which is the one question
         // about reaching a stack that can be answered without sending anything.
