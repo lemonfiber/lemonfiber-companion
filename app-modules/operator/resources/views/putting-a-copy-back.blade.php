@@ -19,7 +19,7 @@
     {{-- What the stack did, drawn from its report and never from the
          listing above it, so a rehearsal cannot read as a restore. --}}
     @if (! $this->done()->went->cameBack())
-        <x-operator::what-stopped-the-reading
+        <x-operator::what-stood-in-the-way
             :went="$this->done()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />

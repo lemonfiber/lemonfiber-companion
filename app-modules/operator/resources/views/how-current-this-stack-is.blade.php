@@ -152,7 +152,7 @@
     <x-design::heading>{{ __('updates.last_update') }}</x-design::heading>
 
     @if (! $this->lastUpdate()->went->cameBack())
-        <x-operator::what-stopped-the-reading
+        <x-operator::what-stood-in-the-way
             :went="$this->lastUpdate()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />

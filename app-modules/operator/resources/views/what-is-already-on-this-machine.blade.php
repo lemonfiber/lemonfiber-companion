@@ -150,7 +150,7 @@
     @else
         {{-- Asking, or asking after it, met something: said where the answer
              would have been, with the way back. --}}
-        <x-operator::what-stopped-the-reading
+        <x-operator::what-stood-in-the-way
             :went="$this->howTheMoveIsGoing()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />

@@ -86,7 +86,7 @@
             <x-design::heading>{{ __('health.came_to.heading') }}</x-design::heading>
 
             @if (! $this->whatItCameTo()->went->cameBack())
-                <x-operator::what-stopped-the-reading
+                <x-operator::what-stood-in-the-way
                     :went="$this->whatItCameTo()->went"
                     :sign-in-goes-to="$this->goes()->signIn()"
                 />
@@ -160,7 +160,7 @@
             <x-design::note>{{ __('health.rehearsal.nothing_started') }}</x-design::note>
 
             @if (! $this->rehearsal()->went->cameBack())
-                <x-operator::what-stopped-the-reading
+                <x-operator::what-stood-in-the-way
                     :went="$this->rehearsal()->went"
                     :sign-in-goes-to="$this->goes()->signIn()"
                 />
