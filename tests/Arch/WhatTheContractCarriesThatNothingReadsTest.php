@@ -808,10 +808,9 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'path' => 'SpaceEnvelope.agreement',
         'because' => 'What the offer to reclaim names itself, so that an answer to it can say which offer it '
             . 'was answering. It exists for the cleanup of what costs nothing, which this app does not ask '
-            . 'for: the `space` action takes a bare `confirm` rather than this name, and its answer does not '
-            . 'say whether the cleanup was rehearsed (`N12-R8`). The row for `N12-R8` in '
-            . '`WhatTheContractDoesNotCarryTest` holds the rest. Stopping seeding one download is the removal '
-            . 'this app offers, and it reads that offer\'s own name.',
+            . 'for: the SDK\'s `space` endpoint takes nothing, so a caller can neither confirm the cleanup nor '
+            . 'name this offer. Stopping seeding one download is the removal this app offers, and it reads '
+            . 'that offer\'s own name.',
     ],
     [
         'path' => 'SpaceEnvelope.reclaimed',
