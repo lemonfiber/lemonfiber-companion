@@ -186,6 +186,10 @@ parameters:
                 # Likewise the base test case: booting the application is the
                 # whole reason Tests\TestCase exists.
                 - Illuminate\Foundation\Testing\TestCase
+                # A migration, which the migrator instantiates and runs: a
+                # store adapter's table is created by one in its own
+                # `database/migrations`, and there is no other way to be one.
+                - Illuminate\Database\Migrations\Migration
                 # The plugin's scanner builder, so a suite can run the scanner
                 # adapter at all. `PendingScanner::scan()` reaches
                 # `nativephp_call()`, which is a no-op off a handset — so the
@@ -687,13 +691,34 @@ parameters:
             class: 'Illuminate\Support\Facades\*'
             # Storage has its own entry below: it is banned for being IO, in
             # two more places than a facade is banned for being a facade.
-            exclude: 'Illuminate\Support\Facades\Storage'
+            # Schema has its own entry below too: it is the one facade a
+            # migration has, and a store adapter's migration is allowed it.
+            exclude:
+                - 'Illuminate\Support\Facades\Storage'
+                - 'Illuminate\Support\Facades\Schema'
             message: "A2 — no facades. A facade is a global lookup that no constructor mentions and no test can substitute without touching global state. Type the contract (Illuminate\\Contracts\\*) as a constructor parameter and bind it in bootstrap/Composition, or — inside a module — define a port in Modules\\Kernel\\Api and keep Illuminate out entirely (A2, A7)."
             allowIn:
                 - bootstrap/Composition/*
                 - config/*
                 # routes/console.php is Artisan's own registration file: the
                 # facade there IS the composition, not a reach into one.
+                - routes/*
+                - tests/*
+                - app-modules/*/tests/*
+                - bridge/tests/*
+
+        # --- A2, for a migration: the schema is reached the one way it can be
+        #
+        # A migration is instantiated by the migrator and given nothing, so the
+        # schema builder reaches it through the facade or not at all. Allowed
+        # in a module's own migrations and wherever a facade already is.
+        -
+            class: 'Illuminate\Support\Facades\Schema'
+            message: "A2 — no facades. The Schema facade is how a migration reaches the schema builder, and a table is created only in its store adapter's own migrations, in app-modules/<store>/database/migrations (A2, A10)."
+            allowIn:
+                - app-modules/*/database/migrations/*
+                - bootstrap/Composition/*
+                - config/*
                 - routes/*
                 - tests/*
                 - app-modules/*/tests/*

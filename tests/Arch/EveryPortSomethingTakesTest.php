@@ -42,10 +42,6 @@ const NOTHING_TAKES_IT_YET = [
         . 'without naming the SDK. `Modules\Sdk\Api\Clients` extends it and is what every adapter '
         . 'that opens a connection takes, because those adapters call the client\'s own methods and '
         . 'the port answers `object`. Nothing takes the kernel\'s spelling until a capability does.',
-    'Sealed' => 'The seal is written and bound, with its keys, and the owners that will seal what they '
-        . 'keep before a store sees it — health, updates, household, stacks, connection and device — '
-        . 'have no store yet. Bound now so that the decision that it is `EncrypterSeal`, under keys '
-        . 'the platform holds, is recorded where every other binding is.',
 ];
 
 /**
@@ -55,7 +51,7 @@ const NOTHING_TAKES_IT_YET = [
  * number that may not rise, which is the whole of what makes the list mean
  * anything.
  */
-const HOW_MANY_MAY_WAIT = 3;
+const HOW_MANY_MAY_WAIT = 2;
 
 /**
  * Every port the composition root binds, by its short name.

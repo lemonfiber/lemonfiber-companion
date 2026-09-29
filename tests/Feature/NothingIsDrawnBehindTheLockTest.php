@@ -19,6 +19,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // What the lock is for, and what it hides.
 //
@@ -57,6 +58,8 @@ function theScreenOnADeviceThat(ADeviceThatKnowsYou $device, Stack ...$paired): 
         StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_LAUNCHED)),
         new Opening($device, $stacks, ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
     );
 }
 

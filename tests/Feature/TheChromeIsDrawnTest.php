@@ -27,6 +27,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // The chrome, asked of a rendered frame rather than of a template's text.
 //
@@ -68,6 +69,7 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
         ACaptureInMemory::inFront(),
         StandingsInMemory::working(),
+        WhatThePhoneKeeps::nothingYet(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -107,6 +109,8 @@ it('the word a frame opens on is drawn, with its age', function (): void {
         $standings,
         FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CHROME_WAS_DRAWN)),
         new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
     );
 
     $drawn = WhatTheDeviceWouldDraw::by($screen);

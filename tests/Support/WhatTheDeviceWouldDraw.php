@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use function array_key_exists;
+
+use Closure;
+
 use function in_array;
 use function is_array;
 use function is_string;
@@ -110,19 +113,21 @@ final readonly class WhatTheDeviceWouldDraw
      */
     public static function tree(NativeComponent $screen): array
     {
-        $was = NativeTagPrecompiler::setActive(active: true);
+        return self::treeMadeBy($screen, $screen->render(...));
+    }
 
-        try {
-            $tree = self::rendered($screen);
-        } finally {
-            NativeTagPrecompiler::setActive(active: $was);
-        }
-
-        $id = 1;
-        $emitted = [];
-        $hashes = [];
-
-        return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
+    /**
+     * The frame a screen draws before its `mount()` runs, the way the device draws it.
+     *
+     * A `#[Lazy]` screen publishes this first, and it is the frame an operator
+     * sees while the stack is asked anything.
+     */
+    public static function whileItOpens(NativeComponent $screen): self
+    {
+        return new self(self::collect(self::treeMadeBy(
+            $screen,
+            new ReflectionObject($screen)->getMethod('placeholder')->getClosure($screen),
+        )));
     }
 
     /**
@@ -168,6 +173,30 @@ final readonly class WhatTheDeviceWouldDraw
     }
 
     /**
+     * The tree one of a screen's frames hands the device, drawn as the device draws it.
+     *
+     * @param Closure(): mixed $making what the screen answers with for the frame: its render, or its placeholder
+     *
+     * @return array<array-key, mixed>
+     */
+    private static function treeMadeBy(NativeComponent $screen, Closure $making): array
+    {
+        $was = NativeTagPrecompiler::setActive(active: true);
+
+        try {
+            $tree = self::rendered($screen, $making());
+        } finally {
+            NativeTagPrecompiler::setActive(active: $was);
+        }
+
+        $id = 1;
+        $emitted = [];
+        $hashes = [];
+
+        return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
+    }
+
+    /**
      * The screen's own render path, which is protected and is the point.
      *
      * A screen may answer with an element or with a view, and the second is the
@@ -176,10 +205,8 @@ final readonly class WhatTheDeviceWouldDraw
      * seam to the package keeps the production path exactly the one the handset
      * takes.
      */
-    private static function rendered(NativeComponent $screen): Element
+    private static function rendered(NativeComponent $screen, mixed $made): Element
     {
-        $made = $screen->render();
-
         if ($made instanceof Element) {
             return $made;
         }

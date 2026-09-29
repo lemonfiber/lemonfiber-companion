@@ -31,6 +31,16 @@
         </x-design::notice>
     @endif
 
+    {{-- Said once, on the first frame past the lock: the phone's key had gone,
+         so what it kept could no longer be read and was cleared. The pairings
+         stayed, which is the half an operator needs to hear before they worry
+         about the list below. --}}
+    @if ($this->savedDataWasCleared())
+        <x-design::notice tone="attention">
+            <x-design::body>{{ __('connection.saved_data_cleared') }}</x-design::body>
+        </x-design::notice>
+    @endif
+
     @if ($this->nothingIsPairedYet())
         {{-- A sequence rather than a wall: one step per frame, each stating
              its own position, and pairing at the end of it.

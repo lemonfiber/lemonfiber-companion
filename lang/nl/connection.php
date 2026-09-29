@@ -77,4 +77,5 @@ return [
     'session_has_ended' => 'Je bent afgemeld bij deze stack.',
     'pair_again' => 'Opnieuw koppelen',
     'start_over' => 'Probeer opnieuw aan te melden',
+    'saved_data_cleared' => 'Opgeslagen gegevens zijn gewist omdat ze niet meer te lezen waren. Je stacks blijven gekoppeld.',
 ];

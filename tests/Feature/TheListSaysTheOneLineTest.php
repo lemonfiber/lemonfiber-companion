@@ -31,6 +31,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // The app opens on how each stack stands, and says when that was heard.
 //
@@ -65,6 +66,8 @@ function theOpeningScreen(Stack $stack, ?StandingsInMemory $standings = null): Y
         $standings ?? StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(NOW)),
         new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
     );
 }
 
@@ -184,6 +187,8 @@ it('keeps one stack\'s word apart from another\'s', function (): void {
         $standings,
         FrozenClock::at(Instant::atEpochSeconds(NOW)),
         new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
     );
 
     expect($screen->lastKnownOf($loft)->said)->toBe(HowItStands::Broken->saidOnTheScreen())
@@ -216,6 +221,7 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
         FrozenClock::at(Instant::atEpochSeconds(NOW - 3)),
         ACaptureInMemory::inFront(),
         $standings,
+        WhatThePhoneKeeps::nothingYet(),
     );
     $heard->setParams(['stack' => $stack->id()->stored()]);
     $heard->listen();

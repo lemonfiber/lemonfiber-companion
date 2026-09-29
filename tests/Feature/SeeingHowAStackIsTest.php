@@ -45,6 +45,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatThePhoneKeeps;
 
 // An operator away from the machine can see whether their stack is
 // doing what it should.
@@ -122,7 +123,7 @@ function theHealthScreen(
     $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working());
+    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -288,7 +289,7 @@ it('N1-R44 — asking again notices a session that has ended underneath them', f
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
 
-    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working());
+    $screen = new HowThisStackIs($asking, $keychain, StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue();
@@ -340,7 +341,7 @@ it('N1-R44 — a session that has ended sends them to sign in rather than to an 
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
     $stack = theStackBeingLookedAt();
 
-    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working());
+    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), StacksInMemory::holding($stack), AStackThatSpeaksUp::holdingOpen(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), ACaptureInMemory::inFront(), StandingsInMemory::working(), WhatThePhoneKeeps::nothingYet());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()

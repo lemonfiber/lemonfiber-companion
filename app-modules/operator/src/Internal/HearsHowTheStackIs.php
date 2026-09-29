@@ -41,6 +41,11 @@ use Native\Mobile\Edge\NativeComponent;
  * goes into {@see \Modules\Kernel\Api\Standings} as it arrives, and the list
  * reads it from there.
  *
+ * **Every summary it hears is kept for the next opening**, through
+ * {@see \Modules\Health\Api\KeepingTheLastReading}, which seals it first. A
+ * screen opening on a stack starts from that summary, as of when it was read,
+ * rather than from nothing.
+ *
  * @phpstan-require-extends NativeComponent
  */
 trait HearsHowTheStackIs
@@ -145,9 +150,16 @@ trait HearsHowTheStackIs
     /** The ports this screen listens with, handed over by the screen that holds them. */
     abstract protected function listensWith(): WhatItListensWith;
 
+    /**
+     * What this screen holds, which on opening is what the phone kept.
+     *
+     * The summary kept from an earlier session, as of when it was read, or
+     * nothing where none was kept: the first frame draws it with its age, and
+     * the first summary the subscription carries replaces it.
+     */
     private function heardSoFar(): WhatWasHeardSoFar
     {
-        return $this->heard ??= WhatWasHeardSoFar::nothingYet();
+        return $this->heard ??= $this->listensWith()->keeping->lastKept($this->stack()->id());
     }
 
     /**
@@ -169,21 +181,24 @@ trait HearsHowTheStackIs
     }
 
     /**
-     * Keep the word a summary said, with when it was heard, and hand back what was heard.
+     * Keep what a summary said, with when it was heard, and hand back what was heard.
      *
-     * What the store answers is not looked at: a word that could not be kept
-     * costs the list that row's word, and this screen is showing the summary
+     * Twice over: the word for the list, and the whole summary for the next
+     * time this screen opens. What either store answers is not looked at: a
+     * summary that could not be kept costs the list that row's word and the
+     * next opening its first frame, and this screen is showing the summary
      * either way.
      */
     private function kept(WhatWasHeard $heard, Stack $stack, Instant $now): WhatWasHeard
     {
-        $standings = $this->listensWith()->standings;
+        $with = $this->listensWith();
 
         return $heard->either(
             nothing: static fn(): WhatWasHeard => $heard,
             alive: static fn(): WhatWasHeard => $heard,
-            said: static function (TheHealthSummary $summary) use ($standings, $heard, $stack, $now): WhatWasHeard {
-                $standings->remember($stack->id(), $summary->standing(), $now);
+            said: static function (TheHealthSummary $summary) use ($with, $heard, $stack, $now): WhatWasHeard {
+                $with->standings->remember($stack->id(), $summary->standing(), $now);
+                $with->keeping->keep($stack->id(), $summary, $now);
 
                 return $heard;
             },

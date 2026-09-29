@@ -54,6 +54,19 @@ final readonly class WhatWasHeardSoFar
         return new self(null, null, null, null);
     }
 
+    /**
+     * A screen opening on a summary kept from an earlier session.
+     *
+     * Held as not current, as a summary from before a break is: it is what was
+     * last heard, drawn with when it was read, and the first summary the
+     * subscription carries replaces it. There is no break to wait out, so the
+     * subscription opens at once.
+     */
+    public static function keptFrom(TheHealthSummary $summary, Instant $readAt): self
+    {
+        return new self(ASummaryHeard::keptFrom($summary, $readAt), null, null, null);
+    }
+
     /** What the screen holds once the subscription has answered at `$now`. */
     public function after(WhatWasHeard $heard, Instant $now): self
     {

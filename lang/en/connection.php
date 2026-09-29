@@ -77,4 +77,5 @@ return [
     'session_has_ended' => 'You are signed out of this stack.',
     'pair_again' => 'Pair it again',
     'start_over' => 'Try signing in again',
+    'saved_data_cleared' => 'Saved data was cleared because it could no longer be read. Your stacks are still paired.',
 ];

@@ -27,6 +27,12 @@ final readonly class ASummaryHeard
         return new self($summary, $at, current: true);
     }
 
+    /** A summary kept from an earlier session, which stands for nothing current. */
+    public static function keptFrom(TheHealthSummary $summary, Instant $at): self
+    {
+        return new self($summary, $at, current: false);
+    }
+
     public function noLongerCurrent(): self
     {
         return new self($this->summary, $this->at, current: false);

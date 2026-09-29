@@ -35,7 +35,10 @@ namespace Modules\Kernel\Api;
  */
 enum Shape: int
 {
-    /** The first layout: a paired stack, its address and its fingerprint. */
+    /**
+     * The first layout: a paired stack, its address and its fingerprint, and a
+     * stack's health summary as `health` writes it before sealing it.
+     */
     case One = 1;
 
     /** The shape this build writes into anything it retains. */

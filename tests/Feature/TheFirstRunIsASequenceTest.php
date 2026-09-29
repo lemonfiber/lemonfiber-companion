@@ -19,6 +19,7 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\WhatThePhoneKeeps;
 
 // The first run is a sequence, not a wall.
 //
@@ -60,6 +61,8 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_WAS_FIRST_RUN)),
         new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
     );
 }
 

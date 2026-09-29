@@ -378,7 +378,7 @@ jobs:
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       # Writes the clover report the floors gate reads. One run produces both
-      # the global number and the seventeen per-tree ones. It also writes the
+      # the global number and the eighteen per-tree ones. It also writes the
       # coverage map every mutation shard reads, and how long the run took,
       # which is what each mutant is timed out against: the shards open on the
       # canary rather than on this whole suite again. The upload below errors

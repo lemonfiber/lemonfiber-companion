@@ -64,6 +64,27 @@ it('holds nothing before it has listened, and may listen at once', function (): 
         ->and($heard->hasGoneQuiet(secondsIn(3_600)))->toBeFalse();
 });
 
+it('opens on a kept summary as of when it was read, and may listen at once', function (): void {
+    $heard = WhatWasHeardSoFar::keptFrom(aSummaryThatSays(HowItStands::Degraded), secondsIn(-3_600));
+
+    expect(theSummaryHeld($heard))->toBe('degraded as of -3600')
+        ->and(whatStoppedIt($heard))->toBe('nothing')
+        ->and($heard->isListening())->toBeFalse()
+        ->and($heard->mayListen(secondsIn(0)))->toBeTrue()
+        ->and($heard->hasGoneQuiet(secondsIn(0)))->toBeFalse();
+});
+
+it('replaces a kept summary with the first one the subscription carries', function (): void {
+    $heard = WhatWasHeardSoFar::keptFrom(aSummaryThatSays(HowItStands::Degraded), secondsIn(-3_600))
+        ->after(WhatWasHeard::nothing(), secondsIn(0));
+
+    expect(theSummaryHeld($heard))->toBe('degraded as of -3600');
+
+    $heard = $heard->after(WhatWasHeard::said(aSummaryThatSays(HowItStands::Healthy)), secondsIn(2));
+
+    expect(theSummaryHeld($heard))->toBe('current healthy');
+});
+
 it('counts silence from the moment a subscription opened, until twice the heartbeat has passed', function (): void {
     $heard = WhatWasHeardSoFar::nothingYet()->after(WhatWasHeard::nothing(), secondsIn(0));
 

@@ -158,6 +158,68 @@ final readonly class Framework
                 }
                 PHP, 'A7/E4 — health', 'Illuminate'),
 
+            // Planted in an adapter, which may name the framework, so that what
+            // this breaks is which module may reach the database rather than
+            // which kind of module may reach for Illuminate at all.
+            Fixture::suite('A1', 'app-modules/codes/src/Fixtures/ReachesTheDatabase.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Codes\Fixtures;
+
+                use Illuminate\Database\ConnectionInterface;
+
+                final readonly class ReachesTheDatabase
+                {
+                    public function __construct(private ConnectionInterface $database) {}
+
+                    public function kept(): int
+                    {
+                        return $this->database->table('codes_drawn')->count();
+                    }
+                }
+                PHP, 'A1 — Illuminate\\Database is named only in a store adapter'),
+
+            // A table created in the right place under the wrong name: a store's
+            // own migration, making a table that does not say whose it is.
+            Fixture::suite('A10', 'app-modules/health-kept/database/migrations/2026_09_29_000001_create_readings_nobody_owns.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                use Illuminate\Database\Migrations\Migration;
+                use Illuminate\Database\Schema\Blueprint;
+                use Illuminate\Support\Facades\Schema;
+
+                return new class extends Migration {
+                    public function up(): void
+                    {
+                        Schema::create('readings', static function (Blueprint $table): void {
+                            $table->string('stack_hash')->primary();
+                        });
+                    }
+                };
+                PHP, 'A10 — a table carries its owner'),
+
+            // A module reading a table another store owns, which is the store
+            // growing by the back door.
+            Fixture::suite('A10', 'app-modules/codes/src/Fixtures/ReadsAnotherStoresTable.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Codes\Fixtures;
+
+                final readonly class ReadsAnotherStoresTable
+                {
+                    public function table(): string
+                    {
+                        return 'health_readings';
+                    }
+                }
+                PHP, 'A10 — no module names a table another module owns'),
+
             Fixture::analyser('A8', 'Plain/UsesPlatformFacade.php', <<<'PHP'
                 <?php
 

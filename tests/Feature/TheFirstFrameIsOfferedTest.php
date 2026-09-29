@@ -27,6 +27,7 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\WhatThePhoneKeeps;
 
 /** A stack this device is already paired with. */
 function aPairedStack(string $called, string $seed = 'a'): Stack
@@ -77,6 +78,8 @@ function theLaunchScreen(
         $standings ?? StandingsInMemory::working(),
         $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_770_000_000)),
         $opening ?? new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
     );
 }
 

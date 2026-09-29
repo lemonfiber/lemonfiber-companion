@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Hearing;
@@ -23,5 +24,6 @@ final readonly class WhatItListensWith
         public Clock $clock,
         public Capture $capture,
         public Standings $standings,
+        public KeepingTheLastReading $keeping,
     ) {}
 }
