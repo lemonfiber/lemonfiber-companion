@@ -50,6 +50,7 @@ return [
     'approve' => 'Goedkeuren',
     'approve_that' => ':title goedkeuren',
     'turn_down' => 'Afwijzen',
+    'turn_down_that' => 'Wijs :title af',
     'turning_down' => ':title afwijzen',
     'turning_down_owes' => ':who ziet wat je hier schrijft, dus zeg genoeg zodat diegene het niet hoeft te komen vragen.',
     'reason_label' => 'Waarom niet',

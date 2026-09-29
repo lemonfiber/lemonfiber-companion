@@ -353,9 +353,9 @@ return [
             'let-through' => 'let through to them',
             'left_to_the_stack' => 'left to this stack to decide',
         ],
-        'hold_unrated_back' => 'Hold anything with no rating back',
-        'let_unrated_through' => 'Let anything with no rating through',
-        'leave_unrated_to_the_stack' => 'Leave unrated material to this stack',
+        'hold_unrated_back' => 'Hold it back',
+        'let_unrated_through' => 'Let it through',
+        'leave_unrated_to_the_stack' => 'Leave it to this stack',
         'needs_a_name' => 'Say who this is for: an invitation needs a name',
         'age_is_a_number' => 'An age limit is a whole number of years',
         'what_would_it_grant' => 'See what inviting them would do',
@@ -406,6 +406,7 @@ return [
         'taking_it_off_means' => 'The password :name has now stops working, and they choose a new one at the address this gives you. You never see or set it',
         'take_it_off' => 'Take the password off for :name',
         'never_mind' => 'Leave it as it is',
+        'never_mind_for' => 'Leave the password of :name as it is',
     ],
 
     // What is already on the machine, before anything is moved in.

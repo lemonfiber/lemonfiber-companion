@@ -31,6 +31,7 @@ use Modules\Kernel\Api\WhoWasTakenBack;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\ViewModels\AMemberAsShown;
+use Modules\Operator\Internal\ViewModels\AnUnratedChoiceAsShown;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -486,16 +487,41 @@ it('lets unrated material be held back, let through, or left to the stack', func
     $screen = theInvitationScreen(AStackThatInvites::answering());
 
     $screen->unratedIs('let-through');
-    $through = $screen->unratedSaid();
+    $through = $screen->unratedChoice()->said;
     $screen->unratedIs('held-back');
-    $back = $screen->unratedSaid();
+    $back = $screen->unratedChoice()->said;
     $screen->unratedIs('');
 
-    expect([$through, $back, $screen->unratedSaid()])->toBe([
+    expect([$through, $back, $screen->unratedChoice()->said])->toBe([
         WhatBecomesOfUnrated::LetThrough->saidOnTheScreen(),
         WhatBecomesOfUnrated::HeldBack->saidOnTheScreen(),
         'stacks.invitation.unrated.left_to_the_stack',
     ]);
+});
+
+it('offers every way unrated material can go as a chip, the one chosen marked', function (): void {
+    $screen = theInvitationScreen(AStackThatInvites::answering());
+    $chosenWith = static function (string $word) use ($screen): array {
+        $screen->unratedIs($word);
+
+        return array_map(
+            static fn(AnUnratedChoiceAsShown $choice): array => [$choice->said, $choice->word, $choice->chosen],
+            $screen->unratedChoice()->offered,
+        );
+    };
+
+    expect($chosenWith('held-back'))->toBe([
+        ['stacks.invitation.hold_unrated_back', 'held-back', true],
+        ['stacks.invitation.let_unrated_through', 'let-through', false],
+        ['stacks.invitation.leave_unrated_to_the_stack', '', false],
+    ])
+        ->and(array_column($chosenWith('let-through'), 2))->toBe([false, true, false])
+        ->and(array_column($chosenWith(''), 2))->toBe([false, false, true])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(
+            __('stacks.invitation.hold_unrated_back'),
+            __('stacks.invitation.let_unrated_through'),
+            __('stacks.invitation.leave_unrated_to_the_stack'),
+        );
 });
 
 it('opens on who is in: joined, or an invitation still out, and asks once a frame', function (): void {

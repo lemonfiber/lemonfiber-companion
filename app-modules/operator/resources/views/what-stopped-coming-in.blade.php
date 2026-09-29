@@ -5,37 +5,37 @@
     {{-- How many stopped, said before the list, so an operator who opened
          this because somebody in the house asked them to does not have to
          count rows. --}}
-    <x-operator::emphasis>
-        {{ trans_choice($this->answer()->countSaid, $this->howMany()) }}
-    </x-operator::emphasis>
+    <x-design::title>{{ trans_choice($this->answer()->countSaid, $this->howMany()) }}</x-design::title>
 
     {{-- Whether this is the whole of what the stack holds. Rendered in both
          cases rather than only when something is missing: a screen that is
          silent when a list is whole teaches an operator to read silence,
          and silence is also what a screen that forgot the flag produces. --}}
-    <x-operator::note>{{ __($this->answer()->shownSaid) }}</x-operator::note>
+    <x-design::note>{{ __($this->answer()->shownSaid) }}</x-design::note>
 
     {{-- What the stack could not look into, before the rows. An empty listing
          from a queue it could not reach is not good news, so this is its own
          answer rather than a footnote under one. --}}
     @unless ($this->answer()->unreached === [])
-        <x-operator::emphasis>{{ __('health.could_not_reach') }}</x-operator::emphasis>
-        <native:text>{{ __('health.could_not_reach_explained') }}</native:text>
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __('health.could_not_reach') }}</x-design::strong>
+            <x-design::body>{{ __('health.could_not_reach_explained') }}</x-design::body>
+        </x-design::notice>
+
+        <x-design::section>
+            @forelse ($this->answer()->unreached as $limit)
+                <x-design::row :headline="$limit->what" :supporting="$limit->because" />
+            @empty
+                {{-- Unreachable while the branch above guards it. A stack that
+                     reached everything it manages has nothing to add here: the
+                     plain count above already says so. --}}
+            @endforelse
+        </x-design::section>
     @endunless
 
-    @forelse ($this->answer()->unreached as $limit)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $limit->what }}</x-operator::emphasis>
-            <native:text>{{ $limit->because }}</native:text>
-        </x-operator::entry>
-    @empty
-        {{-- The stack reached everything it manages, which the plain count
-             above already says. --}}
-    @endforelse
-
     @forelse ($this->answer()->stalled as $item)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $item->title }}</x-operator::emphasis>
+        <x-design::card>
+            <x-design::strong>{{ $item->title }}</x-design::strong>
 
             {{-- Where it stopped and who has it. Both, because
                  either alone strands the operator — a stage with no service
@@ -48,46 +48,42 @@
                  in its place: the word is the one the contract carries, and
                  a phone that swapped it for its own would be speaking a
                  vocabulary nobody else does. --}}
-            <native:text>{{ __('health.at_stage', ['stage' => $item->stage]) }}</native:text>
-            <native:text>{{ __($item->stageSaid) }}</native:text>
+            <x-design::body>{{ __('health.at_stage', ['stage' => $item->stage]) }}</x-design::body>
+            <x-design::body>{{ __($item->stageSaid) }}</x-design::body>
             <x-operator::gloss :gloss="$this->gloss($item->stage)" />
-            <x-operator::note>
-                {{ __('health.stuck_in', ['service' => $item->service]) }}
-            </x-operator::note>
-
-            {{-- Where it got to, followed through every service rather than
-                 the one it stopped in. --}}
-            <x-operator::quiet-action label="{{ __('health.trace.road_in', ['item' => $item->title]) }}" :goes="$this->traceOf($item->title)" />
+            <x-design::note>{{ __('health.stuck_in', ['service' => $item->service]) }}</x-design::note>
 
             @unless ($item->stillMoving)
                 {{-- The two ends of the pipeline, where nothing is going to
-                     move it by itself. Said on the row rather than by
+                     move it by itself. Said on the card rather than by
                      sorting, because the operator is looking for a title
                      and not for a category. --}}
-                <x-operator::note>{{ __('health.stuck_for_good') }}</x-operator::note>
+                <x-design::note>{{ __('health.stuck_for_good') }}</x-design::note>
             @endunless
-        </x-operator::entry>
+
+            {{-- Where it got to, followed through every service rather than
+                 the one it stopped in. Last on the card, under what it is
+                 about. --}}
+            <x-design::link label="{{ __('health.trace.road_in', ['item' => $item->title]) }}" :goes="$this->traceOf($item->title)" />
+        </x-design::card>
     @empty
         {{-- Not the same screen as a stack that could not be asked. Nothing
              stuck is the answer the operator wants, and saying so is what
-             tells it apart from the obstacle branch above. --}}
+             tells it apart from the obstacle branch. --}}
         @if ($this->answer()->unreached === [])
-            <x-operator::emphasis>{{ __('health.nothing_stopped') }}</x-operator::emphasis>
-            <native:text>{{ __('health.nothing_stopped_action') }}</native:text>
+            <x-design::standing :said="__('health.nothing_stopped')" tone="fine" :note="__('health.nothing_stopped_action')" />
         @endif
     @endforelse
 
-    {{-- A screen an operator cannot ask again is a screen that relies
-         on being left and returned to, which is the one thing the requirement
-         names. It sat on the obstacle arm only — so a reading that failed could
-         be retried and a reading that came back could not, which is the wrong
-         way round: somebody watching a stuck download or an update land is
-         looking at a screen they want to ask again.
+    {{-- Offered whether or not the reading came back: somebody watching a
+         stuck download is looking at a screen they want to ask again, and a
+         screen that can only be refreshed by leaving it and coming back is
+         one they cannot reason about.
 
          Last, under what it is about, for the health screen's reason: somebody
          who has just changed something scrolls to the end of what they were
          reading, and that is where they want to ask whether it took. --}}
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
