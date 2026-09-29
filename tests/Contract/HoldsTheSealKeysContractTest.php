@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Native\Storage;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\HoldsTheSealKeys;
 use Modules\Kernel\Api\KeyHeld;
@@ -9,6 +10,7 @@ use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\SealKey;
 use Modules\Kernel\Api\WhyNothingIsSealed;
 use Modules\Vault\Api\PlatformSealKeys;
+use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\SealKeysInMemory;
 
@@ -23,6 +25,9 @@ use Tests\Support\Fakes\SealKeysInMemory;
 
 /** A key made on a first launch, as a seal would hand it in. */
 const THE_FIRST_KEY_MADE = 'the-first-key-made-for-this-test';
+
+/** The first key as the platform's store is sent it, written out rather than encoded here. */
+const THE_FIRST_KEY_MADE_AS_HEX = '7468652d66697273742d6b65792d6d6164652d666f722d746869732d74657374';
 
 /** A second key, handed in on a later ask, which must not replace the first. */
 const A_LATER_KEY_OFFERED = 'a-later-key-that-must-not-be-kep';
@@ -128,4 +133,37 @@ it('makes a key afresh where the one it held has gone', function (): void {
         expect(whichKeyCameBack($keys->readOrKeep(SealKey::TheDataKey, KeyMaterial::of(A_LATER_KEY_OFFERED))))
             ->toBe(sprintf('made:%s', A_LATER_KEY_OFFERED), $which);
     }
+});
+
+// Beyond the contract: what the adapter asks the device's store for, over
+// `nativephp/mobile`'s own bridge double, so the real call is what runs.
+
+it('PlatformSealKeys asks for a key to be readable only while the device is unlocked', function (): void {
+    FakeBridge::disable();
+    $bridge = FakeBridge::enable()
+        ->respondTo('Lemonfiber.Storage.Read', ['outcome' => 'nothing'])
+        ->respondTo('Lemonfiber.Storage.Keep', ['outcome' => 'kept', 'readable' => 'while_unlocked']);
+
+    new PlatformSealKeys(new Storage())->readOrKeep(SealKey::TheDataKey, KeyMaterial::of(THE_FIRST_KEY_MADE));
+
+    $bridge->assertCalled(
+        'Lemonfiber.Storage.Keep',
+        static fn(array $sent): bool => $sent['key'] === 'lemonfiber.seal.data'
+            && $sent['value'] === THE_FIRST_KEY_MADE_AS_HEX
+            && $sent['readable'] === 'while_unlocked',
+    );
+
+    FakeBridge::disable();
+});
+
+it('PlatformSealKeys refuses rather than making a key where the store read nothing and then would not keep one', function (): void {
+    FakeBridge::disable();
+    FakeBridge::enable()
+        ->respondTo('Lemonfiber.Storage.Read', ['outcome' => 'nothing'])
+        ->respondTo('Lemonfiber.Storage.Keep', ['outcome' => 'refused', 'because' => 'store_would_not_open']);
+
+    expect(whichKeyCameBack(new PlatformSealKeys(new Storage())->readOrKeep(SealKey::TheDataKey, KeyMaterial::of(THE_FIRST_KEY_MADE))))
+        ->toBe('refused:KeyUnreadable');
+
+    FakeBridge::disable();
 });

@@ -94,9 +94,11 @@ final readonly class PlatformSealKeys implements HoldsTheSealKeys
     /** The name one key is kept under. */
     private function nameOf(SealKey $which): string
     {
-        return sprintf('%s.%s', self::UNDER, match ($which) {
+        $key = match ($which) {
             SealKey::TheDataKey => 'data',
             SealKey::TheStackKey => 'stack',
-        });
+        };
+
+        return sprintf('%s.%s', self::UNDER, $key);
     }
 }
