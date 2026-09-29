@@ -98,8 +98,9 @@ it('N2-R7 — the frame is about the one thing the route names', function (): vo
         ->and($thing->isRun())->toBeTrue()
         ->and($thing->service?->name)->toBe('Sonarr')
         // The details that belong to the one thing rather than to the list.
-        // A row carrying all of them is a list nobody can scan.
-        ->and($thing->service?->leaning)->toBe(['jellyfin']);
+        // A row carrying all of them is a list nobody can scan. What leans on
+        // it is said by the name the operator knows, not the identifier.
+        ->and($thing->service?->leaning)->toBe(['Jellyfin']);
 });
 
 it('N2-R7 — a thing this machine is not running is an answer, not a blank frame', function (): void {
@@ -240,7 +241,9 @@ it('N2-R8 — states what will not work while it is off', function (): void {
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
 
-    expect($screen->thing()->service?->leaning)->toBe(['jellyfin']);
+    expect($screen->thing()->service?->leaning)->toBe(['Jellyfin'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Jellyfin')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain('jellyfin');
 });
 
 it('says a restart will not help where it is already looping', function (): void {
@@ -636,7 +639,7 @@ it('a rehearsal on a device holding no session for the stack says so', function 
         ->and($screen->rehearsal()->unestimated)->toBe([]);
 });
 
-it('says what a service that ended exited with', function (): void {
+it('says a service that ended stopped with an error, and leaves its exit code for its logs', function (): void {
     $ended = Daemons::of(
         HowTheStackIsRunning::Degraded,
         Forms::these(Form::called('library')),
@@ -645,6 +648,10 @@ it('says what a service that ended exited with', function (): void {
     );
     $screen = theThingScreen(AStackThatSupervises::with($ended));
 
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
     expect($screen->thing()->service?->exited)->toBe('137')
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.it_exited', ['code' => '137']));
+        ->and($screen->thing()->service?->carriedToTheLogs())->toBe(['exited' => '137'])
+        ->and($drawn)->toContain(__('health.it_stopped_with_an_error'))
+        ->and(implode("\n", $drawn))->not->toContain('137');
 });

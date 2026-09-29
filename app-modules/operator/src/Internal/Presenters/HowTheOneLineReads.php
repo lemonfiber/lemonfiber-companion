@@ -188,7 +188,6 @@ final readonly class HowTheOneLineReads
         }
 
         return new AnAffectedItemAsShown(
-            check: $item->check()->shown(),
             severity: $item->severity()->saidOnTheScreen(),
             summary: $item->summary(),
             meaning: $item->meaning(),

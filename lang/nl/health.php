@@ -293,6 +293,8 @@ return [
     'what_a_service_said' => 'Bekijk wat deze dienst zei',
     'what_that_service_said' => 'Bekijk wat :service zei',
     'logs_for' => 'Wat :service heeft gezegd',
+    'the_check_reported' => 'De controle meldde :code',
+    'it_stopped_with_exit_code' => 'Hij stopte met afsluitcode :code',
     'window_of' => 'De laatste :count regels die deze stack bewaarde. Er kan meer achter zitten.',
     'the_whole_of_it' => 'Alle :count regels die deze stack voor deze dienst heeft.',
     'search_label' => 'Zoek in deze regels',
@@ -344,7 +346,8 @@ return [
     // The supervising screen. The verbs above are the buttons; these are the
     // sentences around them — what a row says about itself, and what a stop is stated to
     // disturb before anybody agrees to it.
-    'it_exited' => 'Gestopt met :code',
+    'it_stopped_with_an_error' => 'Hij stopte met een fout',
+    'it_stopped_cleanly' => 'Hij stopte zonder fout',
     'host_runs_it' => 'Deze machine draait hem, niet de stack',
     'read_its_logs' => 'Lees wat hij gezegd heeft',
     'nothing_is_running' => 'Er draait niets op deze machine',

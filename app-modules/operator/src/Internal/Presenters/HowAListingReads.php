@@ -58,7 +58,7 @@ final readonly class HowAListingReads
                 continue;
             }
 
-            $row = new HowAServiceReads()->in($daemon);
+            $row = new HowAServiceReads()->in($daemon, $daemons);
             $rows[] = $row;
             $settling = $settling || $row->isSettling;
         }

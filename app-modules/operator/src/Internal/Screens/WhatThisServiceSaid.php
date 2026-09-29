@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAScrollbackReads;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
+use Modules\Operator\Internal\WhatTheLogsAreOpenedWith;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
@@ -124,6 +125,24 @@ final class WhatThisServiceSaid extends NativeComponent
         $named = $this->param('service');
 
         return ServiceId::called(is_string($named) ? $named : '');
+    }
+
+    /**
+     * The code a check reported about this service, where the road here carried one.
+     *
+     * Said above the lines rather than on the card that led here: a code is
+     * for whoever helps, and somebody reading the logs to find out what
+     * happened is where it is wanted.
+     */
+    public function reported(): string
+    {
+        return $this->carried(WhatTheLogsAreOpenedWith::Reported);
+    }
+
+    /** The exit code this service stopped with, where the road here carried one. */
+    public function exited(): string
+    {
+        return $this->carried(WhatTheLogsAreOpenedWith::Exited);
     }
 
     /** What somebody has typed, for the box to hold it. */
@@ -246,4 +265,10 @@ final class WhatThisServiceSaid extends NativeComponent
         );
     }
 
+    private function carried(WhatTheLogsAreOpenedWith $what): string
+    {
+        $carried = $this->data($what->value);
+
+        return is_string($carried) ? $carried : '';
+    }
 }

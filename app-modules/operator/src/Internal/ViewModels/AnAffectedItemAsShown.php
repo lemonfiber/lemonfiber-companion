@@ -15,7 +15,6 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class AnAffectedItemAsShown
 {
     /**
-     * @param string       $check      which check raised it, as the core names it
      * @param string       $severity   the key for how bad it is
      * @param string       $summary    what is wrong, in one line
      * @param string       $meaning    what it costs the operator
@@ -23,7 +22,6 @@ final readonly class AnAffectedItemAsShown
      * @param list<string> $downstream what else is wrong because of it
      */
     public function __construct(
-        public string $check,
         public string $severity,
         public string $summary,
         public string $meaning,

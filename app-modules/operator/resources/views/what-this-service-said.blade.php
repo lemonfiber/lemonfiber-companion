@@ -2,6 +2,16 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content from-the-end>
+    {{-- The code the road here carried, from a finding or from how the
+         service stopped: for whoever helps, and said above the lines, where
+         somebody finding out what happened is already reading. --}}
+    @if ($this->reported() !== '')
+        <x-design::note>{{ __('health.the_check_reported', ['code' => $this->reported()]) }}</x-design::note>
+    @endif
+    @if ($this->exited() !== '')
+        <x-design::note>{{ __('health.it_stopped_with_exit_code', ['code' => $this->exited()]) }}</x-design::note>
+    @endif
+
     {{-- The view is a window rather than the whole, said before the
          lines rather than under them. Both cases have a line — a screen
          silent when the bound cut nothing teaches an operator to read

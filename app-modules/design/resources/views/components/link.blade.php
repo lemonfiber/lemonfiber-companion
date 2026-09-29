@@ -1,5 +1,5 @@
 @if ($goes !== '')
-<native:pressable native:key="{{ $named }}" class="w-full min-h-12 flex-row items-center justify-between gap-2 py-2" a11y-label="{{ $named }}" :press-opacity="0.6" @navigate="$goes">
+<native:pressable native:key="{{ $named }}" class="w-full min-h-12 flex-row items-center justify-between gap-2 py-2" a11y-label="{{ $named }}" :press-opacity="0.6" @navigate="$goes, $carries">
     <native:text class="flex-1 text-base font-medium text-theme-text">{{ $label }}</native:text>
     <native:icon name="chevron_right" ios="chevron.right" :size="20" color="{{ $ink }}" dark-color="{{ $paper }}" />
 </native:pressable>

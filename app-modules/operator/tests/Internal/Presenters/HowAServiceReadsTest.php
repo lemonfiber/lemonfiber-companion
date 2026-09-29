@@ -9,11 +9,15 @@ use function it;
 
 use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\Daemons;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Operator\Internal\Presenters\HowAServiceReads;
+use Tests\Support\WhatAMachineRuns;
 
 /**
  * Every state a service can be in has the glyph an operator reads it by.
@@ -28,7 +32,7 @@ it('draws each state a service can be in with its own tone', function (HowAServi
         $runs,
         HowMuchItMatters::Important,
         WhatLeansOnIt::nothing(),
-    ));
+    ), Daemons::none(WhatAMachineRuns::whatTheVerbsCost()));
 
     expect($row->tone)->toBe($tone->value);
 })->with([
@@ -42,3 +46,53 @@ it('draws each state a service can be in with its own tone', function (HowAServi
     'crash-looping' => [HowAServiceRuns::CrashLooping, Tone::Trouble],
     'unhealthy' => [HowAServiceRuns::Unhealthy, Tone::Trouble],
 ]);
+
+it('says what leans on a service by the name the listing gives it, and by its identifier where the listing has none', function (): void {
+    $gluetun = Daemon::called(
+        'Gluetun',
+        ServiceId::called('gluetun'),
+        HowAServiceRuns::Failed,
+        HowMuchItMatters::Critical,
+        WhatLeansOnIt::these(ServiceId::called('qbittorrent'), ServiceId::called('unlisted')),
+    );
+    $qbittorrent = Daemon::called(
+        'qBittorrent',
+        ServiceId::called('qbittorrent'),
+        HowAServiceRuns::Running,
+        HowMuchItMatters::Important,
+        WhatLeansOnIt::nothing(),
+    );
+    $listing = Daemons::of(HowTheStackIsRunning::Degraded, Forms::none(), WhatAMachineRuns::whatTheVerbsCost(), $gluetun, $qbittorrent);
+
+    expect(new HowAServiceReads()->in($gluetun, $listing)->leaning)->toBe(['qBittorrent', 'unlisted']);
+});
+
+it('says whether a service stopped with an error, and carries its exit code to its logs', function (int $code, string $said): void {
+    $row = new HowAServiceReads()->in(Daemon::thatExited(
+        'Gluetun',
+        ServiceId::called('gluetun'),
+        HowAServiceRuns::Failed,
+        HowMuchItMatters::Critical,
+        WhatLeansOnIt::nothing(),
+        $code,
+    ), Daemons::none(WhatAMachineRuns::whatTheVerbsCost()));
+
+    expect($row->stoppedSaid)->toBe($said)
+        ->and($row->carriedToTheLogs())->toBe(['exited' => (string) $code]);
+})->with([
+    'with an error' => [1, 'health.it_stopped_with_an_error'],
+    'without one' => [0, 'health.it_stopped_cleanly'],
+]);
+
+it('says nothing about stopping, and carries nothing, for a service with no exit code', function (): void {
+    $row = new HowAServiceReads()->in(Daemon::called(
+        'Gluetun',
+        ServiceId::called('gluetun'),
+        HowAServiceRuns::Running,
+        HowMuchItMatters::Critical,
+        WhatLeansOnIt::nothing(),
+    ), Daemons::none(WhatAMachineRuns::whatTheVerbsCost()));
+
+    expect($row->stoppedSaid)->toBe('')
+        ->and($row->carriedToTheLogs())->toBe([]);
+});

@@ -26,11 +26,15 @@ final class Link extends Component
 
     public readonly string $paper;
 
+    /**
+     * @param array<string, string> $carries what the road hands the screen it opens, besides the route
+     */
     public function __construct(
         public readonly string $label,
         public readonly string $tap = '',
         public readonly string $goes = '',
         string $answersTo = '',
+        public readonly array $carries = [],
     ) {
         $this->named = $answersTo === '' ? $label : $answersTo;
         $this->ink = ThemeToken::Muted->light();
