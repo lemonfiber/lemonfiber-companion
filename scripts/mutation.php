@@ -27,10 +27,10 @@ declare(strict_types=1);
  * lines of shipped PHP the coverage floor holds and this file walked straight
  * past — silently, because the run still passed, over less.
  *
- * **Three arguments, all for CI.** `--list` prints the shards as a JSON array,
- * which is what a workflow matrix reads; `--shard=<id>` runs one of them; and
+ * **Three arguments, for spreading the run over several machines.** `--list`
+ * prints the shards as a JSON array; `--shard=<id>` runs one of them; and
  * `--shard=<id> --proof` prints what that shard's verdict depends on instead,
- * so a runner can skip a shard whose proof already passed. A
+ * so a machine can skip a shard whose proof already passed. A
  * shard is a run of files cut to about the same weight — the measured cost of
  * mutating their lines of code — out of every tree at one floor, so one large
  * tree is spread over several runners and several small ones share one. It is
@@ -133,7 +133,7 @@ const EVERY_TEST = [
 $root = dirname(__DIR__);
 
 // The same derivation the suite uses, reached the only way a script can reach
-// it. `--list` therefore needs an install on the runner that asks for it,
+// it. `--list` therefore needs an install on the machine that asks for it,
 // which is the price of the two of them never disagreeing.
 require sprintf('%s/vendor/autoload.php', $root);
 
@@ -242,12 +242,10 @@ $reach = $since === null ? null : whatTheChangeReaches($root, $since);
 
 $shards = shardsOf($byFloor, $held, $leftOut, $reach);
 
-// What a workflow matrix reads: one entry per runner. An empty array is a
-// legitimate answer — no tree holds code yet — and a matrix over it runs
-// nothing, which is why the job that aggregates the shards has to treat
-// "nothing ran" as a pass rather than as an absence. Slashes unescaped,
-// because a label names paths and `bootstrap\/Composition` is what a runner
-// would be labelled with otherwise.
+// One entry per shard. An empty array is a legitimate answer — no tree holds
+// code yet, or the change reaches none of it — and means there is nothing to
+// run. Slashes unescaped, because a label names paths and
+// `bootstrap\/Composition` is what a shard would be labelled with otherwise.
 if ($listing) {
     $matrix = [];
 
@@ -566,21 +564,20 @@ function runHeld(string $root, array $run): int
  * - A change to a module's own tests, or the bridge's, mutates that module's
  *   whole tree, because those tests are what judge its mutants.
  * - A changed test anywhere mutates every file its tests execute, read from
- *   the coverage map the tests job wrote; a deleted test, or no map to read,
- *   mutates everything.
+ *   the coverage map `MUTATION_SHARED_COVERAGE` names; a deleted test, or no
+ *   map to read, mutates everything.
  * - A change to what decides how the gate runs — a manifest, `phpunit.xml`,
  *   the Pest bootstrap, `tests/Support`, the application's bootstrap and
- *   config, this script and the workflow that runs it — mutates everything. A
+ *   config, this script and `.github/workflows/ci.yml` — mutates everything. A
  *   change to that workflow which only moves the revisions its actions are
  *   pinned at is not one: it mutates nothing by itself.
  * - Anything else — documentation, templates, translations, the lock, other
  *   workflows — mutates nothing by itself.
  *
  * A change can still reach a mutant in a file it did not touch: a template
- * that decides what a screen test sees, or a dependency the lock moved. The
- * run on `main` mutates what was reached since its last commit that passed,
- * and a shard's proof ({@see proofOf()}) covers those files, so a shard whose
- * proof they moved is run again rather than skipped.
+ * that decides what a screen test sees, or a dependency the lock moved. A
+ * shard's proof ({@see proofOf()}) covers those files, so a change to them
+ * changes the proof.
  *
  * Where git cannot say what changed, every path is mutated.
  *
@@ -843,7 +840,7 @@ function testKey(string $name): string
 /**
  * Whether a changed path decides how the gate runs, which mutates every path.
  *
- * The workflow that runs this is one such path, unless all its change did was
+ * `.github/workflows/ci.yml` is one such path, unless all its change did was
  * move the revisions its actions are pinned at.
  */
 function decidesHowTheGateRuns(string $root, string $since, string $path): bool
@@ -973,8 +970,8 @@ function mutate(string $root, int $floor, array $paths, ?string $group, array $l
  * The coverage map a run against the whole suite takes from the tests job, as
  * the environment the mutation plugin reads, or nothing where none was given.
  *
- * CI names the map the `tests` job wrote and how long that run took, in
- * `MUTATION_SHARED_COVERAGE` and `MUTATION_SUITE_SECONDS`, so a shard opens on
+ * `MUTATION_SHARED_COVERAGE` and `MUTATION_SUITE_SECONDS` name a map
+ * `composer test:report` wrote and how long that run took, so a shard opens on
  * the canary rather than on the whole suite a second time: see
  * scripts/patch_pest_mutate_shared_coverage.php. A run a group judges is never
  * given it, because that run's own opening run is the group and nothing else.
@@ -1161,9 +1158,8 @@ function isMeasured(string $root, string $path, array $measured): bool
  * A mutant is killed or not by the tests that run its line, against every line
  * those tests run, under the vendor tree and the files no coverage map records.
  * The digest is taken over the git blob of each of those files, so two commits
- * whose files agree prove the same thing, and a rebase over changes nothing in
- * it reached does not ask the shard again. Without the coverage map the tests
- * job wrote, what judges the shard cannot be told, so nothing is claimed.
+ * whose files agree have the same proof. Without a coverage map, what judges
+ * the shard cannot be told, so nothing is claimed.
  *
  * @param array{label: string, floor: int, files: list<string>, held: list<array{floor: int, path: string, group: string}>} $shard
  */

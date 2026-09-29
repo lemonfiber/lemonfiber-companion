@@ -1009,6 +1009,8 @@ invocation: trees sharing a floor share one run, because a floor of 100 admits
 no offsetting between them, and a tree whose floor differs gets its own. The
 path list comes from the same derivation the coverage floors do rather than
 being written out, which is what stops it going stale the day a tree is added.
+The invocation is `composer test:mutation`, run locally: mutation testing is not
+run in CI.
 
 **Why G6 is worth a rule of its own.** A committed `->only()` makes Pest run
 that one test and report green. Every other rule on this page stops holding, the

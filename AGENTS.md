@@ -153,7 +153,10 @@ checks and the reference comment. None of them runs from a clone.
 | Module manifests | `composer validate:modules` | Each module's own manifest, `--strict`. They generate the architecture rules, so a typo in one would otherwise disable a module's rules silently. |
 | Dependencies | `composer deps` | Unused and shadow dependencies. Plus `validate --strict`, `normalize`, `audit`. |
 | Tests | `composer test:report` | 100% line coverage. The Blade checks live here too, in `tests/Templates` — no analyser reads a template. |
-| Mutation | `composer test:mutation` | The floor declared for each tree the suite measures, in the manifest nearest it. |
+
+Mutation testing is not run in CI, and `composer ci` does not run it either;
+`composer test:mutation` runs it locally, at the floor declared for each tree the
+suite measures, in the manifest nearest it.
 
 `composer test:report` rather than `composer test:coverage`, which is the same run
 without the reports. `test:coverage` writes no clover, and `test:floors` and Sonar
