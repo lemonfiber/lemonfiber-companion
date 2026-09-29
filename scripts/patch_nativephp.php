@@ -307,6 +307,24 @@ SHIPS,
 BECOMES,
     ],
     [
+        // The theme store's `secondary` is the tonal button's fill, and
+        // Material draws a selected tab's label in its own `secondary`. One key
+        // cannot be both a quiet fill and a label that has to read on the bar,
+        // so Material's is the surface's text colour, and the store's stays the
+        // button's.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeUITheme.kt',
+        'ships' => <<<'SHIPS'
+        secondary        = secondary,
+        onSecondary      = onSecondary,
+        tertiary         = accent,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        secondary        = onSurface,
+        onSecondary      = surface,
+        tertiary         = accent,
+BECOMES,
+    ],
+    [
         // Material's container colours back the bottom bar's selected-item
         // indicator and the tonal button. The package maps its surface family
         // onto the theme store and leaves these at Material's baseline, a
