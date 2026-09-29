@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\View\ViewException;
 use Tests\Support\WhatMarkupDraws;
 use Tests\TestCase;
 
@@ -43,3 +44,14 @@ it('draws a row with neither a note nor a value as its headline alone', function
 
     expect(data_get($row, 'props'))->toBe(['headline' => 'Fingerprint']);
 });
+
+it('starts a row that stands for something with a state with that state\'s glyph', function (): void {
+    $row = WhatMarkupDraws::drawn('<x-design::row headline="Sonarr" tone="trouble" goes="\'/s\'" />');
+
+    expect(data_get($row, 'props.leading_icon'))->toBe('error')
+        ->and(data_get($row, 'props.leading_type'))->toBe('icon');
+});
+
+it('refuses a tone it has no glyph for', function (): void {
+    WhatMarkupDraws::drawn('<x-design::row headline="Sonarr" tone="grand" />');
+})->throws(ViewException::class);

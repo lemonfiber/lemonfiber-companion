@@ -372,7 +372,7 @@ return [
     'runs_for' => 'For :forms',
     'runs_for_no_form' => 'No running form asked for it',
     'left_out_heading' => 'Left out on purpose',
-    'left_out' => ':name, asked for by :forms: :needs',
+    'left_out_by' => 'Asked for by :forms, but :needs',
     'nothing_left_out' => 'The forms running left nothing out.',
     'rehearsal' => [
         'heading' => 'What starting it would do',

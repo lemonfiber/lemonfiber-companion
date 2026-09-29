@@ -368,7 +368,7 @@ return [
     'runs_for' => 'Voor :forms',
     'runs_for_no_form' => 'Geen draaiende form vroeg erom',
     'left_out_heading' => 'Bewust overgeslagen',
-    'left_out' => ':name, gevraagd door :forms: :needs',
+    'left_out_by' => 'Gevraagd door :forms, maar :needs',
     'nothing_left_out' => 'De draaiende forms sloegen niets over.',
     'rehearsal' => [
         'heading' => 'Wat starten zou doen',

@@ -115,11 +115,11 @@ it('N2-R7 — carries the forms whether or not anything in them is running', fun
 it('N2-R7 — draws a control for each form the stack declares', function (): void {
     // The stack declares `library` and `full`, and a control is drawn for
     // each, so the form an operator opens this screen to start is on it.
-    $drawn = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())))->said();
+    $frame = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())));
 
-    expect($drawn)->toContain(__('health.open_form', ['name' => 'library']))
-        ->and($drawn)->toContain(__('health.open_form', ['name' => 'full']))
-        ->and($drawn)->not->toContain(__('health.no_forms_at_all'));
+    expect($frame->offers())->toContain('library')
+        ->and($frame->offers())->toContain('full')
+        ->and($frame->said())->not->toContain(__('health.no_forms_at_all'));
 });
 
 it('a stack that declares no forms says that, rather than that nothing is set up', function (): void {
@@ -298,13 +298,16 @@ it('says which forms are running, and every form each service runs for', functio
     $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::partOfItOnPurpose()));
     $answer = $screen->answer();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    // Each row says how it runs and what it runs for on the one line under
+    // its name.
+    $lines = implode("\n", $drawn);
 
     expect($answer->active)->toBe(['library', 'hunt'])
         ->and($answer->services[0]->runsFor)->toBe(['library', 'hunt'])
         ->and($answer->services[1]->runsFor)->toBe(['hunt'])
         ->and($drawn)->toContain(__('health.forms_running', ['forms' => 'library, hunt']))
-        ->and($drawn)->toContain(__('health.runs_for', ['forms' => 'library, hunt']))
-        ->and($drawn)->toContain(__('health.runs_for', ['forms' => 'hunt']));
+        ->and($lines)->toContain(__('health.runs_for', ['forms' => 'library, hunt']))
+        ->and($lines)->toContain(__('health.runs_for', ['forms' => 'hunt']));
 });
 
 it('draws a service the forms left out as left out with why, and not as a service that is absent', function (): void {
@@ -319,8 +322,8 @@ it('draws a service the forms left out as left out with why, and not as a servic
     expect($named)->toBe(['jellyfin', 'sonarr'])
         ->and($answer->leftOut)->toHaveCount(1)
         ->and([$answer->leftOut[0]->name, $answer->leftOut[0]->askedBy])->toBe(['qBittorrent', ['hunt']])
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.left_out', [
-            'name' => 'qBittorrent',
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('qBittorrent')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.left_out_by', [
             'forms' => 'hunt',
             'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent),
         ]));
@@ -331,5 +334,5 @@ it('says so where no form is running, nothing was left out, and a service no run
 
     expect($drawn)->toContain(__('health.no_form_running'))
         ->and($drawn)->toContain(__('health.nothing_left_out'))
-        ->and($drawn)->toContain(__('health.runs_for_no_form'));
+        ->and(implode("\n", $drawn))->toContain(__('health.runs_for_no_form'));
 });

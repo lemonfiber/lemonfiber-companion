@@ -7,7 +7,9 @@ namespace Modules\Operator\Internal\Presenters;
 use function array_filter;
 use function array_values;
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
@@ -42,6 +44,7 @@ final readonly class HowAServiceReads
             id: $daemon->id(),
             name: $daemon->name(),
             runsSaid: $daemon->runs()->saidOnTheScreen(),
+            tone: $this->toneOf($daemon->runs()),
             mattersSaid: $daemon->matters()->saidOnTheScreen(),
             isSettling: $daemon->runs()->isSettling(),
             isOurs: $daemon->runs()->isThisStacksToRun(),
@@ -75,5 +78,22 @@ final readonly class HowAServiceReads
             said: static fn(int $code): AsText => AsText::of((string) $code),
             unstated: static fn(): AsText => AsText::nothing(),
         )->said;
+    }
+
+    /**
+     * The glyph its state is drawn with beside its name.
+     *
+     * A service the host runs reads as fine: the stack has no say over it, and
+     * a glyph asking for attention there would ask for something nobody here
+     * can give.
+     */
+    private function toneOf(HowAServiceRuns $runs): string
+    {
+        return match ($runs) {
+            HowAServiceRuns::Running, HowAServiceRuns::Healthy, HowAServiceRuns::HostManaged => Tone::Fine->value,
+            HowAServiceRuns::Starting => Tone::Working->value,
+            HowAServiceRuns::Stopped, HowAServiceRuns::Absent => Tone::Attention->value,
+            HowAServiceRuns::Failed, HowAServiceRuns::CrashLooping, HowAServiceRuns::Unhealthy => Tone::Trouble->value,
+        };
     }
 }
