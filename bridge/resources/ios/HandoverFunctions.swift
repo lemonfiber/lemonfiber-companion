@@ -95,7 +95,7 @@ enum HandoverFunctions {
 
         NSLog("%@ handover: refused, %@", tag, why.word)
 
-        return Envelope.refusing(refused, why.word).asAnswer()
+        return Envelope.refusing(refused, because: why.word).asAnswer()
     }
 
     /// Put a report in front of whoever the operator picks.
