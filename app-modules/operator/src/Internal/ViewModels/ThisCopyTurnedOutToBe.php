@@ -17,6 +17,7 @@ final readonly class ThisCopyTurnedOutToBe
      * @param string $installedSaid the catalogue key for how it was installed
      * @param string $owner         the tool that owns it, or empty
      * @param string $standsSaid    the catalogue key for where it stands
+     * @param string $tone          the tone where it stands is drawn in, a `Modules\Design\View\Tone` value
      * @param string $offered       the newest version released, or empty
      * @param string $changed       what that version says it changed, or empty
      * @param string $untold        why availability could not be told, or empty
@@ -31,6 +32,7 @@ final readonly class ThisCopyTurnedOutToBe
         public string $installedSaid,
         public string $owner,
         public string $standsSaid,
+        public string $tone,
         public string $offered,
         public string $changed,
         public string $untold,

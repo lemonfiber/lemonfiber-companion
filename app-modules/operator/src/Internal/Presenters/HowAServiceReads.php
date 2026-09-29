@@ -66,6 +66,24 @@ final readonly class HowAServiceReads
     }
 
     /**
+     * The glyph a state is drawn with beside the name of what is in it: a
+     * service, or a container the stack never declared.
+     *
+     * A service the host runs reads as fine: the stack has no say over it, and
+     * a glyph asking for attention there would ask for something nobody here
+     * can give.
+     */
+    public function toneOf(HowAServiceRuns $runs): string
+    {
+        return match ($runs) {
+            HowAServiceRuns::Running, HowAServiceRuns::Healthy, HowAServiceRuns::HostManaged => Tone::Fine->value,
+            HowAServiceRuns::Starting => Tone::Working->value,
+            HowAServiceRuns::Stopped, HowAServiceRuns::Absent => Tone::Attention->value,
+            HowAServiceRuns::Failed, HowAServiceRuns::CrashLooping, HowAServiceRuns::Unhealthy => Tone::Trouble->value,
+        };
+    }
+
+    /**
      * What it exited with, as text, or nothing where it did not.
      *
      * The empty string rather than a zero, because a service that is running
@@ -78,22 +96,5 @@ final readonly class HowAServiceReads
             said: static fn(int $code): AsText => AsText::of((string) $code),
             unstated: static fn(): AsText => AsText::nothing(),
         )->said;
-    }
-
-    /**
-     * The glyph its state is drawn with beside its name.
-     *
-     * A service the host runs reads as fine: the stack has no say over it, and
-     * a glyph asking for attention there would ask for something nobody here
-     * can give.
-     */
-    private function toneOf(HowAServiceRuns $runs): string
-    {
-        return match ($runs) {
-            HowAServiceRuns::Running, HowAServiceRuns::Healthy, HowAServiceRuns::HostManaged => Tone::Fine->value,
-            HowAServiceRuns::Starting => Tone::Working->value,
-            HowAServiceRuns::Stopped, HowAServiceRuns::Absent => Tone::Attention->value,
-            HowAServiceRuns::Failed, HowAServiceRuns::CrashLooping, HowAServiceRuns::Unhealthy => Tone::Trouble->value,
-        };
     }
 }

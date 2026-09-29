@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThisCopyOfLemonfiber;
+use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\ThisCopyTurnedOutToBe;
@@ -44,6 +46,7 @@ final readonly class HowThisCopyReads
             installedSaid: $copy->gotThere()->installed()->saidOnTheScreen(),
             owner: $copy->gotThere()->owner(),
             standsSaid: $copy->stands()->saidOnTheScreen(),
+            tone: $this->toneOf($copy->stands()),
             offered: $copy->released()->version(),
             changed: $copy->released()->changed(),
             untold: $copy->untold(),
@@ -60,6 +63,22 @@ final readonly class HowThisCopyReads
         return $this->nothingFrom(HowTheReadingWent::somethingStopped($why));
     }
 
+    /**
+     * The glyph where the copy stands is drawn with.
+     *
+     * A copy another tool updates is fine: keeping it current is that tool's
+     * work, and nothing here can do it. A check that failed is unknown, never
+     * current.
+     */
+    private function toneOf(WhereThisCopyStands $stands): string
+    {
+        return match ($stands) {
+            WhereThisCopyStands::Current, WhereThisCopyStands::ManagedExternally => Tone::Fine->value,
+            WhereThisCopyStands::UpdateAvailable => Tone::Attention->value,
+            WhereThisCopyStands::CheckFailed => Tone::Unknown->value,
+        };
+    }
+
     /** An answer with nothing in it, for a reading that did not come back. */
     private function nothingFrom(HowTheReadingWent $went): ThisCopyTurnedOutToBe
     {
@@ -69,6 +88,7 @@ final readonly class HowThisCopyReads
             installedSaid: '',
             owner: '',
             standsSaid: '',
+            tone: Tone::Unknown->value,
             offered: '',
             changed: '',
             untold: '',

@@ -77,6 +77,7 @@ final readonly class HowSomethingElseReads
             named: $one->id->named(),
             describes: $one->describes,
             runs: $one->runs->saidOnTheScreen(),
+            tone: new HowAServiceReads()->toneOf($one->runs),
         );
     }
 }

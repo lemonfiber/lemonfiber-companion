@@ -195,8 +195,10 @@ it('N12-R6 — shows the room by the stack\'s categories, a tree by its name, an
     ])
         ->and($drawn)->toContain('movies')
         ->and($drawn)->toContain(__(WhatALineIsAbout::Orphaned->saidOnTheScreen()))
-        ->and($drawn)->toContain(roomSize('stacks.room.unshared', 2_000_000_000_000))
-        ->and($drawn)->not->toContain(roomSize('stacks.room.unshared', 30_000_000_000))
+        // Each line says what it would take unshared, where that differs, and
+        // what getting it back costs, on the one line under what it is about.
+        ->and($drawn)->toContain(sprintf('%s · %s', roomSize('stacks.room.unshared', 2_000_000_000_000), roomWords(WhatGettingItBackCosts::ByLosingContent->saidOnTheScreen())))
+        ->and(implode("\n", $drawn))->not->toContain(roomSize('stacks.room.unshared', 30_000_000_000))
         ->and($drawn)->toContain(__(WhatGettingItBackCosts::TheEasyWin->saidOnTheScreen()));
 });
 
