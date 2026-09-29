@@ -30,7 +30,8 @@ it('paints the widgets\' grounds and text with paper and ink, and the ink theme 
         ->and(TheTheme::WIDGET_ROLES['on-background'])->toBe(ThemeToken::Text)
         ->and(TheTheme::WIDGET_ROLES['surface-variant'])->toBe(ThemeToken::Raised)
         ->and(TheTheme::WIDGET_ROLES['on-surface-variant'])->toBe(ThemeToken::Muted)
-        ->and(TheTheme::WIDGET_ROLES['secondary'])->toBe(ThemeToken::Text)
+        ->and(TheTheme::WIDGET_ROLES['secondary'])->toBe(ThemeToken::Line)
+        ->and(TheTheme::WIDGET_ROLES['on-secondary'])->toBe(ThemeToken::Text)
         ->and(TheTheme::WIDGET_ROLES['outline'])->toBe(ThemeToken::Line)
         ->and(TheTheme::WIDGET_ROLES)->not->toHaveKeys(['destructive', 'success', 'accent']);
 });
