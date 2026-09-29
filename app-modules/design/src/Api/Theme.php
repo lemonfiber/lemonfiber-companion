@@ -7,36 +7,36 @@ namespace Modules\Design\Api;
 use Closure;
 
 /**
- * The theme resolver EDGE asks for, which this module is the owner of.
+ * The resolvers EDGE asks for.
  *
- * `TailwindParser` takes a `callable(string): ?string` and hands it a bare
- * token name — `accent`, `on-surface`, whatever a template wrote after
- * `bg-theme-`. Null is how the parser is told a token means nothing here, and
- * it is the answer for all but the two this surface asserts.
+ * `TailwindParser` hands a resolver a bare token name, whatever a template
+ * wrote after `bg-theme-`, and reads null as "this token means nothing here".
+ * Null lives inside these closures and nowhere else: the parser's contract
+ * wants it, and C2 refuses it on anything else a module publishes.
  *
- * Null lives inside the closure and nowhere else. C2 refuses a nullable return
- * on anything a module publishes, because null cannot say which of "not read
- * yet" and "read, and there is nothing" it means — and here the third-party
- * contract genuinely wants the one that C2 is not about. Confining it to the
- * one function written to satisfy that contract is what keeps the rule and the
- * package both intact.
- *
- * The composition root registers it and does not build it:
- *
- *     TailwindParser::setThemeResolver(Theme::resolver());
- *
- * which is a bind rather than work, reads no file and reaches no network, so a
- * frame arrives without waiting on any of it (A9).
+ * The composition root registers them; building them reads no file and reaches
+ * no network, so a frame arrives without waiting on any of it (A9).
  */
 final readonly class Theme
 {
     /**
-     * A resolver over the tokens this surface asserts.
+     * The light resolver: a role's paper-theme hex.
      *
      * @return Closure(string): (?string)
      */
     public static function resolver(): Closure
     {
-        return static fn(string $token): ?string => ThemeToken::tryFrom($token)?->hex();
+        return static fn(string $token): ?string => ThemeToken::tryFrom($token)?->light();
+    }
+
+    /**
+     * The dark resolver: a role's ink-theme hex, which the parser attaches to
+     * every theme class as its dark companion.
+     *
+     * @return Closure(string): (?string)
+     */
+    public static function darkResolver(): Closure
+    {
+        return static fn(string $token): ?string => ThemeToken::tryFrom($token)?->dark();
     }
 }
