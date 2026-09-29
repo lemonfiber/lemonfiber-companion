@@ -69,6 +69,7 @@ it('says it is waiting, and nothing else, before anything has been heard', funct
     $line = theLineAfter(minutesIn(0));
 
     expect($line->said)->toBe('health.summary.waiting')
+        ->and($line->tone)->toBe('working')
         ->and($line->counted)->toBe('')
         ->and($line->howMany)->toBe(0)
         ->and($line->worst)->toBe('')
@@ -84,6 +85,7 @@ it('says it is waiting while a subscription is open and has said nothing yet', f
     $line = theLineAfter(minutesIn(0), WhatWasHeard::nothing());
 
     expect($line->said)->toBe('health.summary.waiting')
+        ->and($line->tone)->toBe('working')
         ->and($line->listening)->toBeTrue();
 });
 
@@ -179,6 +181,7 @@ it('says what stopped a subscription beside what it last heard', function (): vo
     );
 
     expect($line->said)->toBe('health.standing.unknown')
+        ->and($line->tone)->toBe('unknown')
         ->and($line->met)->toBe('connection.no_network')
         ->and($line->remedy)->toBe('connection.no_network_action')
         ->and($line->ago->count)->toBe(2);
@@ -189,6 +192,7 @@ it('says a kept word with when it was heard, and nothing it did not keep', funct
 
     expect($line)->toEqual(new WhatTheOneLineSays(
         said: 'health.standing.critical',
+        tone: 'trouble',
         counted: '',
         howMany: 0,
         worst: '',
@@ -213,6 +217,7 @@ it('reads a kept word as unknown once a stream could no longer have vouched for 
 it('says a stack never heard cannot be told, with no age', function (): void {
     expect(new HowTheOneLineReads()->neverHeard())->toEqual(new WhatTheOneLineSays(
         said: 'health.standing.unknown',
+        tone: 'unknown',
         counted: '',
         howMany: 0,
         worst: '',
@@ -305,3 +310,16 @@ it('keeps what stopped moving from a summary that is no longer current, beside w
         ->and($line->stopped)->toHaveCount(1)
         ->and($line->ago->said)->toBe('health.ago.minutes');
 });
+
+it('draws each standing with the glyph of its tone', function (HowItStands $standing, string $tone): void {
+    expect(new HowTheOneLineReads()->kept($standing, minutesIn(0), minutesIn(0))->tone)->toBe($tone);
+})->with([
+    'healthy' => [HowItStands::Healthy, 'fine'],
+    'advisory' => [HowItStands::Advisory, 'attention'],
+    'degraded' => [HowItStands::Degraded, 'attention'],
+    'stopped' => [HowItStands::Stopped, 'attention'],
+    'unconfigured' => [HowItStands::Unconfigured, 'attention'],
+    'broken' => [HowItStands::Broken, 'trouble'],
+    'critical' => [HowItStands::Critical, 'trouble'],
+    'unknown' => [HowItStands::Unknown, 'unknown'],
+]);

@@ -90,6 +90,12 @@ return [
     'nothing_to_do_with_it' => 'Hier valt er niets mee te doen.',
     'nothing_to_try' => 'De stack heeft hier geen suggestie voor.',
     'ask_again' => 'Opnieuw controleren',
+    'roads' => [
+        'house' => 'Wat het huis bereikt',
+        'people' => 'Wie erin komt',
+        'machine' => 'Deze machine',
+        'help' => 'Hulp',
+    ],
     'see_how_it_is' => 'Bekijk hoe deze stack het doet',
     'working_it_out' => 'Deze stack kijkt wat er te herstellen valt.',
     'working_it_out_action' => 'Dit duurt even. Vraag het zo nog eens.',

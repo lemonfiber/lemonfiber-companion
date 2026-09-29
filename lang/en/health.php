@@ -92,6 +92,12 @@ return [
     'nothing_to_do_with_it' => 'There is nothing to do with it from here.',
     'nothing_to_try' => 'The stack did not suggest anything to try for this.',
     'ask_again' => 'Check again',
+    'roads' => [
+        'house' => 'What reaches the house',
+        'people' => 'Who gets in',
+        'machine' => 'This machine',
+        'help' => 'Help',
+    ],
     'see_how_it_is' => 'See how this stack is doing',
     'working_it_out' => 'This stack is working out what it could put right.',
     'working_it_out_action' => 'It takes a moment. Ask again shortly.',

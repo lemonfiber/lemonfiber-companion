@@ -22,6 +22,7 @@ final readonly class WhatTheOneLineSays
 {
     /**
      * @param string                      $said      the key for the one line
+     * @param string                      $tone      the tone its glyph is drawn in, a `Modules\Design\View\Tone` value
      * @param string                      $counted   the key for how many things it counts, or empty where it counts none
      * @param int                         $howMany   how many things want attention, as the core counted them
      * @param string                      $worst     the worst thing, named, or empty where the core named nothing
@@ -35,6 +36,7 @@ final readonly class WhatTheOneLineSays
      */
     public function __construct(
         public string $said,
+        public string $tone,
         public string $counted,
         public int $howMany,
         public string $worst,

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\View\Component;
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
@@ -155,13 +156,18 @@ foreach ($modules as $module) {
         // would put C3 — every thrown exception is module-owned — permanently
         // out of reach. Nothing is exempted that could have been caught: the
         // mutability belongs to PHP's base class, not to anything written here.
+        //
+        // A Blade component is skipped for the same reason: `Component`
+        // declares `$attributes` and `$componentName` as ordinary properties,
+        // so a component in the design module cannot be declared readonly.
+        // Its own properties are, one by one.
         it(sprintf('%s holds no mutable state', $module->name), function () use ($module): void {
             $mutable = [];
 
             foreach ($module->classNames() as $name) {
                 $class = new ReflectionClass($name);
 
-                if ($class->isInterface() || $class->isEnum() || $class->isSubclassOf(Throwable::class)) {
+                if ($class->isInterface() || $class->isEnum() || $class->isSubclassOf(Throwable::class) || $class->isSubclassOf(Component::class)) {
                     continue;
                 }
 
