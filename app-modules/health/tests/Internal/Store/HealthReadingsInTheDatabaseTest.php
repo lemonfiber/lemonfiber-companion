@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\HealthKept\Tests\Api;
+namespace Modules\Health\Tests\Internal\Store;
 
 use function expect;
 use function get_object_vars;
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Schema;
 
 use function it;
 
-use Modules\HealthKept\Api\HealthReadingsInTheDatabase;
+use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\SealedPayload;

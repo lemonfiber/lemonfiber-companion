@@ -187,7 +187,7 @@ parameters:
                 # whole reason Tests\TestCase exists.
                 - Illuminate\Foundation\Testing\TestCase
                 # A migration, which the migrator instantiates and runs: a
-                # store adapter's table is created by one in its own
+                # capability's table is created by one in its own
                 # `database/migrations`, and there is no other way to be one.
                 - Illuminate\Database\Migrations\Migration
                 # The plugin's scanner builder, so a suite can run the scanner
@@ -692,7 +692,7 @@ parameters:
             # Storage has its own entry below: it is banned for being IO, in
             # two more places than a facade is banned for being a facade.
             # Schema has its own entry below too: it is the one facade a
-            # migration has, and a store adapter's migration is allowed it.
+            # migration has, and a capability's own migration is allowed it.
             exclude:
                 - 'Illuminate\Support\Facades\Storage'
                 - 'Illuminate\Support\Facades\Schema'
@@ -714,7 +714,7 @@ parameters:
         # in a module's own migrations and wherever a facade already is.
         -
             class: 'Illuminate\Support\Facades\Schema'
-            message: "A2 — no facades. The Schema facade is how a migration reaches the schema builder, and a table is created only in its store adapter's own migrations, in app-modules/<store>/database/migrations (A2, A10)."
+            message: "A2 — no facades. The Schema facade is how a migration reaches the schema builder, and a table is created only in its owning capability's own migrations, in app-modules/<owner>/database/migrations (A2, A10)."
             allowIn:
                 - app-modules/*/database/migrations/*
                 - bootstrap/Composition/*

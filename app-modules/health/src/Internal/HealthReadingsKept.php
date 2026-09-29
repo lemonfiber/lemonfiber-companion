@@ -2,10 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Modules\Kernel\Api;
+namespace Modules\Health\Internal;
+
+use Modules\Kernel\Api\ForgetsEverythingKept;
+use Modules\Kernel\Api\Forgotten;
+use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\Noted;
+use Modules\Kernel\Api\SealedPayload;
+use Modules\Kernel\Api\SealedStack;
+use Modules\Kernel\Api\Shape;
 
 /**
  * The newest health reading of each stack, kept between launches.
+ *
+ * **Declared here, stored in `Internal\Store`.** What `health` decides about a
+ * kept reading asks this, and the one class that answers it over the app's
+ * database lives in this module's store, which the composition root binds to
+ * it and nothing else in the module names.
  *
  * **It is handed nothing it could read.** `health` seals a reading before it
  * asks this to keep it, so every method here takes a {@see SealedPayload} and a

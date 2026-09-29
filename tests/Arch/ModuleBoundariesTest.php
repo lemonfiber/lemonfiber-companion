@@ -11,6 +11,7 @@ use Modules\Sdk\Api\Narrators;
 use Tests\Support\Imports;
 use Tests\Support\Kind;
 use Tests\Support\Module;
+use Tests\Support\Stores;
 
 // The dependency rules in ARCHITECTURE.md, generated from what each module
 // declares itself to be.
@@ -41,6 +42,10 @@ it('has modules to check', function () use ($modules): void {
 // one of them matches no files and reports nothing — `Native` is silent where
 // `Native\Mobile` reports, and the two look identical from here. These are the
 // rules the rest of the architecture rests on, so they are answered exactly.
+
+/** The vendor a capability's store may name, and nothing else in a capability may. */
+const WHAT_A_STORE_MAY_NAME = 'Illuminate';
+
 /**
  * The values whose whole purpose is that they change, each with the reason.
  *
@@ -91,13 +96,14 @@ const MUTABLE_BY_DESIGN = [
 
 foreach ($modules as $module) {
     it(sprintf('A7/E4 — %s stays inside what a %s module may name', $module->name, $module->kind->value), function () use ($module): void {
-        $offenders = reachesOutside($module, $module->kind->forbiddenVendors());
+        $offenders = reachesOutsideItsKind($module);
 
         expect($offenders)->toBe([], sprintf(
             "%s names something its kind may not:\n  %s\n\n"
             . 'A %s module is defined by what it cannot reach. Take what this needs as a '
-            . 'port in Modules\\Kernel\\Api and let the composition root decide which '
-            . 'implementation arrives (A7, E4).',
+            . 'port and let the composition root decide which implementation arrives; what a '
+            . 'capability keeps is the one thing its own store, under src/Internal/Store, may '
+            . 'reach the framework for (A7, E4).',
             $module->name,
             implode("\n  ", $offenders),
             $module->kind->value,
@@ -209,6 +215,37 @@ function reachesOutside(Module $module, array $forbidden): array
 
     foreach ($module->classes() as $file) {
         $names = Imports::of($file);
+
+        foreach ($forbidden as $namespace) {
+            if (Imports::anyUnder($names, $namespace)) {
+                $offenders[] = sprintf('%s names %s', $file, $namespace);
+            }
+        }
+    }
+
+    return $offenders;
+}
+
+/**
+ * Every file in the module that names a vendor its kind may not.
+ *
+ * A capability's store is read apart: it is the one place in a capability
+ * where the framework may be named, because keeping something between launches
+ * means Laravel's database, and the store is walled so that nothing else in
+ * the module reaches it. Everything else its kind forbids — the platform, the
+ * SDK, a transport — stays forbidden there too.
+ *
+ * @return list<string>
+ */
+function reachesOutsideItsKind(Module $module): array
+{
+    $offenders = [];
+
+    foreach ($module->classes() as $file) {
+        $names = Imports::of($file);
+        $forbidden = Stores::holds($module, $file)
+            ? array_values(array_diff($module->kind->forbiddenVendors(), [WHAT_A_STORE_MAY_NAME]))
+            : $module->kind->forbiddenVendors();
 
         foreach ($forbidden as $namespace) {
             if (Imports::anyUnder($names, $namespace)) {

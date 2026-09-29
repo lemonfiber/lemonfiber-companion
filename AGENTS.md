@@ -56,7 +56,7 @@ app-modules/
   design/               EDGE components and theme tokens
   connection/ stacks/ health/ backups/ updates/     capability
   operator/ household/                              surface
-  sdk/ device/ vault/ codes/ seal/ health-kept/      adapter
+  sdk/ device/ vault/ codes/ seal/                  adapter
   dx/                                               stand-in
 ```
 
@@ -66,6 +66,7 @@ app-modules/
 | domain logic | a capability module |
 | anything that talks to the outside | an adapter module |
 | a shared value or a port | `kernel` |
+| something a capability keeps between launches | that capability's `src/Internal/Store` and `database/migrations`, behind a port it declares |
 | a reusable component or a token | `design` |
 | a rule about all of the above | `tests/Arch` |
 
@@ -79,7 +80,7 @@ What a kind may depend on:
 | Kind | May use | Never |
 |---|---|---|
 | `kernel` | nothing | everything |
-| `capability` | `kernel` | Illuminate, Native, the SDK, other capabilities, adapters, surfaces |
+| `capability` | `kernel`; Illuminate in its store only | Illuminate outside its store, Native, the SDK, other capabilities, adapters, surfaces |
 | `design` | `kernel`, `Native\Mobile` | the SDK, capabilities, surfaces |
 | `surface` | `kernel`, `design`, capabilities, `Native\Mobile` | the SDK, adapters, the other surface |
 | `adapter` | `kernel`, the one package it adapts | capabilities, surfaces, other adapters |
@@ -170,7 +171,7 @@ tree, under `extra.lemonfiber.floors.mutation`: a module's own for
 `bootstrap/Composition`. A manifest declaring `0` is taking a position rather
 than being skipped, and `scripts/mutation.php` says which positions those are
 and why — a component holds state and an adapter forwards a call, so mutating
-either measures the fake. Four of the eighteen declare it. Templates are not in
+either measures the fake. Four of the seventeen declare it. Templates are not in
 the picture at all: the run mutates the trees `phpunit.xml` measures, and a
 Blade file is not in one.
 

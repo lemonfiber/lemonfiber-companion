@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\HealthKept\Api;
+namespace Modules\Health\Internal\Store;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -10,10 +10,10 @@ use Illuminate\Database\QueryException;
 use function is_int;
 use function is_string;
 
+use Modules\Health\Internal\HealthReadingsKept;
+use Modules\Health\Internal\NewestHealthReading;
 use Modules\Kernel\Api\Forgotten;
-use Modules\Kernel\Api\HealthReadingsKept;
 use Modules\Kernel\Api\Instant;
-use Modules\Kernel\Api\NewestHealthReading;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;

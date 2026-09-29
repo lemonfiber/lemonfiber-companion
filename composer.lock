@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bd08ffa315925ca0c471d94acd5dd918",
+    "content-hash": "27a7380d1f95b24a8f05b723d9eb4f16",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3522,9 +3522,10 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/health",
-                "reference": "f7da3590aca21189c16e486178e824b8b1617158"
+                "reference": "7ff8c3607dd5cec7cceee836438bc81e1f8eaef7"
             },
             "require": {
+                "illuminate/database": "^13.17",
                 "modules/kernel": "dev-main",
                 "php": "^8.5"
             },
@@ -3548,44 +3549,6 @@
                 "LicenseRef-Hippocratic-3.0"
             ],
             "description": "The verdict, its findings worst-first, and the repairs offered for them.",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
-            "name": "modules/health-kept",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "app-modules/health-kept",
-                "reference": "dfe9990a727936233002b972b001a8daf6de40fa"
-            },
-            "require": {
-                "illuminate/database": "^13.17",
-                "modules/kernel": "dev-main",
-                "php": "^8.5"
-            },
-            "type": "library",
-            "extra": {
-                "lemonfiber": {
-                    "floors": {
-                        "coverage": 100,
-                        "mutation": 100
-                    },
-                    "kind": "adapter"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Modules\\HealthKept\\": "src/",
-                    "Modules\\HealthKept\\Tests\\": "tests/"
-                }
-            },
-            "license": [
-                "LicenseRef-Hippocratic-3.0"
-            ],
-            "description": "The health readings the phone keeps between launches, in the app's own database.",
             "transport-options": {
                 "symlink": true,
                 "relative": true
@@ -14737,7 +14700,6 @@
         "modules/device": 20,
         "modules/dx": 20,
         "modules/health": 20,
-        "modules/health-kept": 20,
         "modules/household": 20,
         "modules/kernel": 20,
         "modules/operator": 20,

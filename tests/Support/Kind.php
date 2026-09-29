@@ -18,7 +18,7 @@ enum Kind: string
     /** Ports, values and outcomes. The shared language, and nothing else. */
     case Kernel = 'kernel';
 
-    /** Domain logic, pure by construction because it may reach nothing. */
+    /** Domain logic, pure by construction because it may reach nothing but its own store. */
     case Capability = 'capability';
 
     /** The EDGE component vocabulary and the theme tokens. */
@@ -63,7 +63,9 @@ enum Kind: string
     {
         return match ($this) {
             // The domain does not know a framework exists (A7), does not know
-            // the platform exists, and does not know how it is reached.
+            // the platform exists, and does not know how it is reached. A
+            // capability's store is the one place in it that names the
+            // framework, and `ModuleBoundariesTest` reads it apart.
             self::Kernel, self::Capability => [
                 'Illuminate',
                 'Native',

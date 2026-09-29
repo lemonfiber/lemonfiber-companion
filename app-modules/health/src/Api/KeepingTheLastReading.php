@@ -6,10 +6,10 @@ namespace Modules\Health\Api;
 
 use function max;
 
+use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\TheSummaryAsKept;
 use Modules\Health\Internal\WhatTheKeptSummaryHeld;
 use Modules\Kernel\Api\Forgotten;
-use Modules\Kernel\Api\HealthReadingsKept;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\Sealed;

@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Modules\Kernel\Api;
+namespace Modules\Health\Internal;
 
 use Closure;
+use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\SealedPayload;
+use Modules\Kernel\Api\SealedReading;
+use Modules\Kernel\Api\Shape;
+use Modules\Kernel\Api\WhyNoReadingIsFound;
 
 /**
  * The newest health reading a store keeps for a stack, or that it keeps none.
