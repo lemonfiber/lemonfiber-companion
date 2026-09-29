@@ -257,6 +257,61 @@ final readonly class TextAndSecurity
                     }
                 }
                 PHP, 'S3 —'),
+
+            // Planted in an adapter, which may name the framework, so that what
+            // each of these breaks is which module seals rather than which kind
+            // of module may reach for Illuminate at all.
+            Fixture::suite('S4', 'app-modules/codes/src/Fixtures/SealsBesideTheSeal.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Codes\Fixtures;
+
+                use Illuminate\Encryption\Encrypter;
+
+                final readonly class SealsBesideTheSeal
+                {
+                    public function sealed(string $key, string $value): string
+                    {
+                        return new Encrypter($key, 'aes-256-gcm')->encryptString($value);
+                    }
+                }
+                PHP, 'S4 — the encrypter is named in the seal module'),
+
+            Fixture::suite('S5', 'app-modules/codes/src/Fixtures/SealsUnderTheFrameworksKey.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Codes\Fixtures;
+
+                use Illuminate\Support\Facades\Crypt;
+
+                final readonly class SealsUnderTheFrameworksKey
+                {
+                    public function sealed(string $value): string
+                    {
+                        return Crypt::encryptString($value);
+                    }
+                }
+                PHP, 'S5 — the Crypt facade is named in the seal module'),
+
+            Fixture::suite('S6', 'app-modules/codes/src/Fixtures/HashesAStackBesideTheSeal.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Codes\Fixtures;
+
+                final readonly class HashesAStackBesideTheSeal
+                {
+                    public function hashed(string $stack, string $key): string
+                    {
+                        return hash_hmac('sha256', $stack, $key);
+                    }
+                }
+                PHP, 'S6 — a keyed hash is taken in the seal module'),
         ];
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\Nonce;
 
 use function sprintf;
@@ -29,6 +30,7 @@ final class SequencedEntropy implements Entropy
     /** The adapter's width: sixteen bytes, hex-encoded. */
     private const int WIDTH = 32;
     private int $answered = 0;
+    private int $keys = 0;
 
     private function __construct() {}
 
@@ -44,7 +46,22 @@ final class SequencedEntropy implements Entropy
         return Nonce::of(str_pad(sprintf('%x', $this->answered), self::WIDTH, '0', STR_PAD_LEFT));
     }
 
-    /** How many have been handed out, for a test that cares. */
+    /**
+     * A key a test can predict, counted apart from the nonces.
+     *
+     * The adapter's width, thirty-two bytes, for the reason a nonce here is the
+     * adapter's width: a shorter one is a key no cipher takes. Counted on its
+     * own so that a test asserting how many nonces were handed out is not
+     * answered by the keys a seal drew.
+     */
+    public function aKey(): KeyMaterial
+    {
+        $this->keys++;
+
+        return KeyMaterial::of(str_pad(sprintf('key-%x', $this->keys), KeyMaterial::BYTES, '0', STR_PAD_LEFT));
+    }
+
+    /** How many nonces have been handed out, for a test that cares. */
     public function answered(): int
     {
         return $this->answered;

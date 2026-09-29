@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Device\Api;
 
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\Nonce;
 
 use function random_bytes;
@@ -38,5 +39,11 @@ final readonly class SystemEntropy implements Entropy
     public function nonce(): Nonce
     {
         return Nonce::of(sodium_bin2hex(random_bytes(self::BYTES)));
+    }
+
+    /** Raw bytes rather than hex: a key goes to a cipher, not into a header. */
+    public function aKey(): KeyMaterial
+    {
+        return KeyMaterial::of(random_bytes(KeyMaterial::BYTES));
     }
 }

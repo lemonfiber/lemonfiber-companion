@@ -48,3 +48,10 @@ extend-exclude = ["lang/nl/", ".git/"]
 # Pest's own expectation is spelled this way; the stub mirrors its API rather
 # than correcting it.
 toBeInvokable = "toBeInvokable"
+# Laravel's class is `Illuminate\Encryption\Encrypter`, and the seal that adapts
+# it is named after it. The checker's dictionary prefers `encryptor`, which is
+# not the name of anything this code can call.
+Encrypter = "Encrypter"
+encrypter = "encrypter"
+EncrypterSeal = "EncrypterSeal"
+EncrypterSealTest = "EncrypterSealTest"

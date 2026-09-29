@@ -56,6 +56,23 @@ final class MustNotLeaveThisProcess extends LogicException
         return new self('A session may not be serialised. It is a credential, and serialising one writes it in full wherever the result is kept — a cache entry, a queued payload, a session file. Pass the Session itself, or take the header off it at the edge.');
     }
 
+    /**
+     * A key the phone's kept values are sealed under.
+     *
+     * The one value here whose leak is total rather than partial: whoever holds
+     * it opens everything the phone keeps, for as long as it is held.
+     */
+    public static function aKey(): self
+    {
+        return new self('A seal key may not be serialised. It opens everything the phone keeps, and it is kept in the platform\'s secure storage and nowhere else.');
+    }
+
+    /** A value on its way into the seal or out of it, in the clear. */
+    public static function somethingUnsealed(): self
+    {
+        return new self('An unsealed value may not be serialised. What the phone keeps is written only once it is sealed, and serialising the plain value writes it in full wherever the result is kept.');
+    }
+
     public static function anAddress(): self
     {
         return new self('A stack address may not be serialised. N1-R15 keeps it beside a credential, not because it is secret but because it is where somebody lives, and anything that serialises one accumulates a map of private networks.');

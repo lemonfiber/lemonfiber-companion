@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b727a646342633d206b00f268bdf6d5a",
+    "content-hash": "27a7380d1f95b24a8f05b723d9eb4f16",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3724,6 +3724,44 @@
             }
         },
         {
+            "name": "modules/seal",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/seal",
+                "reference": "24913a756e5d5f0a8f49bc77ff11997bb9e498ca"
+            },
+            "require": {
+                "illuminate/encryption": "^13.17",
+                "modules/kernel": "dev-main",
+                "php": "^8.5"
+            },
+            "type": "library",
+            "extra": {
+                "lemonfiber": {
+                    "floors": {
+                        "coverage": 100,
+                        "mutation": 100
+                    },
+                    "kind": "adapter"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\Seal\\": "src/",
+                    "Modules\\Seal\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "LicenseRef-Hippocratic-3.0"
+            ],
+            "description": "Sealing what the phone keeps, under keys the platform's secure storage holds.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "modules/stacks",
             "version": "dev-main",
             "dist": {
@@ -3803,9 +3841,10 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/vault",
-                "reference": "f7fba4e2164341656fe0ef877d646e6aa55b6951"
+                "reference": "d858a41ba17f10668569a60927c4f218e51b75c2"
             },
             "require": {
+                "ext-sodium": "*",
                 "modules/kernel": "dev-main",
                 "nativephp/mobile": "^4.4",
                 "php": "^8.5"
@@ -3816,7 +3855,7 @@
                     "floors": {
                         "coverage": 100,
                         "mutation": 0,
-                        "mutation-is-zero-because": "Four adapters over the device's store, each held by its port's contract — SecureStorage, Stacks, Standings and WorkLeftRunning — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest`, `PlatformStandingsTest` and `PlatformWorkLeftRunningTest` over the keys a stack gets and the JSON a row is written as."
+                        "mutation-is-zero-because": "Five adapters over the device's store, each held by its port's contract — SecureStorage, Stacks, Standings, WorkLeftRunning and HoldsTheSealKeys — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest`, `PlatformStandingsTest`, `PlatformWorkLeftRunningTest` and `PlatformSealKeysTest` over the keys each is kept under and the form it is written in."
                     },
                     "kind": "adapter"
                 }
@@ -14664,6 +14703,7 @@
         "modules/kernel": 20,
         "modules/operator": 20,
         "modules/sdk": 20,
+        "modules/seal": 20,
         "modules/stacks": 20,
         "modules/updates": 20,
         "modules/vault": 20,

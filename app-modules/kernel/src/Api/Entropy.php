@@ -20,4 +20,13 @@ interface Entropy
 {
     /** A value nobody can guess, different every time. */
     public function nonce(): Nonce;
+
+    /**
+     * Thirty-two bytes nobody can guess, to be a key.
+     *
+     * Beside the nonce rather than built from one, because the two differ in
+     * what may be done with them: a nonce is sent to a stack and a key never
+     * leaves the device, so a key is a type that refuses to be printed.
+     */
+    public function aKey(): KeyMaterial;
 }
