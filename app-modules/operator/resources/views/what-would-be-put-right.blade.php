@@ -4,98 +4,105 @@
 
     @unless ($this->isSignedIn())
         {{-- The session has ended, so nothing was asked. --}}
-        <native:text>{{ __('connection.session_has_ended') }}</native:text>
-        <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
+        <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
+        <x-design::action label="{{ __('connection.sign_in') }}" :goes="$this->goes()->signIn()" />
     @elseif ($this->offer()->went->met !== '')
         {{-- Both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
-        <x-operator::emphasis>{{ __($this->offer()->went->met) }}</x-operator::emphasis>
-        <native:text>{{ __($this->offer()->went->remedy) }}</native:text>
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __($this->offer()->went->met) }}</x-design::strong>
+            <x-design::body>{{ __($this->offer()->went->remedy) }}</x-design::body>
+        </x-design::notice>
 
         {{-- The action stays on the screen and the failure is reported
              beside it. An obstacle branch with nothing on it leaves an operator
              whose stack woke up two seconds later with no way to find out. --}}
-        <x-operator::action label="{{ __('health.ask_again') }}" tap="lookAgain()" />
+        <x-design::action label="{{ __('health.ask_again') }}" tap="lookAgain()" />
     @elseif ($this->offer()->isWorking)
         {{-- The unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
-             operator — N1-R66 keeps a screen from being a poller. --}}
-        <x-operator::emphasis>{{ __('health.working_it_out') }}</x-operator::emphasis>
-        <native:text>{{ __('health.working_it_out_action') }}</native:text>
-
-        {{-- The same cadence, on the other state the stack works through. --}}
-        <x-operator::note>
-            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-        </x-operator::note>
-        <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+             operator, so the screen is not a poller. The cadence is the same
+             one as on the other state the stack works through. --}}
+        <x-design::standing
+            :said="__('health.working_it_out')"
+            tone="working"
+            :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
+        />
+        <x-design::body>{{ __('health.working_it_out_action') }}</x-design::body>
+        <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
     @elseif ($this->offer()->hasEnded)
         {{-- The stack has no outcome for that asking any more. Not a fault and
              not an answer: nothing was carried out, and the way forward is to
              ask again from the start. Saying so is what keeps it from reading
              as a machine that is broken. --}}
-        <x-operator::emphasis>{{ __('health.nothing_came_back') }}</x-operator::emphasis>
-        <native:text>{{ __('health.nothing_came_back_action') }}</native:text>
-        <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __('health.nothing_came_back') }}</x-design::strong>
+            <x-design::body>{{ __('health.nothing_came_back_action') }}</x-design::body>
+        </x-design::notice>
+        <x-design::action label="{{ __('health.ask_again') }}" tap="again()" />
     @elseif ($this->wasAgreedTo())
         {{-- What the machine actually did, which is a different question
              from what it said it would do — and rendered from a different value
              for that reason, so an offer can never appear as an outcome. --}}
         @if ($this->done()->isWorking)
-            <x-operator::emphasis>{{ __('health.carrying_it_out') }}</x-operator::emphasis>
-            <native:text>{{ __('health.carrying_it_out_action') }}</native:text>
             {{-- The cadence is stated, because a screen that refreshes
                  silently is one an operator cannot reason about — they cannot
                  tell a second-old answer from a minute-old one, and whether
                  something has changed is the only reason they are looking. --}}
-            <x-operator::note>
-                {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-            </x-operator::note>
-            <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+            <x-design::standing
+                :said="__('health.carrying_it_out')"
+                tone="working"
+                :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
+            />
+            <x-design::body>{{ __('health.carrying_it_out_action') }}</x-design::body>
+            <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
         @elseif (! $this->done()->went->cameBack())
-            <x-operator::emphasis>{{ __($this->done()->went->met) }}</x-operator::emphasis>
-            <native:text>{{ __($this->done()->went->remedy) }}</native:text>
+            <x-design::notice tone="unknown">
+                <x-design::strong>{{ __($this->done()->went->met) }}</x-design::strong>
+                <x-design::body>{{ __($this->done()->went->remedy) }}</x-design::body>
+            </x-design::notice>
 
             {{-- The sharper half of it: this obstacle stands
                  between the operator and the answer to *did it work*. Taking
                  the action away leaves them with a machine they told to change
                  something and no way to ask what happened. --}}
-            <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+            <x-design::action label="{{ __('health.ask_again') }}" tap="again()" />
         @elseif ($this->done()->hasEnded)
             {{-- The one state where *it failed* is certainly the wrong word.
                  The operator does not know what happened to their machine, and
                  it may well have worked — so they are sent to look at its
                  health rather than offered the agreement again. --}}
-            <x-operator::emphasis>{{ __('health.nobody_knows_what_happened') }}</x-operator::emphasis>
-            <native:text>{{ __('health.nobody_knows_what_happened_action') }}</native:text>
+            <x-design::notice tone="unknown">
+                <x-design::strong>{{ __('health.nobody_knows_what_happened') }}</x-design::strong>
+                <x-design::body>{{ __('health.nobody_knows_what_happened_action') }}</x-design::body>
+            </x-design::notice>
         @else
-            <x-operator::emphasis>
-                {{ trans_choice('health.changed_count', $this->done()->changed) }}
-            </x-operator::emphasis>
+            <x-design::heading>{{ trans_choice('health.changed_count', $this->done()->changed) }}</x-design::heading>
 
             @forelse ($this->done()->outcomes as $outcome)
-                <x-operator::entry>
-                    <x-operator::emphasis>{{ $outcome->repair->does }}</x-operator::emphasis>
-                    <native:text>{{ __($outcome->became) }}</native:text>
+                <x-design::card>
+                    <x-design::strong>{{ $outcome->repair->does }}</x-design::strong>
+                    <x-design::body>{{ __($outcome->became) }}</x-design::body>
 
                     {{-- What a stopped repair left, which is the whole of what
                          tells an operator whether they may simply try again. --}}
                     @if ($outcome->left !== '')
-                        <x-operator::note>{{ $outcome->left }}</x-operator::note>
+                        <x-design::note>{{ $outcome->left }}</x-design::note>
                     @endif
 
-                    <x-operator::note>{{ __($outcome->repair->undoing) }}</x-operator::note>
+                    <x-design::note>{{ __($outcome->repair->undoing) }}</x-design::note>
 
                     @if ($outcome->worthAnotherGo)
-                        <x-operator::note>{{ __('health.worth_another_go') }}</x-operator::note>
+                        <x-design::note>{{ __('health.worth_another_go') }}</x-design::note>
                     @endif
-                </x-operator::entry>
+                </x-design::card>
             @empty
                 {{-- A run that finished having done nothing. Rare and real: the
                      stack took the agreement, found there was nothing left to
                      do, and said so. Told apart from a job it has forgotten,
                      which is the branch above — one means nothing needed doing
                      and the other means nobody knows. --}}
-                <native:text>{{ __('health.nothing_was_carried_out') }}</native:text>
+                <x-design::body>{{ __('health.nothing_was_carried_out') }}</x-design::body>
             @endforelse
 
             {{-- A listing usually holds more than one repair, and agreeing to
@@ -103,52 +110,48 @@
                  rather than the old listing kept: the machine has just changed,
                  so what it would offer now is not necessarily what it offered
                  before. --}}
-            <x-operator::quiet-action label="{{ __('health.look_again') }}" tap="lookAgain()" />
+            <x-design::action label="{{ __('health.look_again') }}" tap="lookAgain()" tone="tonal" />
         @endif
     @else
         @forelse ($this->offer()->repairs as $repair)
-            <x-operator::entry>
-                {{-- All three clauses, in the order the requirement puts
-                     them, and before anything asks for a yes. What it does, what
-                     else it touches, and whether it can be taken back. --}}
-                <x-operator::emphasis>{{ $repair->does }}</x-operator::emphasis>
+            <x-design::card>
+                {{-- All three clauses, in this order, and before anything asks
+                     for a yes: what it does, what else it touches, and whether
+                     it can be taken back. --}}
+                <x-design::strong>{{ $repair->does }}</x-design::strong>
 
                 @forelse ($repair->effects as $effect)
-                    <x-operator::note>{{ $effect }}</x-operator::note>
+                    <x-design::note>{{ $effect }}</x-design::note>
                 @empty
-                    <x-operator::note>{{ __('health.affects_nothing_else') }}</x-operator::note>
+                    <x-design::note>{{ __('health.affects_nothing_else') }}</x-design::note>
                 @endforelse
 
-                <native:text>{{ __($repair->undoing) }}</native:text>
+                <x-design::body>{{ __($repair->undoing) }}</x-design::body>
 
-                {{-- The yes is its own act, asked for after all three of
-                     `N2-R4`'s statements have been made and not before. Named
-                     by the check rather than by position, because the listing
-                     is re-read every frame and a position is a fact about the
+                {{-- The yes is its own act, asked for after all three
+                     statements have been made and not before. Named by the
+                     check rather than by position, because the listing is
+                     re-read every frame and a position is a fact about the
                      list rather than about the repair. --}}
-                <x-operator::action
+                <x-design::action
                     label="{{ __('health.agree_to_it') }}"
                     answers-to="{{ __('health.agree_to_that', ['repair' => $repair->does]) }}"
                     tap="agreeTo('{{ $repair->answers }}')"
                 />
-            </x-operator::entry>
-
-            @unless ($loop->last)
-                <native:divider />
-            @endunless
+            </x-design::card>
         @empty
             {{-- An empty listing says the stack has no repair to offer, which
                  is not the same as nothing being wrong: a service that fell
                  over for a reason no repair covers leaves it empty too. Said as
-                 an answer rather than as a job that ended. --}}
-            <x-operator::emphasis>{{ __('health.nothing_to_put_right') }}</x-operator::emphasis>
+                 an answer rather than as a job that ended, and with no glyph
+                 that would read as all being well. --}}
+            <x-design::strong>{{ __('health.nothing_to_put_right') }}</x-design::strong>
         @endforelse
 
-        {{-- Quiet, under the yeses. Every repair above is a commitment and this
-             is not one of them: a bar that looks like a yes and re-reads the
-             machine is the control an operator taps when they meant the one
-             above it. --}}
-        <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
+        {{-- Tonal, under the yeses. Every repair above is a commitment and this
+             is not one of them: a filled bar that re-reads the machine is the
+             control an operator taps when they meant the one above it. --}}
+        <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
     @endunless
 
     {{-- No way back of its own. The bar under this screen carries the machine's
