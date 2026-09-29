@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use function __;
 use function array_map;
+use function array_values;
 
 use Illuminate\Support\Facades\Blade;
 
@@ -66,6 +67,32 @@ final readonly class WhatMarkupDraws
         $hashes = [];
 
         return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
+    }
+
+    /**
+     * Every road a piece of markup offers, as the navigations its presses resolve to.
+     *
+     * @return list<array<array-key, mixed>>
+     */
+    public static function roads(string $markup): array
+    {
+        $was = NativeTagPrecompiler::setActive(active: true);
+
+        try {
+            NativeElementCollector::reset();
+            Blade::render($markup);
+            $tree = NativeElementCollector::collect();
+        } finally {
+            NativeTagPrecompiler::setActive(active: $was);
+        }
+
+        $id = 1;
+        $emitted = [];
+        $hashes = [];
+        $registry = new CallbackRegistry();
+        $tree->toArray($registry, $id, '', 0, $emitted, $hashes);
+
+        return array_values($registry->navigations());
     }
 
     /**
