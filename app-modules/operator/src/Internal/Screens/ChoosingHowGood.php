@@ -59,6 +59,7 @@ use function view;
 final class ChoosingHowGood extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * The preset typed, or the format for music.

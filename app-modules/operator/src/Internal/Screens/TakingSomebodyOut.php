@@ -58,6 +58,7 @@ use function view;
 final class TakingSomebodyOut extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What taking them out would cost, while it is in front of the operator.

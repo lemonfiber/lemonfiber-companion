@@ -38,6 +38,7 @@ use function view;
 final class WhichAppToWatchOn extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What came back, once the frame has asked.

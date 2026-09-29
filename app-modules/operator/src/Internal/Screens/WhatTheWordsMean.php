@@ -53,6 +53,7 @@ use function view;
 final class WhatTheWordsMean extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What somebody has typed into the search box.

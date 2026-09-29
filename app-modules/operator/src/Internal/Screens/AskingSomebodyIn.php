@@ -76,6 +76,7 @@ use function view;
 final class AskingSomebodyIn extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * The name they will sign in as, bound to its field.

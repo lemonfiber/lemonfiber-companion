@@ -16,6 +16,7 @@ use Native\Mobile\Edge\CallbackRegistry;
 use Native\Mobile\Edge\Element;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeTagPrecompiler;
+use Native\Mobile\UI\Builders\Drawer;
 use ReflectionObject;
 use RuntimeException;
 
@@ -124,9 +125,29 @@ final readonly class WhatTheDeviceWouldDraw
      */
     public static function whileItOpens(NativeComponent $screen): self
     {
+        // The placeholder may draw the frame's chrome with it, and the side
+        // menu is rendered against the screen's callbacks while it does.
+        $reflected = new ReflectionObject($screen);
+        $reflected->getProperty('nativeCallbacks')->setValue($screen, new CallbackRegistry());
+
         return new self(self::collect(self::treeMadeBy(
             $screen,
-            new ReflectionObject($screen)->getMethod('placeholder')->getClosure($screen),
+            $reflected->getMethod('placeholder')->getClosure($screen),
+        )));
+    }
+
+    /**
+     * What a screen's side menu draws, rendered against the screen as the phone renders it.
+     *
+     * The menu is not part of the screen's own view: NativePHP asks the screen
+     * for it and draws it beside the frame, so a test that read only the frame
+     * would never see it.
+     */
+    public static function inTheMenu(NativeComponent $screen, Drawer $menu): self
+    {
+        return new self(self::collect(self::treeMadeBy(
+            $screen,
+            static fn(): Element => TheSideMenu::drawnOn($screen, $menu),
         )));
     }
 
@@ -316,17 +337,17 @@ final readonly class WhatTheDeviceWouldDraw
     }
 
     /**
-     * What hangs off this node, and nothing where nothing does.
+     * What hangs off this node, but the side menu, and nothing where nothing does.
      *
      * @param array<mixed> $node
      *
-     * @return array<mixed>
+     * @return list<mixed>
      */
     private static function beneath(array $node): array
     {
         $children = array_key_exists(self::BENEATH, $node) ? $node[self::BENEATH] : [];
 
-        return is_array($children) ? $children : [];
+        return is_array($children) ? TheSideMenu::leftOutOf($children) : [];
     }
 
     /**

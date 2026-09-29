@@ -189,4 +189,54 @@ final readonly class Templates
                 BLADE, $arrivesAt, 'a-screen-nothing-opens-on'),
         ];
     }
+
+    /**
+     * A screen about a stack with no menu, a screen of one stack in no menu,
+     * and a navigation label that runs to a sentence.
+     *
+     * The first is a class with nothing but the answer to which stack it is
+     * about, because that answer is what makes a screen one the menu belongs
+     * on. The second adds a screen to the ones a stack has and nothing that
+     * opens it. The third is a menu item's Dutch label written as a sentence.
+     *
+     * @return list<Fixture>
+     */
+    public static function theWayAround(): array
+    {
+        return [
+            Fixture::suite('F17', 'app-modules/operator/src/Internal/Screens/Fixtures/AScreenWithoutTheMenu.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Operator\Internal\Screens\Fixtures;
+
+                final readonly class AScreenWithoutTheMenu
+                {
+                    public function stack(): string
+                    {
+                        return 'the loft';
+                    }
+                }
+                PHP, 'F17 — every operator screen about a stack carries the menu', 'AScreenWithoutTheMenu'),
+
+            Fixture::edit(
+                'F18',
+                'app-modules/stacks/src/Api/AStacksScreen.php',
+                "    case Reset = '/stacks/{stack}/reset';",
+                "    case Reset = '/stacks/{stack}/reset';\n\n    case Stranded = '/stacks/{stack}/stranded';",
+                'F18 — every screen of one stack is a tab, a menu item',
+                'Stranded',
+            ),
+
+            Fixture::edit(
+                'L8',
+                'lang/nl/navigation.php',
+                "        'requests' => 'Verzoeken',",
+                "        'requests' => 'Alles wat het huishouden heeft gevraagd.',",
+                'L8 — every navigation label is at most three words',
+                'navigation.menu.requests',
+            ),
+        ];
+    }
 }

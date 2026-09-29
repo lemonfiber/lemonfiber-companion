@@ -89,6 +89,7 @@ final class HowThisStackIs extends NativeComponent
 {
     use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What came back, once the frame has asked.

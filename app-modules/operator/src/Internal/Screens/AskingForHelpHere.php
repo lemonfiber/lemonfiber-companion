@@ -68,6 +68,7 @@ final class AskingForHelpHere extends NativeComponent
 {
     use ChoosesWhatABundleHolds;
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * The bundle sent, with every choice as it was made.

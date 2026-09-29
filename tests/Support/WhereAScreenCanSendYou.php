@@ -19,6 +19,8 @@ use function is_array;
 use function is_file;
 use function is_string;
 
+use Modules\Operator\Internal\Screens\FindsItsWayAround;
+use Modules\Operator\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 
 use function preg_match;
@@ -118,6 +120,8 @@ final readonly class WhereAScreenCanSendYou
                 $unreadable = [...$unreadable, ...$this->whatIsNoStep($view, $expression, $reached)];
                 $steps = [...$steps, ...$this->stepsOf($screen, $view, $reached)];
             }
+
+            $steps = [...$steps, ...$this->stepsOf($screen, $view, $this->casesInTheMenuOf($screen))];
         }
 
         return ['steps' => $steps, 'unreadable' => $unreadable];
@@ -142,6 +146,29 @@ final readonly class WhereAScreenCanSendYou
         }
 
         return $reached;
+    }
+
+    /**
+     * Where a screen's side menu goes, when it carries one.
+     *
+     * The menu is drawn beside the screen rather than in its view, so its
+     * rows are not in the template this walk reads; every screen that carries
+     * it can go to every item the menu holds.
+     *
+     * @param ReflectionClass<object> $screen
+     *
+     * @return list<string>
+     */
+    private function casesInTheMenuOf(ReflectionClass $screen): array
+    {
+        if (! in_array(FindsItsWayAround::class, $screen->getTraitNames(), strict: true)) {
+            return [];
+        }
+
+        return array_map(
+            static fn(TheMenu $item): string => sprintf('AStacksScreen::%s', $item->screen()->name),
+            TheMenu::cases(),
+        );
     }
 
     /**

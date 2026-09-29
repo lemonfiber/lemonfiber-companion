@@ -63,6 +63,7 @@ use function view;
 final class PuttingThatRunBack extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What the record says of the run, once the frame has asked.

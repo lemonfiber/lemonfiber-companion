@@ -329,6 +329,8 @@ automatic and the operator never sees the question.
 | F14 | Every step a template takes after its screen answered, and every step a component takes off what it was handed — a field or a further call — is one that value has | `tests/Templates`: the chain walked by declared type, from the screen's return type or the component's property onward |
 | F15 | Every screen the router serves is built the way the app builds it, drawn, and draws something — the render path is where a frame is actually decided | `tests/Feature`: every route's screen, rendered with stand-ins answering |
 | F16 | The column a screen's content sits in is written once, in the `content` component, whose slot is drawn inside it | arch |
+| F17 | Every operator screen about a stack carries the side menu, and one that goes without is named with why | arch: every screen answering which stack it is about uses the menu's trait, against a register that may shrink and may not grow |
+| F18 | Every screen of one stack is a tab, a menu item, or a step of another screen named with where it begins | arch: read from the screens a stack has, against the menu, the tabs and a register that may shrink and may not grow |
 
 **Why F12 is a rule of its own, given the three beside it.** Three rules already
 ask about reachability and every one of them asks it of a single screen: each
@@ -432,6 +434,7 @@ ever sees.
 | L1 | Text a person reads comes from the translator | phpstan: own rule, over everything on the way to a screen that is not a refusal |
 | L2 | Every locale carries the same keys, none empty and none equal to its key | test |
 | L7 | Every catalogue key the application names is a key the catalogue holds — the literal ones read out of the sources, the derived ones asked of each enum that builds them — and every line the catalogue holds is one something shows | test: three, one per direction plus one for derived keys |
+| L8 | A tab, a menu item and a menu group name what they open in at most three words, and never as a sentence | arch: every line of the navigation catalogue, in every language |
 
 **The line between the two kinds of text.** A refusal on screen, an empty state,
 a notification body — a person reads these, so they are keys in

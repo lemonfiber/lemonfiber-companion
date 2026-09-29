@@ -44,6 +44,7 @@ use function view;
 final class HowTheLineIsSharedHere extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What came back, once the frame has asked.

@@ -66,6 +66,7 @@ final class WhatStoppedComingIn extends NativeComponent
 {
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
+    use FindsItsWayAround;
 
     /**
      * What came back, once the frame has asked.

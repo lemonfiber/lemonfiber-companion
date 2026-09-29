@@ -60,6 +60,7 @@ use function view;
 final class LettingADownloadGo extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What the offer came to, once the frame has asked.

@@ -56,6 +56,7 @@ use function view;
 final class TakingACopyHere extends NativeComponent
 {
     use AsksWhatTheStackIsRunning;
+    use FindsItsWayAround;
 
     /**
      * The copy being asked about, while the operator decides.

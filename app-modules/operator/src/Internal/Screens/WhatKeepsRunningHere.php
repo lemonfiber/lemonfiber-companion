@@ -74,6 +74,7 @@ use function view;
 final class WhatKeepsRunningHere extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What came back, once the frame has asked.

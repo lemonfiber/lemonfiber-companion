@@ -62,6 +62,7 @@ use function view;
 final class TakingItOffThisMachine extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /** The removal being read, as its own word, or empty while the four are in front of the operator to choose from. */
     public string $tier = WhichRemoval::Stop->value;
