@@ -306,6 +306,120 @@ SHIPS,
                     inFlight.sent(newValue.text)
 BECOMES,
     ],
+    [
+        // Material's container colours back the bottom bar's selected-item
+        // indicator and the tonal button. The package maps its surface family
+        // onto the theme store and leaves these at Material's baseline, a
+        // lavender no theme chose. Each is folded onto the store's token; the
+        // secondary container, behind a selected tab and a tonal button, onto
+        // the outline with the surface's text on it.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeUITheme.kt',
+        'ships' => <<<'SHIPS'
+        inversePrimary          = primary,
+    )
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        inversePrimary          = primary,
+        primaryContainer        = primary,
+        onPrimaryContainer      = onPrimary,
+        secondaryContainer      = outline,
+        onSecondaryContainer    = onSurface,
+        tertiaryContainer       = accent,
+        onTertiaryContainer     = onAccent,
+        errorContainer          = destructive,
+        onErrorContainer        = onDestructive,
+        outlineVariant          = outlineVariant,
+    )
+BECOMES,
+    ],
+    [
+        // Text with no colour of its own is painted black, in dark mode too,
+        // where the ground is the theme's dark background. It takes the theme's
+        // text colour instead, which follows the mode.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.graphics.Color
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt',
+        'ships' => <<<'SHIPS'
+        val textArgb = if (darkColor != 0) darkColor else p.getColor("color", 0xFF000000.toInt())
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        val textArgb = if (darkColor != 0) darkColor else p.getColor("color", androidx.compose.material3.MaterialTheme.colorScheme.onBackground.toArgb())
+BECOMES,
+    ],
+    [
+        // The same default for text drawn as inline runs.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextRenderer.kt',
+        'ships' => <<<'SHIPS'
+        val ctx = LocalContext.current
+        val annotated = buildAnnotatedString {
+            appendTextRuns(node, RunCtx.Root, isDark, ctx)
+        }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        val ctx = LocalContext.current
+        val themeTextArgb = androidx.compose.material3.MaterialTheme.colorScheme.onBackground.toArgb()
+        val annotated = buildAnnotatedString {
+            appendTextRuns(node, RunCtx.Root.copy(colorArgb = themeTextArgb), isDark, ctx)
+        }
+BECOMES,
+    ],
+    [
+        // An icon with no colour of its own takes the theme's text colour on
+        // its surface, for the reason text does.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/IconRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.graphics.Color
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/IconRenderer.kt',
+        'ships' => <<<'SHIPS'
+        val lightArgb = p.getColor("color", 0xFF000000.toInt())
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        val lightArgb = p.getColor("color", androidx.compose.material3.MaterialTheme.colorScheme.onSurface.toArgb())
+BECOMES,
+    ],
+    [
+        // A divider with no colour of its own is a fixed light grey in both
+        // modes. It takes the theme's hairline colour, which follows the mode.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/SimpleRenderers.kt',
+        'ships' => <<<'SHIPS'
+        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else Color(0xFFE0E0E0)
+        HorizontalDivider(modifier = modifier, color = color)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant
+        HorizontalDivider(modifier = modifier, color = color)
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/SimpleRenderers.kt',
+        'ships' => <<<'SHIPS'
+        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else Color(0xFFE0E0E0)
+        val strokeWidth = node.style?.borderWidth ?: 1f
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        val color = if (borderArgb != 0) argbToComposeColor(borderArgb) else androidx.compose.material3.MaterialTheme.colorScheme.outlineVariant
+        val strokeWidth = node.style?.borderWidth ?: 1f
+BECOMES,
+    ],
 ];
 
 /**
