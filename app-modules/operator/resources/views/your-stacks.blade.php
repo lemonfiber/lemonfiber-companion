@@ -6,145 +6,103 @@
              before anything reads retained state or touches a network. Nothing
              below is drawn — not the machine names, not how they stand, not
              the diagnostics control — because all of it is what the lock is for. --}}
-        <x-operator::heading>{{ __('device.unlock_reason') }}</x-operator::heading>
+        <x-design::title>{{ __('device.unlock_reason') }}</x-design::title>
 
         {{-- A button rather than an automatic retry. An operator who
              dismissed the prompt meant it, and a screen that asked again
              immediately is what teaches people to turn a feature off. --}}
-        <x-operator::action label="{{ __('device.unlock') }}" tap="tryToUnlock()" />
+        <x-design::action label="{{ __('device.unlock') }}" tap="tryToUnlock()" />
     @else
     {{-- What stood between this launch and the machine, shown rather
-         than discarded. Producing the answer is half of the requirement; a
-         screen that decided "no network" and then drew the machine names and
-         their last words as though nothing were wrong leaves somebody tapping a
-         stack their phone cannot reach.
+         than discarded: a screen that decided "no network" and then drew the
+         machine names and their last words as though nothing were wrong leaves
+         somebody tapping a stack their phone cannot reach.
 
          Above the list and not instead of it. The words below are retained,
          which is exactly what they are for — a device with no signal is when
          the last thing a stack said is worth most — and the diagnostics control
          at the bottom is the one thing that still works when nothing else does.
-         N1-R10 wants the remedy too: what happened is a fact about the world,
+         The remedy is said beside it: what happened is a fact about the world,
          and what to do about it is advice. --}}
     @if ($this->howItOpened()->met !== '')
-        <x-operator::heading>{{ __($this->howItOpened()->met) }}</x-operator::heading>
-        <native:text>{{ __($this->howItOpened()->remedy) }}</native:text>
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __($this->howItOpened()->met) }}</x-design::strong>
+            <x-design::body>{{ __($this->howItOpened()->remedy) }}</x-design::body>
+        </x-design::notice>
     @endif
 
-    @forelse ($this->configured() as $stack)
-        {{-- A row that is tapped, not a button that is pressed.
+    @if ($this->nothingIsPairedYet())
+        {{-- A sequence rather than a wall: one step per frame, each stating
+             its own position, and pairing at the end of it.
 
-             The platform paints every button the same fill and honours no
-             per-instance colour, so a machine drawn as a button is a full-width
-             filled bar — and a household with three of them opens the app on
-             three identical bars with the pairing controls under them, none of
-             which reads as more or less than any other. `DES-R15` is why there
-             is no second button style to reach for: hierarchy on this device is
-             how many controls are on the frame, and a list of machines is not a
-             list of calls to action.
-
-             So the whole row is the tap target and carries what it is about.
-             `F5` is answered by `a11y-label` rather than by a visible label,
-             because what a reader should hear is *open this machine* and what
-             the eye should read is the machine's state. The dimming under a
-             finger is what says it is tappable at all, in place of the fill
-             that used to say it. --}}
-        <native:pressable
-            class="w-full min-h-12 justify-center gap-1 py-2"
-            @navigate="$this->tappingGoesTo($stack)"
-            a11y-label="{{ __('connection.open_stack', ['stack' => $stack->name()->shown()]) }}"
-            :press-opacity="0.6"
-        >
-            <x-operator::emphasis>{{ $stack->name()->shown() }}</x-operator::emphasis>
-            {{-- How the stack stands, which is what the app opens on: the
-                 core's one line, in the sentence the stack's own screen says
-                 it in. A stack whose line was never heard says it cannot be
-                 told, never nothing.
-
-                 It is held rather than asked, so it carries when it was heard
-                 and is never drawn as though it were current. The age comes
-                 out of the same fold as the word, so a row cannot have one
-                 without the other.
-
-                 Said plainly, with the machine's name carrying the row's one
-                 emphasis. Two strong lines in a row is a row with no first
-                 line, and what tells three machines apart at a glance is which
-                 one this is. --}}
-            <native:text>{{ __($this->lastKnownOf($stack)->said) }}</native:text>
-
-            @if ($this->lastKnownOf($stack)->ago->said !== '')
-                <x-operator::note>
-                    {{ __('health.summary.as_of', [
-                        'ago' => trans_choice($this->lastKnownOf($stack)->ago->said, $this->lastKnownOf($stack)->ago->count),
-                    ]) }}
-                </x-operator::note>
-            @endif
-
-            <x-operator::note>
-                {{ __($this->isSignedInto($stack) ? 'connection.stack_is_open' : 'connection.stack_wants_a_password') }}
-            </x-operator::note>
-        </native:pressable>
-
-        {{-- Between machines rather than under each, so the last row does not
-             end on a line that separates it from nothing. `F6`'s empty state is
-             the arm below; this is what keeps three rows from reading as one
-             paragraph of nine lines. --}}
-        @unless ($loop->last)
-            <native:divider />
-        @endunless
-    @empty
-        {{-- A sequence rather than a wall — one frame carrying a
-             heading, two sentences and three buttons at once says nothing about
-             which of them to read first. One step per frame, each stating its
-             own position, and pairing at the end of it.
-
-             Inside the empty arm and not beside it, which is `N1-R56` by
-             construction: a device holding a pairing never evaluates this, so
-             the sequence cannot be re-entered and nothing has to remember that
-             it was finished. --}}
+             Drawn only where nothing is paired, so a device holding a pairing
+             never evaluates it, the sequence cannot be re-entered and nothing
+             has to remember that it was finished. --}}
         <x-operator::first-run :at="$this->firstRunIsAt()" on="goOn()" leave="skipAhead()" />
-    @endforelse
+    @else
+        {{-- A row that is tapped, not a button that is pressed: a list of
+             machines is not a list of calls to action. The row says what it
+             is about, and a reader hears *open this machine* while the eye
+             reads the machine's state.
+
+             How the stack stands is what the app opens on: the core's one
+             line, in the sentence the stack's own screen says it in, with its
+             glyph at the row's start. A stack whose line was never heard says
+             it cannot be told, never nothing. It is held rather than asked, so
+             it carries when it was heard and is never drawn as though it were
+             current; the age comes out of the same fold as the word, so a row
+             cannot have one without the other. Then whether this device holds
+             a session for it. --}}
+        <x-design::section>
+            @forelse ($this->configured() as $stack)
+                <x-design::row
+                    :headline="$stack->name()->shown()"
+                    :supporting="__($this->lastKnownOf($stack)->said)
+                        . ($this->lastKnownOf($stack)->ago->said === '' ? '' : ' ' . __('health.summary.as_of', ['ago' => trans_choice($this->lastKnownOf($stack)->ago->said, $this->lastKnownOf($stack)->ago->count)]))
+                        . ' · ' . __($this->isSignedInto($stack) ? 'connection.stack_is_open' : 'connection.stack_wants_a_password')"
+                    :tone="$this->lastKnownOf($stack)->tone"
+                    :goes="$this->tappingGoesTo($stack)"
+                    :answers-to="__('connection.open_stack', ['stack' => $stack->name()->shown()])"
+                />
+            @empty
+                {{-- Unreachable while the branch above guards it: a device
+                     with nothing paired draws the first run instead. --}}
+            @endforelse
+        </x-design::section>
+    @endif
 
     @if ($this->sharingWent() !== '')
-        <x-operator::emphasis>{{ __($this->sharingWent()) }}</x-operator::emphasis>
-        <native:text>{{ __($this->sharingRemedy()) }}</native:text>
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __($this->sharingWent()) }}</x-design::strong>
+            <x-design::body>{{ __($this->sharingRemedy()) }}</x-design::body>
+        </x-design::notice>
     @endif
 
-    {{-- The two roads, and the sequence's last step. Guarded rather than moved
-         into the sequence: an operator with a stack already paired is on this
-         screen to add another, and the same two controls answer both — one
-         spelling, one set of tests. --}}
+    {{-- The sequence's last step, and the way to add another machine. Guarded
+         rather than moved into the sequence: an operator with a stack already
+         paired is on this screen to add another, and the same control answers
+         both — one spelling, one set of tests.
+
+         One road offered here and the other where it is used. An operator who
+         opens the app to add a machine is choosing to add one, not choosing
+         between a camera and a keyboard; the scanning screen offers the typed
+         road beside the camera, which is where somebody is when the question
+         is real. --}}
     @if ($this->pairingIsOffered())
-        {{-- One road offered here and the other offered where it is used.
-             `N1-R6` asks for both and does not ask for both on this screen: an
-             operator who opens the app to add a machine is choosing to add one,
-             not choosing between a camera and a keyboard, and two controls of
-             equal weight side by side is this screen asking them to. The
-             scanning screen offers the typed road beside the camera, which is
-             where somebody is when the question is real. --}}
-        <x-operator::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
+        <x-design::action label="{{ __('connection.pair') }}" :goes="$this->scanningIsAt()" />
     @endif
 
-    {{-- Assembled for the operator to send, and not sent by the app.
-         On this screen because it is the one reachable from anywhere and the
-         one that works when nothing else does — a stack that cannot be reached
-         is exactly when somebody needs to ask for help.
+    {{-- Assembled for the operator to send, and not sent by the app. On this
+         screen because it is the one reachable from anywhere and the one that
+         works when nothing else does — a stack that cannot be reached is
+         exactly when somebody needs to ask for help.
 
-         Not on a step of the first run, which is not the same as not reachable:
-         the sequence ends on this screen with everything it offers, and that is
-         where somebody who is stuck on a first run actually is. The platform
-         paints every button the same fill and the design rules refuse a second
-         style — `DES-R15` measures lemon as text at 1.6:1 — so on this device
-         a frame's hierarchy is how many controls are on it, and three of equal
-         weight under `Step 1 of 3` says none of them is the way forward. --}}
+         Not on a step of the first run, which is not the same as not
+         reachable: the sequence ends on this screen with everything it offers,
+         and that is where somebody stuck on a first run actually is. A line
+         rather than a button, because it is not part of the pairing above it. --}}
     @unless ($this->theFirstRunIsStillRunning())
-        {{-- A rule above it rather than a quieter button beside it. The
-             platform paints every button the same fill and honours no
-             per-instance colour, so grouping is the only hierarchy available
-             here that is not an override `DES-R25` refuses — and what this
-             needs to say is not *press me less*, it is *this one is not part
-             of the pairing above*. --}}
-        <native:divider />
-        <x-operator::quiet-action label="{{ __('device.share_diagnostics') }}" tap="share()" />
+        <x-design::link label="{{ __('device.share_diagnostics') }}" tap="share()" />
     @endunless
     @endif
 </x-operator::content>

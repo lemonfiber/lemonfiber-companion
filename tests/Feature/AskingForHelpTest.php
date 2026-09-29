@@ -171,6 +171,8 @@ it('takes a log window it offers, and ignores one it does not', function (): voi
     $screen->describe();
 
     expect($screen->lines)->toBe(1000)
+        ->and($screen->takes(1000))->toBeTrue()
+        ->and($screen->takes(200))->toBeFalse()
         ->and(whatTheBundleAskedFor($helping->asked()[0])['lines'])->toBe(1000);
 });
 

@@ -3,96 +3,100 @@
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
     @if ($this->answer()->item === '')
-        <x-operator::emphasis>{{ __('health.trace.nothing_named') }}</x-operator::emphasis>
+        <x-design::title>{{ __('health.trace.nothing_named') }}</x-design::title>
     @elseif (! $this->answer()->followed)
         {{-- Nothing being watched for matched: nobody asked for it, which is
              an answer, and not the same one as a trace that could not be read. --}}
-        <x-operator::emphasis>{{ __('health.trace.nothing_asked_for', ['item' => $this->answer()->item]) }}</x-operator::emphasis>
+        <x-design::title>{{ __('health.trace.nothing_asked_for', ['item' => $this->answer()->item]) }}</x-design::title>
     @else
-        <x-operator::emphasis>{{ __('health.trace.following', ['item' => $this->answer()->item]) }}</x-operator::emphasis>
+        <x-design::title>{{ __('health.trace.following', ['item' => $this->answer()->item]) }}</x-design::title>
 
         {{-- How sure, first: a guess drawn as fact is worse than a marked one. --}}
         @if ($this->answer()->isUncertain)
-            <x-operator::emphasis>{{ __($this->answer()->sureSaid) }}</x-operator::emphasis>
+            <x-design::notice>
+                <x-design::strong>{{ __($this->answer()->sureSaid) }}</x-design::strong>
+            </x-design::notice>
         @else
-            <x-operator::note>{{ __($this->answer()->sureSaid) }}</x-operator::note>
+            <x-design::note>{{ __($this->answer()->sureSaid) }}</x-design::note>
         @endif
 
         {{-- The stage is the stack's word, drawn as it came, with the plain
              sentence beside it rather than in its place. --}}
         @if ($this->answer()->furthest !== null)
-            <native:text>{{ __('health.trace.furthest', ['stage' => $this->answer()->furthest->word]) }}</native:text>
-            <native:text>{{ __($this->answer()->furthest->said) }}</native:text>
-            <x-operator::gloss :gloss="$this->gloss($this->answer()->furthest->word)" />
+            <x-design::card>
+                <x-design::strong>{{ __('health.trace.furthest', ['stage' => $this->answer()->furthest->word]) }}</x-design::strong>
+                <x-design::body>{{ __($this->answer()->furthest->said) }}</x-design::body>
+                <x-operator::gloss :gloss="$this->gloss($this->answer()->furthest->word)" />
+            </x-design::card>
         @endif
 
         @if ($this->answer()->stall !== '')
-            <x-operator::emphasis>{{ __('health.trace.stopped', ['why' => $this->answer()->stall]) }}</x-operator::emphasis>
+            <x-design::notice>
+                <x-design::strong>{{ __('health.trace.stopped', ['why' => $this->answer()->stall]) }}</x-design::strong>
+            </x-design::notice>
         @endif
 
         {{-- For a series, what is here and what is not, season by season: a
              series reads as imported the moment one episode lands. --}}
         @if ($this->answer()->here->series !== null)
-            <x-operator::emphasis>{{ __('health.trace.series_here', ['have' => $this->answer()->here->series->have, 'wanted' => $this->answer()->here->series->wanted]) }}</x-operator::emphasis>
+            <x-design::heading>{{ __('health.trace.series_here', ['have' => $this->answer()->here->series->have, 'wanted' => $this->answer()->here->series->wanted]) }}</x-design::heading>
             @if ($this->answer()->here->series->unmonitored > 0)
-                <x-operator::note>{{ trans_choice('health.trace.nobody_asked_for', $this->answer()->here->series->unmonitored) }}</x-operator::note>
+                <x-design::note>{{ trans_choice('health.trace.nobody_asked_for', $this->answer()->here->series->unmonitored) }}</x-design::note>
             @endif
             @forelse ($this->answer()->here->series->seasons as $season)
-                <x-operator::entry>
-                    <native:text>{{ __('health.trace.season', ['season' => $season->season, 'have' => $season->have, 'wanted' => $season->wanted]) }}</native:text>
+                <x-design::card>
+                    <x-design::strong>{{ __('health.trace.season', ['season' => $season->season, 'have' => $season->have, 'wanted' => $season->wanted]) }}</x-design::strong>
                     @forelse ($season->outstanding as $episode)
-                        <x-operator::note>{{ __('health.trace.episode', ['number' => $episode->number, 'title' => $episode->title, 'stage' => $episode->word]) }}</x-operator::note>
+                        <x-design::note>{{ __('health.trace.episode', ['number' => $episode->number, 'title' => $episode->title, 'stage' => $episode->word]) }}</x-design::note>
                     @empty
-                        <x-operator::note>{{ __('health.trace.season_all_here') }}</x-operator::note>
+                        <x-design::note>{{ __('health.trace.season_all_here') }}</x-design::note>
                     @endforelse
-                </x-operator::entry>
+                </x-design::card>
             @empty
-                <x-operator::note>{{ __('health.trace.no_seasons') }}</x-operator::note>
+                <x-design::body>{{ __('health.trace.no_seasons') }}</x-design::body>
             @endforelse
         @endif
 
-        <x-operator::emphasis>{{ __('health.trace.the_way') }}</x-operator::emphasis>
-        @forelse ($this->answer()->stages as $stage)
-            <x-operator::entry>
-                <native:text>{{ __('health.at_stage', ['stage' => $stage->word]) }}</native:text>
-                @if ($stage->at !== '')
-                    <x-operator::note>{{ __('health.trace.recorded_at', ['service' => $stage->service, 'at' => $stage->at]) }}</x-operator::note>
-                @else
-                    <x-operator::note>{{ __('health.trace.recorded_untimed', ['service' => $stage->service]) }}</x-operator::note>
-                @endif
-            </x-operator::entry>
-        @empty
-            <x-operator::note>{{ __('health.trace.no_stages') }}</x-operator::note>
-        @endforelse
+        <x-design::section :label="__('health.trace.the_way')">
+            @forelse ($this->answer()->stages as $stage)
+                <x-design::row
+                    :headline="__('health.at_stage', ['stage' => $stage->word])"
+                    :supporting="$stage->at === '' ? __('health.trace.recorded_untimed', ['service' => $stage->service]) : __('health.trace.recorded_at', ['service' => $stage->service, 'at' => $stage->at])"
+                />
+            @empty
+                <x-design::row :headline="__('health.trace.no_stages')" />
+            @endforelse
+        </x-design::section>
 
         {{-- What has been tried, oldest first: a repeated attempt is a pattern. --}}
-        <x-operator::emphasis>{{ __('health.trace.tried') }}</x-operator::emphasis>
-        @forelse ($this->answer()->history as $moment)
-            <x-operator::entry>
-                <native:text>{{ __($moment->said) }}</native:text>
-                <x-operator::note>{{ $moment->at }}</x-operator::note>
-            </x-operator::entry>
-        @empty
-            <x-operator::note>{{ __('health.trace.nothing_tried') }}</x-operator::note>
-        @endforelse
+        <x-design::section :label="__('health.trace.tried')">
+            @forelse ($this->answer()->history as $moment)
+                <x-design::row :headline="__($moment->said)" :supporting="$moment->at" />
+            @empty
+                <x-design::row :headline="__('health.trace.nothing_tried')" />
+            @endforelse
+        </x-design::section>
 
         {{-- Where two services' views of it contradict, in the stack's words. --}}
-        <x-operator::emphasis>{{ __('health.trace.disagree') }}</x-operator::emphasis>
-        @forelse ($this->answer()->disagreements as $disagreement)
-            <x-operator::note>{{ $disagreement }}</x-operator::note>
-        @empty
-            <x-operator::note>{{ __('health.trace.agree') }}</x-operator::note>
-        @endforelse
+        <x-design::section :label="__('health.trace.disagree')">
+            @forelse ($this->answer()->disagreements as $disagreement)
+                <x-design::row :headline="$disagreement" />
+            @empty
+                <x-design::row :headline="__('health.trace.agree')" />
+            @endforelse
+        </x-design::section>
     @endif
 
-    <native:outlined-text-input
-        native:model="looking"
-        label="{{ __('health.trace.search_label') }}"
-        placeholder="{{ __('health.trace.search_placeholder') }}"
-    />
-    <x-operator::quiet-action label="{{ __('health.trace.follow') }}" tap="follow()" />
+    <x-design::card>
+        <native:outlined-text-input
+            native:model="looking"
+            label="{{ __('health.trace.search_label') }}"
+            placeholder="{{ __('health.trace.search_placeholder') }}"
+        />
+        <x-design::action label="{{ __('health.trace.follow') }}" tap="follow()" tone="tonal" />
+    </x-design::card>
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

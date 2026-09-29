@@ -218,8 +218,8 @@ final readonly class WhatASurfaceIsNeverShown
             Fixture::edit(
                 'F7',
                 'app-modules/operator/resources/views/your-stacks.blade.php',
-                '{{ $stack->name()->shown() }}',
-                '{{ $stack->at()->forTheClient() }}',
+                ':headline="$stack->name()->shown()"',
+                ':headline="$stack->at()->forTheClient()"',
                 'F7 —',
                 'forTheClient',
             ),
