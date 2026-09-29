@@ -39,6 +39,7 @@ use Modules\Operator\Internal\ViewModels\AStepOnAsShown;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereItStoppedAsShown;
+use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -306,6 +307,19 @@ it('asks again when asked to', function (): void {
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.ask_again'));
 });
 
+/**
+ * Whether the screen's runloop would go round again. Named for this file (`G10`).
+ *
+ * Letting go of the subscription is not all that stopping does: a screen that
+ * let go and went on running would be the one on the glass still.
+ */
+function whetherTheWalkScreenGoesRound(NativeComponent $screen): bool
+{
+    $asked = Closure::bind(static fn(NativeComponent $running): bool => $running->nativeRunning, null, NativeComponent::class);
+
+    return $asked($screen);
+}
+
 /** A step the walk says on the stream, as the adapter hands it over. */
 function aStepTheWalkSaid(WalkthroughStep $step, string $said, string $detail = ''): WhatTheWalkSaid
 {
@@ -490,7 +504,8 @@ it('lets go of the stream when nobody can see it, opens it again when somebody c
     $screen->stop();
 
     expect($narrating->lettingsGo())->toBe(3)
-        ->and($screen->stage()->ago->said)->not->toBe('');
+        ->and($screen->stage()->ago->said)->not->toBe('')
+        ->and(whetherTheWalkScreenGoesRound($screen))->toBeFalse();
 });
 
 it('says a stage not said yet, never one that could not be heard, while nobody can see the screen and until the wake after it is back', function (): void {
@@ -563,7 +578,7 @@ it('forgets the stage an earlier walk said when another is started', function ()
 
     $screen->walk();
 
-    expect($screen->stage()->step)->toBe('')
+    expect([$screen->stage()->step, $screen->stage()->said, $screen->stage()->detail])->toBe(['', '', ''])
         ->and($screen->stage()->broke)->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.walkthrough.stage_not_said_yet'));
 });

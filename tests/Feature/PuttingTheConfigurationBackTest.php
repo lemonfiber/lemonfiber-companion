@@ -591,3 +591,16 @@ it('refuses a route parameter that is not text as naming a stack', function (): 
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
+
+it('asked again before anything was read, asks for the preview when the frame reads it, and only then', function (): void {
+    $resetting = aStackPreviewingTheReset();
+    $screen = thePuttingItAllBackScreen($resetting);
+
+    $screen->again();
+
+    expect($resetting->previewsAskedFor())->toBe(0);
+
+    $screen->answer();
+
+    expect($resetting->previewsAskedFor())->toBe(1);
+});
