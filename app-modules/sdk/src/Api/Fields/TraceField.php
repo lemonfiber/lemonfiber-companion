@@ -23,9 +23,6 @@ enum TraceField: string implements NamesAWireField
     /** Whether a monitored item matched the term at all. */
     case Matched = 'matched';
 
-    /** How sure the trace is of the item it followed. */
-    case Confidence = 'confidence';
-
     /** The furthest stage the item reached. */
     case Furthest = 'furthest';
 

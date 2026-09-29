@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
-use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
@@ -17,6 +16,7 @@ use Modules\Stacks\Api\AStacksScreen;
  * and how good the media it fetches should be — screens answering one kind of
  * question, which is what the machine does and keeps on its own account while
  * nobody is looking — and the record it keeps of walking one thing through.
+ * The screens that change what it keeps are {@see WhatItIsAskedToChange}'s.
  * Apart from {@see WhereAStackIs} because that is where the questions change
  * subject, and because that class had reached the twenty-method ceiling `H3`
  * refuses: one accessor there hands out this, and the next screen of this kind
@@ -46,6 +46,12 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::Origins->forTheStack($this->stack);
     }
 
+    /** What each service on this machine is for, and what became of any it dropped. */
+    public function catalogue(): string
+    {
+        return AStacksScreen::Catalogue->forTheStack($this->stack);
+    }
+
     /** Everything that leaves this machine. */
     public function leaving(): string
     {
@@ -70,21 +76,13 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::Keeps->forTheStack($this->stack);
     }
 
-    /** Taking a copy of this machine's stack. */
-    public function copy(): string
-    {
-        return AStacksScreen::Copy->forTheStack($this->stack);
-    }
-
     /**
-     * Putting one of this machine's copies back, by the name it was listed under.
-     *
-     * Text on the way in, because a template holds the names as text, and an
-     * {@see ACopy} on the way out, which refuses a blank.
+     * Where the screens are that change what this machine keeps, on a yes:
+     * its copies, its runs, a download, its configuration, and lemonfiber itself.
      */
-    public function puttingBack(string $named): string
+    public function changing(): WhatItIsAskedToChange
     {
-        return AStacksScreen::PutBack->forTheStacksCopy($this->stack, ACopy::named($named));
+        return WhatItIsAskedToChange::of($this->stack);
     }
 
     /** Asking for help with this machine: a support bundle, described before it is written. */
@@ -123,6 +121,7 @@ final readonly class WhatItKeepsOfItself
         return AStacksScreen::Wiring->forTheStack($this->stack);
     }
 
+
     /** What lemonfiber's words mean. */
     public function words(): string
     {
@@ -133,6 +132,12 @@ final readonly class WhatItKeepsOfItself
     public function wordAbout(AWordInUse $word): string
     {
         return AStacksScreen::WordAbout->forTheStacksWord($this->stack, $word);
+    }
+
+    /** Where a guard on this machine's data location is started, and held while that screen asks. */
+    public function guard(): string
+    {
+        return AStacksScreen::Guard->forTheStack($this->stack);
     }
 
     /** Where one thing is fetched while the operator watches, and the record of it is kept. */

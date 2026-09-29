@@ -8,9 +8,12 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ADownloadHeld;
+use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AScreenNeedsMoreThanAStack;
@@ -115,6 +118,23 @@ it('refuses a case that needs more than a machine, and one that needs less', fun
         StackId::rememberedAs(A_MACHINE),
         ACopy::named('lemonfiber-20260924-0300-full'),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Room->forTheStacksDownload(
+        StackId::rememberedAs(A_MACHINE),
+        ADownloadHeld::named('Show.Season1'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Health->forTheStacksRun(
+        StackId::rememberedAs(A_MACHINE),
+        ARun::stamped('1790150000'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+    expect(fn(): string => AStacksScreen::Health->forTheStacksMember(
+        StackId::rememberedAs(A_MACHINE),
+        SomebodyInTheHousehold::called('anna'),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
+it('puts a member of the household where a service would go, encoded', function (): void {
+    expect(AStacksScreen::TakeOut->forTheStacksMember(StackId::rememberedAs(A_MACHINE), SomebodyInTheHousehold::called('Anna Maria/2')))
+        ->toBe(sprintf('/stacks/%s/household/Anna%%20Maria%%2F2', A_MACHINE));
 });
 
 it('puts a copy where a service would go, encoded, and taking a copy under the machine alone', function (): void {
@@ -122,6 +142,18 @@ it('puts a copy where a service would go, encoded, and taking a copy under the m
         ->toBe(sprintf('/stacks/%s/copies/lemonfiber%%202026%%2F09%%2F24', A_MACHINE))
         ->and(AStacksScreen::Copy->forTheStack(StackId::rememberedAs(A_MACHINE)))
         ->toBe(sprintf('/stacks/%s/copy', A_MACHINE));
+});
+
+it('puts a run where a service would go, under the record', function (): void {
+    expect(AStacksScreen::RunBack->forTheStacksRun(StackId::rememberedAs(A_MACHINE), ARun::stamped('1790150000')))
+        ->toBe(sprintf('/stacks/%s/record/1790150000', A_MACHINE))
+        ->and(AStacksScreen::RunBack->forTheStacksRun(StackId::rememberedAs(A_MACHINE), ARun::stamped('17 90')))
+        ->toBe(sprintf('/stacks/%s/record/17%%2090', A_MACHINE));
+});
+
+it('puts a download where a service would go, encoded, beneath how full the machine is', function (): void {
+    expect(AStacksScreen::LetGo->forTheStacksDownload(StackId::rememberedAs(A_MACHINE), ADownloadHeld::named('Show Season1/Extras')))
+        ->toBe(sprintf('/stacks/%s/room/Show%%20Season1%%2FExtras', A_MACHINE));
 });
 
 it('puts an item to follow where a service would go, encoded', function (): void {

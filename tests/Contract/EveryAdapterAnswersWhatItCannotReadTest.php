@@ -11,8 +11,11 @@ use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ADownloadHeld;
+use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AHeldChoice;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
@@ -21,18 +24,33 @@ use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
+use Modules\Kernel\Api\AnUninstall;
+use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\AnUpgradeDescribed;
 use Modules\Kernel\Api\APresetToChoose;
+use Modules\Kernel\Api\ARemoval;
+use Modules\Kernel\Api\ARemovalAgreed;
+use Modules\Kernel\Api\AResetAgreed;
+use Modules\Kernel\Api\ARun;
+use Modules\Kernel\Api\ARunAgreedTo;
+use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\AWrittenBundle;
+use Modules\Kernel\Api\Change;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
+use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\Decided;
+use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HostingAgreed;
+use Modules\Kernel\Api\HowFarItGoesBack;
+use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\HowMuchWasRead;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\MovingInBy;
@@ -59,23 +77,38 @@ use Modules\Kernel\Api\TheAdoption;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
+use Modules\Kernel\Api\TheRecord;
+use Modules\Kernel\Api\TheReset;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhatGoesAndWhatStays;
+use Modules\Kernel\Api\WhatIsNotLemonfibers;
+use Modules\Kernel\Api\WhatIsStillComing;
+use Modules\Kernel\Api\WhatItCannotTake;
+use Modules\Kernel\Api\WhatItReaches;
+use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatTakingItOffComesTo;
+use Modules\Kernel\Api\WhatTheRemovalFound;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToFollow;
+use Modules\Kernel\Api\WhatToKnowFirst;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasNamed;
 use Modules\Kernel\Api\WhatWroteACopy;
+use Modules\Kernel\Api\WhenItWasMade;
+use Modules\Kernel\Api\WhereTakingItOffGot;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhetherToWait;
+use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoWasSwitchedOff;
 use Modules\Kernel\Api\WhoWasTakenBack;
@@ -84,12 +117,15 @@ use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Bundlers;
+use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
@@ -98,13 +134,18 @@ use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
+use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
+use Modules\Sdk\Api\Releasers;
+use Modules\Sdk\Api\Removers;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Resetters;
 use Modules\Sdk\Api\Restorers;
+use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -123,6 +164,7 @@ use Saloon\Http\PendingRequest;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\Tree;
 use Tests\Support\WalkthroughsToFollow;
+use Tests\Support\WhatAResetSays;
 
 // A malformed answer reaches a screen as an obstacle, whichever adapter read it,
 // and so do a stack that could not be asked at all and a machine that is not the
@@ -237,6 +279,44 @@ function aListingToSpoilTheAnswerTo(): WhatPuttingItBackWouldDo
     );
 }
 
+/** An offer to stop seeding, to agree against. */
+function anOfferToLetGoToSpoilTheAnswerTo(): WhatLettingItGoCosts
+{
+    return WhatLettingItGoCosts::offered(ADownloadOnDisk::neverImported('Show.Season1', 1), 'It goes', 'an-agreement');
+}
+
+/** A run the record shows, to put back against. */
+function aRunToSpoilTheAnswerTo(): ARunAgreedTo
+{
+    $change = Change::made('Set LIBRARY_PATH', 'reconfigure', 'lemonfiber', WhenItWasMade::unreadable(), HowFarItGoesBack::Whole, 1);
+
+    return ARunAgreedTo::by(TheRecord::reaching('the last 50 runs', $change)->theRun(ARun::stamped('0')));
+}
+
+/** A reading of the services, to agree against. */
+function anUninstallToSpoilTheAnswerTo(): AnUninstallAgreed
+{
+    return AnUninstallAgreed::after(AnUninstall::of(
+        WhatTakingItOffComesTo::read(
+            WhichRemoval::Services,
+            WhatGoesAndWhatStays::said(
+                'The containers and the images',
+                'Your configuration and your library',
+            ),
+            WhatItReaches::of(),
+            0,
+            WhatToKnowFirst::said(
+                WhatIsNotLemonfibers::of(),
+                WhatIsStillComing::of(),
+                WhatItCannotTake::of(),
+            ),
+            HowMuchWasRead::everything(),
+            'services-0-lines',
+        ),
+        WhereTakingItOffGot::surveyed(),
+    ), WhetherToWait::GoAheadNow, acknowledgedTheVolume: false);
+}
+
 /**
  * Every adapter call that reads an answer, by what it asks.
  *
@@ -257,6 +337,7 @@ function everyAdapterCallThatReads(): array
         'Advisers::advisedBy' => static fn(): object => new Advisers($clients)->advisedBy($stack, $session),
         'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
         'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
+        'Cataloguers::describedOn' => static fn(): object => new Cataloguers($clients)->describedOn($stack, $session),
         'Copiers::take' => static fn(): object
             => new Copiers($clients, $entropy)->take($stack, $session, ACopyAsked::ofTheWholeStack()),
         'Copiers::whatBecameOf' => static fn(): object
@@ -270,9 +351,17 @@ function everyAdapterCallThatReads(): array
             => new Bundlers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Bundlers::fetch' => static fn(): object
             => new Bundlers($clients, $entropy)->fetch($stack, $session, AWrittenBundle::at('/home/op/bundles/lemonfiber-support.tar.gz')),
+        'Dismantlers::surveyed' => static fn(): object
+            => new Dismantlers($clients, $entropy)->surveyed($stack, $session, WhichRemoval::Services),
+        'Dismantlers::takeItOff' => static fn(): object
+            => new Dismantlers($clients, $entropy)->takeItOff($stack, $session, anUninstallToSpoilTheAnswerTo()),
+        'Dismantlers::whatBecameOf' => static fn(): object
+            => new Dismantlers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Copyists::copiesOn' => static fn(): object => new Copyists($clients)->copiesOn($stack, $session),
         'Doorkeepers::frontDoorOf' => static fn(): object => new Doorkeepers($clients)->frontDoorOf($stack, $session),
         'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
+        'Explainers::wordOn' => static fn(): object
+            => new Explainers($clients)->wordOn($stack, $session, AWordInUse::named('seed')),
         'Followers::tracedOn' => static fn(): object
             => new Followers($clients)->tracedOn($stack, $session, WhatToFollow::called('sonarr')),
         'Graders::inForceOn' => static fn(): object => new Graders($clients)->inForceOn($stack, $session),
@@ -280,6 +369,12 @@ function everyAdapterCallThatReads(): array
             => new Graders($clients)->choose($stack, $session, APresetToChoose::named('lossless', 'music')),
         'Graders::confirm' => static fn(): object
             => new Graders($clients)->confirm($stack, $session, aHeldChoiceToSpoilTheAnswerTo()),
+        'Guards::guard' => static fn(): object
+            => new Guards($clients, $entropy)->guard($stack, $session, AGuardAskedFor::of(Forms::these(Form::called('media')))),
+        'Guards::whatBecameOf' => static fn(): object
+            => new Guards($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Guards::letGo' => static fn(): object
+            => new Guards($clients, $entropy)->letGo($stack, $session, Job::named('a-job')),
         'Guides::walk' => static fn(): object
             => new Guides($clients)->walk($stack, $session, WhatToWalk::called('Sintel')),
         'Guides::whatBecameOf' => static fn(): object
@@ -290,6 +385,8 @@ function everyAdapterCallThatReads(): array
         'Keepers::handOver' => static fn(): object
             => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
         'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
+        'Listeners::whatAStartWaitsOn' => static fn(): object => new Listeners($clients)->whatAStartWaitsOn($stack, $session),
+        'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
@@ -304,12 +401,41 @@ function everyAdapterCallThatReads(): array
         'Recorders::recordedOn' => static fn(): object => new Recorders($clients)->recordedOn($stack, $session),
         'Rehearsers::whatStarting' => static fn(): object
             => new Rehearsers($clients)->whatStarting($stack, $session, Form::called('media')),
+        'Releasers::whatItWouldCost' => static fn(): object
+            => new Releasers($clients, $entropy)->whatItWouldCost($stack, $session, ADownloadHeld::named('Show.Season1')),
+        'Releasers::whatTheOfferCameTo' => static fn(): object
+            => new Releasers($clients, $entropy)->whatTheOfferCameTo($stack, $session, Job::named('a-job')),
+        'Releasers::stop' => static fn(): object
+            => new Releasers($clients, $entropy)->stop($stack, $session, anOfferToLetGoToSpoilTheAnswerTo()),
+        'Releasers::whatBecameOf' => static fn(): object
+            => new Releasers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Removers::wouldRemove' => static fn(): object
+            => new Removers($clients, $entropy)->wouldRemove($stack, $session, SomebodyInTheHousehold::called('anna')),
+        'Removers::remove' => static fn(): object
+            => new Removers($clients, $entropy)->remove($stack, $session, ARemovalAgreed::after(ARemoval::described(
+                SomebodyInTheHousehold::called('anna'),
+                0,
+                asksThroughTheRequestService: false,
+                revoked: HowFarTheRemovalReached::Nothing,
+                findings: WhatTheRemovalFound::of(),
+            ))),
+        'Removers::whatBecameOf' => static fn(): object
+            => new Removers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Restorers::rehearse' => static fn(): object
             => new Restorers($clients, $entropy)->rehearse($stack, $session, ACopy::named('lemonfiber-20260924-0300-full')),
         'Restorers::putBack' => static fn(): object
             => new Restorers($clients, $entropy)->putBack($stack, $session, aListingToSpoilTheAnswerTo()),
         'Restorers::whatBecameOf' => static fn(): object
             => new Restorers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Reversers::putBack' => static fn(): object
+            => new Reversers($clients, $entropy)->putBack($stack, $session, aRunToSpoilTheAnswerTo()),
+        'Reversers::whatBecameOf' => static fn(): object
+            => new Reversers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+        'Resetters::wouldRevert' => static fn(): object => new Resetters($clients, $entropy)->wouldRevert($stack, $session),
+        'Resetters::revert' => static fn(): object
+            => new Resetters($clients, $entropy)->revert($stack, $session, AResetAgreed::to(TheReset::previewed(EditsReverted::these(), ConnectionsReverted::these('sonarr → qbittorrent')))),
+        'Resetters::whatBecameOf' => static fn(): object
+            => new Resetters($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
         'Requests::decided' => static fn(): object
             => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::numbered(1))),
@@ -364,9 +490,9 @@ const THE_WORK_AN_INVITATION_BECOMES = 'the work an invitation becomes';
  * Where an answer is built from an envelope's declaration rather than asked of a path.
  *
  * The stand-in answers every action as work, and no path it serves answers
- * with the `music`, `upgrade`, `backup` or `restore` envelope, so a call
- * answered with one of those is given the envelope itself, built by the
- * stand-in from the contract.
+ * with the `music`, `upgrade`, `backup`, `restore` or `stop-seeding`
+ * envelope, so a call answered with one of those is given the envelope
+ * itself, built by the stand-in from the contract.
  */
 const AN_ENVELOPE_BY_NAME = 'envelope:';
 
@@ -375,7 +501,7 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  *
  * The stand-in answers a change to a setting as work, which leaves nothing
  * here for the reader to refuse, so the change is given the listing, reviewed.
- * The stand-in answers every job as a repair's, which an update's reader
+ * The stand-in answers an update's job as a repair's, which an update's reader
  * refuses as the wrong kind, so an update's job is given the update's reading.
  * The stand-in answers handing a command over as work too, where the stack
  * answers it with the `hosting` envelope, so that act is given the reading.
@@ -383,8 +509,10 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * answers with, so it is given {@see THE_WORK_AN_INVITATION_BECOMES}.
  * A quality choice is given the quality reading, and a choice for music and an
  * upgrade the envelopes each is answered with. So are a finished copy, the
- * listing a restore answers without a yes, and a finished restore, and what a
- * start, a stop or a restart came to.
+ * listing a restore answers without a yes, and a finished restore, what a
+ * start, a stop or a restart came to, both what stopping seeding would cost
+ * and what it came to, what taking somebody out came to, and what taking
+ * lemonfiber off came to.
  */
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
@@ -401,7 +529,12 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Copiers::whatBecameOf' => sprintf('%sBackupEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Supervisors::whatBecameOf' => sprintf('%sLifecycleEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Bundlers::whatBecameOf' => sprintf('%sBundleEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Guards::whatBecameOf', $which === 'Guards::letGo' => sprintf('%sWatchEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Releasers::whatTheOfferCameTo', $which === 'Releasers::whatBecameOf' => sprintf('%sStopSeedingEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Reversers::whatBecameOf' => sprintf('%sUndoEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Removers::whatBecameOf' => sprintf('%sRemovalEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Dismantlers::whatBecameOf' => sprintf('%sUninstallEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }
@@ -421,15 +554,19 @@ function theStandInsAnswerTo(string $endpoint, string ...$asked): MockResponse
  *
  * The stand-in answers every job as a repair's, and no path answers with a
  * walkthrough, so a walkthrough's job is sent the record a finished walk
- * answers with.
+ * answers with. A reset's job is sent a reset with its diff in the stack's
+ * own shape, which the contract types only as text and a payload built from
+ * the declaration cannot be.
  *
  * @return list<array<mixed>>
  */
 function theEnvelopesACallIsSent(string $which, string $endpoint, string ...$asked): array
 {
-    return $which === 'Guides::whatBecameOf'
-        ? [WalkthroughsToFollow::whatAStackSaysOfTheWalkThatWorked()]
-        : theEnvelopesAPathSends(theAnswerACallIsGiven($which, $endpoint), ...$asked);
+    return match ($which) {
+        'Guides::whatBecameOf' => [WalkthroughsToFollow::whatAStackSaysOfTheWalkThatWorked()],
+        'Resetters::whatBecameOf' => [WhatAResetSays::envelope(confirmed: false)],
+        default => theEnvelopesAPathSends(theAnswerACallIsGiven($which, $endpoint), ...$asked),
+    };
 }
 
 /**
@@ -568,10 +705,34 @@ function theEnvelopesAPathSends(string $endpoint, string ...$asked): array
     return $lines;
 }
 
-/** What one event on the stream carries, which is the envelope after `data: `. */
+/**
+ * What each event on the stream carries, which is the envelope after `data: `, one a line.
+ *
+ * Every event, because the stand-in's stream carries one of each kind a screen
+ * holds it for, and each adapter reading the stream reads its own kind of them.
+ */
 function anEventsData(string $stream): string
 {
-    return preg_match('/^data: (.*)$/m', $stream, $data) === 1 ? $data[1] : '';
+    preg_match_all('/^data: (.*)$/m', $stream, $data);
+
+    return implode("\n", $data[1]);
+}
+
+/**
+ * The stream an adapter is answered with: every envelope, each framed as an event of its own kind.
+ *
+ * @param list<array<mixed>> $envelopes
+ */
+function aStreamOf(array $envelopes): string
+{
+    $said = '';
+
+    foreach ($envelopes as $envelope) {
+        $kind = array_key_exists('kind', $envelope) && is_string($envelope['kind']) ? $envelope['kind'] : '';
+        $said = sprintf("%sevent: %s\ndata: %s\n\n", $said, $kind, (string) json_encode($envelope));
+    }
+
+    return $said;
 }
 
 /**
@@ -595,7 +756,7 @@ function answerEverythingSpoiledAt(string $which, ?array $at): void
                     static fn(array $envelope): string => (string) json_encode($envelope),
                     $envelopes,
                 ))),
-                Api::EVENTS_ENDPOINT => MockResponse::make(sprintf("event: dashboard\ndata: %s\n\n", (string) json_encode($envelopes[0]))),
+                Api::EVENTS_ENDPOINT => MockResponse::make(aStreamOf($envelopes)),
                 default => MockResponse::make($envelopes[0]),
             };
         },
@@ -628,7 +789,7 @@ function everySpoilingOf(string $which, Closure $ask): array
                 }
             }
 
-            return $which === 'Guides::whatBecameOf'
+            return in_array($which, ['Guides::whatBecameOf', 'Resetters::whatBecameOf'], strict: true)
                 ? MockResponse::make($sent[0])
                 : theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked));
         },
@@ -813,6 +974,7 @@ function adapterCallsThatAskNothing(): array
 {
     return [
         'Listeners::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
+        'Narrators::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
     ];
 }
 

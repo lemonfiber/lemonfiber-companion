@@ -75,9 +75,11 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 64 envelopes and this app follows 44.
-Of the rest, 18 are never named by the code in `app-modules` or `bridge`, tests
-aside, and 2 more — `Admission` and `Pull` — are named without being followed.
+**The measurement.** The SDK ships 65 envelopes and this app follows 55.
+Of the rest, 9 are never named by the code in `app-modules` or `bridge`, tests
+aside, and 1 more — `Pull` — is named without being followed. `Admission` is
+followed through the SDK: signing in opens a door whose class reads that
+envelope itself, so no reader here opens it.
 They resolve to the features below — each one an action available from another
 surface and not offered here, or offered only in part.
 `tests/Feature/EveryActionTheStackOffersTest.php` classifies every kind the SDK
@@ -93,19 +95,21 @@ wants a requirement before it wants a surface. What each row needs is a decision
 — a companion surface, or a requirement stating why not, the way `N1-R4` does
 for setup.
 
-**An unread envelope is not an unbuilt feature, and three rows prove it.** `D7`,
-`F7` and `G2` are each documented on these pages already, beside an envelope the
-app does not read. So those three are *partly* built, and the question they ask
+**An unread envelope is not an unbuilt feature, and two rows prove it.** `D7`
+and `F7` are each documented on these pages already, beside an envelope the
+app does not read. So those two are *partly* built, and the question they ask
 is narrower than the rest: not whether this app does the thing, but whether it
 reads everything the wire now says about it.
 
-**Twenty-two more are partly built, the other way round:** the envelope is read and
+**Twenty-three more are partly built, the other way round:** the envelope is read and
 drawn, and it answers some of the feature's requirements rather than all of
-them. `B2` is starting, stopping and restarting a service or a form, followed to what the stack reports it came to: what did not come back, a start it declined with its reason, a rehearsal, what was left out and which ports something else holds (`N2-R7`, `N16-R6`); `A5` is the survey of what is already on a machine: every project and service, what is in the way, what cannot be taken over, what the layout costs, and the modes as the stack offers them, and moving in by each: what it would come to before the yes, what an import could not carry, the stance as given, a refusal with its reason, and what is copied first (`N7-R1` to `N7-R6`, `N7-R9`, `N7-R11` to `N7-R14`); `D1` is wiring the services to each other: every connection in the state the stack gave it, a value changed by hand said to be kept, both values where both moved, a service's rejection in its own words, what a warning breaks and what puts it right, whether drift could be judged, and a rehearsal labelled as one (`N7-R7`, `N7-R8`, `N7-R10`, `N7-R15` to `N7-R17`); `A7` is the credentials a stack holds, where each stands, who made it and what uses it, and never a value (`N9-R1` to `N9-R4`); `G5` is the front door, what each address faces and why, and whether it was chosen (`N9-R9` to `N9-R11`); `G6` is which app to watch on, device by device, with its rating and what to use instead (`N9-R8`, `N9-R9`); `D6` is inviting somebody, what the invitation grants and when it lapses before it is sent, handing it over, and taking a password off (`N9-R5`, `N9-R6`, `N21-R1` to `N21-R10`); `B1` is a stack running some of its forms, and what starting a form would come to (`N18-R1`, `N18-R3` to `N18-R9`); `A6` is what the stack keeps on the machine, secrets named and never shown (`N6-R7`); `B5` is the alert preset and its exceptions (`N10-R8`); `B10` is what
+them. `B2` is starting, stopping and restarting a service or a form, and fetching a form's images ahead of a start, followed to what the stack reports it came to, with what a running start is waiting for: what did not come back, a start it declined with its reason, a rehearsal, what was left out and which ports something else holds (`N2-R7`, `N2-R24`, `N16-R6`); `A5` is the survey of what is already on a machine: every project and service, what is in the way, what cannot be taken over, what the layout costs, and the modes as the stack offers them, and moving in by each: what it would come to before the yes, what an import could not carry, the stance as given, a refusal with its reason, and what is copied first (`N7-R1` to `N7-R6`, `N7-R9`, `N7-R11` to `N7-R14`); `D1` is wiring the services to each other: every connection in the state the stack gave it, a value changed by hand said to be kept, both values where both moved, a service's rejection in its own words, what a warning breaks and what puts it right, whether drift could be judged, and a rehearsal labelled as one (`N7-R7`, `N7-R8`, `N7-R10`, `N7-R15` to `N7-R17`); `A7` is the credentials a stack holds, where each stands, who made it and what uses it, and never a value (`N9-R1` to `N9-R4`); `G5` is the front door, what each address faces and why, and whether it was chosen (`N9-R9` to `N9-R11`); `G6` is which app to watch on, device by device, with its rating and what to use instead (`N9-R8`, `N9-R9`); `D6` is inviting somebody, what the invitation grants and when it lapses before it is sent, handing it over, taking a password off, and taking somebody out, with what it costs before it is agreed to and how far it reached (`N9-R5`, `N9-R6`, `N21-R1` to `N21-R10`, `N13-R1` to `N13-R3`, `N13-R9`, `N13-R11`, `N13-R19`); `B1` is a stack running some of its forms, and what starting a form would come to (`N18-R1`, `N18-R3` to `N18-R9`); `A6` is what the stack keeps on the machine, secrets named and never shown, and taking lemonfiber off it: four removals, each read before it is agreed to, how much of the reading was read, what is not lemonfiber's, what is kept and why, what is still coming down, what lemonfiber cannot take, and what a removal took, destroyed and left (`N6-R7`, `N13-R4` to `N13-R7`, `N13-R9` to `N13-R18`, `N13-R20`); `B5` is the alert preset and its exceptions (`N10-R8`); `B10` is what
 keeps running when nobody is signed in, what each command guarantees and what
-did not come back, and handing a command over or taking it back with what each did (`N10-R10`, `N23-R1` to `N23-R5`); `D9` is where one item got to, followed through the services (`N8-R4` to `N8-R6`, `N8-R8`, `N8-R9`); `D2` is the quality presets in force, choosing one overall or per kind of media, a held choice confirmed apart, and upgrading what is already here described kind by kind before it is carried out (`N24-R1` to `N24-R5`, `N24-R10`); `D3` is the first-content walkthrough, started from the phone and followed to its record (`N15-R6` to `N15-R8`); `D5` is how full the machine is, where the room went and each download with where it stands (`N12-R1` to `N12-R3`, `N12-R6`, `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E2` is which version runs, how it was installed and what moving it would take (`N14-R1` to `N14-R8`); `E4`
-is the record of what was changed and how far back it goes (`N11-R1` to
-`N11-R3`, `N11-R9`, `N11-R10`); `E3` is the list of copies, taking one and putting one back: an empty list told apart from one that could not be read, the scope named before and after, what a copy removed, how its size stood against the minute, a rehearsal labelled as one and where a restore put the data (`N6-R1` to `N6-R5`, `N6-R9`, `N6-R10`); `C4` is a support bundle, chosen, described before it is written and read in full here, with a refusal drawn as one, and handed over by the operator through the phone's own sharing (`N22-R1` to `N22-R10`); `C7` is queue health: what stopped moving by kind, worst first, one row per cause with the service's own words and how long, slow drawn apart from stuck, what could not be read named, and each item leading to its trace (`N23-R6` to `N23-R10`); `G8` is what leaves the machine, ours and
+did not come back, and handing a command over or taking it back with what each did (`N10-R10`, `N23-R1` to `N23-R5`), and, apart from hosting, a guard on the data location held only while its screen asks and let go when it is left (`N23-R11` to `N23-R13`); `D9` is where one item got to, followed through the services (`N8-R4` to `N8-R6`, `N8-R8`, `N8-R9`); `D2` is the quality presets in force, choosing one overall or per kind of media, a held choice confirmed apart, and upgrading what is already here described kind by kind before it is carried out (`N24-R1` to `N24-R5`, `N24-R10`); `D3` is the first-content walkthrough, started from the phone, followed stage by stage as it runs and to its record (`N15-R5` to `N15-R8`); `G2` is the glossary, each word explained where it is drawn and searchable by what else it is called, and one word the held glossary lacks asked of the stack by the operator (`N15-R3`, `N15-R4`, `N15-R9` to `N15-R11`); `D5` is how full the machine is, where the room went, each download with where it stands, and stopping seeding one download with what it costs, a rehearsal labelled as one (`N12-R1` to `N12-R10`); `D10` is the line's capacity and cap (`N10-R4` to `N10-R7`); `E2` is which version runs, how it was installed and what moving it would take (`N14-R1` to `N14-R8`); `E4`
+is the record of what was changed and how far back it goes, and putting a run
+back from it: what goes with the run said from the record's own rows before the
+yes, and the stack's report leading with what it left and why (`N11-R1` to
+`N11-R3`, `N11-R9`, `N11-R10`, `N6-R6`); `E3` is the list of copies, taking one and putting one back: an empty list told apart from one that could not be read, the scope named before and after, what a copy removed, how its size stood against the minute, a rehearsal labelled as one and where a restore put the data, and putting the configuration back, previewed file by file and connection by connection before the yes (`N6-R1` to `N6-R5`, `N6-R8` to `N6-R10`); `C4` is a support bundle, chosen, described before it is written and read in full here, with a refusal drawn as one, and handed over by the operator through the phone's own sharing (`N22-R1` to `N22-R10`); `C7` is queue health: what stopped moving by kind, worst first, one row per cause with the service's own words and how long, slow drawn apart from stuck, what could not be read named, and each item leading to its trace (`N23-R6` to `N23-R10`); `G8` is what leaves the machine, ours and
 theirs apart (`N10-R1` to `N10-R3`, `N10-R12`); `C6` is the material a phone is paired with, read,
 compared and pinned here, while showing it so another phone can pair and replacing the
 certificate it pins are not offered (`N1-R18` to `N1-R20`, `N1-R47` to `N1-R51`). Each is kept on
@@ -113,6 +117,7 @@ certificate it pins are not offered (`N1-R18` to `N1-R20`, `N1-R47` to `N1-R51`)
 [what leaves a machine](what-leaves-a-machine.md),
 [moving in](moving-in.md),
 [what a machine keeps](what-a-machine-keeps.md),
+[taking lemonfiber off](taking-lemonfiber-off.md),
 [asking for help](asking-for-help.md),
 [how full a machine is](how-full-a-machine-is.md),
 [what is running here](what-is-running-here.md),
@@ -120,7 +125,9 @@ certificate it pins are not offered (`N1-R18` to `N1-R20`, `N1-R47` to `N1-R51`)
 [choosing how good](choosing-how-good.md),
 [who gets in](who-gets-in.md),
 [asking somebody in](asking-somebody-in.md),
+[taking somebody out](taking-somebody-out.md),
 [watching one thing arrive](watching-one-thing-arrive.md),
+[what the words mean](what-the-words-mean.md),
 [running part of it](running-part-of-it.md),
 [what a machine says](what-a-machine-says.md) or
 [what was done here](what-was-done-here.md), and the rest of each feature is

@@ -2,26 +2,21 @@
      because a counter read after the thing it counts is a surprise rather than
      an orientation. `trans_choice` is not used here — both numbers are plural
      in the only sense that matters and neither is ever one word. --}}
-<x-operator::note>
-    {{ __('onboarding.step', ['step' => $at->step(), 'of' => $at->ofHowMany()]) }}
-</x-operator::note>
+<x-design::note>{{ __('onboarding.step', ['step' => $at->step(), 'of' => $at->ofHowMany()]) }}</x-design::note>
 
-<x-operator::heading>{{ __($at->said()) }}</x-operator::heading>
+<x-design::title>{{ __($at->said()) }}</x-design::title>
 
-<native:text>{{ __($at->explained()) }}</native:text>
+<x-design::body>{{ __($at->explained()) }}</x-design::body>
 
 {{-- The pairing step draws no control of its own: the pairing road below is
      the same control an operator with a stack already paired sees, and a
      sequence that ended with its own copy of it would be two spellings of one
      button with one of them untested. --}}
 @unless ($at->isThePairing())
-    <x-operator::action label="{{ __('onboarding.go_on') }}" tap="{{ $on }}" />
+    <x-design::action label="{{ __('onboarding.go_on') }}" tap="{{ $on }}" />
 
-    {{-- Leavable, landing on pairing. Quieter than going on, because
-         skipping is the thing somebody does when they already know — and a
-         second filled button beside the first makes neither of them the way
-         forward. That sentence was here under two identical buttons;
-         {@see \Modules\Operator\View\Components\QuietAction} is what makes
-         it true. --}}
-    <x-operator::quiet-action label="{{ __('onboarding.skip') }}" tap="{{ $leave }}" />
+    {{-- Leavable, landing on pairing. Tonal, because skipping is the thing
+         somebody does when they already know, and going on is the way
+         forward. --}}
+    <x-design::action label="{{ __('onboarding.skip') }}" tap="{{ $leave }}" tone="tonal" />
 @endunless

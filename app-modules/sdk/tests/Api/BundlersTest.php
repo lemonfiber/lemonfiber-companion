@@ -14,6 +14,7 @@ use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ASettingToReveal;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Fingerprint;
@@ -27,7 +28,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatFilenamesShow;
-use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\PinnedClients;
 use RuntimeException;
@@ -100,7 +100,7 @@ function whatBecameOfTheBundleAnswered(MockResponse $answered): string
         ->either(
             stillRunning: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('still running'),
             done: static fn(ABundle $bundle): WhatTheBundlerSaid => new WhatTheBundlerSaid(WhatABundleSays::of($bundle)),
-            refused: static fn(string $said, WhatTheRefusalNamed $named): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('refused: %s (%s)', $said, $named->forTheOperator())),
+            refused: static fn(ARefusalInItsWords $why): WhatTheBundlerSaid => new WhatTheBundlerSaid(sprintf('refused: %s (%s)', $why->summary(), $why->named()->forTheOperator())),
             ended: static fn(): WhatTheBundlerSaid => new WhatTheBundlerSaid('ended'),
             met: static fn(Obstacle $why): WhatTheBundlerSaid => new WhatTheBundlerSaid($why->name),
         )->said;
@@ -144,7 +144,7 @@ it('asks after a bundle at the handle it was answered with', function (): void {
     expect($mock->getLastPendingRequest()?->getUrl())->toEndWith('/api/jobs/a-bundle');
 });
 
-it('carries a bundle the stack refused in its own words, from an error or from prose, with what the error named', function (int $status, string $body, string $named): void {
+it('carries a bundle the stack refused in its own words, with what its problem named', function (int $status, string $body, string $named): void {
     expect(whatBecameOfTheBundleAnswered(MockResponse::make($body, $status)))
         ->toBe(sprintf('refused: %s (%s)', WhatABundleSays::A_LEAK, $named));
 })->with([
@@ -165,15 +165,15 @@ it('carries a bundle the stack refused in its own words, from an error or from p
         'meaning' => 'Nothing has been written.',
         'remedies' => [],
     ]]), ''],
-    'a sentence' => [400, WhatABundleSays::A_LEAK, ''],
 ]);
 
-it('reads a refused session, an account that may not ask, and a refusal with no words as obstacles', function (int $status, string $body, Obstacle $why): void {
+it('reads a refused session, an account that may not ask, and a refusal with no problem in it as obstacles', function (int $status, string $body, Obstacle $why): void {
     expect(whatBecameOfTheBundleAnswered(MockResponse::make($body, $status)))->toBe($why->name);
 })->with([
     'a refused session' => [401, 'This needs the run token.', Obstacle::CredentialWasRefused],
     'an account that may not ask' => [403, 'Only the operator can ask for this.', Obstacle::NotForThisAccount],
     'nothing said' => [500, '', Obstacle::StackDidNotAnswer],
+    'a sentence with no problem around it' => [400, WhatABundleSays::A_LEAK, Obstacle::StackDidNotAnswer],
     'markup from something in between' => [502, '<html>bad gateway</html>', Obstacle::StackDidNotAnswer],
 ]);
 

@@ -10,17 +10,24 @@ use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
+use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
+use Modules\Operator\Internal\Screens\PuttingThatRunBack;
+use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
+use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
+use Modules\Operator\Internal\Screens\TakingSomebodyOut;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
+use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
@@ -164,6 +171,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // reboot nobody was there for.
             Router::native(AStacksScreen::Hosting->value, WhatKeepsRunningHere::class);
 
+            // A guard on the data location, held while its screen asks. A
+            // screen of its own rather than a row of the one above, because
+            // what that one keeps outlives everybody's screens and this one
+            // does not, and drawing the two side by side would invite reading
+            // one as the other.
+            Router::native(AStacksScreen::Guard->value, GuardingWhileYouWatch::class);
+
             // Everything the stack is set to. Beside the services listing
             // rather than under one of them, because a setting is the
             // machine's and not a service's — and an operator looking for one
@@ -203,11 +217,21 @@ final class OperatorServiceProvider extends ServiceProvider
             // machine stands now and this is how it came to stand there.
             Router::native(AStacksScreen::Record->value, WhatWasChangedHere::class);
 
+            // Putting back one run the record shows. Its own screen, reached
+            // from the record, because what goes with the run is said before
+            // anything is agreed to.
+            Router::native(AStacksScreen::RunBack->value, PuttingThatRunBack::class);
+
             // Where every service comes from. Its own screen rather than a
             // section of the record, because the record is what was done and
             // this is what it was done with — two questions asked at different
             // moments.
             Router::native(AStacksScreen::Origins->value, WhereThisComesFrom::class);
+
+            // What each service is for. Its own screen beside the origins,
+            // because that one is what a service is made of and this is what
+            // the house goes without while it is down.
+            Router::native(AStacksScreen::Catalogue->value, WhatEachServiceIsFor::class);
 
             // Everything that leaves the machine. Its own screen, because what
             // it answers is a privacy question asked apart from the others,
@@ -243,6 +267,13 @@ final class OperatorServiceProvider extends ServiceProvider
             // is filling arrives on its own.
             Router::native(AStacksScreen::Room->value, HowFullThisMachineIs::class);
 
+            // Stopping seeding one download. A screen of its own, reached from
+            // that download's row above, because it states what stopping would
+            // cost before anything is agreed to. A download's name is whatever
+            // the torrent was called, so it is encoded and takes the rest of
+            // the path.
+            Router::native(AStacksScreen::LetGo->value, LettingADownloadGo::class)->where('service', '.+');
+
             // Which version of lemonfiber runs, apart from the services' updates.
             Router::native(AStacksScreen::Itself->value, WhatIsRunningHere::class);
 
@@ -253,6 +284,12 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Clients->value, WhichAppToWatchOn::class);
             Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);
             Router::native(AStacksScreen::Invite->value, AskingSomebodyIn::class);
+
+            // Taking one member out. A screen of its own, reached from who is
+            // in, because what taking them out would cost is read and drawn
+            // before anything is agreed to. A name can hold anything the media
+            // server allows, so it is encoded and takes the rest of the path.
+            Router::native(AStacksScreen::TakeOut->value, TakingSomebodyOut::class)->where('service', '.+');
 
             // What is already on the machine, before anything is moved in. Its
             // own screen, because the survey is read before any mode is chosen.
@@ -266,6 +303,16 @@ final class OperatorServiceProvider extends ServiceProvider
             // Wiring the services to each other. Its own screen, because a run
             // is an act with a report of its own, one connection at a time.
             Router::native(AStacksScreen::Wiring->value, HowTheServicesAreWired::class);
+
+            // Taking lemonfiber off the machine. Its own screen, because each
+            // removal is read and agreed to on its own, and the last of them
+            // takes what nothing can fetch again.
+            Router::native(AStacksScreen::Uninstall->value, TakingItOffThisMachine::class);
+
+            // Putting the configuration back. Its own screen, reached from the
+            // settings, because what it would revert is read file by file
+            // before anything is agreed to.
+            Router::native(AStacksScreen::Reset->value, PuttingTheConfigurationBack::class);
 
             // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);

@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
@@ -453,6 +454,11 @@ it('waits no longer than a millisecond for bytes that have not arrived', functio
     expect(Listeners::NO_LONGER_THAN_MS)->toBe(1);
 });
 
+it('stands in for a stack with start lines the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('StartEnvelope', ['api_version' => 1, 'kind' => 'start', 'data' => 'Waiting for the database']))
+        ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});
+
 it('stands in for a stack with dashboards the contract would accept', function (): void {
     foreach ([whatAFillingStackSaysOfItsHealth(), whatAHealthyStackSaysOfItsHealth()] as $health) {
         expect(WhatTheContractAccepts::complaintsAbout('DashboardEnvelope', aDashboardCarrying($health)))
@@ -479,4 +485,148 @@ it('hears what stopped moving with the summary, in the order the stack sent it',
             'healthy, 0 wanting, worst "", {}, stopped {repeated-import-failure/Permission denied on /media/films/20/Access to the path is denied./10800s;slow/Dune/1//600s}',
         ], $which);
     }
+});
+
+/** One start line as the core frames it, carrying whatever payload a test names. */
+function aStartLine(mixed $said): string
+{
+    return anEvent('start', json_encode(['api_version' => 1, 'kind' => 'start', 'data' => $said], JSON_THROW_ON_ERROR));
+}
+
+/**
+ * Both ways of hearing a start, each set up to hear the same thing.
+ *
+ * @param  list<MockResponse>  $streams  what the far end answers each time the adapter opens the stream
+ * @param  list<WhatAStartWaitsOn>  $script  what the fake is scripted to answer, wake by wake
+ * @return array<string, Closure(): Hearing>
+ */
+function everyWayOfHearingAStart(array $streams, array $script): array
+{
+    return [
+        'the fake' => static fn(): Hearing => AStackThatSpeaksUp::whileItStarts(...$script),
+        'the adapter' => static function () use ($streams): Hearing {
+            MockClient::destroyGlobal();
+            MockClient::global($streams);
+
+            return new Listeners(new PinnedClients());
+        },
+    ];
+}
+
+/**
+ * What one way of hearing a start answers across as many wakes as asked.
+ *
+ * @return list<string>
+ */
+function whatWakesHearOfAStart(Hearing $hearing, int $wakes): array
+{
+    $heard = [];
+
+    for ($wake = 0; $wake < $wakes; $wake++) {
+        $heard[] = $hearing->whatAStartWaitsOn(aStackToListenTo(), theSessionItListensWith())->either(
+            saying: static fn(string $line): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord(sprintf('saying "%s"', $line)),
+            nothingNew: static fn(): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord('nothing new'),
+            met: static fn(Obstacle $why): WhatTheStreamSaidAsAWord => new WhatTheStreamSaidAsAWord($why->value),
+        )->said;
+    }
+
+    return $heard;
+}
+
+it('hears the newest of what a start is waiting for, and then nothing new', function (): void {
+    foreach (everyWayOfHearingAStart(
+        [
+            MockResponse::make(sprintf('%s%s%s', aStartLine('Waiting for the database'), aDashboardEvent(whatAHealthyStackSaysOfItsHealth()), aStartLine('Waiting for sonarr to answer'))),
+            MockResponse::make(''),
+        ],
+        [WhatAStartWaitsOn::saying('Waiting for sonarr to answer')],
+    ) as $which => $make) {
+        expect(whatWakesHearOfAStart($make(), 2))->toBe(['saying "Waiting for sonarr to answer"', 'nothing new'], $which);
+    }
+});
+
+it('hears nothing new from a stream that carried no start line', function (): void {
+    foreach (everyWayOfHearingAStart(
+        [MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth()))],
+        [],
+    ) as $which => $make) {
+        expect(whatWakesHearOfAStart($make(), 1))->toBe(['nothing new'], $which);
+    }
+});
+
+it('cannot hear a start line that is blank or not text, and says so as a stack that did not answer', function (): void {
+    foreach ([aStartLine('   '), aStartLine(['waiting' => 'for sonarr']), anEvent('start', 'not json at all')] as $said) {
+        foreach (everyWayOfHearingAStart(
+            [MockResponse::make($said)],
+            [WhatAStartWaitsOn::met(Obstacle::StackDidNotAnswer)],
+        ) as $which => $make) {
+            expect(whatWakesHearOfAStart($make(), 1))->toBe([Obstacle::StackDidNotAnswer->value], $which);
+        }
+    }
+});
+
+it('tells a session the stack refused from a stack that could not be heard, while a start runs', function (): void {
+    foreach ([
+        [MockResponse::make('{"error":"no"}', 401), Obstacle::CredentialWasRefused],
+        [MockResponse::make('{"error":"gone"}', 500), Obstacle::StackDidNotAnswer],
+    ] as [$answered, $why]) {
+        foreach (everyWayOfHearingAStart([$answered], [WhatAStartWaitsOn::met($why)]) as $which => $make) {
+            expect(whatWakesHearOfAStart($make(), 1))->toBe([$why->value], $which);
+        }
+    }
+});
+
+/**
+ * What a stream still open after the given lines sends, up to the read that
+ * finds nothing.
+ *
+ * The SDK reads a stream 8192 bytes at a time and only learns it ended on the
+ * read after the last byte. A body of exactly one read ends in a read that
+ * comes back empty, which is what a stream that is still open looks like
+ * between two lines. The padding is an event-stream comment, which carries
+ * nothing.
+ */
+function aStreamStillOpenAfter(string $said): string
+{
+    return sprintf("%s:%s\n", $said, str_repeat(' ', 8192 - strlen($said) - 2));
+}
+
+it('opens a start stream once while it runs, and takes what arrived after that without asking again', function (): void {
+    // Only the adapter can be asked this. A wake that reopened the stream to
+    // read it would be a request to the stack every time the screen settles.
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([MockResponse::make(aStreamStillOpenAfter(aStartLine('Waiting for the database'))), MockResponse::make('')]);
+
+    expect(whatWakesHearOfAStart(new Listeners(new PinnedClients()), 2))
+        ->toBe(['saying "Waiting for the database"', 'nothing new']);
+
+    $stack->assertSentCount(1);
+});
+
+it('opens a start stream that ended again on the next ask', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aStreamStillOpenAfter(aStartLine('Waiting for the database'))),
+        MockResponse::make(aStartLine('Waiting for sonarr to answer')),
+    ]);
+
+    expect(whatWakesHearOfAStart(new Listeners(new PinnedClients()), 3))
+        ->toBe(['saying "Waiting for the database"', 'nothing new', 'saying "Waiting for sonarr to answer"']);
+
+    $stack->assertSentCount(2);
+});
+
+it('holds no start stream after a line it could not read, so the next ask opens again', function (): void {
+    // The stream is still open when the unreadable line arrives, so nothing
+    // but the refusal itself lets go of it.
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(aStreamStillOpenAfter(aStartLine('   '))),
+        MockResponse::make(aStartLine('Waiting for sonarr to answer')),
+    ]);
+
+    expect(whatWakesHearOfAStart(new Listeners(new PinnedClients()), 2))
+        ->toBe([Obstacle::StackDidNotAnswer->value, 'saying "Waiting for sonarr to answer"']);
+
+    $stack->assertSentCount(2);
 });

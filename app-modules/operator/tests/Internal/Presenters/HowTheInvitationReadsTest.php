@@ -48,3 +48,19 @@ it('draws the code square for square, dark where the code is dark', function ():
         ->and($read->notAskable)->toBe('')
         ->and($read->askedFor)->toBe('anna');
 });
+
+it('names what went on the way past as what would, on a rehearsal, and as what did once carried out', function (): void {
+    $rehearsed = new HowTheInvitationReads()->answered(AnInvitation::rehearsed(
+        AnInvitationToHand::to('anna', AnAddressToHand::at('http://loft.local:8096', ''), 72),
+        WhereTheInvitationStands::Made,
+        WhetherTheyCanAsk::NotTried,
+        WhoWasTakenBack::of(),
+        WhoWasSwitchedOff::of(),
+    ), AScannableCode::drawn('1'));
+    $carriedOut = new HowTheInvitationReads()->answered(annasInvitationCarriedOut(), AScannableCode::drawn('1'));
+
+    expect([$rehearsed->invitation?->withdrawnSaid, $rehearsed->invitation?->suspendedSaid])
+        ->toBe(['stacks.invitation.would_withdraw', 'stacks.invitation.would_switch_off'])
+        ->and([$carriedOut->invitation?->withdrawnSaid, $carriedOut->invitation?->suspendedSaid])
+        ->toBe(['stacks.invitation.withdrew', 'stacks.invitation.switched_off']);
+});

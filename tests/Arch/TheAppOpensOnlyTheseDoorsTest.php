@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Client;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\MovingInBy;
@@ -14,12 +16,16 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TakingItOff;
+use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WhatToDoWithACopy;
+use Modules\Kernel\Api\WhatToDoWithADownload;
+use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WhatWasDecided;
@@ -75,9 +81,10 @@ const DOORS_THE_APP_OPENS = [
     'logs' => 'reads the tail of one service, bounded and named',
 
     // The event stream, which is where the core publishes the health summary
-    // and nowhere else. It reads and changes nothing, and a screen holds it
-    // only while somebody can see it.
-    'eventSource' => 'listens to the stack\'s event stream for the health summary, changing nothing',
+    // and nowhere else, and where it says each step of a running walk as it
+    // happens. It reads and changes nothing, and a screen holds it only while
+    // somebody can see it.
+    'eventSource' => 'listens to the stack\'s event stream for the health summary and the steps of a running walk, changing nothing',
 
     // The one read whose answer is a file rather than an envelope: a support
     // bundle the stack already wrote, fetched by the name its path ends in so
@@ -97,6 +104,11 @@ const DOORS_THE_APP_OPENS = [
     // call is chained off `client(...)` rather than landing in a variable, and
     // the rule matched a receiver.
     'whatBecameOf' => 'asks what became of work the stack named, changing nothing',
+
+    // The one way to end work the stack named. Opened for the guard on the
+    // data location alone, which has no ending of its own: the screen holding
+    // it lets it go when it is left, rather than leaving it to lapse.
+    'letGoOf' => 'ends a guard this app started, when the screen holding it is left',
 
     // The verbs below, and nothing else can reach it: the path is composed by
     // `Api::action()` from a name the kernel spells — a case of a closed set,
@@ -134,9 +146,24 @@ const VERBS_THE_APP_ASKS_FOR = [
     // would otherwise read as the app being able to set anything.
     'config-set' => 'puts a value in one setting, having first been told what that would come to',
 
+    // Two requests under one name. Unconfirmed it compares the operator's
+    // files and connections with lemonfiber's and writes nothing; confirmed it
+    // writes lemonfiber's back. The yes is only ever sent after a preview that
+    // would revert something, which is the one thing `AResetAgreed` can be
+    // built from. The app names no value: what the stack writes is
+    // lemonfiber's own configuration over the operator's edits, and the
+    // preview shows a withheld line masked, as every diff of a stack file is.
+    'reset' => 'puts every edited file and connection back to lemonfiber\'s own, having first previewed what that reverts',
+
     // A start disturbs nothing, which is why it is the one verb
     // that asks for no confirmation.
     'up' => 'starts a form, or a service inside one',
+
+    // A fetch takes nothing away and brings nothing up: a form's images are
+    // brought onto the machine ahead of a start. It is said before it runs
+    // that it may take long and use a lot of the line, and it names a form,
+    // never one service.
+    'pull' => 'fetches a form\'s images ahead of starting it',
 
     // The verb a confirmation exists for: it takes something away from
     // everybody in the house until somebody says otherwise.
@@ -172,6 +199,11 @@ const VERBS_THE_APP_ASKS_FOR = [
     'invite' => 'says what an invitation would grant and when it lapses, and makes the account only when that same request is agreed to',
 
     'reissue' => 'takes a member\'s password off so they choose the next one, naming the person and never a password',
+
+    // Two requests under one name. Without the yes it says what taking
+    // somebody out would cost and takes nobody out; with it, it takes out the
+    // person that reading named, and nobody else.
+    'remove' => 'says what taking one member out of the household would cost, and takes them out only on a yes given beneath that reading',
     // Unconfirmed it records the choice, or holds one this machine would
     // transcode in software; confirmed it records a held one. The yes is only
     // ever sent with a choice the stack held, which is the one thing
@@ -193,6 +225,22 @@ const VERBS_THE_APP_ASKS_FOR = [
     // the listing the operator was shown, and nothing else, because the yes
     // quotes that listing by name.
     'restore' => 'says what putting one copy back would do, and puts it back only against that listing',
+
+    // Two requests under one name, each answered as work. Naming only the
+    // download it says what letting it go would cost and lets nothing go;
+    // naming the offer as well, it asks the download client to let that one
+    // download go. There is no blanket yes: the offer's own name is the only
+    // one the stack takes.
+    'stop-seeding' => 'says what stopping seeding one download would cost, and stops it only against that offer',
+    // One run the record shows, named by its stamp. It takes no yes and offers
+    // no rehearsal over the wire, so the only thing that spells it is an
+    // agreement built from the record's own rows for that run — and a run the
+    // record says cannot go back builds none.
+    'undo' => 'puts back one run the record shows, named by its stamp, after the record\'s rows for it were agreed to',
+    // One removal at a time, and only against the reading of it the operator
+    // was shown: the yes quotes that reading by name, so a reading that has
+    // moved on is refused by the stack rather than carried out.
+    'uninstall' => 'takes one of the four removals off the machine, against the reading of it the operator was shown and agreed to',
 
     // The one verb that fetches something. It names at most a title, and
     // with none the stack chooses something likely to work; the stack
@@ -219,6 +267,11 @@ const VERBS_THE_APP_ASKS_FOR = [
     // Wires the services to each other. It changes nothing already right and
     // keeps what the operator changed, and it overwrites nothing of theirs.
     'seed' => 'wires the services to each other, keeping what the operator changed and changing nothing already right',
+
+    // A guard on the data location for the forms the operator names. It
+    // stops those forms if the location goes, and never starts them again;
+    // it is held only while the screen that started it keeps asking.
+    'watch' => 'guards the data location for the forms named, while the screen that started it asks',
 ];
 
 /**
@@ -484,13 +537,18 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatWasDecided $decided): string => $decided->asked(), WhatWasDecided::cases()),
         ...array_map(static fn(WhatToChange $change): string => $change->asked(), WhatToChange::cases()),
         ...array_map(static fn(AskingThemIn $asking): string => $asking->asked(), AskingThemIn::cases()),
+        ...array_map(static fn(TakingThemOut $out): string => $out->asked(), TakingThemOut::cases()),
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
         ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
+        ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),
+        ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
+        ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         anUpdateSomebodyAgreedTo()->asked(),
         WhatToWalk::called('')->asked(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none())->asked(),
+        AGuardAskedFor::of(Forms::none())->asked(),
     ];
     $explained = array_map(strval(...), array_keys(VERBS_THE_APP_ASKS_FOR));
 

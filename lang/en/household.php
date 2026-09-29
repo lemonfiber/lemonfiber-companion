@@ -50,6 +50,7 @@ return [
     'approve' => 'Approve',
     'approve_that' => 'Approve :title',
     'turn_down' => 'Turn it down',
+    'turn_down_that' => 'Turn down :title',
     'turning_down' => 'Turning down :title',
     'turning_down_owes' => ':who will see what you write here, so say enough that they do not have to come and ask.',
     'reason_label' => 'Why not',

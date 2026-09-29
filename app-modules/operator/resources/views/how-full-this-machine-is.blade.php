@@ -4,91 +4,100 @@
 <x-operator::content>
     {{-- Where the machine stands first: it stands where its worst volume
          does, and a volume nobody could read is never drawn as comfortable. --}}
-    <x-operator::emphasis>{{ __($this->answer()->standsSaid) }}</x-operator::emphasis>
+    <x-design::standing :said="__($this->answer()->standsSaid)" :tone="$this->answer()->tone" />
 
     @if ($this->answer()->halted)
-        <x-operator::note>{{ __('stacks.room.halted') }}</x-operator::note>
+        <x-design::notice>
+            <x-design::strong>{{ __('stacks.room.halted') }}</x-design::strong>
+        </x-design::notice>
     @endif
 
     @forelse ($this->answer()->volumes as $volume)
-        <x-operator::entry>
-            <native:text>{{ __($volume->holdsSaid) }}</native:text>
+        <x-design::card>
+            <x-design::strong>{{ __($volume->holdsSaid) }}</x-design::strong>
 
             @if ($volume->point !== '')
-                <x-operator::note>{{ $volume->point }}</x-operator::note>
+                <x-design::verbatim>{{ $volume->point }}</x-design::verbatim>
             @endif
 
-            <x-operator::note>{{ __($volume->standsSaid) }}</x-operator::note>
+            <x-design::body>{{ __($volume->standsSaid) }}</x-design::body>
 
             @if ($volume->free !== null)
-                <x-operator::note>{{ __('stacks.room.free', ['figure' => $volume->free->figure, 'unit' => __($volume->free->unit)]) }}</x-operator::note>
+                <x-design::note>{{ __('stacks.room.free', ['figure' => $volume->free->figure, 'unit' => __($volume->free->unit)]) }}</x-design::note>
             @else
-                <x-operator::note>{{ __('stacks.room.free_unread') }}</x-operator::note>
+                <x-design::note>{{ __('stacks.room.free_unread') }}</x-design::note>
             @endif
 
             @if ($volume->limit !== null)
-                <x-operator::note>{{ __('stacks.room.limit', ['figure' => $volume->limit->figure, 'unit' => __($volume->limit->unit)]) }}</x-operator::note>
+                <x-design::note>{{ __('stacks.room.limit', ['figure' => $volume->limit->figure, 'unit' => __($volume->limit->unit)]) }}</x-design::note>
             @endif
 
-            <x-operator::note>{{ __('stacks.room.committed', ['figure' => $volume->committed->figure, 'unit' => __($volume->committed->unit)]) }}</x-operator::note>
+            <x-design::note>{{ __('stacks.room.committed', ['figure' => $volume->committed->figure, 'unit' => __($volume->committed->unit)]) }}</x-design::note>
 
             @if ($volume->projected !== null)
-                <x-operator::note>{{ __('stacks.room.projected', ['figure' => $volume->projected->figure, 'unit' => __($volume->projected->unit)]) }}</x-operator::note>
+                <x-design::note>{{ __('stacks.room.projected', ['figure' => $volume->projected->figure, 'unit' => __($volume->projected->unit)]) }}</x-design::note>
             @endif
 
             {{-- A network share answers with what it was last told, so its
                  figures are dated rather than presented as now. --}}
             @if ($volume->agoSaid !== '')
-                <x-operator::note>{{ __('stacks.room.as_of', ['ago' => trans_choice($volume->agoSaid, $volume->agoCount)]) }}</x-operator::note>
+                <x-design::note>{{ __('stacks.room.as_of', ['ago' => trans_choice($volume->agoSaid, $volume->agoCount)]) }}</x-design::note>
             @endif
-        </x-operator::entry>
+        </x-design::card>
     @empty
-        <x-operator::note>{{ __('stacks.room.no_volumes') }}</x-operator::note>
+        <x-design::body>{{ __('stacks.room.no_volumes') }}</x-design::body>
     @endforelse
 
     {{-- Where the room went, by the categories the stack gives: never a
-         listing of files. --}}
-    <x-operator::emphasis>{{ __('stacks.room.account') }}</x-operator::emphasis>
-    @forelse ($this->answer()->account as $line)
-        <x-operator::entry>
-            <native:text>{{ __($line->aboutSaid, ['tree' => $line->tree]) }}</native:text>
-            <x-operator::note>{{ __('stacks.room.occupies', ['figure' => $line->occupies->figure, 'unit' => __($line->occupies->unit)]) }}</x-operator::note>
+         listing of files. What each takes is at its end; under it, what it
+         would take if nothing were shared, only where that differs, and what
+         getting it back would cost. --}}
+    <x-design::section :label="__('stacks.room.account')">
+        @forelse ($this->answer()->account as $line)
+            <x-design::row
+                :headline="__($line->aboutSaid, ['tree' => $line->tree])"
+                :supporting="$line->unshared === null ? __($line->costsSaid) : __('stacks.room.unshared', ['figure' => $line->unshared->figure, 'unit' => __($line->unshared->unit)]) . ' · ' . __($line->costsSaid)"
+                :trailing="__('stacks.room.occupies', ['figure' => $line->occupies->figure, 'unit' => __($line->occupies->unit)])"
+            />
+        @empty
+            <x-design::row :headline="__('stacks.room.nothing_accounted')" />
+        @endforelse
+    </x-design::section>
 
-            @if ($line->unshared !== null)
-                <x-operator::note>{{ __('stacks.room.unshared', ['figure' => $line->unshared->figure, 'unit' => __($line->unshared->unit)]) }}</x-operator::note>
-            @endif
-
-            <x-operator::note>{{ __($line->costsSaid) }}</x-operator::note>
-        </x-operator::entry>
-    @empty
-        <x-operator::note>{{ __('stacks.room.nothing_accounted') }}</x-operator::note>
-    @endforelse
-
-    {{-- Each completed download with where it stands and, on the same row,
-         what removing it would cost. Nothing here is selected. --}}
-    <x-operator::emphasis>{{ __('stacks.room.downloads') }}</x-operator::emphasis>
+    {{-- Each completed download on its card, with where it stands and what
+         removing it would cost. Nothing here is selected and nothing is
+         proposed: stopping seeding is offered on each card alike, and opens on
+         what it would cost rather than doing it. --}}
+    <x-design::heading>{{ __('stacks.room.downloads') }}</x-design::heading>
     @forelse ($this->answer()->downloads as $download)
-        <x-operator::entry>
-            <native:text>{{ $download->name }}</native:text>
-            <x-operator::note>{{ __('stacks.room.takes', ['figure' => $download->size->figure, 'unit' => __($download->size->unit)]) }}</x-operator::note>
-            <x-operator::note>{{ __($download->standingSaid) }}</x-operator::note>
+        <x-design::card>
+            <x-design::strong>{{ $download->name }}</x-design::strong>
+            <x-design::note>{{ __('stacks.room.takes', ['figure' => $download->size->figure, 'unit' => __($download->size->unit)]) }}</x-design::note>
+            <x-design::body>{{ __($download->standingSaid) }}</x-design::body>
 
             @if ($download->ratioSaid !== '')
-                <x-operator::note>{{ __($download->ratioSaid, ['ratio' => $download->ratio]) }}</x-operator::note>
+                <x-design::note>{{ __($download->ratioSaid, ['ratio' => $download->ratio]) }}</x-design::note>
                 <x-operator::gloss :gloss="$this->gloss('ratio')" />
             @endif
 
             @if ($download->consequence !== '')
-                <x-operator::note>{{ $download->consequence }}</x-operator::note>
+                <x-design::note>{{ $download->consequence }}</x-design::note>
             @endif
-        </x-operator::entry>
+
+            <x-design::action
+                label="{{ __('stacks.room.stop_seeding') }}"
+                answers-to="{{ __('stacks.room.stop_seeding_that', ['download' => $download->name]) }}"
+                :goes="$this->goes()->ofItself()->changing()->lettingGo($download->name)"
+                tone="tonal"
+            />
+        </x-design::card>
     @empty
-        <x-operator::note>{{ __('stacks.room.no_downloads') }}</x-operator::note>
+        <x-design::body>{{ __('stacks.room.no_downloads') }}</x-design::body>
     @endforelse
 
-    <x-operator::note>{{ __('stacks.room.at_the_machine') }}</x-operator::note>
+    <x-design::note>{{ __('stacks.room.at_the_machine') }}</x-design::note>
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

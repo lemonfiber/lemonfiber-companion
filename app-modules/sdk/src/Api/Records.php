@@ -155,7 +155,7 @@ final readonly class Records
         $change = Change::made(
             self::text($row, HistoryField::Did, $position),
             self::text($row, HistoryField::Operation, $position),
-            self::text($row, HistoryField::Target, $position),
+            self::text($row, WireField::Target, $position),
             self::when($row, $position),
             self::reversal($row, $position),
             self::alongside($row, $position),

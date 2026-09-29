@@ -44,6 +44,9 @@ requirement is right and this page is a defect.
 | `N1-R20` | A changed certificate becomes *this is not the machine you were introduced to* | `Fingerprint` |
 | `N1-R48` | The fingerprint is the certificate that address will present, and an unencrypted address proves nothing | `Pairing` |
 | `N1-R49` | Material past its moment is its own screen | `Pairing` |
+| `N1-R62` | Pairing material carries an identifier that is the stack's own and survives a re-issue, a change of address and a replacement of the certificate | `Pairing`, reading `WhatPairingMaterialSays::Stack` into `StackId::saidBy()`, which takes only the 32 lower-case hexadecimal characters a stack mints and refuses material naming anything else |
+| `N1-R63` | The app decides which machine from that identifier alone, and material naming one it holds replaces rather than adds | `Introducing`, which takes the stack's identity from the material, and `Configured::with()`; `Remembering` tells a machine already held from a new one by that identifier alone, and answers `HowThePairingWent::PairedAgain` rather than `Paired` |
+| `N1-R64` | A re-pairing that changes the pinned fingerprint discards the session; one that does not keeps it | `Remembering`, through `Configured::wouldRepin()`, forgetting the session only once the new pin is written and answering `HowThePairingWent::PairedAgainOnANewCertificate`, which tells the operator to sign in again |
 | `N1-R50`, `N1-R51` | A short form to check at a glance, derived from the whole fingerprint — two constraints that pull against each other | `AtAGlance` |
 | `N1-R10` | A refusal is an obstacle rather than a type of its own | `Admitted` |
 | `N1-R44` | An ended session is a screen, not a port's business | `Admitting` |
@@ -87,17 +90,10 @@ requirement is right and this page is a defect.
 
 ## What is not built, and what it waits on
 
-Two rules in `tests/Arch` are registers rather than checks: they pass while a
-gap is open and go red the day it closes, so the closing announces itself
+A rule in `tests/Arch` is a register rather than a check: it passes while a
+gap is open and goes red the day it closes, so the closing announces itself
 instead of being something somebody has to remember.
 
 | Requirement | What it asks | What holds it open |
 |---|---|---|
-| `N1-R17` | Where the contract does not carry something the app needs, the work stops and the gap is raised rather than approximated from a neighbour | `WhatPairingMaterialCannotSayYetTest` and `WhatTheContractDoesNotCarryTest` |
-| `N1-R62` | Pairing material carries an identifier that is the stack's own and survives a re-issue, a change of address and a replacement of the certificate | nothing mints pairing material yet, in any repository |
-| `N1-R63` | The app decides which machine from that identifier alone, and material naming one it holds replaces rather than adds | waits on `N1-R62` |
-| `N1-R64` | A re-pairing that changes the pinned fingerprint discards the session; one that does not keeps it | waits on `N1-R62` |
-
-`WhatPairingMaterialCannotSayYet` watches `WhatPairingMaterialSays`, which is a
-closed set: the material growing a field is the app growing a case there and
-nowhere else. The day one lands, that rule goes red and names the work.
+| `N1-R17` | Where the contract does not carry something the app needs, the work stops and the gap is raised rather than approximated from a neighbour | `WhatTheContractDoesNotCarryTest` |

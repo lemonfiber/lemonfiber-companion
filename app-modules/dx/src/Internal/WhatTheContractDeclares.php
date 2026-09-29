@@ -100,6 +100,10 @@ final readonly class WhatTheContractDeclares
     /**
      * The fields one `array{…}` declares, and whether each is required.
      *
+     * A name the notation cannot write bare, such as one with a hyphen in it,
+     * arrives quoted, and is read without its quotes: the wire's word is the
+     * one inside them.
+     *
      * @return array<string, array{0: bool, 1: string}>
      */
     public static function fieldsOf(string $type): array
@@ -107,7 +111,7 @@ final readonly class WhatTheContractDeclares
         $fields = [];
 
         foreach (self::split(self::inside($type, 'array{'), ',') as $part) {
-            if (preg_match('/^(\w+)(\??):\s*(.*)$/s', $part, $said) !== 1) {
+            if (preg_match('/^\'?([\w-]+)\'?(\??):\s*(.*)$/s', $part, $said) !== 1) {
                 continue;
             }
 

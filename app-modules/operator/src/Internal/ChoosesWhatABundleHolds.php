@@ -70,6 +70,12 @@ trait ChoosesWhatABundleHolds
         }
     }
 
+    /** Whether this window is the one the bundle takes. */
+    public function takes(int $window): bool
+    {
+        return $window === $this->lines;
+    }
+
     /** Show media filenames as they are. */
     public function showFilenames(): void
     {

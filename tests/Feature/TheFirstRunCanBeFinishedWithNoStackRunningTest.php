@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Connection\Api\HowThePairingWent;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\Screens\PairByScanning;
@@ -84,6 +85,25 @@ it('N1-R6 — the camera sees a code for a machine this device has not met', fun
         $before + 1,
         'the code was read and the machine was not written down, so the sequence cannot be finished',
     );
+});
+
+it('holds one machine for one code scanned twice, rather than a second row for it', function (): void {
+    withNoCameraAndNoStack();
+
+    $before = howManyMachinesAreHeld();
+    $went = [];
+
+    foreach (['The one in the cupboard', 'The cupboard, again'] as $called) {
+        $screen = theScanningScreen();
+        $screen->__syncProperty('called', $called);
+        $screen->scan();
+        $went[] = $screen->went();
+    }
+
+    expect(howManyMachinesAreHeld())->toBe(
+        $before + 1,
+        'the second code names the machine the first did, so it replaces what is held rather than adding to it',
+    )->and($went)->toBe([HowThePairingWent::Paired, HowThePairingWent::PairedAgain]);
 });
 
 it('N1-R56 — a device that has paired opens on its machines rather than the sequence', function (): void {

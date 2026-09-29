@@ -2,52 +2,52 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    <x-operator::emphasis>{{ __($this->answer()->standingSaid) }}</x-operator::emphasis>
-    <native:text>{{ $this->answer()->meaning }}</native:text>
+    <x-design::standing :said="__($this->answer()->standingSaid)" :tone="$this->answer()->tone" />
+    <x-design::body>{{ $this->answer()->meaning }}</x-design::body>
 
     {{-- Whether the door was worked out, chosen, or chosen and refused: a
          derived door is never drawn as somebody's decision. --}}
-    <x-operator::note>{{ __($this->answer()->chosenSaid, ['named' => $this->answer()->named, 'because' => $this->answer()->refusal]) }}</x-operator::note>
+    <x-design::note>{{ __($this->answer()->chosenSaid, ['named' => $this->answer()->named, 'because' => $this->answer()->refusal]) }}</x-design::note>
 
     @if ($this->answer()->begins->service !== '')
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $this->answer()->begins->service }}</x-operator::emphasis>
-            <x-operator::note>{{ __($this->answer()->begins->facingSaid) }}</x-operator::note>
+        <x-design::card>
+            <x-design::strong>{{ $this->answer()->begins->service }}</x-design::strong>
+            <x-design::note>{{ __($this->answer()->begins->facingSaid) }}</x-design::note>
             {{-- The address exactly as the stack sent it; none is put
                  together here. --}}
             @if ($this->answer()->begins->url !== '')
-                <native:text>{{ $this->answer()->begins->url }}</native:text>
+                <x-design::verbatim>{{ $this->answer()->begins->url }}</x-design::verbatim>
             @else
-                <x-operator::note>{{ __('stacks.front_door.no_address') }}</x-operator::note>
+                <x-design::note>{{ __('stacks.front_door.no_address') }}</x-design::note>
             @endif
             @if ($this->answer()->begins->caution !== '')
-                <x-operator::note>{{ $this->answer()->begins->caution }}</x-operator::note>
+                <x-design::note>{{ $this->answer()->begins->caution }}</x-design::note>
             @endif
-        </x-operator::entry>
+        </x-design::card>
     @endif
 
     {{-- Everything else the household can reach, each with what it is to
          them and why it is not the door. --}}
-    <x-operator::emphasis>{{ __('stacks.front_door.beside') }}</x-operator::emphasis>
+    <x-design::heading>{{ __('stacks.front_door.beside') }}</x-design::heading>
     @forelse ($this->answer()->beside as $service)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $service->service }}</x-operator::emphasis>
-            <x-operator::note>{{ __($service->facingSaid) }}</x-operator::note>
-            <native:text>{{ $service->because }}</native:text>
+        <x-design::card>
+            <x-design::strong>{{ $service->service }}</x-design::strong>
+            <x-design::note>{{ __($service->facingSaid) }}</x-design::note>
+            <x-design::body>{{ $service->because }}</x-design::body>
             @if ($service->url !== '')
-                <native:text>{{ $service->url }}</native:text>
+                <x-design::verbatim>{{ $service->url }}</x-design::verbatim>
             @else
-                <x-operator::note>{{ __('stacks.front_door.no_address') }}</x-operator::note>
+                <x-design::note>{{ __('stacks.front_door.no_address') }}</x-design::note>
             @endif
             @if ($service->caution !== '')
-                <x-operator::note>{{ $service->caution }}</x-operator::note>
+                <x-design::note>{{ $service->caution }}</x-design::note>
             @endif
-        </x-operator::entry>
+        </x-design::card>
     @empty
-        <x-operator::note>{{ __('stacks.front_door.nothing_beside') }}</x-operator::note>
+        <x-design::body>{{ __('stacks.front_door.nothing_beside') }}</x-design::body>
     @endforelse
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

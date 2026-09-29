@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowFarItGoesBack;
+use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItStands;
@@ -49,11 +50,13 @@ use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
+use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereACredentialStands;
@@ -71,6 +74,7 @@ use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSetIt;
@@ -366,6 +370,18 @@ function everyDerivedKey(): array
             WhereTheFrontDoorStands::cases(),
             static fn(WhereTheFrontDoorStands $case): array => [$case->saidOnTheScreen()],
         ),
+        HowFarTheRemovalReached::class => aPairPerCase(
+            HowFarTheRemovalReached::cases(),
+            static fn(HowFarTheRemovalReached $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhichRemoval::class => aPairPerCase(
+            WhichRemoval::cases(),
+            static fn(WhichRemoval $case): array => [$case->saidOnTheScreen(), $case->agreedToAs()],
+        ),
+        WhatSortItIs::class => aPairPerCase(
+            WhatSortItIs::cases(),
+            static fn(WhatSortItIs $case): array => [$case->saidOnTheScreen()],
+        ),
         WhereTheInvitationStands::class => aPairPerCase(
             WhereTheInvitationStands::cases(),
             static fn(WhereTheInvitationStands $case): array => [$case->saidOnTheScreen()],
@@ -409,6 +425,10 @@ function everyDerivedKey(): array
         WhereADownloadStands::class => aPairPerCase(
             WhereADownloadStands::cases(),
             static fn(WhereADownloadStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatGoingBackDoes::class => aPairPerCase(
+            WhatGoingBackDoes::cases(),
+            static fn(WhatGoingBackDoes $case): array => [$case->saidOnTheScreen()],
         ),
         // Both found by the scan below rather than by hand, which is what the
         // scan is for. `Permission` is also asked by

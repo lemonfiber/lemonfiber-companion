@@ -92,7 +92,7 @@ final class PairingIsNotReadable extends InvalidArgumentException
      * silent: the app pairs happily, having been handed a secret out of band by
      * whoever produced the payload.
      *
-     * So the format is closed instead. Three keys are defined and a fourth is
+     * So the format is closed instead. Four keys are defined and a fifth is
      * refused whatever it is called, which needs no list to stay current. A
      * stack that has something new to say says it by raising the
      * {@see WireVersion}, and a version this app does not know is a refusal

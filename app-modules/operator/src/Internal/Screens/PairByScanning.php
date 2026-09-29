@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use Illuminate\View\View;
 use Modules\Connection\Api\HowThePairingWent;
 use Modules\Connection\Api\Introducing;
+use Modules\Connection\Api\Remembering;
 use Modules\Connection\Api\WhatTheCodeSaysSoFar;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
@@ -14,9 +15,7 @@ use Modules\Kernel\Api\HowItWasRead;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\Scanning;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatTheCameraSaw;
-use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -115,7 +114,7 @@ final class PairByScanning extends NativeComponent
     public function __construct(
         private readonly Scanning $camera,
         private readonly Introducing $introducing,
-        private readonly Stacks $stacks,
+        private readonly Remembering $remembering,
         private readonly Clock $clock,
     ) {}
 
@@ -353,9 +352,6 @@ final class PairByScanning extends NativeComponent
         $stack = $this->introducing->stack($said, StackName::of($this->called));
         $this->paired = $stack->id()->stored();
 
-        return $this->stacks->remember($stack)->either(
-            remembered: static fn(): HowThePairingWent => HowThePairingWent::Paired,
-            refused: static fn(WhyAStackCannotBeRemembered $why): HowThePairingWent => HowThePairingWent::refused($why),
-        );
+        return $this->remembering->stack($stack);
     }
 }

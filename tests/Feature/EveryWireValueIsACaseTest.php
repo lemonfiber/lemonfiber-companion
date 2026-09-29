@@ -11,6 +11,7 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowAVolumeWasRead;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowFarItGoesBack;
+use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
@@ -43,11 +44,13 @@ use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
+use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
@@ -58,9 +61,11 @@ use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereTheUninstallStands;
 use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
+use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
@@ -596,6 +601,15 @@ it('N1-R13 — every way a change can be put back has a case', function (): void
     expect(valuesOf(HowFarItGoesBack::cases()))->toBe($reversals);
 });
 
+it('everything putting one change back can do has a case', function (): void {
+    // `does` tags each arm of the action a reversal carries, so the words are
+    // gathered by arm rather than read as one union.
+    $does = theArmsIn(theGeneratedEnvelope('UndoEnvelope'), 'does');
+
+    expect($does)->not->toBe([], 'no reversal arm was found in the generated envelope');
+    expect(valuesOf(WhatGoingBackDoes::cases()))->toBe($does);
+});
+
 it('N1-R13 — every request lemonfiber makes on its own account has a case', function (): void {
     // `reach` on the wire, and the closed set is the stack's claim: an eighth
     // request is one somebody decided to add, and this is where the app hears
@@ -847,6 +861,34 @@ it('everything that can become of unrated material has a case', function (): voi
     expect(valuesOf(WhatBecomesOfUnrated::cases()))->toBe($words);
 });
 
+it('everywhere taking somebody out can have reached has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('RemovalEnvelope'), 'revoked');
+
+    expect($words)->not->toBe([], 'no revoked union was found in the generated envelope');
+    expect(valuesOf(HowFarTheRemovalReached::cases()))->toBe($words);
+});
+
+it('every removal taking lemonfiber off can be, and every sort of thing it reaches, has a case', function (): void {
+    $tiers = unionIn(theGeneratedEnvelope('UninstallEnvelope'), 'tier');
+    $sorts = unionIn(theGeneratedEnvelope('UninstallEnvelope'), 'sort');
+
+    expect($tiers)->not->toBe([], 'no tier union was found in the generated envelope')
+        ->and($sorts)->not->toBe([], 'no sort union was found in the generated envelope');
+    expect(valuesOf(WhichRemoval::cases()))->toBe($tiers)
+        ->and(valuesOf(WhatSortItIs::cases()))->toBe($sorts);
+});
+
+it('everywhere taking lemonfiber off can have got has a case', function (): void {
+    // Tags on objects of their own rather than a union joined by `|`, because
+    // the four carry different fields, so they are gathered by tag.
+    preg_match_all("/\\bstate: '([a-z_-]+)'/", theGeneratedEnvelope('UninstallEnvelope'), $found);
+    $states = array_values(array_unique($found[1]));
+    sort($states);
+
+    expect($states)->not->toBe([], 'no state tag was found in the generated envelope');
+    expect(valuesOf(WhereTheUninstallStands::cases()))->toBe($states);
+});
+
 it('everything a quality choice can become has a case, on both envelopes that carry it', function (): void {
     // The one where a missing case would be worst: a disposition drawn as the
     // nearest one could call a held choice recorded, and nobody would be asked
@@ -1003,7 +1045,10 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhereTheInvitationStands::class => 'standing',
     WhetherTheyCanAsk::class => 'linked',
     WhatBecomesOfUnrated::class => 'unrated',
+    HowFarTheRemovalReached::class => 'revoked',
     WhatBecameOfTheChoice::class => 'disposition',
+    WhichRemoval::class => 'tier',
+    WhatSortItIs::class => 'sort',
     WhereTheAskingStands::class => 'state',
     WalkthroughStep::class => 'step',
     WhereTheWalkthroughIs::class => 'state',
@@ -1014,6 +1059,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     HowDriftWasJudged::class => 'assessment',
     WhereAConnectionStands::class => 'state',
     HowSeriousAConnectionIs::class => 'severity',
+    WhatGoingBackDoes::class => 'does',
 
     // `state` twice, and that is the wire's name rather than a mistake here:
     // a problem's standing and a household request's are different unions in

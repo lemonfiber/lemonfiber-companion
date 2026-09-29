@@ -167,8 +167,8 @@ final readonly class FloorsAndRules
             Fixture::edit(
                 'F15',
                 'app-modules/operator/resources/views/sign-into-a-stack.blade.php',
-                '<native:text>{{ __($this->went()->remedy()) }}</native:text>',
-                '<native:text>{{ $nothingSuppliesThis }}</native:text>',
+                '<x-design::body>{{ __($this->went()->remedy()) }}</x-design::body>',
+                '<x-design::body>{{ $nothingSuppliesThis }}</x-design::body>',
                 'every screen the router serves draws',
                 'nothingSuppliesThis',
             ),
@@ -180,7 +180,7 @@ final readonly class FloorsAndRules
             // other.
             Fixture::edit(
                 'F14',
-                'app-modules/operator/resources/views/components/what-stopped-the-reading.blade.php',
+                'app-modules/operator/resources/views/components/what-stood-in-the-way.blade.php',
                 '{{ __($went->remedy) }}',
                 '{{ __($went->remedyish) }}',
                 'every step a component takes',
@@ -195,10 +195,10 @@ final readonly class FloorsAndRules
             Fixture::edit(
                 'F14',
                 'app-modules/operator/resources/views/how-this-stack-is.blade.php',
-                '<x-operator::emphasis>{{ __($this->summary()->said) }}</x-operator::emphasis>',
-                '<x-operator::emphasis>{{ __($this->summary()->saidish) }}</x-operator::emphasis>',
+                '<x-design::body>{{ $this->summary()->worst }}</x-design::body>',
+                '<x-design::body>{{ $this->summary()->worstish }}</x-design::body>',
                 'every step a template takes',
-                'saidish',
+                'worstish',
             ),
 
             Fixture::edit(

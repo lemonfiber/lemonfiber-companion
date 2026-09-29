@@ -13,6 +13,7 @@ final readonly class TheRoomTurnedOutToBe
 {
     /**
      * @param string                 $standsSaid the catalogue key for where the machine stands, or empty where nothing answered
+     * @param string                 $tone       the tone where the machine stands is drawn in, a `Modules\Design\View\Tone` value
      * @param bool                   $halted     whether the stack has stopped starting new downloads
      * @param list<AVolumeAsShown>   $volumes    each volume watched
      * @param list<ALineAsShown>     $account    where the room went
@@ -21,6 +22,7 @@ final readonly class TheRoomTurnedOutToBe
     public function __construct(
         public HowTheReadingWent $went,
         public string $standsSaid,
+        public string $tone,
         public bool $halted,
         public array $volumes,
         public array $account,

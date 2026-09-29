@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Operator\View;
+namespace Modules\Design\View;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;

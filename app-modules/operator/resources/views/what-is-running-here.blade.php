@@ -2,41 +2,48 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    <x-operator::emphasis>{{ __('stacks.itself.running', ['version' => $this->answer()->running]) }}</x-operator::emphasis>
+    <x-design::heading>{{ __('stacks.itself.running', ['version' => $this->answer()->running]) }}</x-design::heading>
 
     {{-- How it was installed decides who can replace it, so it comes before
          whether there is anything newer. --}}
-    <native:text>{{ __($this->answer()->installedSaid) }}</native:text>
+    <x-design::body>{{ __($this->answer()->installedSaid) }}</x-design::body>
     @if ($this->answer()->owner !== '')
-        <x-operator::note>{{ __('stacks.itself.owner', ['owner' => $this->answer()->owner]) }}</x-operator::note>
+        <x-design::note>{{ __('stacks.itself.owner', ['owner' => $this->answer()->owner]) }}</x-design::note>
     @endif
 
-    <x-operator::emphasis>{{ __($this->answer()->standsSaid) }}</x-operator::emphasis>
-    @if ($this->answer()->offered !== '')
-        <x-operator::note>{{ __('stacks.itself.offered', ['version' => $this->answer()->offered]) }}</x-operator::note>
-    @endif
+    {{-- Where it stands against what has been released, with the newest
+         version under it where there is one. A check that failed is never
+         drawn as current. --}}
+    <x-design::standing
+        :said="__($this->answer()->standsSaid)"
+        :tone="$this->answer()->tone"
+        :note="$this->answer()->offered === '' ? '' : __('stacks.itself.offered', ['version' => $this->answer()->offered])"
+    />
     @if ($this->answer()->changed !== '')
-        <native:text>{{ $this->answer()->changed }}</native:text>
+        <x-design::body>{{ $this->answer()->changed }}</x-design::body>
     @endif
     @if ($this->answer()->untold !== '')
-        <x-operator::note>{{ $this->answer()->untold }}</x-operator::note>
+        <x-design::note>{{ $this->answer()->untold }}</x-design::note>
     @endif
 
-    {{-- What updating would bring and leave behind, before anybody runs it. --}}
-    <x-operator::note>{{ $this->answer()->carries }}</x-operator::note>
-    <x-operator::note>{{ $this->answer()->afterwards }}</x-operator::note>
+    {{-- What updating would bring and leave behind, before anybody runs it,
+         and the command that does it, shown to be run at the machine: nothing
+         here runs it. --}}
+    <x-design::card>
+        <x-design::body>{{ $this->answer()->carries }}</x-design::body>
+        <x-design::note>{{ $this->answer()->afterwards }}</x-design::note>
 
-    {{-- The command is shown to be run at the machine; nothing here runs it. --}}
-    @if ($this->answer()->command !== '')
-        <x-operator::note>{{ __('stacks.itself.run_at_the_machine') }}</x-operator::note>
-        <native:text>{{ $this->answer()->command }}</native:text>
-    @elseif ($this->answer()->instead !== '')
-        <x-operator::note>{{ $this->answer()->instead }}</x-operator::note>
-    @endif
+        @if ($this->answer()->command !== '')
+            <x-design::note>{{ __('stacks.itself.run_at_the_machine') }}</x-design::note>
+            <x-design::verbatim>{{ $this->answer()->command }}</x-design::verbatim>
+        @elseif ($this->answer()->instead !== '')
+            <x-design::note>{{ $this->answer()->instead }}</x-design::note>
+        @endif
+    </x-design::card>
 
-    <x-operator::note>{{ __('stacks.itself.not_the_services') }}</x-operator::note>
+    <x-design::note>{{ __('stacks.itself.not_the_services') }}</x-design::note>
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

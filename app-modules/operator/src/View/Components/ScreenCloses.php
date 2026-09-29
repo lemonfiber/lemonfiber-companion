@@ -19,13 +19,14 @@ use function view;
  *
  * Navigation is a route rather than a tap handler: the platform owns the
  * selected state and the back gesture, and it can only own them if it is told
- * where each item goes.
+ * where each item goes and which section this screen is in. Told nothing, it
+ * lights the first item, so every screen says where it is.
  */
 final class ScreenCloses extends Component
 {
     public function __construct(
         public readonly WhereAStackIs $goes,
-        public readonly string $here = '',
+        public readonly string $here,
     ) {}
 
     public function render(): View

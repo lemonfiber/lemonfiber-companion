@@ -16,10 +16,17 @@ use Modules\Kernel\Api\InstantIsBeforeTheEpoch;
 use Modules\Kernel\Api\Pairing;
 use Modules\Kernel\Api\PairingIsNotReadable;
 use Modules\Kernel\Api\PairingIsSpent;
+use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\StackIsUnidentified;
+
+use function sprintf;
+use function str_repeat;
+
 use Tests\Support\Fakes\FrozenClock;
 
 const A_STACKS_DIGEST = '3b8c1f09a7d24e6b5c0f81a2d93e47b6c8150af2937d6e4b1c05a8f39d27e64b';
 const A_STACKS_ADDRESS = 'https://stack.local';
+const A_STACKS_OWN_NAME_FOR_ITSELF = '7f3c9a1e5b2d4086a9c1e3f5b7d90246';
 
 /** The moment every test in this file happens at. */
 const NOW = 1_757_808_000;
@@ -36,6 +43,7 @@ function material(
     ?string $address = A_STACKS_ADDRESS,
     ?string $fingerprint = A_STACKS_DIGEST,
     ?int $expires = WHILE_IT_IS_GOOD,
+    ?string $stack = A_STACKS_OWN_NAME_FOR_ITSELF,
     array $also = [],
 ): string {
     $said = [];
@@ -50,6 +58,10 @@ function material(
 
     if ($expires !== null) {
         $said['expires'] = $expires;
+    }
+
+    if ($stack !== null) {
+        $said['stack'] = $stack;
     }
 
     return (string) json_encode([...$said, ...$also]);
@@ -104,6 +116,47 @@ it('names which half was missing, and how it was read', function (): void {
 
     expect(fn(): Pairing => Pairing::read(material(address: null), HowItWasRead::Scanned, whenItIsRead()))
         ->toThrow(PairingIsNotReadable::class, 'read by scanned carried no address');
+});
+
+it('names the machine as the stack names itself', function (): void {
+    $said = Pairing::read(material(), HowItWasRead::Scanned, whenItIsRead());
+
+    expect($said->stack()->is(StackId::saidBy(A_STACKS_OWN_NAME_FOR_ITSELF)))->toBeTrue();
+});
+
+it('refuses material that does not say which machine it is for', function (): void {
+    // Without it the app cannot tell a machine it holds from a new one, and
+    // pairing the same machine twice would put it on the list twice.
+    expect(fn(): Pairing => Pairing::read(material(stack: null), HowItWasRead::Scanned, whenItIsRead()))
+        ->toThrow(PairingIsNotReadable::class, 'read by scanned carried no stack')
+        ->and(fn(): Pairing => Pairing::read(material(stack: '  '), HowItWasRead::Typed, whenItIsRead()))
+        ->toThrow(PairingIsNotReadable::class, 'read by typed carried no stack');
+});
+
+it('refuses material whose stack is not a string', function (): void {
+    expect(fn(): Pairing => Pairing::read(material(stack: null, also: ['stack' => 42]), HowItWasRead::Scanned, whenItIsRead()))
+        ->toThrow(PairingIsNotReadable::class, 'read by scanned carried no stack');
+});
+
+it('refuses material naming its stack in a shape no stack mints', function (): void {
+    // Read into the identifier's own refusal rather than the envelope's, the
+    // way a malformed address or digest is: the key is there, and what it
+    // holds is not an identifier.
+    expect(fn(): Pairing => Pairing::read(material(stack: 'the-loft'), HowItWasRead::Typed, whenItIsRead()))
+        ->toThrow(StackIsUnidentified::class, 'the 32 lower-case hexadecimal characters a stack mints');
+});
+
+it('reads material in the exact form a stack writes it', function (): void {
+    $digest = sprintf('5adc06f2%s63aea', str_repeat('0', 51));
+    $written = sprintf(
+        '{"address":"https://the-loft.local:8443","fingerprint":"%s","expires":1790621817,"stack":"5e1d0a7b3c9f4e2d8a6b1c0f9e8d7c6b"}',
+        $digest,
+    );
+
+    $said = Pairing::read($written, HowItWasRead::Scanned, whenItIsRead());
+
+    expect($said->stack()->stored())->toBe('5e1d0a7b3c9f4e2d8a6b1c0f9e8d7c6b')
+        ->and($said->presenting()->forComparingByEye())->toBe($digest);
 });
 
 it('refuses a half that is present and empty', function (): void {

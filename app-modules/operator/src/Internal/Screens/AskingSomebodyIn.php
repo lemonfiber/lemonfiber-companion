@@ -32,8 +32,10 @@ use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
+use Modules\Operator\Internal\Presenters\HowTheUnratedChoiceReads;
 use Modules\Operator\Internal\Presenters\HowWhoIsInReads;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheUnratedChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\WhoIsInTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheInvitationIsAskedWith;
 use Modules\Operator\Internal\WhatTheSheetSaid;
@@ -170,10 +172,10 @@ final class AskingSomebodyIn extends NativeComponent
         $this->unrated = WhatBecomesOfUnrated::tryFrom($word)->value ?? '';
     }
 
-    /** The catalogue key for what becomes of unrated material as chosen here, or for leaving it to the stack. */
-    public function unratedSaid(): string
+    /** What becomes of unrated material as chosen here, and every way it can go. */
+    public function unratedChoice(): TheUnratedChoiceAsShown
     {
-        return WhatBecomesOfUnrated::tryFrom($this->unrated)?->saidOnTheScreen() ?? 'stacks.invitation.unrated.left_to_the_stack';
+        return new HowTheUnratedChoiceReads()->chosen(WhatBecomesOfUnrated::tryFrom($this->unrated));
     }
 
     /**

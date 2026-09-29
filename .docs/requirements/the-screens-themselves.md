@@ -18,6 +18,8 @@ requirement is right and this page is a defect.
 | `N1-R38` | What the *operator* did is held on the screen; the reading of it is computed per frame | `YourStacks`, with `ReadingACode` |
 | `N1-R49` | Expiry, and every refusal along the way, is true of both roads | one parser, not two |
 | `N1-R50` | Typed pairing requires the fingerprint to be confirmed | `FingerprintWasConfirmed`, which may only exist where a person confirmed one |
+| `N1-R63` | Pairing a machine already held updates it rather than adding a second, and the screen says so | `PairByScanning`, `PairByTyping`, through `Remembering`; `HowThePairingWent::PairedAgain` |
+| `N1-R64` | A re-pairing that changed the certificate ends the session, and the screen says to sign in again | `HowThePairingWent::PairedAgainOnANewCertificate` |
 | `N4-R1` | The platform's prompt is raised at the point of first use, not on launch | the camera opens when the operator asks for it |
 | `N4-R2` | The app's own sentence goes up first, in front of a button; the button is what opens the camera | `PairByScanning` |
 | `N4-R4` | Something declined is not re-asked for automatically | there is a button rather than an automatic retry |
@@ -40,6 +42,8 @@ requirement is right and this page is a defect.
 | Requirement | What it asks | What keeps it |
 |---|---|---|
 | `N2-R7` | Start, stop and restart, by service and by form | `WhatThisStackRuns`, `WhatToDoWithThis`. The forms offered are the ones the stack's own list names, read by `Repertoires` — the `forms` on the status reading are only the forms that reading asked about, which is none — and a service's compose `profile` is not read, so no row shows one and none is asked for as a form (`B1-R8`). A verb sent from `WhatToDoWithThis` is followed to what the stack reports it came to, by `FollowsWhatTheVerbCameTo` through `Supervising::whatBecameOf()`, and drawn under the thing's name |
+| `N2-R23` | While a start or a restart sent from here runs, what the stack says it is waiting for, in place of the screen's own sentence and with no progress figure of its own | `Hearing::whatAStartWaitsOn()`, taken from the same event stream `Listeners` holds; `WhatAStartWaitsOn`; `WhatToDoWithThis` draws the newest line and keeps it across a wake that heard nothing new. A line carries no job name, so where two starts run at once the line is the stack's without saying which start said it |
+| `N2-R24` | Fetching a form's images ahead of starting it, said before it runs to take long and use the line with no figure of the app's own, and what it came to drawn from the stack's answer | `WhatToDoWithIt::Pull`, offered for a form and never for one service; `Disturbances::forThe()`'s second arm, which `HowAVerbReads` answers with that sentence; `HowAVerbEndedReads`, which says a fetch was carried out apart from a stop |
 | `N16-R6` | A restart that did not bring everything back names what did not come back, and is never a completed start | `WhatToDoWithThis`, drawing `HowAVerbEndedReads`: *it did not bring everything back* and each service short of running with where it stood, unless the stack called those services `active` and named none of them |
 | `N2-R8` | A disruptive action states what it disturbs, and for how long, before the yes | the yes is built from the listing and never from the tap |
 | `N2-R4` | What this machine would put right, stated before any yes | `WhatWouldBePutRight` |

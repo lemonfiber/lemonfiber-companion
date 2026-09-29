@@ -7,7 +7,7 @@ in to it.
 |---|---|
 | `WhatTheCodeSaysSoFar`, `WhereTheCodeGot` | A pairing code read as far as it has been typed |
 | `FingerprintWasConfirmed`, `PairingWasNotConfirmed` | The operator's confirmation of the fingerprint a typed pairing shows |
-| `Introducing`, `HowThePairingWent` | Pairing material becoming a stack this device keeps |
+| `Introducing`, `Remembering`, `HowThePairingWent` | Pairing material becoming a stack this device keeps, or updating one it already holds |
 | `HowTheSignInWent` | What became of a credential offered to a stack |
 | `Opening` | What the app found when it opened |
 | `WhetherItOpened` | Whether the device let the operator in |

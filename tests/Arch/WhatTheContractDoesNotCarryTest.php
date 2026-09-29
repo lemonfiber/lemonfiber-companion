@@ -129,6 +129,72 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'the answer they arrived on, and says nothing of a decline, which the contract does not carry.',
     ],
     [
+        'requirement' => 'N13-R7',
+        'asks' => 'to carry, on taking somebody out of the household, an agreement naming the reading it was given for',
+        // Named, because the reading an agreement would name is this payload
+        // and nowhere else. `agreement` is the word the uninstall's reading
+        // already names itself by, and a person's removal gaining one would
+        // most plausibly use it too.
+        'envelope' => 'RemovalEnvelope',
+        'field' => 'agreement',
+        'shape' => null,
+        'raised' => 'The `remove` action takes a name and a bare `confirm`, and the `removal` envelope names '
+            . 'nothing a yes could quote. So nothing on the wire can say which reading of what taking '
+            . 'somebody out costs was agreed to, or tell one agreement from another: a yes sent after the '
+            . 'cost moved is carried out against whatever it costs by then. The screen asks every time, '
+            . 'holds the reading only while it is in front of the operator, and sends the yes only beneath '
+            . 'it, which is as much of `N13-R7` as a bare `confirm` allows. What closes this row is the '
+            . 'reading naming itself and the action taking that name back, as an uninstall\'s does.',
+    ],
+    [
+        'requirement' => 'N13-R10',
+        'asks' => 'to label a rehearsed removal of somebody from the household as a rehearsal',
+        // Named, and watched for the word the invitation already marks a
+        // rehearsal with: a person's removal able to be rehearsed would have to
+        // say so on this payload, and `confirmed: false` cannot.
+        'envelope' => 'RemovalEnvelope',
+        'field' => 'rehearsed',
+        'shape' => null,
+        'raised' => 'No action argument on the HTTP route asks for a rehearsal, so none can arrive, and the '
+            . '`removal` envelope carries no marker of one: `confirmed: false` is a reading nobody agreed '
+            . 'to and a rehearsal alike. The screen labels that reading as what taking them out would cost, '
+            . 'with nobody taken out, and never as a rehearsal, because nothing on the wire says one ran. '
+            . 'What closes this row is a rehearsal the route can be asked for and the payload saying it was one.',
+    ],
+    [
+        'requirement' => 'N13-R19',
+        'asks' => 'to state what taking somebody out of the household does to their watch history',
+        // Named, and watched as a whole payload: the effect could arrive as a
+        // sentence, a flag or a count, under any name, and the payload saying
+        // anything it does not say now is what closes this.
+        'envelope' => 'RemovalEnvelope',
+        'field' => null,
+        'shape' => 'array{\'asks-through-the-request-service\': bool, confirmed: bool, findings: list<string>, name: string, requests: int, revoked: \'everywhere\'|\'media-server-only\'|\'nothing\'}',
+        'raised' => '`D6-R9` has the effect on watch history stated before a removal is confirmed. The `removal` '
+            . 'envelope carries what could not be done in `findings` and how many requests are destroyed '
+            . 'in `requests`, and nothing that says the watch history goes with the account. A sentence '
+            . 'written here would be this app asserting what the media server does with an account it '
+            . 'removes, which `N2-R14` refuses. The screen states the requests as the stack counts them and '
+            . 'every finding in its words, and says nothing about watch history.',
+    ],
+    [
+        'requirement' => 'N13-R10',
+        'asks' => 'to ask for a rehearsal of taking lemonfiber off, and label what it answers as one',
+        // Named, and watched as a whole payload. What is missing is an
+        // argument on the action's route, which no payload can show; the
+        // payload a rehearsal answers with is where a route that can be asked
+        // for one would say so, and anything it says that it does not say now
+        // sends somebody to read this row.
+        'envelope' => 'UninstallEnvelope',
+        'field' => null,
+        'shape' => 'array{manifest: array{agreement: string, backup?: string|null, bytes: int, coming: list<array{name: string, progress: int}>, confidence: array{complete: bool, unread: list<string>}, foreign: list<array{at: string, bytes: int, files: int}>, items: list<array{bytes?: int|null, kept?: string|null, name: string, secret: bool, sort: \'container\'|\'network\'|\'image\'|\'path\', what: string}>, keeps: string, outside: list<array{by_hand: string, found: bool, what: string, why: string}>, removes: string, tier: \'stop\'|\'services\'|\'configuration\'|\'media\', volume?: string|null}, removal: array{state: \'surveyed\'}|array{state: \'confirmed\'}|array{credentials: list<string>, gone: list<string>, state: \'complete\'}|array{credentials: list<string>, gone: list<string>, left: list<array{by_hand: string, name: string, why: string}>, state: \'partial\'}}',
+        'raised' => 'The `removal` state `confirmed` is the state an uninstall rehearsal ends in, and the screen '
+            . 'labels it as a rehearsal where it arrives. None can be asked for: the `uninstall` action '
+            . 'takes `tier`, `confirm`, `offer` and `wait`, and no argument on the HTTP route asks for a '
+            . 'rehearsal, so none arrives from this app. What closes this row is a rehearsal the route '
+            . 'can be asked for.',
+    ],
+    [
         'requirement' => 'N7-R11',
         'asks' => 'to show where each service the survey found keeps its configuration and its library',
         // Named, and watched as a whole payload: the answer could arrive as a
@@ -186,6 +252,79 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'the `quality` envelope carries no such statement. A sentence written here would be this app '
             . 'asserting what the core does with a choice, which is the core\'s to say. The screen offers '
             . 'upgrading as its own act and says nothing about what choosing does to the library.',
+    ],
+    [
+        'requirement' => 'N23-R11',
+        'asks' => 'to say, before a guard starts, the data location it would guard, how often it looks and the command it would run',
+        // Named, and watched as a whole payload: the name a guard is started
+        // under is the one answer this app has before it runs, and the watch
+        // could as well come to carry what it would guard there. A rehearsal
+        // argument on the action is the other way it could close, and the SDK
+        // generates no request shapes for a row to watch.
+        'envelope' => 'JobEnvelope',
+        'field' => null,
+        'shape' => 'array{action: string, job: string}',
+        'raised' => '`watch.would` carries the root, the interval and the command, and it is answered only '
+            . 'by a rehearsal; no argument the watch action takes over the web API asks for one. So the '
+            . 'app cannot read from the stack, before the guard runs, which location it would guard, how '
+            . 'often it looks, or what it would run. It does not take the location from a setting or '
+            . 'state an interval of its own: the screen says what a guard does in general, says that the '
+            . 'stack does not say those three beforehand, and starts the guard only on a yes naming the '
+            . 'forms it would stop.',
+    ],
+    [
+        'requirement' => 'N23-R13',
+        'asks' => 'to tell a guard another client released from one the stack let go because nothing asked about it',
+        // Named, and watched as a whole payload, for the row above's reason:
+        // both answer this envelope at `200`, and the distinction would arrive
+        // as a word it does not carry now.
+        'envelope' => 'JobEnvelope',
+        'field' => null,
+        'shape' => 'array{action: string, job: string}',
+        'raised' => 'A guard released and a guard let go for want of asking both answer `job` at `200`, the '
+            . 'standing `JobStanding` reads as ended. This app releases a guard only as its screen is left, '
+            . 'so it never draws its own release; what it can draw is a guard that ended without seeing '
+            . 'anything, told apart from one that saw the data location go, one that never started and one '
+            . 'the stack no longer knows, and it says it was released or not asked about without saying '
+            . 'which.',
+    ],
+    [
+        'requirement' => 'N15-R1',
+        'asks' => 'to show what setup settled — where the library lives, which protocols are on, who the stack runs as — as setup\'s own decisions',
+        // Named, and watched as a whole payload: `wizard` is what setup's own
+        // read answers with, and the settled facts arriving there is the
+        // likeliest way this closes. A field row cannot watch them: `data_root`,
+        // `protocols` and `service_user` are all carried today, by `setup`,
+        // which nothing serves over HTTP.
+        'envelope' => 'WizardEnvelope',
+        'field' => null,
+        'shape' => 'array{asks: bool, at: \'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\', offered: bool, phase: \'in-progress\'|\'reviewing\'|\'applying\'|\'applied\', plan: list<array{key: string, origin: array{origin: \'bundled\'}|array{origin: \'operator\'}|array{named: string, origin: \'plugin\'}|array{origin: \'unknown\', why: string}|array{named: string, origin: \'overridden\', replaced: array{from: mixed, value?: string|null, withheld: bool}}|array{named: string, origin: \'orphaned\'}, secret: bool, value: string}>, proof?: array{observed: string, outcome: \'valid\'}|array{detail: string, outcome: \'rejected\'}|array{detail: string, outcome: \'unreachable\'}|array{detail: string, outcome: \'degraded\'}|null, ready_for_review: bool, unanswered: list<\'welcome\'|\'preflight\'|\'prerequisites\'|\'protocols\'|\'vpn\'|\'data-location\'|\'credentials\'|\'provider\'|\'service-user\'|\'library\'|\'household\'|\'notifications\'|\'autostart\'|\'review\'>, written: list<string>}',
+        'raised' => 'What setup settled is carried whole only by `setup` — `data_root`, `protocols`, '
+            . '`service_user` — and only the command line writes that kind; no read, action or endpoint '
+            . 'answers with it. Setup\'s own read, `GET /api/setup`, answers with `wizard`, whose `plan` '
+            . 'is what applying *will* write and is empty once setup has applied, and the SDK names no '
+            . 'path for that read at all, so this app cannot ask it. The settings listing, `config`, '
+            . 'carries what setup wrote among every other setting, each with its origin, and nothing '
+            . 'on it says which ones setup settled. The settings screen says setup\'s decisions are '
+            . 'among the settings it draws and that changing one is reconfiguration; it singles none '
+            . 'out, because a list of setup\'s keys kept here would be a second copy of the core\'s '
+            . 'plan that goes stale the day it changes, which `N2-R14` refuses.',
+    ],
+    [
+        'requirement' => 'N15-R5',
+        'asks' => 'to tie a stage said on the event stream to the job it is about',
+        // Named, and watched as a whole payload: a job's name could arrive under
+        // any word, and `job` is spent on this wire already, on the `job`
+        // envelope itself.
+        'envelope' => 'StepEnvelope',
+        'field' => null,
+        'shape' => 'array{detail: string, said: string, step: \'choosing\'|\'searching\'|\'grabbing\'|\'downloading\'|\'importing\'|\'scanning\'|\'available\'}',
+        'raised' => 'A `step` carries the stage, what was said and the detail, and nothing naming the walk '
+            . 'it belongs to. The screen following a walk takes every step heard while its walk runs '
+            . 'as that walk\'s, which holds while one walk runs at a time; a second walk started from '
+            . 'another surface meanwhile would be heard as this one. No other job carries a stage at '
+            . 'all: the `job` envelope is `action` and `job`, so a repair, an update or a copy is shown '
+            . 'as running and never as at a stage.',
     ],
 ];
 

@@ -2,56 +2,58 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    <x-operator::emphasis>{{ __('stacks.credentials.heading') }}</x-operator::emphasis>
+    <x-design::title>{{ __('stacks.credentials.heading') }}</x-design::title>
 
     @forelse ($this->answer()->held as $credential)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $credential->name }}</x-operator::emphasis>
+        <x-design::card>
+            <x-design::strong>{{ $credential->name }}</x-design::strong>
             {{-- Each state in its own words: stale, invalid and rotating ask
                  for three different things and are never one warning. --}}
-            <native:text>{{ __($credential->stateSaid) }}</native:text>
+            <x-design::body>{{ __($credential->stateSaid) }}</x-design::body>
             {{-- Who made it decides who fixes it. --}}
-            <x-operator::note>{{ __($credential->originSaid) }}</x-operator::note>
+            <x-design::note>{{ __($credential->originSaid) }}</x-design::note>
 
-            <x-operator::note>{{ __('stacks.credentials.used_by') }}</x-operator::note>
+            <x-design::note>{{ __('stacks.credentials.used_by') }}</x-design::note>
             @forelse ($credential->consumers as $consumer)
-                <native:text>{{ $consumer }}</native:text>
+                <x-design::body>{{ $consumer }}</x-design::body>
             @empty
                 {{-- Nothing uses it, which is a reason to remove it rather
                      than a reason to hide it. --}}
-                <native:text>{{ __('stacks.credentials.used_by_nothing') }}</native:text>
+                <x-design::body>{{ __('stacks.credentials.used_by_nothing') }}</x-design::body>
             @endforelse
 
             @if ($credential->advisory !== '')
-                <x-operator::note>{{ $credential->advisory }}</x-operator::note>
+                <x-design::note>{{ $credential->advisory }}</x-design::note>
             @endif
-        </x-operator::entry>
+        </x-design::card>
     @empty
-        <x-operator::note>{{ __('stacks.credentials.none') }}</x-operator::note>
+        <x-design::body>{{ __('stacks.credentials.none') }}</x-design::body>
     @endforelse
 
     {{-- What keeping them in files protects against, and what it does not. --}}
-    <x-operator::emphasis>{{ __('stacks.credentials.protection.heading') }}</x-operator::emphasis>
-    <native:text>{{ $this->answer()->summary }}</native:text>
+    <x-design::heading>{{ __('stacks.credentials.protection.heading') }}</x-design::heading>
+    <x-design::body>{{ $this->answer()->summary }}</x-design::body>
 
-    <x-operator::note>{{ __('stacks.credentials.protection.against') }}</x-operator::note>
-    @forelse ($this->answer()->against as $threat)
-        <native:text>{{ $threat }}</native:text>
-    @empty
-        <native:text>{{ __('stacks.credentials.protection.nothing_listed') }}</native:text>
-    @endforelse
+    <x-design::section :label="__('stacks.credentials.protection.against')">
+        @forelse ($this->answer()->against as $threat)
+            <x-design::row :headline="$threat" />
+        @empty
+            <x-design::row :headline="__('stacks.credentials.protection.nothing_listed')" />
+        @endforelse
+    </x-design::section>
 
-    <x-operator::note>{{ __('stacks.credentials.protection.not_against') }}</x-operator::note>
-    @forelse ($this->answer()->notAgainst as $threat)
-        <native:text>{{ $threat }}</native:text>
-    @empty
-        <native:text>{{ __('stacks.credentials.protection.nothing_listed') }}</native:text>
-    @endforelse
+    <x-design::section :label="__('stacks.credentials.protection.not_against')">
+        @forelse ($this->answer()->notAgainst as $threat)
+            <x-design::row :headline="$threat" />
+        @empty
+            <x-design::row :headline="__('stacks.credentials.protection.nothing_listed')" />
+        @endforelse
+    </x-design::section>
 
     {{-- Nothing here sets, changes or shows a value. --}}
-    <x-operator::note>{{ __('stacks.credentials.at_the_machine') }}</x-operator::note>
+    <x-design::note>{{ __('stacks.credentials.at_the_machine') }}</x-design::note>
 
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

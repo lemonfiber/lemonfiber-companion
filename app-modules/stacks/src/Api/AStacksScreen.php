@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Modules\Stacks\Api;
 
 use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ADownloadHeld;
+use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatToFollow;
 
@@ -72,6 +75,9 @@ enum AStacksScreen: string
     /** What this machine keeps running when nobody is signed in. */
     case Hosting = '/stacks/{stack}/keeps-running';
 
+    /** A guard on this machine's data location, held only while its screen keeps asking. */
+    case Guard = '/stacks/{stack}/guard';
+
     /** Everything this machine is set to, as the machine itself lists it. */
     case Settings = '/stacks/{stack}/settings';
 
@@ -126,12 +132,28 @@ enum AStacksScreen: string
     case Record = '/stacks/{stack}/record';
 
     /**
+     * Putting back one run the record shows, agreed to before anything is asked.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the stamp the record keeps the run under.
+     */
+    case RunBack = '/stacks/{stack}/record/{service}';
+
+    /**
      * Where every service on this machine comes from.
      *
      * Beside the record: that screen is what was done, and this is what it was
      * done with.
      */
     case Origins = '/stacks/{stack}/origins';
+
+    /**
+     * What each service on this machine is for, and what became of any it dropped.
+     *
+     * Beside where each comes from: that screen is what a service is made of,
+     * and this is what the house goes without while it is down.
+     */
+    case Catalogue = '/stacks/{stack}/catalogue';
 
     /**
      * Everything that leaves this machine: lemonfiber's own requests, and its
@@ -165,6 +187,14 @@ enum AStacksScreen: string
     /** How full this machine is, and where the room went. */
     case Room = '/stacks/{stack}/room';
 
+    /**
+     * Stopping seeding one completed download, with what it costs before anything is agreed to.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the name the account of the disk gave a download.
+     */
+    case LetGo = '/stacks/{stack}/room/{service}';
+
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
     case Itself = '/stacks/{stack}/itself';
 
@@ -180,6 +210,14 @@ enum AStacksScreen: string
     /** Asking somebody in: what an invitation would grant, sending it, and handing it over. */
     case Invite = '/stacks/{stack}/invite';
 
+    /**
+     * Taking one member out of the household, said as what it would cost before it is agreed to.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the name the member's account is held under.
+     */
+    case TakeOut = '/stacks/{stack}/household/{service}';
+
     /** What is already on this machine that is not lemonfiber's, and what may be done about it. */
     case AlreadyHere = '/stacks/{stack}/already-here';
 
@@ -188,6 +226,9 @@ enum AStacksScreen: string
 
     /** Wiring the services to each other, and how each connection turned out. */
     case Wiring = '/stacks/{stack}/wiring';
+
+    /** Taking lemonfiber off this machine, one removal at a time, each read before it is agreed to. */
+    case Uninstall = '/stacks/{stack}/uninstall';
 
     /** What lemonfiber's words mean. */
     case Words = '/stacks/{stack}/words';
@@ -205,6 +246,9 @@ enum AStacksScreen: string
 
     /** Watching one thing arrive, narrated end to end, and the record of what was said. */
     case Walkthrough = '/stacks/{stack}/walkthrough';
+
+    /** Putting the configuration back to lemonfiber's own, previewed file by file before any yes. */
+    case Reset = '/stacks/{stack}/reset';
 
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
@@ -316,6 +360,50 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($copy->name())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one run on one machine's record.
+     *
+     * Encoded for {@see self::forTheStacksCopy()}'s reason.
+     */
+    public function forTheStacksRun(StackId $stack, ARun $run): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($run->stamp())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one completed download on one machine.
+     *
+     * Encoded for {@see self::forTheStacksWord()}'s reason: a download's name
+     * is whatever the torrent was called, spaces and slashes included.
+     */
+    public function forTheStacksDownload(StackId $stack, ADownloadHeld $download): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($download->name())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one member of the household on one machine.
+     *
+     * Encoded for {@see self::forTheStacksWord()}'s reason: nothing about the
+     * name an account is held under promises it is a path segment.
+     */
+    public function forTheStacksMember(StackId $stack, SomebodyInTheHousehold $member): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($member->name())], $this->value);
     }
 
     /**

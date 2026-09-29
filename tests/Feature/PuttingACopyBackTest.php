@@ -6,6 +6,7 @@ use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnExistingSetup;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
@@ -20,10 +21,12 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\ARelocationAsShown;
 use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
@@ -121,7 +124,28 @@ function everythingTheListingShows(WhatPuttingItBackWouldShow $shown): array
         'contents' => $shown->contents,
         'isOlder' => $shown->isOlder,
         'relocation' => $shown->relocation instanceof ARelocationAsShown ? [$shown->relocation->was, $shown->relocation->now] : null,
+        'refused' => theRefusalAsDrawn($shown->refused),
     ];
+}
+
+/**
+ * A refusal as drawn, its three parts in order, or nothing where there is none.
+ *
+ * @return list<string>|null
+ */
+function theRefusalAsDrawn(?ARefusalAsShown $refused): ?array
+{
+    return $refused instanceof ARefusalAsShown ? [$refused->said, $refused->meaning, $refused->named] : null;
+}
+
+/** The stack's refusal of a copy that is newer than it, in its words, naming the versions. */
+function aCopyTooNewToPutBack(): ARefusalInItsWords
+{
+    return ARefusalInItsWords::said(
+        'This backup is from a newer lemonfiber',
+        'It may hold configuration this version would not restore correctly, so it is refused rather than half-applied. Nothing was touched.',
+        WhatTheRefusalNamed::as('the backup is 2.0.0, this is 0.9.0'),
+    );
 }
 
 /**
@@ -140,6 +164,7 @@ function everythingThePuttingBackShows(HowPuttingItBackWent $went): array
         'scope' => $went->scope instanceof AScopeAsShown ? [$went->scope->said, $went->scope->with, $went->scope->trees] : null,
         'takenBy' => $went->takenBy,
         'relocation' => $went->relocation instanceof ARelocationAsShown ? [$went->relocation->was, $went->relocation->now] : null,
+        'refused' => theRefusalAsDrawn($went->refused),
     ];
 }
 
@@ -162,6 +187,7 @@ function nothingListedOfTheCopy(array $changed): array
         'contents' => [],
         'isOlder' => false,
         'relocation' => null,
+        'refused' => null,
         ...$changed,
     ];
 }
@@ -183,6 +209,7 @@ function nothingReportedOfPuttingItBack(array $changed): array
         'scope' => null,
         'takenBy' => null,
         'relocation' => null,
+        'refused' => null,
         ...$changed,
     ];
 }
@@ -203,6 +230,7 @@ it('rehearses first, labelled as one, with the scope, what wrote it, what it hol
         'contents' => ['lemonfiber configuration', 'service configuration'],
         'isOlder' => false,
         'relocation' => ['/srv/old', '/srv/new'],
+        'refused' => null,
     ])
         ->and(array_map(static fn(ACopy $copy): string => $copy->name(), $puttingBack->rehearsed()))->toBe(['lemonfiber-20260924-0300-full'])
         ->and($puttingBack->agreed())->toBe([])
@@ -257,6 +285,96 @@ it('offers nothing to agree to where the stack would not list the copy', functio
 
     expect($puttingBack->agreed())->toBe([])
         ->and($screen->wasAgreedTo())->toBeFalse();
+});
+
+it('says a copy the stack will not list in its words, apart from a stack that could not be reached, and offers the copies rather than asking again', function (): void {
+    $puttingBack = AStackThatPutsCopiesBack::refusingToList(aCopyTooNewToPutBack());
+    $keychain = AKeychainInMemory::working();
+    $screen = thePuttingBackScreen($puttingBack, $keychain);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $unreachable = WhatTheDeviceWouldDraw::by(thePuttingBackScreen(AStackThatPutsCopiesBack::met(Obstacle::StackDidNotAnswer)));
+
+    expect(everythingTheListingShows($screen->answer()))->toBe(nothingListedOfTheCopy(['refused' => [
+        'This backup is from a newer lemonfiber',
+        'It may hold configuration this version would not restore correctly, so it is refused rather than half-applied. Nothing was touched.',
+        'the backup is 2.0.0, this is 0.9.0',
+    ]]))
+        ->and($drawn->said())->toContain(__('stacks.put_back.would_not_list'))
+        ->and($drawn->said())->toContain('This backup is from a newer lemonfiber')
+        ->and($drawn->said())->toContain('It may hold configuration this version would not restore correctly, so it is refused rather than half-applied. Nothing was touched.')
+        ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => 'the backup is 2.0.0, this is 0.9.0']))
+        ->and($drawn->said())->toContain(__('stacks.put_back.same_answer'))
+        ->and($drawn->said())->not->toContain(__('stacks.put_back.a_rehearsal'))
+        ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->offers())->toContain(__('stacks.copy.see_the_copies'))
+        ->and($drawn->offers())->not->toContain(__('stacks.put_back.put_it_back'))
+        ->and($drawn->offers())->not->toContain(__('health.ask_again'))
+        ->and($unreachable->said())->not->toContain(__('stacks.put_back.would_not_list'))
+        ->and($unreachable->offers())->toContain(__('health.ask_again'))
+        ->and($keychain->isHolding(theStackACopyGoesBackOn()->id()))->toBeTrue();
+
+    $screen->agree();
+
+    expect($puttingBack->agreed())->toBe([])
+        ->and($screen->wasAgreedTo())->toBeFalse();
+});
+
+it('draws only the stack\'s sentence where it meant and named nothing more', function (): void {
+    $refused = ARefusalInItsWords::said('The backup could not be read', '', WhatTheRefusalNamed::nothing());
+    $said = WhatTheDeviceWouldDraw::by(thePuttingBackScreen(AStackThatPutsCopiesBack::refusingToList($refused)))->said();
+    $heading = array_search(__('stacks.put_back.would_not_list'), $said, strict: true);
+
+    expect($heading)->toBeInt()
+        ->and(array_slice($said, (int) $heading, 3))->toBe([
+            __('stacks.put_back.would_not_list'),
+            'The backup could not be read',
+            __('stacks.put_back.same_answer'),
+        ]);
+});
+
+it('says a yes the stack stopped on a problem in its words, offers reading the listing again rather than asking again, and reads it afresh', function (): void {
+    $refused = ARefusalInItsWords::said(
+        'The backup could not be unpacked',
+        'The restore was stopped part-way through writing the configuration back. Run it again once the cause is fixed; a seed afterwards will reconcile anything left half-written.',
+        WhatTheRefusalNamed::as('/srv/stack/config: permission denied'),
+    );
+    $puttingBack = AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::refused($refused));
+    $screen = thePuttingBackScreen($puttingBack);
+    $screen->answer();
+    $screen->agree();
+    $screen->whileItRuns();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect(everythingThePuttingBackShows($screen->done()))->toBe(nothingReportedOfPuttingItBack(['refused' => [
+        'The backup could not be unpacked',
+        'The restore was stopped part-way through writing the configuration back. Run it again once the cause is fixed; a seed afterwards will reconcile anything left half-written.',
+        '/srv/stack/config: permission denied',
+    ]]))
+        ->and($screen->isWorking())->toBeFalse()
+        ->and($drawn->said())->toContain(__('stacks.put_back.refused'))
+        ->and($drawn->said())->toContain('The backup could not be unpacked')
+        ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => '/srv/stack/config: permission denied']))
+        ->and($drawn->said())->toContain(__('stacks.put_back.same_answer'))
+        ->and($drawn->said())->not->toContain(__(Obstacle::StackDidNotAnswer->said()))
+        ->and($drawn->offers())->toContain(__('stacks.put_back.look_again'))
+        ->and($drawn->offers())->not->toContain(__('health.ask_again'));
+
+    $screen->lookAgain();
+
+    expect($screen->listed)->toBeNull()
+        ->and($screen->carriedOut)->toBeNull()
+        ->and($screen->answered)->toBeNull();
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and($screen->handle)->toBeNull()
+        ->and($screen->answer()->went->cameBack())->toBeTrue()
+        ->and($screen->answer()->refused)->toBeNull()
+        ->and($puttingBack->rehearsed())->toHaveCount(2)
+        ->and($puttingBack->followed())->toHaveCount(1);
+
+    $screen->whileItRuns();
+
+    expect($puttingBack->followed())->toHaveCount(1);
 });
 
 it('names no copy where it was opened on none, and asks the stack nothing', function (): void {

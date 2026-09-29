@@ -19,7 +19,9 @@ use const JSON_THROW_ON_ERROR;
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Dx\Api\AStandInStack;
+use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithACopy;
+use Modules\Kernel\Api\WhatToDoWithADownload;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -116,6 +118,29 @@ final readonly class WhatTheWireWouldAnswer
     private const string A_LISTING_OF_A_COPY = 'RestoreEnvelope';
 
     /**
+     * What the work of stopping seeding redeems into.
+     *
+     * The one action whose work a screen draws on its first frame: what
+     * stopping seeding one download would cost arrives as work, and redeemed
+     * into a repair it would draw that screen as a stack that did not answer.
+     * So the stand-in names that work after its action, and redeems work by
+     * that name into the `stop-seeding` envelope, which carries the offer and
+     * what became of it.
+     */
+    private const string WHAT_LETTING_GO_BECOMES = 'StopSeedingEnvelope';
+
+    /**
+     * What putting the configuration back finishes as.
+     *
+     * The reset screen asks for work the moment it opens — what putting the
+     * configuration back would revert, before anything is agreed to — and that
+     * work finishes as a `reset` rather than as a repair. So a reset is
+     * answered with work named for it, and that name redeems into this
+     * envelope rather than into {@see WHAT_WORK_BECOMES}.
+     */
+    private const string WHAT_A_RESET_BECOMES = 'ResetEnvelope';
+
+    /**
      * What a door answers a password with.
      *
      * The third endpoint the contract does not write down, and the one that is
@@ -171,8 +196,14 @@ final readonly class WhatTheWireWouldAnswer
      */
     private const int A_FEW_LINES = 3;
 
-    /** The kind of the one event a stand-in stream carries. */
-    private const string WHAT_THE_STREAM_CARRIES = 'dashboard';
+    /**
+     * The kinds of the events a stand-in stream carries, in the order it says them.
+     *
+     * The two a screen holds the stream for: the dashboard the health summary
+     * is read out of, and a step of a running walk. Each screen takes the last
+     * event of its own kind and reads the other as a sign of life.
+     */
+    private const array WHAT_THE_STREAM_CARRIES = ['dashboard', 'step'];
 
     /**
      * A mock for every request this app can make.
@@ -188,13 +219,15 @@ final readonly class WhatTheWireWouldAnswer
         $status = $machine->answersWith();
 
         return new MockClient([
-            '*' => static fn(PendingRequest $asked): MockResponse => self::answersAtOnce($asked)
-                ? new MockResponse(self::oneEnvelope(self::A_LISTING_OF_A_COPY), $status)
-                : self::to(
+            '*' => static fn(PendingRequest $asked): MockResponse => match (true) {
+                self::answersAtOnce($asked) => new MockResponse(self::oneEnvelope(self::A_LISTING_OF_A_COPY), $status),
+                self::isLettingGo($asked) => new MockResponse(self::workNamedFor(self::lettingGo()), $status),
+                default => self::to(
                     $asked->getRequest()->resolveEndpoint(),
                     $status,
                     ...self::theValuesIn($asked->query()->all()),
                 ),
+            },
         ]);
     }
 
@@ -239,6 +272,35 @@ final readonly class WhatTheWireWouldAnswer
             && (!is_array($body) || !array_key_exists(UpdateField::Confirm->value, $body));
     }
 
+    /** Whether this request asks what stopping seeding would cost, or says yes to it. */
+    private static function isLettingGo(PendingRequest $asked): bool
+    {
+        return $asked->getRequest()->resolveEndpoint() === Api::action(WhatToDoWithADownload::StopSeeding->asked());
+    }
+
+    /** lemonfiber's word for stopping seeding, which names the work the stand-in starts for it. */
+    private static function lettingGo(): string
+    {
+        return WhatToDoWithADownload::StopSeeding->asked();
+    }
+
+    /**
+     * A name for work, named after the action that started it.
+     *
+     * The `job` envelope's own declaration, with the action and the work both
+     * given the action's name, so the path the work is redeemed at says which
+     * envelope it redeems into.
+     *
+     * @return array<string, mixed>
+     */
+    private static function workNamedFor(string $action): array
+    {
+        $envelope = self::oneEnvelope(self::A_NAME_FOR_WORK);
+        $envelope['data'] = ['action' => $action, 'job' => $action];
+
+        return $envelope;
+    }
+
     /**
      * The text values a request's query carries, which is what picks between envelopes one endpoint answers with.
      *
@@ -269,15 +331,19 @@ final readonly class WhatTheWireWouldAnswer
      */
     private static function whatThatPathSends(string $endpoint, string ...$asked): array|string
     {
-        // The five paths whose body is not one envelope built from the
-        // contract's declaration, and then everything else. `match` rather than
-        // four early returns, because what this is doing is naming a path
-        // rather than deciding anything (`H8`, `C5`).
+        // The four paths whose body is not one envelope built from the
+        // contract's declaration, the two answers work redeems into, and then
+        // everything else. `match` rather than early returns, because what
+        // this is doing is naming a path rather than deciding anything (`H8`,
+        // `C5`).
         return match (true) {
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
-            $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysOneThing(),
+            $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysWhatItCarries(),
+            $endpoint === Api::job(self::lettingGo()) => self::oneEnvelope(self::WHAT_LETTING_GO_BECOMES),
+            $endpoint === Api::action(WhatToChange::BackToItsOwn->asked()) => self::workNamedFor(WhatToChange::BackToItsOwn->asked()),
+            $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
             default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint, ...$asked)),
         };
@@ -392,6 +458,56 @@ final readonly class WhatTheWireWouldAnswer
     }
 
     /**
+     * A reset whose diffs read the way the stack writes them, and which wrote nothing.
+     *
+     * The `reset` envelope's own declaration, corrected in the two fields the
+     * generated type leaves open. Each diff is the declaration's own text
+     * marked once each way, the operator's `-` and lemonfiber's `+`, because
+     * a line marked neither way is one a reader refuses. And it is a preview
+     * whatever was asked: a stand-in writes nothing, so its reset says it did
+     * not carry anything out.
+     *
+     * @return array<string, mixed>
+     */
+    private static function aResetThatReads(): array
+    {
+        $envelope = self::oneEnvelope(self::WHAT_A_RESET_BECOMES);
+        $data = $envelope['data'];
+        // One line for the door's reason: `data` is always an array.
+        $report = is_array($data) ? $data : [];
+        // `reverted` is required by the declaration, so the key is always
+        // there; what is not known to the analyser is that it holds a list.
+        $reverted = $report['reverted'];
+        $corrected = [];
+
+        foreach (is_array($reverted) ? $reverted : [] as $edit) {
+            $corrected[] = self::anEditThatReads($edit);
+        }
+
+        $report['reverted'] = $corrected;
+        $report['confirmed'] = false;
+        $envelope['data'] = $report;
+
+        return $envelope;
+    }
+
+    /**
+     * One synthesised edit, its diff marked each way.
+     *
+     * @return array<string, mixed>
+     */
+    private static function anEditThatReads(mixed $edit): array
+    {
+        // An edit's fields are named, so only its named keys are carried.
+        $named = array_filter(is_array($edit) ? $edit : [], is_string(...), ARRAY_FILTER_USE_KEY);
+        // `diff` is required by the declaration and typed as text, and one
+        // line for the door's reason.
+        $diff = is_string($named['diff']) ? $named['diff'] : '';
+
+        return [...$named, 'diff' => sprintf("- %s\n+ %s\n", $diff, $diff)];
+    }
+
+    /**
      * A scrollback, which is a `log` envelope a line.
      *
      * Every line is the same, and deliberately so. What a stand-in scrollback
@@ -411,23 +527,28 @@ final readonly class WhatTheWireWouldAnswer
     }
 
     /**
-     * An event stream that says one dashboard and ends.
+     * An event stream that says one of each thing it carries and ends.
      *
-     * A stand-in answers a request and is done, so its stream is one event long:
-     * the dashboard the contract declares, framed the way the core frames an
-     * event, with the envelope's kind as the event's name. A screen holding the
-     * stream reads the summary out of it, finds the stream ended, and opens it
-     * again on its stated cadence, which is the path a stack that restarted
-     * takes too.
+     * A stand-in answers a request and is done, so its stream is one event of
+     * each kind long: the envelope the contract declares for each, framed the
+     * way the core frames an event, with the envelope's kind as the event's
+     * name. A screen holding the stream reads what it holds the stream for out
+     * of it, finds the stream ended, and opens it again on its stated cadence,
+     * which is the path a stack that restarted takes too.
      */
-    private static function aStreamThatSaysOneThing(): string
+    private static function aStreamThatSaysWhatItCarries(): string
     {
-        $envelope = self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(self::WHAT_THE_STREAM_CARRIES));
+        $said = '';
 
-        return sprintf(
-            "event: %s\ndata: %s\n\n",
-            self::WHAT_THE_STREAM_CARRIES,
-            json_encode($envelope, JSON_THROW_ON_ERROR),
-        );
+        foreach (self::WHAT_THE_STREAM_CARRIES as $kind) {
+            $said = sprintf(
+                "%sevent: %s\ndata: %s\n\n",
+                $said,
+                $kind,
+                json_encode(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind($kind)), JSON_THROW_ON_ERROR),
+            );
+        }
+
+        return $said;
     }
 }

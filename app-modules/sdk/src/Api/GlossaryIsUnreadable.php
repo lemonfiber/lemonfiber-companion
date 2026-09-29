@@ -9,7 +9,7 @@ use InvalidArgumentException;
 use function sprintf;
 
 /**
- * The `glossary` envelope did not hold what the contract says it holds.
+ * The `glossary` or `word` envelope did not hold what the contract says it holds.
  *
  * A developer reads it, so it is `sprintf` and never translated (`L1`).
  */
@@ -30,6 +30,15 @@ final class GlossaryIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'Word %d of the glossary has no readable `%s`. A word that does not say what it means is not drawn half-explained.',
             $position,
+            $field->value,
+        ));
+    }
+
+    /** The one word asked for alone is not what the contract says a word is. */
+    public static function asked(NamesAWireField $field): self
+    {
+        return new self(sprintf(
+            'The word asked for has no readable `%s`. A word that does not say what it means is not drawn half-explained.',
             $field->value,
         ));
     }

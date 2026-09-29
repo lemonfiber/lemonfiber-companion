@@ -22,7 +22,7 @@ use function view;
  *
  * So the chrome is pieces a screen emits in order, not a box it sits in. The
  * screen's content does sit in a box, {@see Content}, and
- * {@see \Modules\Operator\View\HoldsItsSlot} says how a box draws its slot
+ * {@see \Modules\Design\View\HoldsItsSlot} says how a box draws its slot
  * inside it.
  */
 final class ScreenOpens extends Component

@@ -110,17 +110,38 @@ it('the word a frame opens on is drawn, with its age', function (): void {
     );
 
     $drawn = WhatTheDeviceWouldDraw::by($screen);
+    // The row says how the machine stands on the one line under its name.
+    $lines = implode("\n", $drawn->said());
 
     // The word and the machine it is about, on the first frame, without a
     // network round trip — which is the whole of what the opening asks for and what
     // a retained reading permits: it came out of a store, so it is retained, so it
     // carries when it was read.
-    // The machine is a row rather than a button, so its name is something the
-    // frame *says* and the way into it is what the frame *offers* — and a
-    // reader hears the second, which is why it is asserted by the name `F5`
-    // gave it rather than by the row's own words.
-    expect($drawn->said())->toContain(__(HowItStands::Broken->saidOnTheScreen()))
-        ->and($drawn->said())->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]))
-        ->and($drawn->said())->toContain($stack->name()->shown())
-        ->and($drawn->offers())->toContain(__('connection.open_stack', ['stack' => $stack->name()->shown()]));
+    // The machine is a row that is tapped, so its name is what the frame
+    // offers — and a reader hears the name the row answers to, which is why
+    // that is asserted as well as the row's own words.
+    expect($lines)->toContain(__(HowItStands::Broken->saidOnTheScreen()))
+        ->and($lines)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]))
+        ->and($drawn->offers())->toContain($stack->name()->shown())
+        ->and(whatAReaderHearsOn(WhatTheDeviceWouldDraw::tree($screen)))->toContain(__('connection.open_stack', ['stack' => $stack->name()->shown()]));
 });
+
+/**
+ * Every name a screen reader is given on a frame, in draw order.
+ *
+ * @param array<array-key, mixed> $tree
+ *
+ * @return list<string>
+ */
+function whatAReaderHearsOn(array $tree): array
+{
+    $named = [];
+
+    array_walk_recursive($tree, static function (mixed $value, int|string $prop) use (&$named): void {
+        if ($prop === 'a11y_label' && is_string($value)) {
+            $named[] = $value;
+        }
+    });
+
+    return $named;
+}

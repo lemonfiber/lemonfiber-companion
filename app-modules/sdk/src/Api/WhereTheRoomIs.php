@@ -58,9 +58,10 @@ final readonly class WhereTheRoomIs
      * The largest figure the field can carry. The core writes it for a torrent
      * added from files already on disk, which downloaded nothing, and reads it
      * back as no ratio (`ratio_reads`); read here the same way, and never
-     * shown as a figure.
+     * shown as a figure. Public because an offer to stop seeding carries the
+     * same standing, and {@see WhatLettingItGoComesTo} reads it with this.
      */
-    private const int NO_RATIO = 4_294_967_295;
+    public const int NO_RATIO = 4_294_967_295;
 
     /** How a refusal names one entry of a list, the way the contract's paths do. */
     private const string AN_ENTRY = '%s[%d]';
@@ -274,11 +275,11 @@ final readonly class WhereTheRoomIs
      */
     private static function consequence(array $row, string $where): string
     {
-        if (! array_key_exists(SpaceField::Consequence->value, $row) || $row[SpaceField::Consequence->value] === null) {
+        if (! array_key_exists(WireField::Consequence->value, $row) || $row[WireField::Consequence->value] === null) {
             return '';
         }
 
-        return self::text($row, self::path($where, SpaceField::Consequence), SpaceField::Consequence);
+        return self::text($row, self::path($where, WireField::Consequence), WireField::Consequence);
     }
 
     /**

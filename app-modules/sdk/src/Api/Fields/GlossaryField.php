@@ -19,16 +19,4 @@ enum GlossaryField: string implements NamesAWireField
 
     /** Every word lemonfiber explains. */
     case Words = 'words';
-
-    /** The word itself. */
-    case Word = 'word';
-
-    /** What it means, in a line. */
-    case Short = 'short';
-
-    /** What it means at length. */
-    case Deep = 'deep';
-
-    /** What else it is called. */
-    case AlsoCalled = 'also_called';
 }

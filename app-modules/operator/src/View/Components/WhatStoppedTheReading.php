@@ -11,20 +11,19 @@ use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use function view;
 
 /**
- * The reason a screen has nothing of its own to draw.
+ * The reason a screen has nothing of its own to draw, as the screen's whole
+ * body: {@see WhatStoodInTheWay} inside {@see Content}.
  *
- * Two of those, and they read differently: a session that has ended
- * is a screen with a way back in, and an obstacle that stopped the reading
- * is a sentence about a machine with the action still on
- * offer. Which of the two a refusal is, is not decided here — it is decided in
- * {@see HowTheReadingWent}, and this draws whichever arrived.
+ * Only where nothing else is drawn. Inside content a screen has already
+ * opened, the screen draws {@see WhatStoodInTheWay} alone, because this opens
+ * a scroll view of its own.
  *
  * **The screen owns the branch and this owns one arm of it.** A template says
  * `@`if with `cameBack()` and puts this in the `@`else, so the two arms are
- * exclusive because Blade made them exclusive. The second guard this class used
- * to carry — deciding for itself whether there was anything to say — was a
- * second expression of one rule, and two expressions can disagree: both silent
- * is a blank screen, both drawing is the obstacle and the content at once.
+ * exclusive because Blade made them exclusive. A guard of its own — deciding
+ * for itself whether there was anything to say — would be a second expression
+ * of one rule, and two expressions can disagree: both silent is a blank screen,
+ * both drawing is the obstacle and the content at once.
  *
  * **It cannot take the content as a slot, and that is a fact about the
  * renderer rather than a preference.** Blade renders a slot before the
@@ -39,7 +38,6 @@ final class WhatStoppedTheReading extends Component
     public function __construct(
         public readonly HowTheReadingWent $went,
         public readonly string $signInGoesTo,
-        public readonly string $askAgain = 'again()',
     ) {}
 
     public function render(): View

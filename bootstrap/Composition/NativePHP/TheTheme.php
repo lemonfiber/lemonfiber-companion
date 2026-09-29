@@ -10,90 +10,66 @@ use Native\Mobile\Edge\TailwindParser;
 use Native\Mobile\UI\Theme as WhatTheWidgetsPaintWith;
 
 /**
- * Whose palette `bg-theme-*` and `text-theme-*` resolve against.
+ * Whose palette the classes and the widgets paint with.
  *
- * EDGE ships no theme resolver, so without one every `bg-theme-*` class is
- * parsed, found to mean nothing, and dropped — silently, at render, on
- * somebody's phone. The design module owns what those tokens mean; this is what
- * connects the two.
- *
- * **It is a class rather than four lines in `boot()` because the ordering is
- * the thing that has to be provable.** `TailwindParser` holds one resolver and
- * keeps whichever was set last, and `nativephp/mobile-ui` sets one of its own —
- * a light one *and* a dark one — in its own boot. Which palette the application
- * actually paints with was therefore decided by provider discovery order, which
- * is not something either package chooses and which differs between a fresh
- * `composer install` and an incremental one.
- *
- * That is not a hypothetical: the assertion in `TheThemeIsRegisteredAtBootTest`
- * passed locally and failed in CI on the same commit, which is exactly what a
- * race between two providers looks like from the outside. A test that only asks
- * "what is registered now" cannot tell a fix from luck — so the registration is
- * a method something can call, and the test plants a foreign resolver and calls
- * it.
- *
- * The composition root calls it from `$this->app->booted()`, which is after
- * every provider's boot rather than after its own. Same remedy, same reason, as
- * {@see ScreenRoutes}.
+ * `TailwindParser` holds one light and one dark resolver and keeps whichever
+ * was set last, and `nativephp/mobile-ui` sets its own in its boot. Provider
+ * discovery order would decide the palette, and it differs between a fresh
+ * `composer install` and an incremental one. So this is a method the
+ * composition root calls from `$this->app->booted()`, after every provider,
+ * and a test can plant a foreign resolver and call it.
  */
 final readonly class TheTheme
 {
     /**
-     * Make this application's palette the one the parser resolves against.
+     * What each key of mobile-ui's theme store is painted with.
      *
-     * Safe to call more than once, and called once. Setting a resolver is a
-     * replacement rather than an addition, which is the property the ordering
-     * problem turns on and the property that makes this idempotent.
+     * The widgets (buttons, list rows, fields, the top bar and the bottom bar)
+     * read their colours from that store rather than from classes. Every
+     * neutral key is mapped, so no widget falls back to the package's own
+     * palette. `secondary` is the tonal button's fill, so it is the line role
+     * with the text role on it: a quiet button beside the accent's filled one.
+     * Material's own `secondary`, which a selected tab's label is drawn in, is
+     * the text role instead, and a selected tab's indicator is the outline
+     * (both in `scripts/patch_nativephp.php`). `destructive`, `success` and
+     * the package's `accent` are not mapped: this surface asserts no colour
+     * for them, and uses no widget variant that would.
+     */
+    public const array WIDGET_ROLES = [
+        'primary' => ThemeToken::Accent,
+        'on-primary' => ThemeToken::OnAccent,
+        'secondary' => ThemeToken::Line,
+        'on-secondary' => ThemeToken::Text,
+        'background' => ThemeToken::Surface,
+        'on-background' => ThemeToken::Text,
+        'surface' => ThemeToken::Surface,
+        'on-surface' => ThemeToken::Text,
+        'surface-variant' => ThemeToken::Raised,
+        'on-surface-variant' => ThemeToken::Muted,
+        'outline' => ThemeToken::Line,
+        'outline-variant' => ThemeToken::Line,
+    ];
+
+    /**
+     * Make this application's roles the ones classes and widgets resolve against.
+     *
+     * Setting a resolver replaces the one before it, which is what makes this
+     * idempotent. The widget theme is merged rather than loaded: the keys the
+     * design module maps are replaced, and the ones it does not assert stay.
      */
     public static function paint(): void
     {
         TailwindParser::setThemeResolver(Theme::resolver());
+        TailwindParser::setThemeDarkResolver(Theme::darkResolver());
 
-        // Cleared rather than left alone, because "registered no dark resolver"
-        // and "somebody else registered one" are the same state to the parser.
-        // Without this the plugin's dark palette rides along under this
-        // application's light one: every `bg-theme-*` gains a dark companion
-        // nothing here chose, and the measured pair stops being what is drawn. `ThemeToken::hex()` carries why there is no dark companion —
-        // ink on lemon measures 10.9:1 whichever way a reader has their phone
-        // set, so there is nothing for a second palette to improve.
-        TailwindParser::setThemeDarkResolver(null);
+        $light = [];
+        $dark = [];
 
-        // The accent role, which is the whole of what is mapped: `lemon`
-        // is asserted and the ground, the type and the spacing stay the
-        // platform's. A filled button takes `primary` from the widget theme and
-        // honours no per-instance colour — deliberately, says the renderer — so
-        // a class on a button is dropped and this is the only place the brand
-        // reaches one.
-        //
-        // Merged rather than loaded: `merge()` overrides these two keys and
-        // leaves every other token the package chose, which is the difference
-        // between mapping a role and repainting an app.
-        //
-        // The same pair in both modes. `ThemeToken::hex()` carries why there is
-        // no dark companion — ink on lemon measures 10.9:1 whichever way a
-        // reader has their phone set.
-        WhatTheWidgetsPaintWith::merge([
-            'light' => self::theAccentRole(),
-            'dark' => self::theAccentRole(),
-        ]);
-    }
+        foreach (self::WIDGET_ROLES as $key => $role) {
+            $light[$key] = $role->light();
+            $dark[$key] = $role->dark();
+        }
 
-    /**
-     * What the widget theme calls the two tokens this surface asserts.
-     *
-     * A method rather than a constant because the hex is read off
-     * {@see ThemeToken} rather than written out, and a constant cannot ask. The
-     * point of asking is that the value lives in one place: `ThemeTokenTest` is
-     * what holds these to the brand's own token file, and a hex typed here
-     * would be a second source that agreed until somebody changed the brand.
-     *
-     * @return array{primary: string, on-primary: string}
-     */
-    private static function theAccentRole(): array
-    {
-        return [
-            'primary' => ThemeToken::Accent->hex(),
-            'on-primary' => ThemeToken::OnAccent->hex(),
-        ];
+        WhatTheWidgetsPaintWith::merge(['light' => $light, 'dark' => $dark]);
     }
 }

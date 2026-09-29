@@ -169,6 +169,26 @@ it('reports what stood in the way rather than an empty listing', function (): vo
         ->and($screen->answer()->howMany())->toBe(0);
 });
 
+it('says what setup decided is among the settings, as facts, and that changing one is not setting up again', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo())))->said();
+
+    expect($drawn)->toContain(__('config.what_setup_settled'), '/data/media')
+        ->and($drawn)->not->toContain(__('onboarding.at_the_machine'));
+});
+
+it('declines first-run setup with the reason, rather than leaving it out, on a stack with settings and one with none', function (Settings $set): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to($set));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__('config.first_run_setup'), __('config.first_run_setup_why'))
+        // Declined in words and never offered: nothing on the screen is a way
+        // into setup, only the changes a stack already set up can take.
+        ->and($drawn->offers())->not->toContain(__('config.first_run_setup'));
+})->with([
+    'with settings' => [whatTheLoftIsSetTo()],
+    'with none' => [Settings::of()],
+]);
+
 it('asks the stack it is on, once, however many rows are drawn', function (): void {
     $arranging = AStackThatIsSet::to(whatTheLoftIsSetTo());
     $screen = theSettingsScreen($arranging);
@@ -193,6 +213,16 @@ it('asks again when the operator asks it to', function (): void {
 
     expect($arranging->askings())->toBe(2);
 });
+
+it('offers putting the configuration back on a listing that came back, holding settings or none, and on no other', function (AStackThatIsSet $arranging, bool $offered): void {
+    $offers = WhatTheDeviceWouldDraw::by(theSettingsScreen($arranging))->offers();
+
+    expect(in_array(__('config.put_it_all_back'), $offers, strict: true))->toBe($offered);
+})->with([
+    'holding settings' => [AStackThatIsSet::to(whatTheLoftIsSetTo()), true],
+    'holding none' => [AStackThatIsSet::toNothing(), true],
+    'not answering' => [AStackThatIsSet::met(Obstacle::StackDidNotAnswer), false],
+]);
 
 it('shows the sign-in prompt rather than a listing when the session has gone', function (): void {
     $arranging = AStackThatIsSet::to(whatTheLoftIsSetTo());
@@ -262,6 +292,36 @@ it('offers a change on a shown setting and on no withheld one', function (): voi
         ->and($rows[1]->mayBeChanged)->toBeFalse()
         ->and($rows[2]->mayBeChanged)->toBeTrue();
 });
+
+it('draws a way to change each shown setting, named for it, and none beside a withheld one', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo())));
+
+    expect($drawn->offers())->toBe([__('config.change_key', ['key' => 'LIBRARY_PATH']), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')])
+        ->and($drawn->said())->toContain('/data/media')
+        ->and($drawn->said())->toContain('set, not shown');
+});
+
+it('draws both sides of a staged change, and offers to make it or to leave it', function (Cost $cost, bool $warned): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
+        ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), $cost),
+        Stance::Pending,
+    )));
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+    $screen->wouldBe('LIBRARY_PATH');
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__('config.holds_now', ['value' => '/data/media']))
+        ->and($drawn->said())->toContain(__('config.would_hold', ['value' => '/data/films']))
+        ->and($drawn->said())->toContain(__($cost->saidOnTheScreen()))
+        ->and($drawn->said())->toContain(__(Stance::Pending->saidOnTheScreen()))
+        ->and(in_array(__('config.worth_reading_twice'), $drawn->said(), strict: true))->toBe($warned)
+        ->and($drawn->offers())->toBe([__('config.agree'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')]);
+})->with([
+    'cheap' => [Cost::Cheap, false],
+    'consequential' => [Cost::Consequential, true],
+]);
 
 it('refuses to open a withheld setting even when asked directly', function (): void {
     // The half that does not depend on markup. The template draws no control

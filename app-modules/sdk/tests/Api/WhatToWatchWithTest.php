@@ -35,7 +35,7 @@ function clientsSaying(mixed $data): Envelope
  */
 function aPlainDevice(): array
 {
-    return ['device' => 'An iPhone', 'client' => 'Jellyfin for iOS', 'support' => 'good'];
+    return ['device' => 'An iPhone', 'client' => 'Jellyfin for iOS', 'support' => 'good', 'open_source' => true];
 }
 
 /**

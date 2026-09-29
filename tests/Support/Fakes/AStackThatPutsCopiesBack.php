@@ -6,6 +6,7 @@ namespace Tests\Support\Fakes;
 
 use Closure;
 use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -70,6 +71,21 @@ final class AStackThatPutsCopiesBack implements PuttingBack
             static fn(): WhatTheRestoreRehearsalFound => WhatTheRestoreRehearsalFound::listed($listing),
             static fn(): Underway => Underway::met($why),
             static fn(): HowPuttingItBackIsGoing => HowPuttingItBackIsGoing::met($why),
+        );
+    }
+
+    /**
+     * A stack that will not list the copy, and says why.
+     *
+     * Nothing is listed, so nothing can be agreed to; a yes sent anyway, or
+     * asked after, meets a stack that did not answer.
+     */
+    public static function refusingToList(ARefusalInItsWords $why): self
+    {
+        return new self(
+            static fn(): WhatTheRestoreRehearsalFound => WhatTheRestoreRehearsalFound::refused($why),
+            static fn(): Underway => Underway::met(Obstacle::StackDidNotAnswer),
+            static fn(): HowPuttingItBackIsGoing => HowPuttingItBackIsGoing::met(Obstacle::StackDidNotAnswer),
         );
     }
 

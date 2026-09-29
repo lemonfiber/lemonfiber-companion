@@ -11,10 +11,11 @@ namespace Modules\Kernel\Api;
  * gives: they are one conversation, and a port that only followed would leave
  * whoever built the starting half free to reach a client of their own.
  *
- * **The narration arrives once, whole.** The stack also narrates each step as
- * it happens on its event stream, and this app does not read that stream: the
- * handle is asked after at a stated cadence while the walk runs, and the lines
- * are drawn from the record the finished walk answers with.
+ * **The narration arrives once, whole.** The handle is asked after at a stated
+ * cadence while the walk runs, and the lines are drawn from the record the
+ * finished walk answers with. The stack also says each step on its event
+ * stream as it happens, and that is {@see HearingTheWalk}'s: the stage a
+ * running walk is at, and nothing a record is built from.
  */
 interface WalkingThrough
 {

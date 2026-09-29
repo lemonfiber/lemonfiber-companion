@@ -34,6 +34,7 @@ use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\Capture;
+use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Copying;
@@ -41,7 +42,9 @@ use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
+use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\History;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
@@ -54,10 +57,13 @@ use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Provenance;
+use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\PuttingBack;
 use Modules\Kernel\Api\Rationing;
 use Modules\Kernel\Api\Reaching;
 use Modules\Kernel\Api\Rehearsing;
+use Modules\Kernel\Api\RemovingSomebody;
+use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\Scanning;
@@ -67,9 +73,11 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\Standings;
+use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
+use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Tracing;
 use Modules\Kernel\Api\UpgradingTheLibrary;
@@ -85,14 +93,17 @@ use Modules\Sdk\Api\Advisers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Bundlers;
+use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Doors;
 use Modules\Sdk\Api\Explainers;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Graders;
+use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
@@ -101,14 +112,19 @@ use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
+use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
 use Modules\Sdk\Api\Rehearsers;
+use Modules\Sdk\Api\Releasers;
+use Modules\Sdk\Api\Removers;
 use Modules\Sdk\Api\Requests;
+use Modules\Sdk\Api\Resetters;
 use Modules\Sdk\Api\Restorers;
+use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Shelves;
@@ -244,6 +260,11 @@ final class CompositionRoot extends ServiceProvider
         // else's.
         $this->app->bind(Hearing::class, Listeners::class);
 
+        // Holding the same stream for the steps a running walk says, which the
+        // stack narrates there as they happen. Bound rather than a singleton,
+        // for the reason above: the screen following a walk holds its own.
+        $this->app->bind(HearingTheWalk::class, Narrators::class);
+
         // Handing a diagnostic report to the operator, which is the only way
         // one leaves this device. The app assembles and does not transmit, and
         // both halves are structural: `Diagnostics` holds nothing
@@ -352,6 +373,10 @@ final class CompositionRoot extends ServiceProvider
         // about itself, and bound beside the record for the same reason.
         $this->app->bind(Provenance::class, Archivists::class);
 
+        // What each service is for, read out of the same stack description as
+        // where it comes from, and bound beside it for the same reason.
+        $this->app->bind(Cataloguing::class, Cataloguers::class);
+
         // What leaves a stack, bound beside what it keeps about itself for the
         // same reason: one place decides whether a certificate is checked.
         $this->app->bind(Outgoing::class, Lookouts::class);
@@ -374,13 +399,25 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(TakingCopies::class, Copiers::class);
         $this->app->bind(PuttingBack::class, Restorers::class);
 
+        // Putting the configuration back, bound beside putting a copy back:
+        // both are asked what they would do before a yes.
+        $this->app->bind(ResettingTheConfiguration::class, Resetters::class);
+
         // A support bundle, described and written, asked beside the rest and
         // bound for the same reason.
         $this->app->bind(AskingForHelp::class, Bundlers::class);
 
+        // Putting back one run the record shows, bound beside putting a copy
+        // back for the same reason.
+        $this->app->bind(PuttingARunBack::class, Reversers::class);
+
         // How full the machine is, read beside the rest and bound for the
         // same reason.
         $this->app->bind(Measuring::class, Surveyors::class);
+
+        // Stopping seeding one download, beside how full the machine is and
+        // bound for the same reason.
+        $this->app->bind(StoppingSeeding::class, Releasers::class);
 
         // The running copy of lemonfiber, read beside the rest and bound for
         // the same reason.
@@ -398,6 +435,10 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Inviting::class, Ushers::class);
         $this->app->bind(Encoding::class, QrCodes::class);
 
+        // Taking somebody out of the household goes through the same door,
+        // said as what it would cost before it is agreed to.
+        $this->app->bind(RemovingSomebody::class, Removers::class);
+
         // What is already on the machine, before anything is moved in, read
         // beside the rest and bound for the same reason.
         $this->app->bind(MovingIn::class, Scouts::class);
@@ -411,10 +452,18 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(ChoosingQuality::class, Graders::class);
         $this->app->bind(UpgradingTheLibrary::class, Upgraders::class);
 
+        // Taking lemonfiber off the machine: a reading, and the removal agreed
+        // against it, bound beside the rest for the same reason.
+        $this->app->bind(TakingLemonfiberOff::class, Dismantlers::class);
+
         $this->app->bind(Explaining::class, Explainers::class);
         $this->app->bind(Rehearsing::class, Rehearsers::class);
         $this->app->bind(Tracing::class, Followers::class);
         $this->app->bind(WalkingThrough::class, Guides::class);
+
+        // A guard on the data location, started, followed and let go through
+        // the same door as every other action, and bound for the same reason.
+        $this->app->bind(Guarding::class, Guards::class);
 
         $this->app->bind(Saying::class, Scrollbacks::class);
 

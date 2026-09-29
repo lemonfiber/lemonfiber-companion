@@ -11,22 +11,24 @@
          Every update asks. There is no unconfirmed arm here the way there
          is for a start: there is no update that takes nothing away, and
          which services it takes away is the whole of what this says. --}}
-    <x-operator::heading>{{ __('updates.about_to_take') }}</x-operator::heading>
+    <x-design::title>{{ __('updates.about_to_take') }}</x-design::title>
 
     {{-- The count first, because it is the size of the evening, and then the
          names — an operator deciding at eleven at night reads *four services*
          before they read which four. --}}
-    <native:text>{{ trans_choice('updates.would_change', $this->wouldChange()) }}</native:text>
+    <x-design::body>{{ trans_choice('updates.would_change', $this->wouldChange()) }}</x-design::body>
 
-    @forelse ($this->asking()->changing() as $service)
-        <x-operator::note>{{ $service->named() }}</x-operator::note>
-    @empty
-        {{-- Unreachable while an offer needs a service that would move, and
-             written anyway: `F6` wants the empty case to be the same edit as
-             the loop, so a change to that rule cannot silently turn *it
-             changes nothing* into a blank space. --}}
-        <x-operator::note>{{ __('updates.changes_nothing') }}</x-operator::note>
-    @endforelse
+    <x-design::section>
+        @forelse ($this->asking()->changing() as $service)
+            <x-design::row :headline="$service->named()" />
+        @empty
+            {{-- Unreachable while an offer needs a service that would move,
+                 and written anyway: `F6` wants the empty case to be the same
+                 edit as the loop, so a change to that rule cannot silently
+                 turn *it changes nothing* into a blank space. --}}
+            <x-design::row :headline="__('updates.changes_nothing')" />
+        @endforelse
+    </x-design::section>
 
     @if ($this->asking()->cannotBeWhollyUndone())
         {{-- Between the list and the buttons, which is where it has to be:
@@ -35,108 +37,111 @@
              whole evening — an update can move four services and be undoable
              for three of them, and a warning that covered all four would be
              refused as easily as it would be believed. --}}
-        <x-operator::emphasis>
-            {{ trans_choice('updates.cannot_be_put_back', $this->cannotBePutBack()) }}
-        </x-operator::emphasis>
+        <x-design::notice>
+            <x-design::strong>{{ trans_choice('updates.cannot_be_put_back', $this->cannotBePutBack()) }}</x-design::strong>
 
-        @forelse ($this->asking()->cannotBePutBack() as $service)
-            <x-operator::note>{{ $service->named() }}</x-operator::note>
-        @empty
-            {{-- Unreachable while the branch above guards it, and written
-                 anyway for the reason the list above writes its own: removing
-                 the guard must not turn a named warning into an unnamed one,
-                 which is the shape that warns about nothing in particular. --}}
-            <x-operator::note>{{ __('updates.cannot_be_put_back_after') }}</x-operator::note>
-        @endforelse
+            @forelse ($this->asking()->cannotBePutBack() as $service)
+                <x-design::body>{{ $service->named() }}</x-design::body>
+            @empty
+                {{-- Unreachable while the branch above guards it, and written
+                     anyway for the reason the list above writes its own:
+                     removing the guard must not turn a named warning into an
+                     unnamed one, which is the shape that warns about nothing
+                     in particular. --}}
+                <x-design::body>{{ __('updates.cannot_be_put_back_after') }}</x-design::body>
+            @endforelse
 
-        <native:text>{{ __('updates.cannot_be_put_back_after') }}</native:text>
+            <x-design::note>{{ __('updates.cannot_be_put_back_after') }}</x-design::note>
+        </x-design::notice>
     @endif
 
-    <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
-    <x-operator::action label="{{ __('health.never_mind') }}" tap="neverMind()" />
+    <x-design::action label="{{ __('health.go_ahead') }}" tap="agree()" />
+    <x-design::action label="{{ __('health.never_mind') }}" tap="neverMind()" tone="tonal" />
 @else
     {{-- The answer, first: whether any service would move onto the version
          its pins name — the stack's own word, not one worked out here from
          two version strings. --}}
-    <x-operator::emphasis>{{ __($this->answer()->pinsSaid) }}</x-operator::emphasis>
+    <x-design::heading>{{ __($this->answer()->pinsSaid) }}</x-design::heading>
 
     {{-- What it is on. Rendered in every state rather than only where
          something is waiting: a screen silent about the version teaches an
          operator to read silence, and silence is also what a screen that
          forgot the field produces. --}}
-    <x-operator::note>
-        {{ __('updates.running_on', ['version' => $this->answer()->running]) }}
-    </x-operator::note>
+    <x-design::note>{{ __('updates.running_on', ['version' => $this->answer()->running]) }}</x-design::note>
 
     @if ($this->answer()->runningWasWithdrawn)
         {{-- A stack running a release that has since been taken back is
              something the operator has to be told, and the reason no update
              is offered onto the pins that release carries. --}}
-        <x-operator::emphasis>{{ __('updates.running_withdrawn') }}</x-operator::emphasis>
+        <x-design::notice>
+            <x-design::strong>{{ __('updates.running_withdrawn') }}</x-design::strong>
+        </x-design::notice>
     @endif
 
     @if ($this->answer()->offer !== null)
         {{-- One offer, for the stack: it moves each service onto the version
              its build pins, and the confirmation names which services. --}}
-        <native:text>{{ trans_choice('updates.would_change', $this->answer()->offer->changing()->count()) }}</native:text>
-        <x-operator::action label="{{ __('updates.take_it') }}" tap="wouldYouLike()" />
+        <x-design::card>
+            <x-design::body>{{ trans_choice('updates.would_change', $this->answer()->offer->changing()->count()) }}</x-design::body>
+            <x-design::action label="{{ __('updates.take_it') }}" tap="wouldYouLike()" />
+        </x-design::card>
     @endif
 
     @if ($this->answer()->inUse !== null)
         {{-- What the release in use changed. Its build carries the pins, so
              this is the reason an update would move anything — and whether the
              household will notice is what makes it a decision. --}}
-        <x-operator::emphasis>
-            {{ __('updates.what_it_changed', ['version' => $this->answer()->inUse->version]) }}
-        </x-operator::emphasis>
+        <x-design::card>
+            <x-design::strong>{{ __('updates.what_it_changed', ['version' => $this->answer()->inUse->version]) }}</x-design::strong>
 
-        @if ($this->answer()->inUse->deliversSaid !== null)
-            <native:text>{{ $this->answer()->inUse->deliversSaid }}</native:text>
-        @else
-            <x-operator::note>{{ __('updates.delivers_unsaid') }}</x-operator::note>
-        @endif
-
-        <x-operator::note>
-            @if ($this->answer()->inUse->theHouseholdWouldNotice)
-                {{ __('updates.would_be_noticed') }}
+            @if ($this->answer()->inUse->deliversSaid !== null)
+                <x-design::body>{{ $this->answer()->inUse->deliversSaid }}</x-design::body>
             @else
-                {{ __('updates.would_not_be_noticed') }}
+                <x-design::note>{{ __('updates.delivers_unsaid') }}</x-design::note>
             @endif
-        </x-operator::note>
+
+            <x-design::note>
+                @if ($this->answer()->inUse->theHouseholdWouldNotice)
+                    {{ __('updates.would_be_noticed') }}
+                @else
+                    {{ __('updates.would_not_be_noticed') }}
+                @endif
+            </x-design::note>
+        </x-design::card>
     @endif
 
     {{-- Every release the stack's record holds, newest first. History up to
          the release running, drawn as history: nothing here is offered, and
          nothing is taken from this list. --}}
-    <x-operator::emphasis>{{ __('updates.history') }}</x-operator::emphasis>
+    <x-design::heading>{{ __('updates.history') }}</x-design::heading>
 
     @forelse ($this->answer()->history as $release)
-        <x-operator::entry>
-            <x-operator::emphasis>{{ $release->version }}</x-operator::emphasis>
+        <x-design::card>
+            <x-design::strong>{{ $release->version }}</x-design::strong>
 
             @if ($release->wasWithdrawn)
-                <x-operator::note>{{ __('updates.withdrawn') }}</x-operator::note>
+                <x-design::note>{{ __('updates.withdrawn') }}</x-design::note>
             @endif
 
             {{-- Said as the stack said it: this app composes nothing, and a
                  release the stack had nothing to say about says so rather than
                  drawing a blank. --}}
             @if ($release->deliversSaid !== null)
-                <native:text>{{ $release->deliversSaid }}</native:text>
+                <x-design::body>{{ $release->deliversSaid }}</x-design::body>
             @else
-                <x-operator::note>{{ __('updates.delivers_unsaid') }}</x-operator::note>
+                <x-design::note>{{ __('updates.delivers_unsaid') }}</x-design::note>
             @endif
 
-            <x-operator::note>
+            <x-design::note>
                 @if ($release->theHouseholdWouldNotice)
                     {{ __('updates.would_be_noticed') }}
                 @else
                     {{ __('updates.would_not_be_noticed') }}
                 @endif
-            </x-operator::note>
-        </x-operator::entry>
+            </x-design::note>
+        </x-design::card>
     @empty
-        <native:text>{{ __('updates.no_history') }}</native:text>
+        <x-design::body>{{ __('updates.no_history') }}</x-design::body>
     @endforelse
 
     {{-- What became of the update taken here, per service, below what is
@@ -144,30 +149,33 @@
          above: a plain reading does not carry how each service took an
          update, so a section drawn off it would always say none was
          taken. --}}
-    <x-operator::emphasis>{{ __('updates.last_update') }}</x-operator::emphasis>
+    <x-design::heading>{{ __('updates.last_update') }}</x-design::heading>
 
     @if (! $this->lastUpdate()->went->cameBack())
-        <x-operator::what-stopped-the-reading
+        <x-operator::what-stood-in-the-way
             :went="$this->lastUpdate()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />
     @elseif ($this->lastUpdate()->isWorking)
-        <native:text>{{ __('updates.still_updating') }}</native:text>
-        <x-operator::note>
-            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-        </x-operator::note>
+        <x-design::standing
+            :said="__('updates.still_updating')"
+            tone="working"
+            :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
+        />
     @elseif ($this->lastUpdate()->hasEnded)
         {{-- Not a failure: it may well have worked, and the reading above
              is where to look. --}}
-        <native:text>{{ __('updates.no_outcome') }}</native:text>
-        <x-operator::note>{{ __('updates.no_outcome_action') }}</x-operator::note>
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __('updates.no_outcome') }}</x-design::strong>
+            <x-design::body>{{ __('updates.no_outcome_action') }}</x-design::body>
+        </x-design::notice>
     @elseif (! $this->lastUpdate()->wasTaken)
-        <native:text>{{ __('updates.nothing_applied') }}</native:text>
+        <x-design::body>{{ __('updates.nothing_applied') }}</x-design::body>
     @else
         @if ($this->lastUpdate()->didNotArrive > 0)
-            <x-operator::emphasis>
-                {{ trans_choice('updates.did_not_arrive', $this->lastUpdate()->didNotArrive) }}
-            </x-operator::emphasis>
+            <x-design::notice tone="trouble">
+                <x-design::strong>{{ trans_choice('updates.did_not_arrive', $this->lastUpdate()->didNotArrive) }}</x-design::strong>
+            </x-design::notice>
         @endif
 
         @if ($this->lastUpdate()->anythingUnanswered)
@@ -175,47 +183,46 @@
                  service that would not come back up is something to fix; one
                  that started and never answered is something the stack does
                  not know about, and sends somebody to a different place. --}}
-            <native:text>{{ __('updates.unanswered') }}</native:text>
+            <x-design::body>{{ __('updates.unanswered') }}</x-design::body>
         @endif
 
         @forelse ($this->lastUpdate()->applied as $took)
-            <x-operator::entry>
-                <x-operator::emphasis>{{ $took->service }}</x-operator::emphasis>
+            <x-design::card>
+                <x-design::strong>{{ $took->service }}</x-design::strong>
 
                 {{-- Which of the four, on the row. Flattened into
                      *failed*, the three ways of not arriving send an operator
                      to look in the wrong place. --}}
-                <x-operator::note>{{ __($took->endingSaid) }}</x-operator::note>
+                <x-design::body>{{ __($took->endingSaid) }}</x-design::body>
 
                 @unless ($took->arrived)
                     {{-- Which way back, named. A rollback and a restore
                          are not one offer, and the app says the one the stack
                          named rather than the word they have in common. --}}
-                    <x-operator::note>{{ __($took->undoSaid) }}</x-operator::note>
+                    <x-design::note>{{ __($took->undoSaid) }}</x-design::note>
 
                     @if ($took->undoCarriesTheDataWithIt)
                         {{-- The difference worth knowing before agreeing: a
                              restore undoes more than the update did. --}}
-                        <x-operator::note>{{ __('updates.undo_carries_data') }}</x-operator::note>
+                        <x-design::note>{{ __('updates.undo_carries_data') }}</x-design::note>
                     @endif
                 @endunless
-            </x-operator::entry>
+            </x-design::card>
         @empty
-            <native:text>{{ __('updates.touched_nothing') }}</native:text>
+            <x-design::body>{{ __('updates.touched_nothing') }}</x-design::body>
         @endforelse
     @endif
 
-    {{-- A screen an operator cannot ask again is a screen that relies
-         on being left and returned to, which is the one thing the requirement
-         names. It sat on the obstacle arm only — so a reading that failed could
-         be retried and a reading that came back could not, which is the wrong
-         way round: somebody watching a stuck download or an update land is
-         looking at a screen they want to ask again.
+    {{-- Offered whether or not the reading came back: somebody watching a
+         stuck download or an update land is looking at a screen they want to
+         ask again, and a screen that can only be refreshed by leaving it and
+         coming back is one they cannot reason about.
 
          Last, under what it is about, for the health screen's reason: somebody
          who has just changed something scrolls to the end of what they were
-         reading, and that is where they want to ask whether it took. --}}
-    <x-operator::action label="{{ __('health.ask_again') }}" tap="again()" />
+         reading, and that is where they want to ask whether it took. Tonal,
+         because taking an update is the screen's one way forward. --}}
+    <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 @endif
 </x-operator::content>
 @else

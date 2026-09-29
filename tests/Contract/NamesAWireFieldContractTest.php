@@ -9,6 +9,7 @@ use Modules\Sdk\Api\Fields\BackupField;
 use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Api\Fields\BesideField;
 use Modules\Sdk\Api\Fields\BundleField;
+use Modules\Sdk\Api\Fields\CatalogueField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\CredentialsField;
@@ -31,16 +32,21 @@ use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\QualityField;
+use Modules\Sdk\Api\Fields\RemovalField;
 use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Api\Fields\ReplacementField;
+use Modules\Sdk\Api\Fields\ResetField;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\SeedField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
+use Modules\Sdk\Api\Fields\StopSeedingField;
 use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Api\Fields\TraceField;
+use Modules\Sdk\Api\Fields\UndoField;
+use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\UpgradeField;
 use Modules\Sdk\Api\Fields\WalkthroughField;
@@ -69,6 +75,7 @@ function everyFieldNamedOnTheWire(): array
         ...BackupField::cases(),
         ...BandwidthField::cases(),
         ...BesideField::cases(),
+        ...CatalogueField::cases(),
         ...BundleField::cases(),
         ...ClientsField::cases(),
         ...ConfigField::cases(),
@@ -92,16 +99,21 @@ function everyFieldNamedOnTheWire(): array
         ...PreviewField::cases(),
         ...ProvenanceField::cases(),
         ...QualityField::cases(),
+        ...RemovalField::cases(),
         ...RepairField::cases(),
         ...ReplacementField::cases(),
+        ...ResetField::cases(),
         ...RestoreField::cases(),
         ...SeedField::cases(),
         ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
         ...StatusField::cases(),
+        ...StopSeedingField::cases(),
         ...StoredField::cases(),
         ...StuckField::cases(),
         ...TraceField::cases(),
+        ...UndoField::cases(),
+        ...UninstallField::cases(),
         ...UpdateField::cases(),
         ...UpgradeField::cases(),
         ...WalkthroughField::cases(),
@@ -109,8 +121,10 @@ function everyFieldNamedOnTheWire(): array
 }
 
 it('names each field by a word the wire could carry', function (): void {
+    // A hyphen as well as an underscore: the `removal` envelope spells one of
+    // its fields `asks-through-the-request-service`, and the word is the wire's.
     foreach (everyFieldNamedOnTheWire() as $field) {
-        expect(preg_match('/^[a-z][a-z_]*$/', $field->value))->toBe(1, sprintf('%s::%s is `%s`', $field::class, $field->name, $field->value));
+        expect(preg_match('/^[a-z][a-z_-]*$/', $field->value))->toBe(1, sprintf('%s::%s is `%s`', $field::class, $field->name, $field->value));
     }
 });
 

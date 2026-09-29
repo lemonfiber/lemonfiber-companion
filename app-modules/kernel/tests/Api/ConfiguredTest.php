@@ -106,6 +106,21 @@ it('N1-R22 — a stack that comes back on another address is the same stack', fu
         ->toContain('192.168.1.77');
 });
 
+it('says a re-pairing would change the pinned certificate only where it would', function (): void {
+    $record = Configured::of(stack('a'), stack('b'));
+    $newCertificate = Stack::of(
+        stack('a')->id(),
+        StackName::of('The loft'),
+        Address::of('https://192.168.1.42'),
+        Fingerprint::of(str_repeat('c', Fingerprint::CHARACTERS)),
+    );
+
+    expect($record->wouldRepin($newCertificate))->toBeTrue()
+        ->and($record->wouldRepin(stack('a', 'Renamed', 'https://192.168.1.77')))->toBeFalse()
+        ->and($record->wouldRepin(stack('c')))->toBeFalse()
+        ->and(Configured::none()->wouldRepin($newCertificate))->toBeFalse();
+});
+
 it('keeps a re-paired stack in its place rather than moving it to the end', function (): void {
     // Order is how the operator recognises their own list. A list that
     // rearranges itself after a re-pair reads as something having gone wrong,

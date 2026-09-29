@@ -7,11 +7,11 @@ namespace Modules\Kernel\Api;
 use function sprintf;
 
 /**
- * The three things the app offers.
+ * The things the app offers to do with what a stack runs.
  *
- * An enum rather than three methods on a port, because these are one question
- * asked three ways: the screen renders a row and the operator picks a verb.
- * Three methods would be three code paths where there is one, and the
+ * An enum rather than a method per verb on a port, because these are one
+ * question asked several ways: the screen renders a row and the operator picks
+ * a verb. A method each would be a code path each where there is one, and the
  * confirmation that is required would have to be written into each.
  *
  * **Stopping and restarting are not the same kind of act.** A stop leaves a
@@ -22,10 +22,10 @@ use function sprintf;
  * debugging on a Tuesday.
  *
  * **The value is the operator's word and {@see self::asked()} is lemonfiber's.**
- * That surface offers `up`, `down` and `restart`, and the SDK deliberately
+ * That surface offers `up`, `down`, `restart` and `pull`, and the SDK deliberately
  * keeps no copy of its list — a name it does not offer is refused by name,
  * which is an answer a caller can act on, where a stale list held there would
- * go wrong in silence. So the three names live here, in one `match`, and the
+ * go wrong in silence. So the names live here, in one `match`, and the
  * value stays the word a catalogue key is built from: `L7` reconstructs a key
  * from a case's value, and a value of `up` would leave every sentence on this
  * screen unreachable by the rule that finds sentences nothing reads.
@@ -51,6 +51,15 @@ enum WhatToDoWithIt: string
     case Restart = 'restart';
 
     /**
+     * Fetch a form's images ahead of starting it.
+     *
+     * Nothing running stops, and nothing comes up: the images are brought
+     * onto the machine so a later start does not wait on them. It is offered
+     * for a form and never for one service, because the stack fetches by form.
+     */
+    case Pull = 'pull';
+
+    /**
      * What this is called on a screen, as a key.
      *
      * Built from the case, which is the shape every word in this app reaches
@@ -66,7 +75,7 @@ enum WhatToDoWithIt: string
      *
      * A `match` rather than the value, so the two vocabularies are told apart
      * in one place. `up` and `down` are that surface's words and *start* and
-     * *stop* are the operator's; they are the same three acts, and nothing
+     * *stop* are the operator's; they are the same acts, and nothing
      * between here and the socket has to know both.
      */
     public function asked(): string
@@ -75,6 +84,7 @@ enum WhatToDoWithIt: string
             self::Start => 'up',
             self::Stop => 'down',
             self::Restart => 'restart',
+            self::Pull => 'pull',
         };
     }
 
@@ -95,7 +105,7 @@ enum WhatToDoWithIt: string
     public function takesSomethingAway(): bool
     {
         return match ($this) {
-            self::Start => false,
+            self::Start, self::Pull => false,
             self::Stop, self::Restart => true,
         };
     }
@@ -111,8 +121,38 @@ enum WhatToDoWithIt: string
     {
         return match ($this) {
             self::Start, self::Restart => true,
-            self::Stop => false,
+            self::Stop, self::Pull => false,
         };
+    }
+
+    /**
+     * Whether this fetches images ahead of a start.
+     *
+     * The one verb whose cost is time and the line rather than something
+     * taken away, and the stack reports no bound for it. So the screen says
+     * before it runs that it may take long and use a lot of the line, and puts
+     * no duration or size of its own on either.
+     */
+    public function fetchesAhead(): bool
+    {
+        return $this === self::Pull;
+    }
+
+    /**
+     * Whether the operator is asked before this is sent.
+     *
+     * Anything that takes something away, and a fetch, whose cost has to be
+     * said before it runs. A start is sent on the tap.
+     */
+    public function asksFirst(): bool
+    {
+        return $this->takesSomethingAway() || $this->fetchesAhead();
+    }
+
+    /** Whether this can be done to one service, rather than only to a whole form. */
+    public function reachesAService(): bool
+    {
+        return ! $this->fetchesAhead();
     }
 
 }

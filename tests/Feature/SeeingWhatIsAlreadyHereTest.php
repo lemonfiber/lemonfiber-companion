@@ -114,6 +114,17 @@ function theSurveyScreen(
     return $screen;
 }
 
+/** The line under a found service's name: whether it runs, and whether it could be taken over. */
+function howAFoundServiceStands(string $running, string $adoptable): string
+{
+    $runs = __($running);
+    $takes = __($adoptable);
+
+    return is_string($runs) && is_string($takes)
+        ? sprintf('%s · %s', $runs, $takes)
+        : throw new LogicException('a key names a group of lines, not a sentence');
+}
+
 it('shows every project and service, whether each runs, and whether it could be taken over', function (): void {
     $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::with(aSurveyOfAMachineInUse()));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -121,15 +132,17 @@ it('shows every project and service, whether each runs, and whether it could be 
 
     expect($screen->answer()->looked)->toBeTrue()
         ->and($screen->answer()->projects[0]->project)->toBe('media')
-        ->and([$services[0]->service, $services[0]->ports, $services[0]->runningSaid, $services[0]->adoptableSaid])
-        ->toBe(['sonarr', '8989, 9898', 'stacks.already_here.running', 'stacks.already_here.adoptable'])
-        ->and([$services[1]->service, $services[1]->ports, $services[1]->runningSaid, $services[1]->adoptableSaid])
-        ->toBe(['tautulli', '', 'stacks.already_here.stopped', 'stacks.already_here.not_adoptable'])
+        ->and([$services[0]->service, $services[0]->ports, $services[0]->portsSaid, $services[0]->runningSaid, $services[0]->adoptableSaid])
+        ->toBe(['sonarr', '8989, 9898', 'stacks.already_here.ports', 'stacks.already_here.running', 'stacks.already_here.adoptable'])
+        ->and([$services[1]->service, $services[1]->ports, $services[1]->portsSaid, $services[1]->runningSaid, $services[1]->adoptableSaid])
+        ->toBe(['tautulli', '', 'stacks.already_here.no_ports', 'stacks.already_here.stopped', 'stacks.already_here.not_adoptable'])
         ->and($drawn)->toContain(__('stacks.already_here.project', ['project' => 'media']))
         ->and($drawn)->toContain(__('stacks.already_here.ports', ['ports' => '8989, 9898']))
         ->and($drawn)->toContain(__('stacks.already_here.no_ports'))
-        ->and($drawn)->toContain(__('stacks.already_here.stopped'))
-        ->and($drawn)->toContain(__('stacks.already_here.not_adoptable'));
+        // Each row says whether it runs and whether it could be taken over on
+        // the one line under its name.
+        ->and($drawn)->toContain(howAFoundServiceStands('stacks.already_here.running', 'stacks.already_here.adoptable'))
+        ->and($drawn)->toContain(howAFoundServiceStands('stacks.already_here.stopped', 'stacks.already_here.not_adoptable'));
 });
 
 it('draws what it found before any mode', function (): void {

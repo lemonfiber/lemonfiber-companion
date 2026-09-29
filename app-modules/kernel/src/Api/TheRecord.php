@@ -65,6 +65,17 @@ final readonly class TheRecord implements Countable, IteratorAggregate
         return $this->horizon;
     }
 
+    /**
+     * One run, as far as this record holds it.
+     *
+     * Empty where nothing here carries its stamp, which is a run the record
+     * has no row for rather than a run that made no changes.
+     */
+    public function theRun(ARun $run): ARunToPutBack
+    {
+        return ARunToPutBack::of($run, ...$this->changes);
+    }
+
     public function count(): int
     {
         return count($this->changes);

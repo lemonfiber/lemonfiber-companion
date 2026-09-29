@@ -23,6 +23,11 @@ use function sprintf;
  * — is a thing they very often can. One sentence for both is the sentence that
  * is unhelpful for whichever they are actually in.
  *
+ * **Pairing a machine already held is named as that.** It updates the machine
+ * on the list rather than adding one, and an operator told "paired" would look
+ * for a second row. Whether the certificate changed is named too, because it
+ * decides whether they are still signed in.
+ *
  * **Mapped from {@see WhyAStackCannotBeRemembered} rather than repeating it.**
  * The kernel's enum is the fact; this is what a surface does about it, which is
  * a different question with the same arity today and no promise of that
@@ -38,16 +43,35 @@ enum HowThePairingWent: string
     /** The stack is paired and written down where the next launch will find it. */
     case Paired = 'paired';
 
+    /**
+     * A machine this device already held, updated rather than added again.
+     *
+     * Its address and name are replaced and its certificate is the one already
+     * pinned, so a session held for it still holds.
+     */
+    case PairedAgain = 'paired_again';
+
+    /**
+     * A machine this device already held, updated with a certificate it had not pinned.
+     *
+     * A session is agreed under the certificate's key, so the one held for it is
+     * let go and the operator signs in again.
+     */
+    case PairedAgainOnANewCertificate = 'paired_again_on_a_new_certificate';
+
     /** There is nowhere on this device this app may write a stack. */
     case NoStoreOnThisDevice = 'no_store_on_this_device';
 
     /** There is a store and it would not open, which is often temporary. */
     case TheStoreWouldNotOpen = 'store_would_not_open';
 
-    /** Whether the stack is paired and written down. */
+    /** Whether the stack is paired and written down, for the first time or again. */
     public function isPaired(): bool
     {
-        return $this === self::Paired;
+        return match ($this) {
+            self::Paired, self::PairedAgain, self::PairedAgainOnANewCertificate => true,
+            self::NotYet, self::NoStoreOnThisDevice, self::TheStoreWouldNotOpen => false,
+        };
     }
 
     /** Whether the operator has confirmed anything yet. */

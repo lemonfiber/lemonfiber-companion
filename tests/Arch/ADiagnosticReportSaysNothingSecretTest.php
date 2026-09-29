@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Diagnostics;
@@ -36,6 +37,7 @@ const NEVER_IN_A_REPORT = [
     Address::class,
     Reading::class,
     WhatTheRefusalNamed::class,
+    ARefusalInItsWords::class,
     ABundleFile::class,
 ];
 

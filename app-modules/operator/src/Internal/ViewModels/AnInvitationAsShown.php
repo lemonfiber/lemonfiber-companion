@@ -15,14 +15,16 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class AnInvitationAsShown
 {
     /**
-     * @param bool                      $rehearsed    whether this only described the invitation
-     * @param bool                      $mayBeSent    whether this is a rehearsal the operator may now agree to
-     * @param string                    $standingSaid the catalogue key for what the stack found
-     * @param string                    $askingSaid   the catalogue key for whether the request service knows them yet
-     * @param AnInvitationToHandAsShown $toHand       the name, the address, its caution, the hours and whether to hand it over
-     * @param WhatWasGrantedAsShown $granted      what it writes on the account
-     * @param list<string>          $withdrawn    the invitations taken back on the way past, or that would be
-     * @param list<string>          $suspended    the lapsed resets switched off on the way past and kept, or that would be
+     * @param bool                      $rehearsed     whether this only described the invitation
+     * @param bool                      $mayBeSent     whether this is a rehearsal the operator may now agree to
+     * @param string                    $standingSaid  the catalogue key for what the stack found
+     * @param string                    $askingSaid    the catalogue key for whether the request service knows them yet
+     * @param AnInvitationToHandAsShown $toHand        the name, the address, its caution, the hours and whether to hand it over
+     * @param WhatWasGrantedAsShown     $granted       what it writes on the account
+     * @param list<string>              $withdrawn     the invitations taken back on the way past, or that would be
+     * @param string                    $withdrawnSaid the catalogue key for what those are: taken back, or that would be
+     * @param list<string>              $suspended     the lapsed resets switched off on the way past and kept, or that would be
+     * @param string                    $suspendedSaid the catalogue key for what those are: switched off, or that would be
      */
     public function __construct(
         public bool $rehearsed,
@@ -32,6 +34,8 @@ final readonly class AnInvitationAsShown
         public AnInvitationToHandAsShown $toHand,
         public WhatWasGrantedAsShown $granted,
         public array $withdrawn,
+        public string $withdrawnSaid,
         public array $suspended,
+        public string $suspendedSaid,
     ) {}
 }

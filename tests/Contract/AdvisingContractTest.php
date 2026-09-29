@@ -72,8 +72,8 @@ function whatAStackAdvises(string $support = 'poor'): array
         'kind' => 'clients',
         'data' => [
             'devices' => [
-                ['device' => 'An iPhone', 'client' => 'Jellyfin for iOS', 'support' => 'good'],
-                ['device' => 'An older smart TV', 'client' => 'The TV browser', 'support' => $support, 'caution' => 'Subtitles may lag', 'instead' => 'A streaming stick'],
+                ['device' => 'An iPhone', 'client' => 'Jellyfin for iOS', 'support' => 'good', 'open_source' => true],
+                ['device' => 'An older smart TV', 'client' => 'The TV browser', 'support' => $support, 'open_source' => false, 'caution' => 'Subtitles may lag', 'instead' => 'A streaming stick'],
             ],
             'only_at_home' => 'Every one of these works on the home network only',
             'nothing_is_installed' => 'Nothing is installed on anybody\'s device for them',

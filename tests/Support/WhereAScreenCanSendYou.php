@@ -284,7 +284,7 @@ final readonly class WhereAScreenCanSendYou
         // somewhere nobody can get to. `<` cannot appear inside a tag, so it is
         // the bound that means *this tag* rather than *up to the first angle
         // bracket, whatever it belongs to*.
-        preg_match_all('/<x-operator::(?:quiet-)?action\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
+        preg_match_all('/<x-(?:operator::(?:quiet-)?action|design::(?:action|link|row))\b[^<]*?:goes\s*=\s*(["\'])(.*?)\1/s', $source, $named);
         $ways = [...$ways, ...$named[2]];
 
         return [...$ways, ...$this->waysOffTheChromeOf($source)];

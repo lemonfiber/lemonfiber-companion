@@ -21,6 +21,7 @@ final readonly class WhatPuttingItBackWouldShow
      * @param list<string>        $contents   what it holds, which is what putting it back would overwrite
      * @param bool                $isOlder    whether it comes from an older major version
      * @param ?ARelocationAsShown $relocation where its data would go instead of where it came from, and nothing where it goes back
+     * @param ?ARefusalAsShown    $refused    why the stack would not list it, in its words, and nothing unless it refused
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -31,5 +32,6 @@ final readonly class WhatPuttingItBackWouldShow
         public array $contents,
         public bool $isOlder,
         public ?ARelocationAsShown $relocation,
+        public ?ARefusalAsShown $refused,
     ) {}
 }

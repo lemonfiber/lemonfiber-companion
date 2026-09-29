@@ -6,7 +6,7 @@ namespace Modules\Operator\View\Components;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
-use Modules\Operator\View\HoldsItsSlot;
+use Modules\Design\View\HoldsItsSlot;
 use Override;
 
 use function view;

@@ -23,6 +23,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
@@ -34,6 +35,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatRehearses;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
@@ -65,6 +67,7 @@ function theScreenAVerbIsFollowedFrom(
     AStackThatSupervises $supervising,
     string $named = 'sonarr',
     ?AKeychainInMemory $keychain = null,
+    ?AStackThatSpeaksUp $hearing = null,
 ): WhatToDoWithThis {
     $stack = theMachineAVerbIsFollowedOn();
     $keychain ??= AKeychainInMemory::working();
@@ -75,6 +78,7 @@ function theScreenAVerbIsFollowedFrom(
         AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()))),
         $keychain,
         StacksInMemory::holding($stack),
+        $hearing ?? AStackThatSpeaksUp::whileItStarts(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
@@ -445,4 +449,101 @@ it('a verb that has finished is not polled for, and neither is a standing listin
     $screen->answer();
 
     expect($supervising->askings())->toBe($askings);
+});
+
+it('draws what the stack says a start is waiting for, in place of its own sentence, newest first', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $hearing = AStackThatSpeaksUp::whileItStarts(
+        WhatAStartWaitsOn::saying('Waiting for the database'),
+        WhatAStartWaitsOn::saying('Waiting for sonarr to answer'),
+    );
+    $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->whileItSettles();
+
+    $first = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($first)->toContain('Waiting for the database')
+        ->and($first)->not->toContain(__('health.came_to.running'));
+
+    $screen->whileItSettles();
+    $newest = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($newest)->toContain('Waiting for sonarr to answer')
+        ->and($newest)->not->toContain('Waiting for the database');
+});
+
+it('keeps the last line where a wake heard nothing new, or could not hear the stream', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $hearing = AStackThatSpeaksUp::whileItStarts(
+        WhatAStartWaitsOn::saying('Waiting for the database'),
+        WhatAStartWaitsOn::met(Obstacle::StackDidNotAnswer),
+    );
+    $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->whileItSettles();
+    $screen->whileItSettles();
+    $screen->whileItSettles();
+
+    expect($screen->waitsOn)->toBe('Waiting for the database');
+});
+
+it('listens for what a start waits on only while a start or a restart it sent runs, and lets go otherwise', function (): void {
+    $running = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $screen = theScreenAVerbIsFollowedFrom($running, hearing: $hearing);
+
+    $screen->whileItSettles();
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
+    $screen->agree();
+    $screen->whileItSettles();
+
+    expect($hearing->asked())->toBe(0)
+        ->and($hearing->lettingsGo())->toBe(2)
+        ->and($screen->waitsOn)->toBe('');
+});
+
+it('lets go rather than listening where the verb it sent comes back from the device emptied', function (): void {
+    // What was sent is the screen's public state, so it comes back from the
+    // device on the next request and can come back empty. A running start is
+    // then one this screen can no longer say it sent, and it listens to nothing.
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->sent = null;
+    $screen->whileItSettles();
+
+    expect($hearing->asked())->toBe(0)
+        ->and($hearing->lettingsGo())->toBe(1)
+        ->and($screen->waitsOn)->toBe('');
+});
+
+it('clears the last line when another verb is sent', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $screen = theScreenAVerbIsFollowedFrom($supervising, hearing: $hearing);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->whileItSettles();
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+
+    expect($screen->waitsOn)->toBe('');
+});
+
+it('keeps the line it has where the session went between the sending and the listening', function (): void {
+    $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
+    $keychain = AKeychainInMemory::working();
+    $hearing = AStackThatSpeaksUp::whileItStarts(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $screen = theScreenAVerbIsFollowedFrom($supervising, keychain: $keychain, hearing: $hearing);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $keychain->forget(theMachineAVerbIsFollowedOn()->id());
+    $screen->whileItSettles();
+
+    expect($hearing->asked())->toBe(0)
+        ->and($screen->waitsOn)->toBe('');
 });

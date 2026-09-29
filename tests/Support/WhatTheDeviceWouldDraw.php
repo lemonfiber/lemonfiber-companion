@@ -53,6 +53,15 @@ final readonly class WhatTheDeviceWouldDraw
     /** The prop a control carries its words on. */
     private const string LABELLED = 'label';
 
+    /** The prop a list row carries its first line on. */
+    private const string HEADLINE = 'headline';
+
+    /**
+     * The props a list row carries its other lines on, each drawn as a line of
+     * its own after the headline.
+     */
+    private const array LINES_BESIDE = ['supporting', 'trailing_value'];
+
     /**
      * The prop a control with no visible words carries its name on.
      *
@@ -69,27 +78,37 @@ final readonly class WhatTheDeviceWouldDraw
     private const string NAMED_FOR_A_READER = 'a11y_label';
 
     /**
-     * Every kind of node a person operates.
+     * Every kind of node a person operates whatever it holds.
      *
-     * A button and a tappable row. The second is not a lesser form of the
-     * first: a list of machines drawn as buttons is a column of identical
-     * filled bars, and `offers()` that counted only buttons would report a
-     * screen of rows as offering nothing at all — which is how a rule about
-     * what a frame leaves an operator comes to pass on a frame with nothing on
-     * it.
+     * A button, a tappable row and a chip. A list row is operated only when it
+     * is given something to do, which {@see isOperated()} reads off the node.
      */
-    private const array OPERATED = ['button', 'pressable'];
+    private const array OPERATED = ['button', 'pressable', 'chip'];
+
+    /** The list row, a control only when something handles its press. */
+    private const string LIST_ROW = 'list_item';
 
     /** Where a screen's children hang. */
     private const string BENEATH = 'children';
 
     /**
-     * @param list<array{type: string, said: string}> $nodes every node that says something
+     * @param list<array{type: string, said: string, operated: bool}> $nodes every line that is said
      */
     private function __construct(private array $nodes) {}
 
     /** Render this screen the way the device renders it. */
     public static function by(NativeComponent $screen): self
+    {
+        return new self(self::collect(self::tree($screen)));
+    }
+
+    /**
+     * The tree this screen hands the device, whole: types, layouts and props,
+     * for what the words on it leave out.
+     *
+     * @return array<array-key, mixed>
+     */
+    public static function tree(NativeComponent $screen): array
     {
         $was = NativeTagPrecompiler::setActive(active: true);
 
@@ -103,7 +122,7 @@ final readonly class WhatTheDeviceWouldDraw
         $emitted = [];
         $hashes = [];
 
-        return new self(self::collect($tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes)));
+        return $tree->toArray(new CallbackRegistry(), $id, '', 0, $emitted, $hashes);
     }
 
     /**
@@ -140,7 +159,7 @@ final readonly class WhatTheDeviceWouldDraw
         $controls = [];
 
         foreach ($this->nodes as $node) {
-            if (in_array($node['type'], self::OPERATED, strict: true)) {
+            if ($node['operated']) {
                 $controls[] = $node['said'];
             }
         }
@@ -184,7 +203,7 @@ final readonly class WhatTheDeviceWouldDraw
      * or added to, and getting that backwards is a bug that reads as a screen
      * saying the right things in the wrong order.
      *
-     * @return list<array{type: string, said: string}>
+     * @return list<array{type: string, said: string, operated: bool}>
      */
     private static function collect(mixed $node): array
     {
@@ -211,16 +230,62 @@ final readonly class WhatTheDeviceWouldDraw
      * *what hangs off it* are two questions, and the recursion is only about
      * the second.
      *
+     * A list row says its headline and then each line beside it, and only its
+     * headline is the control: the lines after it are what the row shows.
+     *
      * @param array<mixed> $node
      *
-     * @return list<array{type: string, said: string}>
+     * @return list<array{type: string, said: string, operated: bool}>
      */
     private static function itself(array $node): array
     {
         $said = self::wordsIn($node);
         $type = array_key_exists('type', $node) ? $node['type'] : '';
 
-        return $said !== '' && is_string($type) ? [['type' => $type, 'said' => $said]] : [];
+        if ($said === '' || ! is_string($type)) {
+            return [];
+        }
+
+        $lines = [['type' => $type, 'said' => $said, 'operated' => self::isOperated($type, $node)]];
+
+        foreach (self::linesBeside($node) as $line) {
+            $lines[] = ['type' => $type, 'said' => $line, 'operated' => false];
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Whether a person operates this node: always for a button, a tappable row
+     * or a chip, and for a list row when something handles its press.
+     *
+     * @param array<mixed> $node
+     */
+    private static function isOperated(string $type, array $node): bool
+    {
+        return in_array($type, self::OPERATED, strict: true)
+            || ($type === self::LIST_ROW && array_key_exists('on_press', $node));
+    }
+
+    /**
+     * A list row's lines after its headline, in the order they are drawn.
+     *
+     * @param array<mixed> $node
+     *
+     * @return list<string>
+     */
+    private static function linesBeside(array $node): array
+    {
+        $props = array_key_exists('props', $node) ? $node['props'] : [];
+        $lines = [];
+
+        foreach (self::LINES_BESIDE as $prop) {
+            if (is_array($props) && array_key_exists($prop, $props) && is_string($props[$prop]) && $props[$prop] !== '') {
+                $lines[] = $props[$prop];
+            }
+        }
+
+        return $lines;
     }
 
     /**
@@ -255,7 +320,7 @@ final readonly class WhatTheDeviceWouldDraw
             return '';
         }
 
-        foreach ([self::SAID, self::LABELLED, self::NAMED_FOR_A_READER] as $prop) {
+        foreach ([self::SAID, self::LABELLED, self::HEADLINE, self::NAMED_FOR_A_READER] as $prop) {
             if (array_key_exists($prop, $props) && is_string($props[$prop]) && $props[$prop] !== '') {
                 return $props[$prop];
             }

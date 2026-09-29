@@ -124,6 +124,81 @@ return [
         // Where the stack's clock would not say when. A sentence rather than
         // a date, because the only date the stack wrote was nobody's guess.
         'clock_unreadable' => 'At a time the machine could not tell',
+        // The way to putting back what was done at one moment. It opens a
+        // screen that says what goes with it; nothing is put back from here.
+        'put_back' => 'What putting this back takes',
+        // The same, for somebody being read to, naming the moment.
+        'put_back_that' => 'What putting back ":did", :when, takes',
+    ],
+
+    // Putting back one run the record shows. The record's own rows are what is
+    // agreed to, because the stack takes no yes and offers no rehearsal of it.
+    'run_back' => [
+        'names_no_run' => 'This names nothing on the record to put back',
+        // A stamp nothing on the record carries: fallen past the horizon, or
+        // already put back.
+        'not_on_the_record' => 'The record holds nothing done at that moment. It may be older than the record reaches, or already put back.',
+        // Said before the yes, with the count the record's own row gives.
+        'goes_with_it' => '{1} Putting this back puts back the one change below.|[2,*] Putting this back puts back all :count changes made together, never some of them.',
+        'whole_or_nothing' => 'The stack puts back the whole of it or none of it, and says what it could not put back and why.',
+        'cannot_go_back' => 'One of these cannot be put back, so the stack would put back none of them.',
+        'put_it_back' => 'Put it back',
+        'putting_back' => 'Putting it back',
+        'no_progress_while_running' => 'The stack says what it put back once it has finished, and nothing about how far it has got while it runs.',
+        'no_outcome' => 'The stack no longer knows what became of putting it back',
+        'no_outcome_action' => 'It may have gone back. The record says what is there now.',
+        // The stack's own answer, told apart from a stack that could not be
+        // reached. Asking after the same work is answered the same way.
+        'refused' => 'The stack answered, and did not put this run back',
+        'refused_same_answer' => 'Asking again gets the same answer. The record says what is there now, and the run can be chosen there again once what the stack said has changed.',
+        // A rehearsal is said to be one, and nothing about it is in the past tense.
+        'a_rehearsal' => 'A rehearsal: nothing has been put back',
+        // What was left leads, in the report's tense.
+        'did' => [
+            'all' => 'All of it went back.',
+            'not_all' => 'Not all of it went back. Still standing, and why:',
+            'reversed' => 'What went back:',
+            'none_reversed' => 'Nothing went back',
+        ],
+        'would' => [
+            'all' => 'All of it would go back.',
+            'not_all' => 'Not all of it can be promised. What might stay standing, and why:',
+            'reversed' => 'What would go back:',
+            'none_reversed' => 'Nothing would go back',
+        ],
+        // It goes back, and going back still leaves something behind.
+        'noted' => 'Going back also means:',
+        // What putting one change back does, in the stack's word for it.
+        'does' => [
+            'remove' => 'What it created is removed',
+            'restore' => 'The setting is put back to what it held',
+            'delete' => 'What it made is deleted',
+            'withdraw' => 'What lemonfiber wrote into the file is taken back out',
+            'repin' => 'Pinned back to the version it was on',
+            'reconfigure' => 'The service\'s own setting is put back',
+        ],
+    ],
+
+    // What each service on the machine is for, and what became of any the
+    // stack dropped. What it does and what the house goes without lead; the
+    // name follows.
+    'catalogue' => [
+        'road_in' => 'What each service is for',
+        'as_declared' => 'As this machine describes its own services, with nothing started.',
+        'without_it' => 'Without it: :without',
+        'nothing_declared' => 'This machine declares no services',
+        'dropped' => 'No longer part of this stack',
+        'removed_in' => 'Dropped in :version: :reason',
+        // Where something took its place, named so somebody looking for the
+        // old one is answered.
+        'replaced_by' => 'Replaced by :by',
+        // Nothing did, which is the commonest answer.
+        'not_replaced' => 'Nothing took its place',
+        'nothing_dropped' => 'This stack has not dropped any service',
+        // The stack's own answer, told apart from a machine that is not
+        // answering: it could not read the description of itself.
+        'refused' => 'The stack answered, and could not say what its services are for',
+        'same_answer' => 'Asking again gets the same answer until what it names is put right on the machine.',
     ],
 
     // Where each service on the machine comes from.
@@ -243,6 +318,36 @@ return [
         'not_the_services' => 'This is lemonfiber itself. The services are updated from their own screen.',
     ],
 
+    // A guard on the data location, held while its screen asks. Every line
+    // keeps it apart from what the machine hosts: it lives only while the
+    // screen asks about it, and says so before it starts and while it runs.
+    'guard' => [
+        'road_in' => 'Guard the data location while you watch',
+        'apart' => 'Or guard the data location only while a screen of this app is open, which is not hosting it',
+        'heading' => 'Guard the data location while you watch',
+        'lives_while_asked' => 'This guard lives only while this screen keeps asking about it. Leave the screen and it stops.',
+        'not_hosted' => 'It is not handed to the machine, so it does not outlast this screen, a locked phone or a restart of the stack.',
+        'to_host_one' => 'Keep a guard running when nobody is looking',
+        'would_do' => 'While it guards, the stack looks at the data location. If it disappears or turns out to be a different drive, the stack stops the forms named here, so they do not write a library onto whatever is left, and does not start them again.',
+        'not_said_before' => 'This stack does not say beforehand which location it would guard, how often it looks, or the command it would run.',
+        'which_forms' => 'Which forms should it stop?',
+        'name' => 'Name ‘:form’',
+        'named' => '‘:form’ is named',
+        'leave_out' => 'Leave ‘:form’ out',
+        'no_forms' => 'This stack declares no forms to guard',
+        'start' => 'Guard the forms named',
+        'about_to' => 'Guard the data location for :forms?',
+        'guarding' => 'Guarding the data location for :forms',
+        'saw_it_go' => 'The guard saw the data location go',
+        'stopped_them' => 'It stopped these forms:',
+        'did_not_stop_them' => 'It could not stop these forms, and they may still be writing to whatever is left:',
+        'named_no_forms' => 'The stack named no forms',
+        'did_not_start' => 'The guard did not start',
+        'let_go' => 'The guard was let go without seeing anything: it was released, or nothing asked about it for long enough',
+        'unknown' => 'This stack no longer knows the guard. It restarted, and the guard did not survive that, so nothing is guarding now',
+        'start_over' => 'Name forms for another guard',
+    ],
+
     // What lemonfiber's words mean, as the stack's glossary explains them.
     'words' => [
         'road_in' => 'What lemonfiber\'s words mean',
@@ -255,6 +360,9 @@ return [
         'less' => 'Less about ‘:word’',
         'nothing_matched' => 'No word, and nothing else a word is called, matches that',
         'none' => 'This machine explains no words',
+        'ask' => 'Ask this machine what ‘:word’ means',
+        'unexplained' => 'This machine has no entry for ‘:word’ either, so it is shown as it came',
+        'ask_in_place' => 'Ask what ‘:word’ means',
     ],
 
     // The credentials the machine holds to let services in. No line here
@@ -353,9 +461,9 @@ return [
             'let-through' => 'let through to them',
             'left_to_the_stack' => 'left to this stack to decide',
         ],
-        'hold_unrated_back' => 'Hold anything with no rating back',
-        'let_unrated_through' => 'Let anything with no rating through',
-        'leave_unrated_to_the_stack' => 'Leave unrated material to this stack',
+        'hold_unrated_back' => 'Hold it back',
+        'let_unrated_through' => 'Let it through',
+        'leave_unrated_to_the_stack' => 'Leave it to this stack',
         'needs_a_name' => 'Say who this is for: an invitation needs a name',
         'age_is_a_number' => 'An age limit is a whole number of years',
         'what_would_it_grant' => 'See what inviting them would do',
@@ -406,6 +514,36 @@ return [
         'taking_it_off_means' => 'The password :name has now stops working, and they choose a new one at the address this gives you. You never see or set it',
         'take_it_off' => 'Take the password off for :name',
         'never_mind' => 'Leave it as it is',
+        'never_mind_for' => 'Leave the password of :name as it is',
+    ],
+
+    // Taking one member out of the household: what it would cost, the yes,
+    // and how far it reached.
+    'removal' => [
+        'would_take_them_out' => 'Take :name out of the household',
+        'names_nobody' => 'This names nobody to take out of the household. Choose somebody from who is in',
+        'back_to_who_is_in' => 'Back to who is in',
+        'taking_out' => 'Taking :name out of the household',
+        'reading' => 'Asking this stack what taking :name out would cost',
+        'removing' => 'This stack is taking :name out of the household',
+        'not_yet' => 'Nobody has been taken out. This is what taking :name out would cost',
+        'revoked' => [
+            'everywhere' => ':name is out of the household: gone from the media server and from the request service',
+            'media-server-only' => ':name can no longer watch or ask, and the request service still holds an account for them. This is not finished: taking them out again removes it',
+            'nothing' => 'Nobody has been taken out',
+        ],
+        'requests_go' => '{0} They have no requests to lose|{1} :count request of theirs goes with them. It is destroyed, not handed to anybody|[2,*] :count requests of theirs go with them. They are destroyed, not handed to anybody',
+        'requests_went' => '{0} They had no requests to lose|{1} :count request of theirs went with them. It was destroyed, not handed to anybody|[2,*] :count requests of theirs went with them. They were destroyed, not handed to anybody',
+        'asks' => 'They ask for things through the request service, so their account there is taken too',
+        'does_not_ask' => 'They have no account on the request service, so there is nothing of theirs to take there',
+        'found' => 'What this stack found',
+        'found_nothing' => 'Nothing it could not do, and nothing else to tell you',
+        'take_them_out' => 'Take :name out of the household',
+        'read_again' => 'Ask what taking :name out would cost now',
+        'refused' => 'This stack would not take :name out of the household',
+        'no_outcome' => 'What taking :name out would cost could not be read: this stack has no outcome for it any more',
+        'no_outcome_after_yes' => 'Whether :name was taken out could not be read: this stack has no outcome for it any more. That is not the same as it not having happened',
+        'unread_after_yes' => 'Whether :name was taken out could not be read. That is not the same as it not having happened',
     ],
 
     // What is already on the machine, before anything is moved in.
@@ -597,7 +735,31 @@ return [
         'ratio' => 'Ratio :ratio',
         'no_ratio' => 'No ratio: nothing was downloaded to divide by',
         'no_downloads' => 'No finished downloads are on this machine',
-        'at_the_machine' => 'Removing anything is done at the machine, not from here',
+        // On every download alike, so none is singled out.
+        'stop_seeding' => 'Stop seeding this',
+        'stop_seeding_that' => 'Stop seeding :download',
+        'at_the_machine' => 'Stopping seeding is offered one download at a time. Anything else is removed at the machine, not from here',
+    ],
+
+    // Stopping seeding one download: what it costs first, and only then the yes.
+    'let_go' => [
+        'names_no_download' => 'This names no download to stop seeding',
+        'see_the_room' => 'See how full the machine is',
+        'working_it_out' => 'Asking the stack what stopping seeding :download would cost',
+        'offer_ended' => 'The stack no longer knows what stopping seeding :download would cost. Ask again to hear it afresh.',
+        'what_it_costs' => 'What stopping seeding this costs',
+        // Stopping seeding is its own act, and said to be before the cost.
+        'its_own_act' => 'Stopping seeding is its own act: it asks the download client to let this one download go and stop sharing it. Nothing else on the machine is removed.',
+        'stop_it' => 'Stop seeding it',
+        'letting_go' => 'Stopping seeding :download',
+        'no_outcome' => 'The stack no longer knows what became of stopping seeding :download',
+        'no_outcome_action' => 'The client may have let it go. How full the machine is says whether it is still there.',
+        // A rehearsal is said to be one, and never reported as room freed.
+        'a_rehearsal' => 'A rehearsal: nothing has been let go',
+        'rehearsed' => 'The stack is rehearsing, so the client still holds :download and is still seeding it.',
+        'nothing_freed' => 'No room was freed. It still occupies :figure :unit.',
+        'let_go' => 'The client let :download go',
+        'occupied' => 'It occupied :figure :unit, as the client reported it.',
     ],
 
     // What the machine keeps, where, and why, and the copies it holds.
@@ -631,7 +793,6 @@ return [
         'what_to_copy' => 'What to take a copy of',
         'the_whole_stack' => 'The whole stack',
         'or_one_service' => 'Or one service on its own',
-        'only' => 'Only :name',
         'only_this_service' => 'Take a copy of :name only',
         'no_services' => 'The stack runs no service to copy on its own',
         'about_to' => 'About to take a copy of :scope',
@@ -688,6 +849,17 @@ return [
         'put_back' => 'Put back :scope, from a copy taken by lemonfiber :version',
         'moved' => 'Its data went to :now, not to :was where it was taken.',
         'where_it_was' => 'Its data went back where it was taken from.',
+        // The stack's own answer, told apart from a stack that could not be
+        // reached. Asking the same again is answered the same way.
+        'would_not_list' => 'The stack will not put this copy back, and says why',
+        'refused' => 'The stack did not finish putting this copy back, and says why',
+        'same_answer' => 'Asking again gets the same answer until what it says has changed.',
+        'look_again' => 'Read what putting it back would do now',
+    ],
+
+    // A stack's refusal in its own words, on whichever screen asked.
+    'refusal' => [
+        'named' => 'It names :named',
     ],
 
     // How the machine shares its line with the household.
@@ -772,7 +944,6 @@ return [
         'no_outcome' => 'The stack no longer says what became of this bundle.',
         'start_over' => 'Change what goes in',
         'refused' => 'The stack refused this bundle',
-        'refused_named' => 'It names :named',
         'refused_wrote_nothing' => 'Nothing was written. The stack gives the same answer until what it names has changed.',
         'written' => 'The bundle is written',
         'described' => 'Nothing has been written yet',
@@ -791,5 +962,37 @@ return [
         'not_held_here' => 'The bundle could not be put on this phone to hand over. A full phone is the commonest reason.',
         'not_offered' => 'This phone would not offer a way to hand it over.',
         'still_on_the_machine' => 'Nothing left this phone. The bundle is still on the machine.',
+    ],
+
+    // Putting the configuration back. A preview is worded in the conditional
+    // and never as having happened; only a report the stack says it carried
+    // out is worded in the past. Each file's lines are marked as the stack
+    // marks them: the operator's `-`, lemonfiber's `+`.
+    'reset' => [
+        'heading' => 'Putting the configuration back',
+        'a_preview' => 'A preview. Nothing has been put back.',
+        'put_back' => 'The configuration was put back.',
+        'would_revert_files' => 'These files would go back to lemonfiber\'s own. Lines marked - are edits that would be lost; lines marked + are what lemonfiber would write.',
+        'reverted_files' => 'These files went back to lemonfiber\'s own. Lines marked - are edits that were lost; lines marked + are what lemonfiber wrote.',
+        'would_revert_no_file' => 'No file would go back.',
+        'reverted_no_file' => 'No file went back.',
+        'differs_in_no_line' => 'It differs from lemonfiber\'s own in no line that can be shown.',
+        'differed_in_no_line' => 'It differed from lemonfiber\'s own in no line that can be shown.',
+        'would_revert_connections' => 'These connections would go back to lemonfiber\'s own with them:',
+        'reverted_connections' => 'These connections went back to lemonfiber\'s own with them:',
+        'would_revert_no_connection' => 'No connection would go back.',
+        'reverted_no_connection' => 'No connection went back.',
+        'would_change_nothing' => 'Nothing would change. No file and no connection differs from lemonfiber\'s own.',
+        'changed_nothing' => 'Nothing changed. No file and no connection differed from lemonfiber\'s own.',
+        'theirs' => '- :line',
+        'lemonfibers' => '+ :line',
+        'put_them_back' => 'Put these back',
+        'asking' => 'The stack is working out what putting the configuration back would change.',
+        'putting_back' => 'The stack is putting the configuration back.',
+        'no_preview' => 'The stack no longer says what putting the configuration back would change.',
+        'no_outcome' => 'The stack no longer says what became of putting the configuration back. It may have been done. Asking again opens a fresh preview of what still differs.',
+        'refused_preview' => 'The stack would not say what putting the configuration back would change:',
+        'refused' => 'The stack would not put the configuration back:',
+        'see_the_settings' => 'See the settings',
     ],
 ];

@@ -8,7 +8,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * What became of the support bundle asked for from this screen, flattened for a template.
  *
  * The bundle is empty until the stack has answered with one, and the refusal
- * is empty unless the stack refused, so a template cannot draw either off a
+ * is nothing unless the stack refused, so a template cannot draw either off a
  * bundle still being gathered.
  */
 final readonly class HowTheBundleWent
@@ -18,8 +18,7 @@ final readonly class HowTheBundleWent
      * @param bool              $wasAsked  whether a bundle was asked for here, so there is anything to follow
      * @param bool              $isWorking whether the stack is still gathering it
      * @param bool              $hasEnded  whether the stack has no outcome for it any more
-     * @param string            $refused   what the stack refused the bundle with, in its own words, blank unless it refused
-     * @param string            $named     what the refusal named, the source a credential was found in, blank where it named nothing
+     * @param ?ARefusalAsShown  $refused   why the stack refused the bundle, in its words, and nothing unless it refused
      * @param bool              $isWritten whether the bundle exists on the machine, rather than being described
      * @param ?ABundleAsShown   $bundle    the bundle, once the stack answered with one
      */
@@ -28,8 +27,7 @@ final readonly class HowTheBundleWent
         public bool $wasAsked,
         public bool $isWorking,
         public bool $hasEnded,
-        public string $refused,
-        public string $named,
+        public ?ARefusalAsShown $refused,
         public bool $isWritten,
         public ?ABundleAsShown $bundle,
     ) {}

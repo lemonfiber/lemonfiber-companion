@@ -51,6 +51,7 @@ function aCode(mixed $at = 'https://192.168.1.42', mixed $digest = null, mixed $
         'address' => $at,
         'fingerprint' => $digest ?? digestOf('a'),
         'expires' => $expires,
+        'stack' => '7f3c9a1e5b2d4086a9c1e3f5b7d90246',
     ]);
 }
 

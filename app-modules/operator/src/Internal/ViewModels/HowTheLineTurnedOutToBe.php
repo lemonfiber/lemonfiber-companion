@@ -17,6 +17,7 @@ final readonly class HowTheLineTurnedOutToBe
 {
     /**
      * @param string       $standsSaid  the catalogue key for where the line stands, or empty where nothing answered
+     * @param string       $tone        the tone the glyph beside where it stands is drawn in, unknown where nothing answered
      * @param string       $means       what that means for the household
      * @param string       $downSays    the download limit, in the stack's sentence
      * @param string       $upSays      the upload limit, in the stack's sentence
@@ -28,6 +29,7 @@ final readonly class HowTheLineTurnedOutToBe
     public function __construct(
         public HowTheReadingWent $went,
         public string $standsSaid,
+        public string $tone,
         public string $means,
         public string $downSays,
         public string $upSays,

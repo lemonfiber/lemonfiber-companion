@@ -60,6 +60,14 @@ use Tests\Support\WhereAShapeHoldsItself;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
+        'path' => 'ClientsEnvelope.devices[].open_source',
+        'because' => 'Whether the client suggested for a device is open source. Which app to watch on is answered with the device, the client, how well it plays there and what to use instead, which are read; no requirement asks the app to say what licence a client carries.',
+    ],
+    [
+        'path' => 'ClientsEnvelope.devices[].deep_link',
+        'because' => 'A link that opens the suggested client. The screen names the client for the person to find on their own device, which is often not the phone holding this app; no requirement asks the app to open another one.',
+    ],
+    [
         'path' => 'BackupEnvelope.path',
         'because' => 'Where the copy was written on the machine. A copy is named on the screen by the name the listing of copies gives it, which is what putting it back is asked for by; a path on a machine the operator has no filesystem in front of names nothing they can use.',
     ],
@@ -90,6 +98,50 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     [
         'path' => 'RestoreEnvelope.would.manifest.sensitive',
         'because' => 'Whether the copy carries credentials, as its own account of itself records it. The copy\'s report says so when it is taken, and every capture the stack takes carries them; `N6` asks nothing of a restore\'s listing about it.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.id',
+        'because' => 'The identifier, inside a service, of what a removal or a reconfigure is about. What each reversal was against is drawn from `target` and what going back did from `does`; an identifier inside a service names nothing an operator can look up from a phone.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.resource',
+        'because' => 'The kind of resource, inside a service, a removal or a reconfigure is about. `target` names the service and `does` what going back did, and both are drawn; the resource kind is the instruction the stack carried out with.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.key',
+        'because' => 'The setting a restore put back, or the file key a withdrawal took a region out of. `target` and `does` are drawn for every reversal; the key is the instruction the stack carried out with.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.value',
+        'because' => 'What a setting was put back to. A value can be a credential, and this app draws no value a reversal carries, which is the line `N6-R7` draws for what the stack holds.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.wrote',
+        'because' => 'What lemonfiber had written to a setting, carried so the stack can tell its own work from the operator\'s before it acts, and a value that can be a credential. A setting somebody chose since is reported in `left` with why, which is read.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.path',
+        'because' => 'The file a deletion or a withdrawal acted on. `target` names what the change was against and is drawn; the path is on a machine the operator has no filesystem in front of.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.owner',
+        'because' => 'Whose region a withdrawal takes out, as the file\'s markers name it: the stack\'s check that the region is its own. A region edited since is reported in `left` with why, which is read.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.written',
+        'because' => 'The checksum of the region a withdrawal takes out: the stack\'s check that it is still its own work, and a number that means nothing on a screen.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.current',
+        'because' => 'The version a run moved a service to, which a repin checks is still running. The stack carries no repin out: a run carried out reports it in `left` with why, which is read, and a rehearsal names it with `does`, which is drawn.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.previous',
+        'because' => 'The version a repin would put back, for `UndoEnvelope.reversed[].action.current`\'s reason.',
+    ],
+    [
+        'path' => 'UndoEnvelope.reversed[].action.field',
+        'because' => 'The field of a service\'s own resource a reconfigure puts back. `target` names the service and `does` says its own setting went back, and both are drawn; a service that did not answer is reported in `left` with why, which is read.',
     ],
     [
         'path' => 'BandwidthEnvelope.applied',
@@ -171,6 +223,15 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'typed. They differ where the manager wraps it, and the wrapped form is what somebody '
             . 'debugging a launch agent needs — the same technical-detail decision as `definition`, and '
             . 'it becomes readable on the same day.',
+    ],
+    [
+        'path' => 'WatchEnvelope.would',
+        'because' => 'The guard a run would keep — the data location, how often it looks, and the command it '
+            . 'would run — which is exactly what a guard is owed before it starts. It is answered only by a '
+            . 'rehearsal, and no argument the watch action takes over the web API asks for one, so no answer '
+            . 'this app can ask for carries it: a guard started here is a real one, and its answer arrives '
+            . 'without this. The gap is in `WhatTheContractDoesNotCarryTest`, and this is read the day an '
+            . 'answer this app can ask for carries it.',
     ],
     [
         'path' => 'ConfigEnvelope.review.findings',
@@ -682,10 +743,11 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     ],
     [
         'path' => 'ErrorEnvelope.detail',
-        'because' => 'The same reading, and the same answer. `N2-R3` has a finding carry its meaning in '
-            . 'the words the core produced, and that arrives on the `doctor` envelope where a screen can '
-            . 'show it; an error body reaches the operator as an obstacle, which is one of four sentences '
-            . 'this app has written.',
+        'because' => 'No reader here opens it: the SDK\'s `Refusal` does, and it quotes what a service '
+            . 'said, fit to show to the person who asked and not to log, report or forward. A refused '
+            . 'bundle, a run the stack would not put back and a copy it will not restore carry it from '
+            . 'there to the screen that asked as `WhatTheRefusalNamed`, and every other refusal reaches '
+            . 'the operator as an obstacle, which is one of four sentences this app has written.',
     ],
     [
         'path' => 'HeldEnvelope.id',
@@ -753,13 +815,15 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
     [
         'path' => 'SpaceEnvelope.agreement',
         'because' => 'What the offer to reclaim names itself, so that an answer to it can say which offer it '
-            . 'was answering. It exists for the act of removing, and this app removes nothing (`N12-R9`); '
-            . 'the room is shown and the removing is done at the machine.',
+            . 'was answering. It exists for the cleanup of what costs nothing, which this app does not ask '
+            . 'for: the SDK\'s `space` endpoint takes nothing, so a caller can neither confirm the cleanup nor '
+            . 'name this offer. Stopping seeding one download is the removal this app offers, and it reads '
+            . 'that offer\'s own name.',
     ],
     [
         'path' => 'SpaceEnvelope.reclaimed',
-        'because' => 'What became of a confirmed cleanup. Only a call that removes fills it in, and this app '
-            . 'makes none, so every reading it asks for leaves it empty.',
+        'because' => 'What became of a confirmed cleanup. Only a call that confirms fills it in, and this app '
+            . 'makes none, for the reason `agreement` gives, so every reading it asks for leaves it empty.',
     ],
     [
         'path' => 'SpaceEnvelope.reclaimable',
@@ -1067,6 +1131,13 @@ it('N1-R17 — every envelope a reader opens is one the reading was seated on', 
     $lost = [];
 
     foreach ($opened as $envelope) {
+        // A payload the contract declares as a bare value, such as a start's
+        // one line, has no field for a reach to seat on and no path the
+        // register could be told is unread. Reading it is taking the value.
+        if (in_array(WhatTheContractDeclares::shapeOf($envelope), ['string', 'int', 'bool'], strict: true)) {
+            continue;
+        }
+
         if (! in_array($envelope, $seated, strict: true)) {
             $lost[] = $envelope;
         }

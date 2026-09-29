@@ -80,9 +80,19 @@ enum WireField: string implements NamesAWireField
     /**
      * The technical detail under a verdict, where the core gave one; a
      * service's own account of why it refused to act on a quality choice; and
-     * what was specifically true of one line a walkthrough said.
+     * what was specifically true of one line a walkthrough said, in its record
+     * or on the event stream as it ran.
      */
     case Detail = 'detail';
+
+    /**
+     * The step a walkthrough's line narrates, in its record or on the event
+     * stream as it ran, or the one a walkthrough stopped at.
+     */
+    case Step = 'step';
+
+    /** What a walkthrough's line says it is doing, in plain language, in its record or on the event stream. */
+    case Said = 'said';
 
     /** Why a check has no answer, on the arms that produced none. */
     case Reason = 'reason';
@@ -151,9 +161,46 @@ enum WireField: string implements NamesAWireField
      * Forms, in the two senses the wire uses the word: the forms a stack
      * declares, listed on the `forms` envelope and named by an action, and
      * the forms lemonfiber writes one of its words in, on each word of the
-     * `glossary`.
+     * `glossary` and on the one `word` asked for.
      */
     case Forms = 'forms';
+
+    /**
+     * Stopped, in each sense the wire uses the word: where and why a
+     * `walkthrough` stopped, the services stopped to stand in place of a setup
+     * already here, and whether a guard that saw the data location go stopped
+     * the forms it was guarding, on the `watch`.
+     */
+    case Stopped = 'stopped';
+
+    /**
+     * What is gone: what became of an answered offer to stop seeding, absent
+     * where the offer is all there is, and what taking lemonfiber off removed,
+     * by the name its reading gave it.
+     */
+    case Gone = 'gone';
+
+    /**
+     * What was left: what putting a run back did not put back, or could not
+     * promise, each with why, and what taking lemonfiber off could not take,
+     * with how to finish it by hand.
+     */
+    case Left = 'left';
+
+    /**
+     * One of lemonfiber's words, on each word of the `glossary` and on the
+     * one `word` asked for, which is also what the word is asked for by.
+     */
+    case Word = 'word';
+
+    /** What a word means, in a line, on the `glossary` and the `word`. */
+    case Short = 'short';
+
+    /** What a word means at length, on the `glossary` and the `word`. */
+    case Deep = 'deep';
+
+    /** What else a word is called, on the `glossary` and the `word`. */
+    case AlsoCalled = 'also_called';
 
     /**
      * The services the forms asked for left out, each with what it would
@@ -433,15 +480,45 @@ enum WireField: string implements NamesAWireField
 
     /**
      * The name a stack gives one listing, quoted back on a yes: a listing of
-     * repairs, and what putting a copy back would do.
+     * repairs, what putting a copy back would do, and what stopping seeding
+     * one download would cost.
      */
     case Agreement = 'agreement';
+
+    /**
+     * What removing a completed download costs, where it costs anything: on
+     * each download the account of the disk lists, and on the one an offer to
+     * stop seeding is about.
+     */
+    case Consequence = 'consequence';
 
     /**
      * A Compose project: the one a set of existing services was started under,
      * and the one a copy of an existing setup was taken from.
      */
     case Project = 'project';
+
+    /**
+     * What something was done or would be done to: one change on the record,
+     * and one change putting a run back reversed, left or noted.
+     */
+    case Target = 'target';
+
+    /**
+     * What something does, in one word or one sentence: what one repair would
+     * do, in the stack's words, and what putting one change back does, in its
+     * word for the kind of reversal.
+     */
+    case Does = 'does';
+
+    /**
+     * What something is or does, in the machine's words rather than this app's:
+     * what a container is running, and what a service does for the house.
+     */
+    case Describes = 'describes';
+
+    /** How much a household loses when one service is not running, on a reading of what runs and in the catalogue. */
+    case Criticality = 'criticality';
 
     /** The host trees a copy of an existing setup read. */
     case Trees = 'trees';
@@ -530,12 +607,6 @@ enum WireField: string implements NamesAWireField
     case Ours = 'ours';
 
     /**
-     * What stopped: where and why a walkthrough stopped, and the services
-     * stopped to stand in place of a setup already here.
-     */
-    case Stopped = 'stopped';
-
-    /**
      * Host ports: every port an existing service publishes, and where each
      * service would listen to stand beside what is already here.
      */
@@ -552,4 +623,36 @@ enum WireField: string implements NamesAWireField
      * survey, and what an import could not bring.
      */
     case NotCarried = 'not_carried';
+
+    /**
+     * What one member has asked their stack for: the requests themselves on a
+     * reading of the household, and how many go with them on a removal.
+     */
+    case Requests = 'requests';
+
+    /**
+     * Whether the operator said yes: on an upgrade, without it nothing was
+     * asked of any service; on a reset, without it nothing was written; and on
+     * a removal, without it nothing was changed, only described.
+     */
+    case Confirmed = 'confirmed';
+
+    /** What something would do or did, listed: a copy's own account of itself, or what a removal reaches. */
+    case Manifest = 'manifest';
+
+    /** How sure a reading is: of the item a trace followed, or of how much of a removal was read. */
+    case Confidence = 'confidence';
+
+    /**
+     * What is kept: each thing a stack keeps on its machine, or why one line
+     * of a removal stays where it is.
+     */
+    case Kept = 'kept';
+
+    /**
+     * Where a file is: where a support bundle was written, absent on a run
+     * that only described it, and a file a reset reverts, within the stack
+     * directory.
+     */
+    case Path = 'path';
 }

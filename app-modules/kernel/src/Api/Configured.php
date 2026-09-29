@@ -112,6 +112,22 @@ final readonly class Configured implements IteratorAggregate
         return new self([...$this->stacks, $stack]);
     }
 
+    /**
+     * Whether holding this stack would change the certificate pinned for it.
+     *
+     * True only for a stack already held whose pinned certificate differs. A
+     * session was granted over the old certificate's key, and a different
+     * certificate is a different key, so what was agreed under one is not
+     * carried across to the other. A stack not held yet has no pin to change.
+     */
+    public function wouldRepin(Stack $stack): bool
+    {
+        return array_any(
+            $this->stacks,
+            static fn(Stack $held): bool => $held->id()->is($stack->id()) && ! $held->presents()->is($stack->presents()),
+        );
+    }
+
     /** Whether this device has been introduced to the stack named. */
     public function knows(StackId $id): bool
     {

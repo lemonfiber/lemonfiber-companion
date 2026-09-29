@@ -22,7 +22,7 @@ use function str_repeat;
  * off — and with it off there is nothing to pair with either. The one screen
  * this module could not reach was the one an operator meets first.
  *
- * **The three keys come from the enum that defines them.** `Pairing::read()`
+ * **The keys come from the enum that defines them.** `Pairing::read()`
  * refuses a key `WhatPairingMaterialSays` does not name, so spelling them here
  * would be a second copy of the format — and the first thing a second copy does
  * is survive a rename of the first. Everything else about the material is this
@@ -40,6 +40,15 @@ final readonly class WhatAPairingCodeWouldSay
      * does not exist rather than a connection to somebody's actual machine.
      */
     private const string AT = 'https://a-machine-you-have-not-met.invalid:8443';
+
+    /**
+     * The name this machine gives itself, the same in every code it issues.
+     *
+     * Fixed rather than drawn, because a stack keeps one identifier across
+     * every piece of material it hands out: two codes from this stand-in are
+     * two codes for one machine, as two from a real stack would be.
+     */
+    private const string CALLING_ITSELF = '5e7a9c1b3d5f7092a4c6e8f0b2d4f6a8';
 
     /** How many bytes a SHA-256 digest is, doubled by its hex spelling. */
     private const int A_SHA256 = 32;
@@ -61,7 +70,7 @@ final readonly class WhatAPairingCodeWouldSay
     /**
      * The code, as the characters a camera would have seen.
      *
-     * @throws JsonException where the three keys cannot be written as JSON,
+     * @throws JsonException where the keys cannot be written as JSON,
      *                       which is a state this cannot reach and the analyser
      *                       cannot know that
      */
@@ -71,6 +80,7 @@ final readonly class WhatAPairingCodeWouldSay
             WhatPairingMaterialSays::Address->value => self::AT,
             WhatPairingMaterialSays::Fingerprint->value => str_repeat('cd', self::A_SHA256),
             WhatPairingMaterialSays::Expires->value => self::LONG_AFTER_ANY_RUN,
+            WhatPairingMaterialSays::Stack->value => self::CALLING_ITSELF,
         ], JSON_THROW_ON_ERROR);
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\ALineOfTheAccount;
 use Modules\Kernel\Api\AnAmountOfRoom;
@@ -13,6 +14,7 @@ use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\ADownloadAsShown;
@@ -61,6 +63,7 @@ final readonly class HowTheRoomReads
         return new TheRoomTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             standsSaid: $room->stands()->saidOnTheScreen(),
+            tone: $this->toneOf($room->stands()),
             halted: $room->isHalted(),
             volumes: $volumes,
             account: $account,
@@ -74,10 +77,52 @@ final readonly class HowTheRoomReads
         return $this->nothingFrom(HowTheReadingWent::somethingStopped($why));
     }
 
+    /**
+     * One completed download, with its ratio where it is seeding.
+     *
+     * Public because an offer to stop seeding is about one of these, and draws
+     * it in the same words the account does.
+     */
+    public function download(ADownloadOnDisk $download): ADownloadAsShown
+    {
+        $ratio = $download->ratio(
+            seeding: static fn(ARatio $ratio): RatioAsShown => $ratio->either(
+                read: static fn(string $read): RatioAsShown => new RatioAsShown('stacks.room.ratio', $read),
+                none: static fn(): RatioAsShown => new RatioAsShown('stacks.room.no_ratio', ''),
+            ),
+            notSeeding: static fn(): RatioAsShown => new RatioAsShown('', ''),
+        );
+
+        return new ADownloadAsShown(
+            name: $download->name(),
+            size: $this->size($download->bytes()),
+            standingSaid: $download->stands()->saidOnTheScreen(),
+            ratioSaid: $ratio->said,
+            ratio: $ratio->ratio,
+            consequence: $download->consequence(),
+        );
+    }
+
     /** An answer with nothing in it, for a reading that did not come back. */
     private function nothingFrom(HowTheReadingWent $went): TheRoomTurnedOutToBe
     {
-        return new TheRoomTurnedOutToBe(went: $went, standsSaid: '', halted: false, volumes: [], account: [], downloads: []);
+        return new TheRoomTurnedOutToBe(went: $went, standsSaid: '', tone: Tone::Unknown->value, halted: false, volumes: [], account: [], downloads: []);
+    }
+
+    /**
+     * The glyph where the machine stands is drawn with.
+     *
+     * A machine nobody could read is unknown rather than comfortable, and one
+     * going to fill with what is on its way wants looking at before it does.
+     */
+    private function toneOf(WhereTheRoomStands $stands): string
+    {
+        return match ($stands) {
+            WhereTheRoomStands::Unknown => Tone::Unknown->value,
+            WhereTheRoomStands::Ample => Tone::Fine->value,
+            WhereTheRoomStands::Advisory, WhereTheRoomStands::Warning => Tone::Attention->value,
+            WhereTheRoomStands::Critical, WhereTheRoomStands::Exhausted => Tone::Trouble->value,
+        };
     }
 
     /** One volume, with how old its reading is against the frame's moment. */
@@ -112,27 +157,6 @@ final readonly class HowTheRoomReads
             occupies: $this->size($occupies->physical()),
             unshared: $occupies->differs() ? $this->size($occupies->logical()) : null,
             costsSaid: $line->costs()->saidOnTheScreen(),
-        );
-    }
-
-    /** One completed download, with its ratio where it is seeding. */
-    private function download(ADownloadOnDisk $download): ADownloadAsShown
-    {
-        $ratio = $download->ratio(
-            seeding: static fn(ARatio $ratio): RatioAsShown => $ratio->either(
-                read: static fn(string $read): RatioAsShown => new RatioAsShown('stacks.room.ratio', $read),
-                none: static fn(): RatioAsShown => new RatioAsShown('stacks.room.no_ratio', ''),
-            ),
-            notSeeding: static fn(): RatioAsShown => new RatioAsShown('', ''),
-        );
-
-        return new ADownloadAsShown(
-            name: $download->name(),
-            size: $this->size($download->bytes()),
-            standingSaid: $download->stands()->saidOnTheScreen(),
-            ratioSaid: $ratio->said,
-            ratio: $ratio->ratio,
-            consequence: $download->consequence(),
         );
     }
 

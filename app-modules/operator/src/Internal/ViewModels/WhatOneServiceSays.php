@@ -38,6 +38,7 @@ final readonly class WhatOneServiceSays
      * @param ServiceId    $id          what a verb is asked for by, and what its logs are read for
      * @param string       $name        what the operator recognises it as
      * @param string       $runsSaid    the key for how it is running
+     * @param string       $tone        the tone its glyph is drawn in, a `Modules\Design\View\Tone` value
      * @param string       $mattersSaid the key for how much it matters
      * @param bool         $isSettling  whether it becomes something else by itself
      * @param bool         $isOurs      whether this stack is the one that runs it
@@ -51,6 +52,7 @@ final readonly class WhatOneServiceSays
         public ServiceId $id,
         public string $name,
         public string $runsSaid,
+        public string $tone,
         public string $mattersSaid,
         public bool $isSettling,
         public bool $isOurs,

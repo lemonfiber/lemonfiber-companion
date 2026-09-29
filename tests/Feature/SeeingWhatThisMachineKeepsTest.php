@@ -177,14 +177,17 @@ it('says so where the stack keeps nothing, names nowhere, and has nothing beside
 });
 
 it('offers putting back each copy listed, taking a copy and asking again, and never a first run', function (): void {
-    $offers = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()))->offers();
+    $drawn = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()));
 
-    expect($offers)->toBe([
-        __('stacks.keeps.put_back'),
-        __('stacks.keeps.put_back'),
+    // Each copy is a row that goes to putting it back, drawn by its name with
+    // what tapping it does under the name.
+    expect($drawn->offers())->toBe([
+        'lemonfiber-20260924-0300-full',
+        'lemonfiber-20260923-0300-full',
         __('stacks.keeps.take_a_copy'),
         __('health.ask_again'),
-    ]);
+    ])
+        ->and(array_keys($drawn->said(), __('stacks.keeps.put_back'), strict: true))->toHaveCount(2);
 });
 
 it('offers nothing to put back where no copy has been taken', function (): void {

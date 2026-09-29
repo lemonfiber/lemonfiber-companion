@@ -20,6 +20,10 @@ return [
     'pair' => 'Scan een koppelingscode',
     'pair_by_typing' => 'Typ de code in plaats daarvan',
     'paired_action' => 'Deze stack staat nu op je telefoon. Je bereikt hem via het hoofdscherm.',
+    'paired_again' => ':stack bijgewerkt',
+    'paired_again_action' => 'Deze stack stond al op je telefoon, dus hij is bijgewerkt in plaats van opnieuw toegevoegd. Was je erop aangemeld, dan ben je dat nog steeds.',
+    'paired_again_on_a_new_certificate' => ':stack bijgewerkt',
+    'paired_again_on_a_new_certificate_action' => 'Deze stack stond al op je telefoon, dus hij is bijgewerkt in plaats van opnieuw toegevoegd. Het certificaat is gewijzigd, dus meld je opnieuw aan.',
     'no_store_on_this_device' => 'Deze telefoon heeft geen plek om een stack te bewaren.',
     'no_store_on_this_device_action' => 'De koppeling is niet gelukt. Een telefoon met een schermvergrendeling heeft die plek wel; stel er een in en probeer het opnieuw.',
     'store_would_not_open' => 'Deze telefoon liet de app de stack niet opslaan.',
@@ -71,5 +75,6 @@ return [
     'stack_is_open' => 'Aangemeld',
     'stack_wants_a_password' => 'Vraagt om je wachtwoord',
     'session_has_ended' => 'Je bent afgemeld bij deze stack.',
+    'pair_again' => 'Opnieuw koppelen',
     'start_over' => 'Probeer opnieuw aan te melden',
 ];
