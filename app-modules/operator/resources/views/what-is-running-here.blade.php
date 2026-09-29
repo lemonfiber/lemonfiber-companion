@@ -11,14 +11,22 @@
         <x-design::note>{{ __('stacks.itself.owner', ['owner' => $this->answer()->owner]) }}</x-design::note>
     @endif
 
-    {{-- Where it stands against what has been released, with the newest
+    {{-- Where it stands against what has been released. A newer release is
+         the heading, named; otherwise the standing is, with the newest
          version under it where there is one. A check that failed is never
          drawn as current. --}}
-    <x-design::standing
-        :said="__($this->answer()->standsSaid)"
-        :tone="$this->answer()->tone"
-        :note="$this->answer()->offered === '' ? '' : __('stacks.itself.offered', ['version' => $this->answer()->offered])"
-    />
+    @if ($this->answer()->out !== '')
+        <x-design::standing
+            :said="__('stacks.itself.is_out', ['version' => $this->answer()->out])"
+            :tone="$this->answer()->tone"
+        />
+    @else
+        <x-design::standing
+            :said="__($this->answer()->standsSaid)"
+            :tone="$this->answer()->tone"
+            :note="$this->answer()->offered === '' ? '' : __('stacks.itself.offered', ['version' => $this->answer()->offered])"
+        />
+    @endif
     @if ($this->answer()->changed !== '')
         <x-design::body>{{ $this->answer()->changed }}</x-design::body>
     @endif

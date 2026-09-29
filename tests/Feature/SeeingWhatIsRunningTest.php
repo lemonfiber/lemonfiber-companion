@@ -80,13 +80,14 @@ function theCopyScreen(
     return $screen;
 }
 
-it('says which version runs, how it was installed, and where it stands', function (): void {
+it('says which version runs, how it was installed, and names the newer release that is out', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theCopyScreen(AStackThatChecksItself::with(aCopyWithANewerVersion())))->said();
 
     expect($drawn)->toContain(__('stacks.itself.running', ['version' => '0.15.0']))
         ->and($drawn)->toContain(__(HowLemonfiberWasInstalled::Installer->saidOnTheScreen()))
-        ->and($drawn)->toContain(__(WhereThisCopyStands::UpdateAvailable->saidOnTheScreen()))
-        ->and($drawn)->toContain(__('stacks.itself.offered', ['version' => '0.16.0']))
+        ->and($drawn)->toContain(__('stacks.itself.is_out', ['version' => '0.16.0']))
+        ->and($drawn)->not->toContain(__(WhereThisCopyStands::UpdateAvailable->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__('stacks.itself.offered', ['version' => '0.16.0']))
         ->and($drawn)->toContain('Plugins can be installed from the phone');
 });
 
@@ -139,9 +140,9 @@ it('a stack that could not be asked is not a copy that is up to date', function 
         ->and($answer->went->met)->toBe(Obstacle::StackDidNotAnswer->said())
         ->and($answer->went->isSignedIn)->toBeTrue()
         ->and([
-            $answer->running, $answer->installedSaid, $answer->owner, $answer->standsSaid, $answer->offered,
+            $answer->running, $answer->installedSaid, $answer->owner, $answer->standsSaid, $answer->offered, $answer->out,
             $answer->changed, $answer->untold, $answer->command, $answer->instead, $answer->carries, $answer->afterwards,
-        ])->toBe(['', '', '', '', '', '', '', '', '', '', '']);
+        ])->toBe(['', '', '', '', '', '', '', '', '', '', '', '']);
 });
 
 it('a session that has ended is not a copy that is up to date', function (): void {

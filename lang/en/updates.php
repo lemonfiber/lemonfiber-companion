@@ -33,7 +33,7 @@ return [
     // the evening.
     'cannot_be_put_back' => '{1} One of these cannot be put back|[2,*] :count of these cannot be put back',
     'cannot_be_put_back_after' => 'Undoing the update afterwards will not reverse this.',
-    'take_it' => 'Update the services',
+    'take_them' => '{1} Update 1 service|[2,*] Update :count services',
     'last_update' => 'The last update',
     'did_not_arrive' => '{1} One service is not where you wanted it|[2,*] :count services are not where you wanted it',
     'unanswered' => 'Some services started and have not answered, so the stack cannot say what they are doing.',
@@ -44,6 +44,8 @@ return [
     'no_outcome_action' => 'It may have finished. Ask again to see where the services stand now.',
     'touched_nothing' => 'The update finished without changing any service.',
     'running_on' => 'Running :version',
+    'behind' => '{1} 1 service is behind|[2,*] :count services are behind',
+    'newer_in' => 'lemonfiber :version has newer versions of them.',
     'running_withdrawn' => 'This version has been withdrawn',
     'what_it_changed' => 'What :version changed',
     'history' => 'Release history',

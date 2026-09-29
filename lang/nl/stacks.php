@@ -245,6 +245,7 @@ return [
             'check-failed' => 'Of er een nieuwere versie is kon niet gecontroleerd worden',
         ],
         'offered' => 'Nieuwste: :version',
+        'is_out' => 'lemonfiber :version is verschenen',
         'run_at_the_machine' => 'Om bij te werken, voer dit uit op de machine:',
         'not_the_services' => 'Dit is lemonfiber zelf. De services worden bijgewerkt vanaf hun eigen scherm.',
     ],

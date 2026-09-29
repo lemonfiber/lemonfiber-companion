@@ -28,7 +28,7 @@ return [
     // maken van de update zet de rest terug en deze niet.
     'cannot_be_put_back' => '{1} Eén hiervan kan niet worden teruggedraaid|[2,*] :count hiervan kunnen niet worden teruggedraaid',
     'cannot_be_put_back_after' => 'De update later ongedaan maken draait dit niet terug.',
-    'take_it' => 'Werk de diensten bij',
+    'take_them' => '{1} 1 dienst bijwerken|[2,*] :count diensten bijwerken',
     'last_update' => 'De laatste update',
     'did_not_arrive' => '{1} Eén dienst staat niet waar je hem wilde|[2,*] :count diensten staan niet waar je ze wilde',
     'unanswered' => 'Sommige diensten zijn gestart en geven geen antwoord, dus de stack kan niet zeggen wat ze doen.',
@@ -39,6 +39,8 @@ return [
     'no_outcome_action' => 'Misschien is hij klaar. Vraag opnieuw om te zien waar de diensten nu staan.',
     'touched_nothing' => 'De update is klaar en heeft geen dienst veranderd.',
     'running_on' => 'Draait :version',
+    'behind' => '{1} 1 dienst loopt achter|[2,*] :count diensten lopen achter',
+    'newer_in' => 'lemonfiber :version heeft nieuwere versies ervan.',
     'running_withdrawn' => 'Deze versie is teruggetrokken',
     'what_it_changed' => 'Wat :version veranderde',
     'history' => 'Releasegeschiedenis',
