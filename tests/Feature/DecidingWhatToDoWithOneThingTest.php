@@ -244,12 +244,40 @@ it('N2-R8 — states what will not work while it is off', function (): void {
     expect($screen->thing()->service?->leaning)->toBe(['jellyfin']);
 });
 
-it('N2-R8 — says a restart will not help where it is already looping', function (): void {
+it('says a restart will not help where it is already looping', function (): void {
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::CrashLooping, HowTheStackIsRunning::Degraded)));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Restart->value);
+
+    expect($screen->aRestartWouldNotHelp())->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.would_not_help'));
+});
+
+it('carries no restart warning on a stop of a service that is looping', function (): void {
+    // The warning is about another restart joining a queue of starts, which
+    // a stop is not.
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::CrashLooping, HowTheStackIsRunning::Degraded)));
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
 
-    expect($screen->thing()->service?->wouldNotHelp)->toBeTrue();
+    expect($screen->thing()->service?->wouldNotHelp)->toBeTrue()
+        ->and($screen->aRestartWouldNotHelp())->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.would_not_help'));
+});
+
+it('carries no restart warning on a restart of a service that is not looping', function (): void {
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Restart->value);
+
+    expect($screen->asking())->not->toBeNull()
+        ->and($screen->aRestartWouldNotHelp())->toBeFalse();
+});
+
+it('carries no restart warning while nothing is being asked', function (): void {
+    $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::CrashLooping, HowTheStackIsRunning::Degraded)));
+
+    expect($screen->aRestartWouldNotHelp())->toBeFalse();
 });
 
 it('N2-R8 — the confirmation says how long the verb takes it away for', function (): void {

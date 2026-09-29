@@ -24,10 +24,10 @@
             <x-design::body>{{ __('health.about_to_form') }}</x-design::body>
         </x-design::notice>
     @else
-        @if ($this->thing()->service?->wouldNotHelp)
-            {{-- The honest statement for a service that is already being
-                 started over and over: another restart adds a start to a
-                 queue of starts. --}}
+        @if ($this->aRestartWouldNotHelp())
+            {{-- The honest statement for a restart of a service that is
+                 already being started over and over: another restart adds a
+                 start to a queue of starts. --}}
             <x-design::notice>
                 <x-design::strong>{{ __('health.would_not_help') }}</x-design::strong>
             </x-design::notice>

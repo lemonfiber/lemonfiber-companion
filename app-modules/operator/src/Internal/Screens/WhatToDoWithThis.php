@@ -268,6 +268,25 @@ final class WhatToDoWithThis extends NativeComponent
     }
 
     /**
+     * Whether the question is a restart of a service already being started over and over.
+     *
+     * Only a restart: another restart of a service in that state joins a queue
+     * of starts, and a stop or a start is not a restart, so the warning is
+     * not true of either.
+     */
+    public function aRestartWouldNotHelp(): bool
+    {
+        $agreed = $this->asking;
+        $service = $this->thing()->service;
+
+        if (! $agreed instanceof AgreedTo || ! $service instanceof WhatOneServiceSays) {
+            return false;
+        }
+
+        return $agreed->doing() === WhatToDoWithIt::Restart && $service->wouldNotHelp;
+    }
+
+    /**
      * Look again while the machine is settling into what it was told.
      *
      * It does nothing unless a verb sent here is still running or something
