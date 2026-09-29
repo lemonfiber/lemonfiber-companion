@@ -17,10 +17,15 @@ use Closure;
  */
 final readonly class WhereTakingItOffGot
 {
+    /**
+     * What was gone and which credentials went with it travel as one pair,
+     * because a run removed both or neither.
+     *
+     * @param array{NamedOnTheManifest, NamedOnTheManifest}|null $removed
+     */
     private function __construct(
         private bool $surveyed,
-        private ?NamedOnTheManifest $gone = null,
-        private ?NamedOnTheManifest $credentials = null,
+        private ?array $removed = null,
         private ?WhatWasLeftBehind $left = null,
     ) {}
 
@@ -39,13 +44,13 @@ final readonly class WhereTakingItOffGot
     /** Everything the reading named as going is gone. */
     public static function complete(NamedOnTheManifest $gone, NamedOnTheManifest $credentials): self
     {
-        return new self(surveyed: false, gone: $gone, credentials: $credentials);
+        return new self(surveyed: false, removed: [$gone, $credentials]);
     }
 
     /** Some of it could not be removed, and this is what is left. */
     public static function partial(NamedOnTheManifest $gone, NamedOnTheManifest $credentials, WhatWasLeftBehind $left): self
     {
-        return new self(surveyed: false, gone: $gone, credentials: $credentials, left: $left);
+        return new self(surveyed: false, removed: [$gone, $credentials], left: $left);
     }
 
     /** Whether this is a reading, which is the only answer a removal can be agreed against. */
@@ -71,12 +76,13 @@ final readonly class WhereTakingItOffGot
      */
     public function either(Closure $surveyed, Closure $rehearsed, Closure $complete, Closure $partial): object
     {
+        $removed = $this->removed;
+
         return match (true) {
             $this->surveyed => $surveyed(),
-            $this->gone instanceof NamedOnTheManifest && $this->credentials instanceof NamedOnTheManifest && $this->left instanceof WhatWasLeftBehind
-                => $partial($this->gone, $this->credentials, $this->left),
-            $this->gone instanceof NamedOnTheManifest && $this->credentials instanceof NamedOnTheManifest => $complete($this->gone, $this->credentials),
-            default => $rehearsed(),
+            $removed === null => $rehearsed(),
+            $this->left instanceof WhatWasLeftBehind => $partial($removed[0], $removed[1], $this->left),
+            default => $complete($removed[0], $removed[1]),
         };
     }
 }

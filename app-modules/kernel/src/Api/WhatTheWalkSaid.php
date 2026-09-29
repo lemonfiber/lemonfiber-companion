@@ -18,37 +18,38 @@ use Closure;
  */
 final readonly class WhatTheWalkSaid
 {
+    /** Each answer names only what it carries; the rest stays at nothing said. */
     private function __construct(
-        private ?ALineItSaid $line,
-        private ?Obstacle $why,
-        private bool $alive,
-        private bool $closed,
+        private ?ALineItSaid $line = null,
+        private ?Obstacle $why = null,
+        private bool $alive = false,
+        private bool $closed = false,
     ) {}
 
     public static function nothing(): self
     {
-        return new self(null, null, alive: false, closed: false);
+        return new self();
     }
 
     public static function aSignOfLife(): self
     {
-        return new self(null, null, alive: true, closed: false);
+        return new self(alive: true);
     }
 
     /** The last step the walk said, carried as the stack said it. */
     public static function said(ALineItSaid $line): self
     {
-        return new self($line, null, alive: true, closed: false);
+        return new self(line: $line);
     }
 
     public static function closed(): self
     {
-        return new self(null, null, alive: false, closed: true);
+        return new self(closed: true);
     }
 
     public static function met(Obstacle $why): self
     {
-        return new self(null, $why, alive: false, closed: false);
+        return new self(why: $why);
     }
 
     /**
