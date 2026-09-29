@@ -149,7 +149,7 @@ it('draws each change with what it did first, then what did it, how far it goes 
         __('stacks.record.instead', ['instead' => 'Restore it from the last backup first']),
     ])
         ->and($said)->toContain(__('stacks.record.horizon', ['horizon' => 'the last 50 runs']))
-        ->and($drawn->offers())->toBe([__('health.ask_again')]);
+        ->and($drawn->offers())->toBe([__('stacks.record.put_back'), __('health.ask_again')]);
 });
 
 it('draws a record with nothing in it as saying so, over where it ends', function (): void {

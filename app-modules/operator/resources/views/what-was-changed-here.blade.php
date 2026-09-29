@@ -43,7 +43,7 @@
         {{-- The way to putting back what was done then. It leads to a screen
              that says what goes with it before anything is agreed to; nothing
              is put back from here. --}}
-        <x-operator::action
+        <x-design::action
             label="{{ __('stacks.record.put_back') }}"
             answers-to="{{ __('stacks.record.put_back_that', ['did' => $moment->leadsWith, 'when' => trans_choice($moment->whenSaid, $moment->whenCount)]) }}"
             :goes="$this->goes()->ofItself()->changing()->puttingARunBack($moment->stamp)"

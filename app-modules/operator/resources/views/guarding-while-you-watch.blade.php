@@ -53,7 +53,7 @@
             <x-operator::action label="{{ __('stacks.guard.start_over') }}" tap="startOver()" />
         @endif
     @else
-        <x-operator::what-stopped-the-reading
+        <x-operator::what-stood-in-the-way
             :went="$this->lastGuard()->went"
             :sign-in-goes-to="$this->goes()->signIn()"
         />
