@@ -162,6 +162,8 @@ function theLaunchOver(ADeviceThatKnowsYou $device, ClearingWhatCannotBeRead $cl
         new Opening($device, $stacks, ADeviceOnANetwork::connected()),
         $clearing,
         $keeping,
+        AStackThatSpeaksUp::holdingOpen(),
+        ACaptureInMemory::inFront(),
     );
 }
 

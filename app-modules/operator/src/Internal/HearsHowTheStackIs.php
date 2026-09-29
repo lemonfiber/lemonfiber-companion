@@ -10,7 +10,6 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Operator\Internal\Presenters\HowTheOneLineReads;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
@@ -37,9 +36,8 @@ use Native\Mobile\Edge\NativeComponent;
  * decides.
  *
  * **Every word it hears is kept for the list.** The list of stacks says each
- * stack's one line and holds no stream, so the word, and when it was heard,
- * goes into {@see \Modules\Kernel\Api\Standings} as it arrives, and the list
- * reads it from there.
+ * stack's one line from {@see \Modules\Kernel\Api\Standings}, so the word, and
+ * when it was heard, goes there as it arrives.
  *
  * **Every summary it hears is kept for the next opening**, through
  * {@see \Modules\Health\Api\KeepingTheLastReading}, which seals it first. A
@@ -159,39 +157,12 @@ trait HearsHowTheStackIs
     private function heardFrom(Stack $stack, Instant $now): WhatWasHeard
     {
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatWasHeard => $this->kept(
+            held: fn(Session $session): WhatWasHeard => $this->listensWith()->kept(
                 $this->listensWith()->hearing->howItIs($stack, $session),
                 $stack,
                 $now,
             ),
             notHeld: static fn(): WhatWasHeard => WhatWasHeard::closed(),
-        );
-    }
-
-    /**
-     * Keep what a summary said, with when it was heard, and hand back what was heard.
-     *
-     * Twice over: the word for the list, and the whole summary for the next
-     * time this screen opens. What either store answers is not looked at: a
-     * summary that could not be kept costs the list that row's word and the
-     * next opening its first frame, and this screen is showing the summary
-     * either way.
-     */
-    private function kept(WhatWasHeard $heard, Stack $stack, Instant $now): WhatWasHeard
-    {
-        $with = $this->listensWith();
-
-        return $heard->either(
-            nothing: static fn(): WhatWasHeard => $heard,
-            alive: static fn(): WhatWasHeard => $heard,
-            said: static function (TheHealthSummary $summary) use ($with, $heard, $stack, $now): WhatWasHeard {
-                $with->standings->remember($stack->id(), $summary->standing(), $now);
-                $with->keeping->keep($stack->id(), $summary, $now);
-
-                return $heard;
-            },
-            closed: static fn(): WhatWasHeard => $heard,
-            met: static fn(): WhatWasHeard => $heard,
         );
     }
 }

@@ -57,9 +57,10 @@
 
              How the stack stands is what the app opens on: the core's one
              line as a single word, with its glyph at the row's start. A stack
-             whose line was never heard says unknown, never nothing. It is held
-             rather than asked, so it carries when it was heard and is never
-             drawn as though it were current; the age comes out of the same
+             whose line was never heard says unknown, never nothing. It is read
+             from what was kept, which the list's own subscriptions keep fresh,
+             so it carries when it was heard and is never drawn as though it
+             were current; the age comes out of the same
              fold as the word, so a row cannot have one without the other. A
              stack this device holds no session for says so last. --}}
         <x-design::section>
@@ -80,10 +81,10 @@
         </x-design::section>
     @endif
 
-    @if ($this->sharingWent() !== '')
+    @if ($this->sharingWent !== '')
         <x-design::notice tone="unknown">
-            <x-design::strong>{{ __($this->sharingWent()) }}</x-design::strong>
-            <x-design::body>{{ __($this->sharingRemedy()) }}</x-design::body>
+            <x-design::strong>{{ __($this->sharingWent) }}</x-design::strong>
+            <x-design::body>{{ __($this->sharingRemedy) }}</x-design::body>
         </x-design::notice>
     @endif
 

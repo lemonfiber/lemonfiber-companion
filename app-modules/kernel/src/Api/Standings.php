@@ -9,10 +9,10 @@ namespace Modules\Kernel\Api;
  *
  * The app opens on the list of stacks, and what each row says under a stack's
  * name is how that stack stands. The core computes that word once, for every
- * surface, and publishes it only on the event stream, which the list never
- * opens: a screen holding the stream is the screen for one stack, and opening
- * the app is not a reason to talk to four machines. So the screen that hears
- * the word keeps it here, and the list reads it back.
+ * surface, and publishes it only on the event stream. A launch draws its first
+ * frame before it reaches any stack, so every screen that hears the word keeps
+ * it here — the stack's own screen and the list alike — and the list's rows
+ * read it back.
  *
  * **What is kept is the word and nothing else.** Not the count, not the worst
  * thing, not the affected items. The row says how a stack stands and the

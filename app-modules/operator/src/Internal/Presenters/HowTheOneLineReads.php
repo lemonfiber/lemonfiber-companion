@@ -32,8 +32,8 @@ use Modules\Operator\Internal\ViewModels\WhyNothingWasSaid;
  * critical. Things reported anywhere else, because a stack that is stopped or
  * still starting can carry findings without any of them being a demand.
  *
- * **The list says the same line from what was kept.** It holds no stream, so
- * it has the word a stack's screen last heard and when, and nothing else. That
+ * **The list says the same line from what was kept.** Its rows read the store,
+ * so they have the word last heard and when, and nothing else. That
  * word is said for as long as a stream could have stayed silent and still been
  * vouched for, and past that it reads as unknown, as the stack's own screen
  * would; either way it says when it was heard. A row has room for a word
