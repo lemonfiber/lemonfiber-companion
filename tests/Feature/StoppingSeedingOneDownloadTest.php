@@ -237,7 +237,6 @@ it('says the stack is still working out the cost, on the cadence it reads again 
     expect(everythingTheOfferToLetGoShows($screen->answer()))->toBe(nothingOfferedToLetGo(['isWorking' => true]))
         ->and($screen->isWorking())->toBeTrue()
         ->and($drawn->said())->toContain(__('stacks.let_go.working_it_out', ['download' => 'Some.Film.2024']))
-        ->and($drawn->said())->toContain(__('health.every.while_work_runs', ['count' => 5]))
         ->and($drawn->offers())->toBe([__('health.ask_again')]);
 
     $screen->whileItRuns();
@@ -325,7 +324,6 @@ it('stops seeding exactly the offer it showed, and says it is doing so on its ca
         ->and($screen->isWorking())->toBeTrue()
         ->and(everythingLettingGoShows($screen->done()))->toBe(nothingReportedOfLettingGo(['isWorking' => true]))
         ->and($drawn)->toContain(__('stacks.let_go.letting_go', ['download' => 'Some.Film.2024']))
-        ->and($drawn)->toContain(__('health.every.while_work_runs', ['count' => 5]))
         ->and($drawn)->not->toContain(__('stacks.let_go.what_it_costs'))
         ->and($stopping->followed())->toBe([]);
 

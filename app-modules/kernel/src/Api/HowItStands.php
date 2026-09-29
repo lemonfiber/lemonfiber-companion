@@ -37,4 +37,10 @@ enum HowItStands: string
     {
         return sprintf('health.standing.%s', $this->value);
     }
+
+    /** The same word as a single word, for a line with room for nothing else, as a key. */
+    public function saidInAWord(): string
+    {
+        return sprintf('health.standing_short.%s', $this->value);
+    }
 }

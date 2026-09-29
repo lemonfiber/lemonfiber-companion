@@ -32,12 +32,12 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N1-R67` | A screen may hold a subscription in place of reading, and opening it is that screen's one read. What arrives is rendered from what the subscription holds | `Hearing`, bound fresh for each screen. `HowThisStackIs` holds one `Listeners` and draws from `WhatWasHeardSoFar`, which is a value on the screen |
 | `N1-R68` | The first frame is published before the subscription is opened, and opening carries the bounded timeout every call carries | The screen is `#[Lazy]`, so its placeholder is published before `mount()` opens the stream. The stream is opened through the pinned client every call uses |
-| `N1-R69` | What arrived is taken on a stated cadence, without waiting for what has not | `#[Poll(HowOften::WHILE_LISTENING_MS)]` on `HearsHowTheStackIs::listen()`. `Listeners` reads with a wait of `Listeners::NO_LONGER_THAN_MS` and stops at the first read that finds nothing |
+| `N1-R69` | What arrived is taken on a declared cadence, without waiting for what has not | `#[Poll(HowOften::WHILE_LISTENING_MS)]` on `HearsHowTheStackIs::listen()`. `Listeners` reads with a wait of `Listeners::NO_LONGER_THAN_MS` and stops at the first read that finds nothing |
 | `N1-R70` | Twice the heartbeat in silence is a broken subscription: the last value is shown with its age, and a summary reads unknown | `WhatWasHeardSoFar::hasGoneQuiet()`, past thirty seconds with nothing heard; the screen lets go on the wake that notices. `HearingHowAStackIsTest` asserts both sides of the bound. The list holds no stream, so it keeps the same bound from when a word was heard: past `WhatWasHeardSoFar::isStillCurrent()`, a kept word reads unknown with its age |
-| `N1-R71` | A broken subscription is opened again on a stated cadence and never sooner; nothing from before the break is current until a new value arrives | `WhatWasHeardSoFar::mayListen()` waits out `HowOften::AfterABreak`, and the screen states that cadence while the stream is broken. A value held from before a break is drawn as unknown with its age |
+| `N1-R71` | A broken subscription is opened again on a declared cadence and never sooner; nothing from before the break is current until a new value arrives | `WhatWasHeardSoFar::mayListen()` waits out `HowOften::AfterABreak`. A value held from before a break is drawn as unknown with its age |
 | `N1-R72` | Held only while a screen showing it is in front; closed when the screen is left and when the app leaves the foreground | Every wake asks `Capture::isInFront()`, answered by `Lemonfiber.IsInFront` from the lifecycle observer capture protection installs, and lets go while the answer is no. Every way off a screen ends in `stop()`, which lets go |
-| `N1-R9` | A value not read in the current session carries when it was read | A summary that is no longer current is drawn with how long ago it was heard, and every word on the list is drawn with how long ago it was heard |
-| `N1-R27` | A screen whose content changes while open refreshes on a stated cadence | The screen says how often it looks at what it holds, or how soon it listens again |
+| `N1-R9` | A value not read in the current session carries when it was read | A summary that is no longer current says when it was updated, and every word on the list is drawn with how long ago it was heard |
+| `N1-R27` | A screen whose content changes while open refreshes on a cadence it declares, which is not shown | `#[Poll(HowOften::WHILE_LISTENING_MS)]` on `HearsHowTheStackIs::listen()`, and `HowOften::AfterABreak` in `WhatWasHeardSoFar::mayListen()`. `tests/Arch/EveryCadenceIsDeclaredTest.php` holds both and refuses a screen that hands a cadence to its template |
 
 ## How the line reaches the list
 
@@ -66,7 +66,7 @@ them cannot hold this one:
   and a second enforcement of the certificate pin, which `N1-R16` and `N1-R19`
   refuse.
 - **The screen's own runloop** keeps its component alive between wakes, and
-  `#[Poll]` wakes it on a stated cadence. The stream is opened through the SDK
+  `#[Poll]` wakes it on a declared cadence. The stream is opened through the SDK
   and held by the screen's `Listeners`, and each wake reads it with a wait of a
   millisecond, so a wake with nothing to take costs about that and never waits
   on the stack.

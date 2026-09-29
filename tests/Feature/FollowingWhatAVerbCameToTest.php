@@ -10,7 +10,6 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\Nonce;
@@ -128,7 +127,7 @@ function whatStartingSonarrDrew(WhatToDoWithThis $screen): array
     return WhatTheDeviceWouldDraw::by($screen)->said();
 }
 
-it('follows a verb it sent until the stack reports, on the cadence it states', function (): void {
+it('follows a verb it sent until the stack reports, on the cadence it declares', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
     $screen = theScreenAVerbIsFollowedFrom($supervising);
 
@@ -138,8 +137,7 @@ it('follows a verb it sent until the stack reports, on the cadence it states', f
     expect($screen->whatItCameTo()->isWorking)->toBeTrue()
         ->and($supervising->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())
-        ->toContain(__('health.came_to.running'))
-        ->toContain(__(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => HowOften::WhileWorkRuns->seconds()]));
+        ->toContain(__('health.came_to.running'));
 
     $screen->whileItSettles();
     $screen->whatItCameTo();

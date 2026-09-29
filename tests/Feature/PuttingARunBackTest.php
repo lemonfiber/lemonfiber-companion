@@ -369,7 +369,6 @@ it('puts back exactly the run it showed, and says it is running without drawing 
         ->and(everythingPuttingTheRunBackShows($screen->done()))->toBe(nothingReportedOfTheRun(['isWorking' => true]))
         ->and($drawn)->toContain(__('stacks.run_back.putting_back'))
         ->and($drawn)->toContain(__('stacks.run_back.no_progress_while_running'))
-        ->and($drawn)->toContain(__('health.every.while_work_runs', ['count' => 5]))
         ->and($puttingBack->followed())->toBe([]);
 });
 

@@ -9,7 +9,6 @@ use Modules\Kernel\Api\APortMoved;
 use Modules\Kernel\Api\ARecord;
 use Modules\Kernel\Api\AServiceAdopted;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -210,7 +209,6 @@ it('asks what a mode would come to, says it is working while it runs, and offers
         ->and($screen->about)->toBe('adopt')
         ->and($drawn->said())->toContain(__('stacks.moving_in.about', ['mode' => 'adopt']))
         ->and($drawn->said())->toContain(__('stacks.moving_in.working'))
-        ->and($drawn->said())->toContain(__(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => HowOften::WhileWorkRuns->seconds()]))
         ->and($drawn->offers())->not->toContain(__('stacks.moving_in.agree.adopt'));
 });
 
@@ -419,8 +417,7 @@ it('asks after running work only while it runs', function (): void {
     $screen->whileItRuns();
     $screen->howTheMoveIsGoing();
 
-    expect($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'after:j-1'])
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+    expect($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'after:j-1']);
 
     $screen->whileItRuns();
     $screen->howTheMoveIsGoing();

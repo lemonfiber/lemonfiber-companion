@@ -533,7 +533,7 @@ final readonly class WhatTheWireWouldAnswer
      * each kind long: the envelope the contract declares for each, framed the
      * way the core frames an event, with the envelope's kind as the event's
      * name. A screen holding the stream reads what it holds the stream for out
-     * of it, finds the stream ended, and opens it again on its stated cadence,
+     * of it, finds the stream ended, and opens it again on its declared cadence,
      * which is the path a stack that restarted takes too.
      */
     private static function aStreamThatSaysWhatItCarries(): string

@@ -267,9 +267,7 @@ final class WhatWouldBePutRight extends NativeComponent
      * either state.
      *
      * The interval is {@see HowOften}'s constant rather than a number written
-     * here, because {@see cadence()} renders the same cadence into a
-     * sentence and a screen that polled at one interval while stating another
-     * would be stating a cadence it does not keep.
+     * here, so every screen that waits on work waits on the same one.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -292,26 +290,6 @@ final class WhatWouldBePutRight extends NativeComponent
     public function isWorking(): bool
     {
         return $this->agreed ? $this->done()->isWorking : $this->offer()->isWorking;
-    }
-
-    /**
-     * How often this screen looks again.
-     *
-     * The stated half of the requirement. A screen that refreshes silently is
-     * one an operator cannot reason about: they do not know whether what they
-     * are reading is a second old or a minute old, and whether something has
-     * changed is the only reason they are looking.
-     *
-     * One accessor handing out the cadence rather than one per part of the
-     * sentence, which is {@see goes()}'s shape and for its reason: a key and a
-     * count were two methods naming `WhileWorkRuns` separately, so the screen
-     * said which cadence it keeps in three places and this class arrived at the
-     * twenty-first method that is refused. The template reads what it needs off
-     * the case, and the next thing the sentence counts on costs no method here.
-     */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /**
@@ -423,7 +401,6 @@ final class WhatWouldBePutRight extends NativeComponent
             notHeld: static fn(): WhatThisStackPutRight => new HowAMendingReads()->ended(),
         );
     }
-
 
     /** What came back, asked once per frame. */
     private function answer(): WhatTheStackWouldPutRight

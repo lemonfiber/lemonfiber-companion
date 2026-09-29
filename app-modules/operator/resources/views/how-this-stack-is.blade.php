@@ -2,13 +2,18 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    {{-- The one line, as the core computed it for every surface. A line that
-         is not current reads as unknown and says when it was last heard, so a
-         stack nobody can vouch for right now is never drawn as healthy. --}}
+    {{-- The one line, as the core computed it for every surface: the worst
+         thing it named, in its words, beside the glyph of how the stack
+         stands and that standing in a word, and the line's own sentence where
+         it named nothing. A line that is not current reads as unknown and
+         says when it was updated, so a stack nobody can vouch for right now
+         is never drawn as healthy; a current one says no age, because it is
+         being listened to. --}}
     <x-design::standing
-        :said="__($this->summary()->said)"
+        :said="$this->summary()->worst === '' ? __($this->summary()->said) : $this->summary()->worst"
         :tone="$this->summary()->tone"
         :note="$this->summary()->ago->said === '' ? '' : __('health.summary.as_of', ['ago' => trans_choice($this->summary()->ago->said, $this->summary()->ago->count)])"
+        :word="__($this->summary()->word)"
     />
 
     @if ($this->summary()->met !== '')
@@ -18,16 +23,12 @@
         </x-design::notice>
     @endif
 
-    {{-- The worst thing, in the core's words, so the line says what is wrong
-         rather than only grading it. --}}
-    @if ($this->summary()->worst !== '')
-        <x-design::body>{{ $this->summary()->worst }}</x-design::body>
-    @endif
-
-    {{-- How many, counted by cause, and the way into what it counts; offered
-         only where it counts something. --}}
+    {{-- How many, counted by cause, as the one row that opens them out;
+         offered only where it counts something. --}}
     @if ($this->summary()->counted !== '')
-        <x-design::link label="{{ trans_choice($this->summary()->counted, $this->summary()->howMany) }}" tap="expand()" />
+        <x-design::section>
+            <x-design::row :headline="trans_choice($this->summary()->counted, $this->summary()->howMany)" tap="expand()" />
+        </x-design::section>
     @endif
 
     @if ($this->expanded)
@@ -79,8 +80,6 @@
     @empty
         {{-- Nothing: nothing is only slow. --}}
     @endforelse
-
-    <x-design::note>{{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}</x-design::note>
 
     {{-- The families this run has something to say about, as chips: the one
          being read is chosen, and choosing it again is the way back to all of

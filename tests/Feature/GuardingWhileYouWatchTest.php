@@ -199,7 +199,7 @@ it('asks before it starts, naming the forms it would stop, and never mind starts
         ->and($screen->asking)->toBeNull();
 });
 
-it('starts the guard for the forms named on a yes, and says it guards them while this screen asks, and how often it asks', function (): void {
+it('starts the guard for the forms named on a yes, and says it guards them while this screen asks', function (): void {
     $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());
     $screen = aGuardAgreedTo($guarding);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
@@ -209,11 +209,10 @@ it('starts the guard for the forms named on a yes, and says it guards them while
         ->and($drawn->said())->toContain(aLineOfTheGuard('stacks.guard.guarding', ['forms' => 'library, full']))
         ->and($drawn->said())->toContain(aLineOfTheGuard('stacks.guard.lives_while_asked'))
         ->and($drawn->said())->toContain(aLineOfTheGuard('stacks.guard.not_hosted'))
-        ->and($drawn->said())->toContain(aLineOfTheGuard(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => '5']))
         ->and($guarding->followed())->toBe([]);
 });
 
-it('asks after the guard on the stated cadence while it guards, by the name it was started under', function (): void {
+it('asks after the guard on the declared cadence while it guards, by the name it was started under', function (): void {
     $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());
     $screen = aGuardAgreedTo($guarding);
 
@@ -224,8 +223,7 @@ it('asks after the guard on the stated cadence while it guards, by the name it w
 
     expect($guarding->followed())->toHaveCount(2)
         ->and(array_map(static fn(Job $job): string => $job->shown(), $guarding->followed()))->toBe([AStackThatGuards::THE_JOB, AStackThatGuards::THE_JOB])
-        ->and($poll)->toBe([HowOften::WhileWorkRuns->milliseconds()])
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+        ->and($poll)->toBe([HowOften::WhileWorkRuns->milliseconds()]);
 });
 
 it('a guard that saw the data location go and stopped the forms says so, with why it ended and each form', function (): void {

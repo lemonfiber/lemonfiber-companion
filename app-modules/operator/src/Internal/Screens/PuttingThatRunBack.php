@@ -47,7 +47,7 @@ use function view;
  * and how many changes go with it. Where a row says it cannot be put back, the
  * stack would put none of the run back, and nothing is offered.
  *
- * **Putting it back answers a handle,** followed on a stated cadence while it
+ * **Putting it back answers a handle,** followed on a declared cadence while it
  * runs, as putting a copy back is. The report leads with what was left and why,
  * because a run believed undone with part of it still standing is the machine
  * nobody has been told about. A rehearsal is labelled as one.
@@ -206,7 +206,7 @@ final class PuttingThatRunBack extends NativeComponent
      *
      * It does nothing unless that is running, so the record and a finished
      * report are not read over and over. The interval is {@see HowOften}'s
-     * constant, which {@see cadence()} states on the screen.
+     * constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -220,12 +220,6 @@ final class PuttingThatRunBack extends NativeComponent
     public function isWorking(): bool
     {
         return $this->agreed && $this->done()->isWorking;
-    }
-
-    /** How often this screen asks after a run being put back, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /** Resume the session and read what the record says of the run. */

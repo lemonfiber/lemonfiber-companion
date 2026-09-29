@@ -70,7 +70,6 @@
     <x-design::standing
         :said="__('stacks.help.gathering')"
         tone="working"
-        :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
     />
     <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 @elseif ($this->answer()->hasEnded)

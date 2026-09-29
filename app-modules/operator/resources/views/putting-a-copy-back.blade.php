@@ -29,7 +29,6 @@
         <x-design::standing
             :said="__('stacks.put_back.putting_back', ['copy' => $this->copyNamed()])"
             tone="working"
-            :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
         />
 
         {{-- The stack says how far a restore got once it has finished, and

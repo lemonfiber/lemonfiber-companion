@@ -21,12 +21,10 @@
     @elseif ($this->offer()->isWorking)
         {{-- The unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
-             operator, so the screen is not a poller. The cadence is the same
-             one as on the other state the stack works through. --}}
+             operator, so the screen is not a poller. --}}
         <x-design::standing
             :said="__('health.working_it_out')"
             tone="working"
-            :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
         />
         <x-design::body>{{ __('health.working_it_out_action') }}</x-design::body>
         <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
@@ -45,14 +43,11 @@
              from what it said it would do — and rendered from a different value
              for that reason, so an offer can never appear as an outcome. --}}
         @if ($this->done()->isWorking)
-            {{-- The cadence is stated, because a screen that refreshes
-                 silently is one an operator cannot reason about — they cannot
-                 tell a second-old answer from a minute-old one, and whether
-                 something has changed is the only reason they are looking. --}}
+            {{-- Read again on the screen's cadence until the stack says it
+                 has finished. --}}
             <x-design::standing
                 :said="__('health.carrying_it_out')"
                 tone="working"
-                :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
             />
             <x-design::body>{{ __('health.carrying_it_out_action') }}</x-design::body>
             <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />

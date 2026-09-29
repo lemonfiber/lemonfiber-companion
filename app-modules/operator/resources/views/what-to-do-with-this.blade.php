@@ -99,7 +99,6 @@
                 @else
                     <x-design::body>{{ __('health.came_to.running') }}</x-design::body>
                 @endif
-                <x-design::note>{{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}</x-design::note>
             @elseif ($this->whatItCameTo()->hasEnded)
                 {{-- Not a failure: it may well have worked, and the listing is
                      where to look. --}}
@@ -203,12 +202,6 @@
                 <x-design::note>{{ __('health.nothing_leans_on_it') }}</x-design::note>
             @endforelse
         </x-design::card>
-    @endif
-
-    @if ($this->thing()->service?->isSettling)
-        {{-- This one becomes something else on its own, and this
-             says how often the screen looks. --}}
-        <x-design::note>{{ __($this->cadence()->saidOnTheScreen()) }}</x-design::note>
     @endif
 
     @forelse ($this->thing()->verbs as $verb)

@@ -37,8 +37,8 @@ use Tests\Support\WhatThePhoneKeeps;
 //
 // The word is the core's one line, which the stack's own screen hears on the
 // event stream and keeps. The list holds no stream: it reads back what was
-// kept, so every word on it is a retained reading, said in the sentence the
-// stack's screen says it in and carrying when it was heard.
+// kept, so every word on it is a retained reading, said as a single word and
+// carrying when it was heard.
 
 /** The moment every case below is read at, so an age is a thing a test states. */
 const NOW = 1_770_000_000;
@@ -71,6 +71,14 @@ function theOpeningScreen(Stack $stack, ?StandingsInMemory $standings = null): Y
     );
 }
 
+/** One line of the catalogue, as text, for finding it on a row. */
+function aWordOnTheList(string $key): string
+{
+    $said = __($key);
+
+    return is_string($said) ? $said : $key;
+}
+
 /** What a stack's row says, as the word's key and the age's key and count. */
 function whatTheRowSays(Stack $stack, StandingsInMemory $standings): string
 {
@@ -84,23 +92,55 @@ it('opens on the word the stack\'s screen last heard, and says when it was heard
     $standings = StandingsInMemory::working()
         ->lastHeard($stack->id(), HowItStands::Degraded, Instant::atEpochSeconds(NOW - 10));
 
-    // The row says the word and its age on the one line under its name.
-    $drawn = implode("\n", WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $standings))->said());
+    // The row says the word and its age on the one line under its name, and
+    // nothing about the session, which this device holds none of here.
+    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $standings))->said();
 
     expect(whatTheRowSays($stack, $standings))->toBe('health.standing.degraded|health.ago.minutes|0')
-        ->and($drawn)->toContain(__(HowItStands::Degraded->saidOnTheScreen()))
-        ->and($drawn)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]));
+        ->and($drawn)->toContain(sprintf(
+            '%s · %s · %s',
+            aWordOnTheList(HowItStands::Degraded->saidInAWord()),
+            trans_choice('health.ago.minutes', 0),
+            aWordOnTheList('connection.sign_in_needed'),
+        ))
+        ->and(implode("\n", $drawn))->not->toContain(__(HowItStands::Degraded->saidOnTheScreen()));
+});
+
+it('says nothing about the session where this device is signed in', function (): void {
+    $stack = aStackToOpenOn();
+    $standings = StandingsInMemory::working()
+        ->lastHeard($stack->id(), HowItStands::Critical, Instant::atEpochSeconds(NOW - 7_200));
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $stacks = StacksInMemory::holding($stack);
+
+    $screen = new YourStacks(
+        $stacks,
+        $keychain,
+        AShareSheetThatWasOffered::working(),
+        $standings,
+        FrozenClock::at(Instant::atEpochSeconds(NOW)),
+        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
+    );
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(sprintf(
+        '%s · %s',
+        aWordOnTheList(HowItStands::Unknown->saidInAWord()),
+        trans_choice('health.ago.hours', 2),
+    ));
 });
 
 it('says a stack whose one line was never heard cannot be told, and never that it is fine', function (): void {
     $stack = aStackToOpenOn();
 
-    $drawn = implode("\n", WhatTheDeviceWouldDraw::by(theOpeningScreen($stack))->said());
+    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack))->said();
 
+    // The word alone, with no age, because nothing was heard to have one.
     expect(whatTheRowSays($stack, StandingsInMemory::working()))->toBe('health.standing.unknown||0')
-        ->and($drawn)->toContain(__(HowItStands::Unknown->saidOnTheScreen()))
-        ->and($drawn)->not->toContain(__(HowItStands::Healthy->saidOnTheScreen()))
-        ->and($drawn)->not->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]));
+        ->and($drawn)->toContain(sprintf('%s · %s', aWordOnTheList(HowItStands::Unknown->saidInAWord()), aWordOnTheList('connection.sign_in_needed')))
+        ->and(implode("\n", $drawn))->not->toContain(__(HowItStands::Healthy->saidInAWord()));
 });
 
 it('reads a word heard longer ago than a stream may be silent as unknown, with when it was heard', function (): void {
@@ -111,14 +151,18 @@ it('reads a word heard longer ago than a stream may be silent as unknown, with w
     $heardAt = static fn(int $ago): StandingsInMemory => StandingsInMemory::working()
         ->lastHeard($stack->id(), HowItStands::Healthy, Instant::atEpochSeconds(NOW - $ago));
 
-    $drawn = implode("\n", WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $heardAt(7_200)))->said());
+    $drawn = WhatTheDeviceWouldDraw::by(theOpeningScreen($stack, $heardAt(7_200)))->said();
 
     expect(whatTheRowSays($stack, $heardAt(30)))->toBe('health.standing.healthy|health.ago.minutes|0')
         ->and(whatTheRowSays($stack, $heardAt(31)))->toBe('health.standing.unknown|health.ago.minutes|0')
         ->and(whatTheRowSays($stack, $heardAt(7_200)))->toBe('health.standing.unknown|health.ago.hours|2')
-        ->and($drawn)->toContain(__(HowItStands::Unknown->saidOnTheScreen()))
-        ->and($drawn)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.hours', 2)]))
-        ->and($drawn)->not->toContain(__(HowItStands::Healthy->saidOnTheScreen()));
+        ->and($drawn)->toContain(sprintf(
+            '%s · %s · %s',
+            aWordOnTheList(HowItStands::Unknown->saidInAWord()),
+            trans_choice('health.ago.hours', 2),
+            aWordOnTheList('connection.sign_in_needed'),
+        ))
+        ->and(implode("\n", $drawn))->not->toContain(__(HowItStands::Healthy->saidInAWord()));
 });
 
 it('says the age in whichever unit it fills', function (): void {
@@ -146,7 +190,7 @@ it('says the age in whichever unit it fills', function (): void {
         ->and($said(864_000))->toBe('health.ago.days|10');
 });
 
-it('says a word heard in the future was heard moments ago', function (): void {
+it('says a word heard in the future was heard just now', function (): void {
     // A device whose clock moved backwards, or a stack whose clock is ahead.
     // This app knows the word is not old and does not know enough to say
     // anything else; the raw subtraction would put *in three hours* on the

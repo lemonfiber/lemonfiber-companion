@@ -93,7 +93,7 @@ enum HowAServiceRuns: string
      * Whether this will become something else without anybody touching it.
      *
      * The one state that resolves on its own, which is what wants a
-     * stated cadence for: a service that is starting becomes a running one in a
+     * declared cadence for: a service that is starting becomes a running one in a
      * few seconds, and a screen showing *starting* with no way to learn
      * otherwise leaves somebody tapping to find out. Every other case here is a
      * standing answer — a stopped service stays stopped until somebody says

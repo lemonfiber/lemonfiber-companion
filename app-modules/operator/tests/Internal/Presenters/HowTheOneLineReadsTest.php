@@ -69,6 +69,7 @@ it('says it is waiting, and nothing else, before anything has been heard', funct
     $line = theLineAfter(minutesIn(0));
 
     expect($line->said)->toBe('health.summary.waiting')
+        ->and($line->word)->toBe('health.standing_short.unknown')
         ->and($line->tone)->toBe('working')
         ->and($line->counted)->toBe('')
         ->and($line->howMany)->toBe(0)
@@ -77,7 +78,6 @@ it('says it is waiting, and nothing else, before anything has been heard', funct
         ->and($line->ago->count)->toBe(0)
         ->and($line->met)->toBe('')
         ->and($line->remedy)->toBe('')
-        ->and($line->listening)->toBeFalse()
         ->and($line->affected)->toBe([]);
 });
 
@@ -85,8 +85,7 @@ it('says it is waiting while a subscription is open and has said nothing yet', f
     $line = theLineAfter(minutesIn(0), WhatWasHeard::nothing());
 
     expect($line->said)->toBe('health.summary.waiting')
-        ->and($line->tone)->toBe('working')
-        ->and($line->listening)->toBeTrue();
+        ->and($line->tone)->toBe('working');
 });
 
 it('reads as unknown, and says what stopped it, where a subscription could not be heard before it said anything', function (): void {
@@ -99,7 +98,6 @@ it('reads as unknown, and says what stopped it, where a subscription could not b
         ->and($line->ago->said)->toBe('')
         ->and($line->met)->toBe('connection.no_answer')
         ->and($line->remedy)->toBe('connection.no_answer_action')
-        ->and($line->listening)->toBeFalse()
         ->and($line->affected)->toBe([]);
 });
 
@@ -114,7 +112,6 @@ it('draws a current summary as the core said it, with every part of every item',
         ->and($line->ago->count)->toBe(0)
         ->and($line->met)->toBe('')
         ->and($line->remedy)->toBe('')
-        ->and($line->listening)->toBeTrue()
         ->and($line->affected)->toHaveCount(1)
         ->and($line->affected[0]->check)->toBe('disk.space')
         ->and($line->affected[0]->severity)->toBe('health.severity.warning')
@@ -124,23 +121,23 @@ it('draws a current summary as the core said it, with every part of every item',
         ->and($line->affected[0]->downstream)->toBe(['Imports are failing']);
 });
 
-it('says each word in its own sentence, and counts the way the word asks', function (): void {
+it('says each word in its own sentence and as a single word, and counts the way the word asks', function (): void {
     $said = [];
 
     foreach (HowItStands::cases() as $standing) {
         $line = theLineAfter(minutesIn(0), WhatWasHeard::said(aSummaryCountingOne($standing)));
-        $said[$standing->value] = [$line->said, $line->counted];
+        $said[$standing->value] = [$line->said, $line->word, $line->counted];
     }
 
     expect($said)->toBe([
-        'healthy' => ['health.standing.healthy', 'health.summary.reported'],
-        'stopped' => ['health.standing.stopped', 'health.summary.reported'],
-        'unconfigured' => ['health.standing.unconfigured', 'health.summary.reported'],
-        'advisory' => ['health.standing.advisory', 'health.summary.notes'],
-        'degraded' => ['health.standing.degraded', 'health.summary.wanting'],
-        'broken' => ['health.standing.broken', 'health.summary.wanting'],
-        'critical' => ['health.standing.critical', 'health.summary.wanting'],
-        'unknown' => ['health.standing.unknown', 'health.summary.reported'],
+        'healthy' => ['health.standing.healthy', 'health.standing_short.healthy', 'health.summary.reported'],
+        'stopped' => ['health.standing.stopped', 'health.standing_short.stopped', 'health.summary.reported'],
+        'unconfigured' => ['health.standing.unconfigured', 'health.standing_short.unconfigured', 'health.summary.reported'],
+        'advisory' => ['health.standing.advisory', 'health.standing_short.advisory', 'health.summary.notes'],
+        'degraded' => ['health.standing.degraded', 'health.standing_short.degraded', 'health.summary.wanting'],
+        'broken' => ['health.standing.broken', 'health.standing_short.broken', 'health.summary.wanting'],
+        'critical' => ['health.standing.critical', 'health.standing_short.critical', 'health.summary.wanting'],
+        'unknown' => ['health.standing.unknown', 'health.standing_short.unknown', 'health.summary.reported'],
     ]);
 });
 
@@ -169,7 +166,6 @@ it('reads a summary that is no longer current as unknown, with when it was heard
         ->and($line->ago->count)->toBe(5)
         ->and($line->met)->toBe('')
         ->and($line->remedy)->toBe('')
-        ->and($line->listening)->toBeFalse()
         ->and($line->affected)->toHaveCount(1);
 });
 
@@ -192,6 +188,7 @@ it('says a kept word with when it was heard, and nothing it did not keep', funct
 
     expect($line)->toEqual(new WhatTheOneLineSays(
         said: 'health.standing.critical',
+        word: 'health.standing_short.critical',
         tone: 'trouble',
         counted: '',
         howMany: 0,
@@ -199,7 +196,6 @@ it('says a kept word with when it was heard, and nothing it did not keep', funct
         ago: AgoAsShown::from(HowLongAgo::Minutes, minutesIn(0), Instant::atEpochSeconds(1_790_000_030)),
         met: '',
         remedy: '',
-        listening: false,
         affected: [],
         stopped: [],
         slow: [],
@@ -217,6 +213,7 @@ it('reads a kept word as unknown once a stream could no longer have vouched for 
 it('says a stack never heard cannot be told, with no age', function (): void {
     expect(new HowTheOneLineReads()->neverHeard())->toEqual(new WhatTheOneLineSays(
         said: 'health.standing.unknown',
+        word: 'health.standing_short.unknown',
         tone: 'unknown',
         counted: '',
         howMany: 0,
@@ -224,7 +221,6 @@ it('says a stack never heard cannot be told, with no age', function (): void {
         ago: AgoAsShown::live(),
         met: '',
         remedy: '',
-        listening: false,
         affected: [],
         stopped: [],
         slow: [],

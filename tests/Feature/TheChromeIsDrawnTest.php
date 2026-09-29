@@ -124,8 +124,9 @@ it('the word a frame opens on is drawn, with its age', function (): void {
     // The machine is a row that is tapped, so its name is what the frame
     // offers — and a reader hears the name the row answers to, which is why
     // that is asserted as well as the row's own words.
-    expect($lines)->toContain(__(HowItStands::Broken->saidOnTheScreen()))
-        ->and($lines)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.minutes', 0)]))
+    $word = __(HowItStands::Broken->saidInAWord());
+
+    expect($lines)->toContain(sprintf('%s · %s', is_string($word) ? $word : '', trans_choice('health.ago.minutes', 0)))
         ->and($drawn->offers())->toContain($stack->name()->shown())
         ->and(whatAReaderHearsOn(WhatTheDeviceWouldDraw::tree($screen)))->toContain(__('connection.open_stack', ['stack' => $stack->name()->shown()]));
 });

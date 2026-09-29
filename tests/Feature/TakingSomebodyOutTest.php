@@ -8,7 +8,6 @@ use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -178,7 +177,6 @@ it('asks what taking them out would cost as it opens, and says it is asking', fu
     expect($removing->asked())->toBe(['would:anna'])
         ->and($screen->answer()->isWorking)->toBeTrue()
         ->and($drawn->said())->toContain(__('stacks.removal.reading', ['name' => 'anna']))
-        ->and($drawn->said())->toContain(__(HowOften::WhileWorkRuns->saidOnTheScreen(), ['count' => HowOften::WhileWorkRuns->seconds()]))
         ->and($drawn->offers())->not->toContain(__('stacks.removal.take_them_out', ['name' => 'anna']));
 });
 
@@ -330,8 +328,7 @@ it('asks after nothing while nothing is running', function (): void {
     $screen->answer();
     $screen->whileItRuns();
 
-    expect($removing->asked())->toBe(['would:anna'])
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+    expect($removing->asked())->toBe(['would:anna']);
 });
 
 it('sends no yes where there is no reading to agree to, or the answer was already carried out', function (): void {

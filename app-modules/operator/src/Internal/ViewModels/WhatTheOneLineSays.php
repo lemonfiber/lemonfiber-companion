@@ -22,6 +22,7 @@ final readonly class WhatTheOneLineSays
 {
     /**
      * @param string                      $said      the key for the one line
+     * @param string                      $word      the key for the same line as a single word
      * @param string                      $tone      the tone its glyph is drawn in, a `Modules\Design\View\Tone` value
      * @param string                      $counted   the key for how many things it counts, or empty where it counts none
      * @param int                         $howMany   how many things want attention, as the core counted them
@@ -29,13 +30,13 @@ final readonly class WhatTheOneLineSays
      * @param AgoAsShown                  $ago       when the summary shown was heard, or live where it is current
      * @param string                      $met       the key for what stopped the subscription, or empty
      * @param string                      $remedy    the key for what to do about that, or empty
-     * @param bool                        $listening whether a subscription is open, which decides which cadence is said
      * @param list<AnAffectedItemAsShown> $affected  every thing counted as wrong, worst first
      * @param list<AStoppageAsShown>      $stopped   what stopped in the queue and wants a fix, in the stack's order
      * @param list<AStoppageAsShown>      $slow      what is slow and still moving, in the stack's order
      */
     public function __construct(
         public string $said,
+        public string $word,
         public string $tone,
         public string $counted,
         public int $howMany,
@@ -43,7 +44,6 @@ final readonly class WhatTheOneLineSays
         public AgoAsShown $ago,
         public string $met,
         public string $remedy,
-        public bool $listening,
         public array $affected,
         public array $stopped,
         public array $slow,

@@ -64,7 +64,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * **A stream that ends is said to have ended once.** The call that finds the
  * end hands back what arrived before it, and the next hands back `closed`
  * without opening anything. The screen decides when to open again, on the
- * cadence it states.
+ * cadence it declares.
  *
  * **A `ConfigurationProblem` is deliberately not caught**, for {@see Admissions}'
  * reason: the SDK raises one where a stored stack cannot be pinned, which is a
