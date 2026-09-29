@@ -8,9 +8,9 @@ declare(strict_types=1);
  *
  * Pest's mutation plugin opens every run with the full suite under coverage:
  * that run is how it learns which tests execute which line, and so which tests
- * each mutant is run against. In CI the `tests` job has already run exactly
- * that suite, under coverage, on the same commit, and every mutation shard ran
- * it again — about five minutes a shard, twenty times over, all identical.
+ * each mutant is run against. `composer test:report` runs exactly that suite,
+ * under coverage, and every shard of the same commit running it again would
+ * repeat the same run once per shard.
  *
  * That run is `composer test:report`, and it keeps its map by naming a path in
  * `LEMONFIBER_KEEP_COVERAGE`. Pest's `--coverage` writes the map to a path of
@@ -122,7 +122,7 @@ foreach (PATCHES as $where => [$ships, $becomes]) {
     $source = file_exists($path) ? file_get_contents($path) : false;
 
     if (! is_string($source)) {
-        fwrite(STDERR, sprintf("patch_pest_mutate_shared_coverage: %s is not there or cannot be read.\n\nPest or its mutation plugin no longer ships a file this patch rewrites. Point this at the new path, or delete this script, its `composer.json` hooks and the `MUTATION_SHARED_COVERAGE` step in CI. Do not ignore this.\n", $path));
+        fwrite(STDERR, sprintf("patch_pest_mutate_shared_coverage: %s is not there or cannot be read.\n\nPest or its mutation plugin no longer ships a file this patch rewrites. Point this at the new path, or delete this script, its `composer.json` hooks and what `scripts/mutation.php` does with `MUTATION_SHARED_COVERAGE`. Do not ignore this.\n", $path));
 
         exit(1);
     }

@@ -38,19 +38,11 @@ env:
 # seconds of work. Eleven gates that way is eleven of those preambles, and the
 # preamble is most of the bill.
 #
-# So the fast gates share one job and one install. The two slow ones stay
-# separate because they need a coverage driver and genuinely take time — and
-# mutation waits for the tests, because mutating code whose tests already fail
-# tells you nothing and costs the most of anything here.
+# So the fast gates share one job and one install. The tests stay separate
+# because they need a coverage driver and genuinely take time, and so do the
+# guards, which run the analyser and the suite again as subprocesses.
 #
-# A pull request mutates what its change reaches, and `main` mutates what was
-# reached since its last commit that passed. `scripts/mutation.php
-# --changed-since` says what a change reaches: a changed source file, the
-# module a changed module test belongs to, and every file a changed test
-# executes, read from the coverage map `tests` wrote — so a test edited to
-# assert less has the code it judged mutated against it again. A change to
-# how the gate runs — a manifest, `phpunit.xml`, `tests/Support`, this file —
-# and a deleted test mutate everything.
+# Mutation testing is not run in CI; `composer test:mutation` runs it locally.
 
 jobs:
   # Which of the following are worth running at all. A documentation change
@@ -72,8 +64,8 @@ jobs:
       # as it was — a stacked branch whose base was squash-merged, a base that
       # moved only where the branch already agreed — names the same tree. A
       # tree every PHP gate already passed on is not tested again: the gates
-      # take the path a documentation change takes, and `mutation testing`
-      # and the SonarCloud gate read that as a pass. The proof is recorded by
+      # take the path a documentation change takes, and the SonarCloud gate
+      # reads that as a pass. The proof is recorded by
       # `proved-tree` below, only once every gate passed on it, and a branch
       # can read its own proofs and `main`'s, never another branch's.
       - id: tree
@@ -378,16 +370,8 @@ jobs:
           coverage: pcov
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       # Writes the clover report the floors gate reads. One run produces both
-      # the global number and the eighteen per-tree ones. It also writes the
-      # coverage map every mutation shard reads, and how long the run took,
-      # which is what each mutant is timed out against: the shards open on the
-      # canary rather than on this whole suite again. The upload below errors
-      # only when none of its files exist, so a missing map is refused here.
-      - run: |
-          started=$SECONDS
-          composer test:report
-          echo $((SECONDS - started)) > coverage/suite-seconds
-          test -s coverage/mutation.php || { echo "::error::test:report wrote no coverage map at coverage/mutation.php"; exit 1; }
+      # the global number and the eighteen per-tree ones.
+      - run: composer test:report
       - run: composer test:floors
       # The same two reports are what `sonar` hands SonarCloud, so the suite
       # runs once for both.
@@ -397,290 +381,8 @@ jobs:
           path: |
             coverage/clover.xml
             coverage/junit.xml
-            coverage/mutation.php
-            coverage/suite-seconds
           if-no-files-found: error
           retention-days: 1
-
-  # Which shards to mutate, asked of the same script that mutates them. A list
-  # written here would be a second source of truth that goes stale the day a
-  # tree gains its first class — silently, because the run still passes, over
-  # less.
-  #
-  # The dependencies are installed for one `--list`, which reads as waste and
-  # is not. The script derives the trees from `phpunit.xml` through
-  # `Tests\Support\MeasuredTree`, which is the same derivation the `Floors`
-  # suite and `G7` read — and the only way a script reaches it is the
-  # autoloader. The alternative is a second copy of "what is measured" written
-  # out here in a file nothing compares against the first.
-  #
-  # It runs after `tests` and only once they pass, so it skips wherever
-  # `tests` skips or fails, and a shard never starts over tests already red.
-  #
-  # On a pull request it lists only the shards the change reaches, and reads
-  # that from git against the base commit, which is fetched for it. On `main`
-  # it lists the shards reached since the last commit on `main` whose run of
-  # this workflow passed, so a push a newer one cancelled is carried into the
-  # newer one's reach rather than dropped, and a merge that reaches no code
-  # mutates nothing. Where every commit in that range is the tree of a pull
-  # request head whose own run passed, it lists none: the branch was up to
-  # date, so its run judged exactly the tree that landed. Where no such commit
-  # is found, every shard runs.
-  #
-  # A changed test reaches the code it executes, read from the coverage map
-  # `tests` wrote, so the listing waits for `tests` — which the shards wait for
-  # anyway. A test edited to assert less changes no line of what it judged,
-  # and without the map that code would never be mutated against it again.
-  mutation-scope:
-    name: what to mutate
-    needs: [scope, tests]
-    if: ${{ !cancelled() && needs.tests.result == 'success' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      actions: read
-      pull-requests: read
-    outputs:
-      shards: ${{ steps.list.outputs.shards }}
-      base: ${{ steps.base.outputs.sha }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
-        with:
-          php-version: ${{ env.PHP_VERSION }}
-      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - id: base
-        name: The commit the change is measured against
-        env:
-          GH_TOKEN: ${{ github.token }}
-          EVENT: ${{ github.event_name }}
-          PULL_BASE: ${{ github.event.pull_request.base.sha }}
-          PUSHED: ${{ github.sha }}
-        run: |
-          # Whether a commit on `main` is a tree its own pull request already
-          # passed every gate on. `main` takes only up-to-date branches, so a
-          # squash merge lands exactly the tree of the head it came from, and
-          # that head's run mutated what the change reaches.
-          proved() {
-            local head
-            head="$(gh api "repos/${GITHUB_REPOSITORY}/commits/$1/pulls" --jq '[.[] | select(.merged_at != null and .base.ref == "main")][0].head.sha // empty')" || return 1
-            [ -n "${head}" ] || return 1
-            [ "$(gh api "repos/${GITHUB_REPOSITORY}/git/commits/${head}" --jq .tree.sha)" = "$(gh api "repos/${GITHUB_REPOSITORY}/git/commits/$1" --jq .tree.sha)" ] || return 1
-            [ "$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${head}&event=pull_request&status=success&per_page=1" --jq .total_count)" -gt 0 ]
-          }
-
-          case "${EVENT}" in
-            pull_request) BASE="${PULL_BASE}" ;;
-            push)
-              BASE="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=1" --jq '.workflow_runs[0].head_sha // empty' || true)"
-              # Where every commit since that run was proved by its own pull
-              # request, there is nothing left to mutate. One commit that was
-              # not, or a range too long to ask about, mutates all of it.
-              if [ -n "${BASE}" ]; then
-                commits="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${BASE}...${PUSHED}" --jq 'select(.status == "ahead" and .total_commits <= 20) | .commits[].sha' || true)"
-                all=yes
-                [ -n "${commits}" ] || all=""
-                for commit in ${commits}; do
-                  proved "${commit}" || { all=""; echo "${commit} is not a tree its pull request proved."; break; }
-                done
-                if [ -n "${all}" ]; then
-                  echo "Every commit since ${BASE} is a tree its pull request proved, so nothing is mutated again." | tee -a "$GITHUB_STEP_SUMMARY"
-                  BASE="${PUSHED}"
-                fi
-              fi
-              ;;
-            *) BASE="" ;;
-          esac
-          if [ -n "${BASE}" ] && git fetch --no-tags --depth=1 origin "${BASE}"; then
-            echo "sha=${BASE}" >> "$GITHUB_OUTPUT"
-          else
-            echo "No usable base commit, so every shard runs."
-          fi
-      # The coverage map `tests` wrote, which says what a changed test executes.
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: coverage-report
-          path: coverage
-      - id: list
-        env:
-          BASE: ${{ steps.base.outputs.sha }}
-          MUTATION_SHARED_COVERAGE: ${{ github.workspace }}/coverage/mutation.php
-        run: |
-          echo "shards=$(php scripts/mutation.php --list ${BASE:+--changed-since="${BASE}"})" >> "$GITHUB_OUTPUT"
-
-  # The most expensive gate in the repository, so it is the most guarded: only
-  # once the tests have passed, and only over the app's own logic. Mutating code
-  # whose tests are already failing measures nothing.
-  #
-  # A runner per shard, because this is the one gate whose work genuinely
-  # separates: a floor of 100 admits no offsetting between files, so each is
-  # already judged alone. `scripts/mutation.php` cuts the files of every tree
-  # into shards of about the same measured mutation time, so the largest tree
-  # is spread over several runners and the smallest share one; the wall clock
-  # is the slowest shard.
-  #
-  # `fail-fast: false` because the point of a shard is to learn about all of
-  # them: cancelling every other runner over one escaped mutant means a second
-  # push to find the next one.
-  #
-  # `max-parallel: 5` because the organisation's repositories share twenty
-  # GitHub-hosted runners, and a pull request here can cut its trees into
-  # dozens of shards. Unbounded, the shards of a few open pull requests take
-  # nearly every runner, and every other repository's checks, however short,
-  # queue behind them. Five per run keeps three open pull requests to fifteen
-  # runners and leaves five for everything else; the shards past five wait
-  # their turn in this run rather than in everyone's.
-  mutation:
-    name: mutation (${{ matrix.shard.label }})
-    needs: [tests, mutation-scope]
-    if: ${{ !cancelled() && needs.tests.result == 'success' && needs.mutation-scope.result == 'success' && needs.mutation-scope.outputs.shards != '[]' }}
-    strategy:
-      fail-fast: false
-      max-parallel: 5
-      matrix:
-        shard: ${{ fromJson(needs.mutation-scope.outputs.shards) }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
-        with:
-          php-version: ${{ env.PHP_VERSION }}
-          coverage: pcov
-      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
-      - name: The commit the change is measured against
-        if: needs.mutation-scope.outputs.base != ''
-        env:
-          BASE: ${{ needs.mutation-scope.outputs.base }}
-        run: git fetch --no-tags --depth=1 origin "${BASE}"
-      # The coverage map `tests` wrote on this commit, so the shard does not run
-      # the whole suite again to make its own.
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: coverage-report
-          path: coverage
-      # The same `--changed-since` as the listing, so this cuts the shards the
-      # matrix was built from.
-      # What this shard's verdict depends on: its files, the tests that run
-      # them, every file those tests run, and what no coverage map records —
-      # see `proofOf()` in scripts/mutation.php. A shard whose proof passed
-      # before, on this branch or on `main`, is not run again: a rebase over
-      # changes that reach none of it proves nothing new. Empty where it
-      # cannot be told, and then the shard always runs.
-      - id: proof
-        env:
-          BASE: ${{ needs.mutation-scope.outputs.base }}
-          SHARD: ${{ matrix.shard.id }}
-          MUTATION_SHARED_COVERAGE: ${{ github.workspace }}/coverage/mutation.php
-        run: |
-          key=$(php scripts/mutation.php --shard="${SHARD}" --proof ${BASE:+--changed-since="${BASE}"})
-          echo "key=${key}" >> "$GITHUB_OUTPUT"
-      - id: proved
-        if: steps.proof.outputs.key != ''
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .mutation-proved
-          key: mutation-proved-${{ steps.proof.outputs.key }}
-          lookup-only: true
-      - if: steps.proved.outputs.cache-hit == 'true'
-        env:
-          KEY: ${{ steps.proof.outputs.key }}
-        run: |
-          echo "Proved already: every file this shard's verdict depends on is as it was when proof ${KEY} passed." | tee -a "$GITHUB_STEP_SUMMARY"
-      - if: steps.proved.outputs.cache-hit != 'true'
-        env:
-          BASE: ${{ needs.mutation-scope.outputs.base }}
-          SHARD: ${{ matrix.shard.id }}
-          MUTATION_SHARED_COVERAGE: ${{ github.workspace }}/coverage/mutation.php
-        run: |
-          MUTATION_SUITE_SECONDS="$(cat coverage/suite-seconds)" composer test:mutation -- --shard="${SHARD}" ${BASE:+--changed-since="${BASE}"}
-      # Recorded only once the shard has passed, so a proof names a verdict
-      # that held.
-      - if: steps.proof.outputs.key != '' && steps.proved.outputs.cache-hit != 'true'
-        env:
-          KEY: ${{ steps.proof.outputs.key }}
-        run: |
-          mkdir -p .mutation-proved
-          printf '%s\n' "${KEY}" > .mutation-proved/key
-      - if: steps.proof.outputs.key != '' && steps.proved.outputs.cache-hit != 'true'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .mutation-proved
-          key: mutation-proved-${{ steps.proof.outputs.key }}
-
-  # The check branch protection actually names.
-  #
-  # A matrix job reports one check per entry — `mutation (app-modules/kernel/src,
-  # part 2 of 4)`, `mutation (paths a holds: group judges)` — and none of them
-  # is called `mutation testing`. That required check would simply never
-  # report, and a required check that never reports blocks a pull request
-  # forever with nothing anywhere naming the cause. It is the same hole the
-  # SonarCloud `gate` job exists to close, and it is reached here by renaming
-  # rather than by a failure.
-  #
-  # So this job keeps the name and answers for the shards. `!cancelled()` rather
-  # than `always()`: a cancelled run is somebody pressing stop.
-  #
-  # It asks the results rather than depending on them, for the reason every
-  # other gate in this file does: `needs` alone makes a job disappear when what
-  # it needs fails, which turns a red gate into a missing one.
-  mutation-gate:
-    name: mutation testing
-    # `scope` is needed for its outputs rather than its work: this job has to
-    # be able to tell a `tests` that skipped by design from one that skipped
-    # because something upstream broke, and those two are indistinguishable
-    # from `needs.tests.result` alone.
-    needs: [scope, tests, mutation-scope, mutation]
-    if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: every tree that was mutated passed
-        env:
-          TESTS: ${{ needs.tests.result }}
-          SCOPE: ${{ needs.mutation-scope.result }}
-          SHARDS: ${{ needs.mutation.result }}
-          EVENT: ${{ github.event_name }}
-          SCOPED: ${{ needs.scope.result }}
-          CHANGED: ${{ needs.scope.outputs.code }}
-        run: |
-          # `skipped` is a pass here and only here: the shards are skipped when
-          # the change reaches no mutated file, or no measured tree holds code
-          # yet, which `mutation-scope` reports as an empty list. Every other reason a shard does not run — a failure upstream,
-          # a cancelled run — is already covered by the two results above it.
-          echo "tests=$TESTS scope=$SCOPE shards=$SHARDS event=$EVENT scoped=$SCOPED changed=$CHANGED"
-
-          # Mutation runs wherever the tests run: on every event, once a change
-          # touches code. A documentation-only change skips both, deliberately,
-          # and this job is downstream of that skip — without the check below a
-          # documentation-only pull request could not merge at all, because
-          # this is a required context and a required context that fails
-          # blocks rather than skips.
-          #
-          # The skip is restated rather than inferred. `needs.tests.result`
-          # says `skipped` whether the skip was intended or whether something
-          # above it broke, and treating those alike is what would let a real
-          # breakage pass as a quiet day. So this asks the question `tests`
-          # asks, of the same inputs, and calls only that skip a pass.
-          if [ "$TESTS" = skipped ] && [ "$SCOPED" = success ] && [ "$CHANGED" != true ]; then
-            echo "Nothing to mutate: the tests did not run, and were not meant to."
-            exit 0
-          fi
-
-          if [ "$TESTS" != success ] || [ "$SCOPE" != success ]; then
-            echo "::error::Mutation did not run: the tests or the tree list did not pass."
-            exit 1
-          fi
-
-          if [ "$SHARDS" != success ] && [ "$SHARDS" != skipped ]; then
-            echo "::error::A shard's mutation run did not pass. Open the mutation (<shard>) job that is red."
-            exit 1
-          fi
 
   # SonarCloud, moved here from its own workflow so that it reads the report
   # `tests` writes instead of running the suite a second time.
@@ -860,8 +562,8 @@ jobs:
   # ran and every one of them passed: a skipped gate proved nothing.
   proved-tree:
     name: record the proven tree
-    needs: [scope, guards, checks, tests, mutation-gate, sonar]
-    if: ${{ !cancelled() && needs.scope.outputs.code == 'true' && needs.guards.result == 'success' && needs.checks.result == 'success' && needs.tests.result == 'success' && needs.mutation-gate.result == 'success' && (needs.sonar.result == 'success' || needs.sonar.result == 'skipped') }}
+    needs: [scope, guards, checks, tests, sonar]
+    if: ${{ !cancelled() && needs.scope.outputs.code == 'true' && needs.guards.result == 'success' && needs.checks.result == 'success' && needs.tests.result == 'success' && (needs.sonar.result == 'success' || needs.sonar.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
