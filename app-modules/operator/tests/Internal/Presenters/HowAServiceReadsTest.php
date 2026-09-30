@@ -41,7 +41,8 @@ it('draws each state a service can be in with its own tone', function (HowAServi
     'run by the host' => [HowAServiceRuns::HostManaged, Tone::Fine],
     'starting' => [HowAServiceRuns::Starting, Tone::Working],
     'stopped' => [HowAServiceRuns::Stopped, Tone::Attention],
-    'absent' => [HowAServiceRuns::Absent, Tone::Attention],
+    // Absent and asked for by nothing: not installed, which is nothing wrong.
+    'absent' => [HowAServiceRuns::Absent, Tone::Quiet],
     'failed' => [HowAServiceRuns::Failed, Tone::Trouble],
     'crash-looping' => [HowAServiceRuns::CrashLooping, Tone::Trouble],
     'unhealthy' => [HowAServiceRuns::Unhealthy, Tone::Trouble],

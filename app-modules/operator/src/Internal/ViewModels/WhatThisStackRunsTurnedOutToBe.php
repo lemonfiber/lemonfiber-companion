@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
+use function array_filter;
+use function array_values;
+
 use Modules\Kernel\Api\Disturbances;
 
 /**
@@ -41,4 +44,29 @@ final readonly class WhatThisStackRunsTurnedOutToBe
         public array $active,
         public array $leftOut,
     ) {}
+
+    /**
+     * What it runs, and what it would run and has not got: everything but
+     * what nobody asked for.
+     *
+     * @return list<WhatOneServiceSays>
+     */
+    public function installed(): array
+    {
+        return array_values(array_filter($this->services, static fn(WhatOneServiceSays $service): bool => $service->isInstalled));
+    }
+
+    /**
+     * What the stack could run and nothing asked for, in the stack's order.
+     *
+     * Folded away at the foot of the list rather than drawn among it: a row
+     * for something nobody wanted, drawn like one that is missing, is a
+     * warning about nothing.
+     *
+     * @return list<WhatOneServiceSays>
+     */
+    public function notInstalled(): array
+    {
+        return array_values(array_filter($this->services, static fn(WhatOneServiceSays $service): bool => ! $service->isInstalled));
+    }
 }

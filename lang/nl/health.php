@@ -382,6 +382,7 @@ return [
     'no_form_running' => 'Er draait geen form.',
     'runs_for' => 'Voor :forms',
     'runs_for_no_form' => 'Geen draaiende form vroeg erom',
+    'not_installed' => 'Niet geïnstalleerd (:count)',
     'left_out_heading' => 'Bewust overgeslagen',
     'left_out_by' => 'Gevraagd door :forms, maar :needs',
     'nothing_left_out' => 'De draaiende forms sloegen niets over.',

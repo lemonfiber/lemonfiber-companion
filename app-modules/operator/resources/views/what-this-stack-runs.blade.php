@@ -23,7 +23,7 @@
          every form that brought it, so a service is never shown without why
          it is there. --}}
     <x-design::section>
-        @forelse ($this->answer()->services as $service)
+        @forelse ($this->answer()->installed() as $service)
             <x-design::row
                 :headline="$service->name"
                 :supporting="__($service->runsSaid) . ' · ' . ($service->runsFor === [] ? __('health.runs_for_no_form') : __('health.runs_for', ['forms' => implode(', ', $service->runsFor)]))"
@@ -70,6 +70,34 @@
             <x-design::row :headline="__('health.no_forms_at_all')" />
         @endforelse
     </x-design::section>
+
+    {{-- What the stack could run and no running form asked for, folded away
+         at the foot: nothing is wrong with a service nobody wanted, so it
+         carries the quiet glyph and no warning. Each opens to the screen
+         about it, which says what starting it would do. --}}
+    @unless ($this->answer()->notInstalled() === [])
+        <x-design::section>
+            <x-design::row
+                :headline="__('health.not_installed', ['count' => count($this->answer()->notInstalled())])"
+                tone="quiet"
+                tap="showWhatIsNotInstalled()"
+            />
+            @if ($this->showsWhatIsNotInstalled)
+                @forelse ($this->answer()->notInstalled() as $service)
+                    <x-design::row
+                        :headline="$service->name"
+                        :supporting="__($service->mattersSaid)"
+                        :tone="$service->tone"
+                        :goes="$this->goes()->doingWith($service->id)"
+                        :answers-to="__('health.open_service', ['name' => $service->name])"
+                    />
+                @empty
+                    {{-- Unreachable while the guard above holds: the fold is
+                         drawn only where something is not installed. --}}
+                @endforelse
+            @endif
+        </x-design::section>
+    @endunless
 
     {{-- Tonal, because it is not the thing this frame wants anybody to do.
          The rows are, and a filled bar under a column of them reads as the

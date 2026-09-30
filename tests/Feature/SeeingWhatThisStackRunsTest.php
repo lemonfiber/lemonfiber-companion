@@ -21,6 +21,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
+use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -334,4 +335,58 @@ it('says so where no form is running, nothing was left out, and a service no run
     expect($drawn)->toContain(__('health.no_form_running'))
         ->and($drawn)->toContain(__('health.nothing_left_out'))
         ->and(implode("\n", $drawn))->toContain(__('health.runs_for_no_form'));
+});
+
+/** A stack running Sonarr, with Caddy and Navidrome there to run and asked for by nothing. */
+function aStackWithTwoThingsNobodyAskedFor(): Daemons
+{
+    return Daemons::of(
+        HowTheStackIsRunning::Active,
+        Forms::these(Form::called('library')),
+        WhatAMachineRuns::whatTheVerbsCost(),
+        WhatAMachineRuns::aService('sonarr')->broughtInBy(Forms::these(Form::called('library'))),
+        WhatAMachineRuns::aService('caddy', HowAServiceRuns::Absent),
+        WhatAMachineRuns::aService('navidrome', HowAServiceRuns::Absent),
+    );
+}
+
+it('folds what no running form asked for away at the foot, counted, quiet and without a warning', function (): void {
+    $screen = theServicesScreen(AStackThatSupervises::with(aStackWithTwoThingsNobodyAskedFor()));
+    $answer = $screen->answer();
+    $folded = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    $installed = array_map(static fn(WhatOneServiceSays $service): string => $service->name, $answer->installed());
+    $notInstalled = array_map(static fn(WhatOneServiceSays $service): string => $service->name, $answer->notInstalled());
+
+    expect($installed)->toBe(['Sonarr'])
+        ->and($notInstalled)->toBe(['Caddy', 'Navidrome'])
+        ->and($answer->notInstalled()[0]->tone)->toBe('quiet')
+        ->and($folded)->toContain(__('health.not_installed', ['count' => 2]))
+        ->and($folded)->not->toContain('Caddy')
+        ->and(implode("\n", $folded))->not->toContain(__(HowAServiceRuns::Absent->saidOnTheScreen()));
+
+    $screen->showWhatIsNotInstalled();
+    $opened = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($opened)->toContain('Caddy')
+        ->and($opened)->toContain('Navidrome')
+        ->and($screen->goes()->doingWith($answer->notInstalled()[0]->id))
+        ->toBe(AStacksScreen::Doing->forTheStacksService(theStackWhoseServicesAreRead()->id(), ServiceId::called('caddy')));
+
+    $screen->showWhatIsNotInstalled();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain('Caddy');
+});
+
+it('keeps a service a running form asked for and has not got among the rest, with its warning', function (): void {
+    $screen = theServicesScreen(AStackThatSupervises::with(Daemons::of(
+        HowTheStackIsRunning::Degraded,
+        Forms::these(Form::called('library')),
+        WhatAMachineRuns::whatTheVerbsCost(),
+        WhatAMachineRuns::aService('jellyfin', HowAServiceRuns::Absent)->broughtInBy(Forms::these(Form::called('library'))),
+    )));
+
+    expect($screen->answer()->notInstalled())->toBe([])
+        ->and($screen->answer()->installed()[0]->tone)->toBe('attention')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.not_installed', ['count' => 0]));
 });

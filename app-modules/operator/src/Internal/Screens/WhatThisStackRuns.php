@@ -77,6 +77,14 @@ final class WhatThisStackRuns extends NativeComponent
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
 
+    /**
+     * Whether what is not installed is opened out.
+     *
+     * Held on the screen, because it is what the operator did here and is
+     * worth nothing once they leave: the fold starts closed every time.
+     */
+    public bool $showsWhatIsNotInstalled = false;
+
     public function __construct(
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
@@ -126,6 +134,12 @@ final class WhatThisStackRuns extends NativeComponent
         $this->again();
     }
 
+    /** Open what is not installed out, or fold it away again. */
+    public function showWhatIsNotInstalled(): void
+    {
+        $this->showsWhatIsNotInstalled = ! $this->showsWhatIsNotInstalled;
+    }
+
     /**
      * Where this machine's screens are.
      *
@@ -142,7 +156,4 @@ final class WhatThisStackRuns extends NativeComponent
     {
         return view('operator::what-this-stack-runs');
     }
-
-
-
 }
