@@ -177,6 +177,24 @@ it('N2-R10 — a line the service timed carries the moment, and one it did not s
         ->and($rows[2]->hasAMoment)->toBeTrue();
 });
 
+it('says above the lines the code the road here carried, from a finding or from how the service stopped', function (): void {
+    $fromAFinding = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+    $fromAFinding->setData(['reported' => 'VPN-2']);
+    $fromTheService = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+    $fromTheService->setData(['exited' => '1']);
+
+    expect(WhatTheDeviceWouldDraw::by($fromAFinding)->said())->toContain(__('health.the_check_reported', ['code' => 'VPN-2']))
+        ->and(WhatTheDeviceWouldDraw::by($fromTheService)->said())->toContain(__('health.it_stopped_with_exit_code', ['code' => '1']));
+});
+
+it('says no code where the road here carried none', function (): void {
+    $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+    $screen->setData(['reported' => 42]);
+
+    expect($screen->reported())->toBe('')
+        ->and($screen->exited())->toBe('');
+});
+
 it('N2-R10 — names the service it is about, from the route', function (): void {
     // From the route rather than held, because a screen holding the service it
     // was opened with, on a frame whose URI names another, would show one

@@ -34,7 +34,7 @@
     @if ($this->expanded)
         @forelse ($this->summary()->affected as $item)
             <x-design::card>
-                <x-design::note>{{ __($item->severity) }} · {{ $item->check }}</x-design::note>
+                <x-design::note>{{ __($item->severity) }}</x-design::note>
                 <x-design::strong>{{ $item->summary }}</x-design::strong>
                 <x-design::body>{{ $item->meaning }}</x-design::body>
 
@@ -99,9 +99,10 @@
 
     @forelse ($this->findings() as $finding)
         <x-design::card>
-            {{-- Which check, and which service it was about: the same check
-                 runs against whichever service fills a role. --}}
-            <x-design::note>{{ __($finding->about) }}@if ($finding->service !== '') · {{ $finding->service }}@endif</x-design::note>
+            {{-- Which part of the machine it is about. The service is named by
+                 the title and by the road to its logs below; the report names
+                 it only by its identifier, which is not a name to read. --}}
+            <x-design::note>{{ __($finding->about) }}</x-design::note>
             <x-design::strong>{{ $finding->title }}</x-design::strong>
 
             {{-- Whose finding it is, only where it is not the stack's own;
@@ -110,10 +111,7 @@
                 <x-operator::came-from :from="$finding->from" :said="$finding->from->came->ofACheck()" />
             @endunless
 
-            <x-design::body>{{ __($finding->verdict) }}</x-design::body>
-            @if ($finding->cost !== '')
-                <x-design::strong>{{ __($finding->cost) }}</x-design::strong>
-            @endif
+            <x-design::strong>{{ __($finding->verdict) }}</x-design::strong>
 
             @if ($finding->because !== '')
                 <x-design::note>{{ __('health.because_of', ['title' => $finding->because]) }}</x-design::note>
@@ -121,9 +119,6 @@
 
             @if ($finding->explainsItself())
                 <x-design::body>{{ $finding->meaning }}</x-design::body>
-                @if ($finding->code !== '')
-                    <x-design::verbatim>{{ $finding->code }}</x-design::verbatim>
-                @endif
                 @forelse ($finding->remedies as $remedy)
                     <x-design::body>{{ $remedy->action() }}</x-design::body>
                 @empty
@@ -132,19 +127,28 @@
             @endif
 
             {{-- The technical detail, available and not leading: last on the
-                 card, under the plain explanation and what to try. --}}
-            @if ($finding->underneath !== '')
+                 card, under the plain explanation and what to try. A finding
+                 about the machine says its code here, having no logs to carry
+                 it to. --}}
+            @if ($finding->underneath !== '' || $finding->codeAtTheFoot() !== '')
                 <x-design::note>{{ __('health.what_it_says_underneath') }}</x-design::note>
-                <x-design::verbatim>{{ $finding->underneath }}</x-design::verbatim>
+                @if ($finding->codeAtTheFoot() !== '')
+                    <x-design::verbatim>{{ $finding->codeAtTheFoot() }}</x-design::verbatim>
+                @endif
+                @if ($finding->underneath !== '')
+                    <x-design::verbatim>{{ $finding->underneath }}</x-design::verbatim>
+                @endif
             @endif
 
-            {{-- The logs, from the finding already about this service; a check
+            {{-- The logs, from the finding already about this service, with
+                 its code carried there and said above the lines; a check
                  about the machine itself has no scrollback to read. --}}
             @if ($finding->service !== '')
                 <x-design::link
                     label="{{ __('health.what_a_service_said') }}"
                     answers-to="{{ __('health.what_that_service_said', ['service' => $finding->service]) }}"
                     :goes="$this->logsOf($finding->service)"
+                    :carries="$finding->carriedToTheLogs()"
                 />
             @endif
         </x-design::card>

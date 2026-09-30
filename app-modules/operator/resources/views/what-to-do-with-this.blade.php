@@ -189,11 +189,12 @@
         <x-design::card>
             <x-design::body>{{ __($this->thing()->service->mattersSaid) }}</x-design::body>
 
-            @if ($this->thing()->service->exited !== '')
-                {{-- What it ended with. A service that is running has no code at
-                     all, so this line appears only where there is one — an empty
-                     field and a zero are different facts. --}}
-                <x-design::note>{{ __('health.it_exited', ['code' => $this->thing()->service->exited]) }}</x-design::note>
+            @if ($this->thing()->service->stoppedSaid !== '')
+                {{-- How it stopped, with an error or without one. A service
+                     that is running has no exit code at all, so this line
+                     appears only where there is one; the code itself is said
+                     where its logs are read. --}}
+                <x-design::note>{{ __($this->thing()->service->stoppedSaid) }}</x-design::note>
             @endif
 
             @forelse ($this->thing()->service->leaning as $name)
@@ -228,6 +229,7 @@
         <x-design::link
             label="{{ __('health.read_its_logs') }}"
             :goes="$this->goes()->logsOf($this->thing()->service->id)"
+            :carries="$this->thing()->service->carriedToTheLogs()"
         />
     @endunless
 

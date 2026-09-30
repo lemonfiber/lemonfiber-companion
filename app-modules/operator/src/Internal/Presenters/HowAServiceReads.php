@@ -9,7 +9,9 @@ use function array_values;
 
 use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Daemon;
+use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
@@ -21,6 +23,8 @@ use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
  * state what it disturbs, and what a stop disturbs is not knowable from the
  * service alone — it is the other services that will not work without it. A
  * screen that had to go back and ask would be a screen that could forget to.
+ * Each is said by the name the listing gives it, which is the name the
+ * operator knows it by, rather than by the identifier the stack names it by.
  */
 final readonly class HowAServiceReads
 {
@@ -32,12 +36,12 @@ final readonly class HowAServiceReads
      * row, so a field cannot reach a template by a path that skipped the value
      * object.
      */
-    public function in(Daemon $daemon): WhatOneServiceSays
+    public function in(Daemon $daemon, Daemons $listing): WhatOneServiceSays
     {
         $leaning = [];
 
         foreach ($daemon->whatLeansOnIt() as $id) {
-            $leaning[] = $id->named();
+            $leaning[] = $this->nameOf($id, $listing);
         }
 
         return new WhatOneServiceSays(
@@ -51,6 +55,7 @@ final readonly class HowAServiceReads
             wouldNotHelp: $daemon->runs()->isAlreadyBeingRestarted(),
             leaning: $leaning,
             exited: $this->exited($daemon),
+            stoppedSaid: $this->stopped($daemon),
             // Asked of the state rather than worked out here, so one screen
             // cannot come to a different answer from another about what a
             // stopped service can be told to do. A walk over the three rather
@@ -81,6 +86,30 @@ final readonly class HowAServiceReads
             HowAServiceRuns::Stopped, HowAServiceRuns::Absent => Tone::Attention->value,
             HowAServiceRuns::Failed, HowAServiceRuns::CrashLooping, HowAServiceRuns::Unhealthy => Tone::Trouble->value,
         };
+    }
+
+    /**
+     * The name the listing gives a service, or its identifier where the
+     * listing names no such service.
+     */
+    private function nameOf(ServiceId $id, Daemons $listing): string
+    {
+        foreach ($listing as $other) {
+            if ($other->id()->isTheSameAs($id)) {
+                return $other->name();
+            }
+        }
+
+        return $id->named();
+    }
+
+    /** The key for how it stopped, or empty where it did not: with an error, or without one. */
+    private function stopped(Daemon $daemon): string
+    {
+        return $daemon->exit(
+            said: static fn(int $code): AsText => AsText::of($code === 0 ? 'health.it_stopped_cleanly' : 'health.it_stopped_with_an_error'),
+            unstated: static fn(): AsText => AsText::nothing(),
+        )->said;
     }
 
     /**

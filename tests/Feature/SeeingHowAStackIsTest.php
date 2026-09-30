@@ -409,19 +409,22 @@ it('refuses a route parameter that is not text', function (): void {
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
-it('N2-R3 — a row says what it costs, beside what the verdict was', function (): void {
-    // The two are not the same question, and a screen showing only the verdict
-    // makes a critical failure and an ordinary one look identical. `WorstFirst`
-    // already puts the costlier one higher; this is the row saying why.
+it('says one word for where a finding stands: what it costs, where it cost something', function (): void {
+    // The verdict and the cost are two answers, and a row showing *failed*
+    // beside *broken* says one thing twice. What it costs says more, so a
+    // failed check reads as that, and a critical failure and an ordinary one
+    // still read differently.
     $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($screen->findings()[0]->cost)->toBe(Severity::Critical->saidOnTheScreen())
-        ->and(__($screen->findings()[0]->cost))->not->toBe($screen->findings()[0]->cost);
+    expect($screen->findings()[0]->verdict)->toBe(Severity::Critical->saidOnTheScreen())
+        ->and($drawn)->toContain(__(Severity::Critical->saidOnTheScreen()))
+        ->and($drawn)->not->toContain(__(Conclusion::Failed->saidOnTheScreen()));
 });
 
-it('N2-R3 — a row with nothing graded carries no cost at all', function (): void {
-    // A passing check was never graded, so there is no word for how much it
-    // costs and none is invented. The template branches on the empty key.
+it('says the verdict of a finding with nothing graded, and no code', function (): void {
+    // A passing check was never graded, so there is no word for what it costs
+    // and none is invented: its word is its verdict.
     $screen = theHealthScreen(AStackThatWasAsked::saying(
         Report::of(Overall::Healthy, Findings::of(
             Finding::of(
@@ -435,8 +438,45 @@ it('N2-R3 — a row with nothing graded carries no cost at all', function (): vo
         )),
     ));
 
-    expect($screen->findings()[0]->cost)->toBe('')
+    expect($screen->findings()[0]->verdict)->toBe(Conclusion::Passed->saidOnTheScreen())
         ->and($screen->findings()[0]->code)->toBe('');
+});
+
+it('carries a service finding\'s code to its logs, and says neither the code nor the service on the card', function (): void {
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.up'),
+            Category::Vpn,
+            'The tunnel',
+            Conclusion::Failed,
+            aFailingVerdict(),
+            WhoPutItThere::bundled(),
+        )->about(AboutWhat::theService('gluetun')),
+    ))));
+
+    $row = $screen->findings()[0];
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $naming = array_values(array_filter($drawn, static fn(string $line): bool => str_contains($line, 'gluetun')));
+
+    // The identifier is only in what a reader hears for the road to the logs,
+    // which has to say which service's logs it opens.
+    expect($row->carriedToTheLogs())->toBe(['reported' => $row->code])
+        ->and($row->codeAtTheFoot())->toBe('')
+        ->and($row->code)->not->toBe('')
+        ->and(implode("\n", $drawn))->not->toContain($row->code)
+        ->and($drawn)->toContain(__(Category::Vpn->saidOnTheScreen()))
+        ->and($naming)->toBe([__('health.what_that_service_said', ['service' => 'gluetun'])]);
+});
+
+it('says a machine finding\'s code at the foot of its card, having no logs to carry it to', function (): void {
+    $screen = theHealthScreen(AStackThatWasAsked::saying(aRunThatExplainsItself()));
+
+    $row = $screen->findings()[0];
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($row->codeAtTheFoot())->toBe('VPN-3')
+        ->and($drawn)->toContain(__('health.what_it_says_underneath'))
+        ->and($drawn)->toContain('VPN-3');
 });
 
 it('N2-R3 — a row whose check could not run carries the reason and nothing else', function (): void {
@@ -468,7 +508,6 @@ it('N2-R3 — a row whose check could not run carries the reason and nothing els
     $row = $screen->findings()[0];
 
     expect($row->code)->toBe('')
-        ->and($row->cost)->toBe('')
         // And the row is not blank: the reason and what to try about it both
         // land in the two fields a failure uses, because an operator wants to
         // know what a row means and what to do whichever outcome produced it.

@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\ViewModels;
 
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Operator\Internal\WhatTheLogsAreOpenedWith;
 
 /**
  * One service a stack runs, flattened for a template to read.
@@ -43,8 +44,9 @@ final readonly class WhatOneServiceSays
      * @param bool         $isSettling  whether it becomes something else by itself
      * @param bool         $isOurs      whether this stack is the one that runs it
      * @param bool         $wouldNotHelp whether it is already being restarted, so another restart would not help
-     * @param list<string> $leaning     the services that will not work without it
+     * @param list<string> $leaning     the services that will not work without it, by the names the operator knows
      * @param string       $exited      what it exited with, or empty where it did not
+     * @param string       $stoppedSaid the key for whether it stopped with an error, or empty where it did not stop
      * @param list<WhatToDoWithIt> $verbs what this state can take, worst-case none
      * @param list<string> $runsFor     every form it is running for, none where no form holding it is up
      */
@@ -59,9 +61,20 @@ final readonly class WhatOneServiceSays
         public bool $wouldNotHelp,
         public array $leaning,
         public string $exited,
+        public string $stoppedSaid,
         public array $verbs,
         public array $runsFor,
     ) {}
+
+    /**
+     * What the road to its logs carries: the exit code, where there is one.
+     *
+     * @return array<string, string>
+     */
+    public function carriedToTheLogs(): array
+    {
+        return WhatTheLogsAreOpenedWith::Exited->carrying($this->exited);
+    }
 
     /**
      * Whether this service is the one a verb was agreed about.

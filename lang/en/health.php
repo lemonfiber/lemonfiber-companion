@@ -297,6 +297,8 @@ return [
     'what_a_service_said' => 'See what this service said',
     'what_that_service_said' => 'See what :service said',
     'logs_for' => 'What :service has been saying',
+    'the_check_reported' => 'The check reported :code',
+    'it_stopped_with_exit_code' => 'It stopped with exit code :code',
     'window_of' => 'The last :count lines this stack kept. There may be more behind them.',
     'the_whole_of_it' => 'All :count lines this stack has for this service.',
     'search_label' => 'Find in these lines',
@@ -348,7 +350,8 @@ return [
     // The supervising screen. The verbs above are the buttons; these are the
     // sentences around them — what a row says about itself, and what a stop is stated to
     // disturb before anybody agrees to it.
-    'it_exited' => 'It ended with :code',
+    'it_stopped_with_an_error' => 'It stopped with an error',
+    'it_stopped_cleanly' => 'It stopped without an error',
     'host_runs_it' => 'This machine runs it, not the stack',
     'read_its_logs' => 'Read what it has been saying',
     'nothing_is_running' => 'Nothing is running on this machine',

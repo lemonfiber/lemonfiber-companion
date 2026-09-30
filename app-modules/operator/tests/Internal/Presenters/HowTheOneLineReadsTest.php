@@ -113,7 +113,6 @@ it('draws a current summary as the core said it, with every part of every item',
         ->and($line->met)->toBe('')
         ->and($line->remedy)->toBe('')
         ->and($line->affected)->toHaveCount(1)
-        ->and($line->affected[0]->check)->toBe('disk.space')
         ->and($line->affected[0]->severity)->toBe('health.severity.warning')
         ->and($line->affected[0]->summary)->toBe('The disk is nearly full')
         ->and($line->affected[0]->meaning)->toBe('New downloads will start failing soon')

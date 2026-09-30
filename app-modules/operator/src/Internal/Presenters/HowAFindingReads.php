@@ -53,12 +53,13 @@ use Modules\Operator\Internal\WhatTheCoreAddedUnderneath;
  * which finding matters most. Saying which part each is about does the same
  * work without taking that decision.
  *
- * **How much it costs is shown beside the verdict, not instead of it.** They
- * answer different questions — the verdict is whether the check passed and the
- * severity is what the answer costs — and two failed checks where one puts data
- * at risk must not read the same. It is also the key
- * {@see \Modules\Health\Api\Queries\WorstFirst} orders by first, so a row that
- * is higher up for a reason says what that reason was.
+ * **A row says one word for where it stands.** Where the check found
+ * something wrong, that word is what it costs rather than that it failed: two
+ * failed checks where one puts data at risk must not read the same, and a row
+ * saying both *failed* and *broken* says one thing twice. A check that passed,
+ * or said nothing, has no cost, so its word is its verdict. The cost is also
+ * the key {@see \Modules\Health\Api\Queries\WorstFirst} orders by first, so
+ * a row that is higher up for a reason says what that reason was.
  */
 final readonly class HowAFindingReads
 {
@@ -84,7 +85,6 @@ final readonly class HowAFindingReads
                 verdict: $finding->conclusion()->saidOnTheScreen(),
                 code: '',
                 meaning: '',
-                cost: '',
                 service: $service,
                 because: $because,
                 remedies: Remedies::none(),
@@ -101,10 +101,11 @@ final readonly class HowAFindingReads
             ): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),
                 about: $finding->category()->saidOnTheScreen(),
-                verdict: $finding->conclusion()->saidOnTheScreen(),
+                // One word for where it stands: what it costs, which says more
+                // than that it failed, and says it once.
+                verdict: $severity->saidOnTheScreen(),
                 code: $code->shown(),
                 meaning: $meaning,
-                cost: $severity->saidOnTheScreen(),
                 service: $service,
                 because: $because,
                 // Every one of them, in the order the engine gave. `likeliest()`
@@ -127,14 +128,13 @@ final readonly class HowAFindingReads
                 title: $finding->title(),
                 about: $finding->category()->saidOnTheScreen(),
                 verdict: $finding->conclusion()->saidOnTheScreen(),
-                // No code and no cost, because these outcomes carry neither.
+                // No code and no severity, because these outcomes carry neither.
                 // Nothing was graded — a check that could not run produced no
                 // judgement, and a word here would be this app inventing one.
                 // The template branches on the meaning, so a row with a reason
                 // and neither of the others still explains itself.
                 code: '',
                 meaning: $reason,
-                cost: '',
                 service: $service,
                 because: $because,
                 remedies: $remedies,

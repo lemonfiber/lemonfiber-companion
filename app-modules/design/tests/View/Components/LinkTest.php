@@ -28,3 +28,15 @@ it('names a link for what it acts on where its words alone would not', function 
     expect(data_get(WhatMarkupDraws::drawn('<x-design::link label="Read the log" goes="\'/l\'" answers-to="Read what Sonarr said" />'), 'props.a11y_label'))
         ->toBe('Read what Sonarr said');
 });
+
+it('hands the screen it opens what it carries, besides the route', function (): void {
+    $roads = WhatMarkupDraws::roads('<x-design::link label="Read the log" goes="/logs" :carries="[\'reported\' => \'VPN-2\']" />');
+
+    expect($roads)->toHaveCount(1)
+        ->and(data_get($roads, '0.uri'))->toBe('/logs')
+        ->and(data_get($roads, '0.data'))->toBe(['reported' => 'VPN-2']);
+});
+
+it('carries nothing where it is given nothing to carry', function (): void {
+    expect(data_get(WhatMarkupDraws::roads('<x-design::link label="Read the log" goes="/logs" />'), '0.data'))->toBe([]);
+});

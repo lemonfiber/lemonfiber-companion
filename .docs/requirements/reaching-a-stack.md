@@ -48,7 +48,7 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N2-R3` | A finding carries its code, its meaning and its remedy, in the words the core produced | `Reports`; a note on a passing check is the core being chatty and is dropped |
+| `N2-R3` | A finding carries its meaning and its remedy, in the words the core produced, and its code one step away | `Reports`; a note on a passing check is the core being chatty and is dropped |
 | `G4-R4` | Plain explanation leads and technical detail is available, where there is any | `Reports` |
 | `N2-R6` | A repair's yes quotes the listing it was given | `Menders`, whose signature is that requirement in a parameter list: there is no way to name a repair the listing did not offer |
 | `N2-R8` | What a verb costs is said before an operator confirms | `Costs` |
