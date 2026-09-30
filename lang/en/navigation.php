@@ -25,7 +25,11 @@ return [
         'settings' => 'Settings',
         'help' => 'Help',
     ],
+    'switcher' => [
+        'add' => 'Add a stack',
+    ],
     'menu' => [
+        'switch_stack' => 'Switch stack',
         'open' => 'Menu',
         'whats_new' => 'What\'s new',
         'stack_settings' => 'Stack settings',

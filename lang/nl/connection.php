@@ -72,6 +72,7 @@ return [
     'session_would_not_keep' => 'Deze telefoon liet de app de sessie niet bewaren.',
     'session_would_not_keep_action' => 'Je bent niet aangemeld. Ontgrendel de telefoon en probeer het opnieuw.',
     'open_stack' => ':stack openen',
+    'current_stack' => ':stack, huidige',
     'sign_in_needed' => 'Aanmelden nodig',
     'session_has_ended' => 'Je bent afgemeld bij deze stack.',
     'pair_again' => 'Opnieuw koppelen',

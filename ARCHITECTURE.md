@@ -342,7 +342,7 @@ automatic and the operator never sees the question.
 | F14 | Every step a template takes after its screen answered, and every step a component takes off what it was handed — a field or a further call — is one that value has | `tests/Templates`: the chain walked by declared type, from the screen's return type or the component's property onward |
 | F15 | Every screen the router serves is built the way the app builds it, drawn, and draws something — the render path is where a frame is actually decided | `tests/Feature`: every route's screen, rendered with stand-ins answering |
 | F16 | The column a screen's content sits in is written once, in the `content` component, whose slot is drawn inside it | arch |
-| F17 | Every operator screen about a stack carries the side menu, and one that goes without is named with why | arch: every screen answering which stack it is about uses the menu's trait, against a register that may shrink and may not grow |
+| F17 | Every operator screen about a stack carries the side menu and the list of stacks, and one that goes without the menu is named with why | arch: every screen answering which stack it is about uses the menu's trait, against a register that may shrink and may not grow, and carries the list of stacks |
 | F18 | Every screen of one stack is a tab, a menu item, or a step of another screen named with where it begins | arch: read from the screens a stack has, against the menu, the tabs and a register that may shrink and may not grow |
 
 **Why F12 is a rule of its own, given the three beside it.** Three rules already

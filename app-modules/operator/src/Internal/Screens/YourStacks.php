@@ -14,11 +14,8 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
 use Modules\Kernel\Api\Hearing;
-use Modules\Kernel\Api\HowItStands;
-use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Launch;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Sharing;
@@ -26,16 +23,15 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
-use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\HearsHowEachStackIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
-use Modules\Operator\Internal\Presenters\HowTheOneLineReads;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
+use Modules\Operator\Internal\WhatEachStackLastSaid;
 use Modules\Operator\Internal\WhatItListensWith;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -308,25 +304,7 @@ final class YourStacks extends NativeComponent
      */
     public function lastKnownOf(Stack $stack): WhatTheOneLineSays
     {
-        // Read once here rather than inside the fold, so every row on one frame
-        // is aged against the same moment.
-        $now = $this->clock->now();
-
-        return $this->standings->lastKnownOf($stack->id())->either(
-            waiting: static fn(): WhatTheOneLineSays => new HowTheOneLineReads()->neverHeard(),
-            holding: static fn(Reading $reading): WhatTheOneLineSays => $reading->either(
-                // A live reading cannot arrive here: everything this port
-                // answers came out of a store. Answered rather than refused
-                // because the arm is the type's, not this screen's, and read
-                // as never heard because a word with no moment has no age to
-                // be said with.
-                live: static fn(): WhatTheOneLineSays => new HowTheOneLineReads()->neverHeard(),
-                retained: static fn(object $standing, Instant $at): WhatTheOneLineSays
-                    => $standing instanceof HowItStands
-                        ? new HowTheOneLineReads()->kept($standing, $at, $now)
-                        : new HowTheOneLineReads()->neverHeard(),
-            ),
-        );
+        return new WhatEachStackLastSaid($this->standings, $this->clock)->of($stack);
     }
 
     /**
@@ -378,13 +356,7 @@ final class YourStacks extends NativeComponent
     {
         $where = WhereAStackIs::of($stack->id());
 
-        $leads = $this->storage->resume($stack->id())->whoseItIs(
-            nobody: static fn(): WhereTappingLeads => WhereTappingLeads::TheSignIn,
-            theirs: static fn(Whose $whose): WhereTappingLeads => $whose->either(
-                operator: static fn(): WhereTappingLeads => WhereTappingLeads::TheReport,
-                member: static fn(): WhereTappingLeads => WhereTappingLeads::WhatTheyAreOwed,
-            ),
-        );
+        $leads = WhereTappingLeads::for($this->storage, $stack->id());
 
         return match ($leads) {
             WhereTappingLeads::TheSignIn => $this->signInAt($stack),

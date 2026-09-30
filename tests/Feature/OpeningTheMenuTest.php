@@ -53,12 +53,12 @@ function aScreenTheMenuOpens(): WhatTheWordsMean
     return $screen;
 }
 
-it('draws the stack and what is new, every group with every item under it, and the two settings, in the menu\'s order', function (): void {
+it('draws the stack, the way to another stack and what is new, every group with every item under it, and the two settings, in the menu\'s order', function (): void {
     $screen = aTabWithTheMenu();
     $drawn = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride());
 
-    $expected = ['The attic', __('navigation.menu.whats_new')];
-    $items = [__('navigation.menu.whats_new')];
+    $expected = ['The attic', __('navigation.menu.switch_stack'), __('navigation.menu.whats_new')];
+    $items = [__('navigation.menu.switch_stack'), __('navigation.menu.whats_new')];
 
     foreach (WhereInTheMenu::cases() as $group) {
         $expected[] = __($group->said());
@@ -74,7 +74,7 @@ it('draws the stack and what is new, every group with every item under it, and t
 
     expect(array_values(array_diff($drawn->said(), ['chevron_right'])))->toBe($expected)
         ->and($drawn->offers())->toBe($items)
-        ->and($items)->toHaveCount(count(TheMenu::cases()) + 3);
+        ->and($items)->toHaveCount(count(TheMenu::cases()) + 4);
 });
 
 it('names the control that opens the menu in the operator\'s language', function (): void {

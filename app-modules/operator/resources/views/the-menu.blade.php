@@ -1,10 +1,18 @@
-{{-- The side menu: the stack it is about and what is new, then its five
-     groups, then the stack's settings and the app's. Every item is drawn on
-     every stack. --}}
+{{-- The side menu: the stack it is about, the way to another stack and what
+     is new, then its five groups, then the stack's settings and the app's.
+     Every item is drawn on every stack. --}}
 <native:column class="w-full gap-4 p-4">
     <x-design::title>{{ $stack->name()->shown() }}</x-design::title>
 
     <x-design::section>
+        <x-design::row
+            :headline="__('navigation.menu.switch_stack')"
+            :answers-to="__('navigation.menu.switch_stack')"
+            tap="chooseAStack()"
+            icon="swap_horiz"
+            ios-icon="arrow.left.arrow.right"
+        />
+
         <x-design::row
             :headline="__($whatsNew->said())"
             :answers-to="__($whatsNew->said())"

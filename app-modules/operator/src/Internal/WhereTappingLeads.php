@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\Whose;
+
 /**
  * What tapping a stack on the list comes to, carried out of an `either()` arm.
  *
  * Three places, because the list is the way into everything and a device can be in
  * three states about one machine: nobody is signed into it, the operator is, or a
  * member is. {@see \Modules\Kernel\Api\Resumed::whoseItIs()} answers the first
- * against the other two and {@see \Modules\Kernel\Api\Whose::either()} splits those,
+ * against the other two and {@see Whose::either()} splits those,
  * and both answer with an object — an enum case is one, so the arms may build these.
  *
  * **Not {@see WhichSurfaceTheyAreGiven}, though two of the three agree with it.**
@@ -41,4 +45,22 @@ enum WhereTappingLeads: string
      * machine report every launch after the first.
      */
     case WhatTheyAreOwed = 'what_they_are_owed';
+
+    /**
+     * Where opening this stack leads, from whose session this phone holds for it.
+     *
+     * The subject without the session: a place that opens a stack has no use
+     * for a credential, so it asks a question whose answer does not contain
+     * one.
+     */
+    public static function for(SecureStorage $storage, StackId $stack): self
+    {
+        return $storage->resume($stack)->whoseItIs(
+            nobody: static fn(): self => self::TheSignIn,
+            theirs: static fn(Whose $whose): self => $whose->either(
+                operator: static fn(): self => self::TheReport,
+                member: static fn(): self => self::WhatTheyAreOwed,
+            ),
+        );
+    }
 }
