@@ -11,6 +11,10 @@ namespace Modules\Operator\Internal\ViewModels;
  * sentences are the machine's about the machine, and putting them through the
  * catalogue would mean this app writing lines for checks it has never heard
  * of.
+ *
+ * **The exit code is not drawn on the card.** It rides along for the road to
+ * the service's logs, which say it above the lines, where somebody finding out
+ * what happened is already reading.
  */
 final readonly class AnAffectedItemAsShown
 {
@@ -20,6 +24,8 @@ final readonly class AnAffectedItemAsShown
      * @param string       $meaning    what it costs the operator
      * @param list<string> $remedies   what to try, most likely first
      * @param list<string> $downstream what else is wrong because of it
+     * @param string       $check      which check raised it, to find it again by
+     * @param string       $exited     the code a service it names exited on, or empty
      */
     public function __construct(
         public string $severity,
@@ -27,5 +33,7 @@ final readonly class AnAffectedItemAsShown
         public string $meaning,
         public array $remedies,
         public array $downstream,
+        public string $check = '',
+        public string $exited = '',
     ) {}
 }

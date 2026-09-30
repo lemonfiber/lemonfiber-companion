@@ -10,6 +10,7 @@ use function is_string;
 
 use Lemonfiber\Sdk\LogWindow;
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\Said;
 use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\ServiceId;
@@ -82,11 +83,35 @@ final readonly class Lines
         $service = ServiceId::called(self::text($row, WireField::Service, $position));
         $stream = self::stream($row, $position);
 
-        if (! array_key_exists(WireField::At->value, $row) || $row[WireField::At->value] === null) {
-            return Said::whenever($line, $service, $stream);
+        $said = ! array_key_exists(WireField::At->value, $row) || $row[WireField::At->value] === null
+            ? Said::whenever($line, $service, $stream)
+            : Said::at(self::moment($row, $position), $line, $service, $stream);
+
+        return self::declared($row, $position, $said);
+    }
+
+    /**
+     * The line, with the severity it declared where the core classified one.
+     *
+     * Absent and null are both *unclassified*, which is the contract saying the
+     * core could not place the line and passed it through rather than guess.
+     * A word this app does not know is refused, for {@see Stream()}'s reason.
+     *
+     * @param array<mixed> $row
+     */
+    private static function declared(array $row, int $position, Said $said): Said
+    {
+        if (! array_key_exists(WireField::Level->value, $row) || $row[WireField::Level->value] === null) {
+            return $said;
         }
 
-        return Said::at(self::moment($row, $position), $line, $service, $stream);
+        $level = $row[WireField::Level->value];
+
+        if (! is_string($level)) {
+            throw LineIsUnreadable::said(WireField::Level, $position);
+        }
+
+        return $said->declaring(HowSeriousALineIs::tryFrom($level) ?? throw LineIsUnreadable::level($level, $position));
     }
 
     /**

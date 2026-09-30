@@ -44,6 +44,7 @@ final readonly class Said
         private ServiceId $service,
         private Stream $stream,
         private ?string $at = null,
+        private ?HowSeriousALineIs $level = null,
     ) {}
 
     /**
@@ -62,6 +63,18 @@ final readonly class Said
     public static function whenever(string $line, ServiceId $service, Stream $stream): self
     {
         return new self($line, $service, $stream);
+    }
+
+    /**
+     * The same line, carrying the severity it declared.
+     *
+     * Its own step rather than a parameter, because most lines declare none:
+     * a line the core could not classify is ordinary, and passing *nothing*
+     * for it at every construction would make the ordinary case the noisy one.
+     */
+    public function declaring(HowSeriousALineIs $level): self
+    {
+        return new self($this->line, $this->service, $this->stream, $this->at, $level);
     }
 
     /** What the service wrote, exactly as it wrote it. */
@@ -95,6 +108,24 @@ final readonly class Said
     public function when(Closure $then, Closure $unstated): object
     {
         return $this->at === null ? $unstated() : $then($this->at);
+    }
+
+    /**
+     * Say the severity the line declared, or that it declared none.
+     *
+     * Two arms for {@see when()}'s reason: a line nobody classified is not an
+     * *info* line, and a screen handed a null would be tempted to read it as one.
+     *
+     * @template TDeclared of object
+     * @template TUndeclared of object
+     *
+     * @param  Closure(HowSeriousALineIs): TDeclared $declared
+     * @param  Closure(): TUndeclared                $undeclared
+     * @return TDeclared|TUndeclared
+     */
+    public function level(Closure $declared, Closure $undeclared): object
+    {
+        return $this->level instanceof HowSeriousALineIs ? $declared($this->level) : $undeclared();
     }
 
     /**

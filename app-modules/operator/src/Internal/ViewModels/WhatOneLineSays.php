@@ -37,6 +37,9 @@ final readonly class WhatOneLineSays
      * @param int    $folded        how many decorative lines this row stands for, or 0 for a line
      * @param int    $fold          which fold this is, counted from the top of the window
      * @param bool   $isOpen        whether that fold is showing the lines it holds
+     * @param string $tone          the tone of the severity the line declared, where it earns a glyph, or empty
+     * @param string $levelSaid     the key for that severity, which the glyph is read aloud as, or empty
+     * @param bool   $isAnError     whether the line declared an error
      */
     public function __construct(
         public string $line,
@@ -48,5 +51,8 @@ final readonly class WhatOneLineSays
         public int $folded = 0,
         public int $fold = 0,
         public bool $isOpen = false,
+        public string $tone = '',
+        public string $levelSaid = '',
+        public bool $isAnError = false,
     ) {}
 }

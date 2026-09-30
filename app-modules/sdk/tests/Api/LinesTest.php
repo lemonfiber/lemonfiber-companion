@@ -12,6 +12,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Logs;
 use Lemonfiber\Sdk\LogWindow;
 use Modules\Kernel\Api\EnvelopeIsNotRead;
+use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\Scrollback;
 use Modules\Sdk\Api\LineIsUnreadable;
 use Modules\Sdk\Api\Lines;
@@ -19,6 +20,12 @@ use Modules\Sdk\Api\Lines;
 use function sprintf;
 
 use Tests\Support\WhatTheContractAccepts;
+
+/** What one line's severity came to, carried out of `level()`, which must hand back an object. */
+final readonly class WhatALevelCameTo
+{
+    public function __construct(public string $said) {}
+}
 
 /**
  * A window whose lines arrived on a wire version this app has never heard of.
@@ -238,4 +245,43 @@ it('stands in for a service with lines the contract would accept', function (): 
                 $at,
             ));
     }
+});
+
+/** The severity a scrollback's lines declared, in order, or `-` for a line that declared none. */
+function everyLevelFolded(Scrollback $scrollback): string
+{
+    $levels = [];
+
+    foreach ($scrollback as $line) {
+        $levels[] = $line->level(
+            declared: static fn(HowSeriousALineIs $level): WhatALevelCameTo => new WhatALevelCameTo($level->value),
+            undeclared: static fn(): WhatALevelCameTo => new WhatALevelCameTo('-'),
+        )->said;
+    }
+
+    return implode(' ', $levels);
+}
+
+it('reads the severity each line declared, and a line with none as unclassified', function (): void {
+    $window = Lines::in(aWindowOf('gluetun', 10, [
+        [...aLogRow('ERROR VPN provider name is not valid', 'gluetun', 'stderr'), 'level' => 'error'],
+        [...aLogRow('WARN slow', 'gluetun', 'stdout'), 'level' => 'warn'],
+        [...aLogRow('tunnel up', 'gluetun', 'stdout'), 'level' => null],
+        aLogRow('@@@==@@@', 'gluetun', 'stdout'),
+        [...aLogRow('gone', 'gluetun', 'stderr'), 'level' => 'fatal'],
+    ]));
+
+    expect(everyLevelFolded($window))->toBe('error warn - - fatal');
+});
+
+it('refuses a severity this app does not know, naming the ones it reads', function (): void {
+    expect(fn(): Scrollback => Lines::in(aWindowOf('gluetun', 10, [
+        [...aLogRow('hm', 'gluetun', 'stdout'), 'level' => 'shouting'],
+    ])))->toThrow(LineIsUnreadable::class, '`shouting`, and this app reads `trace`, `debug`, `info`, `warn`, `error`, `fatal`');
+});
+
+it('refuses a severity that is not a word', function (): void {
+    expect(fn(): Scrollback => Lines::in(aWindowOf('gluetun', 10, [
+        [...aLogRow('hm', 'gluetun', 'stdout'), 'level' => 3],
+    ])))->toThrow(LineIsUnreadable::class, '`level`');
 });

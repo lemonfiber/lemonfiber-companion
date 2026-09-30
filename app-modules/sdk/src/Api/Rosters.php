@@ -408,11 +408,11 @@ final readonly class Rosters
      */
     private static function howItEnded(array $row, int $position): ?int
     {
-        if (! array_key_exists(StatusField::Exit->value, $row)) {
+        if (! array_key_exists(WireField::Exit->value, $row)) {
             return null;
         }
 
-        $code = $row[StatusField::Exit->value];
+        $code = $row[WireField::Exit->value];
 
         if ($code === null) {
             return null;

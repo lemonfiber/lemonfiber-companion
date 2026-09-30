@@ -299,6 +299,16 @@ return [
     'service_said_nothing_action' => 'Hij draait rustig door, of is net gestart.',
     'no_moment' => 'Geen tijd opgegeven',
     'decorative_lines' => '{1} 1 decoratieve regel|[2,*] :count decoratieve regels',
+    'show_from_the_first_error' => 'Vanaf de eerste fout tonen',
+    'show_every_line' => 'Alle regels tonen',
+    'level' => [
+        'trace' => 'Trace',
+        'debug' => 'Debug',
+        'info' => 'Informatie',
+        'warn' => 'Waarschuwing',
+        'error' => 'Fout',
+        'fatal' => 'Fatale fout',
+    ],
 
     // Wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
     // een dienst nu staat; hoeveel het uitmaakt is wat het zou kosten als dat

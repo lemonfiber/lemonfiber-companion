@@ -23,6 +23,7 @@ use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
+use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheImportLinked;
@@ -239,6 +240,10 @@ function everyDerivedKey(): array
         Stream::class => aPairPerCase(
             Stream::cases(),
             static fn(Stream $stream): array => [$stream->saidOnTheScreen()],
+        ),
+        HowSeriousALineIs::class => aPairPerCase(
+            HowSeriousALineIs::cases(),
+            static fn(HowSeriousALineIs $level): array => [$level->saidOnTheScreen()],
         ),
         WhatBecameOfIt::class => aPairPerCase(
             WhatBecameOfIt::cases(),

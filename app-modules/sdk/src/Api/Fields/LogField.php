@@ -22,4 +22,5 @@ enum LogField: string implements NamesAWireField
 
     /** Which of a service's two mouths a line came out of. */
     case Stream = 'stream';
+
 }

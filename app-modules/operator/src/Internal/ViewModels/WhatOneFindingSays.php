@@ -54,6 +54,7 @@ final readonly class WhatOneFindingSays
      * @param Remedies $remedies what to try, likeliest first, empty where none
      * @param string   $underneath the technical detail the core added, or empty
      * @param WhereARowSaysItCameFrom $from who put the check there
+     * @param string   $exited   the code the service it is about exited on, where the stack said, or empty
      */
     public function __construct(
         public string $title,
@@ -67,6 +68,7 @@ final readonly class WhatOneFindingSays
         public Remedies $remedies,
         public string $underneath,
         public WhereARowSaysItCameFrom $from,
+        public string $exited = '',
     ) {}
 
     /**
@@ -82,8 +84,9 @@ final readonly class WhatOneFindingSays
     }
 
     /**
-     * What the road to the service's logs carries: the code, and what the stack
-     * calls the service, where there is each.
+     * What the road to the service's logs carries: the code, the code the
+     * service exited on, and what the stack calls the service, where there is
+     * each.
      *
      * @return array<string, string>
      */
@@ -91,6 +94,7 @@ final readonly class WhatOneFindingSays
     {
         return [
             ...WhatTheLogsAreOpenedWith::Reported->carrying($this->code),
+            ...WhatTheLogsAreOpenedWith::Exited->carrying($this->exited),
             ...WhatTheLogsAreOpenedWith::Called->carrying($this->called),
         ];
     }

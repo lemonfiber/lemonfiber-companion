@@ -182,14 +182,41 @@ final readonly class Summaries
     /** @param array<mixed> $row */
     private static function item(array $row, int $position): AnAffectedItem
     {
-        return AnAffectedItem::of(
-            Check::of(self::saidIn($row, WireField::Check, $position)),
-            self::severity(self::saidIn($row, WireField::Severity, $position), $position),
-            self::saidIn($row, WireField::Summary, $position),
-            self::saidIn($row, WireField::Meaning, $position),
-            Remedies::of(...self::remedies($row, $position)),
-            WhatFollowedFromIt::of(...self::lines($row, DashboardField::Downstream, $position)),
-        );
+        $check = Check::of(self::saidIn($row, WireField::Check, $position));
+        $severity = self::severity(self::saidIn($row, WireField::Severity, $position), $position);
+        $summary = self::saidIn($row, WireField::Summary, $position);
+        $meaning = self::saidIn($row, WireField::Meaning, $position);
+        $remedies = Remedies::of(...self::remedies($row, $position));
+        $downstream = WhatFollowedFromIt::of(...self::lines($row, DashboardField::Downstream, $position));
+        $code = self::exitedOn($row, $position);
+
+        return $code === null
+            ? AnAffectedItem::of($check, $severity, $summary, $meaning, $remedies, $downstream)
+            : AnAffectedItem::ofAServiceThatExited($check, $severity, $summary, $meaning, $remedies, $downstream, $code);
+    }
+
+    /**
+     * The code a service an item is about exited on, where it is one.
+     *
+     * Absent and null are both *no code*: most items are not a service that
+     * stopped. Anything else is refused rather than dropped, because a code
+     * that vanished reads exactly like one that was never sent.
+     *
+     * @param array<mixed> $row
+     */
+    private static function exitedOn(array $row, int $position): ?int
+    {
+        if (! array_key_exists(WireField::Exit->value, $row) || $row[WireField::Exit->value] === null) {
+            return null;
+        }
+
+        $code = $row[WireField::Exit->value];
+
+        if (! is_int($code)) {
+            throw SummaryIsUnreadable::inItem($position, WireField::Exit);
+        }
+
+        return $code;
     }
 
     /** @param array<mixed> $row */

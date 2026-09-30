@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function array_slice;
 use function count;
 use function in_array;
 
@@ -32,6 +33,11 @@ use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
  * it is: a fold of one hides nothing and costs a tap. Nothing folds while a
  * search is on, because the lines a search found are the ones somebody asked
  * to see.
+ *
+ * **Showing from the first error starts the lines there.** The lines before it
+ * are left out of what is shown, not out of what arrived, so the window's
+ * claim about its edge still holds; the screen says the lines were narrowed and
+ * offers every line back.
  */
 final readonly class HowAScrollbackReads
 {
@@ -57,10 +63,16 @@ final readonly class HowAScrollbackReads
     /**
      * The stack answered, and this is the window, narrowed to what was typed.
      *
-     * @param list<int> $open the folds somebody has opened, counted from the top of the window
+     * @param list<int> $open             the folds somebody has opened, counted from the top of the window
+     * @param bool      $fromTheFirstError whether somebody asked for the lines from the first error on, so the ones before it are left out
      */
-    public function this(Scrollback $scrollback, LookingFor $looking, Zone $zone, array $open): WhatTheServiceTurnedOutToSay
-    {
+    public function this(
+        Scrollback $scrollback,
+        LookingFor $looking,
+        Zone $zone,
+        array $open,
+        bool $fromTheFirstError = false,
+    ): WhatTheServiceTurnedOutToSay {
         $shown = $scrollback->matching($looking);
         $folds = ! $shown->lookingFor()->isSearching();
 
@@ -80,16 +92,21 @@ final readonly class HowAScrollbackReads
         }
 
         $rows = $this->withTheRun($rows, $run, $zone, $open);
+        $first = $this->firstErrorIn($rows);
+        $narrowed = $fromTheFirstError && $first > 0;
 
         // Every claim about the edge comes off the window rather than off the
-        // rows, which is what keeps a search from quietly widening it.
+        // rows, which is what keeps a search — or showing from the first error — from quietly
+        // narrowing it.
         return new WhatTheServiceTurnedOutToSay(
             went: HowTheReadingWent::itCameBack(),
-            lines: $rows,
+            lines: $narrowed ? array_slice($rows, $first) : $rows,
             arrived: $shown->howManyArrived(),
             bound: $shown->asked()->figure(),
             isAWindow: $shown->isAWindow(),
             isSearching: $shown->lookingFor()->isSearching(),
+            hasAnErrorFurtherDown: ! $narrowed && $first > 0,
+            startsAtTheFirstError: $narrowed,
         );
     }
 
@@ -161,6 +178,23 @@ final readonly class HowAScrollbackReads
         }
 
         return $rows;
+    }
+
+    /**
+     * Where among these rows the first line declaring an error is, or 0 where
+     * it is the first row or there is none — either way, nothing to leave out.
+     *
+     * @param list<WhatOneLineSays> $rows
+     */
+    private function firstErrorIn(array $rows): int
+    {
+        foreach ($rows as $at => $row) {
+            if ($row->isAnError) {
+                return $at;
+            }
+        }
+
+        return 0;
     }
 
     /**

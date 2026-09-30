@@ -303,6 +303,16 @@ return [
     'service_said_nothing_action' => 'It is running quietly, or it has only just started.',
     'no_moment' => 'No time given',
     'decorative_lines' => '{1} 1 decorative line|[2,*] :count decorative lines',
+    'show_from_the_first_error' => 'Show from the first error',
+    'show_every_line' => 'Show every line',
+    'level' => [
+        'trace' => 'Trace',
+        'debug' => 'Debug',
+        'info' => 'Information',
+        'warn' => 'Warning',
+        'error' => 'Error',
+        'fatal' => 'Fatal error',
+    ],
 
     // What is running, and how much each one matters. The state is
     // where a service stands now; how much it matters is what it would cost if

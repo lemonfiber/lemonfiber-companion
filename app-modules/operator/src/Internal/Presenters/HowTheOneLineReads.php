@@ -13,10 +13,13 @@ use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AnAffectedItemAsShown;
 use Modules\Operator\Internal\ViewModels\AStoppageAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
 use Modules\Operator\Internal\ViewModels\WhyNothingWasSaid;
+
+use function sprintf;
 
 /**
  * The health summary a screen holds, as the lines a template draws.
@@ -193,6 +196,11 @@ final readonly class HowTheOneLineReads
             meaning: $item->meaning(),
             remedies: $remedies,
             downstream: $downstream,
+            check: $item->check()->shown(),
+            exited: $item->exit(
+                said: static fn(int $code): AsText => AsText::of(sprintf('%d', $code)),
+                unstated: static fn(): AsText => AsText::nothing(),
+            )->said,
         );
     }
 

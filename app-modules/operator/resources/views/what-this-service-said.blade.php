@@ -2,7 +2,16 @@
 <x-operator::stacks-to-choose :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
-<x-operator::content from-the-end>
+<x-operator::content :from-the-end="! $this->answer()->startsAtTheFirstError">
+    {{-- The lines from the first error on, one tap away at the top where a
+         screen that opens at its end is not; and every line back, once they
+         were narrowed. --}}
+    @if ($this->answer()->hasAnErrorFurtherDown)
+        <x-design::link label="{{ __('health.show_from_the_first_error') }}" tap="showFromTheFirstError()" />
+    @elseif ($this->answer()->startsAtTheFirstError)
+        <x-design::link label="{{ __('health.show_every_line') }}" tap="showEveryLine()" />
+    @endif
+
     {{-- The code the road here carried, from a finding or from how the
          service stopped: for whoever helps, and said above the lines, where
          somebody finding out what happened is already reading. --}}
@@ -53,9 +62,14 @@
                 />
             @else
                 {{-- The stream is not a severity — plenty of well-behaved
-                     services write progress to `stderr` — so a line worth
-                     noticing is drawn in weight, not with a mark. --}}
-                @if ($line->worthNoticing)
+                     services write progress to `stderr` — so a line from it
+                     is drawn in weight, and a glyph is kept for what a line
+                     declared about itself. --}}
+                @if ($line->tone !== '')
+                    {{-- An error or a warning, by what the line declared, with
+                         its glyph read aloud as that word. --}}
+                    <x-design::marked-line :line="$line->line" :tone="$line->tone" :word="__($line->levelSaid)" />
+                @elseif ($line->worthNoticing)
                     <x-design::strong>{{ $line->line }}</x-design::strong>
                 @else
                     <x-design::verbatim>{{ $line->line }}</x-design::verbatim>

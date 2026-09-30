@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Said;
@@ -653,4 +654,93 @@ it('draws the list of stacks when the menu opens it, though its top bar names th
 
     expect(WhatTheDeviceWouldDraw::inTheListOfStacks($screen)->offers())
         ->toBe([theStackWhoseServiceIsRead()->name()->shown(), __('navigation.switcher.add')]);
+});
+
+/** A window where an error comes after two ordinary lines, and a warning and an info line after it. */
+function aWindowWithAnErrorInIt(): Scrollback
+{
+    $service = theServiceOnTheScreen();
+
+    return Scrollback::of(
+        $service,
+        HowManyLines::of(10),
+        Said::whenever('starting', $service, Stream::Stdout)->declaring(HowSeriousALineIs::Info),
+        Said::whenever('checking the settings', $service, Stream::Stdout),
+        Said::whenever('VPN provider name is not valid', $service, Stream::Stderr)->declaring(HowSeriousALineIs::Error),
+        Said::whenever('slow to answer', $service, Stream::Stdout)->declaring(HowSeriousALineIs::Warn),
+        Said::whenever('gone', $service, Stream::Stderr)->declaring(HowSeriousALineIs::Fatal),
+    );
+}
+
+it('gives an error, a fatal line and a warning the glyph of their tone, read aloud as their word', function (): void {
+    $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWithAnErrorInIt()));
+    $rows = $screen->answer()->lines;
+
+    expect($rows[0]->tone)->toBe('')
+        ->and($rows[1]->tone)->toBe('')
+        ->and($rows[2]->tone)->toBe('trouble')
+        ->and($rows[2]->isAnError)->toBeTrue()
+        ->and($rows[3]->tone)->toBe('attention')
+        ->and($rows[3]->isAnError)->toBeFalse()
+        ->and($rows[4]->tone)->toBe('trouble')
+        ->and($rows[4]->isAnError)->toBeTrue();
+    $readAloud = everythingReadAloudOnTheLogScreen(WhatTheDeviceWouldDraw::tree($screen));
+
+    expect($readAloud)->toContain(
+        whatTheLogScreenCalls('health.level.error'),
+        whatTheLogScreenCalls('health.level.warn'),
+        whatTheLogScreenCalls('health.level.fatal'),
+    );
+    expect($readAloud)->not->toContain(whatTheLogScreenCalls('health.level.info'));
+});
+
+it('offers the lines from the first error at the top, which starts them there and offers every line back', function (): void {
+    $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWithAnErrorInIt()));
+
+    expect($screen->answer()->hasAnErrorFurtherDown)->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers()[0] ?? '')->toBe(whatTheLogScreenCalls('health.show_from_the_first_error'))
+        ->and(whereTheLogScreenOpens(WhatTheDeviceWouldDraw::tree($screen)))->toBe(['bottom']);
+
+    $screen->showFromTheFirstError();
+    $rows = $screen->answer()->lines;
+
+    // The lines start at the error; the window's claim about its edge is the
+    // one it made before, because nothing arrived differently.
+    expect($rows)->toHaveCount(3)
+        ->and($rows[0]->line)->toBe('VPN provider name is not valid')
+        ->and($screen->answer()->arrived)->toBe(5)
+        ->and($screen->answer()->startsAtTheFirstError)->toBeTrue()
+        ->and($screen->answer()->hasAnErrorFurtherDown)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers()[0] ?? '')->toBe(whatTheLogScreenCalls('health.show_every_line'))
+        ->and(whereTheLogScreenOpens(WhatTheDeviceWouldDraw::tree($screen)))->toBe(['top']);
+
+    $screen->showEveryLine();
+
+    expect($screen->answer()->lines)->toHaveCount(5);
+
+    $screen->showFromTheFirstError();
+    $screen->again();
+
+    expect($screen->fromTheFirstError)->toBeFalse();
+});
+
+it('offers nothing to show from where no line declared an error, or where the first line is the error', function (): void {
+    $service = theServiceOnTheScreen();
+    $quiet = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+    $atOnce = theLogScreen(AServiceThatSpoke::saying(Scrollback::of(
+        $service,
+        HowManyLines::of(10),
+        Said::whenever('broken', $service, Stream::Stderr)->declaring(HowSeriousALineIs::Error),
+        Said::whenever('still broken', $service, Stream::Stderr)->declaring(HowSeriousALineIs::Error),
+    )));
+
+    expect($quiet->answer()->hasAnErrorFurtherDown)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($quiet)->offers())->not->toContain(whatTheLogScreenCalls('health.show_from_the_first_error'))
+        ->and($atOnce->answer()->hasAnErrorFurtherDown)->toBeFalse();
+
+    // Asking where nothing comes before the first error leaves every line where it was.
+    $atOnce->showFromTheFirstError();
+
+    expect($atOnce->answer()->startsAtTheFirstError)->toBeFalse()
+        ->and($atOnce->answer()->lines)->toHaveCount(2);
 });

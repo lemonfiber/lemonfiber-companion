@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function array_key_exists;
+
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Finding;
@@ -63,7 +65,10 @@ use Modules\Operator\Internal\WhatTheCoreAddedUnderneath;
  */
 final readonly class HowAFindingReads
 {
-    public function __construct(private Findings $run) {}
+    /**
+     * @param array<string, string> $exits the code each check's service exited on, by the check, where the stack said
+     */
+    public function __construct(private Findings $run, private array $exits = []) {}
 
     /**
      * The one place a finding becomes a row.
@@ -78,6 +83,7 @@ final readonly class HowAFindingReads
         $called = $this->calledOf($finding);
         $because = $this->becauseOf($finding);
         $from = new HowAnOriginReads()->of($finding->origin());
+        $exited = $this->exitedOf($finding);
 
         return $said->either(
             nothingWrong: static fn(): WhatOneFindingSays => new WhatOneFindingSays(
@@ -92,6 +98,7 @@ final readonly class HowAFindingReads
                 remedies: Remedies::none(),
                 underneath: '',
                 from: $from,
+                exited: $exited,
             ),
             wentWrong: static fn(
                 Code $code,
@@ -126,6 +133,7 @@ final readonly class HowAFindingReads
                         => new WhatTheCoreAddedUnderneath(''),
                 )->said,
                 from: $from,
+                exited: $exited,
             ),
             couldNotSay: static fn(string $reason, Remedies $remedies): WhatOneFindingSays => new WhatOneFindingSays(
                 title: $finding->title(),
@@ -144,11 +152,26 @@ final readonly class HowAFindingReads
                 remedies: $remedies,
                 underneath: '',
                 from: $from,
+                exited: $exited,
             ),
         );
     }
 
     /** Which service this row is about, or empty where it is about the machine. */
+    /**
+     * The code the finding's service exited on, where the health summary gave
+     * one for the same check.
+     *
+     * Found by the check rather than by the service, because the summary
+     * names a check and the check is what both readings share.
+     */
+    private function exitedOf(Finding $finding): string
+    {
+        $check = $finding->check()->shown();
+
+        return array_key_exists($check, $this->exits) ? $this->exits[$check] : '';
+    }
+
     private function serviceOf(Finding $finding): string
     {
         return $finding->whatItIsAbout()->either(

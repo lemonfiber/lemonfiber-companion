@@ -26,9 +26,6 @@ enum StatusField: string implements NamesAWireField
     /** The services one service will not work without. */
     case DependsOn = 'depends_on';
 
-    /** What a service that has ended exited with. Absent while it runs. */
-    case Exit = 'exit';
-
     /** Which of a disturbance's two shapes this one is. */
     case Bound = 'bound';
 

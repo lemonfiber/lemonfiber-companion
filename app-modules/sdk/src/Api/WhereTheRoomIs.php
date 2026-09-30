@@ -81,7 +81,7 @@ final readonly class WhereTheRoomIs
 
         return WhereTheRoomWent::measured(
             TheVolumes::of(...self::volumes($data)),
-            self::level($data, SpaceField::Level->value),
+            self::level($data, WireField::Level->value),
             TheAccount::of(...self::account($data)),
             TheDownloadsOnDisk::of(...self::downloads($data)),
             halted: self::flag($data, SpaceField::Halted->value, SpaceField::Halted),
@@ -123,7 +123,7 @@ final readonly class WhereTheRoomIs
                 WhatAVolumeHolds::tryFrom($holds) ?? throw SpaceIsUnreadable::word(self::path($where, SpaceField::Role), $holds, ...array_map(static fn(WhatAVolumeHolds $case): string => $case->value, WhatAVolumeHolds::cases())),
                 self::point($row, $where),
                 HowMuchRoomAVolumeHas::counted(self::amount($row, $where, SpaceField::Free), self::amount($row, $where, WireField::Limit), self::count($row, self::path($where, SpaceField::Committed), SpaceField::Committed), self::amount($row, $where, SpaceField::Projected)),
-                self::level($row, self::path($where, SpaceField::Level)),
+                self::level($row, self::path($where, WireField::Level)),
                 self::reading($row, $where),
             );
             $position++;
@@ -314,7 +314,7 @@ final readonly class WhereTheRoomIs
      */
     private static function level(array $data, string $where): WhereTheRoomStands
     {
-        $said = self::text($data, $where, SpaceField::Level);
+        $said = self::text($data, $where, WireField::Level);
 
         return WhereTheRoomStands::tryFrom($said) ?? throw SpaceIsUnreadable::word($where, $said, ...array_map(static fn(WhereTheRoomStands $case): string => $case->value, WhereTheRoomStands::cases()));
     }

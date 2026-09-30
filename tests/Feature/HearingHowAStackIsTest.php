@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AboutWhat;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\AStoppage;
@@ -130,7 +131,7 @@ final readonly class AScreenListening
 }
 
 /** The home screen, listening to a stream that says what a test scripts, in front of somebody. */
-function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $window = null, bool $signedIn = true): AScreenListening
+function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $window = null, bool $signedIn = true, ?Report $run = null): AScreenListening
 {
     $stack = theStackBeingListenedTo();
     $keychain = AKeychainInMemory::working();
@@ -144,7 +145,7 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
     $standings = StandingsInMemory::working();
 
     $screen = new HowThisStackIs(
-        AStackThatWasAsked::saying(aRunWithOneFinding()),
+        AStackThatWasAsked::saying($run ?? aRunWithOneFinding()),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         $stream,
@@ -543,3 +544,50 @@ it('draws no stopped heading and no slow heading where nothing has stopped', fun
     expect($said)->not->toContain(__('health.stopped_heading'))
         ->and($said)->not->toContain(__('health.slow_heading'));
 });
+
+it('reads a service that stopped plainly at the top, with its standing, and carries its exit code to its logs alone', function (): void {
+    $gluetun = TheHealthSummary::of(
+        HowItStands::Critical,
+        1,
+        'Gluetun stopped with an error',
+        WhatStoppedMoving::nothing(),
+        AnAffectedItem::ofAServiceThatExited(
+            Check::of('service.gluetun'),
+            Severity::Critical,
+            'Gluetun stopped with an error',
+            'what depends on Gluetun is not safe to keep running while it is down',
+            Remedies::of(Remedy::of('start Gluetun again')),
+            WhatFollowedFromIt::of(),
+            1,
+        ),
+    );
+    $listening = aScreenListeningTo(
+        AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said($gluetun)),
+        run: Report::of(Overall::Broken, Findings::of(
+            Finding::of(
+                Check::of('service.gluetun'),
+                Category::Services,
+                'Gluetun',
+                Conclusion::Failed,
+                WhatTheCheckSaid::nothingWrong(),
+                WhoPutItThere::bundled(),
+            )->about(AboutWhat::theNamedService('gluetun', 'Gluetun')),
+        )),
+    );
+
+    $listening->screen->mount();
+    $listening->screen->expand();
+    $drawn = WhatTheDeviceWouldDraw::by($listening->screen)->said();
+
+    expect($drawn)->toContain('Gluetun stopped with an error', whatTheTopCalls('health.standing_short.critical'))
+        ->and(implode("\n", $drawn))->not->toContain('exit')
+        ->and($listening->screen->findings()[0]->carriedToTheLogs())->toBe(['exited' => '1', 'called' => 'Gluetun']);
+});
+
+/** What the catalogue says for a key, as the text it is. */
+function whatTheTopCalls(string $key): string
+{
+    $said = __($key);
+
+    return is_string($said) ? $said : '';
+}

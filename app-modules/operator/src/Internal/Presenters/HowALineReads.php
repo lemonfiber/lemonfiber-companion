@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AMomentAsWritten;
+use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Said;
 use Modules\Kernel\Api\Zone;
+use Modules\Operator\Internal\AGlyphForALine;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\WhatOneLineSays;
 
@@ -26,6 +28,12 @@ use Modules\Operator\Internal\ViewModels\WhatOneLineSays;
  *
  * **Only the error stream is marked.** Ordinary output is what nearly every line
  * is, and a mark on every row says nothing.
+ *
+ * **A line's glyph is its own word for itself.** An error — and one the service
+ * did not survive — is drawn with trouble's glyph, a warning with attention's,
+ * from the severity the core read off the line. Every other severity, and a
+ * line the core could not classify, is drawn without one: a glyph on an info
+ * line would teach the eye to skip glyphs.
  */
 final readonly class HowALineReads
 {
@@ -35,6 +43,10 @@ final readonly class HowALineReads
         $stream = $said->stream();
         $noticed = $stream->worthNoticing();
         $marked = $noticed ? $stream->saidOnTheScreen() : '';
+        $level = $said->level(
+            declared: static fn(HowSeriousALineIs $level): AGlyphForALine => AGlyphForALine::for($level),
+            undeclared: static fn(): AGlyphForALine => AGlyphForALine::none(),
+        );
 
         return $said->when(
             then: static fn(string $when): WhatOneLineSays => new WhatOneLineSays(
@@ -47,6 +59,9 @@ final readonly class HowALineReads
                 )->said,
                 atInFull: $when,
                 hasAMoment: true,
+                tone: $level->tone,
+                levelSaid: $level->said,
+                isAnError: $level->isAnError,
             ),
             unstated: static fn(): WhatOneLineSays => new WhatOneLineSays(
                 line: $said->line(),
@@ -55,6 +70,9 @@ final readonly class HowALineReads
                 at: '',
                 atInFull: '',
                 hasAMoment: false,
+                tone: $level->tone,
+                levelSaid: $level->said,
+                isAnError: $level->isAnError,
             ),
         );
     }

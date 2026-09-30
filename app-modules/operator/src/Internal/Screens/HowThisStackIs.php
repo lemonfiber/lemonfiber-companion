@@ -189,7 +189,7 @@ final class HowThisStackIs extends NativeComponent
         // findable across the run. Built once and asked per row, so every row
         // resolves its cause against the listing this screen is showing —
         // grouped, so a symptom resolves against the cause it now sits under.
-        $reads = new HowAFindingReads($run);
+        $reads = new HowAFindingReads($run, $this->exits());
         $rows = [];
 
         foreach ($run as $finding) {
@@ -368,6 +368,27 @@ final class HowThisStackIs extends NativeComponent
     protected function listensWith(): WhatItListensWith
     {
         return new WhatItListensWith($this->hearing, $this->clock, $this->capture, $this->standings, $this->keeping);
+    }
+
+    /**
+     * The code each check's service exited on, from the health summary heard.
+     *
+     * Carried down the road to that service's logs, which say it above the
+     * lines; the cards say nothing of it.
+     *
+     * @return array<string, string>
+     */
+    private function exits(): array
+    {
+        $exits = [];
+
+        foreach ($this->summary()->affected as $item) {
+            if ($item->exited !== '') {
+                $exits[$item->check] = $item->exited;
+            }
+        }
+
+        return $exits;
     }
 
     /**

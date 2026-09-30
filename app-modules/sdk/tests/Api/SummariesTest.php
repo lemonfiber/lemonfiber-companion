@@ -250,3 +250,45 @@ it('refuses a dashboard with no stopped list, rather than reading it as nothing 
     expect(whyTheSummaryWasRefused(new Envelope(1, 'dashboard', ['health' => aHealthSummary()])))->toContain('`stuck`')
         ->and(whyTheSummaryWasRefused(new Envelope(1, 'dashboard', ['health' => aHealthSummary(), 'stuck' => 'nothing'])))->toContain('`stuck`');
 });
+
+/** What one item's exit code came to, carried out of `exit()`, which must hand back an object. */
+final readonly class WhatAnExitCameTo
+{
+    public function __construct(public string $said) {}
+}
+
+/**
+ * The exit code each affected item carried, in order, or `-` for one that carried none.
+ *
+ * @param Envelope<mixed> $envelope
+ */
+function everyExitCarried(Envelope $envelope): string
+{
+    $codes = [];
+
+    foreach (Summaries::in($envelope) as $item) {
+        $codes[] = $item->exit(
+            said: static fn(int $code): WhatAnExitCameTo => new WhatAnExitCameTo(sprintf('%d', $code)),
+            unstated: static fn(): WhatAnExitCameTo => new WhatAnExitCameTo('-'),
+        )->said;
+    }
+
+    return implode(' ', $codes);
+}
+
+it('reads the code a service in an item exited on, and an item with none as carrying none', function (): void {
+    expect(everyExitCarried(aDashboardSaying(aHealthSummary([
+        'affected' => [
+            [...anAffectedRow('service.gluetun', 'critical'), 'exit' => 1],
+            [...anAffectedRow('service.sonarr', 'error'), 'exit' => 0],
+            [...anAffectedRow('disk.space'), 'exit' => null],
+            anAffectedRow('vpn.leak', 'critical'),
+        ],
+    ]))))->toBe('1 0 - -');
+});
+
+it('refuses an exit code that is not a number, naming the item', function (): void {
+    expect(whyTheSummaryWasRefused(aDashboardSaying(aHealthSummary([
+        'affected' => [anAffectedRow(), [...anAffectedRow(), 'exit' => '1']],
+    ]))))->toContain('exit');
+});

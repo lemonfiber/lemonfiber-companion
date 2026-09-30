@@ -17,9 +17,6 @@ enum SpaceField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Where a machine, or one of its volumes, stands for room. */
-    case Level = 'level';
-
     /** Whether the stack has stopped starting new downloads to keep its services writable. */
     case Halted = 'halted';
 
