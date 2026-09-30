@@ -1127,6 +1127,60 @@ struct NativeUIWrappingRow: Layout {
 BECOMES,
     ],
     [
+        // The iOS half of the IconHelper.kt glyph entries. A list row's leading and
+        // trailing icons are SF Symbols drawn as images VoiceOver can reach,
+        // so a row is read as its symbol's name ("exclamationmark.octagon.fill")
+        // and a chevron as "Forward", each a stop of its own beside the row.
+        // They decorate a row whose words, and whose label, already say what
+        // it is, so they are hidden from VoiceOver, as the Android row's icons
+        // are and as the row's avatar, monogram and image already were.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
+        'ships' => <<<'SHIPS'
+                    Image(systemName: getIconForName(value))
+                        .nuiScaledFont(size: 18, weight: .medium)
+                        .foregroundColor(.white)
+                }
+                .frame(width: 40, height: 40)
+            } else {
+                Image(systemName: getIconForName(value))
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.secondary)
+            }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                    Image(systemName: getIconForName(value))
+                        .nuiScaledFont(size: 18, weight: .medium)
+                        .foregroundColor(.white)
+                }
+                .frame(width: 40, height: 40)
+                .accessibilityHidden(true)
+            } else {
+                Image(systemName: getIconForName(value))
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(.secondary)
+                    .accessibilityHidden(true)
+            }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
+        'ships' => <<<'SHIPS'
+        case "icon":
+            Image(systemName: getIconForName(value))
+                .frame(width: 24, height: 24)
+                .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
+        case "text":
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        case "icon":
+            Image(systemName: getIconForName(value))
+                .frame(width: 24, height: 24)
+                .foregroundColor(iconColor != 0 ? Color(argb: iconColor) : .secondary)
+                .accessibilityHidden(true)
+        case "text":
+BECOMES,
+    ],
+    [
         // What a bridge call carries stays out of the device log. The bridge
         // writes every call's parameters and result to logcat at INFO, in
         // debug and release builds alike, and this app's storage calls carry
