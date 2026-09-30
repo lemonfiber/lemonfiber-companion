@@ -24,7 +24,6 @@ use Modules\Operator\Internal\Screens\YourStacks;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
-use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -68,7 +67,7 @@ function theOpeningScreen(Stack $stack, ?StandingsInMemory $standings = null): Y
         AShareSheetThatWasOffered::working(),
         $standings ?? StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(NOW)),
-        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
         AStackThatSpeaksUp::holdingOpen(),
@@ -125,7 +124,7 @@ it('says nothing about the session where this device is signed in', function ():
         AShareSheetThatWasOffered::working(),
         $standings,
         FrozenClock::at(Instant::atEpochSeconds(NOW)),
-        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
         AStackThatSpeaksUp::holdingOpen(),
@@ -237,7 +236,7 @@ it('keeps one stack\'s word apart from another\'s', function (): void {
         AShareSheetThatWasOffered::working(),
         $standings,
         FrozenClock::at(Instant::atEpochSeconds(NOW)),
-        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
         AStackThatSpeaksUp::holdingOpen(),
@@ -301,7 +300,7 @@ function theListeningScreen(
         AShareSheetThatWasOffered::working(),
         $standings,
         $clock ?? FrozenClock::at(Instant::atEpochSeconds(NOW)),
-        new Opening(ADeviceThatKnowsYou::willing(), $stacks, $network ?? ADeviceOnANetwork::connected()),
+        new Opening($stacks, $network ?? ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
         $hearing,

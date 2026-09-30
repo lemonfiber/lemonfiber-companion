@@ -1,127 +1,152 @@
 import Foundation
 
-/// Whether the app must be locked, and whether it may ask right now.
+/// Whether the app is locked, and what the glass may show.
 ///
-/// Two questions rather than one, and keeping them apart is the whole of the
-/// rule. "Must the app be locked" is about time and about whether anybody has
-/// authenticated yet. "May the app prompt" is about what the operator is in the
-/// middle of — and a prompt raised over an action in flight is refused, because
-/// the operator answers it to get rid of it rather than because they meant to.
+/// The lock stands from a cold start until the device's own prompt succeeds.
+/// Leaving the app starts a clock, and coming back once `after` seconds have
+/// passed stands it again. Nothing else opens it except `waived()`, which the
+/// PHP half asks for only where the store holds nothing for the lock to guard.
 ///
-/// No Security, no LocalAuthentication, no UIKit. Everything here is arithmetic
-/// on values a caller passes in, which is what lets the decision be tested on a
-/// laptop rather than demonstrated on a handset.
+/// Time is whatever monotonic clock the caller reads, counting while the phone
+/// sleeps, so setting the phone's clock back cannot shorten a time away.
+///
+/// No UIKit and no LocalAuthentication here: every answer is arithmetic on
+/// values a caller passes in, and `LockRule.kt` answers the same questions line
+/// for line.
 public struct LockRule: Equatable, Sendable {
-    /// Whether the device has authenticated somebody since the app started.
-    ///
-    /// False on a cold start, which must always require the device's own
-    /// authentication — there is no grace period across a launch, because the
-    /// app that was open before is not the app that is open now.
-    public let everAuthenticated: Bool
+    /// Whether the lock stands.
+    public let held: Bool
 
-    /// How long ago that was.
-    ///
-    /// Meaningless while `everAuthenticated` is false, and deliberately not an
-    /// optional: an optional here invites `?? 0`, which reads as "just now" and
-    /// unlocks a cold start.
-    public let secondsSinceAuthenticated: Int
+    /// How many seconds the app may be away before the lock stands again.
+    public let after: Int64
 
-    /// How long the operator chose to allow before asking again.
-    ///
-    /// Configurable by the operator. Zero means ask on every resume, which is a
-    /// legitimate choice and is why this is not clamped to a minimum.
-    public let grace: Int
+    /// Whether the app is out of sight right now.
+    public let away: Bool
 
-    /// Whether the operator is in the middle of something.
-    ///
-    /// A command sent to a stack, a pairing half finished. A prompt is refused
-    /// here: an operator interrupted mid-action answers to get rid of the
-    /// dialog, which is not authentication, it is an obstacle.
-    public let actionInFlight: Bool
+    /// When the app last went out of sight, in the caller's monotonic seconds.
+    public let leftAt: Int64
 
-    /// - Parameters:
-    ///   - everAuthenticated: whether the device has authenticated since launch.
-    ///   - secondsSinceAuthenticated: how long ago that was.
-    ///   - grace: how long the operator allows before being asked again.
-    ///   - actionInFlight: whether something is mid-flight.
-    public init(
-        everAuthenticated: Bool,
-        secondsSinceAuthenticated: Int,
-        grace: Int,
-        actionInFlight: Bool
-    ) {
-        self.everAuthenticated = everAuthenticated
-        self.secondsSinceAuthenticated = secondsSinceAuthenticated
-        self.grace = grace
-        self.actionInFlight = actionInFlight
-    }
+    /// Whether the device's own prompt is up.
+    public let prompting: Bool
 
-    /// The app must be locked.
-    ///
-    /// `>=` rather than `>`: a grace of sixty seconds means sixty seconds of
-    /// grace, and the sixtieth second is the first one past it. With `>` a grace
-    /// of zero would never lock, which is the configuration meaning "ask every
-    /// time".
-    public var mustLock: Bool {
-        !everAuthenticated || secondsSinceAuthenticated >= grace
-    }
+    /// Whether the glass stays covered until the lock screen is drawn on it.
+    public let hiding: Bool
 
-    /// The app may raise the device's authentication prompt now.
-    ///
-    /// Never merely `mustLock`. A locked app with an action in flight stays
-    /// locked and stays quiet — the lock screen is shown, and the prompt waits
-    /// until the action has finished.
-    public var mayPrompt: Bool {
-        mustLock && !actionInFlight
-    }
+    /// Whether the prompt was raised without being asked for, for this standing.
+    public let asked: Bool
 
-    /// What a cold start looks like: nobody authenticated, whatever the clock says.
-    public static func coldStart(grace: Int) -> LockRule {
+    /// A cold start: the lock stands, and Lock after is immediately until told otherwise.
+    public static func coldStart() -> LockRule {
         LockRule(
-            everAuthenticated: false,
-            secondsSinceAuthenticated: 0,
-            grace: grace,
-            actionInFlight: false
+            held: true,
+            after: 0,
+            away: false,
+            leftAt: 0,
+            prompting: false,
+            hiding: false,
+            asked: false
         )
     }
 
-    /// The same rule with the device having just authenticated somebody.
-    public func authenticated() -> LockRule {
-        LockRule(
-            everAuthenticated: true,
-            secondsSinceAuthenticated: 0,
-            grace: grace,
-            actionInFlight: actionInFlight
-        )
+    /// Whether the lock stands at `now`, counting a time away that has not ended.
+    ///
+    /// A notification shown while the app is away asks this, because the lock
+    /// stands from the moment the time away passes `after`, not from the return.
+    /// A device with no screen lock of its own has nobody to ask, and there the
+    /// lock never stands.
+    public func standsAt(now: Int64, canAsk: Bool) -> Bool {
+        canAsk && (held || (away && now - leftAt >= after))
     }
 
-    /// The same rule, some seconds later.
-    public func after(seconds: Int) -> LockRule {
-        LockRule(
-            everAuthenticated: everAuthenticated,
-            secondsSinceAuthenticated: secondsSinceAuthenticated + seconds,
-            grace: grace,
-            actionInFlight: actionInFlight
-        )
+    /// Whether the glass must show nothing of the app.
+    public var mustCover: Bool {
+        away || hiding
     }
 
-    /// The same rule with the operator in the middle of something.
-    public func doing() -> LockRule {
-        LockRule(
-            everAuthenticated: everAuthenticated,
-            secondsSinceAuthenticated: secondsSinceAuthenticated,
-            grace: grace,
-            actionInFlight: true
-        )
+    /// Whether the prompt may go up without the operator asking for it.
+    ///
+    /// Once per standing. An operator who dismissed the prompt meant it, and the
+    /// lock screen offers the prompt again on a tap.
+    public var mayAskByItself: Bool {
+        held && !asked && !prompting
     }
 
-    /// The same rule with that action finished.
-    public func idle() -> LockRule {
+    /// The app went out of sight at `now`.
+    ///
+    /// Not while the device's own prompt is up: the passcode sheet takes the app
+    /// out of the active state, and counting it as leaving would stand the lock
+    /// again over the answer that opened it.
+    public func left(_ now: Int64) -> LockRule {
+        prompting ? self : with(away: true, leftAt: now)
+    }
+
+    /// The app came back into sight at `now`, on a device that `canAsk` or not.
+    ///
+    /// `>=` rather than `>`, so that a Lock after of nothing stands the lock on
+    /// every return. A lock that stands afresh hides the glass until the lock
+    /// screen is on it, and may ask once more by itself.
+    public func returned(now: Int64, canAsk: Bool) -> LockRule {
+        if prompting || !away {
+            return with(away: false)
+        }
+
+        let stands = canAsk && (held || now - leftAt >= after)
+        let afresh = stands && !held
+
+        return with(held: stands, away: false, hiding: hiding || afresh, asked: asked && !afresh)
+    }
+
+    /// The lock screen is on the glass, so the glass need not be covered.
+    public func drawn() -> LockRule {
+        with(hiding: false)
+    }
+
+    /// The device's own prompt went up.
+    public func asking() -> LockRule {
+        with(prompting: true)
+    }
+
+    /// The prompt went up without the operator asking for it.
+    public func askingByItself() -> LockRule {
+        with(prompting: true, asked: true)
+    }
+
+    /// The device's own prompt answered.
+    ///
+    /// Only `succeeded` opens the lock. A failure, a cancel, a lockout and an
+    /// error all leave it exactly as it was.
+    public func answered(succeeded: Bool) -> LockRule {
+        with(held: held && !succeeded, prompting: false, hiding: hiding && !succeeded)
+    }
+
+    /// The store holds nothing the lock guards, so it stands down.
+    public func waived() -> LockRule {
+        with(held: false, hiding: false)
+    }
+
+    /// The operator chose how long the app may be away.
+    public func awayFor(seconds: Int64) -> LockRule {
+        with(after: seconds)
+    }
+
+    /// The same rule with the named facts changed, which is Kotlin's `copy`.
+    private func with(
+        held: Bool? = nil,
+        after: Int64? = nil,
+        away: Bool? = nil,
+        leftAt: Int64? = nil,
+        prompting: Bool? = nil,
+        hiding: Bool? = nil,
+        asked: Bool? = nil
+    ) -> LockRule {
         LockRule(
-            everAuthenticated: everAuthenticated,
-            secondsSinceAuthenticated: secondsSinceAuthenticated,
-            grace: grace,
-            actionInFlight: false
+            held: held ?? self.held,
+            after: after ?? self.after,
+            away: away ?? self.away,
+            leftAt: leftAt ?? self.leftAt,
+            prompting: prompting ?? self.prompting,
+            hiding: hiding ?? self.hiding,
+            asked: asked ?? self.asked
         )
     }
 }

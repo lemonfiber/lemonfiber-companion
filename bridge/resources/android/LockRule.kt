@@ -1,98 +1,136 @@
 package app.lemonfiber.native
 
 /**
- * Whether the app must be locked, and whether it may ask right now.
+ * Whether the app is locked, and what the glass may show.
  *
- * Two questions rather than one, and keeping them apart is the whole of the
- * rule. "Must the app be locked" is about time and about whether anybody has
- * authenticated yet. "May the app prompt" is about what the operator is in the
- * middle of — and a prompt raised over an action in flight is refused, because
- * the operator answers it to get rid of it rather than because they meant to.
+ * The lock stands from a cold start until the device's own prompt succeeds.
+ * Leaving the app starts a clock, and coming back once [after] seconds have
+ * passed stands it again. Nothing else opens it except [waived], which the PHP
+ * half asks for only where the store holds nothing for the lock to guard.
  *
- * No Android framework here. Everything is arithmetic on values a caller passes
- * in, which is what lets the decision be tested on a JVM in two seconds rather
- * than demonstrated on a handset.
+ * Time is whatever monotonic clock the caller reads, counting while the phone
+ * sleeps, so setting the phone's clock back cannot shorten a time away.
  *
- * Deliberately mirrors `LockRule.swift` line for line, for the reason the
- * capture rule is mirrored: two platforms disagreeing about when an app locks is
- * a bug nobody finds, because each half looks right on its own.
+ * No Android framework here: every answer is arithmetic on values a caller
+ * passes in, and `LockRule.swift` answers the same questions line for line.
  */
 public data class LockRule(
-    /**
-     * Whether the device has authenticated somebody since the app started.
-     *
-     * False on a cold start, which must always require the device's own
-     * authentication — there is no grace period across a launch, because the
-     * app that was open before is not the app that is open now.
-     */
-    public val everAuthenticated: Boolean,
-    /**
-     * How long ago that was.
-     *
-     * Meaningless while [everAuthenticated] is false, and deliberately not
-     * nullable: a null here invites `?: 0`, which reads as "just now" and
-     * unlocks a cold start.
-     */
-    public val secondsSinceAuthenticated: Int,
-    /**
-     * How long the operator chose to allow before being asked again.
-     *
-     * Configurable by the operator. Zero means ask on every resume, which is a
-     * legitimate choice and is why this is not clamped to a minimum.
-     */
-    public val grace: Int,
-    /**
-     * Whether the operator is in the middle of something.
-     *
-     * A command sent to a stack, a pairing half finished. A prompt is refused
-     * here: an operator interrupted mid-action answers to get rid of the dialog,
-     * which is not authentication, it is an obstacle.
-     */
-    public val actionInFlight: Boolean,
+    /** Whether the lock stands. */
+    public val held: Boolean,
+    /** How many seconds the app may be away before the lock stands again. */
+    public val after: Long,
+    /** Whether the app is out of sight right now. */
+    public val away: Boolean,
+    /** When the app last went out of sight, in the caller's monotonic seconds. */
+    public val leftAt: Long,
+    /** Whether the device's own prompt is up. */
+    public val prompting: Boolean,
+    /** Whether the glass stays covered until the lock screen is drawn on it. */
+    public val hiding: Boolean,
+    /** Whether the prompt was raised without being asked for, for this standing. */
+    public val asked: Boolean,
 ) {
     /**
-     * The app must be locked.
+     * Whether the lock stands at [now], counting a time away that has not ended.
      *
-     * `>=` rather than `>`: a grace of sixty seconds means sixty seconds of
-     * grace, and the sixtieth second is the first one past it. With `>` a grace
-     * of zero would never lock, which is the configuration meaning "ask every
-     * time".
+     * A notification shown while the app is away asks this, because the lock
+     * stands from the moment the time away passes [after], not from the return.
+     * A device with no screen lock of its own has nobody to ask, and there the
+     * lock never stands.
      */
-    public val mustLock: Boolean
-        get() = !everAuthenticated || secondsSinceAuthenticated >= grace
+    public fun standsAt(
+        now: Long,
+        canAsk: Boolean,
+    ): Boolean = canAsk && (held || (away && now - leftAt >= after))
+
+    /** Whether the glass must show nothing of the app. */
+    public val mustCover: Boolean
+        get() = away || hiding
 
     /**
-     * The app may raise the device's authentication prompt now.
+     * Whether the prompt may go up without the operator asking for it.
      *
-     * Never merely [mustLock]. A locked app with an action in flight stays
-     * locked and stays quiet — the lock screen is shown, and the prompt waits
-     * until the action has finished.
+     * Once per standing. An operator who dismissed the prompt meant it, and the
+     * lock screen offers the prompt again on a tap.
      */
-    public val mayPrompt: Boolean
-        get() = mustLock && !actionInFlight
+    public val mayAskByItself: Boolean
+        get() = held && !asked && !prompting
 
-    /** The same rule with the device having just authenticated somebody. */
-    public fun authenticated(): LockRule = copy(everAuthenticated = true, secondsSinceAuthenticated = 0)
+    /**
+     * The app went out of sight at [now].
+     *
+     * Not while the device's own prompt is up: on some devices the passcode
+     * screen is an activity of its own, and counting it as leaving would stand
+     * the lock again over the answer that opened it.
+     */
+    public fun left(now: Long): LockRule = if (prompting) this else copy(away = true, leftAt = now)
 
-    /** The same rule, some seconds later. */
-    public fun after(seconds: Int): LockRule =
-        copy(secondsSinceAuthenticated = secondsSinceAuthenticated + seconds)
+    /**
+     * The app came back into sight at [now], on a device that [canAsk] or not.
+     *
+     * `>=` rather than `>`, so that a Lock after of nothing stands the lock on
+     * every return. A lock that stands afresh hides the glass until the lock
+     * screen is on it, and may ask once more by itself.
+     */
+    public fun returned(
+        now: Long,
+        canAsk: Boolean,
+    ): LockRule {
+        if (prompting || !away) {
+            return copy(away = false)
+        }
 
-    /** The same rule with the operator in the middle of something. */
-    public fun doing(): LockRule = copy(actionInFlight = true)
+        val stands = canAsk && (held || now - leftAt >= after)
+        val afresh = stands && !held
 
-    /** The same rule with that action finished. */
-    public fun idle(): LockRule = copy(actionInFlight = false)
+        return copy(
+            held = stands,
+            away = false,
+            hiding = hiding || afresh,
+            asked = asked && !afresh,
+        )
+    }
+
+    /** The lock screen is on the glass, so the glass need not be covered. */
+    public fun drawn(): LockRule = copy(hiding = false)
+
+    /** The device's own prompt went up. */
+    public fun asking(): LockRule = copy(prompting = true)
+
+    /** The prompt went up without the operator asking for it. */
+    public fun askingByItself(): LockRule = copy(prompting = true, asked = true)
+
+    /**
+     * The device's own prompt answered.
+     *
+     * Only [succeeded] opens the lock. A failure, a cancel, a lockout and an
+     * error all leave it exactly as it was.
+     */
+    public fun answered(succeeded: Boolean): LockRule =
+        copy(
+            held = held && !succeeded,
+            hiding = hiding && !succeeded,
+            prompting = false,
+        )
+
+    /** The store holds nothing the lock guards, so it stands down. */
+    public fun waived(): LockRule = copy(held = false, hiding = false)
+
+    /** The operator chose how long the app may be away. */
+    public fun awayFor(seconds: Long): LockRule = copy(after = seconds)
 
     /** Where the starting state lives, named so it reads at a call site. */
     public companion object {
-        /** What a cold start looks like: nobody authenticated, whatever the clock says. */
-        public fun coldStart(grace: Int): LockRule =
+        /** A cold start: the lock stands, and Lock after is immediately until told otherwise. */
+        public fun coldStart(): LockRule =
             LockRule(
-                everAuthenticated = false,
-                secondsSinceAuthenticated = 0,
-                grace = grace,
-                actionInFlight = false,
+                held = true,
+                after = 0,
+                away = false,
+                leftAt = 0,
+                prompting = false,
+                hiding = false,
+                asked = false,
             )
     }
 }

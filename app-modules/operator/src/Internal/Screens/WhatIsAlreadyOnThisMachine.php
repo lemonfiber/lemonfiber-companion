@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TheSurvey;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAMoveReads;
 use Modules\Operator\Internal\Presenters\HowTheSurveyReads;
@@ -57,7 +58,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class WhatIsAlreadyOnThisMachine extends NativeComponent
+final class WhatIsAlreadyOnThisMachine extends NativeComponent implements AwaitsAnOutcome
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -185,6 +186,12 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->howTheMoveIsGoing()->isWorking;
     }
 
     public function render(): View

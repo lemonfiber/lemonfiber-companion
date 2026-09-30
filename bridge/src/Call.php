@@ -35,13 +35,21 @@ enum Call: string
     case IsInFront = 'Lemonfiber.IsInFront';
 
     /**
-     * Ask the device who this is.
+     * Ask the device who this is, and wait for the answer.
      *
-     * Answers immediately and sends the real result as an event: the dialog is
-     * the operator's to answer in their own time, and a bridge call that waited
-     * would hold the thread it was called on.
+     * The bridge thread waits while the operator answers, as it does for the
+     * camera, and what comes back is what the platform said.
      */
     case Authenticate = 'Lemonfiber.Authenticate';
+
+    /** Whether the app lock stands right now. */
+    case LockStanding = 'Lemonfiber.Lock.Standing';
+
+    /** Stand the lock down: the store holds nothing for it to guard. */
+    case LockWaive = 'Lemonfiber.Lock.Waive';
+
+    /** The lock screen is on the glass. */
+    case LockDrawn = 'Lemonfiber.Lock.Drawn';
 
     /**
      * Whether the device can authenticate anybody at all.

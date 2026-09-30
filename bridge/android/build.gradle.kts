@@ -79,6 +79,8 @@ sourceSets {
         kotlin.exclude(
             "LemonfiberFunctions.kt",
             "LemonfiberAuth.kt",
+            "TheLock.kt",
+            "TheCover.kt",
             "TellingFunctions.kt",
             "ThePermissionPrompt.kt",
             "ScanningFunctions.kt",

@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowABundleReads;
@@ -64,7 +65,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class AskingForHelpHere extends NativeComponent
+final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
 {
     use ChoosesWhatABundleHolds;
     use LetsGoOfARefusedSession;
@@ -115,6 +116,12 @@ final class AskingForHelpHere extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->answer()->isWorking;
     }
 
     public function render(): View

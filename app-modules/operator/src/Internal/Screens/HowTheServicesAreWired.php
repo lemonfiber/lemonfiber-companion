@@ -18,6 +18,7 @@ use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\Presenters\HowTheWiringReads;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheWiringTurnedOutToBe;
@@ -50,7 +51,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class HowTheServicesAreWired extends NativeComponent
+final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOutcome
 {
     use AsksWhatTheStackIsRunning;
     use FindsItsWayAround;
@@ -127,6 +128,12 @@ final class HowTheServicesAreWired extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->howItIsGoing()->isWorking;
     }
 
     public function render(): View

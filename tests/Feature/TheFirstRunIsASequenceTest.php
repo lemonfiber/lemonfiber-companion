@@ -14,7 +14,6 @@ use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
-use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -62,7 +61,7 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         AShareSheetThatWasOffered::working(),
         StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_WAS_FIRST_RUN)),
-        new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
+        new Opening($stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
         AStackThatSpeaksUp::holdingOpen(),

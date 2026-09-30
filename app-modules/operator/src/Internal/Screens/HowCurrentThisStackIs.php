@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
@@ -48,7 +49,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class HowCurrentThisStackIs extends NativeComponent
+final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOutcome
 {
     use FollowsTheUpdateItTook;
     use LetsGoOfARefusedSession;

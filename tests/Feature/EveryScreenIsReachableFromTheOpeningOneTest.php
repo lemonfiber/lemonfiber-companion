@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Operator\Internal\Screens\Locked;
 use Tests\Support\Screens;
 use Tests\Support\WhereAScreenCanSendYou;
 
@@ -136,6 +137,14 @@ it('F12 — every screen can be reached from the one the app opens on', function
     $stranded = [];
 
     foreach ($screens as $class => $view) {
+        // The lock is not a place anybody taps their way to. The navigation
+        // stack builds it in place of any screen while the device's lock
+        // stands, and puts it over the screen on view when the lock stands
+        // again, so it is reached from every screen and from none by a tap.
+        if ($class === Locked::class) {
+            continue;
+        }
+
         if (! in_array($class, $reached, strict: true)) {
             $stranded[] = sprintf('%s — %s', $view, $class);
         }
@@ -153,10 +162,11 @@ it('F12 — every screen can be reached from the one the app opens on', function
     // The same answer counted rather than listed, which is what fails when the
     // walk reaches a screen twice under two names and the list above therefore
     // reads as empty.
-    expect($reached)->toHaveCount(count($screens), sprintf(
+    // Less the lock, which is reached by no tap and was set aside above.
+    expect($reached)->toHaveCount(count($screens) - 1, sprintf(
         "%d of %d screens can be reached by tapping from the opening one (F12).",
         count($reached),
-        count($screens),
+        count($screens) - 1,
     ));
 });
 

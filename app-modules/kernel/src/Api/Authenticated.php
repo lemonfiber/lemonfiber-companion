@@ -18,7 +18,7 @@ namespace Modules\Kernel\Api;
  * would invite a screen to make a distinction the requirement does not.
  *
  * The constructor is private and the only maker is {@see self::byTheDevice()},
- * which an adapter calls on a prompt that returned success. That is a thin
+ * which an adapter calls where the device answered that the lock is open. That is a thin
  * guarantee — an adapter could call it wrongly — and it is the right thin
  * guarantee: the mistake is now in one file that exists to be read carefully,
  * rather than available at every call site that has a boolean.
@@ -39,9 +39,9 @@ final readonly class Authenticated
     /**
      * The device said yes.
      *
-     * Called only from an adapter holding a prompt result that succeeded.
-     * Nothing else in this application should name it, and `A9` keeps it out of
-     * a service provider.
+     * Called only from an adapter holding the device's answer that the lock is
+     * open. Nothing else in this application names it, and
+     * `OnlyTheDeviceOpensTheLockTest` keeps it that way.
      */
     public static function byTheDevice(): self
     {

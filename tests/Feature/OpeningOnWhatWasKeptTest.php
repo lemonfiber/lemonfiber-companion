@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\Locked;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
@@ -150,7 +151,7 @@ it('opens on the platform\'s indicator, and on nothing kept, where nothing was k
 });
 
 /** The launch screen, over a seal and a store in whatever state a test arranges. */
-function theLaunchOver(ADeviceThatKnowsYou $device, ClearingWhatCannotBeRead $clearing, KeepingTheLastReading $keeping): YourStacks
+function theLaunchOver(ClearingWhatCannotBeRead $clearing, KeepingTheLastReading $keeping): YourStacks
 {
     $stacks = StacksInMemory::holding(theStackWhoseSummaryWasKept());
 
@@ -160,7 +161,7 @@ function theLaunchOver(ADeviceThatKnowsYou $device, ClearingWhatCannotBeRead $cl
         AShareSheetThatWasOffered::working(),
         StandingsInMemory::working(),
         FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED)),
-        new Opening($device, $stacks, ADeviceOnANetwork::connected()),
+        new Opening($stacks, ADeviceOnANetwork::connected()),
         $clearing,
         $keeping,
         AStackThatSpeaksUp::holdingOpen(),
@@ -183,12 +184,12 @@ it('clears what the phone kept where its key has gone, and says so once', functi
     $keeping = new KeepingTheLastReading($seal, $store);
     $store->holdsOneALaterBuildWrote($seal->stack(theStackWhoseSummaryWasKept()->id()));
 
-    $launch = theLaunchOver(ADeviceThatKnowsYou::willing(), new ClearingWhatCannotBeRead($seal, $store), $keeping);
+    $launch = theLaunchOver(new ClearingWhatCannotBeRead($seal, $store), $keeping);
 
     expect(WhatTheDeviceWouldDraw::by($launch)->said())->toContain(__('connection.saved_data_cleared'))
         ->and($store->forgetEverything()->howMany())->toBe(0);
 
-    $again = theLaunchOver(ADeviceThatKnowsYou::willing(), new ClearingWhatCannotBeRead($seal, $store), $keeping);
+    $again = theLaunchOver(new ClearingWhatCannotBeRead($seal, $store), $keeping);
 
     expect(WhatTheDeviceWouldDraw::by($again)->said())->not->toContain(__('connection.saved_data_cleared'));
 });
@@ -201,16 +202,17 @@ it('touches nothing kept while the app is locked, and clears it once the lock is
     $clearing = new ClearingWhatCannotBeRead($seal, $store);
     $keeping = new KeepingTheLastReading($seal, $store);
 
-    $locked = theLaunchOver(ADeviceThatKnowsYou::refusing(), $clearing, $keeping);
+    // While the lock stands the navigation stack builds the lock screen in
+    // place of the launch, and the lock screen reads nothing kept.
+    WhatTheDeviceWouldDraw::by(new Locked(ADeviceThatKnowsYou::refusing()));
 
-    expect(WhatTheDeviceWouldDraw::by($locked)->said())->not->toContain(__('connection.saved_data_cleared'))
-        ->and($store->newest($attic)->either(
-            found: static fn(): Code => Code::of('found'),
-            none: static fn(): Code => Code::of('none'),
-            unreadable: static fn(): Code => Code::of('still kept'),
-        )->shown())->toBe('still kept');
+    expect($store->newest($attic)->either(
+        found: static fn(): Code => Code::of('found'),
+        none: static fn(): Code => Code::of('none'),
+        unreadable: static fn(): Code => Code::of('still kept'),
+    )->shown())->toBe('still kept');
 
-    expect(WhatTheDeviceWouldDraw::by(theLaunchOver(ADeviceThatKnowsYou::willing(), $clearing, $keeping))->said())
+    expect(WhatTheDeviceWouldDraw::by(theLaunchOver($clearing, $keeping))->said())
         ->toContain(__('connection.saved_data_cleared'));
 });
 
@@ -223,7 +225,7 @@ it('forgets on opening what was read longer ago than a reading is kept', functio
         Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED - THIRTY_ONE_DAYS),
     );
 
-    WhatTheDeviceWouldDraw::by(theLaunchOver(ADeviceThatKnowsYou::willing(), WhatThePhoneKeeps::nothingToClear(), $keeping));
+    WhatTheDeviceWouldDraw::by(theLaunchOver(WhatThePhoneKeeps::nothingToClear(), $keeping));
 
     expect($store->forgetEverything()->howMany())->toBe(0);
 });

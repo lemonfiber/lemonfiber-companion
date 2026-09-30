@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfTheRemoval;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -55,7 +56,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class TakingSomebodyOut extends NativeComponent
+final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -93,6 +94,12 @@ final class TakingSomebodyOut extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->answer()->isWorking;
     }
 
     public function render(): View

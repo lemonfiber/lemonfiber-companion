@@ -138,23 +138,6 @@ final class YourStacks extends NativeComponent
     ) {}
 
     /**
-     * Ask the device again, because the operator said they were ready.
-     *
-     * Forgetting what was held rather than re-asking and comparing, which is
-     * {@see HowThisStackIs::again()}'s shape: the next read rebuilds it, so
-     * there is one path to an answer and it is the one every frame takes.
-     *
-     * There is a button for this rather than an automatic retry because something
-     * refuses to ask again for something that was declined: an operator who
-     * dismissed the prompt meant it, and a screen that immediately asked again
-     * is the behaviour that teaches people to turn a feature off.
-     */
-    public function tryToUnlock(): void
-    {
-        $this->launched = null;
-    }
-
-    /**
      * Whether this device has been introduced to anything.
      *
      * Read here rather than held as state, because a screen returned to after
@@ -436,9 +419,9 @@ final class YourStacks extends NativeComponent
     /**
      * Whether the phone cleared what it kept when the app opened, which is said once.
      *
-     * The opening's housekeeping, done on the first frame past the lock and
-     * never behind it: nothing kept is read, cleared or drawn while the app is
-     * locked. The seal is asked first, before anything kept is opened, and a
+     * The opening's housekeeping, done on the first frame of this screen, which
+     * is built only past the lock: nothing kept is read, cleared or drawn while
+     * the app is locked. The seal is asked first, before anything kept is opened, and a
      * key made afresh clears every store; then every reading kept longer than
      * a reading is kept for is let go of.
      */
@@ -469,41 +452,22 @@ final class YourStacks extends NativeComponent
     /**
      * The launch, folded once into the shape a template can read.
      *
-     * Held rather than asked again, because asking twice would prompt twice:
-     * the platform's unlock is a system dialog, and a frame that drew it once
-     * per field would put several in front of somebody. What is wanted is the
-     * device's own authentication on a cold start and {@see Opening} is where
-     * that order is decided — locked is asked before anything reads retained
-     * state or touches a network. This screen renders the answer.
+     * Held rather than asked again, because each answer is a question put to
+     * the network. The lock is not among the answers: this screen is built only
+     * once the lock has opened.
      *
-     * One accessor handing out the value rather than one per field, which is
-     * {@see WhatThisStackRuns::answer()}'s shape and its argument: a method per
-     * field is a method this class spends on saying nothing, and the next fact
-     * the template needs then costs one it does not have.
-     *
-     * Every arm is named even though each reader takes one field. That is
-     * `Launch`'s design working rather than four arms saying one thing: an
-     * optional arm would be a default, and a default is where two of the four
-     * quietly become the same answer — which is exactly what is refused. Saying
-     * it four times is the cost of never being able to forget one.
-     *
-     * Producing the answer is only half of it, which is why the
-     * template branches on `->met` before it draws anything else. A launch that
-     * decided *no network* and then drew the machine names and their last words
-     * would leave somebody tapping a stack their phone cannot reach, and the
-     * distinction the type refuses to collapse would be discarded by the one
-     * surface that was supposed to show it. `->remedy` is stated beside it
-     * rather than folded into it, because an obstacle owes both: what happened
-     * is a fact about the world and what to do about it is advice, and for a
-     * launch the advice is the whole value — the fact is that a phone has no
-     * signal, which its owner can usually see.
+     * The template branches on `->met` before it draws anything else. A launch
+     * that decided *no network* and then drew the machine names and their last
+     * words would leave somebody tapping a stack their phone cannot reach.
+     * `->remedy` is stated beside it rather than folded into it, because an
+     * obstacle owes both: what happened is a fact about the world and what to
+     * do about it is advice.
      */
     public function howItOpened(): WhatTheLaunchWas
     {
         $this->launched ??= $this->opening->found();
 
         return $this->launched->either(
-            locked: static fn(): WhatTheLaunchWas => new HowTheLaunchReads()->locked(),
             unpaired: static fn(): WhatTheLaunchWas => new HowTheLaunchReads()->unpaired(),
             blocked: static fn(Obstacle $why): WhatTheLaunchWas => new HowTheLaunchReads()->blockedBy($why),
             ready: static fn(StackId $stack): WhatTheLaunchWas => new HowTheLaunchReads()->readyFor($stack),

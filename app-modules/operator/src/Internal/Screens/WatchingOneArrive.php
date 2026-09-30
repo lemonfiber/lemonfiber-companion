@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatToWalk;
 use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\HearsWhereTheWalkIs;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
@@ -71,7 +72,7 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-final class WatchingOneArrive extends NativeComponent
+final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
 {
     use HearsWhereTheWalkIs {
         HearsWhereTheWalkIs::stop insteadof FindsItsWayAround;
@@ -202,6 +203,12 @@ final class WatchingOneArrive extends NativeComponent
     public function goes(): WhereAStackIs
     {
         return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** The same question this screen's cadence asks, answered from what it last heard. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->answer()->isWorking;
     }
 
     public function render(): View

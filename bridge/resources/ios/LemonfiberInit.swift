@@ -8,10 +8,12 @@ import Foundation
 /// a bridge function is called — would leave the window uncovered until a screen
 /// happened to conceal itself. The task switcher does not wait for that.
 @objc public final class LemonfiberInit: NSObject {
-    /// Install the observers that keep the window protected for the life of the
-    /// app, and sweep whatever the last handover left in the share cache.
+    /// Install the observers that keep the window protected and the app locked
+    /// for the life of the app, and sweep whatever the last handover left in
+    /// the share cache.
     @objc public static func install() {
         LemonfiberFunctions.install()
+        TheLock.install()
         ShareCache.inThisAppsCaches()?.sweep()
     }
 }

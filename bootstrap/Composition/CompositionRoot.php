@@ -4,21 +4,27 @@ declare(strict_types=1);
 
 namespace Bootstrap\Composition;
 
+use Bootstrap\Composition\NativePHP\BehindTheLock;
 use Bootstrap\Composition\NativePHP\ScreenRoutes;
 use Bootstrap\Composition\NativePHP\TheHarnessInstead;
+use Bootstrap\Composition\NativePHP\TheLockIsOnTheGlass;
 use Bootstrap\Composition\NativePHP\TheRunloop;
 use Bootstrap\Composition\NativePHP\TheTheme;
+use Bootstrap\Composition\NativePHP\WhenTheLockMoves;
 
 use function config;
 
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 use Lemonfiber\Native\Clock as ThePhonesClock;
+use Lemonfiber\Native\Events\TheLockMoved;
 use Lemonfiber\Native\Handover as TheSheet;
 use Lemonfiber\Native\Link as TheLink;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
 use Modules\Codes\Api\QrCodes;
+use Modules\Connection\Api\TheLock;
 use Modules\Device\Api\PlatformAuth;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
@@ -151,6 +157,7 @@ use Modules\Vault\Api\PlatformSealKeys;
 use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformStandings;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
+use Native\Mobile\Edge\TreeObservers;
 
 /**
  * The composition root.
@@ -645,6 +652,26 @@ final class CompositionRoot extends ServiceProvider
         $runloop = $this->app->runningUnitTests() ? new TheHarnessInstead() : new TheRunloop();
 
         new ScreenRoutes($this->screen(...), $runloop)->declare();
+
+        // The lock, kept over whatever screen is on view. The device wakes the
+        // app with an event that carries nothing when its lock stands again or
+        // opens, and {@see WhenTheLockMoves} reads the lock afresh; the device
+        // keeps its window covered until {@see TheLockIsOnTheGlass} says the
+        // lock screen has been published. After boot, where the dispatcher is
+        // the one every provider has registered with.
+        $this->app->booted($this->keepTheLock(...));
+    }
+
+    /**
+     * Hear the device's lock move, and tell it when the lock screen is drawn.
+     *
+     * A method rather than a closure, because `make()` raises a checked
+     * exception and a closure's caller cannot see what it throws.
+     */
+    private function keepTheLock(): void
+    {
+        TreeObservers::register(new TheLockIsOnTheGlass());
+        $this->app->make(Dispatcher::class)->listen(TheLockMoved::class, WhenTheLockMoves::class);
     }
 
     /**
@@ -665,7 +692,8 @@ final class CompositionRoot extends ServiceProvider
     }
 
     /**
-     * One screen, built with whatever it declared in its constructor.
+     * One screen, built with whatever it declared in its constructor — or the
+     * lock, while the device's lock stands, which {@see BehindTheLock} decides.
      *
      * The one place a screen meets a port. NativePHP builds a screen with
      * `new $class`, so without this a screen could hold nothing — and a screen
@@ -681,6 +709,17 @@ final class CompositionRoot extends ServiceProvider
      * back lives with the router that is about to call methods on it.
      */
     private function screen(string $class): mixed
+    {
+        return new BehindTheLock($this->app->make(TheLock::class), $this->made(...))->screen($class);
+    }
+
+    /**
+     * One class, made by the container.
+     *
+     * A method for the reason {@see Screen()} is one: `make()` raises a checked
+     * exception, and a closure's caller cannot see what it throws.
+     */
+    private function made(string $class): mixed
     {
         return $this->app->make($class);
     }

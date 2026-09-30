@@ -17,6 +17,7 @@ use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
+use Modules\Operator\Internal\Screens\Locked;
 use Modules\Operator\Internal\Screens\NotInThisVersionYet;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
@@ -132,6 +133,11 @@ final class OperatorServiceProvider extends ServiceProvider
             // What this version of the app does not have yet, which the menu
             // keeps its items for and which says so when opened.
             Router::native(AScreenWithoutAStack::NotHereYet->value, NotInThisVersionYet::class);
+
+            // The lock, which the navigation stack builds in place of any
+            // screen while the device's lock stands, and puts over the screen
+            // on view when the device stands it again.
+            Router::native(AScreenWithoutAStack::Locked->value, Locked::class);
 
             // The stack in the URI rather than in the screen, because a device
             // keeps each stack's session separate and a screen that chose its

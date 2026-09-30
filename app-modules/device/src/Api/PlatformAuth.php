@@ -9,24 +9,20 @@ use Modules\Device\Internal\Words;
 use Modules\Kernel\Api\Authenticated;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Lock;
+use Modules\Kernel\Api\WhenTheLockAsks;
 
 /**
  * The device's own authentication, reached through lemonfiber's native expansion.
  *
- * Thin on purpose. The decision that matters — *when* the app must be locked and
- * when it may ask — lives in `LockRule`, in Kotlin and in Swift, with the same
- * seven tests each. What is decided here is only how an answer becomes a
- * {@see Lock}.
+ * Thin on purpose. The lock itself — when it stands, when it may ask, and that
+ * only the prompt's success opens it — lives in `LockRule`, in Kotlin and in
+ * Swift, with the same cases each. What is decided here is only how an answer
+ * becomes a {@see Lock}.
  *
- * **Why our own plugin rather than the stock biometric call.** A biometric
- * failure must fall back to the device passcode. On iOS that is the
- * difference between `.deviceOwnerAuthenticationWithBiometrics` and
- * `.deviceOwnerAuthentication`; on Android it is whether `DEVICE_CREDENTIAL` is
- * among the accepted authenticators. Both are constants chosen before the dialog
- * is shown, neither is visible from PHP, and the published examples reach for
- * the biometrics-only form — which locks an operator with a passcode and no
- * fingerprint out of their own app. A requirement this application owns is one
- * it has to be able to point at a line for.
+ * **Every answer is read through the bridge, never from an event.** The device
+ * wakes the app when the lock moves with an event that carries nothing, and the
+ * app then asks here; a lock opened by something an event said would be a lock
+ * anything able to send one could open.
  */
 final readonly class PlatformAuth implements DeviceAuth
 {
@@ -39,22 +35,41 @@ final readonly class PlatformAuth implements DeviceAuth
 
     public function unlock(): Lock
     {
-        // `Authenticated::byTheDevice()` is reached on exactly one condition and
-        // from exactly one line in this application. That is the thin guarantee
-        // the fallback rests on, and it is the right thin guarantee:
-        // the mistake is now in one file that exists to be read carefully,
-        // rather than available anywhere somebody holds a boolean.
-        return $this->device->authenticate($this->reason())
-            ? Lock::openedBy(Authenticated::byTheDevice())
-            : Lock::held();
+        return $this->lock(open: $this->device->authenticate($this->reason()));
+    }
+
+    public function standing(): Lock
+    {
+        return $this->lock(open: $this->device->lockIsOpen());
+    }
+
+    public function waive(): Lock
+    {
+        return $this->lock(open: $this->device->waiveTheLock());
+    }
+
+    public function drawn(WhenTheLockAsks $asks): Lock
+    {
+        return $this->lock(open: $this->device->lockIsDrawn($this->reason(), mayAsk: $asks->byItself()));
+    }
+
+    /**
+     * The device's answer as a lock.
+     *
+     * `Authenticated::byTheDevice()` is reached here and from nowhere else in
+     * this application: the one line that turns the device saying *open* into
+     * an open lock, in one file that exists to be read carefully.
+     */
+    private function lock(bool $open): Lock
+    {
+        return $open ? Lock::openedBy(Authenticated::byTheDevice()) : Lock::held();
     }
 
     /**
      * The sentence the platform shows in its own dialog.
      *
-     * From the catalogue rather than from a caller, which is what `L1` asks for
-     * and what `D2` pushed this design towards: with no parameter to pass, there
-     * is nowhere for a literal to get in.
+     * From the catalogue rather than from a caller: with no parameter to pass,
+     * there is nowhere for a literal to get in.
      */
     private function reason(): string
     {

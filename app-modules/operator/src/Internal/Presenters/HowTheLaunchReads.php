@@ -11,22 +11,16 @@ use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 /**
  * What the app found when it opened, as the fields a template reads.
  *
- * `F2`: data in, view model out. The four methods are the four arms
+ * `F2`: data in, view model out. The three methods are the three arms
  * is insisted on, so a test states a launch and reads a screen rather
  * than arranging a device and a network to produce one.
  */
 final readonly class HowTheLaunchReads
 {
-    /** The device would not let the operator in, and nothing was tried. */
-    public function locked(): WhatTheLaunchWas
-    {
-        return new WhatTheLaunchWas(isLocked: true, isPaired: false, met: '', remedy: '', opensOn: '');
-    }
-
     /** No machine is paired, which is a first run rather than a fault. */
     public function unpaired(): WhatTheLaunchWas
     {
-        return new WhatTheLaunchWas(isLocked: false, isPaired: false, met: '', remedy: '', opensOn: '');
+        return new WhatTheLaunchWas(isPaired: false, met: '', remedy: '', opensOn: '');
     }
 
     /**
@@ -40,7 +34,6 @@ final readonly class HowTheLaunchReads
     public function blockedBy(Obstacle $why): WhatTheLaunchWas
     {
         return new WhatTheLaunchWas(
-            isLocked: false,
             isPaired: true,
             met: $why->said(),
             remedy: $why->remedy(),
@@ -51,6 +44,6 @@ final readonly class HowTheLaunchReads
     /** A machine is paired and ready to be asked. */
     public function readyFor(StackId $stack): WhatTheLaunchWas
     {
-        return new WhatTheLaunchWas(isLocked: false, isPaired: true, met: '', remedy: '', opensOn: $stack->stored());
+        return new WhatTheLaunchWas(isPaired: true, met: '', remedy: '', opensOn: $stack->stored());
     }
 }

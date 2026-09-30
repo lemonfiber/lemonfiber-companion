@@ -1,18 +1,6 @@
 <x-operator::screen-opens :title="__('navigation.your_stacks')" />
 
 <x-operator::content>
-    @if ($this->howItOpened()->isLocked)
-        {{-- The device's own authentication on a cold start, asked
-             before anything reads retained state or touches a network. Nothing
-             below is drawn — not the machine names, not how they stand, not
-             the diagnostics control — because all of it is what the lock is for. --}}
-        <x-design::title>{{ __('device.unlock_reason') }}</x-design::title>
-
-        {{-- A button rather than an automatic retry. An operator who
-             dismissed the prompt meant it, and a screen that asked again
-             immediately is what teaches people to turn a feature off. --}}
-        <x-design::action label="{{ __('device.unlock') }}" tap="tryToUnlock()" />
-    @else
     {{-- What stood between this launch and the machine, shown rather
          than discarded: a screen that decided "no network" and then drew the
          machine names and their last words as though nothing were wrong leaves
@@ -114,5 +102,4 @@
     @unless ($this->theFirstRunIsStillRunning())
         <x-design::link label="{{ __('device.share_diagnostics') }}" tap="share()" />
     @endunless
-    @endif
 </x-operator::content>

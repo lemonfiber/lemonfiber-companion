@@ -25,6 +25,7 @@ let package = Package(
                 "LemonfiberFunctions.swift",
                 "LemonfiberInit.swift",
                 "LemonfiberAuth.swift",
+                "TheLock.swift",
                 "TellingFunctions.swift",
                 "ScanningFunctions.swift",
                 "ScanningViewController.swift",

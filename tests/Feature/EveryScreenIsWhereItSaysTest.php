@@ -286,6 +286,13 @@ it('every screen that needs no machine is somewhere a template can send you too'
             continue;
         }
 
+        // The lock, which the navigation stack builds in place of any screen
+        // while the device's lock stands and puts over the one on view when it
+        // stands again. Nothing sends anybody there with a tap.
+        if ($screen === AScreenWithoutAStack::Locked) {
+            continue;
+        }
+
         $accessor = $handedOut[$screen->name] ?? null;
 
         if ($accessor === null) {

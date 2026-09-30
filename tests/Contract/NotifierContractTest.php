@@ -7,6 +7,7 @@ use Lemonfiber\Native\WhyNothingWasTold;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Shown;
@@ -15,6 +16,7 @@ use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhyNothingIsShown;
 use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Catalogue;
+use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\ANotificationCentreOnAHandset;
 use Tests\Support\Fakes\ANotifierInMemory;
 
@@ -61,7 +63,7 @@ function somethingWorthSaying(): Notification
  *
  * Named for this file: the root suites share one namespace (`G10`).
  */
-function overAHandset(ANotificationCentreOnAHandset $centre): PlatformNotifier
+function overAHandset(ANotificationCentreOnAHandset $centre, ?DeviceAuth $lock = null): PlatformNotifier
 {
     FakeBridge::disable();
     FakeBridge::enable()
@@ -69,7 +71,7 @@ function overAHandset(ANotificationCentreOnAHandset $centre): PlatformNotifier
         ->respondTo('Lemonfiber.Telling.Ask', $centre->ask(...))
         ->respondTo('Lemonfiber.Telling.Show', $centre->show(...));
 
-    return new PlatformNotifier(new Telling(), Catalogue::words());
+    return new PlatformNotifier(new Telling(), Catalogue::words(), $lock ?? ADeviceThatKnowsYou::unlocked());
 }
 
 /**
@@ -192,10 +194,25 @@ it('shows the guarded form without complaint', function (): void {
 // fake to grow a translator to stay honest, which is the opposite of why it
 // exists.
 
-it('N4-R20 — the locked wording names no stack', function (): void {
+it('the locked wording names no stack', function (): void {
     $centre = ANotificationCentreOnAHandset::allowed();
 
     overAHandset($centre)->show(somethingWorthSaying()->whileLocked());
+
+    $shown = $centre->shown();
+
+    expect($shown)->toHaveCount(1)
+        ->and($shown[0]['title'])->not->toContain('the-loft')
+        ->and($shown[0]['body'])->not->toContain('the-loft')
+        ->and($shown[0]['body'])->not->toContain('backup.finished');
+});
+
+it('names no stack while the lock stands, whatever the caller handed it', function (): void {
+    // The notifier asks the device itself, so a caller that forgot to ask for
+    // the guarded form cannot put a stack's words on a locked phone.
+    $centre = ANotificationCentreOnAHandset::allowed();
+
+    overAHandset($centre, ADeviceThatKnowsYou::refusing())->show(somethingWorthSaying());
 
     $shown = $centre->shown();
 

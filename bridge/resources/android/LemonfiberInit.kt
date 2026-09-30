@@ -42,10 +42,15 @@ public fun installLemonfiber(context: Context) {
         // window would go unprotected in the task switcher while every screen
         // still looked right, which is the failure that cannot be seen from
         // inside the app.
-        Log.e(TAG, "capture protection not installed: ${application.javaClass.name} is not an Application")
+        Log.e(
+            TAG,
+            "capture protection and the lock not installed: " +
+                "${application.javaClass.name} is not an Application",
+        )
 
         return
     }
 
     LemonfiberFunctions.install(application)
+    TheLock.install(application)
 }
