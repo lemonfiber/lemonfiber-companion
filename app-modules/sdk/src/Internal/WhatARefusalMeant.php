@@ -10,6 +10,7 @@ use function is_string;
 
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Refusal;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
@@ -24,15 +25,24 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
  * *sign in again* where another says *the machine is not answering*, for the
  * same response. The operator meets both screens in one session.
  *
- * **Two refusals are worth telling apart, and they are the two where the stack
- * answered.** A session it will not accept is answered by signing in again, on
- * a machine that is working perfectly. A session it accepts, asking for
- * something this account may not have, is answered by saying so — and by
- * leaving the session alone, which is the part that matters: reading it as the
- * first would sign a member out the first time they reached something that was
- * never theirs.
+ * **The stack says which refusal it is, and this reads what it said.** Four
+ * refusals share one status — a session it no longer admits, an address it is
+ * not listening on, an account asking for what is not its own, and an account
+ * its media server could not vouch for — and each has its own remedy: sign in
+ * again, pair again, leave it be, try again. The refusal's code is what tells
+ * them apart, never its sentence, which is written for a person and may be
+ * reworded.
  *
- * **A third refusal is this app's own, and it is not silence either.** A
+ * Only the first ends the session. Reading any other as it would sign a member
+ * out the first time they reached something that was never theirs, or on the
+ * day their media server restarted.
+ *
+ * **A refusal with no code is read by its status.** A stack from before codes,
+ * or a code newer than this app knows, still says `401` for a session it will
+ * not accept and `403` for everything else it refuses about who is asking, and
+ * that is what this falls back to.
+ *
+ * **One more refusal is this app's own, and it is not silence either.** A
  * peer that presents a certificate the pairing did not name answered, and it
  * is not the machine paired with. It is refused before anything is sent, and
  * it reaches the operator as the stack not being the one paired, with
@@ -40,16 +50,13 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
  *
  * Everything else — a stack asleep, a network that dropped, an endpoint
  * answering five hundred — is the same sentence, and it is the one an obstacle
- * gives for a stack that is not answering. A stack that could not check an
- * account with its media server lands there too, which is the right place for
- * it: nothing about that is the account's doing, the door stays open, and what
- * it wants is another go.
+ * gives for a stack that is not answering.
  *
  * **Where the stack refused the work itself, it says why.** A problem
- * document at any status but `401` and `403` is the stack's answer about what
- * was asked — a copy it will not restore, work that stopped on a problem — and
- * {@see inItsWords()} carries it as {@see ARefusalInItsWords}. Every port whose
- * work the stack refuses in its words follows that one rule. A sentence with
+ * document that is none of the refusals of who is asking is the stack's answer
+ * about what was asked — a copy it will not restore, work that stopped on a
+ * problem — and {@see inItsWords()} carries it as {@see ARefusalInItsWords}.
+ * Every port whose work the stack refuses in its words follows that one rule. A sentence with
  * no document around it may have come from anything standing in front of the
  * stack, and a document with no sentence says nothing, so both stay the
  * obstacle.
@@ -60,7 +67,7 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 final readonly class WhatARefusalMeant
 {
     /**
-     * The status a stack answers with when the session it was handed is not one.
+     * The status a stack without codes answers a session it will not accept with.
      *
      * Named rather than written as `401` at the comparison, which is `D6`: a
      * bare number at a call site says nothing about which of the several
@@ -69,14 +76,12 @@ final readonly class WhatARefusalMeant
     private const int SESSION_IS_NOT_ACCEPTED = 401;
 
     /**
-     * The status a stack answers with when the session is one and may not ask.
+     * The status a stack without codes answers every other refusal of who is
+     * asking with.
      *
-     * Named for the same reason the one above is (`D6`), and told apart from it
-     * for a reason that reaches the operator: a session that is not accepted is
-     * answered by signing in again, and a session that may not ask for a thing
-     * is answered by not offering it — never by ending the session. An app that
-     * read them as one would sign a member out the first time they reached
-     * something that was never theirs.
+     * Read as an account that may not ask, which never ends a session: of the
+     * readings this status could have, it is the one that cannot sign somebody
+     * out by mistake.
      */
     private const int ACCOUNT_MAY_NOT_ASK = 403;
 
@@ -134,7 +139,60 @@ final readonly class WhatARefusalMeant
             return Obstacle::StackIsNotTheOnePaired;
         }
 
-        return match ($why->status()) {
+        $code = $why->code();
+
+        if (! $code instanceof RefusalCode) {
+            return self::byStatus($why->status());
+        }
+
+        return match ($code) {
+            RefusalCode::NotAdmitted => Obstacle::CredentialWasRefused,
+            RefusalCode::NotYours => Obstacle::NotForThisAccount,
+            RefusalCode::Unconfirmed => Obstacle::MediaServerDidNotAnswer,
+            RefusalCode::Elsewhere => Obstacle::AddressIsNotTheStacks,
+            // The door's own refusals, which `Admissions` reads where the
+            // password is offered. One reaching here is about what was offered
+            // at the door, and it ends no session.
+            RefusalCode::NotThePassword,
+            RefusalCode::TooManyAttempts,
+            RefusalCode::NotAPassword,
+            // The stack refusing what was asked rather than who asked. Its own
+            // words are the answer, and every code is written out so that one the
+            // contract adds is decided here rather than swept in unread.
+            RefusalCode::NoSuchAction,
+            RefusalCode::MissingArgument,
+            RefusalCode::UnrecognisedArgument,
+            RefusalCode::UnwantedArgument,
+            RefusalCode::ArgumentsTogether,
+            RefusalCode::NotArguments,
+            RefusalCode::NoSuchJob,
+            RefusalCode::NotAnAnswer,
+            RefusalCode::NoEndpoint,
+            RefusalCode::WrongMethod,
+            RefusalCode::Unwanted,
+            RefusalCode::Repeated,
+            RefusalCode::NoSuchRead,
+            RefusalCode::NoTerm,
+            RefusalCode::NotASeason,
+            RefusalCode::NoSetting,
+            RefusalCode::NoMember,
+            RefusalCode::NoShelfWithoutAMember,
+            RefusalCode::NotACount,
+            RefusalCode::TooManyAtOnce,
+            RefusalCode::NoSuchGroup,
+            RefusalCode::NoSuchRemoval,
+            RefusalCode::NoUpdateObject,
+            RefusalCode::NotALineCount,
+            RefusalCode::NotAChoice,
+            RefusalCode::Unrenderable,
+            RefusalCode::NoJobName => Obstacle::StackDidNotAnswer,
+        };
+    }
+
+    /** What a refusal carrying no code this app knows means, read from its status. */
+    private static function byStatus(int $status): Obstacle
+    {
+        return match ($status) {
             self::SESSION_IS_NOT_ACCEPTED => Obstacle::CredentialWasRefused,
             self::ACCOUNT_MAY_NOT_ASK => Obstacle::NotForThisAccount,
             default => Obstacle::StackDidNotAnswer,

@@ -56,10 +56,7 @@ final readonly class Coincidences
         PlatformNotifier::class => ['UNDER' => 'the group notifications are filed under on the phone'],
         SystemEntropy::class => ['BYTES' => 'the bytes of randomness a nonce is drawn from'],
         Nonce::class => ['SHORTEST' => 'the fewest characters a nonce may have'],
-        AStandInStack::class => [
-            'IS_ANSWERING' => 'the status a working stand-in answers with, written as a stack writes it',
-            'WILL_NOT_TAKE_THE_SESSION' => 'the status a stand-in refusing the session answers with, written as a stack writes it',
-        ],
+        AStandInStack::class => ['IS_ANSWERING' => 'the status a working stand-in answers with, written as a stack writes it'],
         TheHarnessInstead::class => ['THE_ROUTE_IS_THERE' => 'the status a suite is answered with for a route that names a screen'],
         WhatAStackWouldSay::class => ['A_NUMBER' => 'the integer a stand-in payload is given'],
         WhatTheWireWouldAnswer::class => ['A_FEW_LINES' => 'the lines a stand-in scrollback holds'],

@@ -211,10 +211,32 @@ it('says a changed certificate is not the machine paired, and offers pairing it 
         ->and(__('connection.pair_again'))->not->toBe('connection.pair_again');
 });
 
-it('offers pairing again for a changed certificate and for nothing else', function (): void {
+it('says an address the stack does not listen on is refused, and offers pairing it again', function (): void {
+    // The door answered and refused where the request came from, not what it
+    // carried: the same password would be refused the same way, and what fixes
+    // it is the address pairing again gives this app.
+    $screen = typedPassword(
+        signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::AddressIsNotTheStacks)),
+        'the-operators-password',
+    );
+
+    $screen->offer();
+
+    expect($screen->went())->toBe(HowTheSignInWent::TheAddressIsNotTheStacks)
+        ->and($screen->went()->said())->toBe('connection.address_not_the_stacks')
+        ->and(__($screen->went()->said()))->not->toBe($screen->went()->said())
+        ->and(__($screen->went()->remedy()))->not->toBe($screen->went()->remedy())
+        ->and($screen->mayTry())->toBeFalse()
+        ->and($screen->mayStartOver())->toBeFalse()
+        ->and($screen->mayPairAgain())->toBeTrue();
+});
+
+it('offers pairing again where the stack answered as some other machine or at some other address, and nowhere else', function (): void {
     foreach (HowTheSignInWent::cases() as $went) {
-        expect($went->asksForAnotherPairing())
-            ->toBe($went === HowTheSignInWent::TheMachineIsNotTheOnePaired, $went->value);
+        expect($went->asksForAnotherPairing())->toBe(
+            $went === HowTheSignInWent::TheMachineIsNotTheOnePaired || $went === HowTheSignInWent::TheAddressIsNotTheStacks,
+            $went->value,
+        );
     }
 });
 
@@ -303,6 +325,7 @@ it('offers the password field only where typing one could help', function (): vo
         [HowTheSignInWent::TheNetworkIsNotPermitted, false, true],
         // No field and no way back either: its button is pairing it again.
         [HowTheSignInWent::TheMachineIsNotTheOnePaired, false, false],
+        [HowTheSignInWent::TheAddressIsNotTheStacks, false, false],
     ];
 
     expect($offered)->toHaveCount(count(HowTheSignInWent::cases()));

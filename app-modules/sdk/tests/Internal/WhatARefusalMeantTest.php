@@ -11,6 +11,7 @@ use function json_encode;
 
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Sdk\Internal\WhatARefusalMeant;
@@ -31,15 +32,16 @@ function refusedWith(int $status): RequestFailed
     return RequestFailed::from('/api/requests', $status, '');
 }
 
-it('reads a session the stack will not accept as a refused credential', function (): void {
-    // The one that signs somebody out, and the only one that may.
+it('reads a session a stack without codes will not accept as a refused credential', function (): void {
+    // A refusal carrying no code is read by its status, and this is the one that
+    // signs somebody out.
     $obstacle = WhatARefusalMeant::obstacle(refusedWith(401));
 
     expect($obstacle)->toBe(Obstacle::CredentialWasRefused)
         ->and($obstacle->meansWeAreSignedOut())->toBeTrue();
 });
 
-it('reads a stack that will not let this account ask as its own obstacle', function (): void {
+it('reads a stack without codes that will not let this account ask as its own obstacle', function (): void {
     // The session is good and the answer is no. Reading it as the case above
     // would end a member's session the first time they reached something that
     // was never theirs.
@@ -174,3 +176,66 @@ it('reads an answer holding no problem with a sentence in it as a stack that did
     'a problem missing its remedies' => [aProblemTheStackSent(500, ['remedies' => null])],
     'nothing at all' => [refusedWith(500)],
 ]);
+
+/** A refusal carrying a code, at the status the contract answers it with. */
+function refusedFor(RefusalCode $code): RequestFailed
+{
+    return aProblemTheStackSent($code->status(), ['code' => $code->value, 'summary' => 'The stack said no.']);
+}
+
+it('stands in for a stack with a refusal the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('ErrorEnvelope', aProblemTheStackWrites(['code' => RefusalCode::NotAdmitted->value])))->toBe([]);
+});
+
+it('reads a session the stack no longer admits as signed out, though it answered forbidden', function (): void {
+    // What a restarted stack says to a phone still holding the last run's
+    // session. The status is the one an account refused entitlement gets too;
+    // the code is what says signing in again is the remedy.
+    $obstacle = WhatARefusalMeant::obstacle(refusedFor(RefusalCode::NotAdmitted));
+
+    expect($obstacle)->toBe(Obstacle::CredentialWasRefused)
+        ->and($obstacle->meansWeAreSignedOut())->toBeTrue();
+});
+
+it('reads each refusal of who is asking as its own obstacle', function (RefusalCode $code, Obstacle $met): void {
+    expect(WhatARefusalMeant::obstacle(refusedFor($code)))->toBe($met);
+})->with([
+    'an account asking for what is not its own' => [RefusalCode::NotYours, Obstacle::NotForThisAccount],
+    'an account the media server could not vouch for' => [RefusalCode::Unconfirmed, Obstacle::MediaServerDidNotAnswer],
+    'an address the stack is not listening on' => [RefusalCode::Elsewhere, Obstacle::AddressIsNotTheStacks],
+]);
+
+it('signs out on the one code that says the session is not admitted, and on no other', function (): void {
+    $signedOut = [];
+
+    foreach (RefusalCode::cases() as $code) {
+        if (WhatARefusalMeant::obstacle(refusedFor($code))->meansWeAreSignedOut()) {
+            $signedOut[] = $code;
+        }
+    }
+
+    expect($signedOut)->toBe([RefusalCode::NotAdmitted]);
+});
+
+it('reads a refusal of what was asked in the stack\'s own words, whatever its status', function (): void {
+    expect(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::NoTerm)))
+        ->toBe('refused: The stack said no. | It is refused rather than half-applied. Nothing was touched. | ')
+        ->and(WhatARefusalMeant::inItsOwnWords(refusedFor(RefusalCode::WrongMethod)))->toBe('The stack said no.');
+});
+
+it('reads a code it does not know by the status it came with', function (): void {
+    // A stack newer than this app can refuse with a code this build has no case
+    // for, and the status is what is left to go on.
+    $unknown = static fn(int $status): Obstacle => WhatARefusalMeant::obstacle(
+        aProblemTheStackSent($status, ['code' => 'NEWER-1']),
+    );
+
+    expect($unknown(401))->toBe(Obstacle::CredentialWasRefused)
+        ->and($unknown(403))->toBe(Obstacle::NotForThisAccount)
+        ->and($unknown(400))->toBe(Obstacle::StackDidNotAnswer);
+});
+
+it('reads a media server that could not vouch for an account as met rather than in the stack\'s words', function (): void {
+    expect(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::Unconfirmed)))->toBe(Obstacle::MediaServerDidNotAnswer->name)
+        ->and(whatTheRefusalSaidInItsWords(refusedFor(RefusalCode::Elsewhere)))->toBe(Obstacle::AddressIsNotTheStacks->name);
+});

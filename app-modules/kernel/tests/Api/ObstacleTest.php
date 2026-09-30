@@ -15,7 +15,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 
-it('is the seven an operator must be able to tell apart', function (): void {
+it('is the nine an operator must be able to tell apart', function (): void {
     // Pinned rather than counted. Adding one is a decision — the lock keeps
     // being proposed and keeps belonging elsewhere, while the permission case asked for
     // the permission case by name — and it should be made against a failing
@@ -28,6 +28,8 @@ it('is the seven an operator must be able to tell apart', function (): void {
         Obstacle::CredentialWasRefused,
         Obstacle::NotForThisAccount,
         Obstacle::TooManyAttempts,
+        Obstacle::MediaServerDidNotAnswer,
+        Obstacle::AddressIsNotTheStacks,
     ]);
 });
 
@@ -55,6 +57,8 @@ it('G4-R6 — names each one differently in the identifier an operator searches 
         'COMPANION-CREDENTIAL-REFUSED',
         'COMPANION-NOT-FOR-THIS-ACCOUNT',
         'COMPANION-TOO-MANY-ATTEMPTS',
+        'COMPANION-MEDIA-SERVER-UNCONFIRMED',
+        'COMPANION-ADDRESS-NOT-THE-STACKS',
     ]);
 });
 
@@ -84,6 +88,12 @@ it('calls a condition that clears itself a warning, and a fault an error', funct
     expect(Obstacle::StackIsNotTheOnePaired->severity()->demandsAttention())->toBeTrue();
 
     expect(Obstacle::DeviceHasNoNetwork->severity()->demandsAttention())->toBeFalse();
+
+    // A media server restarting clears itself and says nothing against the
+    // account; an address the stack does not listen on is something that is
+    // supposed to work and does not.
+    expect(Obstacle::MediaServerDidNotAnswer->severity())->toBe(Severity::Warning);
+    expect(Obstacle::AddressIsNotTheStacks->severity())->toBe(Severity::Error);
 });
 
 it('offers a button only where the app can press it', function (): void {
@@ -101,6 +111,11 @@ it('offers a button only where the app can press it', function (): void {
     // member something the app cannot deliver.
     expect(Obstacle::NotForThisAccount->standing())->toBe(Standing::Guided);
     expect(Obstacle::StackIsNotTheOnePaired->standing())->toBe(Standing::Actionable);
+
+    // Waiting for the household's media server happens somewhere this app cannot
+    // reach; pairing again is a thing it does.
+    expect(Obstacle::MediaServerDidNotAnswer->standing())->toBe(Standing::Guided);
+    expect(Obstacle::AddressIsNotTheStacks->standing())->toBe(Standing::Actionable);
 
     expect(Obstacle::CredentialWasRefused->standing()->offersAButton())->toBeTrue();
     expect(Obstacle::StackDidNotAnswer->standing()->offersAButton())->toBeFalse();

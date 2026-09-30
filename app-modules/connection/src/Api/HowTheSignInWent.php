@@ -41,10 +41,12 @@ use Modules\Kernel\Api\WhySessionCannotBeKept;
  * rather than swept into a `default` arm, because a default is what lets a new
  * case arrive and be answered by the one written last.
  *
- * **A changed certificate is not one of them.** The machine answered, and it
- * is not the one this device was introduced to. Checking that it is switched
- * on sends the operator to a machine that is working; the remedy is to pair it
- * again, which replaces the pinned certificate for the stack already held.
+ * **A changed certificate is not one of them, nor an address the stack does
+ * not answer on.** The machine answered, and either it is not the one this
+ * device was introduced to or it was reached somewhere it is not listening.
+ * Checking that it is switched on sends the operator to a machine that is
+ * working; the remedy is to pair it again, which replaces what this device
+ * holds for the stack — the pinned certificate, or the address.
  */
 enum HowTheSignInWent: string
 {
@@ -95,6 +97,17 @@ enum HowTheSignInWent: string
     case TheMachineIsNotTheOnePaired = 'fingerprint_changed';
 
     /**
+     * The stack answered, and the address this app reached it at is not one it
+     * says it is listening on.
+     *
+     * Never offered a password: the door refused where the request came from,
+     * not what it carried, and the same password would be refused the same way.
+     * The remedy is pairing again from the stack itself, which gives this app the
+     * address the stack answers on.
+     */
+    case TheAddressIsNotTheStacks = 'address_not_the_stacks';
+
+    /**
      * Whether the operator is in, with a session that will survive the launch.
      *
      * Deleted once as unused and back with a caller: the screen shows the way
@@ -131,7 +144,7 @@ enum HowTheSignInWent: string
      */
     public function asksForAnotherPairing(): bool
     {
-        return $this === self::TheMachineIsNotTheOnePaired;
+        return $this === self::TheMachineIsNotTheOnePaired || $this === self::TheAddressIsNotTheStacks;
     }
 
     /**
@@ -214,7 +227,7 @@ enum HowTheSignInWent: string
             self::TheNetworkIsNotPermitted => Standing::Guided,
             // `Actionable`, as the kernel judges the obstacle: there is a
             // button, and it leads to pairing rather than to a password field.
-            self::TheMachineIsNotTheOnePaired => Standing::Actionable,
+            self::TheMachineIsNotTheOnePaired, self::TheAddressIsNotTheStacks => Standing::Actionable,
         };
     }
 
@@ -266,6 +279,7 @@ enum HowTheSignInWent: string
             // other is a switch on the phone the operator is holding.
             Obstacle::LocalNetworkIsNotPermitted => self::TheNetworkIsNotPermitted,
             Obstacle::StackIsNotTheOnePaired => self::TheMachineIsNotTheOnePaired,
+            Obstacle::AddressIsNotTheStacks => self::TheAddressIsNotTheStacks,
             Obstacle::StackDidNotAnswer,
             Obstacle::DeviceHasNoNetwork,
             // Not a state of its own, because this door cannot answer with it.
@@ -275,7 +289,11 @@ enum HowTheSignInWent: string
             // an account by name is the day a sign-in state is owed for it —
             // this enum has none that would be true of it, and inventing one
             // now would be a screen nobody can reach.
-            Obstacle::NotForThisAccount => self::StackDidNotAnswer,
+            Obstacle::NotForThisAccount,
+            // The door is the one place that never asks the media server about an
+            // account it has not yet admitted, so this cannot arrive here either;
+            // the day it does, it is owed a state of its own rather than this one.
+            Obstacle::MediaServerDidNotAnswer => self::StackDidNotAnswer,
         };
     }
 
