@@ -121,12 +121,15 @@ trait HearsHowTheStackIs
      *
      * Every way off a screen ends here: a push, a pop, a replace, and the
      * platform parking the app. What was held stays, marked as no longer
-     * current, and a return opens the subscription again at once.
+     * current, and a return opens the subscription again at once. The list of
+     * stacks the top bar's name opens is let go of with it, having
+     * subscriptions of its own.
      */
     public function stop(): void
     {
         $with = $this->listensWith();
         $this->heard = $this->heardSoFar()->after($with->hearing->letGo(), $with->clock->now())->wentAway();
+        $this->letTheListOfStacksGo();
 
         parent::stop();
     }
@@ -135,6 +138,20 @@ trait HearsHowTheStackIs
 
     /** The ports this screen listens with, handed over by the screen that holds them. */
     abstract protected function listensWith(): WhatItListensWith;
+
+    /**
+     * It does: the summary it shows is its stack's own stream.
+     *
+     * So the list of stacks the top bar's name opens does not ask that stack
+     * again, and letting the list go leaves this stream alone.
+     */
+    protected function holdsItsStacksStream(): bool
+    {
+        return true;
+    }
+
+    /** Let go of what the list of stacks the top bar's name opens holds, which {@see Screens\ChoosesAStack} does. */
+    abstract private function letTheListOfStacksGo(): void;
 
     /**
      * What this screen holds, which on opening is what the phone kept.

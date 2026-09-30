@@ -27,7 +27,6 @@ use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\HearsHowEachStackIs;
-use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
@@ -95,7 +94,6 @@ use function view;
 final class YourStacks extends NativeComponent
 {
     use HearsHowEachStackIs;
-    use LetsGoOfARefusedSession;
 
     public ?Launch $launched = null;
 

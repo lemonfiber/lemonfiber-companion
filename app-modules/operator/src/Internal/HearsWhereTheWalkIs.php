@@ -59,11 +59,13 @@ trait HearsWhereTheWalkIs
      * Let go of the subscription whenever this screen stops being the one in front.
      *
      * Every way off a screen ends here. What was heard stays, marked as no
-     * longer current.
+     * longer current. The list of stacks the top bar's name opens is let go of
+     * with it, having subscriptions of its own.
      */
     public function stop(): void
     {
         $this->letGoOfTheWalk();
+        $this->letTheListOfStacksGo();
 
         parent::stop();
     }
@@ -72,6 +74,9 @@ trait HearsWhereTheWalkIs
 
     /** The ports this screen follows a walk with, handed over by the screen that holds them. */
     abstract protected function followsTheWalkWith(): WhatTheWalkIsFollowedWith;
+
+    /** Let go of what the list of stacks the top bar's name opens holds, which {@see Screens\ChoosesAStack} does. */
+    abstract private function letTheListOfStacksGo(): void;
 
     /**
      * Start afresh for a walk about to begin: let go of anything held, and open the subscription.

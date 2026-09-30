@@ -19,10 +19,13 @@ use Modules\Stacks\Api\AStacksScreen;
 
 /**
  * What a screen about one stack reads about the stacks this phone holds, what
- * its menu is called, and where choosing another stack leads.
+ * its menu is called, where choosing another stack leads, and how each stack
+ * stands while the list of them is open.
  *
  * Every screen about a stack is handed one, built by the container, and asks
- * it rather than the stacks themselves.
+ * it rather than the stacks themselves. The container builds each with a
+ * {@see HearingEachStack} of its own, so the list's subscriptions belong to
+ * the list.
  */
 final readonly class TheWayAround
 {
@@ -34,6 +37,7 @@ final readonly class TheWayAround
         private Standings $standings,
         private Clock $clock,
         private SecureStorage $storage,
+        private HearingEachStack $hearing,
     ) {}
 
     /**
@@ -79,6 +83,31 @@ final readonly class TheWayAround
         }
 
         return $rows;
+    }
+
+    /**
+     * What the list of stacks has heard after this wake, from every stack but one whose stream the screen already holds.
+     *
+     * Only while the list is open, and on its own subscriptions, so what the
+     * screen underneath holds is neither asked twice nor let go of.
+     */
+    public function heardWhileChoosing(WhatEachStackSaidSoFar $heard, Stack $current, bool $itsStreamIsHeld): WhatEachStackSaidSoFar
+    {
+        $stacks = [];
+
+        foreach ($this->stacks->configured() as $stack) {
+            if (! $itsStreamIsHeld || ! $stack->is($current)) {
+                $stacks[] = $stack;
+            }
+        }
+
+        return $this->hearing->after($heard, $stacks);
+    }
+
+    /** Every subscription the list of stacks holds let go of, because it closed or cannot be seen. */
+    public function stopHearingWhileChoosing(WhatEachStackSaidSoFar $heard): WhatEachStackSaidSoFar
+    {
+        return $this->hearing->letGo($heard);
     }
 
     /**

@@ -46,6 +46,7 @@ use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatNarrates;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWalksThrough;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
@@ -86,6 +87,7 @@ function theWalkthroughScreen(
     ?AStackThatNarrates $narrating = null,
     ?FrozenClock $clock = null,
     ?ACaptureInMemory $capture = null,
+    ?AStackThatSpeaksUp $listing = null,
 ): WatchingOneArrive {
     $stack = theStackAWalkRunsOn();
     $keychain ??= AKeychainInMemory::working();
@@ -98,7 +100,7 @@ function theWalkthroughScreen(
         $walking,
         $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()),
         $keychain,
-        AroundThePhone::holding(StacksInMemory::holding($stack)),
+        AroundThePhone::holding(StacksInMemory::holding($stack), hearing: $listing),
         $left ?? WorkLeftRunningInMemory::working(),
         $narrating ?? AStackThatNarrates::holdingOpen(),
         $clock ?? FrozenClock::at(secondsIntoFollowingAWalk(0)),
@@ -480,7 +482,8 @@ it('lets go of the stream once the walk is over, and only once', function (): vo
 it('lets go of the stream when nobody can see it, opens it again when somebody can, and when the screen is left', function (): void {
     $capture = ACaptureInMemory::away();
     $narrating = AStackThatNarrates::holdingOpen(aStepTheWalkSaid(WalkthroughStep::Scanning, 'Telling the media server to look'));
-    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), narrating: $narrating, capture: $capture);
+    $listing = AStackThatSpeaksUp::holdingOpen();
+    $screen = theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), narrating: $narrating, capture: $capture, listing: $listing);
 
     $screen->walk();
 
@@ -498,7 +501,9 @@ it('lets go of the stream when nobody can see it, opens it again when somebody c
 
     $screen->stop();
 
+    // The list of stacks the top bar's name opens is let go of in the same stop.
     expect($narrating->lettingsGo())->toBe(3)
+        ->and($listing->lettingsGo())->toBe(1)
         ->and($screen->stage()->ago->said)->not->toBe('')
         ->and(whetherTheWalkScreenGoesRound($screen))->toBeFalse();
 });
