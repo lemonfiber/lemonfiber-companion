@@ -111,7 +111,12 @@
                 @endif
 
                 <x-design::body>{{ __($this->whatItCameTo()->cameToSaid, ['why' => $this->whatItCameTo()->because]) }}</x-design::body>
-                <x-design::note>{{ __($this->whatItCameTo()->amountsToSaid) }}</x-design::note>
+                @if ($this->whatItCameTo()->amountsToSaid !== '')
+                    {{-- Where the stack did not say what the services amount
+                         to, nothing is said in its place: what the verb did
+                         stands on its own. --}}
+                    <x-design::note>{{ __($this->whatItCameTo()->amountsToSaid) }}</x-design::note>
+                @endif
 
                 @if ($this->whatItCameTo()->namesWhatDidNotComeBack)
                     {{-- Every service short of running, by name and with where it

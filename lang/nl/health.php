@@ -415,7 +415,6 @@ return [
         'not_everything_back' => 'Het heeft niet alles teruggebracht.',
         'stopped' => 'De stack heeft de stop uitgevoerd.',
         'fetched' => 'De stack heeft opgehaald wat hij kon. Wat het volgens hem opleverde staat hieronder.',
-        'unsaid' => 'De stack zei niet wat die diensten samen zijn.',
         'not_back' => ':name kwam niet terug: :runs',
         'none_named' => 'De stack noemde geen dienst die niet draait.',
         'left_out' => ':name is overgeslagen: :needs',
