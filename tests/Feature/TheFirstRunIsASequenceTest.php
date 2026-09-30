@@ -20,6 +20,7 @@ use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
 // The first run is a sequence, not a wall.
@@ -68,6 +69,15 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         ACaptureInMemory::inFront(),
     );
 }
+
+it('draws its first step on a device holding nothing, and no unlock', function (): void {
+    // A lock over an empty store protects nothing, so the gate builds this
+    // screen without asking; what reaches the glass is the first step.
+    $drawn = WhatTheDeviceWouldDraw::by(theScreenAFirstRunLandsOn());
+
+    expect($drawn->said())->toContain(__('onboarding.what_this_is'))
+        ->and($drawn->said())->not->toContain(__('device.unlock_reason'));
+});
 
 it('N1-R54 — a first run opens on what the app is, not on a button', function (): void {
     // The order is the requirement. A sequence that opened on pairing would be
