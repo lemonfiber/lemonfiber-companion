@@ -287,10 +287,25 @@ $outcome->either(
 | D4 | Enums for every closed set, never string constants and never a literal compared against | arch (names) + test over source tokens (literals) + shipmonk `ForbidMatchDefaultArmForEnums` |
 | D5 | No bare `true`/`false` at a call site — name the argument or split the method | phpstan: own rule |
 | D6 | No unnamed numeric literal in a method body | phpstan: own rule + SonarCloud |
+| D8 | A closed set of strings is an enum: no class compares a value against three or more of its own string constants, and no lookup asks a list of three or more strings, but where an outside vocabulary is read in its own words | phpstan: own rule, over what ships; arch: every file it leaves alone is there, and the list only shrinks |
+| D9 | One value has one home: a value two classes declare as constants is declared once and referred to, unless the two only mean different things | phpstan: own rule with a collector, over what ships and `tests/Support`; arch: every constant it leaves alone is still declared, and the list only shrinks |
 
 D2's payoff is concrete: a stack id and a service id are both strings, and
 nothing stops you passing one where the other belongs. `StackId` and `ServiceId`
 are two types, and the mistake stops compiling.
+
+D8 and D9 are numbered as `php-mutation-gate` numbers the same two rules, and
+they close what D4 and D6 leave open. D6's cure is a name, and D4's cure for a
+sentinel is a `private const`; neither says where the name lives. A heartbeat
+named in the class that listens and named again in the class that decides a
+stream went quiet passes both, and is one decision kept in two places. So a
+value has one home, a length of time is counted from `SecondsIn` and a step of
+a thousand from `DecimalPrefix`, and a default somebody could tune is a value
+with a named `standard()`. Where two constants hold the same value and mean
+different things, one is listed with what it means; where a stand-in or a
+double spells what the side it stands in for spells, the two are kept apart on
+purpose and listed too, because one home would have the reader agree with what
+it reads by construction.
 
 ### Boundaries
 

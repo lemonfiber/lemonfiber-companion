@@ -990,6 +990,28 @@ services:
         tags:
             - phpstan.rules.rule
 
+    # D8 — a closed set of strings is an enum. D4 refuses the literal; this
+    # refuses the same set written as the class's own constants, or as a list
+    # a lookup asks. The files that read an outside vocabulary in its own words
+    # are OutsideVocabularies, a list that only shrinks.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\NoStringClosedSetRule
+        tags:
+            - phpstan.rules.rule
+
+    # D9 — one value has one home. The collector gathers every constant and
+    # backed enum case; the rule reports a value two classes declare. The
+    # constants whose value only matches another's are Coincidences, a list
+    # that only shrinks.
+    -
+        class: Lemonfiber\Companion\PHPStan\Collectors\ConstantValues
+        tags:
+            - phpstan.collector
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\OneHomePerValueRule
+        tags:
+            - phpstan.rules.rule
+
     # S3 — certificate verification is never turned off. ADR-0018 pins a stack
     # by a fingerprint from the pairing material, and a verify-off switch leaves
     # the pin in place while making sure nothing ever reaches it.
