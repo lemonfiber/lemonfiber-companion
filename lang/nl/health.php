@@ -299,7 +299,7 @@ return [
     'service_said_nothing_action' => 'Hij draait rustig door, of is net gestart.',
     'no_moment' => 'Geen tijd opgegeven',
     'decorative_lines' => '{1} 1 decoratieve regel|[2,*] :count decoratieve regels',
-    'jump_to_the_first_error' => 'Naar de eerste fout',
+    'show_from_the_first_error' => 'Vanaf de eerste fout tonen',
     'show_every_line' => 'Alle regels tonen',
     'level' => [
         'trace' => 'Trace',

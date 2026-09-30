@@ -108,7 +108,7 @@ final class WhatThisServiceSaid extends NativeComponent
      */
     public array $unfolded = [];
 
-    /** Whether somebody jumped to the first error, so the lines start there. */
+    /** Whether somebody asked for the lines from the first error on. */
     public bool $fromTheFirstError = false;
 
     public function __construct(
@@ -212,12 +212,12 @@ final class WhatThisServiceSaid extends NativeComponent
     /**
      * Start the lines at the first one that declared an error.
      *
-     * The platform offers no way to scroll a screen to a line, so the jump
+     * The platform offers no way to scroll a screen to a line, so this
      * leaves out what came before instead, and the screen opens at its top
      * rather than at its end. Nothing is asked again: it is the lines already
      * here, drawn from a later one.
      */
-    public function jumpToTheFirstError(): void
+    public function showFromTheFirstError(): void
     {
         $this->fromTheFirstError = true;
     }

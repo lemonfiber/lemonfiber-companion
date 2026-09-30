@@ -694,14 +694,14 @@ it('gives an error, a fatal line and a warning the glyph of their tone, read alo
     expect($readAloud)->not->toContain(whatTheLogScreenCalls('health.level.info'));
 });
 
-it('offers a jump to the first error at the top, which starts the lines there and offers every line back', function (): void {
+it('offers the lines from the first error at the top, which starts them there and offers every line back', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWithAnErrorInIt()));
 
     expect($screen->answer()->hasAnErrorFurtherDown)->toBeTrue()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers()[0] ?? '')->toBe(whatTheLogScreenCalls('health.jump_to_the_first_error'))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers()[0] ?? '')->toBe(whatTheLogScreenCalls('health.show_from_the_first_error'))
         ->and(whereTheLogScreenOpens(WhatTheDeviceWouldDraw::tree($screen)))->toBe(['bottom']);
 
-    $screen->jumpToTheFirstError();
+    $screen->showFromTheFirstError();
     $rows = $screen->answer()->lines;
 
     // The lines start at the error; the window's claim about its edge is the
@@ -718,13 +718,13 @@ it('offers a jump to the first error at the top, which starts the lines there an
 
     expect($screen->answer()->lines)->toHaveCount(5);
 
-    $screen->jumpToTheFirstError();
+    $screen->showFromTheFirstError();
     $screen->again();
 
     expect($screen->fromTheFirstError)->toBeFalse();
 });
 
-it('offers no jump where no line declared an error, or where the first line is the error', function (): void {
+it('offers nothing to show from where no line declared an error, or where the first line is the error', function (): void {
     $service = theServiceOnTheScreen();
     $quiet = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
     $atOnce = theLogScreen(AServiceThatSpoke::saying(Scrollback::of(
@@ -735,11 +735,11 @@ it('offers no jump where no line declared an error, or where the first line is t
     )));
 
     expect($quiet->answer()->hasAnErrorFurtherDown)->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($quiet)->offers())->not->toContain(whatTheLogScreenCalls('health.jump_to_the_first_error'))
+        ->and(WhatTheDeviceWouldDraw::by($quiet)->offers())->not->toContain(whatTheLogScreenCalls('health.show_from_the_first_error'))
         ->and($atOnce->answer()->hasAnErrorFurtherDown)->toBeFalse();
 
-    // Jumping where there is nowhere to jump leaves every line where it was.
-    $atOnce->jumpToTheFirstError();
+    // Asking where nothing comes before the first error leaves every line where it was.
+    $atOnce->showFromTheFirstError();
 
     expect($atOnce->answer()->startsAtTheFirstError)->toBeFalse()
         ->and($atOnce->answer()->lines)->toHaveCount(2);

@@ -3,10 +3,11 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content :from-the-end="! $this->answer()->startsAtTheFirstError">
-    {{-- The first error, one tap away, at the top where a screen that opens
-         at its end is not; and every line back, once the jump was made. --}}
+    {{-- The lines from the first error on, one tap away at the top where a
+         screen that opens at its end is not; and every line back, once they
+         were narrowed. --}}
     @if ($this->answer()->hasAnErrorFurtherDown)
-        <x-design::link label="{{ __('health.jump_to_the_first_error') }}" tap="jumpToTheFirstError()" />
+        <x-design::link label="{{ __('health.show_from_the_first_error') }}" tap="showFromTheFirstError()" />
     @elseif ($this->answer()->startsAtTheFirstError)
         <x-design::link label="{{ __('health.show_every_line') }}" tap="showEveryLine()" />
     @endif

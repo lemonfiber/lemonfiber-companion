@@ -303,7 +303,7 @@ return [
     'service_said_nothing_action' => 'It is running quietly, or it has only just started.',
     'no_moment' => 'No time given',
     'decorative_lines' => '{1} 1 decorative line|[2,*] :count decorative lines',
-    'jump_to_the_first_error' => 'Jump to the first error',
+    'show_from_the_first_error' => 'Show from the first error',
     'show_every_line' => 'Show every line',
     'level' => [
         'trace' => 'Trace',

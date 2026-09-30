@@ -27,7 +27,7 @@ final readonly class WhatTheServiceTurnedOutToSay
      * @param int                   $bound      how many were asked for
      * @param bool                  $isAWindow  whether the view stops where it was told to
      * @param bool                  $isSearching whether a search is narrowing the lines
-     * @param bool                  $hasAnErrorFurtherDown whether a line below the first declared an error, so there is somewhere to jump to
+     * @param bool                  $hasAnErrorFurtherDown whether a line below the first declared an error, so there are lines to leave out before it
      * @param bool                  $startsAtTheFirstError whether the lines before the first error are left out
      */
     public function __construct(
