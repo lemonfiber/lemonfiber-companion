@@ -9,8 +9,9 @@ namespace Modules\Operator\Internal;
  *
  * A code is for whoever helps the operator, so it is not on the card that
  * leads there: it travels with the road and is said above the lines, where
- * somebody reading them to find out what happened is already looking. Each
- * case is the key it travels under.
+ * somebody reading them to find out what happened is already looking. The
+ * service's name travels the same way, for the heading. Each case is the key
+ * it travels under.
  */
 enum WhatTheLogsAreOpenedWith: string
 {
@@ -21,12 +22,18 @@ enum WhatTheLogsAreOpenedWith: string
     case Exited = 'exited';
 
     /**
-     * What a road carries for this code, or nothing where there is none.
+     * What the stack calls the service, which the route cannot say: the route
+     * names it by its id, which is what the logs are asked for with.
+     */
+    case Called = 'called';
+
+    /**
+     * What a road carries for this value, or nothing where there is none.
      *
      * @return array<string, string>
      */
-    public function carrying(string $code): array
+    public function carrying(string $value): array
     {
-        return $code === '' ? [] : [$this->value => $code];
+        return $value === '' ? [] : [$this->value => $value];
     }
 }

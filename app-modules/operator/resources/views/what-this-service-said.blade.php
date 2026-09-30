@@ -1,4 +1,4 @@
-<x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->service()->named()])" />
+<x-operator::screen-opens :title="__('health.logs_for', ['service' => $this->called()])" />
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content from-the-end>

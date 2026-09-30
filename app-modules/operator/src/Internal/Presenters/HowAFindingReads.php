@@ -75,6 +75,7 @@ final readonly class HowAFindingReads
     {
         $said = $finding->said();
         $service = $this->serviceOf($finding);
+        $called = $this->calledOf($finding);
         $because = $this->becauseOf($finding);
         $from = new HowAnOriginReads()->of($finding->origin());
 
@@ -86,6 +87,7 @@ final readonly class HowAFindingReads
                 code: '',
                 meaning: '',
                 service: $service,
+                called: $called,
                 because: $because,
                 remedies: Remedies::none(),
                 underneath: '',
@@ -107,6 +109,7 @@ final readonly class HowAFindingReads
                 code: $code->shown(),
                 meaning: $meaning,
                 service: $service,
+                called: $called,
                 because: $because,
                 // Every one of them, in the order the engine gave. `likeliest()`
                 // exists for a screen with room for one line, and this screen
@@ -136,6 +139,7 @@ final readonly class HowAFindingReads
                 code: '',
                 meaning: $reason,
                 service: $service,
+                called: $called,
                 because: $because,
                 remedies: $remedies,
                 underneath: '',
@@ -150,6 +154,22 @@ final readonly class HowAFindingReads
         return $finding->whatItIsAbout()->either(
             theMachine: static fn(): AsText => AsText::nothing(),
             theService: static fn(ServiceId $service): AsText => AsText::of($service->named()),
+        )->said;
+    }
+
+    /**
+     * What the stack calls the service this row is about, or empty where the
+     * report gave no name or the row is about the machine.
+     *
+     * Never the id in its place: the id is a key, and a card that showed it
+     * where a name belongs would be showing `qbittorrent` to somebody who knows
+     * qBittorrent.
+     */
+    private function calledOf(Finding $finding): string
+    {
+        return $finding->whatItIsAbout()->whatItIsCalled(
+            called: static fn(string $name): AsText => AsText::of($name),
+            unsaid: static fn(): AsText => AsText::nothing(),
         )->said;
     }
 

@@ -506,6 +506,36 @@ it('N2-R3 — refuses a finding that claims a service and names none', function 
         ->toThrow(ServiceIsUnnamed::class);
 });
 
+it('reads what the stack calls a finding\'s service, where the row gives it', function (): void {
+    $named = aFinding('vpn.tunnel', 'vpn', 'Gluetun tunnel', ['outcome' => 'pass']);
+    $named['service'] = 'gluetun';
+    $named['service_name'] = 'Gluetun';
+    $unnamed = aFinding('vpn.egress-match', 'vpn', 'The tunnel', ['outcome' => 'pass']);
+    $unnamed['service'] = 'qbittorrent';
+    $called = [];
+
+    foreach (Reports::in(doctorSaying(aRun('healthy', [$named, $unnamed])))->findings() as $finding) {
+        $called[] = $finding->whatItIsAbout()->whatItIsCalled(
+            called: static fn(string $name): Code => Code::of($name),
+            unsaid: static fn(): Code => Code::of('unsaid'),
+        )->shown();
+    }
+
+    expect($called)->toBe(['Gluetun', 'unsaid']);
+});
+
+it('refuses a finding that gives its service\'s name as nothing, or as something other than text', function (mixed $said, string $refusal): void {
+    $row = aFinding('vpn.tunnel', 'vpn', 'Gluetun tunnel', ['outcome' => 'pass']);
+    $row['service'] = 'gluetun';
+    $row['service_name'] = $said;
+
+    expect(fn(): Report => Reports::in(doctorSaying(aRun('healthy', [$row]))))
+        ->toThrow($refusal);
+})->with([
+    'blank' => ['  ', ServiceIsUnnamed::class],
+    'not text' => [42, ReportIsUnreadable::class],
+]);
+
 it('N2-R3 — reads which check explains a finding', function (): void {
     // The engine sets this after the run, because a check is independent by
     // construction and cannot see what any other found. It is the difference

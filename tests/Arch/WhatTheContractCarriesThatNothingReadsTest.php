@@ -345,11 +345,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'The tunnel\'s exit and whether traffic leaves through it. VPN verification reaches this app as findings in the doctor report, and a failed one as an affected item of the health summary.',
     ],
     [
-        'path' => 'DoctorEnvelope.findings[].service_name',
-        'because' => 'What the stack calls the service a finding is about (`C1-R16`), which the client '
-            . 'this app takes carries from sdk-php d188a6a. No reader takes it yet.',
-    ],
-    [
         'path' => 'DoctorEnvelope.findings[].said',
         'because' => 'A summary line beside the meaning. `N2-R3` has a finding carry its code, its meaning '
             . 'and its remedy, and a second sentence saying roughly the meaning again is the core being '

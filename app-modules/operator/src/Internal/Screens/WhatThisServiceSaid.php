@@ -140,6 +140,17 @@ final class WhatThisServiceSaid extends NativeComponent
         return $this->carried(WhatTheLogsAreOpenedWith::Exited);
     }
 
+    /**
+     * The service as the heading names it: what the stack calls it, where the
+     * road here carried that, and otherwise the id the route names it by.
+     */
+    public function called(): string
+    {
+        $called = $this->carried(WhatTheLogsAreOpenedWith::Called);
+
+        return $called !== '' ? $called : $this->service()->named();
+    }
+
     /** What somebody has typed, for the box to hold it. */
     public function looking(): string
     {

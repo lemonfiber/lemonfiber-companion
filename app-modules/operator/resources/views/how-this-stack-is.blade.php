@@ -99,10 +99,14 @@
 
     @forelse ($this->findings() as $finding)
         <x-design::card>
-            {{-- Which part of the machine it is about. The service is named by
-                 the title and by the road to its logs below; the report names
-                 it only by its identifier, which is not a name to read. --}}
-            <x-design::note>{{ __($finding->about) }}</x-design::note>
+            {{-- Which part of the machine it is about, and which service where
+                 the report names one by what the stack calls it. The id is a
+                 key rather than a name, and is never shown in its place. --}}
+            @if ($finding->called !== '')
+                <x-design::note>{{ __('health.about_the_service', ['about' => __($finding->about), 'service' => $finding->called]) }}</x-design::note>
+            @else
+                <x-design::note>{{ __($finding->about) }}</x-design::note>
+            @endif
             <x-design::strong>{{ $finding->title }}</x-design::strong>
 
             {{-- Whose finding it is, only where it is not the stack's own;
@@ -146,7 +150,7 @@
             @if ($finding->service !== '')
                 <x-design::link
                     label="{{ __('health.what_a_service_said') }}"
-                    answers-to="{{ __('health.what_that_service_said', ['service' => $finding->service]) }}"
+                    answers-to="{{ $finding->called !== '' ? __('health.what_that_service_said', ['service' => $finding->called]) : __('health.what_a_service_said') }}"
                     :goes="$this->logsOf($finding->service)"
                     :carries="$finding->carriedToTheLogs()"
                 />

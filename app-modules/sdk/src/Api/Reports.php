@@ -207,6 +207,10 @@ final readonly class Reports
      * and blank *is* refused — {@see AboutWhat::theService()} does that — since
      * a row claiming a service and naming none has a fault worth seeing here.
      *
+     * What the stack calls the service is read beside it where the row gives
+     * it, and a row that gives none is read as naming the service by its id
+     * alone — which a report from before the name was carried is.
+     *
      * @param array<mixed> $row
      */
     private static function about(array $row, int $position): AboutWhat
@@ -215,7 +219,13 @@ final readonly class Reports
             return AboutWhat::theMachine();
         }
 
-        return AboutWhat::theService(self::saidIn($row, WireField::Service, $position));
+        $service = self::saidIn($row, WireField::Service, $position);
+
+        if (! array_key_exists(DoctorField::ServiceName->value, $row)) {
+            return AboutWhat::theService($service);
+        }
+
+        return AboutWhat::theNamedService($service, self::saidIn($row, DoctorField::ServiceName, $position));
     }
 
     /**

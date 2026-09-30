@@ -67,7 +67,7 @@ it('says what leans on a service by the name the listing gives it, and by its id
     expect(new HowAServiceReads()->in($gluetun, $listing)->leaning)->toBe(['qBittorrent', 'unlisted']);
 });
 
-it('says whether a service stopped with an error, and carries its exit code to its logs', function (int $code, string $said): void {
+it('says whether a service stopped with an error, and carries its exit code and its name to its logs', function (int $code, string $said): void {
     $row = new HowAServiceReads()->in(Daemon::thatExited(
         'Gluetun',
         ServiceId::called('gluetun'),
@@ -78,13 +78,13 @@ it('says whether a service stopped with an error, and carries its exit code to i
     ), Daemons::none(WhatAMachineRuns::whatTheVerbsCost()));
 
     expect($row->stoppedSaid)->toBe($said)
-        ->and($row->carriedToTheLogs())->toBe(['exited' => (string) $code]);
+        ->and($row->carriedToTheLogs())->toBe(['exited' => (string) $code, 'called' => 'Gluetun']);
 })->with([
     'with an error' => [1, 'health.it_stopped_with_an_error'],
     'without one' => [0, 'health.it_stopped_cleanly'],
 ]);
 
-it('says nothing about stopping, and carries nothing, for a service with no exit code', function (): void {
+it('says nothing about stopping, and carries only its name, for a service with no exit code', function (): void {
     $row = new HowAServiceReads()->in(Daemon::called(
         'Gluetun',
         ServiceId::called('gluetun'),
@@ -94,5 +94,5 @@ it('says nothing about stopping, and carries nothing, for a service with no exit
     ), Daemons::none(WhatAMachineRuns::whatTheVerbsCost()));
 
     expect($row->stoppedSaid)->toBe('')
-        ->and($row->carriedToTheLogs())->toBe([]);
+        ->and($row->carriedToTheLogs())->toBe(['called' => 'Gluetun']);
 });

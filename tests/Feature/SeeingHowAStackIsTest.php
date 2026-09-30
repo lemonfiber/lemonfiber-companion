@@ -45,6 +45,7 @@ use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\WhatMarkupDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
 
@@ -442,7 +443,7 @@ it('says the verdict of a finding with nothing graded, and no code', function ()
         ->and($screen->findings()[0]->code)->toBe('');
 });
 
-it('carries a service finding\'s code to its logs, and says neither the code nor the service on the card', function (): void {
+it('carries a service finding\'s code to its logs, and says neither the code nor the id on the card', function (): void {
     $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
         Finding::of(
             Check::of('vpn.up'),
@@ -458,14 +459,40 @@ it('carries a service finding\'s code to its logs, and says neither the code nor
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $naming = array_values(array_filter($drawn, static fn(string $line): bool => str_contains($line, 'gluetun')));
 
-    // The identifier is only in what a reader hears for the road to the logs,
-    // which has to say which service's logs it opens.
+    // A report that gives no name leaves the card with its category, and the
+    // road to the logs says it opens this service's without naming it: the id
+    // is a key, and nothing drawn shows it in a name's place.
     expect($row->carriedToTheLogs())->toBe(['reported' => $row->code])
         ->and($row->codeAtTheFoot())->toBe('')
         ->and($row->code)->not->toBe('')
         ->and(implode("\n", $drawn))->not->toContain($row->code)
         ->and($drawn)->toContain(__(Category::Vpn->saidOnTheScreen()))
-        ->and($naming)->toBe([__('health.what_that_service_said', ['service' => 'gluetun'])]);
+        ->and($drawn)->toContain(__('health.what_a_service_said'))
+        ->and($naming)->toBe([]);
+});
+
+it('names a service finding by what the stack calls it, beside its category and on the road to its logs', function (): void {
+    $screen = theHealthScreen(AStackThatWasAsked::saying(Report::of(Overall::Broken, Findings::of(
+        Finding::of(
+            Check::of('vpn.tunnel'),
+            Category::Vpn,
+            'Gluetun tunnel',
+            Conclusion::Failed,
+            aFailingVerdict(),
+            WhoPutItThere::bundled(),
+        )->about(AboutWhat::theNamedService('gluetun', 'Gluetun')),
+    ))));
+
+    $row = $screen->findings()[0];
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('health.about_the_service', [
+        'about' => WhatMarkupDraws::words(Category::Vpn->saidOnTheScreen()),
+        'service' => 'Gluetun',
+    ]))
+        ->and($drawn)->toContain(__('health.what_that_service_said', ['service' => 'Gluetun']))
+        ->and($row->carriedToTheLogs())->toBe(['reported' => $row->code, 'called' => 'Gluetun'])
+        ->and(array_filter($drawn, static fn(string $line): bool => str_contains($line, 'gluetun')))->toBe([]);
 });
 
 it('says a machine finding\'s code at the foot of its card, having no logs to carry it to', function (): void {
