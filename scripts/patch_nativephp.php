@@ -116,6 +116,28 @@ SHIPS,
 BECOMES,
     ],
     [
+        // The package registers two HTTP routes for pages it renders in a web
+        // view: `POST _native/api/events`, which builds whatever class the
+        // request names with whatever arguments it carries, and
+        // `POST _native/api/call`, which calls whatever bridge function it
+        // names. This application renders no web view, so neither is used, and
+        // each is a door: the first is object injection by design, and the
+        // second reaches every bridge function this plugin declares, the
+        // app lock's and the secure store's included. Anything that ever got a
+        // page into a web view here could walk through both. So the package
+        // registers neither.
+        'in' => '/../vendor/nativephp/mobile/src/NativeServiceProvider.php',
+        'ships' => <<<'SHIPS'
+            ->hasConfigFile('nativephp')
+            ->hasRoute('api')
+            ->hasCommands([
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            ->hasConfigFile('nativephp')
+            ->hasCommands([
+BECOMES,
+    ],
+    [
         // `bridge/` is a path repository, so composer symlinks it into
         // `vendor/lemonfiber/bridge` — and the bundler copies with
         // `rsync -a --copy-links`, which follows the link and takes everything
