@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Connection\Api;
 
+use Modules\Kernel\Api\InTheConnectionCatalogue;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
-
-use function sprintf;
 
 /**
  * What became of a credential the operator offered to a stack.
@@ -158,7 +157,7 @@ enum HowTheSignInWent: string
      */
     public function said(): string
     {
-        return sprintf('connection.%s', $this->value);
+        return InTheConnectionCatalogue::under($this->value)->said();
     }
 
     /**
@@ -175,7 +174,7 @@ enum HowTheSignInWent: string
      */
     public function remedy(): string
     {
-        return sprintf('connection.%s_action', $this->value);
+        return InTheConnectionCatalogue::under($this->value)->remedy();
     }
 
     /**
