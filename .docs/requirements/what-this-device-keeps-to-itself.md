@@ -45,13 +45,14 @@ and never from an event.
 | The prompt being raised read as success | `Lemonfiber.Authenticate` waits and answers the platform's success | `DeviceAuthContractTest`, `OnlyTheDeviceOpensTheLockTest` |
 | A bridge answer that is missing, garbled or not a plain yes | Anything but `true` is held | `DeviceAuthContractTest` |
 | An event claiming the lock opened, forged or replayed | `TheLockMoved` carries nothing; the lock is read afresh through the bridge | `NothingIsBuiltBehindTheLockTest` |
+| A web request calling `Lemonfiber.Lock.Waive`, or posting an event that builds a class | The app registers no route but its screens; the NativePHP patch drops the package's `_native/api` routes | `TheAppAnswersNoWebRequestTest` |
 | A link or a notification opening a screen while locked | Every screen is built through the composition root, which builds `Locked` while the lock stands | `NothingIsBuiltBehindTheLockTest` |
 | The back button or an edge swipe on the lock screen | `Locked` ignores back and has no top bar | `NothingIsDrawnBehindTheLockTest` |
 | A store that cannot be read, taken for an empty one | `Stacks::holdsAny()` answers that something is held | `TheLockTest` |
 | The phone's clock set back, or the phone asleep | A monotonic clock that counts sleep: `elapsedRealtime`, `CLOCK_MONOTONIC` | `LockRuleTest`, `LockRuleTests` |
 | The device's own prompt counted as leaving, locking again over its answer | `LockRule.left()` does nothing while the prompt is up | `LockRuleTest`, `LockRuleTests` |
 | Biometrics removed or changed between locks | The passcode stands behind them in the same prompt | `LockRuleTest`, `LockRuleTests` |
-| The frame from before the lock, in the switcher or on return | The cover, up from leaving until `Locked` is published | `LockRuleTest`, `LockRuleTests`, on a device |
+| The frame from before the lock, in the switcher or on return | On Android `FLAG_SECURE`, set as the activity pauses, blanks the switcher; on both, the cover is up from leaving until `Locked` is published | `LockRuleTest`, `LockRuleTests`, on a device |
 | A screen reader reading through the cover | The content is hidden from it while the cover is up | on a device |
 | Two prompts answering one question | `LockRule` refuses a prompt while one is up | `LockRuleTest`, `LockRuleTests` |
 | A notification disclosing a stack while locked | `PlatformNotifier` asks the lock itself | `NotifierContractTest` |
