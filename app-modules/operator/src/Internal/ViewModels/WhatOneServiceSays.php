@@ -42,7 +42,7 @@ final readonly class WhatOneServiceSays
      * @param string       $mattersSaid the key for how much it matters
      * @param bool         $isSettling  whether it becomes something else by itself
      * @param bool         $isOurs      whether this stack is the one that runs it
-     * @param bool         $wouldNotHelp whether restarting it now would make things worse
+     * @param bool         $wouldNotHelp whether it is already being restarted, so another restart would not help
      * @param list<string> $leaning     the services that will not work without it
      * @param string       $exited      what it exited with, or empty where it did not
      * @param list<WhatToDoWithIt> $verbs what this state can take, worst-case none
