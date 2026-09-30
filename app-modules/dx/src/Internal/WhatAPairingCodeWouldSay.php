@@ -33,15 +33,8 @@ use function str_repeat;
  */
 final readonly class WhatAPairingCodeWouldSay
 {
-    /**
-     * Reserved by RFC 2606, so it resolves nowhere.
-     *
-     * Pairing material that could reach a real stack is refused. An
-     * address that cannot be resolved is the strongest form of that: were a
-     * request ever to escape the stand-in, the failure would be a name that
-     * does not exist rather than a connection to somebody's actual machine.
-     */
-    private const string AT = 'https://a-machine-you-have-not-met.invalid:8443';
+    /** What the machine the code is for is called, under an address that resolves nowhere. */
+    private const string NAMED = 'a-machine-you-have-not-met';
 
     /**
      * The name this machine gives itself, the same in every code it issues.
@@ -72,7 +65,7 @@ final readonly class WhatAPairingCodeWouldSay
     public static function asItWouldBeScanned(): string
     {
         return json_encode([
-            WhatPairingMaterialSays::Address->value => self::AT,
+            WhatPairingMaterialSays::Address->value => AnAddressThatResolvesNowhere::of(self::NAMED),
             WhatPairingMaterialSays::Fingerprint->value => str_repeat('cd', intdiv(Fingerprint::CHARACTERS, 2)),
             WhatPairingMaterialSays::Expires->value => self::EXPIRES,
             WhatPairingMaterialSays::Stack->value => self::CALLING_ITSELF,
