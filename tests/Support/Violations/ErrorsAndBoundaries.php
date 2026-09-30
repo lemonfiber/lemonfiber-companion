@@ -296,6 +296,71 @@ final readonly class ErrorsAndBoundaries
                     }
                 }
                 PHP, 'D5 —'),
+
+            // D8's two clauses, each on its own. Planted inside a module's
+            // source, because the rule reads what ships and a fixture beside
+            // it would be a fixture it never read.
+            Fixture::analyserInPlace('D8', 'app-modules/health/src/Fixtures/StandingInWords.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                final readonly class StandingInWords
+                {
+                    private const string GRANTED = 'granted';
+
+                    private const string PROVISIONAL = 'provisional';
+
+                    private const string DENIED = 'denied';
+
+                    public function isAllowed(string $said): bool
+                    {
+                        return match ($said) {
+                            self::GRANTED, self::PROVISIONAL => true,
+                            self::DENIED => false,
+                            default => false,
+                        };
+                    }
+                }
+                PHP, 'D8 — Modules\Health\Fixtures\StandingInWords compares against the string constants'),
+
+            Fixture::analyserInPlace('D8', 'app-modules/health/src/Fixtures/StandingAmongWords.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                final readonly class StandingAmongWords
+                {
+                    private const array ALLOWED = ['granted', 'provisional', 'pending'];
+
+                    public function isAllowed(string $said): bool
+                    {
+                        return in_array($said, self::ALLOWED, strict: true);
+                    }
+                }
+                PHP, 'D8 — in_array asks self::ALLOWED'),
+
+            Fixture::analyserInPlace('D9', 'app-modules/health/src/Fixtures/TwoHeartbeats.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Fixtures;
+
+                final readonly class TwoHeartbeats
+                {
+                    public const int HEARTBEAT_SECONDS = 15;
+                }
+
+                final readonly class AnotherHeartbeat
+                {
+                    public const int HEARTBEAT_SECONDS = 15;
+                }
+                PHP, 'D9 — Modules\Health\Fixtures\TwoHeartbeats::HEARTBEAT_SECONDS holds 15'),
         ];
     }
 
