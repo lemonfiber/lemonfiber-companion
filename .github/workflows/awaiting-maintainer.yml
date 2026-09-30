@@ -5,7 +5,7 @@
 # `main` requires has passed, and the reusable reads this same list back out of
 # this file to know what it must see finish first — so a workflow missing from it
 # is a workflow the gate never waits for and never re-evaluates on. `main`
-# requires twenty-four checks here and they come from three workflows:
+# requires twenty-five checks here and they come from three workflows:
 #
 #   ci         spec-check / spec-check, dco / dco, attribution / attribution,
 #              commitlint / commitlint, hygiene / {actionlint, invite, links,
@@ -13,6 +13,7 @@
 #              security / {gitleaks, osv-scanner},
 #              workflow-pins / workflow-pins, what changed,
 #              checks, rules, the rules refuse violations,
+#              the bridge compiles for iOS,
 #              tests and coverage, gate / gate, sonarcloud
 #   sdk-drift  sdk-drift
 #   codeql     analyze, alerts / alerts

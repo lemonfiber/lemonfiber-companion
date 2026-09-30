@@ -3,9 +3,9 @@
 # Typechecks every Swift file the bridge ships, the way the app build compiles
 # them: against the iOS SDK and beside the NativePHP sources they call into.
 #
-# `native.yml` builds and tests only the files that need no iOS runtime, on the
-# host. Nothing else compiles the rest — every `BridgeFunction`, everything
-# touching UIKit — before the app build does.
+# The `swift` job in `.github/workflows/ci.yml` builds and tests only the files
+# that need no iOS runtime, on the host. Nothing else compiles the rest — every
+# `BridgeFunction`, everything touching UIKit — before the app build does.
 #
 # The NativePHP half is read from the installed `vendor/nativephp/mobile`, so
 # the bridge is checked against the package the app is built with. One stand-in
