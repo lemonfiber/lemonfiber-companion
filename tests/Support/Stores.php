@@ -8,6 +8,7 @@ use function array_filter;
 use function array_unique;
 use function array_values;
 use function file_get_contents;
+use function interface_exists;
 use function is_string;
 
 use PhpParser\Node\Name\FullyQualified;
@@ -88,7 +89,7 @@ final readonly class Stores
      * as every store implements what clears everything kept, is the kernel's
      * port and is counted there.
      *
-     * @return list<string>
+     * @return list<class-string>
      */
     public static function ports(): array
     {
@@ -147,14 +148,19 @@ final readonly class Stores
      *
      * @param class-string $name
      *
-     * @return list<string>
+     * @return list<class-string>
      */
     private static function portsItsOwnerDeclares(Module $store, string $name): array
     {
-        return array_values(array_filter(
-            new ReflectionClass($name)->getInterfaceNames(),
-            static fn(string $port): bool => str_starts_with($port, sprintf('%s\\', $store->namespace)),
-        ));
+        $found = [];
+
+        foreach (new ReflectionClass($name)->getInterfaceNames() as $port) {
+            if (interface_exists($port) && str_starts_with($port, sprintf('%s\\', $store->namespace))) {
+                $found[] = $port;
+            }
+        }
+
+        return $found;
     }
 
     private static function directoryOf(Module $module): string
