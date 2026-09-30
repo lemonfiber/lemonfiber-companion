@@ -7,6 +7,7 @@ use Modules\Device\Api\PlatformAuth;
 use Modules\Kernel\Api\Authenticated;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\DeviceAuth;
+use Modules\Kernel\Api\HowLong;
 use Modules\Kernel\Api\Lock;
 use Modules\Kernel\Api\WhenTheLockAsks;
 use Native\Mobile\Testing\FakeBridge;
@@ -184,4 +185,15 @@ it('asks once per unlock, and counts it', function (): void {
 
 it('takes no sentence, so no caller can write one', function (): void {
     expect(new ReflectionMethod(ADeviceThatKnowsYou::class, 'unlock')->getParameters())->toBe([]);
+});
+
+it('tells the device how long the app may be away, and answers how the lock stands', function (): void {
+    foreach (everyDevice('refusing') as $which => [$device]) {
+        expect(howTheLockAnswered($device->allowAway(HowLong::ofSeconds(300))))->toBe('held', $which);
+    }
+
+    ADeviceWithAScreenLock::ready()->bind();
+    new PlatformAuth(new Screen(), Catalogue::words())->allowAway(HowLong::ofSeconds(900));
+
+    expect(array_column(FakeBridge::current()?->callsTo('Lemonfiber.Lock.After') ?? [], 'params'))->toBe([['seconds' => 900]]);
 });

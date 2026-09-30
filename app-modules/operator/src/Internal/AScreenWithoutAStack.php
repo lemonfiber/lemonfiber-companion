@@ -56,6 +56,9 @@ enum AScreenWithoutAStack: string
     /** The lock, put over whatever was on the glass when the device stood it again. */
     case Locked = '/locked';
 
+    /** How this phone is set: the lock, readings, the order of the stacks and what is kept. */
+    case Settings = '/settings';
+
     /** This screen's path, saying which item this version of the app does not have yet. */
     public function saying(WhatIsNotHereYet $what): string
     {

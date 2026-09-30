@@ -56,6 +56,12 @@
             "description": "The lock screen is on the glass: take the cover down, and ask once where that is allowed"
         },
         {
+            "name": "Lemonfiber.Lock.After",
+            "android": "app.lemonfiber.native.TheLock.After",
+            "ios": "TheLock.After",
+            "description": "How long the app may be away before the lock stands again, in seconds"
+        },
+        {
             "name": "Lemonfiber.Telling.Show",
             "android": "app.lemonfiber.native.TellingFunctions.Show",
             "ios": "TellingFunctions.Show",

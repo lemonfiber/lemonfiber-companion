@@ -226,4 +226,18 @@ enum TheLock {
             return BridgeResponse.success(data: ["open": !stands()])
         }
     }
+
+    /// `Lemonfiber.Lock.After` — how many seconds the app may be away.
+    ///
+    /// A missing or negative count is not taken, and the lock keeps what it
+    /// had; a fraction of a second is dropped.
+    class After: BridgeFunction {
+        func execute(parameters: [String: Any]) throws -> [String: Any] {
+            if let seconds = (parameters["seconds"] as? NSNumber)?.int64Value, seconds >= 0 {
+                change { $0.awayFor(seconds: seconds) }
+            }
+
+            return BridgeResponse.success(data: ["open": !stands()])
+        }
+    }
 }

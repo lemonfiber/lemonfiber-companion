@@ -170,6 +170,7 @@ final readonly class WhereAScreenCanSendYou
         return [
             ...array_map(static fn(TheMenu $item): string => sprintf('AStacksScreen::%s', $item->screen()->name), TheMenu::cases()),
             'AScreenWithoutAStack::NotHereYet',
+            'AScreenWithoutAStack::Settings',
         ];
     }
 

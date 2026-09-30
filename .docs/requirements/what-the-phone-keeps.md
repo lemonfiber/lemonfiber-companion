@@ -16,7 +16,7 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N27-R3` | Everything kept is encrypted under a key in the platform's secure storage, readable only while the device is unlocked, and never under a key in the application's own files | `EncrypterSeal` seals with AES-256-GCM under a data key it asks `HoldsTheSealKeys` for; `PlatformSealKeys` keeps that key in the platform's store, asked for at `WhenAValueMayBeRead::WhileUnlocked`; rules `S4` and `S5` keep the encrypter and the `Crypt` facade in `Modules\Seal`; rule `A12` lets a store take and give nothing but what is sealed, and `WhatThePhoneKeepsIsUnreadableOnDiskTest` reads the database file after a summary is kept and finds none of it |
 | `N27-R4` | A kept row names its stack only by a keyed hash, never by its identity, name or address | `SealedStack`, which `EncrypterSeal` builds as the HMAC-SHA256 of the stack's identity under a second key; rule `S6` keeps `hash_hmac` in `Modules\Seal` |
-| `N27-R5` | With no secure storage the app keeps nothing between launches, and says so on App settings | `SealStanding` answers `Unavailable` and `Sealing` is refused with `WhyNothingIsSealed`, so nothing can be sealed and so nothing can be kept; App settings is a screen this app does not have |
+| `N27-R5` | With no secure storage the app keeps nothing between launches, and says so on App settings | `SealStanding` answers `Unavailable` and `Sealing` is refused with `WhyNothingIsSealed`, so nothing can be sealed and so nothing can be kept; `HowThisPhoneIsSet`, the App settings screen, asks `SecureStorage::isAvailable()` and, where there is none, says `settings.no_secure_storage` above every setting |
 
 ## Kept, and shown for what it is
 
@@ -27,3 +27,9 @@ requirement is right and this page is a defect.
 | `N27-R10` | Readings older than the kept period are deleted when the app opens | `KeepingTheLastReading::forgetTheOld()`, for `HowLongAReadingIsKept::standard()` — thirty days — until there is a setting, asked by `YourStacks` on the first frame past the lock |
 | `N27-R13` | A kept reading in a shape this build does not read is discarded | Every kept summary is written in a `Shape`; `HealthReadingsInTheDatabase` answers a row of a shape it has no case for as one it cannot read, and `KeepingTheLastReading` forgets it, as it forgets one that does not open or does not read as a summary |
 | `N27-R22` | Nothing kept is drawn while the app is locked | `BehindTheLock` builds `Locked` in place of any screen while `TheLock` stands, so no screen that reads anything kept is built, let alone drawn; `Locked` draws the reason and the unlock and reads nothing kept; `NothingIsBuiltBehindTheLockTest` and `NothingIsDrawnBehindTheLockTest` |
+
+## Set on App settings
+
+| Requirement | What it asks | What keeps it |
+|---|---|---|
+| `N27-R14` | App settings offers when to ask for the passcode again: immediately until the operator sets one, or after 1, 5 or 15 minutes, or 1 hour | `LockAfter` holds the five choices, `Immediately` its standard; `HowThisPhoneIsSet` offers them under Lock, `LockingAfter` keeps the one chosen sealed in the connection module's own settings row and tells the device through `DeviceAuth::allowAway()`, and `Locked` tells the device again each time the lock is passed, so a new process starts from the kept choice |

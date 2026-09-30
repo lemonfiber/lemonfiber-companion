@@ -16,6 +16,7 @@ use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
+use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\Locked;
@@ -141,6 +142,9 @@ final class OperatorServiceProvider extends ServiceProvider
             // screen while the device's lock stands, and puts over the screen
             // on view when the device stands it again.
             Router::native(AScreenWithoutAStack::Locked->value, Locked::class);
+
+            // The phone's own settings, reached from the foot of the menu.
+            Router::native(AScreenWithoutAStack::Settings->value, HowThisPhoneIsSet::class);
 
             // The stack in the URI rather than in the screen, because a device
             // keeps each stack's session separate and a screen that chose its

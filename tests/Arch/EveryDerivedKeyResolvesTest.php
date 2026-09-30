@@ -31,6 +31,7 @@ use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Permission;
@@ -456,6 +457,10 @@ function everyDerivedKey(): array
         WhatIsNotHereYet::class => aPairPerCase(
             WhatIsNotHereYet::cases(),
             static fn(WhatIsNotHereYet $item): array => [$item->said()],
+        ),
+        LockAfter::class => aPairPerCase(
+            LockAfter::cases(),
+            static fn(LockAfter $after): array => [$after->said()],
         ),
         WhereInTheMenu::class => aPairPerCase(
             WhereInTheMenu::cases(),

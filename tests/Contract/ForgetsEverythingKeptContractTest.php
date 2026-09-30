@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\EveryStoreThePhoneKeeps;
+use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\ForgetsEverythingKept;
@@ -11,6 +12,7 @@ use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
 use Tests\Support\AKeptDatabase;
+use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\HealthReadingsInMemory;
 
 // The ForgetsEverythingKept contract, run against every store and against all
@@ -66,11 +68,25 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
     $stores = [
         'the adapter' => new HealthReadingsInTheDatabase(AKeptDatabase::migrated()),
         'the fake' => HealthReadingsInMemory::empty(),
+        'the settings adapter' => new SettingsInTheDatabase(AKeptDatabase::migrated()),
+        'the settings fake' => ConnectionSettingsInMemory::empty(),
         'every store together' => new EveryStoreThePhoneKeeps(HealthReadingsInMemory::empty(), HealthReadingsInMemory::empty()),
         'no store at all' => new EveryStoreThePhoneKeeps(),
     ];
 
     foreach ($stores as $which => $forgetting) {
         expect($forgetting->forgetEverything()->howMany())->toBe(0, $which);
+    }
+});
+
+it('forgets the settings a settings store keeps, and says how much that was', function (): void {
+    foreach ([
+        'the settings adapter' => new SettingsInTheDatabase(AKeptDatabase::migrated()),
+        'the settings fake' => ConnectionSettingsInMemory::empty(),
+    ] as $which => $store) {
+        $store->keep(SealedPayload::of('sealed'), Shape::One, Instant::atEpochSeconds(1_790_000_000));
+
+        expect($store->forgetEverything()->howMany())->toBe(1, $which)
+            ->and($store->forgetEverything()->howMany())->toBe(0, $which);
     }
 });

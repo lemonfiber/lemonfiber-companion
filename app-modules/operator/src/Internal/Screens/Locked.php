@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
+use Modules\Connection\Api\LockingAfter;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\WhenTheLockAsks;
 use Modules\Operator\Internal\AScreenWithoutAStack;
@@ -39,7 +40,7 @@ final class Locked extends NativeComponent
     /** Whether the screen under this awaits the outcome of something it sent. */
     public const string AWAITS = 'awaits';
 
-    public function __construct(private readonly DeviceAuth $device) {}
+    public function __construct(private readonly DeviceAuth $device, private readonly LockingAfter $lockingAfter) {}
 
     /**
      * Ask the device, because the operator tapped.
@@ -92,9 +93,17 @@ final class Locked extends NativeComponent
         return view('operator::locked');
     }
 
-    /** Back to the screen the lock went over, or on to the one it stood in for. */
+    /**
+     * Back to the screen the lock went over, or on to the one it stood in for.
+     *
+     * The device is told how long the app may be away first: the lock is open,
+     * so what the phone keeps may be read, and a device that has just started
+     * knows only its own default.
+     */
     private function goOn(): self
     {
+        $this->lockingAfter->toldTheDevice();
+
         $here = $this->nativeRouter?->currentUri() ?? AScreenWithoutAStack::TheList->value;
 
         if ($here !== AScreenWithoutAStack::Locked->value) {

@@ -41,16 +41,19 @@
     @endforelse
 
     <x-design::section>
-        @forelse ($settings as $item)
-            <x-design::row
-                :headline="__($item->said())"
-                :answers-to="__($item->said())"
-                :goes="$item->goes()"
-                :icon="$item->glyph()"
-                :ios-icon="$item->iosGlyph()"
-            />
-        @empty
-            {{-- Nothing: there are always the two settings. --}}
-        @endforelse
+        <x-design::row
+            :headline="__($stackSettings->said())"
+            :answers-to="__($stackSettings->said())"
+            :goes="$stackSettings->goes()"
+            :icon="$stackSettings->glyph()"
+            :ios-icon="$stackSettings->iosGlyph()"
+        />
+        <x-design::row
+            :headline="__($appSettings->said())"
+            :answers-to="__($appSettings->said())"
+            :goes="$appSettings->appSettings()"
+            :icon="$appSettings->glyph()"
+            :ios-icon="$appSettings->iosGlyph()"
+        />
     </x-design::section>
 </native:column>
