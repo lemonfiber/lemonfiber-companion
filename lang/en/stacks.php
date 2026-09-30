@@ -316,6 +316,7 @@ return [
             'check-failed' => 'Whether a newer version is out could not be checked',
         ],
         'offered' => 'Newest: :version',
+        'is_out' => 'lemonfiber :version is out',
         'run_at_the_machine' => 'To update, run this at the machine:',
         'not_the_services' => 'This is lemonfiber itself. The services are updated from their own screen.',
     ],

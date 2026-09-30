@@ -60,14 +60,21 @@
 @else
     {{-- The answer, first: whether any service would move onto the version
          its pins name — the stack's own word, not one worked out here from
-         two version strings. --}}
-    <x-design::heading>{{ __($this->answer()->pinsSaid) }}</x-design::heading>
+         two version strings. Where one would, the answer is how many are
+         behind, and the version it is on is the one that has newer versions
+         of them: its build carries the pins.
 
-    {{-- What it is on. Rendered in every state rather than only where
+         The version is rendered in every state rather than only where
          something is waiting: a screen silent about the version teaches an
          operator to read silence, and silence is also what a screen that
          forgot the field produces. --}}
-    <x-design::note>{{ __('updates.running_on', ['version' => $this->answer()->running]) }}</x-design::note>
+    @if ($this->answer()->offer !== null)
+        <x-design::heading>{{ trans_choice('updates.behind', $this->answer()->offer->changing()->count()) }}</x-design::heading>
+        <x-design::note>{{ __('updates.newer_in', ['version' => $this->answer()->running]) }}</x-design::note>
+    @else
+        <x-design::heading>{{ __($this->answer()->pinsSaid) }}</x-design::heading>
+        <x-design::note>{{ __('updates.running_on', ['version' => $this->answer()->running]) }}</x-design::note>
+    @endif
 
     @if ($this->answer()->runningWasWithdrawn)
         {{-- A stack running a release that has since been taken back is
@@ -83,7 +90,7 @@
              its build pins, and the confirmation names which services. --}}
         <x-design::card>
             <x-design::body>{{ trans_choice('updates.would_change', $this->answer()->offer->changing()->count()) }}</x-design::body>
-            <x-design::action label="{{ __('updates.take_it') }}" tap="wouldYouLike()" />
+            <x-design::action label="{{ trans_choice('updates.take_them', $this->answer()->offer->changing()->count()) }}" tap="wouldYouLike()" />
         </x-design::card>
     @endif
 

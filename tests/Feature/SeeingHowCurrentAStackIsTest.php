@@ -864,22 +864,26 @@ it('does not say an update is waiting where the notes are pending and the servic
 
         expect($drawn)->toContain(__('updates.pins.current'), __('updates.history'), '4.0.16', '4.0.15')
             ->and($drawn)->not->toContain(__('updates.pins.updates-available'))
-            ->and($drawn)->not->toContain(__('updates.take_it'));
+            ->and($drawn)->not->toContain(trans_choice('updates.behind', 1))
+            ->and($drawn)->not->toContain(trans_choice('updates.take_them', 1));
     }
 });
 
-it('says an update is waiting where a service is behind its pin, and offers it', function (): void {
+it('says how many services are behind and which lemonfiber has newer versions of them, and offers to update them', function (): void {
     foreach (['en', 'nl'] as $locale) {
         app()->setLocale($locale);
 
         $drawn = theUpkeepScreenDrawnOver(aStackWithOneServiceBehindItsPin());
 
         expect($drawn)->toContain(
-            __('updates.pins.updates-available'),
-            __('updates.take_it'),
+            trans_choice('updates.behind', 1),
+            __('updates.newer_in', ['version' => '4.1.0']),
+            trans_choice('updates.take_them', 1),
             trans_choice('updates.would_change', 1),
             __('updates.what_it_changed', ['version' => '4.1.0']),
-        )->and($drawn)->not->toContain(__('updates.pins.current'));
+        )->and($drawn)->not->toContain(__('updates.pins.current'))
+            ->and($drawn)->not->toContain(__('updates.pins.updates-available'))
+            ->and($drawn)->not->toContain(__('updates.running_on', ['version' => '4.1.0']));
     }
 });
 

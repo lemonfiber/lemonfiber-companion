@@ -19,6 +19,7 @@ final readonly class ThisCopyTurnedOutToBe
      * @param string $standsSaid    the catalogue key for where it stands
      * @param string $tone          the tone where it stands is drawn in, a `Modules\Design\View\Tone` value
      * @param string $offered       the newest version released, or empty
+     * @param string $out           the newer version offered in place of this one, or empty where none is
      * @param string $changed       what that version says it changed, or empty
      * @param string $untold        why availability could not be told, or empty
      * @param string $command       exactly what to type to update, or empty
@@ -34,6 +35,7 @@ final readonly class ThisCopyTurnedOutToBe
         public string $standsSaid,
         public string $tone,
         public string $offered,
+        public string $out,
         public string $changed,
         public string $untold,
         public string $command,
