@@ -616,10 +616,9 @@ it('N1-R66 — the cadence costs nothing while there is nothing to wait for', fu
         ->and($screen->isWorking())->toBeFalse();
 });
 
-it('N1-R27 — the cadence the screen states is the one the attribute keeps', function (): void {
-    // The two halves come off one constant, so there is no arrangement in which
-    // the sentence says five seconds and the poll fires at two. Asserted
-    // against the attribute itself rather than against a number written here.
+it('declares its cadence on the attribute, from the one constant', function (): void {
+    // Asserted against the attribute itself rather than against a number
+    // written here.
     $screen = theRepairsScreen(AStackThatWouldMend::stillWorkingItOut());
 
     // Through the class rather than `new ReflectionMethod(...)`, whose
@@ -634,9 +633,7 @@ it('N1-R27 — the cadence the screen states is the one the attribute keeps', fu
     }
 
     expect($polls)->toHaveCount(1)
-        ->and($polls[0]->newInstance()->ms)->toBe(HowOften::WhileWorkRuns->milliseconds())
-        ->and($screen->cadence()->seconds() * 1_000)->toBe($polls[0]->newInstance()->ms)
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+        ->and($polls[0]->newInstance()->ms)->toBe(HowOften::WhileWorkRuns->milliseconds());
 });
 
 it('N3-R13 — a refused credential on the outcome read signs this device out', function (): void {

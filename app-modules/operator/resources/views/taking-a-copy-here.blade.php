@@ -21,7 +21,6 @@
         <x-design::standing
             :said="__('stacks.copy.taking', ['scope' => __($this->lastCopy()->scope->said, $this->lastCopy()->scope->with)])"
             tone="working"
-            :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
         />
 
         {{-- The stack says how far a copy got once it has finished, and not

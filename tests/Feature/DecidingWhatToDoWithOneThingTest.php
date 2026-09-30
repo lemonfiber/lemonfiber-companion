@@ -13,7 +13,6 @@ use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -408,8 +407,7 @@ it('N1-R27 — looks again only while something is settling', function (): void 
     $screen->whileItSettles();
     $screen->answer();
 
-    expect($supervising->askings())->toBe(2)
-        ->and($screen->cadence())->toBe(HowOften::WhileWorkRuns);
+    expect($supervising->askings())->toBe(2);
 });
 
 it('N1-R66 — a standing thing is not polled', function (): void {

@@ -16,9 +16,6 @@
         @else
             <native:text>{{ __('stacks.removal.reading', ['name' => $this->answer()->name]) }}</native:text>
         @endif
-        <x-operator::note>
-            {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-        </x-operator::note>
     @elseif ($this->answer()->hasEnded)
         {{-- Not a failure and not a refusal: the stack has no outcome for it
              any more. After a yes that is not the same as it not having run,

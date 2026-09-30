@@ -50,7 +50,7 @@ trait FollowsTheUpdateItTook
      * It does nothing unless the update is running, which is what keeps this
      * from being polling: a finished report answers the
      * same thing however often it is read. The interval is
-     * {@see HowOften}'s constant, which {@see cadence()} states on the screen.
+     * {@see HowOften}'s constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -58,12 +58,6 @@ trait FollowsTheUpdateItTook
         if ($this->lastUpdate()->isWorking) {
             $this->lastUpdated = null;
         }
-    }
-
-    /** How often this screen asks after an update running, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     abstract public function stack(): Stack;

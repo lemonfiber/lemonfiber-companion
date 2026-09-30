@@ -195,10 +195,10 @@ final readonly class FloorsAndRules
             Fixture::edit(
                 'F14',
                 'app-modules/operator/resources/views/how-this-stack-is.blade.php',
-                '<x-design::body>{{ $this->summary()->worst }}</x-design::body>',
-                '<x-design::body>{{ $this->summary()->worstish }}</x-design::body>',
+                ':word="__($this->summary()->word)"',
+                ':word="__($this->summary()->wordish)"',
                 'every step a template takes',
-                'worstish',
+                'wordish',
             ),
 
             Fixture::edit(

@@ -45,7 +45,7 @@ use function view;
  * size stood against the minute a copy is meant to take.
  *
  * **Taking a copy answers a handle,** and the report arrives only through it.
- * The handle is held, asked after on a stated cadence while the stack is
+ * The handle is held, asked after on a declared cadence while the stack is
  * taking the copy, and the report drawn once it finishes. The stack says
  * nothing about how far a copy has got until it has finished, so while it
  * runs the screen says that and nothing more.
@@ -181,8 +181,7 @@ final class TakingACopyHere extends NativeComponent
      * Ask after the copy again while the stack is taking it.
      *
      * It does nothing unless a copy is being taken, so a finished report is
-     * not read over and over. The interval is {@see HowOften}'s constant,
-     * which {@see cadence()} states on the screen.
+     * not read over and over. The interval is {@see HowOften}'s constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void

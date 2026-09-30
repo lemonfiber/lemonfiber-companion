@@ -417,7 +417,6 @@ it('puts back exactly the listing it showed, and says it is running without draw
         ->and(everythingThePuttingBackShows($screen->done()))->toBe(nothingReportedOfPuttingItBack(['isWorking' => true]))
         ->and($drawn)->toContain(__('stacks.put_back.putting_back', ['copy' => 'lemonfiber-20260924-0300-full']))
         ->and($drawn)->toContain(__('stacks.put_back.no_progress_while_running'))
-        ->and($drawn)->toContain(__('health.every.while_work_runs', ['count' => 5]))
         ->and($drawn)->not->toContain(__('stacks.put_back.a_rehearsal'))
         ->and($puttingBack->followed())->toBe([]);
 });

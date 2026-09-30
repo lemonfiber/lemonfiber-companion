@@ -56,20 +56,20 @@
              reads the machine's state.
 
              How the stack stands is what the app opens on: the core's one
-             line, in the sentence the stack's own screen says it in, with its
-             glyph at the row's start. A stack whose line was never heard says
-             it cannot be told, never nothing. It is held rather than asked, so
-             it carries when it was heard and is never drawn as though it were
-             current; the age comes out of the same fold as the word, so a row
-             cannot have one without the other. Then whether this device holds
-             a session for it. --}}
+             line as a single word, with its glyph at the row's start. A stack
+             whose line was never heard says unknown, never nothing. It is read
+             from what was kept, which the list's own subscriptions keep fresh,
+             so it carries when it was heard and is never drawn as though it
+             were current; the age comes out of the same
+             fold as the word, so a row cannot have one without the other. A
+             stack this device holds no session for says so last. --}}
         <x-design::section>
             @forelse ($this->configured() as $stack)
                 <x-design::row
                     :headline="$stack->name()->shown()"
-                    :supporting="__($this->lastKnownOf($stack)->said)
-                        . ($this->lastKnownOf($stack)->ago->said === '' ? '' : ' ' . __('health.summary.as_of', ['ago' => trans_choice($this->lastKnownOf($stack)->ago->said, $this->lastKnownOf($stack)->ago->count)]))
-                        . ' · ' . __($this->isSignedInto($stack) ? 'connection.stack_is_open' : 'connection.stack_wants_a_password')"
+                    :supporting="__($this->lastKnownOf($stack)->word)
+                        . ($this->lastKnownOf($stack)->ago->said === '' ? '' : ' · ' . trans_choice($this->lastKnownOf($stack)->ago->said, $this->lastKnownOf($stack)->ago->count))
+                        . ($this->isSignedInto($stack) ? '' : ' · ' . __('connection.sign_in_needed'))"
                     :tone="$this->lastKnownOf($stack)->tone"
                     :goes="$this->tappingGoesTo($stack)"
                     :answers-to="__('connection.open_stack', ['stack' => $stack->name()->shown()])"
@@ -81,10 +81,10 @@
         </x-design::section>
     @endif
 
-    @if ($this->sharingWent() !== '')
+    @if ($this->sharingWent !== '')
         <x-design::notice tone="unknown">
-            <x-design::strong>{{ __($this->sharingWent()) }}</x-design::strong>
-            <x-design::body>{{ __($this->sharingRemedy()) }}</x-design::body>
+            <x-design::strong>{{ __($this->sharingWent) }}</x-design::strong>
+            <x-design::body>{{ __($this->sharingRemedy) }}</x-design::body>
         </x-design::notice>
     @endif
 

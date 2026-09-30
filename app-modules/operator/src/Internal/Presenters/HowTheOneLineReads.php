@@ -32,11 +32,12 @@ use Modules\Operator\Internal\ViewModels\WhyNothingWasSaid;
  * critical. Things reported anywhere else, because a stack that is stopped or
  * still starting can carry findings without any of them being a demand.
  *
- * **The list says the same line from what was kept.** It holds no stream, so
- * it has the word a stack's screen last heard and when, and nothing else. That
+ * **The list says the same line from what was kept.** Its rows read the store,
+ * so they have the word last heard and when, and nothing else. That
  * word is said for as long as a stream could have stayed silent and still been
  * vouched for, and past that it reads as unknown, as the stack's own screen
- * would; either way it says when it was heard.
+ * would; either way it says when it was heard. A row has room for a word
+ * and not a sentence, so every line carries its word as a single word too.
  */
 final readonly class HowTheOneLineReads
 {
@@ -51,11 +52,11 @@ final readonly class HowTheOneLineReads
         );
 
         return $heard->summary(
-            none: fn(): WhatTheOneLineSays => $this->nothingHeard($why, $heard->isListening()),
+            none: fn(): WhatTheOneLineSays => $this->nothingHeard($why),
             current: fn(TheHealthSummary $summary): WhatTheOneLineSays
-                => $this->said($summary, $summary->standing(), AgoAsShown::live(), $why, $heard->isListening()),
+                => $this->said($summary, $summary->standing(), AgoAsShown::live(), $why),
             asOf: fn(TheHealthSummary $summary, Instant $at): WhatTheOneLineSays
-                => $this->said($summary, HowItStands::Unknown, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $why, $heard->isListening()),
+                => $this->said($summary, HowItStands::Unknown, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $why),
         );
     }
 
@@ -83,6 +84,7 @@ final readonly class HowTheOneLineReads
     {
         return new WhatTheOneLineSays(
             said: $shown->saidOnTheScreen(),
+            word: $shown->saidInAWord(),
             tone: $this->toneOf($shown),
             counted: '',
             howMany: 0,
@@ -90,17 +92,17 @@ final readonly class HowTheOneLineReads
             ago: $ago,
             met: '',
             remedy: '',
-            listening: false,
             affected: [],
             stopped: [],
             slow: [],
         );
     }
 
-    private function nothingHeard(WhyNothingWasSaid $why, bool $listening): WhatTheOneLineSays
+    private function nothingHeard(WhyNothingWasSaid $why): WhatTheOneLineSays
     {
         return new WhatTheOneLineSays(
             said: $why->met === '' ? self::WAITING : HowItStands::Unknown->saidOnTheScreen(),
+            word: HowItStands::Unknown->saidInAWord(),
             tone: $why->met === '' ? Tone::Working->value : Tone::Unknown->value,
             counted: '',
             howMany: 0,
@@ -108,14 +110,13 @@ final readonly class HowTheOneLineReads
             ago: AgoAsShown::live(),
             met: $why->met,
             remedy: $why->remedy,
-            listening: $listening,
             affected: [],
             stopped: [],
             slow: [],
         );
     }
 
-    private function said(TheHealthSummary $summary, HowItStands $shown, AgoAsShown $ago, WhyNothingWasSaid $why, bool $listening): WhatTheOneLineSays
+    private function said(TheHealthSummary $summary, HowItStands $shown, AgoAsShown $ago, WhyNothingWasSaid $why): WhatTheOneLineSays
     {
         $affected = [];
 
@@ -138,6 +139,7 @@ final readonly class HowTheOneLineReads
 
         return new WhatTheOneLineSays(
             said: $shown->saidOnTheScreen(),
+            word: $shown->saidInAWord(),
             tone: $this->toneOf($shown),
             counted: $summary->wantingAttention() === 0 ? '' : $this->counted($shown),
             howMany: $summary->wantingAttention(),
@@ -145,7 +147,6 @@ final readonly class HowTheOneLineReads
             ago: $ago,
             met: $why->met,
             remedy: $why->remedy,
-            listening: $listening,
             affected: $affected,
             stopped: $stopped,
             slow: $slow,

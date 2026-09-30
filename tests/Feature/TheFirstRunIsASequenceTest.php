@@ -12,10 +12,12 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -63,6 +65,8 @@ function theScreenAFirstRunLandsOn(Stack ...$paired): YourStacks
         new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
+        AStackThatSpeaksUp::holdingOpen(),
+        ACaptureInMemory::inFront(),
     );
 }
 

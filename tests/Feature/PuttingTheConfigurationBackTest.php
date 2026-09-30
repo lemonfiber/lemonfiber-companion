@@ -279,7 +279,7 @@ it('says plainly that nothing would change, and offers nothing to agree to', fun
         ->and($screen->wasAgreedTo())->toBeFalse();
 });
 
-it('says the stack is working out the preview, and how often it asks, while that runs', function (): void {
+it('says the stack is working out the preview while that runs', function (): void {
     $resetting = AStackThatResets::previewing(HowTheResetIsGoing::stillRunning(), HowTheResetIsGoing::stillRunning());
     $screen = thePuttingItAllBackScreen($resetting);
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -287,7 +287,6 @@ it('says the stack is working out the preview, and how often it asks, while that
     expect(everythingTheResetShows($screen->answer()))->toBe(nothingReportedOfTheReset(afterTheYes: false, changed: ['isWorking' => true]))
         ->and($screen->isWorking())->toBeTrue()
         ->and($drawn)->toContain(__('stacks.reset.asking'))
-        ->and($drawn)->toContain(__('health.every.while_work_runs', ['count' => 5]))
         ->and($drawn)->not->toContain(__('stacks.reset.a_preview'));
 });
 
@@ -402,7 +401,6 @@ it('sends the yes only after the preview, and says it is putting the configurati
         ->and($screen->isWorking())->toBeTrue()
         ->and(everythingTheResetShows($screen->answer()))->toBe(nothingReportedOfTheReset(afterTheYes: true, changed: ['isWorking' => true]))
         ->and($drawn->said())->toContain(__('stacks.reset.putting_back'))
-        ->and($drawn->said())->toContain(__('health.every.while_work_runs', ['count' => 5]))
         ->and($drawn->said())->not->toContain(__('stacks.reset.a_preview'))
         ->and($drawn->offers())->toContain(__('stacks.reset.see_the_settings'))
         ->and($resetting->followed())->toBe([AStackThatResets::THE_PREVIEW]);
@@ -581,7 +579,6 @@ it('names where it goes and what it draws', function (): void {
     $screen = thePuttingItAllBackScreen(aStackPreviewingTheReset());
 
     expect($screen->goes()->ofItself()->changing()->reset())->toEndWith('/reset')
-        ->and($screen->cadence()->seconds())->toBe(5)
         ->and($screen->render()->name())->toBe('operator::putting-the-configuration-back');
 });
 

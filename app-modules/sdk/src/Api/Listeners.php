@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use function array_key_exists;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\EnvelopeReader;
@@ -52,19 +53,22 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * one.
  *
  * **Mutable, because a held connection is.** This is the one adapter that
- * keeps something between calls, and what it keeps is the connection itself.
- * One belongs to one screen, which is why it is bound fresh for each.
+ * keeps something between calls, and what it keeps is the connection itself,
+ * one for each stack it is asked about. One belongs to one screen, which is
+ * why it is bound fresh for each: the screen for one stack holds one stream,
+ * and the list of stacks holds one per stack.
  *
  * **Every refusal is an obstacle.** The stream refusing the session, the two
  * ends disagreeing about the version, an event that is not an envelope, and a
  * summary this app cannot read all leave the screen with the same thing to
- * say: this stack could not be heard. Nothing is held after any of them, so
- * the next attempt opens a new connection.
+ * say: this stack could not be heard. Nothing is held for that stack after
+ * any of them, so the next attempt opens a new connection, and every other
+ * stack's stream stays open.
  *
  * **A stream that ends is said to have ended once.** The call that finds the
  * end hands back what arrived before it, and the next hands back `closed`
  * without opening anything. The screen decides when to open again, on the
- * cadence it states.
+ * cadence it declares.
  *
  * **A `ConfigurationProblem` is deliberately not caught**, for {@see Admissions}'
  * reason: the SDK raises one where a stored stack cannot be pinned, which is a
@@ -80,16 +84,20 @@ final class Listeners implements Hearing
      */
     public const int NO_LONGER_THAN_MS = 1;
 
-    private ?AStreamHeldOpen $held = null;
+    /** @var array<string, AStreamHeldOpen> each stack's open stream, by its stored identifier */
+    private array $held = [];
 
-    private bool $ended = false;
+    /** @var array<string, true> the stacks whose stream ended and has not been said to have ended */
+    private array $ended = [];
 
     public function __construct(private readonly Clients $clients) {}
 
     public function howItIs(Stack $stack, Session $session): WhatWasHeard
     {
-        if ($this->ended) {
-            $this->ended = false;
+        $which = $stack->id()->stored();
+
+        if (array_key_exists($which, $this->ended)) {
+            unset($this->ended[$which]);
 
             return WhatWasHeard::closed();
         }
@@ -99,16 +107,17 @@ final class Listeners implements Hearing
 
     public function whatAStartWaitsOn(Stack $stack, Session $session): WhatAStartWaitsOn
     {
+        $which = $stack->id()->stored();
+
         try {
-            $held = $this->held ??= $this->opened($stack, $session);
-            $arrived = $held->taken();
+            $arrived = $this->heldFor($stack, $session)->taken();
             $latest = $arrived->theLast(StartEnvelope::KIND);
 
             // A stream that ended is let go of and opened again on the next
             // ask. There is no end to report here: a start's lines stop when
             // the start does, and the job being followed says when that was.
             if ($arrived->ended) {
-                $this->held = null;
+                unset($this->held[$which]);
             }
 
             return $latest instanceof ServerEvent
@@ -117,7 +126,7 @@ final class Listeners implements Hearing
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatAStartWaitsOn::met(WhatARefusalMeant::obstacle($why));
         } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|StartSaysNothing) {
-            $this->letGo();
+            $this->letGoOf($which);
 
             return WhatAStartWaitsOn::met(Obstacle::StackDidNotAnswer);
         }
@@ -125,8 +134,8 @@ final class Listeners implements Hearing
 
     public function letGo(): WhatWasHeard
     {
-        $this->held = null;
-        $this->ended = false;
+        $this->held = [];
+        $this->ended = [];
 
         return WhatWasHeard::closed();
     }
@@ -134,18 +143,32 @@ final class Listeners implements Hearing
     /** What has arrived on the stream, opening it where it is not open. */
     private function heardFrom(Stack $stack, Session $session): WhatWasHeard
     {
+        $which = $stack->id()->stored();
+
         try {
-            return $this->heard($this->held ??= $this->opened($stack, $session));
+            return $this->heard($which, $this->heldFor($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
         } catch (
             Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted
             |SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing
         ) {
-            $this->letGo();
+            $this->letGoOf($which);
 
             return WhatWasHeard::met(Obstacle::StackDidNotAnswer);
         }
+    }
+
+    /** This stack's open stream, opening it where it is not open. */
+    private function heldFor(Stack $stack, Session $session): AStreamHeldOpen
+    {
+        return $this->held[$stack->id()->stored()] ??= $this->opened($stack, $session);
+    }
+
+    /** Let go of one stack's stream, leaving every other stack's open. */
+    private function letGoOf(string $which): void
+    {
+        unset($this->held[$which], $this->ended[$which]);
     }
 
     private function opened(Stack $stack, Session $session): AStreamHeldOpen
@@ -159,14 +182,17 @@ final class Listeners implements Hearing
     }
 
     /** What arrived, as what was heard, letting go of a stream that ended. */
-    private function heard(AStreamHeldOpen $held): WhatWasHeard
+    private function heard(string $which, AStreamHeldOpen $held): WhatWasHeard
     {
         $arrived = $held->taken();
         $latest = $arrived->theLast(DashboardEnvelope::KIND);
 
         if ($arrived->ended) {
-            $this->held = null;
-            $this->ended = $arrived->anything;
+            $this->letGoOf($which);
+        }
+
+        if ($arrived->ended && $arrived->anything) {
+            $this->ended[$which] = true;
         }
 
         return match (true) {

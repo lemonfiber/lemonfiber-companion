@@ -30,24 +30,28 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R67` | A screen may hold a subscription in place of reading, and opening it is that screen's one read. What arrives is rendered from what the subscription holds | `Hearing`, bound fresh for each screen. `HowThisStackIs` holds one `Listeners` and draws from `WhatWasHeardSoFar`, which is a value on the screen |
+| `N1-R67` | A screen may hold a subscription in place of reading, and opening it is that screen's one read. What arrives is rendered from what the subscription holds | `Hearing`, bound fresh for each screen, holding one stream for each stack it is asked about. `HowThisStackIs` holds one `Listeners` and draws from `WhatWasHeardSoFar`, which is a value on the screen. `YourStacks` holds one too, with a `WhatWasHeardSoFar` for each stack in `WhatEachStackSaidSoFar` |
 | `N1-R68` | The first frame is published before the subscription is opened, and opening carries the bounded timeout every call carries | The screen is `#[Lazy]`, so its placeholder is published before `mount()` opens the stream. The stream is opened through the pinned client every call uses |
-| `N1-R69` | What arrived is taken on a stated cadence, without waiting for what has not | `#[Poll(HowOften::WHILE_LISTENING_MS)]` on `HearsHowTheStackIs::listen()`. `Listeners` reads with a wait of `Listeners::NO_LONGER_THAN_MS` and stops at the first read that finds nothing |
-| `N1-R70` | Twice the heartbeat in silence is a broken subscription: the last value is shown with its age, and a summary reads unknown | `WhatWasHeardSoFar::hasGoneQuiet()`, past thirty seconds with nothing heard; the screen lets go on the wake that notices. `HearingHowAStackIsTest` asserts both sides of the bound. The list holds no stream, so it keeps the same bound from when a word was heard: past `WhatWasHeardSoFar::isStillCurrent()`, a kept word reads unknown with its age |
-| `N1-R71` | A broken subscription is opened again on a stated cadence and never sooner; nothing from before the break is current until a new value arrives | `WhatWasHeardSoFar::mayListen()` waits out `HowOften::AfterABreak`, and the screen states that cadence while the stream is broken. A value held from before a break is drawn as unknown with its age |
+| `N1-R69` | What arrived is taken on a declared cadence, without waiting for what has not | `#[Poll(HowOften::WHILE_LISTENING_MS)]` on `HearsHowTheStackIs::listen()`. `Listeners` reads with a wait of `Listeners::NO_LONGER_THAN_MS` and stops at the first read that finds nothing |
+| `N1-R70` | Twice the heartbeat in silence is a broken subscription: the last value is shown with its age, and a summary reads unknown | `WhatWasHeardSoFar::hasGoneQuiet()`, past thirty seconds with nothing heard; the screen lets go on the wake that notices. `HearingHowAStackIsTest` asserts both sides of the bound. The list's rows read kept words, so they keep the same bound from when a word was heard: past `WhatWasHeardSoFar::isStillCurrent()`, a kept word reads unknown with its age |
+| `N1-R71` | A broken subscription is opened again on a declared cadence and never sooner; nothing from before the break is current until a new value arrives | `WhatWasHeardSoFar::mayListen()` waits out `HowOften::AfterABreak`. A value held from before a break is drawn as unknown with its age |
 | `N1-R72` | Held only while a screen showing it is in front; closed when the screen is left and when the app leaves the foreground | Every wake asks `Capture::isInFront()`, answered by `Lemonfiber.IsInFront` from the lifecycle observer capture protection installs, and lets go while the answer is no. Every way off a screen ends in `stop()`, which lets go |
-| `N1-R9` | A value not read in the current session carries when it was read | A summary that is no longer current is drawn with how long ago it was heard, and every word on the list is drawn with how long ago it was heard |
-| `N1-R27` | A screen whose content changes while open refreshes on a stated cadence | The screen says how often it looks at what it holds, or how soon it listens again |
+| `N1-R9` | A value not read in the current session carries when it was read | A summary that is no longer current says when it was updated, and every word on the list is drawn with how long ago it was heard |
+| `N1-R27` | A screen whose content changes while open refreshes on a cadence it declares, which is not shown | `#[Poll(HowOften::WHILE_LISTENING_MS)]` on `HearsHowTheStackIs::listen()`, and `HowOften::AfterABreak` in `WhatWasHeardSoFar::mayListen()`. `tests/Arch/EveryCadenceIsDeclaredTest.php` holds both and refuses a screen that hands a cadence to its template |
 
 ## How the line reaches the list
 
-The list of stacks is the screen the app opens on, and it holds no stream:
-opening the app is not a reason to talk to every stack, and the one
-subscription belongs to the stack's own screen. So every word `HearsHowTheStackIs`
-hears is kept, with when it was heard, and the list reads it back.
+The list of stacks is the screen the app opens on. Its first frame is drawn
+from the words kept for each stack, with when each was heard. From the first
+wake after it, `HearsHowEachStackIs` holds a subscription to each stack this
+device is signed into as the operator, on the stack screen's own rules, and
+never while the lock stands or on a launch with no network. Every word it and
+`HearsHowTheStackIs` hear is kept, with when it was heard, and the rows read it
+back.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
+| `N1-R25` | A screen that reads from a stack publishes its first frame before the read, built from what the app holds | `HearsHowEachStackIs::listen()` runs on `#[Poll]` wakes only, which come after the first render, and the rows read `Standings`. `TheListSaysTheOneLineTest` draws the kept word with its age before anything is asked, and the heard word after |
 | `N2-R1` | The app opens on the overall verdict, and renders `unknown` as its own answer | Every row on `YourStacks` says a word in its own sentence, and a stack never heard reads `HowItStands::Unknown` rather than nothing |
 | `N1-R24` | A reading retained from an earlier session may be shown on opening, carrying when it was read, and never confirms an action | `Standings` answers `Showing`, whose held arm is a retained `Reading`. `PlatformStandings` keeps the word and the moment in the platform's store, and nothing else |
 | `N2-R13` | A reading older than the session carries its age wherever it is shown, including on the opening verdict | `HowTheOneLineReads::kept()` hands the word and its age out together, and the row draws the one line's own *last heard* sentence under it |
@@ -66,7 +70,7 @@ them cannot hold this one:
   and a second enforcement of the certificate pin, which `N1-R16` and `N1-R19`
   refuse.
 - **The screen's own runloop** keeps its component alive between wakes, and
-  `#[Poll]` wakes it on a stated cadence. The stream is opened through the SDK
+  `#[Poll]` wakes it on a declared cadence. The stream is opened through the SDK
   and held by the screen's `Listeners`, and each wake reads it with a wait of a
   millisecond, so a wake with nothing to take costs about that and never waits
   on the stack.

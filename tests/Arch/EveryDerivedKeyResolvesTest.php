@@ -23,7 +23,6 @@ use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
-use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheImportLinked;
@@ -196,7 +195,7 @@ function everyDerivedKey(): array
         ),
         HowItStands::class => aPairPerCase(
             HowItStands::cases(),
-            static fn(HowItStands $standing): array => [$standing->saidOnTheScreen()],
+            static fn(HowItStands $standing): array => [$standing->saidOnTheScreen(), $standing->saidInAWord()],
         ),
         Category::class => aPairPerCase(
             Category::cases(),
@@ -233,10 +232,6 @@ function everyDerivedKey(): array
         HowMuchIsShown::class => aPairPerCase(
             HowMuchIsShown::cases(),
             static fn(HowMuchIsShown $shown): array => [$shown->saidOnTheScreen()],
-        ),
-        HowOften::class => aPairPerCase(
-            HowOften::cases(),
-            static fn(HowOften $often): array => [$often->saidOnTheScreen()],
         ),
         Stream::class => aPairPerCase(
             Stream::cases(),

@@ -113,8 +113,8 @@ it('draws the kept summary with its age on the first frame, and the fresh one re
     $first = WhatTheDeviceWouldDraw::whileItOpens($screen)->said();
 
     // Kept, so never current: the word is unknown, the age is beside it, and
-    // what it last named is still said.
-    expect($first)->toContain(__(HowItStands::Unknown->saidOnTheScreen()))
+    // what it last named is still the heading.
+    expect($first)->toContain(__(HowItStands::Unknown->saidInAWord()))
         ->and($first)->toContain(__('health.summary.as_of', ['ago' => trans_choice('health.ago.hours', 2)]))
         ->and($first)->toContain('The disk that holds the photos is full');
 
@@ -162,6 +162,8 @@ function theLaunchOver(ADeviceThatKnowsYou $device, ClearingWhatCannotBeRead $cl
         new Opening($device, $stacks, ADeviceOnANetwork::connected()),
         $clearing,
         $keeping,
+        AStackThatSpeaksUp::holdingOpen(),
+        ACaptureInMemory::inFront(),
     );
 }
 

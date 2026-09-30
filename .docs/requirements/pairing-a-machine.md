@@ -31,7 +31,7 @@ requirement is right and this page is a defect.
 | `N1-R37` | A launch with no network, one that cannot reach the stack, and one where the app is locked are told apart | `Opening` |
 | `N1-R35`, `N1-R36` | And the two that are not failures at all: no stack paired yet, and a stack paired but not reachable | `Opening` |
 | `N1-R31` | Two stacks are not interchangeable, so which one opens is answered rather than chosen on the operator's behalf | `Opening` |
-| `N1-R66` | Nothing but a stated cadence or an operator's act makes a screen reach a machine | `Opening` — opening one is an act |
+| `N1-R66` | Nothing but a declared cadence or an operator's act makes a screen reach a machine | `Opening` — opening one is an act |
 | `N4-R19` | The device's own authentication on a cold start, asked before anything touches a network | `Opening` |
 | `N4-R22` | A lock over an empty store protects nothing, and is not asked for | `Opening` |
 | `N4-R23` | The store itself decides that, not a flag, so an unlocked first run cannot outlive it | `Opening` |

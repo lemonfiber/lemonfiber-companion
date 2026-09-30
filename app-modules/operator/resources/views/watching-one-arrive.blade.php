@@ -10,7 +10,6 @@
         <x-design::standing
             :said="__('health.walkthrough.walking')"
             tone="working"
-            :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
         />
         @if ($this->stage()->step !== '')
             @if ($this->stage()->ago->said === '')
@@ -36,9 +35,6 @@
                  wake opens it, for a walk found again or a screen back in
                  front of somebody. --}}
             <x-design::body>{{ __('health.walkthrough.stage_not_said_yet') }}</x-design::body>
-        @endif
-        @if ($this->stage()->broke)
-            <x-design::note>{{ __('health.walkthrough.listening_again', ['count' => $this->listensAgain()->seconds()]) }}</x-design::note>
         @endif
         <x-design::body>{{ __('health.walkthrough.lines_when_done') }}</x-design::body>
         {{-- Leaving does not stop it, said while it runs because that is when

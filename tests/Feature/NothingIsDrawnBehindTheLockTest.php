@@ -5,16 +5,24 @@ declare(strict_types=1);
 use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheHealthSummary;
+use Modules\Kernel\Api\WhatStoppedMoving;
+use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\YourStacks;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -60,6 +68,8 @@ function theScreenOnADeviceThat(ADeviceThatKnowsYou $device, Stack ...$paired): 
         new Opening($device, $stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
+        AStackThatSpeaksUp::holdingOpen(),
+        ACaptureInMemory::inFront(),
     );
 }
 
@@ -108,6 +118,34 @@ it('N4-R24 — the name of a machine is not behind the lock', function (): void 
     // what the operator chose, and the names of the machines in somebody's
     // house is exactly what an unlocked phone on a table would show a guest.
     expect($drawn->said())->not->toContain($stack->name()->shown());
+});
+
+it('no stack is reached behind a lock, even one this device is signed into', function (): void {
+    $stack = aStackBehindTheLock();
+    $stacks = StacksInMemory::holding($stack);
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $hearing = AStackThatSpeaksUp::holdingOpen(
+        WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())),
+    );
+    $screen = new YourStacks(
+        $stacks,
+        $keychain,
+        AShareSheetThatWasOffered::working(),
+        StandingsInMemory::working(),
+        FrozenClock::at(Instant::atEpochSeconds(WHEN_IT_LAUNCHED)),
+        new Opening(ADeviceThatKnowsYou::refusing(), $stacks, ADeviceOnANetwork::connected()),
+        WhatThePhoneKeeps::nothingToClear(),
+        WhatThePhoneKeeps::nothingYet(),
+        $hearing,
+        ACaptureInMemory::inFront(),
+    );
+
+    // A wake on a locked list is a wake on a frame that shows nothing, and a
+    // subscription opened there would be the lock reaching the stack for it.
+    $screen->listen();
+
+    expect($hearing->asked())->toBe(0);
 });
 
 it('N4-R22 — a device holding nothing reaches its first run with no prompt', function (): void {

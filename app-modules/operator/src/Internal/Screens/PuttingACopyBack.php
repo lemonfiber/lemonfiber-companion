@@ -48,7 +48,7 @@ use function view;
  * would not list the copy offers nothing to agree to, and the screen offers
  * nothing.
  *
- * **Putting it back answers a handle,** followed on a stated cadence while it
+ * **Putting it back answers a handle,** followed on a declared cadence while it
  * runs, as taking an update is. The report says what was restored and where
  * the data went.
  *
@@ -222,7 +222,7 @@ final class PuttingACopyBack extends NativeComponent
      *
      * It does nothing unless that is running, so a rehearsal and a finished
      * report are not read over and over. The interval is {@see HowOften}'s
-     * constant, which {@see cadence()} states on the screen.
+     * constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -236,12 +236,6 @@ final class PuttingACopyBack extends NativeComponent
     public function isWorking(): bool
     {
         return $this->agreed && $this->done()->isWorking;
-    }
-
-    /** How often this screen asks after a copy being put back, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /** Resume the session and ask what putting the copy back would do. */

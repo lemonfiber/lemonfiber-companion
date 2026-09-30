@@ -170,8 +170,7 @@ final class TakingSomebodyOut extends NativeComponent
      * Ask after the work again while the stack is carrying it out.
      *
      * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOften}'s, which {@see cadence()}
-     * states on the screen.
+     * for again. The interval is {@see HowOften}'s.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -179,12 +178,6 @@ final class TakingSomebodyOut extends NativeComponent
         if ($this->answer()->isWorking) {
             $this->going = null;
         }
-    }
-
-    /** How often this screen asks after work running, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /** What the stack is asked this frame: after the work being followed, or what taking them out would cost. */

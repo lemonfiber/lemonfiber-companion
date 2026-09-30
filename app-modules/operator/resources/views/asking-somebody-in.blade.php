@@ -35,7 +35,6 @@
             <x-design::standing
                 :said="__('stacks.invitation.working')"
                 tone="working"
-                :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
             />
         @elseif ($this->howItIsGoing()->hasEnded)
             {{-- Not a failure and not a refusal: the stack has no outcome for it

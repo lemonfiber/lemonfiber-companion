@@ -160,7 +160,6 @@
         <x-design::standing
             :said="__('updates.still_updating')"
             tone="working"
-            :note="__($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()])"
         />
     @elseif ($this->lastUpdate()->hasEnded)
         {{-- Not a failure: it may well have worked, and the reading above

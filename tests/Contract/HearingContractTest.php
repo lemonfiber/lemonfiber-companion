@@ -398,6 +398,51 @@ it('opens the stream once, and takes what arrived after that without asking agai
     $stack->assertSentCount(1);
 });
 
+/** A second stack, listened to beside the first. */
+function anotherStackToListenTo(): Stack
+{
+    return Stack::of(
+        StackId::of(Nonce::of(str_repeat('e', Nonce::SHORTEST))),
+        StackName::of('The shed'),
+        Address::of('https://192.168.1.44:8443'),
+        Fingerprint::of(str_repeat('f', Fingerprint::CHARACTERS)),
+    );
+}
+
+it('holds one stream for each stack it is asked about, and opens neither again', function (): void {
+    // Only the adapter can be asked this. The list of stacks listens to every
+    // stack it is signed into through one of these, and a wake that reopened
+    // one stack's stream because another was asked about in between would be
+    // a request to each stack on every wake.
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([MockResponse::make(''), MockResponse::make('')]);
+    $hearing = new Listeners(new PinnedClients());
+
+    foreach ([aStackToListenTo(), anotherStackToListenTo(), aStackToListenTo(), anotherStackToListenTo()] as $asked) {
+        $hearing->howItIs($asked, theSessionItListensWith());
+    }
+
+    $stack->assertSentCount(2);
+});
+
+it('leaves every other stack\'s stream open when one stack could not be heard', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([MockResponse::make(''), MockResponse::make('{"error":"gone"}', 500)]);
+    $hearing = new Listeners(new PinnedClients());
+
+    $first = $hearing->howItIs(aStackToListenTo(), theSessionItListensWith());
+    $second = $hearing->howItIs(anotherStackToListenTo(), theSessionItListensWith());
+    $again = $hearing->howItIs(aStackToListenTo(), theSessionItListensWith());
+
+    // The first stack's stream is the one it opened: a mocked stream ends once
+    // its bytes are read, and a stream opened again would have been a third
+    // request.
+    expect(array_map(whatWasHeardAsAWord(...), [$first, $second, $again]))
+        ->toBe(['nothing', Obstacle::StackDidNotAnswer->value, 'closed']);
+
+    $stack->assertSentCount(2);
+});
+
 it('opens a stream that ended again, once it has said that it ended', function (): void {
     // Only the adapter can be asked this: the fake's script ends where the
     // screen's cadence takes over. What is held is the promise that an ended

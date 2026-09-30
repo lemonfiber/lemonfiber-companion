@@ -243,7 +243,6 @@ it('takes exactly the copy it named, and says it is being taken without drawing 
         ]))
         ->and($drawn)->toContain(__('stacks.copy.taking', ['scope' => aLineOfTheCopy('stacks.copy.scope.service', ['name' => 'sonarr'])]))
         ->and($drawn)->toContain(__('stacks.copy.no_progress_while_running'))
-        ->and($drawn)->toContain(__('health.every.while_work_runs', ['count' => 5]))
         ->and($copying->followed())->toBe([]);
 });
 

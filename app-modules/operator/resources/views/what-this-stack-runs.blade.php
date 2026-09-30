@@ -16,13 +16,6 @@
         <x-design::body>{{ __('health.no_form_running') }}</x-design::body>
     @endif
 
-    @if ($this->answer()->isSettling)
-        {{-- Something here becomes something else on its own, and
-             this says how often the screen looks. A screen that refreshes
-             silently is one an operator cannot reason about. --}}
-        <x-design::note>{{ __($this->cadence()->saidOnTheScreen()) }}</x-design::note>
-    @endif
-
     {{-- A row, not a rack. The verbs live behind it, on the screen about
          that one service — a list is read and a verb is chosen, and the two
          acts do not want the same frame. What the row carries is what somebody

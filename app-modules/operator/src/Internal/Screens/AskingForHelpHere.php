@@ -54,7 +54,7 @@ use function view;
  * only then is writing offered. What is written is what was described: the
  * choices are held with the description and sent again as they were.
  *
- * **Both answer a handle,** followed on a stated cadence while the stack
+ * **Both answer a handle,** followed on a declared cadence while the stack
  * gathers. A bundle the stack refused is its answer, drawn as a refusal in its
  * own words and never as a fault to try again.
  *
@@ -219,8 +219,7 @@ final class AskingForHelpHere extends NativeComponent
      * Ask after the bundle again while the stack is gathering it.
      *
      * It does nothing unless that is running, so a finished bundle is not read
-     * over and over. The interval is {@see HowOften}'s constant, which
-     * {@see cadence()} states on the screen.
+     * over and over. The interval is {@see HowOften}'s constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
@@ -228,12 +227,6 @@ final class AskingForHelpHere extends NativeComponent
         if ($this->answer()->isWorking) {
             $this->went = null;
         }
-    }
-
-    /** How often this screen asks after a bundle being gathered, as the screen states it. */
-    public function cadence(): HowOften
-    {
-        return HowOften::WhileWorkRuns;
     }
 
     /**

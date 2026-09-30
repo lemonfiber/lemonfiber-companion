@@ -8,10 +8,7 @@
     <x-operator::emphasis>{{ __($this->answer()->words->working) }}</x-operator::emphasis>
 
     {{-- The stack says nothing of a job until it finishes, so the screen
-         says how often it asks rather than drawing progress. --}}
-    <x-operator::note>
-        {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-    </x-operator::note>
+         asks again on its cadence rather than drawing progress. --}}
 @elseif ($this->answer()->hasEnded)
     {{-- Not a failure. After a yes the files may well have gone back, and
          the settings are where to look before asking for anything again. --}}

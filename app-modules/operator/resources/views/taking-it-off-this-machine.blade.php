@@ -18,9 +18,6 @@
     <x-operator::action label="{{ __('uninstall.read', ['tier' => __('uninstall.tier.media')]) }}" tap="choose('media')" />
 @elseif ($this->answer()->isWorking)
     <native:text>{{ __('uninstall.removing') }}</native:text>
-    <x-operator::note>
-        {{ __($this->cadence()->saidOnTheScreen(), ['count' => $this->cadence()->seconds()]) }}
-    </x-operator::note>
 @elseif ($this->answer()->hasEnded)
     {{-- Not a failure and not a refusal: the stack has no outcome for the
          yes any more, which is not the same as it not having happened. --}}

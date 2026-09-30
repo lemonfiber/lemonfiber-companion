@@ -13,10 +13,12 @@ namespace Modules\Kernel\Api;
  * that screen's one read: the stack sends to every listener from the gather it
  * already runs, and taking what arrived sends nothing back.
  *
- * One of these belongs to one screen. It opens the subscription the first time
- * it is asked, and takes what has already arrived every time after that without
- * waiting for more. It is closed when the stack ends it, when it could not be
- * read, and when the screen lets go.
+ * One of these belongs to one screen, and holds one subscription for each stack
+ * it is asked about. It opens a stack's subscription the first time it is asked
+ * about that stack, and takes what has already arrived every time after that
+ * without waiting for more. A subscription is closed when the stack ends it and
+ * when it could not be read, which leaves every other stack's open, and all of
+ * them are closed when the screen lets go.
  */
 interface Hearing
 {

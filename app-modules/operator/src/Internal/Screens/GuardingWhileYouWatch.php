@@ -46,7 +46,7 @@ use function view;
  *
  * **The guard lives as long as the screen does.** Started over the web API it
  * is work with no ending of its own, which the stack keeps only while somebody
- * asks about it. This screen asks on a stated cadence while it is open, and
+ * asks about it. This screen asks on a declared cadence while it is open, and
  * lets the guard go when it is left. It says so before the guard starts and
  * for as long as it runs, and it never presents the guard as hosted: one that
  * outlives the screen is handed to the machine on {@see WhatKeepsRunningHere},
@@ -207,8 +207,7 @@ final class GuardingWhileYouWatch extends NativeComponent
      *
      * Asking is what keeps it: the stack holds the guard only while somebody
      * asks. It does nothing once the guard has ended, so an ending is not read
-     * over and over. The interval is {@see HowOften}'s constant, which
-     * {@see cadence()} states on the screen.
+     * over and over. The interval is {@see HowOften}'s constant.
      */
     #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
     public function whileItGuards(): void

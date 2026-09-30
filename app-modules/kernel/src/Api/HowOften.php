@@ -5,23 +5,19 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 use function intdiv;
-use function sprintf;
 
 /**
  * How often a screen looks again, and the one place each cadence is decided.
  *
- * A screen whose content can change while it is open refreshes on
- * a **stated** cadence and does not rely on the operator leaving and returning
- * to see a change. Two halves, and the second is what this type exists for: a
- * screen that refreshes silently is a screen an operator cannot reason about —
- * they do not know whether what they are looking at is a second old or a minute
- * old, and the one thing they came to find out is whether something has
- * changed.
+ * A screen whose content can change while it is open refreshes on a cadence it
+ * declares, and does not rely on the operator leaving and returning to see a
+ * change. The cadence is declared here and in the screen's `#[Poll]`, where a
+ * test reads it, and it is not shown: what tells an operator whether what they
+ * are looking at is current is the age a reading carries once it is not.
  *
- * **The number is a constant so the attribute and the sentence cannot
- * disagree.** `#[Poll]` takes a constant expression, and a screen that polled
- * every two seconds while telling somebody it looks every five would be stating
- * a cadence that is not the one it keeps. Both read from here.
+ * **The number is a constant so every screen that waits on the same thing
+ * waits as long.** `#[Poll]` takes a constant expression, and a number written
+ * at the attribute is one nothing else can check.
  *
  * **This is not in tension with one-read-per-frame.** That rule refuses a screen that
  * reads again to fill in its own fields — four connections to draw one frame, on a
@@ -86,28 +82,13 @@ enum HowOften: string
     }
 
     /**
-     * How long this cadence is in seconds, which is what a sentence says.
+     * How long this cadence is in seconds, which is what a wait is measured in.
      *
      * `intdiv` rather than a second constant, so the two numbers cannot drift:
-     * a cadence changed in milliseconds changes the sentence with it, and there
-     * is no arrangement in which the screen says one thing and does another.
+     * a cadence changed in milliseconds changes the wait with it.
      */
     public function seconds(): int
     {
         return intdiv($this->milliseconds(), self::A_SECOND);
-    }
-
-    /**
-     * What this is called on a screen, as a key.
-     *
-     * Built from the case, which is the shape every word in this app reaches
-     * the catalogue by — see {@see Conclusion::saidOnTheScreen()} for the
-     * argument. The line it names counts on the number beside it, because the
-     * sentence is the whole requirement: a cadence nobody is told about is not
-     * a stated one.
-     */
-    public function saidOnTheScreen(): string
-    {
-        return sprintf('health.every.%s', $this->value);
     }
 }

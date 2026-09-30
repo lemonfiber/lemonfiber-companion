@@ -495,7 +495,7 @@ it('N2-R18 — a screen that has taken no update says so, and asks after nothing
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.nothing_applied'));
 });
 
-it('N2-R18 — an update just taken is running, and the screen says how often it asks after it', function (): void {
+it('N2-R18 — an update just taken is running, and the screen says so', function (): void {
     $keeping = AStackThatKeepsCurrent::with(anEveningWorthSpending());
     $screen = theUpkeepScreen($keeping);
     $screen->wouldYouLike();
@@ -505,8 +505,7 @@ it('N2-R18 — an update just taken is running, and the screen says how often it
         ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
         ->and($keeping->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())
-        ->toContain(__('updates.still_updating'))
-        ->toContain(__($screen->cadence()->saidOnTheScreen(), ['count' => $screen->cadence()->seconds()]));
+        ->toContain(__('updates.still_updating'));
 });
 
 it('N2-R18 — asks after an update again only while it runs', function (): void {

@@ -9,9 +9,11 @@ use Modules\Connection\Api\ClearingWhatCannotBeRead;
 use Modules\Connection\Api\Opening;
 use Modules\Connection\Api\WhatWasKeptAtOpening;
 use Modules\Health\Api\KeepingTheLastReading;
+use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Diagnostics;
+use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Launch;
@@ -28,10 +30,13 @@ use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\HearsHowEachStackIs;
+use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
 use Modules\Operator\Internal\Presenters\HowTheOneLineReads;
 use Modules\Operator\Internal\ViewModels\WhatTheLaunchWas;
 use Modules\Operator\Internal\ViewModels\WhatTheOneLineSays;
+use Modules\Operator\Internal\WhatItListensWith;
 use Modules\Operator\Internal\WhatTheSharingDid;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhereTappingLeads;
@@ -66,26 +71,16 @@ use function view;
  * what tells them apart: the name the operator chose, which is the only part of
  * a stack they picked.
  *
- * **It reads no stack.** A usable frame is owed without waiting for a
- * reading, and the cheapest way to keep that is to have nothing to wait for:
- * what this shows is retained configuration, which is on the device. Reaching
- * a stack belongs to the screen for one stack, which is a different screen and
- * needs a session this app does not have yet.
+ * **It draws what the device holds, then listens.** A usable frame is owed
+ * without waiting for a reading, so the first frame is the configuration and
+ * the words kept for each stack, with when each was heard. After it, the list
+ * holds a subscription to each stack it is signed into as the operator, through
+ * {@see HearsHowEachStackIs}, and the words those say replace the kept ones.
  *
- * **It carries `#[Lazy]`, and the reason it does is worth keeping.** This file
- * used to say the attribute was unnecessary because the screen reached no
- * port. It reaches one now, and the first instinct was that `F4` still did not
- * apply — `Stacks::configured()` reads this device's own retained state rather
- * than a machine over a network, so where is the wait? In the platform store.
- * A keychain read is a call across a process boundary, and on Android it can
- * be a binder call that waits on a locked store. A launch
- * reaches a usable frame without waiting for a reading, and *usually instant*
- * is not the same claim.
- *
- * The arch rule caught that, which is the argument for it being a rule rather
- * than a judgement: the assumption was made in good faith and was wrong about
- * the case that matters — a cold start on a device that has just been powered
- * on.
+ * **It carries `#[Lazy]`** because `Stacks::configured()` waits on the platform
+ * store. A keychain read is a call across a process boundary, and on Android it
+ * can be a binder call that waits on a locked store — on a cold start on a
+ * device that has just been powered on, above all.
  *
  * **It answers for the case where there is nothing, and steps aside otherwise.**
  * The first-run case is a launch with no stack configured; a launch *with* one must
@@ -102,12 +97,15 @@ use function view;
 #[Lazy]
 final class YourStacks extends NativeComponent
 {
-    /** What became of the last attempt to hand a report over, as a key. */
+    use HearsHowEachStackIs;
+    use LetsGoOfARefusedSession;
+
     public ?Launch $launched = null;
 
+    /** What became of the last attempt to hand a report over, as a key, or empty. */
     public string $sharingWent = '';
 
-    /** What to do about it, beside {@see sharingWent()}. */
+    /** What to do about it, beside {@see $sharingWent}. */
     public string $sharingRemedy = '';
 
     /**
@@ -140,6 +138,8 @@ final class YourStacks extends NativeComponent
         private readonly Opening $opening,
         private readonly ClearingWhatCannotBeRead $clearing,
         private readonly KeepingTheLastReading $keeping,
+        private readonly Hearing $hearing,
+        private readonly Capture $capture,
     ) {}
 
     /**
@@ -270,7 +270,7 @@ final class YourStacks extends NativeComponent
      *
      * **The session itself does not come out of here.** `Resumed::either()` is
      * answered with a boolean and the session is dropped, so the one thing this
-     * screen learns is whether to say *signed in* or *sign in*. An address will
+     * screen learns is whether to say *sign in needed*. An address will
      * not let a session reach a screen, and the shortest way to keep that true
      * is for the screen never to hold one.
      */
@@ -292,14 +292,14 @@ final class YourStacks extends NativeComponent
      *
      * **The core's one line, so every surface says the same word.** The stack's
      * own screen hears it on the event stream and keeps each word it hears in
-     * {@see Standings}, and this row says that word in the sentence that
-     * screen uses for it.
+     * {@see Standings}, and this row says that word as a single word, where
+     * that screen says it in a sentence.
      *
-     * **Held, never asked.** This screen opens the app and opening the app is
-     * not a reason to talk to four machines — a screen is not a poller and `F4`
-     * says a frame is not where a socket is opened. So the word comes out of
-     * the store, which makes every one of them a retained reading: it may open
-     * a screen, and it carries when it was heard.
+     * **Read from the store, on every frame.** A frame is not where a socket
+     * is opened, so the word comes out of the store, which makes every one of
+     * them a retained reading that carries when it was heard. The list's own
+     * subscriptions keep that store fresh while the list is open, so a word
+     * heard a moment ago is said as one.
      *
      * The age cannot be dropped on the way here. `Reading::either()` hands the
      * word and the moment to the same arm, so a row showing a word without an
@@ -409,18 +409,6 @@ final class YourStacks extends NativeComponent
     public function scanningIsAt(): string
     {
         return AScreenWithoutAStack::PairByScanning->value;
-    }
-
-    /** What became of the last attempt to hand a report over. */
-    public function sharingWent(): string
-    {
-        return $this->sharingWent;
-    }
-
-    /** What to do about it. */
-    public function sharingRemedy(): string
-    {
-        return $this->sharingRemedy;
     }
 
     /**
@@ -549,5 +537,10 @@ final class YourStacks extends NativeComponent
             blocked: static fn(Obstacle $why): WhatTheLaunchWas => new HowTheLaunchReads()->blockedBy($why),
             ready: static fn(StackId $stack): WhatTheLaunchWas => new HowTheLaunchReads()->readyFor($stack),
         );
+    }
+
+    protected function listensWith(): WhatItListensWith
+    {
+        return new WhatItListensWith($this->hearing, $this->clock, $this->capture, $this->standings, $this->keeping);
     }
 }

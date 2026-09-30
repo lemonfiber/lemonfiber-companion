@@ -20,10 +20,12 @@ use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
@@ -80,6 +82,8 @@ function theLaunchScreen(
         $opening ?? new Opening(ADeviceThatKnowsYou::willing(), $stacks, ADeviceOnANetwork::connected()),
         WhatThePhoneKeeps::nothingToClear(),
         WhatThePhoneKeeps::nothingYet(),
+        AStackThatSpeaksUp::holdingOpen(),
+        ACaptureInMemory::inFront(),
     );
 }
 
@@ -216,7 +220,7 @@ it('N4-R13 — assembles a report for the operator to send, and does not send it
 
     expect($handed)->not->toBeNull()
         ->and($handed?->named())->toBe('lemonfiber-diagnostics.txt')
-        ->and($screen->sharingWent())->toBe('');
+        ->and($screen->sharingWent)->toBe('');
 });
 
 it('N4-R13 — the report carries no address, no session and no reading', function (): void {
@@ -247,9 +251,9 @@ it('N1-R10 — says why a report could not be handed over, and what to do', func
 
         $screen->share();
 
-        expect($screen->sharingWent())->toBe($why->saidOnTheScreen(), $why->value)
-            ->and($screen->sharingRemedy())->toBe($why->remedy(), $why->value)
-            ->and(__($screen->sharingWent()))->not->toBe($screen->sharingWent(), $why->value);
+        expect($screen->sharingWent)->toBe($why->saidOnTheScreen(), $why->value)
+            ->and($screen->sharingRemedy)->toBe($why->remedy(), $why->value)
+            ->and(__($screen->sharingWent))->not->toBe($screen->sharingWent, $why->value);
     }
 });
 
@@ -263,7 +267,7 @@ it('clears the refusal once a later attempt works', function (): void {
 
     $screen->share();
 
-    expect($screen->sharingWent())->not->toBe('');
+    expect($screen->sharingWent)->not->toBe('');
 
     $working = theLaunchScreen(
         StacksInMemory::holding(aPairedStack('The loft', 'a')),
@@ -271,8 +275,8 @@ it('clears the refusal once a later attempt works', function (): void {
     );
     $working->share();
 
-    expect($working->sharingWent())->toBe('')
-        ->and($working->sharingRemedy())->toBe('');
+    expect($working->sharingWent)->toBe('')
+        ->and($working->sharingRemedy)->toBe('');
 });
 
 it('N1-R11 — a stack in the list leads to that stack and no other', function (): void {
