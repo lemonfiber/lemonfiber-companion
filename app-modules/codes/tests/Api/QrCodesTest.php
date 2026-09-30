@@ -13,6 +13,10 @@ use function iterator_to_array;
 
 use Modules\Codes\Api\QrCodes;
 use Modules\Kernel\Api\AnAddressToHand;
+use Modules\Kernel\Api\APairingLine;
+
+use function sprintf;
+use function str_repeat;
 
 /**
  * The squares the encoder itself makes of a text, row by row, `1` for dark.
@@ -49,4 +53,14 @@ it('draws the address and not its caution', function (): void {
     $without = iterator_to_array(new QrCodes()->codeFor(AnAddressToHand::at('http://192.168.1.42:8096', '')), preserve_keys: true);
 
     expect($withCaution)->toBe($without);
+});
+
+it('draws the line a phone pairs with, exactly as the stack wrote it', function (): void {
+    $line = sprintf(
+        '{"address":"https://den.local:8443","fingerprint":"%s","expires":1790813400,"stack":"000102030405060708090a0b0c0d0e0f"}',
+        str_repeat('ab', 32),
+    );
+
+    expect(iterator_to_array(new QrCodes()->codeFor(APairingLine::asWritten($line)), preserve_keys: true))
+        ->toBe(theSquaresTheEncoderMakes($line));
 });

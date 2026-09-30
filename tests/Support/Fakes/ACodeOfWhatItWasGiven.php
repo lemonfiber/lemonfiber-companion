@@ -5,21 +5,22 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Modules\Kernel\Api\AnAddressToHand;
+use Modules\Kernel\Api\APairingLine;
 use Modules\Kernel\Api\AScannableCode;
 use Modules\Kernel\Api\Encoding;
 
 /**
- * An encoder that draws the same small square for any address, and remembers the address.
+ * An encoder that draws the same small square for any text, and remembers the text.
  *
- * What a screen test needs of a code is that one is drawn, and drawn of the
- * address the stack sent; the squares a real encoder makes are the contract
+ * What a screen test needs of a code is that one is drawn, and drawn of what
+ * the stack sent; the squares a real encoder makes are the contract
  * test's business. One that draws nothing stands in for text too long to fit.
  *
  * Not `readonly`: what it was handed is written when the handing happens.
  */
 final class ACodeOfWhatItWasGiven implements Encoding
 {
-    private ?AnAddressToHand $given = null;
+    private AnAddressToHand|APairingLine|null $given = null;
 
     private function __construct(private readonly AScannableCode $drawn) {}
 
@@ -35,15 +36,15 @@ final class ACodeOfWhatItWasGiven implements Encoding
         return new self(AScannableCode::none());
     }
 
-    /** The address it was last handed, or nothing where it never was. */
-    public function given(): ?AnAddressToHand
+    /** What it was last handed, or nothing where it never was. */
+    public function given(): AnAddressToHand|APairingLine|null
     {
         return $this->given;
     }
 
-    public function codeFor(AnAddressToHand $address): AScannableCode
+    public function codeFor(AnAddressToHand|APairingLine $handed): AScannableCode
     {
-        $this->given = $address;
+        $this->given = $handed;
 
         return $this->drawn;
     }

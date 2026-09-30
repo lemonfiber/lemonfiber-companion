@@ -109,26 +109,7 @@
                     @if ($this->howItIsGoing()->invitation->toHand->caution !== '')
                         <x-design::note>{{ $this->howItIsGoing()->invitation->toHand->caution }}</x-design::note>
                     @endif
-                    {{-- Dark squares on the accent, the two tokens that hold in
-                         light and dark alike, so the code reads the same whichever
-                         the phone is set to. A row is never empty; its `@empty` is
-                         there because every list here says what nothing looks
-                         like. --}}
-                    @forelse ($this->howItIsGoing()->invitation->toHand->code as $row)
-                        <native:row class="bg-theme-accent">
-                            @forelse ($row as $dark)
-                                @if ($dark)
-                                    <native:rect :width="4" :height="4" class="bg-theme-on-accent" />
-                                @else
-                                    <native:rect :width="4" :height="4" class="bg-theme-accent" />
-                                @endif
-                            @empty
-                                <x-design::note>{{ __('stacks.invitation.no_code') }}</x-design::note>
-                            @endforelse
-                        </native:row>
-                    @empty
-                        <x-design::note>{{ __('stacks.invitation.no_code') }}</x-design::note>
-                    @endforelse
+                    <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->code" missing="{{ __('stacks.invitation.no_code') }}" />
                     @if ($this->howItIsGoing()->invitation->toHand->code !== [])
                         <x-design::note>{{ __('stacks.invitation.code') }}</x-design::note>
                     @endif
