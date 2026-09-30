@@ -427,6 +427,13 @@ enum WireField: string implements NamesAWireField
      */
     case Address = 'address';
 
+    /**
+     * Where a Compose file saying where each service listens was written, on a
+     * move beside; and the pairing material as the one line a code carries and a
+     * person types, on a `pairing`.
+     */
+    case Written = 'written';
+
     /** A volume's own size or its quota, and how far up the ratings an invited member may watch. */
     case Limit = 'limit';
 

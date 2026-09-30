@@ -60,6 +60,22 @@ use Tests\Support\WhereAShapeHoldsItself;
  */
 const WHAT_THIS_APP_DOES_NOT_READ = [
     [
+        'path' => 'PairingEnvelope.material.fingerprint',
+        'because' => 'The fingerprint the pairing line carries. The other phone reads it from the line it scans or types, and the operator compares the short form `compare` carries; the long hex is nothing a person checks by eye.',
+    ],
+    [
+        'path' => 'PairingEnvelope.material.stack',
+        'because' => 'The stack\'s own identifier, carried inside the pairing line for the other phone to know this stack by. Nothing on the screen that makes the code names it, and no requirement asks it to.',
+    ],
+    [
+        'path' => 'PairingEnvelope.until',
+        'because' => 'When the code stops being good, written as a date and a time in UTC. The screen says the same moment, `material.expires`, as the clock on the phone holding it reads, which is the time somebody pairing a phone is looking at.',
+    ],
+    [
+        'path' => 'PairingEnvelope.replacing',
+        'because' => 'What replacing the certificate would cost every paired phone. It belongs where the certificate is replaced, which this app does not offer; the screen that makes a code shows what the approved design names and nothing else.',
+    ],
+    [
         'path' => 'ClientsEnvelope.devices[].open_source',
         'because' => 'Whether the client suggested for a device is open source. Which app to watch on is answered with the device, the client, how well it plays there and what to use instead, which are read; no requirement asks the app to say what licence a client carries.',
     ],

@@ -118,4 +118,19 @@ final class PairingIsNotReadable extends InvalidArgumentException
     {
         return new self('The stack answered with a blank line to pair with, and a code of nothing pairs nothing.');
     }
+
+    /**
+     * A pairing code arrived with a word it owes left blank.
+     *
+     * Named, because what is missing says which half of the stack's answer to
+     * distrust: a blank compare code is a check nobody can make, and a blank
+     * address is nowhere to reach.
+     */
+    public static function becauseItSaysNothingAbout(string $field): self
+    {
+        return new self(sprintf(
+            'The stack answered with a pairing code whose `%s` is blank, and a pairing code that will not say it is not one to hand another phone.',
+            $field,
+        ));
+    }
 }

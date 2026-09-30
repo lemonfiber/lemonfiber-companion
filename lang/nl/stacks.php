@@ -358,6 +358,20 @@ return [
         'nothing_beside' => 'Verder staat niets open voor het huishouden',
     ],
 
+    // Een andere telefoon aan deze stack koppelen: een code om te scannen, of een regel om te typen.
+    'pairing' => [
+        'heading' => 'Telefoon koppelen',
+        'what_it_is' => 'Een code die een andere telefoon scant om deze stack toe te voegen. Er zit geen wachtwoord in: die telefoon meldt zich nog steeds aan met het jouwe.',
+        'make' => 'Code maken',
+        'no_code' => 'Dit kon niet als code getekend worden. Typ de regel in plaats daarvan',
+        'or_type' => 'Of typ dit op de telefoon:',
+        'compare' => 'Als het getypt is, laat de andere telefoon dit zien. Kijk of het overeenkomt.',
+        'until' => 'Hij is geldig tot :until.',
+        'reaches' => 'De telefoon bereikt deze machine op :address.',
+        'expired' => 'Deze code is verlopen',
+        'make_a_new_one' => 'Maak een nieuwe',
+    ],
+
     // Iemand binnenvragen: wat een uitnodiging geeft, haar versturen, haar
     // doorgeven, en iemand een nieuw wachtwoord laten kiezen.
     'invitation' => [

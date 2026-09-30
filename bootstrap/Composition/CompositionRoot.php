@@ -56,6 +56,7 @@ use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\LocalZone;
+use Modules\Kernel\Api\MakingPairingCodes;
 use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\MovingIn;
@@ -121,6 +122,7 @@ use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\Narrators;
+use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PinnedDoors;
 use Modules\Sdk\Api\Quartermasters;
@@ -449,6 +451,7 @@ final class CompositionRoot extends ServiceProvider
         // Taking a copy and putting one back, bound beside the listing of
         // copies for the same reason.
         $this->app->bind(TakingCopies::class, Copiers::class);
+        $this->app->bind(MakingPairingCodes::class, Pairers::class);
         $this->app->bind(PuttingBack::class, Restorers::class);
 
         // Putting the configuration back, bound beside putting a copy back:
