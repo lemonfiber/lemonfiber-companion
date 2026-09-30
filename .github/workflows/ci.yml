@@ -53,6 +53,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       code: ${{ steps.proved.outputs.cache-hit == 'true' && 'false' || steps.diff.outputs.code }}
+      native: ${{ steps.proved.outputs.cache-hit == 'true' && 'false' || steps.diff.outputs.native }}
       tree: ${{ steps.tree.outputs.tree }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -93,6 +94,7 @@ jobs:
           # No base to compare against means run everything rather than guess.
           if [ -z "${BASE}" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
             echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "native=true" >> "$GITHUB_OUTPUT"
             echo "No usable base commit, so every gate runs."
             exit 0
           fi
@@ -108,7 +110,24 @@ jobs:
           # starts none of them either where every line it changes is a pin
           # on a shared workflow from `lemonfiber/spec`: those jobs run no PHP.
           code=false
+          # Whether the bridge's Swift, or what it is compiled beside, moved:
+          # its sources, the script that compiles them, the locked
+          # `nativephp/mobile` and the patch applied to it on install, and
+          # this file where it moved more than a pin.
+          native=false
+          nativephp() {
+            git show "$1:composer.lock" 2>/dev/null \
+              | jq -c '.packages[]? | select(.name == "nativephp/mobile")' || true
+          }
           while IFS= read -r path; do
+            case "${path}" in
+            bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php) native=true ;;
+            composer.lock)
+              if [ "$(nativephp "${BASE}")" != "$(nativephp HEAD)" ]; then
+                native=true
+              fi
+              ;;
+            esac
             case "${path}" in
             '' | .docs/* | *.md | LICENSE) continue ;;
             .github/workflows/ci.yml)
@@ -122,6 +141,7 @@ jobs:
                 | grep -vE '^[-+][[:space:]]*uses: lemonfiber/spec/\.github/workflows/[^@]+@[0-9a-f]{40}( # .*)?$' || true)"
               if [ -n "${moved}" ]; then
                 code=true
+                native=true
               fi
               ;;
             .github/*) continue ;;
@@ -129,6 +149,7 @@ jobs:
             esac
           done <<< "${changed}"
           echo "code=${code}" >> "$GITHUB_OUTPUT"
+          echo "native=${native}" >> "$GITHUB_OUTPUT"
           if [ "${code}" = false ]; then
             echo "Documentation, and workflows that run no PHP gate; the PHP gates are skipped."
           fi
@@ -336,6 +357,34 @@ jobs:
       - run: composer refactor
       - run: composer deps
       - run: composer audit
+
+  # Every Swift file the bridge ships, compiled for iOS against the NativePHP
+  # sources installed beside it. `native.yml` builds only the files that need
+  # no iOS runtime; the rest meet a compiler here, or else first in the app
+  # build. The bridge's Kotlin is not compiled by this job: see
+  # `scripts/typecheck_native.sh`.
+  #
+  # macOS, for the iOS SDK, so it runs only where `scope` says the bridge or
+  # what it is compiled beside moved. The condition asks the result as well as
+  # the output, for the reason `guards` gives.
+  native:
+    name: the bridge compiles for iOS
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native == 'true') }}
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+      # The NativePHP sources the bridge is compiled against, as the lock
+      # installs and `scripts/patch_nativephp.php` patches them.
+      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
+      - run: scripts/typecheck_native.sh
 
   tests:
     name: tests and coverage
@@ -559,11 +608,13 @@ jobs:
 
   # Records that every PHP gate passed on this tree, so a later run on the same
   # tree — see `scope` — does not test it again. Only where the gates actually
-  # ran and every one of them passed: a skipped gate proved nothing.
+  # ran and every one of them passed: a skipped gate proved nothing. The bridge's
+  # compile is skipped on a proven tree too, so it passed here or had nothing to
+  # compile.
   proved-tree:
     name: record the proven tree
-    needs: [scope, guards, checks, tests, sonar]
-    if: ${{ !cancelled() && needs.scope.outputs.code == 'true' && needs.guards.result == 'success' && needs.checks.result == 'success' && needs.tests.result == 'success' && (needs.sonar.result == 'success' || needs.sonar.result == 'skipped') }}
+    needs: [scope, guards, checks, native, tests, sonar]
+    if: ${{ !cancelled() && needs.scope.outputs.code == 'true' && needs.guards.result == 'success' && needs.checks.result == 'success' && (needs.native.result == 'success' || needs.native.result == 'skipped') && needs.tests.result == 'success' && (needs.sonar.result == 'success' || needs.sonar.result == 'skipped') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

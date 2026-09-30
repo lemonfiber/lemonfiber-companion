@@ -39,6 +39,9 @@ final readonly class Link
     /** The one word that means no. Anything else, including silence, means yes. */
     private const string UNREACHABLE = 'unreachable';
 
+    /** The payload of a call that carries nothing. */
+    private const string NOTHING = '{}';
+
     /**
      * Whether anything is reachable from here.
      *
@@ -61,13 +64,10 @@ final readonly class Link
     /**
      * What the bridge said, decoded, or nothing where it said nothing.
      *
-     * **This is the one call here that carries nothing**, and it says so by
-     * passing nothing rather than by encoding an empty array. `[]` and `{}`
-     * and `''` all arrive at both native halves as no parameters — `Status`
-     * reads none on either platform — so the three were interchangeable, and a
-     * payload nothing can tell apart from another is a payload no test can
-     * hold. `nativephp_call` declares `'{}'` for exactly this case, which is
-     * also the shape a `Map<String, Any>` on the Kotlin side is written for.
+     * The call carries nothing, and says so with `'{}'`. On a handset
+     * `nativephp_call` is a C extension that takes exactly two arguments; only
+     * the development fallback declares a default for the second, so leaving
+     * it out passes every test and fails on the phone.
      *
      * Every other call in this package encodes something somebody passed in,
      * where an unencodable payload is a real answer and is refused as one.
@@ -76,7 +76,7 @@ final readonly class Link
      */
     private function answering(): ?array
     {
-        $said = nativephp_call(Call::LinkStatus->value);
+        $said = nativephp_call(Call::LinkStatus->value, self::NOTHING);
 
         if (! is_string($said)) {
             return null;
