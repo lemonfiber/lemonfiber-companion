@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\EveryStoreThePhoneKeeps;
-use Modules\HealthKept\Api\HealthReadingsInTheDatabase;
+use Modules\Health\Internal\HealthReadingsKept;
+use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\ForgetsEverythingKept;
-use Modules\Kernel\Api\HealthReadingsKept;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;

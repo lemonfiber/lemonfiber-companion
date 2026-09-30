@@ -3,44 +3,28 @@
 declare(strict_types=1);
 
 use Tests\Support\Imports;
-use Tests\Support\Kind;
 use Tests\Support\Module;
+use Tests\Support\Stores;
 use Tests\Support\Tree;
 
-// A1 and A10 — the database belongs to the stores, and each table to one store.
+// A1 and A10 — the database belongs to the stores, and each table to one owner.
 //
-// What the phone keeps is decided by the capability it belongs to and stored
-// by a small adapter of its own, which adapts Laravel's database and nothing
-// else. Two things keep that arrangement from eroding. The database is named
-// in no module but a store, so a capability or a screen cannot quietly start
-// keeping something on its own; and each table belongs to the one store that
-// creates it, so a store cannot grow by reading another's rows — one owner
-// that needs another's data asks that owner's capability.
+// What the phone keeps is decided and stored by the capability it belongs to.
+// Its store sits inside it, under `src/Internal/Store`, beside the module's own
+// `database/migrations`, and two things keep that arrangement from eroding.
+// The database is named nowhere else, so the rest of a capability, a screen or
+// an adapter cannot quietly start keeping something on its own; and each table
+// belongs to the one module whose migrations create it, so a store cannot grow
+// by reading another's rows — one owner that needs another's data asks that
+// owner's capability.
 //
-// A store is an adapter whose manifest requires `illuminate/database`: the one
-// package an adapter adapts is the one its manifest names, so the declaration
-// is what makes a module a store, and a module that names the database without
-// making it is refused here by name.
+// A store is recognised by where it is rather than by a list here, so one
+// written tomorrow is governed the moment its first class exists.
 
-/** The package a store adapts. */
-const WHAT_A_STORE_ADAPTS = 'illuminate/database';
-
-/** Whether a module is a store: an adapter whose manifest requires the database. */
-function isAStore(Module $module): bool
+/** The prefix every table a capability owns carries: its own name. */
+function thePrefixOf(Module $owner): string
 {
-    $manifest = json_decode((string) file_get_contents(sprintf('%s/composer.json', $module->path)), associative: true);
-
-    return $module->kind === Kind::Adapter
-        && is_array($manifest)
-        && array_key_exists('require', $manifest)
-        && is_array($manifest['require'])
-        && array_key_exists(WHAT_A_STORE_ADAPTS, $manifest['require']);
-}
-
-/** The prefix every table a store owns carries: its owner's name, which is the store's without `-kept`. */
-function thePrefixOf(Module $store): string
-{
-    return sprintf('%s_', str_replace('-', '_', preg_replace('/-kept$/', '', $store->name) ?? $store->name));
+    return sprintf('%s_', str_replace('-', '_', $owner->name));
 }
 
 /**
@@ -87,11 +71,11 @@ function theStringsSpelledIn(string $file): array
 }
 
 /**
- * Every table the stores' migrations create, with the store that creates it.
+ * Every table a module's migrations create, with the module that creates it.
  *
- * @return array<string, Module> table => the store that owns it
+ * @return array<string, Module> table => the module that owns it
  */
-function everyTableAndItsStore(): array
+function everyTableAndItsOwner(): array
 {
     $owned = [];
 
@@ -109,19 +93,19 @@ function everyTableAndItsStore(): array
 it('finds the stores and the tables they own', function (): void {
     // The floor. A reading that found no store, or no table, would make every
     // rule below pass about nothing.
-    expect(array_filter(Module::all(), isAStore(...)))->not->toBe([])
-        ->and(everyTableAndItsStore())->not->toBe([]);
+    expect(Stores::all())->not->toBe([])
+        ->and(everyTableAndItsOwner())->not->toBe([]);
 });
 
-it('A1 — Illuminate\Database is named only in a store adapter', function (): void {
+it('A1 — Illuminate\Database is named only in a capability\'s store and its migrations', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
-        if (isAStore($module)) {
-            continue;
-        }
-
         foreach (everyFileAModuleRuns($module) as $file) {
+            if (Stores::holds($module, $file) || Stores::isAMigrationOf($module, $file)) {
+                continue;
+            }
+
             if (Imports::anyUnder(Imports::of($file), 'Illuminate\Database')) {
                 $offenders[] = sprintf('%s names Illuminate\Database', $file);
             }
@@ -136,22 +120,22 @@ it('A1 — Illuminate\Database is named only in a store adapter', function (): v
 
     expect($offenders)->toBe([], sprintf(
         "These reach the database without being a store:\n  %s\n\n"
-        . 'What the phone keeps is decided by the capability it belongs to and stored by an adapter '
-        . 'of its own, which requires %s in its manifest and adapts nothing else. Take what this '
-        . 'needs as a port in Modules\Kernel\Api and let a store implement it (A1).',
+        . 'What the phone keeps is decided and stored by the capability it belongs to. Its store '
+        . 'is one query class under that capability\'s src/Internal/Store, beside its own '
+        . 'database/migrations, answering a port the capability declares; nothing else names the '
+        . 'database (A1).',
         implode("\n  ", $offenders),
-        WHAT_A_STORE_ADAPTS,
     ));
 });
 
-it('A10 — a table carries its owner\'s prefix and is created only in its store\'s migrations', function (): void {
+it('A10 — a table carries its owner\'s prefix and is created only in its owner\'s migrations', function (): void {
     $offenders = [];
 
     foreach (Module::all() as $module) {
         foreach (everyFileAModuleRuns($module) as $file) {
             foreach (theTablesCreatedIn($file) as $table) {
-                if (! isAStore($module) || ! str_contains($file, sprintf('%s/database/migrations/', $module->path))) {
-                    $offenders[] = sprintf('%s creates %s, and only a store\'s own migrations create a table', $file, $table);
+                if (! Stores::isAMigrationOf($module, $file)) {
+                    $offenders[] = sprintf('%s creates %s, and only a capability\'s own migrations create a table', $file, $table);
 
                     continue;
                 }
@@ -164,15 +148,16 @@ it('A10 — a table carries its owner\'s prefix and is created only in its store
     }
 
     expect($offenders)->toBe([], sprintf(
-        "These tables do not belong to one store:\n  %s\n\n"
-        . 'A table is created by the store that owns it, in that store\'s database/migrations, and '
-        . 'is named with its owner\'s prefix, so a row on disk says whose it is (A10).',
+        "These tables do not belong to one owner:\n  %s\n\n"
+        . 'A table is created by the capability that owns it, in that capability\'s '
+        . 'database/migrations, and is named with its owner\'s prefix, so a row on disk says '
+        . 'whose it is (A10).',
         implode("\n  ", $offenders),
     ));
 });
 
 it('A10 — no module names a table another module owns', function (): void {
-    $tables = everyTableAndItsStore();
+    $tables = everyTableAndItsOwner();
     $offenders = [];
 
     foreach (Module::all() as $module) {

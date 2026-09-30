@@ -41,7 +41,6 @@ app-modules/
   vault/                  secure storage, app lock            (N4)
   codes/                  QR codes another phone can scan
   seal/                   sealing what the phone keeps
-  health-kept/            the health readings the phone keeps
 
   dx/                     stand-ins for a stack, require-dev only
 ```
@@ -62,7 +61,7 @@ is the difference between a convention and an invariant: nobody has to remember.
 | Kind | May use | May never use |
 |---|---|---|
 | `kernel` | nothing. Not Illuminate, not Native, not the SDK | everything |
-| `capability` | `kernel` | Illuminate, Native, the SDK, other capabilities, adapters, surfaces |
+| `capability` | `kernel`; Illuminate in its own store only | Illuminate outside its store, Native, the SDK, other capabilities, adapters, surfaces |
 | `design` | `kernel`, `Native\Mobile` | the SDK, capabilities, surfaces |
 | `surface` | `kernel`, `design`, capabilities, `Native\Mobile` | the SDK, adapters, the other surface |
 | `adapter` | `kernel`, the one package it adapts | capabilities, surfaces, other adapters |
@@ -72,7 +71,8 @@ Two consequences worth stating plainly:
 
 **A capability module cannot be run wrong.** It has no framework, no network and
 no clock of its own, so a test of it is a unit test whether or not anyone
-intended one.
+intended one. The one place in it that names the framework is its store, which
+nothing else in it can reach but through a port: see A1, A7 and A11.
 
 **`modules/sdk` is the only shipped manifest that requires `lemonfiber/sdk-php`.**
 N1-R16 therefore stops being a rule a reviewer enforces and becomes a fact the
@@ -130,6 +130,10 @@ app-modules/health/src/
     Queries/TheCauseBeforeItsSymptoms.php  findings that share a cause, cause first
   Internal/       ← nothing outside this module may name these
     WhatExplainedIt.php                    the check that explains a finding, as a name
+    HealthReadingsKept.php                 the port its decisions ask of what it keeps
+    Store/        ← nothing but the composition root may name these, inside the module or out
+      HealthReadingsInTheDatabase.php      that port, over the app's own database
+app-modules/health/database/migrations/    the tables it keeps them in, named health_*
 ```
 
 The benefit is refactoring: anything in `Internal` can be renamed, split or
@@ -148,16 +152,18 @@ honestly is better than pretending.
 
 | | Rule | Enforced by |
 |---|---|---|
-| A1 | No Eloquent, no Active Record. Persistence is a port, and `Illuminate\Database` is named only in a store adapter — an adapter whose manifest requires `illuminate/database` | arch: no Eloquent and no query builder named anywhere (`ArchitectureTest`), and no `Illuminate\Database` in any module but a store or in the composition root (`OnlyAStoreReachesTheDatabaseTest`) |
+| A1 | No Eloquent, no Active Record. Persistence is a port the owning capability declares, and `Illuminate\Database` is named only in a store: a capability's `src/Internal/Store` and its own `database/migrations` | arch: no Eloquent and no query builder named anywhere (`ArchitectureTest`), and no `Illuminate\Database` in any file of any module outside a capability's store and migrations, or in the composition root (`OnlyAStoreReachesTheDatabaseTest`) |
 | A2 | No facades. Dependencies arrive through constructors | phpstan `disallowed-calls` |
 | A3 | No service location — `app()`, `resolve()`, `Container` | phpstan `disallowed-calls` |
 | A4 | No container-reaching helpers — `config()`, `cache()`, `view()`, `__()` and the rest — outside the composition root, `config/` and tests | phpstan `disallowed-calls` |
 | A5 | `env()` only inside `config/` | arch |
 | A6 | No mutable static state — a static property, and a `static` inside a method body | arch: reflection over every module class for the property, a token read over every source for the variable |
-| A7 | `Illuminate\*` forbidden in `kernel` and every `capability` | arch: module kind |
+| A7 | `Illuminate\*` forbidden in `kernel`, and in a `capability` everywhere but its store: `src/Internal/Store` and `database/migrations` | arch: module kind (`ModuleBoundariesTest`), with a capability's store read apart by directory. The dependency analyser reads a package per manifest and cannot scope one by path, so a capability that keeps something requires `illuminate/database` in its manifest and this rule is the wall |
 | A8 | `Native\Mobile\Facades\*` only in `device` and `vault` | phpstan `disallowed-calls` |
 | A9 | A service provider binds and does not work: no read, no request, no resolve in `register()`/`boot()` | phpstan: own rule |
-| A10 | A table belongs to one store: it carries its owner's prefix, is created only in that store's own `database/migrations`, and is named in no other module's code | arch: `OnlyAStoreReachesTheDatabaseTest`, over every module's sources and migrations and the composition root |
+| A10 | A table belongs to one owner: it carries its owner's prefix, is created only in that capability's own `database/migrations`, and is named in no other module's code | arch: `OnlyAStoreReachesTheDatabaseTest`, over every module's sources and migrations and the composition root |
+| A11 | A store is reached through its port: nothing outside a capability's `src/Internal/Store`, in that module or any other, names a class in it, and only the composition root binds it | arch: `AStoreIsReachedThroughItsPortTest`, over every module's sources and the rest of `bootstrap/Composition`, with names resolved as PHP resolves them |
+| A12 | A store takes and gives only what is sealed: every public method of a store class takes a `SealedPayload`, a `SealedStack` or the `Shape` and `Instant` beside them, and answers with a value built from those or a count | arch: `AStoreSeesNothingItCouldReadTest`, by reflection over every store class; test: `WhatThePhoneKeepsIsUnreadableOnDiskTest`, which keeps a summary and reads the raw database file for it |
 
 **Why A1 is first.** An Eloquent model cannot be constructed without a database,
 so every test that touches one is an integration test wearing a unit test's
@@ -165,15 +171,22 @@ clothes. It is also the single largest source of hidden IO in a Laravel codebase
 a property access can issue a query. Neither is acceptable in a module that is
 supposed to be pure.
 
-**Why A1 and A10 give every store its own module.** What the phone keeps is
-decided by the capability it belongs to and stored by a small adapter of its
-own — `health` decides and `health-kept` stores — so that no module grows with
-every feature and a capability stays free of the framework. A store is
-recognised by what its manifest requires rather than by a list here, so one
-added tomorrow is governed the moment it declares the database. Its table is
-named for its owner, `health_readings`, so a row on disk says whose it is, and
-no other module names it: one owner that needs another's data asks that
-owner's capability, never its rows.
+**Why a store lives inside its owner, walled.** What the phone keeps is decided
+and stored by the capability it belongs to: `health` decides what it keeps of a
+stack's health, and `health`'s store keeps it. Modules will keep more and more
+on the phone, and a module per kind of kept data would grow the application by
+a module, a manifest and a kernel port for every class and migration. So the
+store is a directory rather than a module, and four walls give it what a
+module of its own would. A1 and A7 let the framework into that directory and its
+migrations and nowhere else in the capability, so the rest of it still cannot
+be run wrong. A11 keeps the store behind the port the capability declares, so
+every decision is still tested over a fake. A12 keeps it sealed in and sealed
+out, so a store can be handed nothing it could read. A10 names its tables for
+their owner, `health_readings`, so a row on disk says whose it is, and no other
+module names one: an owner that needs another's data asks that owner's
+capability, never its rows. A store is recognised by where it is rather than by
+a list here, so one written tomorrow is walled the moment its first class
+exists.
 
 **Why A7 costs something and is worth it.** Giving up `Collection` in domain code
 is a real loss of convenience. What it buys is a domain that does not move when
@@ -559,9 +572,11 @@ app-modules/<name>/
   src/Api/Commands/       one public method each, returning Outcome
   src/Api/Queries/        one public method each, never returning Outcome
   src/Internal/           unreachable from anywhere else
+  src/Internal/Store/     what the module keeps, reached only through its port (A11)
   src/Internal/Presenters/   pure: data in, view model out
   src/Internal/ViewModels/   what a template reads, deciding nothing
   resources/views/        the screens this module navigates to
+  database/migrations/    the tables its store keeps, named for the module (A10)
   tests/                  mirroring src/, one directory level for one
 lang/<locale>/<module>.php   every sentence a person reads
 bridge/src/               the plugin's own PHP, held to the same bar (R4)
@@ -818,7 +833,7 @@ there is nowhere in either that a number would be doing anything but gesturing.
 | G5 | One assertion idiom: Pest's `expect()`, never PHPUnit's `assert*` | arch |
 | G6 | No committed `->only(`, and no `->skip()` whose last argument is not the reason | arch |
 | G7 | Every tree the coverage report measures is held to a coverage and a mutation floor, declared in the manifest nearest it, and no manifest is nearest to two | arch |
-| G8 | Every port in `Modules\Kernel` is bound, once, in the composition root, and something takes it — a port nothing is handed is a binding that resolves and changes nothing | test: the booted composition root; arch: every bound port read against what is handed one, with a register of those still waiting |
+| G8 | Every port in `Modules\Kernel`, and every port a store answers, is bound, once, in the composition root, and something takes it — a port nothing is handed is a binding that resolves and changes nothing | test: the booted composition root; arch: every bound port read against what is handed one, with a register of those still waiting |
 | G9 | No measured tree is below the coverage floor its nearest manifest declared | test: the `Floors` suite, over the clover report |
 | G10 | No two test files declare the same helper or file-level constant name | arch: over the text of the test files |
 | G11 | A diagnostic fails the run, and no setting exempts one | arch: the settings, read out of `phpunit.xml` |
@@ -956,12 +971,12 @@ honestly described: the table reports green and a reader stops checking, which
 is strictly worse than an unchecked area, because an unchecked area gets
 reviewed by a person.
 
-**Why the floors are per tree.** One percentage across eighteen trees is an
+**Why the floors are per tree.** One percentage across seventeen trees is an
 average, and an average is true about what it covered and silent about what it
 covered over: a capability at 100% carries an adapter at 40% and the gate
 reports a pass. The clover report already holds the per-file numbers, so
 splitting it by directory costs nothing at the point of measurement and turns
-one number into eighteen.
+one number into seventeen.
 
 **A tree's floors are declared in the nearest manifest above it.** That is one
 principle applied three times rather than three cases:
@@ -1069,7 +1084,17 @@ reaches for first.
 ### Port
 
 An interface in `kernel`, named for what it does, not what implements it.
-No `Interface` suffix, no framework types in its signature.
+No `Interface` suffix, no framework types in its signature. A port for what a
+capability keeps is the one exception to where it lives: the capability
+declares it in its own `Internal`, because nothing but its own decisions asks
+it.
+
+### Store
+
+The one class that answers a capability's store port, under that capability's
+`src/Internal/Store`, over Laravel's query builder with an injected connection:
+one private, named method per query and one place a row becomes a value. It is
+handed only what is sealed, and bound to its port by the composition root.
 
 ### Adapter
 

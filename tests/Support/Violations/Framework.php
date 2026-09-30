@@ -158,9 +158,53 @@ final readonly class Framework
                 }
                 PHP, 'A7/E4 — health', 'Illuminate'),
 
+            // Beside the store and not in it: a directory whose name starts
+            // with the store's, so a wall read as a string prefix rather than
+            // as a directory would let the framework through.
+            Fixture::suite('A7', 'app-modules/health/src/Internal/Storefront/NamesTheFrameworkBesideTheStore.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Internal\Storefront;
+
+                use Illuminate\Support\Collection;
+
+                final readonly class NamesTheFrameworkBesideTheStore
+                {
+                    public function holds(): Collection
+                    {
+                        return new Collection();
+                    }
+                }
+                PHP, 'A7/E4 — health'),
+
+            // A capability reaching the database from outside its store: the
+            // rest of the module is as free of the framework as it ever was.
+            Fixture::suite('A1', 'app-modules/health/src/Internal/KeepsBesideTheStore.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Internal;
+
+                use Illuminate\Database\ConnectionInterface;
+
+                final readonly class KeepsBesideTheStore
+                {
+                    public function __construct(private ConnectionInterface $database) {}
+
+                    public function kept(): int
+                    {
+                        return $this->database->table('health_readings')->count();
+                    }
+                }
+                PHP, 'A1 — Illuminate\\Database is named only in a capability\'s store'),
+
             // Planted in an adapter, which may name the framework, so that what
             // this breaks is which module may reach the database rather than
-            // which kind of module may reach for Illuminate at all.
+            // which kind of module may reach for Illuminate at all: a store is
+            // a capability's, and an adapter is not one.
             Fixture::suite('A1', 'app-modules/codes/src/Fixtures/ReachesTheDatabase.php', <<<'PHP'
                 <?php
 
@@ -179,11 +223,12 @@ final readonly class Framework
                         return $this->database->table('codes_drawn')->count();
                     }
                 }
-                PHP, 'A1 — Illuminate\\Database is named only in a store adapter'),
+                PHP, 'A1 — Illuminate\\Database is named only in a capability\'s store'),
 
-            // A table created in the right place under the wrong name: a store's
-            // own migration, making a table that does not say whose it is.
-            Fixture::suite('A10', 'app-modules/health-kept/database/migrations/2026_09_29_000001_create_readings_nobody_owns.php', <<<'PHP'
+            // A table created in the right place under the wrong name: a
+            // capability's own migration, making a table that does not say
+            // whose it is.
+            Fixture::suite('A10', 'app-modules/health/database/migrations/2026_09_29_000001_create_readings_nobody_owns.php', <<<'PHP'
                 <?php
 
                 declare(strict_types=1);
@@ -219,6 +264,50 @@ final readonly class Framework
                     }
                 }
                 PHP, 'A10 — no module names a table another module owns'),
+
+            // The store reached from beside it rather than through its port,
+            // by a relative name that imports nothing, which is how a class in
+            // the same module would write it.
+            Fixture::suite('A11', 'app-modules/health/src/Internal/AsksTheStoreDirectly.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Internal;
+
+                use Modules\Kernel\Api\SealedStack;
+
+                final readonly class AsksTheStoreDirectly
+                {
+                    public function __construct(private Store\HealthReadingsInTheDatabase $store) {}
+
+                    public function forget(SealedStack $stack): int
+                    {
+                        return $this->store->forget($stack)->howMany();
+                    }
+                }
+                PHP, 'A11 — nothing outside a store names a class in it'),
+
+            // A store that can be handed a summary it could read, and so one
+            // day writes it to disk in the clear.
+            Fixture::suite('A12', 'app-modules/health/src/Internal/Store/KeepsWhatItCanRead.php', <<<'PHP'
+                <?php
+
+                declare(strict_types=1);
+
+                namespace Modules\Health\Internal\Store;
+
+                use Modules\Kernel\Api\Noted;
+                use Modules\Kernel\Api\TheHealthSummary;
+
+                final readonly class KeepsWhatItCanRead
+                {
+                    public function keep(TheHealthSummary $summary): Noted
+                    {
+                        return Noted::notKept();
+                    }
+                }
+                PHP, 'A12 — a store class takes and gives only sealed payloads'),
 
             Fixture::analyser('A8', 'Plain/UsesPlatformFacade.php', <<<'PHP'
                 <?php

@@ -8,10 +8,10 @@ use function array_filter;
 use function array_key_exists;
 use function count;
 
+use Modules\Health\Internal\HealthReadingsKept;
+use Modules\Health\Internal\NewestHealthReading;
 use Modules\Kernel\Api\Forgotten;
-use Modules\Kernel\Api\HealthReadingsKept;
 use Modules\Kernel\Api\Instant;
-use Modules\Kernel\Api\NewestHealthReading;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedReading;
@@ -22,7 +22,7 @@ use Modules\Kernel\Api\Shape;
  * The health readings the phone keeps, held for as long as a test runs.
  *
  * Held to the same contract as
- * {@see \Modules\HealthKept\Api\HealthReadingsInTheDatabase}, so a decision
+ * {@see \Modules\Health\Internal\Store\HealthReadingsInTheDatabase}, so a decision
  * tested over this is tested over a store that behaves like the database: one
  * reading per stack, the later replacing the earlier, a reading read exactly at
  * the cut-off kept, and a row this build cannot read reachable, because a

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Modules\Kernel\Tests\Api;
+namespace Modules\Health\Tests\Internal;
 
 use function expect;
 use function it;
 
+use Modules\Health\Internal\NewestHealthReading;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Instant;
-use Modules\Kernel\Api\NewestHealthReading;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\Shape;
 

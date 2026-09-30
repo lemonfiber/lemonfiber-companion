@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use Tests\Support\Module;
+use Tests\Support\Stores;
 
 // Runs the composition root rather than reading it, so its mutants are judged
 // here: see `scripts/mutation.php`.
 pest()->group('holds:bootstrap/Composition');
 
-// G8 — every port the kernel publishes is bound, once, to something real.
+// G8 — every port the kernel publishes is bound, once, to something real, and
+// so is every port a capability declares for its own store.
 //
 // A port with no binding fails at the moment a screen first asks for it, which
 // on a device is after the operator has tapped something and is waiting. The
@@ -41,6 +43,12 @@ it('G8 — every port is bound to exactly one adapter', function (): void {
         }
     }
 
+    foreach (Stores::ports() as $name) {
+        if (! app()->bound($name)) {
+            $unbound[] = $name;
+        }
+    }
+
     expect($unbound)->toBe([], sprintf(
         "These ports have no adapter behind them:\n  %s\n\n"
         . 'A port with no binding resolves at the moment a screen first asks for it — on '
@@ -54,13 +62,13 @@ it('G8 — every port is bound to exactly one adapter', function (): void {
 });
 
 /**
- * Every kernel port the container has a binding for.
+ * Every kernel port, and every port a store answers, that the container has a binding for.
  *
  * @return list<class-string>
  */
 function everyBoundPort(): array
 {
-    $found = [];
+    $found = array_values(array_filter(Stores::ports(), static fn(string $name): bool => app()->bound($name)));
 
     foreach (Module::all() as $module) {
         if ($module->kind->value !== 'kernel') {

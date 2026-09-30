@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use Illuminate\Database\ConnectionInterface;
-use Modules\HealthKept\Api\HealthReadingsInTheDatabase;
+use Modules\Health\Internal\HealthReadingsKept;
+use Modules\Health\Internal\NewestHealthReading;
+use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\Code;
-use Modules\Kernel\Api\HealthReadingsKept;
 use Modules\Kernel\Api\Instant;
-use Modules\Kernel\Api\NewestHealthReading;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;

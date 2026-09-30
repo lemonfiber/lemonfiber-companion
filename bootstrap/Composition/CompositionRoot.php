@@ -27,7 +27,8 @@ use Modules\Device\Api\PlatformShare;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
-use Modules\HealthKept\Api\HealthReadingsInTheDatabase;
+use Modules\Health\Internal\HealthReadingsKept;
+use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\Advising;
@@ -45,7 +46,6 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\Guarding;
-use Modules\Kernel\Api\HealthReadingsKept;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\History;
@@ -337,6 +337,9 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(Sealed::class, EncrypterSeal::class);
 
         // The newest health reading of each stack, in the app's own database.
+        // Both are `health`'s own, the port its decisions ask and the store
+        // walled inside it, and this is the one place outside that store to
+        // name it.
         // Named by class: its one dependency is the database connection the
         // framework already binds, so the decision this line makes is which
         // store. What reaches it is sealed first, by `health`, so the database

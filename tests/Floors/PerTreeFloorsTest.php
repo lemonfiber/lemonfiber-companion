@@ -8,11 +8,11 @@ use Tests\Support\Tree;
 
 // G9 — no measured tree is below the floor its nearest manifest declared.
 //
-// One percentage for fifteen trees is an average, and an average is true about
+// One percentage for seventeen trees is an average, and an average is true about
 // what it covered and silent about what it covered over: a capability at 100%
 // carries an adapter at 40% and the gate reports a pass. The same clover report
 // already holds the per-file numbers, so splitting it by directory costs
-// nothing at the point of measurement and turns one number into fifteen.
+// nothing at the point of measurement and turns one number into seventeen.
 //
 // The trees are the ones `phpunit.xml` measures rather than the modules, which
 // is the same list `G7` holds to a bar and `scripts/mutation.php` mutates. Read
