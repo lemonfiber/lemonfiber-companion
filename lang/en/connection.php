@@ -72,6 +72,7 @@ return [
     'session_would_not_keep' => 'This phone would not let the app keep the session.',
     'session_would_not_keep_action' => 'You are not signed in. Unlock the phone and try again.',
     'open_stack' => 'Open :stack',
+    'current_stack' => ':stack, current',
     'sign_in_needed' => 'Sign in needed',
     'session_has_ended' => 'You are signed out of this stack.',
     'pair_again' => 'Pair it again',

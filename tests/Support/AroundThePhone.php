@@ -7,19 +7,41 @@ namespace Tests\Support;
 use function app;
 
 use Illuminate\Contracts\Translation\Translator;
+use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stacks;
+use Modules\Kernel\Api\Standings;
 use Modules\Operator\Internal\TheWayAround;
+use Tests\Support\Fakes\AKeychainInMemory;
+use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\StandingsInMemory;
 
 /**
  * The way around a test's stacks, made as the container makes it.
  *
  * Every screen about a stack is handed one, so a test that builds a screen by
- * hand takes it from here, and what it is made of is written once.
+ * hand takes it from here, and what it is made of is written once. A test
+ * about the list of stacks hands it what the phone kept of each stack and
+ * which sessions it holds; every other test takes a phone that kept nothing.
  */
 final readonly class AroundThePhone
 {
-    public static function holding(Stacks $stacks): TheWayAround
-    {
-        return new TheWayAround($stacks, app(Translator::class));
+    /** The moment a phone that was handed no clock reads. */
+    private const int NOW = 1_790_000_000;
+
+    public static function holding(
+        Stacks $stacks,
+        ?Standings $standings = null,
+        ?SecureStorage $storage = null,
+        ?Clock $clock = null,
+    ): TheWayAround {
+        return new TheWayAround(
+            $stacks,
+            app(Translator::class),
+            $standings ?? StandingsInMemory::working(),
+            $clock ?? FrozenClock::at(Instant::atEpochSeconds(self::NOW)),
+            $storage ?? AKeychainInMemory::working(),
+        );
     }
 }

@@ -70,6 +70,8 @@ use function view;
 #[Concealed]
 final class SignIntoAStack extends NativeComponent
 {
+    use ChoosesAStack;
+
     /**
      * The password, as it stands in the field.
      *

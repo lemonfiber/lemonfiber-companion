@@ -6,11 +6,13 @@ use Modules\Operator\Internal\Screens\FindsItsWayAround;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Tests\Support\Screens;
 
-// F17 — every operator screen about a stack carries the side menu.
+// F17 — every operator screen about a stack carries the side menu and the
+// list of stacks.
 //
 // The menu is how an operator reaches every screen that is not a tab, so a
 // screen about a stack without it is a screen they can only leave by going
-// back. A screen is about a stack when it answers which stack it is about,
+// back. The list of stacks is how they reach another stack, and signing in
+// carries it too. A screen is about a stack when it answers which stack it is about,
 // and it carries the menu by using the trait that hands NativePHP the drawer.
 // A screen that goes without names itself below with why, and the list may
 // shrink and may not grow.
@@ -48,4 +50,28 @@ it('F17 — every operator screen about a stack carries the menu, or is named wi
 
 it('does not let the screens without the menu grow', function (): void {
     expect(count(WITHOUT_THE_MENU))->toBeLessThanOrEqual(1);
+});
+
+it('F17 — every operator screen about a stack carries the list of stacks', function (): void {
+    $without = [];
+    $read = 0;
+
+    foreach (Screens::all() as $screen) {
+        if (! str_starts_with($screen->getName(), 'Modules\\Operator\\') || ! $screen->hasMethod('stack')) {
+            continue;
+        }
+
+        $read++;
+
+        if (! $screen->hasMethod('chooseAStack')) {
+            $without[] = $screen->getName();
+        }
+    }
+
+    expect($read)->toBeGreaterThan(0, 'no operator screen answers which stack it is about, so this read nothing')
+        ->and($without)->toBe([], sprintf(
+            "These screens about a stack carry no list of stacks:\n  %s\n\n"
+            . "Use `ChoosesAStack` in the screen, or `FindsItsWayAround`, which uses it.\n",
+            implode("\n  ", $without),
+        ));
 });

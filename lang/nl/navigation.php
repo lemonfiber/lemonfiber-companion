@@ -25,7 +25,11 @@ return [
         'settings' => 'Instellingen',
         'help' => 'Hulp',
     ],
+    'switcher' => [
+        'add' => 'Stack toevoegen',
+    ],
     'menu' => [
+        'switch_stack' => 'Andere stack',
         'open' => 'Menu',
         'whats_new' => 'Wat is nieuw',
         'stack_settings' => 'Stack-instellingen',

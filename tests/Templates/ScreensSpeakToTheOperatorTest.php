@@ -47,6 +47,9 @@ const WHAT_A_COMPONENT_IS = [
     'top-bar-title' => false,
     'scroll-view' => false,
     'bottom-nav' => false,
+    // A sheet over the screen is a box for what is drawn in it. Swiping it
+    // away is the platform's own gesture, and the rows inside are the controls.
+    'bottom-sheet' => false,
     // The platform's own grouped container and the group inside it. Both are
     // boxes, and a box announced as a box is a word between the reader and
     // what it holds — the same reason a column is furniture.

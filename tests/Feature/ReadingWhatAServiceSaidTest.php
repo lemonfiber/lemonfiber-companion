@@ -643,3 +643,14 @@ it('hands the view the state its markup reads by name', function (): void {
 
     expect($screen->render()->getData())->toHaveKey('looking');
 });
+
+it('draws the list of stacks when the menu opens it, though its top bar names the service rather than the stack', function (): void {
+    $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+
+    expect(WhatTheDeviceWouldDraw::inTheListOfStacks($screen)->said())->toBe([]);
+
+    $screen->chooseAStack();
+
+    expect(WhatTheDeviceWouldDraw::inTheListOfStacks($screen)->offers())
+        ->toBe([theStackWhoseServiceIsRead()->name()->shown(), __('navigation.switcher.add')]);
+});

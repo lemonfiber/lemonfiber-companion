@@ -147,8 +147,18 @@ final readonly class WhatTheDeviceWouldDraw
     {
         return new self(self::collect(self::treeMadeBy(
             $screen,
-            static fn(): Element => TheSideMenu::drawnOn($screen, $menu),
+            static fn(): Element => TheWaysAround::drawnOn($screen, $menu),
         )));
+    }
+
+    /**
+     * What the list of stacks draws on a screen about a stack: the name in the
+     * top bar that opens it, then the sheet, which draws its rows only while it
+     * is open.
+     */
+    public static function inTheListOfStacks(NativeComponent $screen): self
+    {
+        return new self(self::collect([self::BENEATH => TheWaysAround::theListOfStacksIn(self::tree($screen))]));
     }
 
     /**
@@ -337,7 +347,7 @@ final readonly class WhatTheDeviceWouldDraw
     }
 
     /**
-     * What hangs off this node, but the side menu, and nothing where nothing does.
+     * What hangs off this node, but the side menu and the list of stacks, and nothing where nothing does.
      *
      * @param array<mixed> $node
      *
@@ -347,7 +357,7 @@ final readonly class WhatTheDeviceWouldDraw
     {
         $children = array_key_exists(self::BENEATH, $node) ? $node[self::BENEATH] : [];
 
-        return is_array($children) ? TheSideMenu::leftOutOf($children) : [];
+        return is_array($children) ? TheWaysAround::leftOutOf($children) : [];
     }
 
     /**

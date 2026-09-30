@@ -1,4 +1,4 @@
-<x-operator::screen-opens :title="$this->stack()->name()->shown()" />
+<x-operator::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
     {{-- The first frame, drawn before the stack is asked anything: the one

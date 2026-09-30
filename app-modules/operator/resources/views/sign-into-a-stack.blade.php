@@ -1,4 +1,4 @@
-<x-operator::screen-opens :title="$this->stack()->name()->shown()" />
+<x-operator::stack-opens :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
     <x-design::title>{{ __($this->went()->said(), ['stack' => $this->stack()->name()->shown()]) }}</x-design::title>
