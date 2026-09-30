@@ -4,14 +4,6 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Native;
 
-use function array_key_exists;
-use function is_array;
-use function is_bool;
-use function is_string;
-use function json_decode;
-use function json_encode;
-use function nativephp_call;
-
 /**
  * The camera, as this application is willing to use one.
  *
@@ -56,85 +48,15 @@ final readonly class Scanning
      */
     public function forAPairingCode(string $prompt): Scanned
     {
-        $said = $this->answering($prompt);
+        $said = WhatTheBridgeAnswered::to(Call::Read, ['prompt' => $prompt]);
 
-        if ($this->wordUnder($said, 'outcome') === self::READ) {
-            return Scanned::read($this->wordUnder($said, 'payload') ?? '');
+        if ($said->outcome() === self::READ) {
+            return Scanned::read($said->word(WhatAnAnswerHolds::Payload) ?? '');
         }
 
         return Scanned::nothing(
-            WhyNothingWasRead::orSimplyDismissed($this->wordUnder($said, 'because')),
-            $this->flagUnder($said, 'may_ask_again'),
+            WhyNothingWasRead::orSimplyDismissed($said->word(WhatAnAnswerHolds::Because)),
+            $said->says(WhatAnAnswerHolds::MayAskAgain),
         );
-    }
-
-    /**
-     * One bridge call, decoded.
-     *
-     * A method rather than four lines in the caller, because the prompt has
-     * to be encoded before it can be sent and encoding it is something that
-     * can fail.
-     */
-    private function answering(string $prompt): mixed
-    {
-        // A payload that will not encode is not sent.
-        //
-        // `json_encode` answers false for a string that is not valid UTF-8.
-        // A `(string)` cast turns that false into `''`, which reaches the
-        // device as a call carrying no parameters at all — indistinguishable
-        // from one that meant to carry none. The device answers whatever it
-        // answers to a call with everything missing, and the operator sees the
-        // result of a request nobody made.
-        //
-        // Refused here instead, as the same nothing every other way of
-        // not reaching the bridge produces: nobody answered, because nobody
-        // was asked. It is also the only shape a test can hold: a cast
-        // between two values nothing downstream can tell apart is a line
-        // nothing can fail on.
-        $payload = json_encode(['prompt' => $prompt]);
-
-        if (! is_string($payload)) {
-            return null;
-        }
-
-        return json_decode(
-            (string) nativephp_call(Call::Read->value, $payload),
-            associative: true,
-        );
-    }
-
-    /**
-     * One word out of an answer, or nothing where there is no word there.
-     *
-     * Asked for rather than defaulted. `??` on a decoded answer folds absent,
-     * present-and-null and present-and-the-wrong-type into one value, and the
-     * caller above has a different thing to do about *nobody answered* than
-     * about *answered with something unexpected* (`C9`).
-     */
-    private function wordUnder(mixed $said, string $key): ?string
-    {
-        if (! is_array($said) || ! array_key_exists($key, $said) || ! is_string($said[$key])) {
-            return null;
-        }
-
-        return $said[$key];
-    }
-
-    /**
-     * One flag out of an answer, and false where there is no flag there.
-     *
-     * False rather than null, because the question it answers has no third
-     * state: either asking again could change the answer or it could not, and
-     * an answer that did not say is one that could not say. A bridge with no
-     * device behind it lands here, and a screen reading *no* offers the typed
-     * road — which is the right advice on a machine with no camera.
-     */
-    private function flagUnder(mixed $said, string $key): bool
-    {
-        if (! is_array($said) || ! array_key_exists($key, $said) || ! is_bool($said[$key])) {
-            return false;
-        }
-
-        return $said[$key];
     }
 }

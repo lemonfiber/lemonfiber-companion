@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Native;
 
-use function array_key_exists;
-use function is_array;
-use function is_string;
-use function json_decode;
-use function json_encode;
-use function nativephp_call;
-
 /**
  * The window, as the operating system will let this application treat it.
  *
@@ -77,7 +70,7 @@ final readonly class Screen
      */
     public function isInFront(): bool
     {
-        return $this->asked(Call::IsInFront, 'inFront');
+        return $this->asked(Call::IsInFront, WhatAnAnswerHolds::InFront);
     }
 
     /**
@@ -88,7 +81,7 @@ final readonly class Screen
      */
     public function canAuthenticate(): bool
     {
-        return $this->asked(Call::CanAuthenticate, 'canAuthenticate');
+        return $this->asked(Call::CanAuthenticate, WhatAnAnswerHolds::CanAuthenticate);
     }
 
     /**
@@ -104,18 +97,15 @@ final readonly class Screen
      */
     public function authenticate(string $reason): bool
     {
-        return $this->asked(Call::Authenticate, 'acknowledged', ['reason' => $reason]);
+        return $this->asked(Call::Authenticate, WhatAnAnswerHolds::Acknowledged, ['reason' => $reason]);
     }
 
     /**
      * One bridge call, reduced to the one thing every answer carries.
      *
-     * `nativephp_call()` is the bridge. On a handset it is a C extension
-     * function; on a development machine `nativephp/mobile` supplies a fallback
-     * that relays to a connected device — and answers
-     * `{"status":"error","code":"NO_DEVICE"}` when there is none. Under test a
-     * bound `FakeBridge` intercepts it in-process, which is what the tests
-     * beside this file drive.
+     * {@see WhatTheBridgeAnswered} says what the bridge is on a handset, on a
+     * development machine and under test, which is what the tests beside this
+     * file drive.
      *
      * All three of those, plus an unparsable answer, mean the same thing here:
      * this process cannot see a protected window. Collapsing them is right
@@ -131,7 +121,8 @@ final readonly class Screen
      * ever enter. `ScreenTest` pins the fact it rested on instead, so the day
      * that stops being true it fails here rather than fataling on a handset.
      *
-     * The `=== true` matters. A `NO_DEVICE` answer decodes to an array with no
+     * Yes is `true` and nothing else ({@see WhatTheBridgeAnswered::says()}), and
+     * that matters. A `NO_DEVICE` answer decodes to an array with no
      * `protected` key, and a loose check on a missing key is the kind of false
      * that turns into a true the day somebody returns `"false"`. The key is
      * asked for rather than defaulted, which is the same distinction one step
@@ -140,7 +131,7 @@ final readonly class Screen
      */
     private function ask(Call $function): bool
     {
-        return $this->asked($function, 'protected');
+        return $this->asked($function, WhatAnAnswerHolds::Protected);
     }
 
     /**
@@ -148,33 +139,8 @@ final readonly class Screen
      *
      * @param array<string, string> $with
      */
-    private function asked(Call $function, string $key, array $with = []): bool
+    private function asked(Call $function, WhatAnAnswerHolds $key, array $with = []): bool
     {
-        // A payload that will not encode is not sent.
-        //
-        // `json_encode` answers false for a string that is not valid UTF-8.
-        // A `(string)` cast turns that false into `''`, which reaches the
-        // device as a call carrying no parameters at all — indistinguishable
-        // from one that meant to carry none. The device answers whatever it
-        // answers to a call with everything missing, and the operator sees the
-        // result of a request nobody made.
-        //
-        // Refused here instead, as the same false every other way of
-        // not reaching the bridge produces: nobody answered, because nobody
-        // was asked. It is also the only shape a test can hold: a cast
-        // between two values nothing downstream can tell apart is a line
-        // nothing can fail on.
-        $payload = json_encode($with);
-
-        if (! is_string($payload)) {
-            return false;
-        }
-
-        $said = json_decode(
-            (string) nativephp_call($function->value, $payload),
-            associative: true,
-        );
-
-        return is_array($said) && array_key_exists($key, $said) && $said[$key] === true;
+        return WhatTheBridgeAnswered::to($function, $with)->says($key);
     }
 }

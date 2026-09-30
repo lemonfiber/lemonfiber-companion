@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Native;
 
-use function array_key_exists;
-use function is_array;
-use function is_string;
-use function json_decode;
-use function nativephp_call;
-
 /**
  * Whether this device can reach anything at all right now.
  *
@@ -55,50 +49,6 @@ final readonly class Link
         // envelope, no bridge at all — lands on *try anyway*. The affirmative
         // spelling would make silence mean *no network*, which is the reading
         // that puts every desktop and every test run behind a wifi warning.
-        return $this->wordUnder($this->answering(), 'outcome') !== self::UNREACHABLE;
-    }
-
-    /**
-     * What the bridge said, decoded, or nothing where it said nothing.
-     *
-     * The call carries nothing, and says so with {@see Call::CARRIES_NOTHING}:
-     * leaving the second argument out passes every test and fails on the phone.
-     *
-     * A call that carries something encodes what somebody passed in, where an
-     * unencodable payload is a real answer and is refused as one.
-     *
-     * @return array<mixed>|null
-     */
-    private function answering(): ?array
-    {
-        $said = nativephp_call(Call::LinkStatus->value, Call::CARRIES_NOTHING);
-
-        if (! is_string($said)) {
-            return null;
-        }
-
-        $decoded = json_decode($said, associative: true);
-
-        return is_array($decoded) ? $decoded : null;
-    }
-
-    /**
-     * One named word out of the answer, where the answer holds one.
-     *
-     * Written out rather than coalesced, which `C9` refuses: a `??` folds
-     * absent, present-and-null and present-and-the-wrong-type into one answer,
-     * and the one it picks reads as *carry on*.
-     *
-     * @param array<mixed>|null $said
-     */
-    private function wordUnder(?array $said, string $named): ?string
-    {
-        if ($said === null || ! array_key_exists($named, $said)) {
-            return null;
-        }
-
-        $word = $said[$named];
-
-        return is_string($word) ? $word : null;
+        return WhatTheBridgeAnswered::toNothing(Call::LinkStatus)->outcome() !== self::UNREACHABLE;
     }
 }

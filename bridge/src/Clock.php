@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Native;
 
-use function array_key_exists;
-use function is_array;
-use function is_string;
-use function json_decode;
-use function nativephp_call;
-
 /**
  * The phone's clock, as far as this plugin reads it: which zone it is set to.
  *
@@ -26,20 +20,6 @@ final readonly class Clock
     /** The zone's name in the time zone database, or empty where none was given. */
     public function zone(): string
     {
-        $said = nativephp_call(Call::Zone->value, Call::CARRIES_NOTHING);
-
-        if (! is_string($said)) {
-            return '';
-        }
-
-        $decoded = json_decode($said, associative: true);
-
-        if (! is_array($decoded) || ! array_key_exists('zone', $decoded)) {
-            return '';
-        }
-
-        $zone = $decoded['zone'];
-
-        return is_string($zone) ? $zone : '';
+        return WhatTheBridgeAnswered::toNothing(Call::Zone)->word(WhatAnAnswerHolds::Zone) ?? '';
     }
 }
