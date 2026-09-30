@@ -63,12 +63,15 @@ const WHAT_A_COMPONENT_IS = [
     // a space.
     'divider' => false,
 
-    // A line of things side by side, and one square of a code another phone
+    // A line of things side by side, and one run of a code another phone
     // scans. Both are furniture: the row says nothing the order does not, and
-    // a reader announcing each square of a code would read out hundreds of
-    // boxes where the line beneath the code says what it is.
+    // a reader announcing each run of a code would read out hundreds of boxes
+    // where the line beneath the code says what it is.
     'row' => false,
     'rect' => false,
+    // A stack lays what it holds one over another. The code a scannable draws is
+    // one, and what a reader hears about it is said in the words beside it.
+    'stack' => false,
 
     // A glyph beside the words that say the same thing: furniture, because the
     // words are what a reader hears, and a glyph announced before them is the
