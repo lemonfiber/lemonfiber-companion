@@ -21,8 +21,15 @@ public object ClockFunctions {
     /** What this plugin's log lines are tagged with. */
     private const val TAG = "Lemonfiber"
 
-    /** Answer the zone the clock is set to. */
-    public class Zone(private val activity: FragmentActivity) : BridgeFunction {
+    /**
+     * Answer the zone the clock is set to.
+     *
+     * The activity is what the plugin's registration hands every function, and
+     * this one has no use for it: the zone belongs to the device, not a window.
+     */
+    public class Zone(
+        @Suppress("UnusedPrivateProperty") private val activity: FragmentActivity,
+    ) : BridgeFunction {
         override fun execute(parameters: Map<String, Any>): Map<String, Any> {
             val zone = TimeZone.getDefault().id
 
