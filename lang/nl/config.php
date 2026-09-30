@@ -28,7 +28,6 @@ return [
         'withheld' => 'Eerder stond hier een geheim, dat niet wordt getoond',
     ],
 
-    'what_this_is_set_to' => 'Waarop deze machine is ingesteld',
 
     'cost' => [
         'cheap' => 'Een herstart van de betrokken diensten, en verder niets',

@@ -170,45 +170,9 @@
          the end of what was wrong, and that is where they ask whether it took. --}}
     <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 
-    {{-- The readings the bar under this screen has no room for, grouped by
-         what they are about. Services, repairs and updates are the bar's own. --}}
-    <x-design::section :label="__('health.roads.house')">
-        <x-design::row :headline="__('household.asked_for')" :goes="$this->goes()->requests()" />
-        <x-design::row :headline="__('household.yours')" :goes="$this->goes()->yours()" />
-        <x-design::row :headline="__('health.what_stopped')" :goes="$this->goes()->stuck()" />
-        <x-design::row :headline="__('health.walkthrough.road_in')" :goes="$this->goes()->ofItself()->walkthrough()" />
-    </x-design::section>
-
-    <x-design::section :label="__('health.roads.people')">
-        <x-design::row :headline="__('stacks.credentials.road_in')" :goes="$this->goes()->whoGetsIn()->credentials()" />
-        <x-design::row :headline="__('stacks.clients.road_in')" :goes="$this->goes()->whoGetsIn()->clients()" />
-        <x-design::row :headline="__('stacks.front_door.road_in')" :goes="$this->goes()->whoGetsIn()->frontDoor()" />
-        <x-design::row :headline="__('stacks.invitation.road_in')" :goes="$this->goes()->whoGetsIn()->invite()" />
-    </x-design::section>
-
-    <x-design::section :label="__('health.roads.machine')">
-        <x-design::row :headline="__('health.what_else_is_running')" :goes="$this->goes()->elsewhere()" />
-        <x-design::row :headline="__('stacks.already_here.road_in')" :goes="$this->goes()->ofItself()->alreadyHere()" />
-        <x-design::row :headline="__('stacks.what_keeps_running')" :goes="$this->goes()->keepsRunning()" />
-        <x-design::row :headline="__('config.what_this_is_set_to')" :goes="$this->goes()->settings()" />
-        <x-design::row :headline="__('stacks.record.road_in')" :goes="$this->goes()->ofItself()->record()" />
-        <x-design::row :headline="__('stacks.origins.road_in')" :goes="$this->goes()->ofItself()->origins()" />
-        <x-design::row :headline="__('stacks.catalogue.road_in')" :goes="$this->goes()->ofItself()->catalogue()" />
-        <x-design::row :headline="__('stacks.outbound.road_in')" :goes="$this->goes()->ofItself()->leaving()" />
-        <x-design::row :headline="__('stacks.alerts.road_in')" :goes="$this->goes()->ofItself()->told()" />
-        <x-design::row :headline="__('stacks.line.road_in')" :goes="$this->goes()->ofItself()->line()" />
-        <x-design::row :headline="__('stacks.keeps.road_in')" :goes="$this->goes()->ofItself()->keeps()" />
-        <x-design::row :headline="__('stacks.room.road_in')" :goes="$this->goes()->ofItself()->room()" />
-        <x-design::row :headline="__('stacks.itself.road_in')" :goes="$this->goes()->ofItself()->itself()" />
-        <x-design::row :headline="__('quality.road_in')" :goes="$this->goes()->ofItself()->quality()" />
-        <x-design::row :headline="__('stacks.wiring.road_in')" :goes="$this->goes()->ofItself()->wiring()" />
-        <x-design::row :headline="__('uninstall.road_in')" :goes="$this->goes()->ofItself()->changing()->takingItOff()" />
-    </x-design::section>
-
-    <x-design::section :label="__('health.roads.help')">
-        <x-design::row :headline="__('stacks.help.road_in')" :goes="$this->goes()->ofItself()->help()" />
-        <x-design::row :headline="__('stacks.words.road_in')" :goes="$this->goes()->ofItself()->words()" />
-    </x-design::section>
+    {{-- What this machine says the operator is owed, as a member of the
+         household: the one reading of theirs that is not in the menu. --}}
+    <x-design::row :headline="__('household.yours')" :goes="$this->goes()->yours()" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

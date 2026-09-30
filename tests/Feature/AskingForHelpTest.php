@@ -28,6 +28,7 @@ use Modules\Kernel\Api\WhereABundleIs;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
+use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
@@ -666,8 +667,8 @@ it('forgets what handing over came to once the choices change or a bundle is des
 it('is reached from the machine it is about, and goes back to it', function (): void {
     $screen = theHelpScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::stillRunning()));
 
-    expect(NativeRouter::resolve($screen->goes()->ofItself()->help()))->not->toBeNull()
-        ->and($screen->goes()->ofItself()->help())->toBe(sprintf('/stacks/%s/help', theStackHelpIsAskedAbout()->id()->stored()))
+    expect(NativeRouter::resolve(TheMenu::GetHelp->screen()->forTheStack($screen->stack()->id())))->not->toBeNull()
+        ->and(TheMenu::GetHelp->screen()->forTheStack($screen->stack()->id()))->toBe(sprintf('/stacks/%s/help', theStackHelpIsAskedAbout()->id()->stored()))
         ->and($screen->render()->name())->toBe('operator::asking-for-help-here');
 });
 

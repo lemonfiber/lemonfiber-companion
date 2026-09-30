@@ -104,12 +104,6 @@ final readonly class WhereAStackIs
         return AStacksScreen::Repairs->forTheStack($this->stack);
     }
 
-    /** What has stopped coming in to this machine. */
-    public function stuck(): string
-    {
-        return AStacksScreen::Stuck->forTheStack($this->stack);
-    }
-
     /** What this machine is running, and the verbs about it. */
     public function services(): string
     {
@@ -132,12 +126,6 @@ final readonly class WhereAStackIs
     public function updates(): string
     {
         return AStacksScreen::Updates->forTheStack($this->stack);
-    }
-
-    /** What is running here that this machine never declared. */
-    public function elsewhere(): string
-    {
-        return AStacksScreen::Elsewhere->forTheStack($this->stack);
     }
 
     /**

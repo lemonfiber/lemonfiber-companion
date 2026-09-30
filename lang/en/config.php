@@ -41,7 +41,6 @@ return [
         'withheld' => 'Before, it held a credential, which is not shown',
     ],
 
-    'what_this_is_set_to' => 'What this machine is set to',
 
     'cost' => [
         'cheap' => 'A restart of the services it affects, and nothing else',

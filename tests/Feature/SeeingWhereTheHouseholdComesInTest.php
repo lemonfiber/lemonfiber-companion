@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHouseholdBegins;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhereTheHouseholdComesIn;
+use Modules\Operator\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -230,7 +231,7 @@ it('the way here and the way back are routes', function (): void {
     $screen = theDoorScreen(AStackWithAFrontDoor::with(aDoorWhoseNamingWasRefused()));
 
     expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->whoGetsIn()->frontDoor()))->not->toBeNull();
+        ->and(NativeRouter::resolve(TheMenu::FrontDoor->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {

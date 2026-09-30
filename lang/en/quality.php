@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 return [
-    'road_in' => 'How good the media should be',
 
     // What became of the choice. A rehearsal and a held choice each have a
     // sentence of their own, and neither says the choice was recorded.

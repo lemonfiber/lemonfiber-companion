@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
+use Modules\Operator\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -199,7 +200,7 @@ it('the way here and the way back are routes', function (): void {
     $screen = theCredentialsScreen(AStackThatHoldsCredentials::holding(credentialsInTrouble()));
 
     expect(NativeRouter::resolve($screen->goes()->health()))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->whoGetsIn()->credentials()))->not->toBeNull();
+        ->and(NativeRouter::resolve(TheMenu::Passwords->screen()->forTheStack($screen->stack()->id())))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {
