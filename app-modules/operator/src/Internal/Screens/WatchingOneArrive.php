@@ -73,7 +73,9 @@ use function view;
 #[Concealed]
 final class WatchingOneArrive extends NativeComponent
 {
-    use HearsWhereTheWalkIs;
+    use HearsWhereTheWalkIs {
+        HearsWhereTheWalkIs::stop insteadof FindsItsWayAround;
+    }
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
     use FindsItsWayAround;

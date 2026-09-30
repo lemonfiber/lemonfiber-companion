@@ -6,10 +6,9 @@ namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stack;
-use Native\Mobile\Edge\NativeComponent;
 
 /**
- * The effect half of letting go of a refused session, written once for the screens that need it.
+ * The effect half of letting go of a refused session, written once for everything that needs it.
  *
  * Five screens resume a session and hand it to a stack, and every one of them
  * has to let go of a session that stack has just refused. The decision is the
@@ -28,12 +27,12 @@ use Native\Mobile\Edge\NativeComponent;
  * Three of them arrived at twenty-one the day this effect was added to each,
  * which is what a cross-cutting concern looks like when it is pasted.
  *
- * **It reads the using screen's own `$storage`.** That is the coupling, stated
- * here because a trait cannot declare it: every screen that resumes a session
- * already holds the store it resumed from, and a trait that took one as an
- * argument would be a function with extra steps.
- *
- * @phpstan-require-extends NativeComponent
+ * **It reads the user's own `$storage`.** That is the coupling, stated here
+ * because a trait cannot declare it: every screen that resumes a session
+ * already holds the store it resumed from, and so does
+ * {@see HearingEachStack}, which resumes one for each stack the lists of
+ * stacks listen to. A trait that took the store as an argument would be a
+ * function with extra steps.
  */
 trait LetsGoOfARefusedSession
 {
