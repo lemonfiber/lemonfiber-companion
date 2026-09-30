@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
-use function array_any;
-
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ASettingToReveal;
-use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Native\Mobile\Edge\NativeComponent;
@@ -31,14 +28,8 @@ use function trim;
  */
 trait ChoosesWhatABundleHolds
 {
-    /** The narrowest log window offered: enough for a fault that is happening now. */
-    private const int FEWER_LINES = 50;
-
-    /** The widest log window offered: enough for a fault that came and went. */
-    private const int MORE_LINES = 1000;
-
-    /** How many log lines each service contributes, one of {@see windows()}. */
-    public int $lines = HowManyLines::ON_A_PHONE;
+    /** How many log lines each service contributes. */
+    public ALogWindow $window = ALogWindow::AsOnAPhone;
 
     /** Whether media filenames are shown or replaced. Replaced unless the operator asks. */
     public WhatFilenamesShow $filenames = WhatFilenamesShow::Replaced;
@@ -55,25 +46,23 @@ trait ChoosesWhatABundleHolds
     /**
      * The log windows offered, fewest lines first.
      *
-     * @return list<int>
+     * @return list<ALogWindow>
      */
     public function windows(): array
     {
-        return [self::FEWER_LINES, HowManyLines::ON_A_PHONE, self::MORE_LINES];
+        return ALogWindow::cases();
     }
 
     /** Take this many lines from each service, where it is one of the windows offered. */
     public function chooseLines(int $lines): void
     {
-        if (array_any($this->windows(), static fn(int $window): bool => $window === $lines)) {
-            $this->lines = $lines;
-        }
+        $this->window = ALogWindow::tryFrom($lines) ?? $this->window;
     }
 
     /** Whether this window is the one the bundle takes. */
-    public function takes(int $window): bool
+    public function takes(ALogWindow $window): bool
     {
-        return $window === $this->lines;
+        return $window === $this->window;
     }
 
     /** Show media filenames as they are. */
@@ -151,7 +140,7 @@ trait ChoosesWhatABundleHolds
     /** The bundle those choices describe, not written. */
     private function chosen(): ABundleAsked
     {
-        return ABundleAsked::described(HowManyLines::of($this->lines), $this->filenames, $this->revealedSoFar());
+        return ABundleAsked::described($this->window->lines(), $this->filenames, $this->revealedSoFar());
     }
 
     /** The settings agreed to, which is none until the first. */
