@@ -5,13 +5,8 @@ declare(strict_types=1);
 namespace Lemonfiber\Native;
 
 use function array_filter;
-use function array_key_exists;
 use function array_values;
-use function is_array;
 use function is_string;
-use function json_decode;
-use function json_encode;
-use function nativephp_call;
 
 /**
  * The operator's notification centre, as this application is willing to use one.
@@ -141,13 +136,9 @@ final readonly class Telling
      */
     public function pending(): ?array
     {
-        $said = $this->answering(Call::Pending);
+        $pending = WhatTheBridgeAnswered::to(Call::Pending)->listed(WhatAnAnswerHolds::Pending);
 
-        if (! is_array($said) || ! array_key_exists('pending', $said) || ! is_array($said['pending'])) {
-            return null;
-        }
-
-        return array_values(array_filter($said['pending'], is_string(...)));
+        return $pending === null ? null : array_values(array_filter($pending, is_string(...)));
     }
 
     /**
@@ -157,11 +148,11 @@ final readonly class Telling
      */
     private function told(Call $function, array $with = []): Told
     {
-        $said = $this->answering($function, $with);
-        $outcome = $this->wordUnder($said, 'outcome');
+        $said = WhatTheBridgeAnswered::to($function, $with);
+        $outcome = $said->outcome();
 
         return $outcome === null || $outcome === self::WITHHELD
-            ? Told::withheld(WhyNothingWasTold::orTheDeviceRefused($this->wordUnder($said, 'because')))
+            ? Told::withheld(WhyNothingWasTold::orTheDeviceRefused($said->word(WhatAnAnswerHolds::Because)))
             : Told::done();
     }
 
@@ -172,68 +163,6 @@ final readonly class Telling
      */
     private function outcomeOf(Call $function, array $with = []): ?string
     {
-        return $this->wordUnder($this->answering($function, $with), 'outcome');
-    }
-
-    /**
-     * One word out of an answer, or nothing where there is no word there.
-     *
-     * Asked for rather than defaulted. `??` on a decoded answer folds absent,
-     * present-and-null and present-and-the-wrong-type into one value, and every
-     * caller above has a different thing to do about *nobody answered* than
-     * about *answered with something unexpected* (`C9`).
-     */
-    private function wordUnder(mixed $said, string $key): ?string
-    {
-        if (! is_array($said) || ! array_key_exists($key, $said) || ! is_string($said[$key])) {
-            return null;
-        }
-
-        return $said[$key];
-    }
-
-    /**
-     * One bridge call, decoded.
-     *
-     * `nativephp_call()` is the bridge. On a handset it is a C extension
-     * function; on a development machine `nativephp/mobile` supplies a fallback
-     * that relays to a connected device, and answers
-     * `{"status":"error","code":"NO_DEVICE"}` when there is none. Under test a
-     * bound `FakeBridge` intercepts it in-process.
-     *
-     * All of those, plus an unparsable answer, arrive here as something that is
-     * not an array with an `outcome` in it — and every caller above reads that
-     * as the least it could mean. Collapsing them is right rather than lazy: no
-     * caller would do something different for each, and four ways to say
-     * "nobody answered" is four chances to check only three of them.
-     *
-     * @param array<string, int|string> $with
-     */
-    private function answering(Call $function, array $with = []): mixed
-    {
-        // A payload that will not encode is not sent.
-        //
-        // `json_encode` answers false for a string that is not valid UTF-8.
-        // A `(string)` cast turns that false into `''`, which reaches the
-        // device as a call carrying no parameters at all — indistinguishable
-        // from one that meant to carry none. The device answers whatever it
-        // answers to a call with everything missing, and the operator sees the
-        // result of a request nobody made.
-        //
-        // Refused here instead, as the same nothing every other way of
-        // not reaching the bridge produces: nobody answered, because nobody
-        // was asked. It is also the only shape a test can hold: a cast
-        // between two values nothing downstream can tell apart is a line
-        // nothing can fail on.
-        $payload = json_encode($with);
-
-        if (! is_string($payload)) {
-            return null;
-        }
-
-        return json_decode(
-            (string) nativephp_call($function->value, $payload),
-            associative: true,
-        );
+        return WhatTheBridgeAnswered::to($function, $with)->outcome();
     }
 }

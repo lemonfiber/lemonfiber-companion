@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Native;
 
-use function array_key_exists;
-use function is_array;
-use function is_string;
-use function json_decode;
-use function json_encode;
-use function nativephp_call;
-
 /**
  * The device's own secure store, as this application is willing to use one.
  *
@@ -65,14 +58,14 @@ final readonly class Storage implements Keeps
      */
     public function canBeAsked(): bool
     {
-        $said = $this->answering(Call::Kept, ['key' => self::A_KEY_NOTHING_IS_KEPT_UNDER]);
-        $outcome = $this->outcomeOf($said);
+        $said = WhatTheBridgeAnswered::to(Call::Kept, ['key' => self::A_KEY_NOTHING_IS_KEPT_UNDER]);
+        $outcome = HowTheStoreAnswered::in($said);
 
         if ($outcome === HowTheStoreAnswered::Found || $outcome === HowTheStoreAnswered::Nothing) {
             return true;
         }
 
-        return $this->wordUnder($said, 'because') === WhyNothingWasKept::StoreWouldNotOpen->value;
+        return $said->word(WhatAnAnswerHolds::Because) === WhyNothingWasKept::StoreWouldNotOpen->value;
     }
 
     /**
@@ -86,30 +79,30 @@ final readonly class Storage implements Keeps
      */
     public function keep(string $key, string $value, WhenAValueMayBeRead $when): Wrote
     {
-        $said = $this->answering(Call::Keep, [
+        $said = WhatTheBridgeAnswered::to(Call::Keep, [
             'key' => $key,
             'value' => $value,
             'readable' => $when->value,
         ]);
 
-        return $this->outcomeOf($said) === HowTheStoreAnswered::Kept
-            ? Wrote::done(WhenAValueMayBeRead::orTheNarrowest($this->wordUnder($said, 'readable')))
-            : Wrote::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($this->wordUnder($said, 'because')));
+        return HowTheStoreAnswered::in($said) === HowTheStoreAnswered::Kept
+            ? Wrote::done(WhenAValueMayBeRead::orTheNarrowest($said->word(WhatAnAnswerHolds::Readable)))
+            : Wrote::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($said->word(WhatAnAnswerHolds::Because)));
     }
 
     /** Read one value, or say there is none, or say nobody could be asked. */
     public function read(string $key): WasRead
     {
-        $said = $this->answering(Call::Kept, ['key' => $key]);
-        $outcome = $this->outcomeOf($said);
+        $said = WhatTheBridgeAnswered::to(Call::Kept, ['key' => $key]);
+        $outcome = HowTheStoreAnswered::in($said);
 
         if ($outcome === HowTheStoreAnswered::Found) {
-            return WasRead::found($this->wordUnder($said, 'value') ?? '');
+            return WasRead::found($said->word(WhatAnAnswerHolds::Value) ?? '');
         }
 
         return $outcome === HowTheStoreAnswered::Nothing
             ? WasRead::nothing()
-            : WasRead::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($this->wordUnder($said, 'because')));
+            : WasRead::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($said->word(WhatAnAnswerHolds::Because)));
     }
 
     /**
@@ -122,73 +115,10 @@ final readonly class Storage implements Keeps
      */
     public function forget(string $key): Wrote
     {
-        $said = $this->answering(Call::Forget, ['key' => $key]);
+        $said = WhatTheBridgeAnswered::to(Call::Forget, ['key' => $key]);
 
-        return $this->outcomeOf($said) === HowTheStoreAnswered::Forgotten
+        return HowTheStoreAnswered::in($said) === HowTheStoreAnswered::Forgotten
             ? Wrote::done(WhenAValueMayBeRead::WhileUnlocked)
-            : Wrote::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($this->wordUnder($said, 'because')));
-    }
-
-    /** What the store answered under `outcome`, where it is a word both halves write. */
-    private function outcomeOf(mixed $said): ?HowTheStoreAnswered
-    {
-        $word = $this->wordUnder($said, 'outcome');
-
-        return $word === null ? null : HowTheStoreAnswered::tryFrom($word);
-    }
-
-    /**
-     * One word out of an answer, or nothing where there is no word there.
-     *
-     * Asked for rather than defaulted. `??` on a decoded answer folds absent,
-     * present-and-null and present-and-the-wrong-type into one value, and the
-     * callers above have a different thing to do about *nobody answered* than
-     * about *answered with something unexpected* (`C9`).
-     */
-    private function wordUnder(mixed $said, string $key): ?string
-    {
-        if (! is_array($said) || ! array_key_exists($key, $said) || ! is_string($said[$key])) {
-            return null;
-        }
-
-        return $said[$key];
-    }
-
-    /**
-     * One bridge call, decoded.
-     *
-     * Everything that is not an answer — no device, an unparsable reply, a
-     * function the router has never heard of — arrives here as something that
-     * is not an array with an `outcome` in it, and every caller above reads
-     * that as the least it could mean.
-     *
-     * @param array<string, string> $with
-     */
-    private function answering(Call $function, array $with): mixed
-    {
-        // A payload that will not encode is not sent.
-        //
-        // `json_encode` answers false for a string that is not valid UTF-8.
-        // A `(string)` cast turns that false into `''`, which reaches the
-        // device as a call carrying no parameters at all — indistinguishable
-        // from one that meant to carry none. The device answers whatever it
-        // answers to a call with everything missing, and the operator sees the
-        // result of a request nobody made.
-        //
-        // Refused here instead, as the same nothing every other way of
-        // not reaching the bridge produces: nobody answered, because nobody
-        // was asked. It is also the only shape a test can hold: a cast
-        // between two values nothing downstream can tell apart is a line
-        // nothing can fail on.
-        $payload = json_encode($with);
-
-        if (! is_string($payload)) {
-            return null;
-        }
-
-        return json_decode(
-            (string) nativephp_call($function->value, $payload),
-            associative: true,
-        );
+            : Wrote::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($said->word(WhatAnAnswerHolds::Because)));
     }
 }
