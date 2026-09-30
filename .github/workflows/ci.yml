@@ -46,15 +46,21 @@ env:
 
 jobs:
   # Which of the following are worth running at all. A documentation change
-  # should not start a PHP toolchain, and asking costs one checkout.
+  # should not start a PHP toolchain, a change to the PHP should not start a
+  # macOS runner, and asking costs one checkout.
   scope:
     name: what changed
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # One output per gate this job decides, each named for the job it starts;
+    # `code` starts the PHP gates. The step below writes every one of them.
     outputs:
-      code: ${{ steps.proved.outputs.cache-hit == 'true' && 'false' || steps.diff.outputs.code }}
-      native: ${{ steps.proved.outputs.cache-hit == 'true' && 'false' || steps.diff.outputs.native }}
       tree: ${{ steps.tree.outputs.tree }}
+      code: ${{ steps.diff.outputs.code }}
+      typecheck: ${{ steps.diff.outputs.typecheck }}
+      kotlin: ${{ steps.diff.outputs.kotlin }}
+      swift: ${{ steps.diff.outputs.swift }}
+      agreement: ${{ steps.diff.outputs.agreement }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -64,11 +70,11 @@ jobs:
       # merged onto its base, so a rebase that leaves the result byte for byte
       # as it was — a stacked branch whose base was squash-merged, a base that
       # moved only where the branch already agreed — names the same tree. A
-      # tree every PHP gate already passed on is not tested again: the gates
-      # take the path a documentation change takes, and the SonarCloud gate
-      # reads that as a pass. The proof is recorded by
-      # `proved-tree` below, only once every gate passed on it, and a branch
-      # can read its own proofs and `main`'s, never another branch's.
+      # tree every gate already passed on is not tested again: the gates take
+      # the path a documentation change takes, and the SonarCloud gate reads
+      # that as a pass. The proof is recorded by `proved-tree` below, only once
+      # every gate passed on it, and a branch can read its own proofs and
+      # `main`'s, never another branch's.
       - id: tree
         run: echo "tree=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
       - id: proved
@@ -77,57 +83,74 @@ jobs:
           path: .ci-proved
           key: ci-proved-tree-${{ steps.tree.outputs.tree }}
           lookup-only: true
-      - if: steps.proved.outputs.cache-hit == 'true'
-        env:
-          TREE: ${{ steps.tree.outputs.tree }}
-        run: |
-          echo "Every PHP gate already passed on tree ${TREE}; they are not run again." | tee -a "$GITHUB_STEP_SUMMARY"
       - id: diff
-        if: steps.proved.outputs.cache-hit != 'true'
         env:
+          PROVED: ${{ steps.proved.outputs.cache-hit }}
+          TREE: ${{ steps.tree.outputs.tree }}
           # What this branch is measured against: a pull request's base, and on
           # a push to `main` the commit before it, so a push of documentation
           # alone starts no PHP gate there either.
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: |
           set -euo pipefail
+          # Every gate this job decides, and the only list of them. Each stays
+          # false until a changed path names it.
+          declare -A run=([code]=false [typecheck]=false [kotlin]=false [swift]=false [agreement]=false)
+          every() {
+            for gate in "${!run[@]}"; do run[${gate}]=$1; done
+          }
+          decided() {
+            for gate in "${!run[@]}"; do echo "${gate}=${run[${gate}]}"; done >> "$GITHUB_OUTPUT"
+          }
+          if [ "${PROVED}" = true ]; then
+            echo "Every gate already passed on tree ${TREE}; none is run again." | tee -a "$GITHUB_STEP_SUMMARY"
+            decided
+            exit 0
+          fi
           # No base to compare against means run everything rather than guess.
           if [ -z "${BASE}" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
-            echo "code=true" >> "$GITHUB_OUTPUT"
-            echo "native=true" >> "$GITHUB_OUTPUT"
+            every true
+            decided
             echo "No usable base commit, so every gate runs."
             exit 0
           fi
           changed="$(git diff --name-only "${BASE}" HEAD)"
-          # Anything that is not documentation is treated as code. The list is
-          # deliberately short: a new kind of file defaults to running the gates.
-          # A Markdown file is documentation wherever it sits, a module's
-          # README as much as the root's; the one suite that reads Markdown is
-          # Arch, and `rules` runs it on every change.
-          #
-          # Under `.github/`, only this file runs the PHP gates, so a change to
-          # any other file there starts none of them. A change to this file
-          # starts none of them either where every line it changes is a pin
-          # on a shared workflow from `lemonfiber/spec`: those jobs run no PHP.
-          code=false
-          # Whether the bridge's Swift, or what it is compiled beside, moved:
-          # its sources, the script that compiles them, the locked
-          # `nativephp/mobile` and the patch applied to it on install, and
-          # this file where it moved more than a pin.
-          native=false
           nativephp() {
             git show "$1:composer.lock" 2>/dev/null \
               | jq -c '.packages[]? | select(.name == "nativephp/mobile")' || true
           }
           while IFS= read -r path; do
+            # What each bridge gate reads, one row per gate. `;;&` tests the
+            # next row as well, so one path can start several gates.
+            #
+            # `typecheck` compiles every Swift file the bridge ships against
+            # the locked `nativephp/mobile` as `scripts/patch_nativephp.php`
+            # patches it. `swift` lints, builds and tests the Swift package, and
+            # `kotlin` the Gradle project, whose ktlint reads the root
+            # `.editorconfig` as well as the bridge's own. `agreement` reads
+            # the two test trees.
             case "${path}" in
-            bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php) native=true ;;
+            bridge/resources/ios/* | scripts/typecheck_native.sh | scripts/patch_nativephp.php) run[typecheck]=true ;;&
+            bridge/resources/ios/* | bridge/ios/* | bridge/Package.swift | bridge/.swift-format) run[swift]=true ;;&
+            bridge/resources/android/* | bridge/android/* | bridge/.editorconfig | .editorconfig) run[kotlin]=true ;;&
+            bridge/android/src/test/kotlin/* | bridge/ios/Tests/*) run[agreement]=true ;;&
             composer.lock)
               if [ "$(nativephp "${BASE}")" != "$(nativephp HEAD)" ]; then
-                native=true
+                run[typecheck]=true
               fi
               ;;
             esac
+            # Anything that is not documentation is treated as code. The list is
+            # deliberately short: a new kind of file defaults to running the gates.
+            # A Markdown file is documentation wherever it sits, a module's
+            # README as much as the root's; the one suite that reads Markdown is
+            # Arch, and `rules` runs it on every change.
+            #
+            # Under `.github/`, only this file runs the gates this job decides,
+            # so a change to any other file there starts none of them. A change
+            # to this file starts every one of them, except where every line it
+            # changes is a pin on a shared workflow from `lemonfiber/spec`:
+            # those jobs run none of these gates.
             case "${path}" in
             '' | .docs/* | *.md | LICENSE) continue ;;
             .github/workflows/ci.yml)
@@ -140,17 +163,15 @@ jobs:
                 | grep -E '^[-+]' | grep -vE '^(\+\+\+|---) ' \
                 | grep -vE '^[-+][[:space:]]*uses: lemonfiber/spec/\.github/workflows/[^@]+@[0-9a-f]{40}( # .*)?$' || true)"
               if [ -n "${moved}" ]; then
-                code=true
-                native=true
+                every true
               fi
               ;;
             .github/*) continue ;;
-            *) code=true ;;
+            *) run[code]=true ;;
             esac
           done <<< "${changed}"
-          echo "code=${code}" >> "$GITHUB_OUTPUT"
-          echo "native=${native}" >> "$GITHUB_OUTPUT"
-          if [ "${code}" = false ]; then
+          decided
+          if [ "${run[code]}" = false ]; then
             echo "Documentation, and workflows that run no PHP gate; the PHP gates are skipped."
           fi
 
@@ -358,20 +379,39 @@ jobs:
       - run: composer deps
       - run: composer audit
 
-  # Every Swift file the bridge ships, compiled for iOS against the NativePHP
-  # sources installed beside it. `native.yml` builds only the files that need
-  # no iOS runtime; the rest meet a compiler here, or else first in the app
-  # build. The bridge's Kotlin is not compiled by this job: see
-  # `scripts/typecheck_native.sh`.
+  # The bridge's own gates: its Kotlin and its Swift, held to the bar the PHP
+  # is, and the two held to each other.
   #
-  # macOS, for the iOS SDK, so it runs only where `scope` says the bridge or
-  # what it is compiled beside moved. The condition asks the result as well as
-  # the output, for the reason `guards` gives.
-  native:
+  # Each runs only where `scope` says what it reads moved, and that is about
+  # cost. The Swift gates need a macOS runner, which bills at ten times an
+  # ubuntu one, so a formatting fix on a Blade template must not start one.
+  #
+  # They are skipped by an `if:` rather than kept out by a `paths:` filter on a
+  # workflow of their own, because each is a required check. A job skipped by
+  # its `if:` takes no runner and still reports, and branch protection reads
+  # the skip as a pass. A workflow a `paths:` filter keeps from starting reports
+  # nothing, and a required check that never reports holds the pull request
+  # forever. Each condition asks the result as well as the output, for the
+  # reason `guards` gives.
+  #
+  # There is no build of the plugin, because there is nothing to build: what
+  # ships is a directory of sources the NativePHP builder copies into a host
+  # app. What can be checked without a device is the decision those sources
+  # make — each rule, in both languages — and that every Swift file compiles
+  # for iOS, and that is what these run.
+
+  # Every Swift file the bridge ships, compiled for iOS against the NativePHP
+  # sources installed beside it. `swift` builds only the files that need no
+  # iOS runtime; the rest meet a compiler here, or else first in the app build.
+  # The bridge's Kotlin is not compiled by this job: see
+  # `scripts/typecheck_native.sh`.
+  typecheck:
     name: the bridge compiles for iOS
     needs: scope
-    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native == 'true') }}
-    runs-on: macos-latest
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.typecheck == 'true') }}
+    # The one macOS image both Swift gates run on, so the harness and the
+    # typecheck read the same sources with the same compiler.
+    runs-on: &swift-runner macos-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -385,6 +425,170 @@ jobs:
       # installs and `scripts/patch_nativephp.php` patches them.
       - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       - run: scripts/typecheck_native.sh
+
+  kotlin:
+    name: kotlin
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.kotlin == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version-file: bridge/android/.java-version
+
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          gradle-version: '8.14'
+
+      # In the order a person would want to read them. A formatting finding is
+      # cheaper to read than an analyser finding, which is cheaper than a test
+      # failure — and each is often the reason for the next.
+      #
+      # `ktlintCheck` is pint, `detekt` is PHPStan, `test` is pest and
+      # `koverVerify` is the 100% floor. The Kotlin compiler runs under all of
+      # them with `allWarningsAsErrors` and `explicitApi()` on, which is the
+      # nearest thing it has to `declare(strict_types=1)`.
+      - name: ktlint, detekt, the decision, and the floor
+        working-directory: bridge/android
+        run: gradle ktlintCheck detekt test koverVerify --console=plain
+
+  swift:
+    name: swift
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.swift == 'true') }}
+    runs-on: *swift-runner
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: swift-format
+        working-directory: bridge
+        run: swift format lint --strict --recursive --configuration .swift-format resources/ios ios
+
+      # The compiler's own findings, made blocking. The counterpart of Kotlin's
+      # `allWarningsAsErrors`, passed here rather than set in `Package.swift`
+      # because `unsafeFlags` there would make this package unusable as anybody
+      # else's dependency.
+      - name: build, with warnings blocking
+        working-directory: bridge
+        run: swift build -Xswiftc -warnings-as-errors
+
+      # Runs the tests and holds the 100% floor in one step, so a suite that
+      # passes while covering less cannot be read as green.
+      - name: the decision, in Swift, and the floor
+        working-directory: bridge
+        run: ./ios/coverage.sh
+
+  # The two halves must decide the same thing. Each rule is tested in its own
+  # language on each side, and this is what notices if one file grows a case
+  # the other does not — which is how two platforms come to disagree about a
+  # decision without either looking wrong on its own.
+  agreement:
+    name: both halves answer the same questions
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.agreement == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: compare the two test files, case for case
+        shell: python3 {0}
+        run: |
+            """Both halves must ask the same questions.
+
+            Written in Python rather than in `sed`, because the patterns that
+            pull a test name out of each file are full of regex anchors and
+            backticks — and in a shell they are three layers of quoting deep,
+            which is how a comparison ends up silently matching nothing and
+            reporting agreement.
+            """
+            import re
+            import sys
+            from pathlib import Path
+
+            # Every mirrored pair, found rather than listed: a rule added
+            # tomorrow with only one half written is exactly what this exists to
+            # catch, and a hand-kept list would not know about it.
+            #
+            # Both trees are globbed, so a suite on either side with no
+            # counterpart on the other is found and named. A check that reports
+            # agreement by not looking is the failure its own error message
+            # describes.
+            kotlin = {
+                p.stem.removesuffix("Test")
+                for p in Path("bridge/android/src/test/kotlin").glob("*Test.kt")
+            }
+            swift = {
+                p.parent.name.removesuffix("Tests")
+                for p in Path("bridge/ios/Tests").glob("*Tests/*Tests.swift")
+            }
+
+            pairs = [
+                (
+                    Path("bridge/android/src/test/kotlin") / f"{name}Test.kt",
+                    Path("bridge/ios/Tests") / f"{name}Tests" / f"{name}Tests.swift",
+                )
+                for name in sorted(kotlin | swift)
+            ]
+
+            missing = [str(p) for pair in pairs for p in pair if not p.exists()]
+
+            if missing:
+                print("::error::A rule is tested on one platform and not the other.")
+                for path in missing:
+                    print(f"  no such file: {path}")
+                sys.exit(1)
+
+            failed = False
+
+            for kotlin_path, swift_path in pairs:
+                kotlin = kotlin_path.read_text()
+                swift = swift_path.read_text()
+
+                # Compared character for character, with nothing normalised
+                # away. A name is a sentence somebody wrote about what the rule
+                # decides, and two spellings of one sentence is a pair of files
+                # drifting in exactly the way this job exists to notice. Each
+                # normalisation added here is also a way for two genuinely
+                # different names to compare equal.
+                asked = {
+                    "kotlin": set(re.findall(r"fun `([^`]+)`", kotlin)),
+                    "swift": set(re.findall(r'@Test\("([^"]+)"\)', swift)),
+                }
+
+                if asked["kotlin"] == asked["swift"]:
+                    print(f"{kotlin_path.stem}: both halves answer the same "
+                          f"{len(asked['kotlin'])} questions.")
+                    continue
+
+                failed = True
+                print(f"::error::{kotlin_path.stem} and {swift_path.stem} no longer "
+                      "ask the same questions.")
+
+                for side, other in (("kotlin", "swift"), ("swift", "kotlin")):
+                    only = sorted(asked[side] - asked[other])
+                    if only:
+                        print(f"Only in {side}:")
+                        for name in only:
+                            print(f"  {name}")
+
+            if failed:
+                print()
+                print("A rule kept on one platform and not the other is the bug nobody")
+                print("finds: each half looks right on its own. Add the missing case")
+                print("rather than deleting the one that has no pair.")
+                sys.exit(1)
 
   tests:
     name: tests and coverage
@@ -606,15 +810,15 @@ jobs:
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
 
-  # Records that every PHP gate passed on this tree, so a later run on the same
-  # tree — see `scope` — does not test it again. Only where the gates actually
-  # ran and every one of them passed: a skipped gate proved nothing. The bridge's
-  # compile is skipped on a proven tree too, so it passed here or had nothing to
-  # compile.
+  # Records that every gate passed on this tree, so a later run on the same
+  # tree — see `scope` — does not test it again. Only where the PHP gates
+  # actually ran and nothing it waits on failed or was cancelled: a skipped PHP
+  # gate proved nothing. A bridge gate is skipped where nothing it reads moved
+  # against the base, so it passed here or had nothing to check.
   proved-tree:
     name: record the proven tree
-    needs: [scope, guards, checks, native, tests, sonar]
-    if: ${{ !cancelled() && needs.scope.outputs.code == 'true' && needs.guards.result == 'success' && needs.checks.result == 'success' && (needs.native.result == 'success' || needs.native.result == 'skipped') && needs.tests.result == 'success' && (needs.sonar.result == 'success' || needs.sonar.result == 'skipped') }}
+    needs: [scope, guards, checks, typecheck, kotlin, swift, agreement, tests, sonar]
+    if: ${{ !cancelled() && needs.scope.outputs.code == 'true' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -627,4 +831,3 @@ jobs:
         with:
           path: .ci-proved
           key: ci-proved-tree-${{ needs.scope.outputs.tree }}
-

@@ -32,7 +32,9 @@ dependencies {
 }
 
 kotlin {
-    jvmToolchain(17)
+    // The JDK this compiles for, read from `.java-version` beside this file,
+    // which is also the one CI installs.
+    jvmToolchain(file(".java-version").readText().trim().toInt())
 
     // Every public declaration states its visibility and its return type.
     // The Kotlin counterpart of `declare(strict_types=1)` and an explicit
