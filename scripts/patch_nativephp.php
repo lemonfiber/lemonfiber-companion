@@ -438,6 +438,273 @@ SHIPS,
         val strokeWidth = node.style?.borderWidth ?: 1f
 BECOMES,
     ],
+    [
+        // The drawer names its ☰ and says whether the screen already has a
+        // back button in the leading slot. Both are the screen's to say: the
+        // label is text a person reads, so it comes from the translator, and
+        // only the screen knows whether it was pushed.
+        'in' => '/../vendor/nativephp/mobile-ui/src/Builders/Drawer.php',
+        'ships' => <<<'SHIPS'
+    public function getContent(): View|Element
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    private string $label = 'Open menu';
+
+    private bool $besideBack = false;
+
+    /** What a screen reader announces for the ☰ affordance. */
+    public function label(string $label): self
+    {
+        $this->label = $label;
+
+        return $this;
+    }
+
+    /** The screen has a back button in the leading slot, so the ☰ sits beside it. */
+    public function besideBack(bool $besideBack = true): self
+    {
+        $this->besideBack = $besideBack;
+
+        return $this;
+    }
+
+    public function getLabel(): string
+    {
+        return $this->label;
+    }
+
+    public function isBesideBack(): bool
+    {
+        return $this->besideBack;
+    }
+
+    public function getContent(): View|Element
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/src/NativeUIServiceProvider.php',
+        'ships' => <<<'SHIPS'
+                'mode' => $builder->getMode(),
+                'width' => $builder->getWidth(),
+            ]);
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                'mode' => $builder->getMode(),
+                'width' => $builder->getWidth(),
+                'a11y-label' => $builder->getLabel(),
+                'beside_back' => $builder->isBesideBack(),
+            ]);
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/src/Elements/NativeDrawer.php',
+        'ships' => <<<'SHIPS'
+            $this->props['width'] = (int) $attrs['width'];
+        }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            $this->props['width'] = (int) $attrs['width'];
+        }
+        if (isset($attrs['beside_back'])) {
+            $this->props['beside_back'] = (bool) $attrs['beside_back'];
+        }
+BECOMES,
+    ],
+    [
+        // The host is told which screen it is drawn around, so a navigation
+        // that keeps the drawer — one screen with a menu to the next — closes it.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
+        'ships' => <<<'SHIPS'
+        return AnyView(NativeDrawerHost(drawerNode: drawerNode) { content })
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        let uri = root.props.getString("current_uri", default: "")
+        return AnyView(NativeDrawerHost(drawerNode: drawerNode, uri: uri) { content })
+BECOMES,
+    ],
+    [
+        // The panel's colour is read from the theme store for the mode the
+        // phone is in. The environment's theme is not set this far out, so it
+        // answered the package's light fallback in dark mode too. The ☰ sits
+        // past the system's back button: a 44-point glass circle from iOS 26,
+        // a chevron and a word before it.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
+        'ships' => <<<'SHIPS'
+    let drawerNode: NativeUINode?
+    @ViewBuilder var content: Content
+
+    @ObservedObject private var state = DrawerHostState.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.nativeUITheme) private var theme
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    let drawerNode: NativeUINode?
+    var uri: String = ""
+    @ViewBuilder var content: Content
+
+    @ObservedObject private var state = DrawerHostState.shared
+    @ObservedObject private var themes = NativeUITheme.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var besideTheBack: CGFloat {
+        if #available(iOS 26, *) { return 64 }
+        return 100
+    }
+BECOMES,
+    ],
+    [
+        // A level with a back button keeps the left-edge swipe for going back.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
+        'ships' => <<<'SHIPS'
+                // Left-edge detector for swipe-to-open (both modes), when closed.
+                if !state.isOpen {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                // Left-edge detector for swipe-to-open (both modes), when closed.
+                if !state.isOpen && !drawerNode.props.getBool("beside_back") {
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
+        'ships' => <<<'SHIPS'
+                    .accessibilityLabel("Open menu")
+                    .padding(.leading, 12)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                    .accessibilityLabel(drawerNode.props.getString("a11y_label", default: "Open menu"))
+                    .padding(.leading, drawerNode.props.getBool("beside_back") ? besideTheBack : 12)
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
+        'ships' => <<<'SHIPS'
+        .onChange(of: drawerNode.id) { _ in
+            if dragOffset != 0 { dragOffset = 0 }
+        }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        .onChange(of: drawerNode.id) { _ in
+            if dragOffset != 0 { dragOffset = 0 }
+        }
+        .onChange(of: uri) { _ in
+            if state.isOpen { animateClosed() }
+        }
+BECOMES,
+    ],
+    [
+        // A tap inside the panel is a choice made, so the panel closes. A drag
+        // is a scroll and leaves it open.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIDrawerHost.swift',
+        'ships' => <<<'SHIPS'
+        .background(theme.background)
+    }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        .background(themes.resolve(for: colorScheme).background)
+        .simultaneousGesture(TapGesture().onEnded { animateClosed() })
+    }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeUIChromeInit.kt',
+        'ships' => <<<'SHIPS'
+        NativeLayoutDrawerHost(drawerNode = drawerNode, content = content)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        NativeLayoutDrawerHost(drawerNode = drawerNode, uri = root.props.getString("current_uri", ""), content = content)
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
+        'ships' => <<<'SHIPS'
+import kotlinx.coroutines.launch
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
+        'ships' => <<<'SHIPS'
+    drawerNode: NativeUINode?,
+    content: @Composable () -> Unit,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    drawerNode: NativeUINode?,
+    uri: String = "",
+    content: @Composable () -> Unit,
+BECOMES,
+    ],
+    [
+        // Closed when the screen under it changes, and by a tap inside the
+        // panel — a tap is a choice made, and a drag past the touch slop is a
+        // scroll that leaves it open.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
+        'ships' => <<<'SHIPS'
+    val scope = rememberCoroutineScope()
+
+    val sheetModifier = if (widthDp > 0) Modifier.width(widthDp.dp) else Modifier
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    val scope = rememberCoroutineScope()
+
+    androidx.compose.runtime.LaunchedEffect(uri) {
+        if (drawerState.isOpen) drawerState.close()
+    }
+
+    val sheetModifier = (if (widthDp > 0) Modifier.width(widthDp.dp) else Modifier)
+        .pointerInput(drawerState) {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                var dragged = false
+                while (true) {
+                    val change = awaitPointerEvent(PointerEventPass.Initial).changes.firstOrNull { it.id == down.id } ?: break
+                    if ((change.position - down.position).getDistance() > viewConfiguration.touchSlop) dragged = true
+                    if (!change.pressed) {
+                        if (!dragged) scope.launch { drawerState.close() }
+                        break
+                    }
+                }
+            }
+        }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
+        'ships' => <<<'SHIPS'
+                    Icon(Icons.Filled.Menu, contentDescription = "Open menu")
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                    Icon(Icons.Filled.Menu, contentDescription = drawerNode.props.getString("a11y_label", "Open menu"))
+BECOMES,
+    ],
+    [
+        // Back closes an open drawer before it leaves the screen. Composed
+        // after the drawer, so it is registered after the screen's own back
+        // handlers and is asked first.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/NativeLayoutDrawerHost.kt',
+        'ships' => <<<'SHIPS'
+            content = wrappedContent
+        )
+    }
+}
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            content = wrappedContent
+        )
+    }
+
+    androidx.activity.compose.BackHandler(enabled = drawerState.isOpen) {
+        scope.launch { drawerState.close() }
+    }
+}
+BECOMES,
+    ],
 ];
 
 /**
