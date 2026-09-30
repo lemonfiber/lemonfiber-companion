@@ -61,6 +61,14 @@ it('draws no top bar, so there is no back arrow and no edge swipe', function ():
         ->and($tree)->not->toContain('bottom_nav');
 });
 
+it('keeps its words clear of the status bar and the home indicator', function (): void {
+    // With no top bar to take the status bar's inset, the screen takes both
+    // insets itself, or the reason is drawn under the clock.
+    $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree(new Locked(ADeviceThatKnowsYou::refusing())));
+
+    expect($tree)->toContain('"safe_area":1');
+});
+
 it('stays where it is on the back button', function (): void {
     $screen = new Locked(ADeviceThatKnowsYou::willing());
 
