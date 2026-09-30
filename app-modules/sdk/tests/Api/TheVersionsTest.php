@@ -98,6 +98,13 @@ it('reads an engine the stack could not ask as none, rather than refusing the re
         ->and($absent->stack())->toBe('0.9.0');
 });
 
+it('reads an engine the payload leaves out as none, as the contract allows', function (): void {
+    $payload = aVersionPayload();
+    unset($payload['compose']);
+
+    expect(TheVersions::in(versionsSaying($payload))->engine())->toBe('');
+});
+
 it('reads a stack naming no running release as one, with no notes', function (): void {
     $runs = TheVersions::in(versionsSaying(aVersionPayload(changelog: ['state' => 'pending', 'running' => null])));
 
