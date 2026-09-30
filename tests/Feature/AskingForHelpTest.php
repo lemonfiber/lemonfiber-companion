@@ -27,6 +27,7 @@ use Modules\Kernel\Api\WhenABundleWasTaken;
 use Modules\Kernel\Api\WhereABundleIs;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Operator\Internal\ALogWindow;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
@@ -160,7 +161,7 @@ it('offers the choices, and asks the stack nothing until they are described', fu
         ->and($drawn->offers())->toContain(__('stacks.help.show_filenames'))
         ->and($drawn->offers())->toContain(__('stacks.help.name_it'))
         ->and($drawn->offers())->toContain(__('stacks.help.describe'))
-        ->and($screen->windows())->toBe([50, 200, 1000])
+        ->and($screen->windows())->toBe([ALogWindow::Fewer, ALogWindow::AsOnAPhone, ALogWindow::More])
         ->and($screen->answer()->wasAsked)->toBeFalse()
         ->and($helping->asked())->toBe([])
         ->and($helping->followed())->toBe([]);
@@ -173,9 +174,9 @@ it('takes a log window it offers, and ignores one it does not', function (): voi
     $screen->chooseLines(7);
     $screen->describe();
 
-    expect($screen->lines)->toBe(1000)
-        ->and($screen->takes(1000))->toBeTrue()
-        ->and($screen->takes(200))->toBeFalse()
+    expect($screen->window)->toBe(ALogWindow::More)
+        ->and($screen->takes(ALogWindow::More))->toBeTrue()
+        ->and($screen->takes(ALogWindow::AsOnAPhone))->toBeFalse()
         ->and(whatTheBundleAskedFor($helping->asked()[0])['lines'])->toBe(1000);
 });
 
@@ -435,7 +436,7 @@ it('goes back to the choices, keeping them, and forgets the bundle it was follow
     expect($screen->asked)->toBeNull()
         ->and($screen->handle)->toBeNull()
         ->and($screen->answer()->wasAsked)->toBeFalse()
-        ->and($screen->lines)->toBe(50)
+        ->and($screen->window)->toBe(ALogWindow::Fewer)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.help.what_goes_in'));
 });
 

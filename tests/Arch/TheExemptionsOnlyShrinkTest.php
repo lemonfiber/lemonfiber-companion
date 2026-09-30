@@ -16,7 +16,7 @@ use Tests\Support\Tree;
 // Lower the ceiling in the change that empties an entry.
 
 it('lets the constants D9 leaves alone only shrink', function (): void {
-    $ceiling = 30;
+    $ceiling = 28;
 
     expect(count(Coincidences::named()))->toBeLessThanOrEqual($ceiling, sprintf(
         "D9 leaves %d constants alone, and the ceiling is %d.\n"

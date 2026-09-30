@@ -10,10 +10,10 @@
     <x-design::body>{{ __('stacks.help.nothing_leaves') }}</x-design::body>
 
     <x-design::card>
-        <x-design::strong>{{ trans_choice('stacks.help.lines', $this->lines) }}</x-design::strong>
+        <x-design::strong>{{ trans_choice('stacks.help.lines', $this->window->value) }}</x-design::strong>
         <x-design::chips>
             @forelse ($this->windows() as $window)
-                <x-design::chip label="{{ trans_choice('stacks.help.take_lines', $window) }}" tap="chooseLines({{ $window }})" :chosen="$this->takes($window)" />
+                <x-design::chip label="{{ trans_choice('stacks.help.take_lines', $window->value) }}" tap="chooseLines({{ $window->value }})" :chosen="$this->takes($window)" />
             @empty
                 {{-- The windows are this screen's own and there are always three. --}}
             @endforelse
