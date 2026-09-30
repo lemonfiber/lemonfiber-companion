@@ -774,58 +774,116 @@ const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites i
 const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %s is not there.\n\nThe package no longer ships the file this patch rewrites. Either it was renamed, in which case point that entry at the new path, or it is gone, in which case delete the entry — and if it was the last one, this script and the two `composer.json` hooks that call it. Skipping it quietly leaves a build fatalling on a device with nothing having said so. Do not ignore this.\n";
 
 /**
+ * What to do when the Android project this tree built from does not carry a line the package does.
+ *
+ * Its own sentence, because the remedy is not the other two's. The project
+ * is a copy `native:install` took of the package, so a line missing from it
+ * means the copy no longer matches the package this tree installed, and the
+ * way out is to copy it again rather than to edit this script.
+ *
+ * One literal for the reason the ones above are one literal.
+ */
+const WHEN_THE_INSTALLED_COPY_DIFFERS = "patch_nativephp: %s does not carry what the package ships.\n\nThat file belongs to the native project `native:install` copied out of the package, and the copy no longer matches the package this tree installed. Run `php artisan native:install --force` to copy it again from the patched package. Building from it as it is leaves the device on code this patch never reached. Do not ignore this.\n";
+
+/**
  * The package directory the bundle leaves out, so its copy of this tree has none.
  *
  * A build copies this tree without it, as `BundleExclusions::VENDOR_PATHS`
  * says, and runs `composer install` in the copy, which runs this script again.
- * The native project is built from this tree's own copy of that directory,
- * which the first run patched, so in the bundle's copy there is nothing of it
- * to patch. Where the directory is here and a file under it is not, the file
- * moved, and that is still refused.
+ * Nothing in the bundle is built from that directory, so in the bundle's copy
+ * there is nothing of it to patch. Where the directory is here and a file under
+ * it is not, the file moved, and that is still refused.
  */
 const WHAT_THE_BUNDLE_LEAVES_OUT = '/../vendor/nativephp/mobile/resources';
 
-$rewritten = 0;
+/**
+ * Where `native:install` copies a package template, which is what a build compiles.
+ *
+ * `native:install` copies the Android project out of the package into
+ * `nativephp/android` once, and every build after that compiles the copy
+ * without reading the package again. A rewrite of the template reaches a
+ * project installed after it and never one installed before it, so an entry
+ * under the template is made to the installed copy as well. A tree with no
+ * installed project has nothing there to patch: a fresh checkout, whose install
+ * copies the template this run patched, and the bundle's copy, which leaves
+ * `nativephp` out as `BundleExclusions::PROJECT` says.
+ */
+const WHERE_AN_INSTALL_COPIES_A_TEMPLATE = [
+    '/../vendor/nativephp/mobile/resources/androidstudio' => '/../nativephp/android',
+];
 
-foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => $becomes]) {
-    $path = sprintf('%s%s', __DIR__, $where);
+/**
+ * Each file an entry is made to, with what to say where the line is not in it.
+ *
+ * The package's own file, unless this is the bundle's copy, and the installed
+ * project's copy of it where there is one.
+ *
+ * @return list<array{path: string, file_is_not_there: string, line_has_moved: string}>
+ */
+function whereItIsMade(string $where): array
+{
+    $made = [];
 
     $leftOutOfThisCopy = str_starts_with($where, sprintf('%s/', WHAT_THE_BUNDLE_LEAVES_OUT))
         && ! is_dir(sprintf('%s%s', __DIR__, WHAT_THE_BUNDLE_LEAVES_OUT));
 
-    if ($leftOutOfThisCopy) {
-        continue;
+    if (! $leftOutOfThisCopy) {
+        $made[] = [
+            'path' => sprintf('%s%s', __DIR__, $where),
+            'file_is_not_there' => WHEN_THE_FILE_IS_NOT_THERE,
+            'line_has_moved' => WHEN_THE_LINE_HAS_MOVED,
+        ];
     }
 
-    if (! file_exists($path)) {
-        fwrite(STDERR, sprintf(WHEN_THE_FILE_IS_NOT_THERE, $path));
+    foreach (WHERE_AN_INSTALL_COPIES_A_TEMPLATE as $template => $installed) {
+        $isUnderIt = str_starts_with($where, sprintf('%s/', $template));
 
-        exit(1);
+        if ($isUnderIt && is_dir(sprintf('%s%s', __DIR__, $installed))) {
+            $made[] = [
+                'path' => sprintf('%s%s%s', __DIR__, $installed, mb_substr($where, mb_strlen($template))),
+                'file_is_not_there' => WHEN_THE_INSTALLED_COPY_DIFFERS,
+                'line_has_moved' => WHEN_THE_INSTALLED_COPY_DIFFERS,
+            ];
+        }
     }
 
-    $source = file_get_contents($path);
+    return $made;
+}
 
-    if (! is_string($source)) {
-        fwrite(STDERR, sprintf("patch_nativephp: could not read %s.\n", $path));
+$rewritten = 0;
 
-        exit(1);
+foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => $becomes]) {
+    foreach (whereItIsMade($where) as ['path' => $path, 'file_is_not_there' => $fileIsNotThere, 'line_has_moved' => $lineHasMoved]) {
+        if (! file_exists($path)) {
+            fwrite(STDERR, sprintf($fileIsNotThere, $path));
+
+            exit(1);
+        }
+
+        $source = file_get_contents($path);
+
+        if (! is_string($source)) {
+            fwrite(STDERR, sprintf("patch_nativephp: could not read %s.\n", $path));
+
+            exit(1);
+        }
+
+        if (str_contains($source, $becomes)) {
+            continue;
+        }
+
+        if (! str_contains($source, $ships)) {
+            fwrite(STDERR, sprintf($lineHasMoved, $path));
+
+            exit(1);
+        }
+
+        file_put_contents($path, str_replace($ships, $becomes, $source));
+
+        $rewritten++;
     }
-
-    if (str_contains($source, $becomes)) {
-        continue;
-    }
-
-    if (! str_contains($source, $ships)) {
-        fwrite(STDERR, sprintf(WHEN_THE_LINE_HAS_MOVED, $path));
-
-        exit(1);
-    }
-
-    file_put_contents($path, str_replace($ships, $becomes, $source));
-
-    $rewritten++;
 }
 
 if ($rewritten > 0) {
-    fwrite(STDOUT, sprintf("patch_nativephp: %d line(s) rewritten in the packager.\n", $rewritten));
+    fwrite(STDOUT, sprintf("patch_nativephp: %d line(s) rewritten in NativePHP.\n", $rewritten));
 }
