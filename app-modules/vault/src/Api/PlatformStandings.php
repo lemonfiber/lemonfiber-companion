@@ -20,6 +20,8 @@ use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Showing;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Standings;
+use Modules\Vault\Internal\KeptInAShape;
+use Modules\Vault\Internal\KeptUnder;
 use Modules\Vault\Internal\TheRowsHeld;
 
 /**
@@ -49,9 +51,6 @@ use Modules\Vault\Internal\TheRowsHeld;
  */
 final readonly class PlatformStandings implements Standings
 {
-    /** The one key the whole record lives under. */
-    private const string UNDER = 'lemonfiber.standings';
-
     /** The shape this build writes, and the only one it reads. */
     private const int SHAPE = 1;
 
@@ -77,7 +76,7 @@ final readonly class PlatformStandings implements Standings
         $record = $this->whatEachStackSaid()->rows;
         $record[$stack->stored()] = ['standing' => $standing->value, 'at' => $at->epochSeconds()];
 
-        $written = json_encode(['shape' => self::SHAPE, 'standings' => $record]);
+        $written = json_encode(KeptInAShape::written(self::SHAPE, ['standings' => $record]));
 
         if ($written === false) {
             return Noted::notKept();
@@ -88,7 +87,7 @@ final readonly class PlatformStandings implements Standings
         // the stack's screen hears it again, so there is nothing for an
         // operator to do differently about a store with no keystore than about
         // a store that would not open.
-        return $this->store->keep(self::UNDER, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+        return $this->store->keep(KeptUnder::Standings->value, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
             done: static fn(): Noted => Noted::downAt($at),
             refused: static fn(): Noted => Noted::notKept(),
         );
@@ -156,7 +155,7 @@ final readonly class PlatformStandings implements Standings
      */
     private function whatEachStackSaid(): TheRowsHeld
     {
-        return $this->store->read(self::UNDER)->either(
+        return $this->store->read(KeptUnder::Standings->value)->either(
             found: fn(string $written): TheRowsHeld => TheRowsHeld::of(
                 $this->rowsIn(json_decode($written, associative: true)),
             ),
@@ -176,7 +175,7 @@ final readonly class PlatformStandings implements Standings
      */
     private function rowsIn(mixed $record): array
     {
-        if (! is_array($record) || ! array_key_exists('shape', $record) || $record['shape'] !== self::SHAPE) {
+        if (! KeptInAShape::isIn($record, self::SHAPE)) {
             return [];
         }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Vault\Api;
 
 use function array_key_exists;
-use function is_array;
 use function is_string;
 use function json_decode;
 use function json_encode;
@@ -18,8 +17,8 @@ use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatAReturnFinds;
 use Modules\Kernel\Api\WorkLeftRunning;
-
-use function sprintf;
+use Modules\Vault\Internal\KeptInAShape;
+use Modules\Vault\Internal\KeptUnder;
 
 /**
  * The handle of work left running on each stack, kept in the platform's own store.
@@ -46,14 +45,8 @@ use function sprintf;
  */
 final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
 {
-    /** What every key here is prefixed with, so nothing else in the store collides. */
-    private const string UNDER = 'lemonfiber.left-running';
-
     /** The shape this build writes, and the only one it reads. */
     private const int SHAPE = 1;
-
-    /** The field of a stored value that says which shape it was written in. */
-    private const string SHAPE_UNDER = 'shape';
 
     /** The field of a stored value that holds the handle. */
     private const string JOB_UNDER = 'job';
@@ -75,7 +68,7 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
 
     public function remember(StackId $stack, KindOfWork $work, Job $job): WhatAReturnFinds
     {
-        $written = json_encode([self::SHAPE_UNDER => self::SHAPE, self::JOB_UNDER => $job->shown()]);
+        $written = json_encode(KeptInAShape::written(self::SHAPE, [self::JOB_UNDER => $job->shown()]));
 
         // A handle is the stack's text and `Job` asks only that it not be
         // blank, so a name that is not valid text reaches `json_encode`, which
@@ -132,7 +125,7 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
      */
     private function nameIn(mixed $found): ?string
     {
-        if (! is_array($found) || ! array_key_exists(self::SHAPE_UNDER, $found) || $found[self::SHAPE_UNDER] !== self::SHAPE) {
+        if (! KeptInAShape::isIn($found, self::SHAPE)) {
             return null;
         }
 
@@ -146,6 +139,6 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
     /** One key per stack and kind, so neither two stacks nor two kinds of work share a handle. */
     private function keyFor(StackId $stack, KindOfWork $work): string
     {
-        return sprintf('%s.%s.%s', self::UNDER, $work->value, $stack->stored());
+        return KeptUnder::WorkLeftRunning->beneath($work->value, $stack->stored());
     }
 }
