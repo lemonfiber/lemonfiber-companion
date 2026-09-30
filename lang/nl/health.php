@@ -298,6 +298,7 @@ return [
     'service_said_nothing' => 'Deze dienst heeft niets gezegd.',
     'service_said_nothing_action' => 'Hij draait rustig door, of is net gestart.',
     'no_moment' => 'Geen tijd opgegeven',
+    'decorative_lines' => '{1} 1 decoratieve regel|[2,*] :count decoratieve regels',
 
     // Wat er draait, en hoeveel elk ervan uitmaakt. De toestand is waar
     // een dienst nu staat; hoeveel het uitmaakt is wat het zou kosten als dat

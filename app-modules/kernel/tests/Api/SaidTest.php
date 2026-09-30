@@ -85,3 +85,20 @@ it('a multi-byte line matches on a multi-byte term', function (): void {
     expect($line->holds(LookingFor::text('—')))->toBeTrue()
         ->and($line->holds(LookingFor::text('GEEN')))->toBeTrue();
 });
+
+it('knows a line that holds no letter in any script', function (string $line, bool $none): void {
+    expect(Said::whenever($line, ServiceId::called('gluetun'), Stream::Stdout)->holdsNoLetters())->toBe($none);
+})->with([
+    'a banner row' => ['@@@@@@@@@==@@@@@@@@@@', true],
+    'a blank line' => ['', true],
+    'a rule of dashes' => ['----------------------', true],
+    'a line of numbers' => ['2026 09 29 21 39', true],
+    'words' => ['tunnel up', false],
+    'one letter in a banner' => ['@@@@ v @@@@', false],
+    'a letter in another script' => ['@@@ Ж @@@', false],
+]);
+
+it('does not count a line whose bytes are not text as holding no letters', function (): void {
+    // Folding it away would hide the one line strange enough to be worth seeing.
+    expect(Said::whenever("\xFF\xFE", ServiceId::called('gluetun'), Stream::Stdout)->holdsNoLetters())->toBeFalse();
+});

@@ -12,6 +12,7 @@ use Bootstrap\Composition\NativePHP\TheTheme;
 use function config;
 
 use Illuminate\Support\ServiceProvider;
+use Lemonfiber\Native\Clock as ThePhonesClock;
 use Lemonfiber\Native\Handover as TheSheet;
 use Lemonfiber\Native\Link as TheLink;
 use Lemonfiber\Native\Scanning as TheCamera;
@@ -24,6 +25,7 @@ use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Api\PlatformScanner;
 use Modules\Device\Api\PlatformScreen;
 use Modules\Device\Api\PlatformShare;
+use Modules\Device\Api\PlatformZone;
 use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\Words;
@@ -53,6 +55,7 @@ use Modules\Kernel\Api\HoldsTheSealKeys;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
+use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\Measuring;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\MovingIn;
@@ -536,6 +539,13 @@ final class CompositionRoot extends ServiceProvider
         $this->app->bind(
             Networking::class,
             static fn(): Networking => new PlatformNetwork(new TheLink()),
+        );
+
+        // Which zone the phone's clock is set to, asked each time rather than
+        // held: a phone can cross a border between two screens.
+        $this->app->bind(
+            LocalZone::class,
+            static fn(): LocalZone => new PlatformZone(new ThePhonesClock()),
         );
 
         // Bound, not a singleton, for the same reason the store above is not:

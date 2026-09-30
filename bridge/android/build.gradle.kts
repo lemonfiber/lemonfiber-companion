@@ -85,6 +85,7 @@ sourceSets {
             "LinkFunctions.kt",
             "LemonfiberInit.kt",
             "HandoverFunctions.kt",
+            "ClockFunctions.kt",
         )
     }
     test {

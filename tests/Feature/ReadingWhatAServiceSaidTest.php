@@ -25,6 +25,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AServiceThatSpoke;
+use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -66,6 +67,22 @@ function aWindowWorthReading(): Scrollback
     );
 }
 
+/** A line, a banner of three lines holding no letters, a line, a lone rule, and a line. */
+function aBannerAndThen(ServiceId $service): Scrollback
+{
+    return Scrollback::of(
+        $service,
+        HowManyLines::of(10),
+        Said::at('2026-09-14T04:00:00Z', 'starting', $service, Stream::Stdout),
+        Said::at('2026-09-14T04:00:00Z', '@@@==@@@', $service, Stream::Stdout),
+        Said::at('2026-09-14T04:00:00Z', '', $service, Stream::Stdout),
+        Said::at('2026-09-14T04:00:00Z', '@@==@@', $service, Stream::Stdout),
+        Said::at('2026-09-14T04:00:01Z', 'ready', $service, Stream::Stdout),
+        Said::at('2026-09-14T04:00:01Z', '=====', $service, Stream::Stdout),
+        Said::at('2026-09-14T04:00:01Z', 'listening', $service, Stream::Stdout),
+    );
+}
+
 /**
  * The screen, with a stack it knows and a keychain holding whatever a test says.
  *
@@ -85,7 +102,12 @@ function theLogScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisServiceSaid($saying, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
+    $screen = new WhatThisServiceSaid(
+        $saying,
+        $keychain,
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
+        AZoneThatIsSet::to('Europe/Amsterdam'),
+    );
     $screen->setParams([
         'stack' => $named ?? $stack->id()->stored(),
         'service' => $service ?? theServiceOnTheScreen()->named(),
@@ -136,20 +158,48 @@ function whereTheLogScreenOpens(mixed $node): array
     return $found;
 }
 
+/** What the catalogue says for a key, as the text it is. */
+function whatTheLogScreenCalls(string $key): string
+{
+    $said = __($key);
+
+    return is_string($said) ? $said : '';
+}
+
+/**
+ * Every name a drawn log screen gives a screen reader in place of what it shows.
+ *
+ * @return list<string>
+ */
+function everythingReadAloudOnTheLogScreen(mixed $node): array
+{
+    if (! is_array($node)) {
+        return [];
+    }
+
+    $named = data_get($node, 'props.a11y_label');
+    $found = is_string($named) ? [$named] : [];
+    $children = data_get($node, 'children');
+
+    foreach (is_array($children) ? $children : [] as $child) {
+        $found = [...$found, ...everythingReadAloudOnTheLogScreen($child)];
+    }
+
+    return $found;
+}
+
 it('opens at the last line, where a service says why it stopped', function (): void {
     expect(whereTheLogScreenOpens(WhatTheDeviceWouldDraw::tree(
         theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading())),
     )))->toBe(['bottom']);
 });
 
-it('N2-R10 — shows the lines, oldest first, with the mouth each came out of', function (): void {
+it('N2-R10 — shows the lines, oldest first, marking only those from the error stream', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
 
     expect(everyLineOnTheScreen($screen))->toBe(sprintf(
-        '%s/tunnel up | %s/connection timed out | %s/retrying',
-        Stream::Stdout->saidOnTheScreen(),
+        '/tunnel up | %s/connection timed out | /retrying',
         Stream::Stderr->saidOnTheScreen(),
-        Stream::Stdout->saidOnTheScreen(),
     ))->and($screen->answer()->went->met)->toBe('')
         ->and($screen->answer()->went->isSignedIn)->toBeTrue()
         // A read that worked leaves no obstacle and so nothing to do about one.
@@ -158,7 +208,7 @@ it('N2-R10 — shows the lines, oldest first, with the mouth each came out of', 
         ->and($screen->answer()->went->remedy)->toBe('');
 });
 
-it('N2-R10 — a line the service timed carries the moment, and one it did not says so', function (): void {
+it('N2-R10 — a line the service timed carries the time on the phone\'s clock, and one it did not says so', function (): void {
     // `hasAMoment` is a field of its own so a template never has to read an
     // empty `at` as *no moment*. That only holds if the two disagree somewhere:
     // a fold that set the flag from nothing, or set it the same way on both
@@ -166,15 +216,129 @@ it('N2-R10 — a line the service timed carries the moment, and one it did not s
     // lines without one are exactly where nobody looks.
     $rows = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()))->answer()->lines;
 
-    expect($rows[0]->at)->toBe('2026-09-14T04:00:00Z')
+    // Four in the morning UTC is six on a phone set to Amsterdam in September.
+    expect($rows[0]->at)->toBe('06:00:00')
+        ->and($rows[0]->atInFull)->toBe('2026-09-14T04:00:00Z')
         ->and($rows[0]->hasAMoment)->toBeTrue()
         // The service wrote this one without a time, so there is nothing to show
         // and the screen says which rather than showing a blank where a moment
         // goes.
         ->and($rows[1]->at)->toBe('')
+        ->and($rows[1]->atInFull)->toBe('')
         ->and($rows[1]->hasAMoment)->toBeFalse()
-        ->and($rows[2]->at)->toBe('2026-09-14T04:00:02Z')
+        ->and($rows[2]->at)->toBe('06:00:02')
         ->and($rows[2]->hasAMoment)->toBeTrue();
+});
+
+it('draws the time on the phone\'s clock and reads out the moment as the service wrote it', function (): void {
+    $service = theServiceOnTheScreen();
+    $screen = theLogScreen(AServiceThatSpoke::saying(Scrollback::of(
+        $service,
+        HowManyLines::of(3),
+        Said::at('2026-09-29T21:39:01.530691525Z', 'VPN provider name is not valid', $service, Stream::Stderr),
+        Said::at('2026-09-29T21:39:02.000000001Z', 'shutting down', $service, Stream::Stdout),
+        Said::at('not a moment', 'what now', $service, Stream::Stdout),
+    )));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $noticed = whatTheLogScreenCalls('health.stream.stderr');
+
+    expect($drawn)->toContain(
+        sprintf('23:39:01 · %s', $noticed),
+        '23:39:02',
+        // A moment nobody can read is shown as it was written.
+        'not a moment',
+    );
+    expect($drawn)->not->toContain(whatTheLogScreenCalls('health.stream.stdout'));
+    expect(everythingReadAloudOnTheLogScreen(WhatTheDeviceWouldDraw::tree($screen)))->toContain(
+        sprintf('2026-09-29T21:39:01.530691525Z · %s', $noticed),
+        '2026-09-29T21:39:02.000000001Z',
+        'not a moment',
+    );
+});
+
+it('folds a run of lines holding no letters into one row that says how many', function (): void {
+    $service = theServiceOnTheScreen();
+    $screen = theLogScreen(AServiceThatSpoke::saying(aBannerAndThen($service)));
+    $rows = $screen->answer()->lines;
+
+    expect($rows)->toHaveCount(5)
+        ->and($rows[0]->line)->toBe('starting')
+        ->and($rows[1]->folded)->toBe(3)
+        ->and($rows[1]->fold)->toBe(0)
+        ->and($rows[1]->isOpen)->toBeFalse()
+        ->and($rows[2]->line)->toBe('ready')
+        // One such line alone is left as it is: a fold of one hides nothing.
+        ->and($rows[3]->line)->toBe('=====')
+        ->and($rows[3]->folded)->toBe(0)
+        ->and($rows[4]->line)->toBe('listening');
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())
+        ->toContain(trans_choice('health.decorative_lines', 3));
+    expect(trans_choice('health.decorative_lines', 3))->toBe('3 decorative lines');
+});
+
+it('opens a fold to show the lines it holds, and closes it again', function (): void {
+    $service = theServiceOnTheScreen();
+    $screen = theLogScreen(AServiceThatSpoke::saying(aBannerAndThen($service)));
+    $screen->answer();
+
+    $screen->unfold(0);
+    $open = $screen->answer()->lines;
+
+    expect($open)->toHaveCount(8)
+        ->and($open[1]->folded)->toBe(3)
+        ->and($open[1]->isOpen)->toBeTrue()
+        ->and($open[2]->line)->toBe('@@@==@@@')
+        ->and($open[3]->line)->toBe('')
+        ->and($open[4]->line)->toBe('@@==@@');
+
+    $screen->unfold(0);
+
+    expect($screen->answer()->lines)->toHaveCount(5);
+});
+
+it('keeps each fold it opened, and forgets them all when asked again', function (): void {
+    $service = theServiceOnTheScreen();
+    $screen = theLogScreen(AServiceThatSpoke::saying(Scrollback::of(
+        $service,
+        HowManyLines::of(10),
+        Said::whenever('@@@', $service, Stream::Stdout),
+        Said::whenever('@@@', $service, Stream::Stdout),
+        Said::whenever('between', $service, Stream::Stdout),
+        Said::whenever('###', $service, Stream::Stdout),
+        Said::whenever('###', $service, Stream::Stdout),
+    )));
+    $screen->answer();
+
+    $screen->unfold(1);
+    $rows = $screen->answer()->lines;
+
+    expect($rows[0]->fold)->toBe(0)
+        ->and($rows[0]->isOpen)->toBeFalse()
+        ->and($rows[2]->fold)->toBe(1)
+        ->and($rows[2]->isOpen)->toBeTrue()
+        ->and($rows)->toHaveCount(5);
+
+    $screen->unfold(0);
+
+    expect($screen->unfolded)->toBe([1, 0]);
+
+    expect($screen->readIn?->name())->toBe('Europe/Amsterdam');
+
+    $screen->again();
+
+    // Asking again reads the phone's zone afresh, with the lines.
+    expect($screen->unfolded)->toBe([])
+        ->and($screen->readIn)->toBeNull();
+});
+
+it('folds nothing while a search is on', function (): void {
+    // The lines a search found are the ones somebody asked to see.
+    $service = theServiceOnTheScreen();
+    $rows = typedIntoTheSearch(theLogScreen(AServiceThatSpoke::saying(aBannerAndThen($service))), '@')->answer()->lines;
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows[0]->line)->toBe('@@@==@@@')
+        ->and($rows[1]->line)->toBe('@@==@@');
 });
 
 it('says above the lines the code the road here carried, from a finding or from how the service stopped', function (): void {

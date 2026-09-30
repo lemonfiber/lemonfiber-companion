@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function count;
+use function in_array;
+
 use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Said;
 use Modules\Kernel\Api\Scrollback;
+use Modules\Kernel\Api\Zone;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhatOneLineSays;
 use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
 
 /**
@@ -19,6 +25,13 @@ use Modules\Operator\Internal\ViewModels\WhatTheServiceTurnedOutToSay;
  * screen that recomputed the claim from the twelve would tell an operator the
  * search covered everything the service ever said — which is the one lie this
  * screen can tell that somebody would act on.
+ *
+ * **A run of decorative lines folds into one row.** Two or more lines in a row
+ * that hold no letter — the banner a service draws at start-up — become a row
+ * saying how many, which opens to show them. One such line alone is left as
+ * it is: a fold of one hides nothing and costs a tap. Nothing folds while a
+ * search is on, because the lines a search found are the ones somebody asked
+ * to see.
  */
 final readonly class HowAScrollbackReads
 {
@@ -41,16 +54,32 @@ final readonly class HowAScrollbackReads
         );
     }
 
-    /** The stack answered, and this is the window, narrowed to what was typed. */
-    public function this(Scrollback $scrollback, LookingFor $looking): WhatTheServiceTurnedOutToSay
+    /**
+     * The stack answered, and this is the window, narrowed to what was typed.
+     *
+     * @param list<int> $open the folds somebody has opened, counted from the top of the window
+     */
+    public function this(Scrollback $scrollback, LookingFor $looking, Zone $zone, array $open): WhatTheServiceTurnedOutToSay
     {
         $shown = $scrollback->matching($looking);
+        $folds = ! $shown->lookingFor()->isSearching();
 
         $rows = [];
+        $run = [];
 
         foreach ($shown as $line) {
-            $rows[] = new HowALineReads()->in($line);
+            if ($folds && $line->holdsNoLetters()) {
+                $run[] = $line;
+
+                continue;
+            }
+
+            $rows = $this->withTheRun($rows, $run, $zone, $open);
+            $run = [];
+            $rows[] = new HowALineReads()->in($line, $zone);
         }
+
+        $rows = $this->withTheRun($rows, $run, $zone, $open);
 
         // Every claim about the edge comes off the window rather than off the
         // rows, which is what keeps a search from quietly widening it.
@@ -89,5 +118,66 @@ final readonly class HowAScrollbackReads
             isAWindow: false,
             isSearching: false,
         );
+    }
+
+    /**
+     * The rows so far, followed by a run of decorative lines.
+     *
+     * Folded where there are two or more, and each fold is numbered by how
+     * many came before it — so the same window folds the same way on every
+     * frame, and the fold somebody opened stays the one that is open.
+     *
+     * @param list<WhatOneLineSays> $rows
+     * @param list<Said>            $run
+     * @param list<int>             $open
+     *
+     * @return list<WhatOneLineSays>
+     */
+    private function withTheRun(array $rows, array $run, Zone $zone, array $open): array
+    {
+        if (count($run) < 2) {
+            return $this->withTheLines($rows, $run, $zone);
+        }
+
+        $fold = $this->foldsIn($rows);
+        $isOpen = in_array($fold, $open, strict: true);
+        $rows[] = new HowALineReads()->folding(count($run), $fold, $isOpen);
+
+        return $isOpen ? $this->withTheLines($rows, $run, $zone) : $rows;
+    }
+
+    /**
+     * The rows so far, followed by each of these lines as a row of its own.
+     *
+     * @param list<WhatOneLineSays> $rows
+     * @param list<Said>            $lines
+     *
+     * @return list<WhatOneLineSays>
+     */
+    private function withTheLines(array $rows, array $lines, Zone $zone): array
+    {
+        foreach ($lines as $line) {
+            $rows[] = new HowALineReads()->in($line, $zone);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * How many folds are among these rows, which is the number the next one takes.
+     *
+     * @param list<WhatOneLineSays> $rows
+     */
+    private function foldsIn(array $rows): int
+    {
+        $folds = 0;
+
+        foreach ($rows as $row) {
+            if ($row->folded > 0) {
+                ++$folds;
+            }
+        }
+
+        return $folds;
     }
 }

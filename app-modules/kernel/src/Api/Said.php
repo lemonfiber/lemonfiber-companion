@@ -7,6 +7,7 @@ namespace Modules\Kernel\Api;
 use Closure;
 
 use function mb_stripos;
+use function preg_match;
 
 /**
  * One line a service wrote, and the three things that place it.
@@ -111,5 +112,22 @@ final readonly class Said
     public function holds(LookingFor $looking): bool
     {
         return mb_stripos($this->line, $looking->typed()) !== false;
+    }
+
+    /**
+     * Whether this line holds no letter in any script.
+     *
+     * The shape of a banner a service draws at start-up — rows of `@` and `=`,
+     * box corners, a line of dashes — and of the blank lines between them. It
+     * says nothing a person reads as words, which is what lets a screen fold a
+     * run of such lines away without hiding anything somebody was saying.
+     *
+     * A line that is not valid UTF-8 cannot be read for letters at all, and is
+     * not counted as holding none: folding it away would hide the one line
+     * whose bytes are strange enough to be worth seeing.
+     */
+    public function holdsNoLetters(): bool
+    {
+        return preg_match('/\p{L}/u', $this->line) === 0;
     }
 }

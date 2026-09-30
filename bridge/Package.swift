@@ -31,6 +31,7 @@ let package = Package(
                 "StorageFunctions.swift",
                 "LinkFunctions.swift",
                 "HandoverFunctions.swift",
+                "ClockFunctions.swift",
             ]
         ),
         .testTarget(

@@ -37,26 +37,36 @@
         <x-design::strong>{{ trans_choice('health.matched_count', $this->howMany()) }}</x-design::strong>
     @endif
 
-    {{-- The lines on one card, as the service wrote them, each with when and
-         on which stream under it. --}}
+    {{-- The lines on one card, as the service wrote them, each with the time
+         on the phone's clock under it, and which stream it came out of where
+         that was the error stream. A screen reader hears the moment as the
+         service wrote it. --}}
     <x-design::card>
         @forelse ($this->answer()->lines as $line)
-            {{-- The stream is not a severity — plenty of well-behaved
-                 services write progress to `stderr` — so a line worth
-                 noticing is drawn in weight, not with a mark. --}}
-            @if ($line->worthNoticing)
-                <x-design::strong>{{ $line->line }}</x-design::strong>
+            @if ($line->folded > 0)
+                {{-- A run of lines holding no letters, folded into one row
+                     that opens to show them. --}}
+                <x-design::link
+                    label="{{ trans_choice('health.decorative_lines', $line->folded) }}"
+                    tap="unfold({{ $line->fold }})"
+                />
             @else
-                <x-design::verbatim>{{ $line->line }}</x-design::verbatim>
-            @endif
-            <x-design::note>
-                @if ($line->hasAMoment)
-                    {{ $line->at }}
+                {{-- The stream is not a severity — plenty of well-behaved
+                     services write progress to `stderr` — so a line worth
+                     noticing is drawn in weight, not with a mark. --}}
+                @if ($line->worthNoticing)
+                    <x-design::strong>{{ $line->line }}</x-design::strong>
                 @else
-                    {{ __('health.no_moment') }}
+                    <x-design::verbatim>{{ $line->line }}</x-design::verbatim>
                 @endif
-                · {{ __($line->streamSaid) }}
-            </x-design::note>
+                @if ($line->hasAMoment && $line->streamSaid !== '')
+                    <x-design::note :answers-to="$line->atInFull . ' · ' . __($line->streamSaid)">{{ $line->at }} · {{ __($line->streamSaid) }}</x-design::note>
+                @elseif ($line->hasAMoment)
+                    <x-design::note :answers-to="$line->atInFull">{{ $line->at }}</x-design::note>
+                @elseif ($line->streamSaid !== '')
+                    <x-design::note>{{ __('health.no_moment') }} · {{ __($line->streamSaid) }}</x-design::note>
+                @endif
+            @endif
         @empty
             @if ($this->answer()->isSearching)
                 {{-- Not the same as a silent service, and the difference is the

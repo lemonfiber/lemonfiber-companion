@@ -122,6 +122,12 @@
             "description": "Say whether anything is reachable from this device right now"
         },
         {
+            "name": "Lemonfiber.Clock.Zone",
+            "android": "app.lemonfiber.native.ClockFunctions.Zone",
+            "ios": "ClockFunctions.Zone",
+            "description": "Say which time zone the phone's clock is set to, by its name in the time zone database"
+        },
+        {
             "name": "Lemonfiber.Handover.Offer",
             "android": "app.lemonfiber.native.HandoverFunctions.Offer",
             "ios": "HandoverFunctions.Offer",
