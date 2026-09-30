@@ -6,6 +6,7 @@ namespace Modules\Dx\Api;
 
 use function intdiv;
 
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Dx\Internal\AnAddressThatResolvesNowhere;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
@@ -50,10 +51,10 @@ enum AStandInStack: string
      * A machine that is not answering.
      *
      * `503` rather than a refused connection, because the two arrive at the
-     * same place — {@see \Modules\Sdk\Internal\WhatARefusalMeant} reads
-     * anything that is not `401` as `StackDidNotAnswer` — and a status is a
-     * thing a stand-in can produce exactly, where a dropped socket is a thing
-     * it can only approximate.
+     * same place — {@see \Modules\Sdk\Internal\WhatARefusalMeant} reads a
+     * failure carrying no refusal of who is asking as `StackDidNotAnswer` — and
+     * a status is a thing a stand-in can produce exactly, where a dropped socket
+     * is a thing it can only approximate.
      */
     case NotAnswering = 'not_answering';
 
@@ -72,9 +73,6 @@ enum AStandInStack: string
 
     /** What a machine that cannot serve the request answers with. */
     private const int CANNOT_SERVE_IT = 503;
-
-    /** What a machine answers with when the session it was handed is not one. */
-    private const int WILL_NOT_TAKE_THE_SESSION = 401;
 
     /**
      * The stack as this device holds it.
@@ -135,8 +133,23 @@ enum AStandInStack: string
         return match ($this) {
             self::Answering => self::IS_ANSWERING,
             self::NotAnswering => self::CANNOT_SERVE_IT,
-            self::RefusingTheSession => self::WILL_NOT_TAKE_THE_SESSION,
+            self::RefusingTheSession => RefusalCode::NotAdmitted->status(),
         };
+    }
+
+    /**
+     * Whether this machine refuses every request's session, by the code a real
+     * stack refuses one with.
+     *
+     * The code rather than only the status, because the status is one a real
+     * stack also answers an account it will not let ask with, and it is the
+     * code that says the session is what was refused. A stand-in answering the
+     * status alone would be read by the fallback for a stack with no codes, and
+     * prove nothing about the reading a real one gets.
+     */
+    public function refusesTheSession(): bool
+    {
+        return $this === self::RefusingTheSession;
     }
 
     /**

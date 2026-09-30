@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Tests\Api;
 
+use function array_filter;
 use function array_unique;
 use function count;
 use function expect;
 use function it;
 
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
@@ -54,9 +56,9 @@ it('treats a machine it has never heard of as a working one', function (): void 
 it('N1-R10 — the three answer differently, which is the whole point', function (): void {
     // A build where every machine answers well is a build where the screens an
     // operator meets on a bad evening are unreachable.
-    // `WhatARefusalMeant` reads `401` as a session to sign in again for and
-    // everything else as a stack that is not answering, so these cover both of
-    // its arms and the path where nothing went wrong.
+    // `WhatARefusalMeant` reads a session refused by its code as one to sign in
+    // again for, and a failure as a stack that is not answering, so these cover
+    // both and the path where nothing went wrong.
     $answers = [];
 
     foreach (AStandInStack::cases() as $case) {
@@ -65,7 +67,7 @@ it('N1-R10 — the three answer differently, which is the whole point', function
 
     expect($answers)->toHaveCount(count(array_unique($answers)))
         ->and(AStandInStack::Answering->answersWith())->toBe(200)
-        ->and(AStandInStack::RefusingTheSession->answersWith())->toBe(401);
+        ->and(AStandInStack::RefusingTheSession->answersWith())->toBe(403);
 });
 
 it('N1-R60 — no address it carries can resolve anywhere', function (): void {
@@ -89,4 +91,14 @@ it('finds machines to check', function (): void {
     // all of them pass with no iterations — which is the shape of silence every
     // rule in this repository is written against.
     expect(AStandInStack::cases())->not->toBeEmpty();
+});
+
+it('refuses the session on one machine, and at the status its code is answered with', function (): void {
+    // The status alone is one a real stack also answers an account it will not
+    // let ask with; the code the wire carries is what makes this the session
+    // being refused, and the status is the one that code is answered at.
+    $refusing = array_filter(AStandInStack::cases(), static fn(AStandInStack $case): bool => $case->refusesTheSession());
+
+    expect($refusing)->toBe([2 => AStandInStack::RefusingTheSession])
+        ->and(AStandInStack::RefusingTheSession->answersWith())->toBe(RefusalCode::NotAdmitted->status());
 });

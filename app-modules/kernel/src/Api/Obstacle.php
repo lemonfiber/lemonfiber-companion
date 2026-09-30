@@ -35,6 +35,12 @@ namespace Modules\Kernel\Api;
  * It arrives looking like a stack that is simply there, which is what makes
  * collapsing it into the others dangerous rather than merely unhelpful.
  *
+ * Two more are the stack answering about the request rather than about the
+ * credential: a media server that could not vouch for the account, and an
+ * address the stack does not say it listens on. Each has a remedy of its own —
+ * another go, and pairing again — so neither is folded into a refused
+ * credential or into an account that may not ask.
+ *
  * **Where each one happened** is what separates them, and it is worth naming
  * because it is what makes each remedy different. `DeviceHasNoNetwork` is
  * decided without leaving the device. `LocalNetworkIsNotPermitted` is decided
@@ -146,6 +152,29 @@ enum Obstacle: string
     case TooManyAttempts = 'too_many_attempts';
 
     /**
+     * The stack answered, and could not check this account with its media server.
+     *
+     * The connection works and the session may well be good; nobody was
+     * identified, so nothing was answered. It is not the account being turned
+     * away and not the session ending, and it must not be said as either: a
+     * member told their account is gone on the day the media server restarts
+     * has been told something false, and one signed out has lost a session that
+     * another go would have used.
+     */
+    case MediaServerDidNotAnswer = 'media_server_unconfirmed';
+
+    /**
+     * The stack answered, and the address this app reached it at is not one it
+     * says it is listening on.
+     *
+     * The machine is there and it said no, so it is not silence; but no session
+     * was refused either, and signing in again would be refused the same way.
+     * What fixes it is the address this app holds, which only pairing again
+     * from the stack itself can change.
+     */
+    case AddressIsNotTheStacks = 'address_not_the_stacks';
+
+    /**
      * The key for what stood in the way.
      *
      * The value *is* the stem, so a case added here has a sentence by existing
@@ -236,6 +265,8 @@ enum Obstacle: string
             self::CredentialWasRefused => 'COMPANION-CREDENTIAL-REFUSED',
             self::NotForThisAccount => 'COMPANION-NOT-FOR-THIS-ACCOUNT',
             self::TooManyAttempts => 'COMPANION-TOO-MANY-ATTEMPTS',
+            self::MediaServerDidNotAnswer => 'COMPANION-MEDIA-SERVER-UNCONFIRMED',
+            self::AddressIsNotTheStacks => 'COMPANION-ADDRESS-NOT-THE-STACKS',
         });
     }
 
@@ -258,9 +289,14 @@ enum Obstacle: string
             // for it would be raising an alarm about the rules working.
             self::DeviceHasNoNetwork,
             self::TooManyAttempts,
-            self::NotForThisAccount => Severity::Warning,
+            self::NotForThisAccount,
+            // A media server that is restarting clears itself, and nothing about
+            // the account is wrong; an alarm here would send a member looking
+            // for a fault in the one place there is none.
+            self::MediaServerDidNotAnswer => Severity::Warning,
             self::LocalNetworkIsNotPermitted,
             self::StackDidNotAnswer,
+            self::AddressIsNotTheStacks,
             self::CredentialWasRefused => Severity::Error,
             self::StackIsNotTheOnePaired => Severity::Critical,
         };
@@ -288,9 +324,13 @@ enum Obstacle: string
             // Entitlement is the household operator's to give, somewhere
             // this application cannot reach. A button would either do
             // nothing or promise a member something the app cannot deliver.
-            self::NotForThisAccount => Standing::Guided,
+            self::NotForThisAccount,
+            // The media server is the household's, on a machine this app does not
+            // reach; the remedy is waiting for it, not a button.
+            self::MediaServerDidNotAnswer => Standing::Guided,
             self::LocalNetworkIsNotPermitted,
             self::CredentialWasRefused,
+            self::AddressIsNotTheStacks,
             self::StackIsNotTheOnePaired => Standing::Actionable,
         };
     }

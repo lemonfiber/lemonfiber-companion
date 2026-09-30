@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Internal;
 
+use function array_diff_key;
 use function array_filter;
 
 use const ARRAY_FILTER_USE_KEY;
@@ -18,6 +19,7 @@ use const JSON_THROW_ON_ERROR;
 
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Contract\Api;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithACopy;
@@ -151,6 +153,12 @@ final readonly class WhatTheWireWouldAnswer
      */
     private const string WHAT_A_DOOR_ANSWERS = 'AdmissionEnvelope';
 
+    /** The declaration a refusal is carried in. */
+    private const string WHAT_A_REFUSAL_IS = 'ErrorEnvelope';
+
+    /** The field a problem names the problem beneath it in. */
+    private const string THE_PROBLEM_BENEATH = 'cause';
+
     /**
      * When a stand-in session ends.
      *
@@ -214,6 +222,9 @@ final readonly class WhatTheWireWouldAnswer
     public static function asFarAs(AStandInStack $machine): MockClient
     {
         $status = $machine->answersWith();
+        if ($machine->refusesTheSession()) {
+            return new MockClient(['*' => new MockResponse(self::refusedAs(RefusalCode::NotAdmitted), $status)]);
+        }
 
         return new MockClient([
             '*' => static fn(PendingRequest $asked): MockResponse => match (true) {
@@ -376,6 +387,26 @@ final readonly class WhatTheWireWouldAnswer
             'kind' => WhatTheContractDeclares::kindOf($envelope),
             'data' => WhatAStackWouldSay::inside($envelope),
         ];
+    }
+
+    /**
+     * The refusal a machine answers every request with, carrying its code.
+     *
+     * Built from `ErrorEnvelope`'s own declaration and corrected where it has
+     * to be, as {@see aDoorThatOpened()} is: the code is the one this machine
+     * refuses with, and the problem beneath it is left out, because the
+     * declaration writes a word where the contract wants a problem and the
+     * client reads a document that does not hold together as no refusal at all.
+     *
+     * @return array<string, mixed>
+     */
+    private static function refusedAs(RefusalCode $code): array
+    {
+        $envelope = self::oneEnvelope(self::WHAT_A_REFUSAL_IS);
+        $data = $envelope['data'];
+        $envelope['data'] = [...array_diff_key(is_array($data) ? $data : [], [self::THE_PROBLEM_BENEATH => true]), 'code' => $code->value];
+
+        return $envelope;
     }
 
     /**
