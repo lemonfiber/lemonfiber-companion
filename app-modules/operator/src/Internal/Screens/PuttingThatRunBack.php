@@ -16,7 +16,7 @@ use Modules\Kernel\Api\ARunToPutBack;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\History;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingARunBack;
@@ -201,10 +201,10 @@ final class PuttingThatRunBack extends NativeComponent
      * Ask after the run being put back while the stack is doing it.
      *
      * It does nothing unless that is running, so the record and a finished
-     * report are not read over and over. The interval is {@see HowOften}'s
+     * report are not read over and over. The interval is {@see HowOftenAScreenLooks}'s
      * constant.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->isWorking()) {

@@ -5,7 +5,7 @@ import Foundation
 /// A closed set, because an unrecognised word is a caller asking for something
 /// that will never happen. Reading it as a default — daily, usually — arms a
 /// repeat nobody asked for and reports success, which is worse than refusing.
-public enum HowOften: String, CaseIterable, Sendable {
+public enum HowOftenItRecurs: String, CaseIterable, Sendable {
     /// Every hour, on a minute.
     case hourly
 
@@ -33,7 +33,7 @@ public enum HowOften: String, CaseIterable, Sendable {
     ///
     /// - Parameter word: what the caller asked for.
     /// - Returns: the frequency, or nil where the word names none.
-    public static func saying(_ word: String?) -> HowOften? {
+    public static func saying(_ word: String?) -> HowOftenItRecurs? {
         allCases.first { $0.word == word }
     }
 }
@@ -104,7 +104,7 @@ public struct WhatItFixes: Equatable, Sendable {
 /// trigger and is not woken again — and neither rule knows which.
 public struct Recurrence: Equatable, Sendable {
     /// How often it comes round.
-    public let frequency: HowOften
+    public let frequency: HowOftenItRecurs
 
     /// The hour of the day it is wanted at, ignored for an hourly repeat.
     public let hour: Int
@@ -129,7 +129,7 @@ public struct Recurrence: Equatable, Sendable {
     ///   - dayOfMonth: the day of the month.
     ///   - month: the month, counted from one.
     public init(
-        frequency: HowOften,
+        frequency: HowOftenItRecurs,
         hour: Int,
         minute: Int,
         weekday: Int,

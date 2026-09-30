@@ -24,7 +24,7 @@ private func halfPastTwelve() throws -> Date {
 }
 
 private func repeating(
-    _ frequency: HowOften,
+    _ frequency: HowOftenItRecurs,
     hour: Int = 9,
     minute: Int = 0,
     weekday: Int = 0,
@@ -162,8 +162,8 @@ func anUnknownFrequencyIsNotOne() {
     // Refused rather than defaulted. A word this does not know is a caller
     // asking for something that will not happen, and arming a daily repeat
     // instead reports success for an alert nobody chose.
-    #expect(HowOften.saying("daily") == .daily)
-    #expect(HowOften.saying("fortnightly") == nil)
-    #expect(HowOften.saying(nil) == nil)
-    #expect(HowOften.allCases.map(\.word) == ["hourly", "daily", "weekly", "monthly", "yearly"])
+    #expect(HowOftenItRecurs.saying("daily") == .daily)
+    #expect(HowOftenItRecurs.saying("fortnightly") == nil)
+    #expect(HowOftenItRecurs.saying(nil) == nil)
+    #expect(HowOftenItRecurs.allCases.map(\.word) == ["hourly", "daily", "weekly", "monthly", "yearly"])
 }

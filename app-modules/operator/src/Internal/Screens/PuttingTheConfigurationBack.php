@@ -10,7 +10,7 @@ use function is_string;
 
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\HowTheResetIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -201,9 +201,9 @@ final class PuttingTheConfigurationBack extends NativeComponent
      * Ask after the preview or the yes while the stack is at it.
      *
      * It does nothing unless one is running, so a finished report is not read
-     * over and over. The interval is {@see HowOften}'s constant.
+     * over and over. The interval is {@see HowOftenAScreenLooks}'s constant.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->answer()->isWorking) {

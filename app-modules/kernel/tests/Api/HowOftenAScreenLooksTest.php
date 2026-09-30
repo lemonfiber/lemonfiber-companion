@@ -7,12 +7,12 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 
 it('declares each cadence once, in the milliseconds the platform counts and the seconds a wait is measured in', function (): void {
     $said = [];
 
-    foreach (HowOften::cases() as $cadence) {
+    foreach (HowOftenAScreenLooks::cases() as $cadence) {
         $said[$cadence->value] = [$cadence->milliseconds(), $cadence->seconds()];
     }
 

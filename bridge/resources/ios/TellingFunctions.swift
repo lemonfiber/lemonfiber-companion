@@ -281,7 +281,7 @@ enum TellingFunctions {
 
         /// The recurrence the caller asked for, or nothing where it named none.
         private func asked(_ parameters: [String: Any]) -> Recurrence? {
-            guard let frequency = HowOften.saying(parameters["frequency"] as? String) else {
+            guard let frequency = HowOftenItRecurs.saying(parameters["frequency"] as? String) else {
                 return nil
             }
 

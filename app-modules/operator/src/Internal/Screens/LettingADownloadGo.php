@@ -11,7 +11,7 @@ use function is_string;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ADownloadLetGo;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -205,9 +205,9 @@ final class LettingADownloadGo extends NativeComponent
      * It does nothing unless one of those is running, so an offer on the
      * screen and a finished report are not read over and over, and it only
      * ever reads: the yes is sent by {@see agree()} and nothing else. The
-     * interval is {@see HowOften}'s constant.
+     * interval is {@see HowOftenAScreenLooks}'s constant.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if (! $this->isWorking()) {

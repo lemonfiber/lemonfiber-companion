@@ -13,7 +13,7 @@ import java.time.temporal.ChronoUnit
  * that will never happen. Reading it as a default — daily, usually — arms a
  * repeat nobody asked for and reports success, which is worse than refusing.
  */
-public enum class HowOften(
+public enum class HowOftenItRecurs(
     /** What this frequency is called on the wire. */
     public val word: String,
     /** How much of the calendar one whole period of it moves. */
@@ -45,7 +45,7 @@ public enum class HowOften(
          * a different one is how an operator comes to be told about a backup at
          * an hour nobody chose.
          */
-        public fun saying(word: String?): HowOften? = entries.firstOrNull { it.word == word }
+        public fun saying(word: String?): HowOftenItRecurs? = entries.firstOrNull { it.word == word }
     }
 }
 
@@ -102,7 +102,7 @@ public data class WhatItFixes(
  */
 public data class Recurrence(
     /** How often it comes round. */
-    public val frequency: HowOften,
+    public val frequency: HowOftenItRecurs,
     /** The hour of the day it is wanted at, ignored for an hourly repeat. */
     public val hour: Int,
     /** The minute of that hour. */
@@ -170,11 +170,11 @@ public data class Recurrence(
      */
     public fun fixes(): WhatItFixes =
         when (frequency) {
-            HowOften.HOURLY -> WhatItFixes(null, minute, null, null, null)
-            HowOften.DAILY -> WhatItFixes(hour, minute, null, null, null)
-            HowOften.WEEKLY -> WhatItFixes(hour, minute, weekday, null, null)
-            HowOften.MONTHLY -> WhatItFixes(hour, minute, null, dayOfMonth, null)
-            HowOften.YEARLY -> WhatItFixes(hour, minute, null, dayOfMonth, month)
+            HowOftenItRecurs.HOURLY -> WhatItFixes(null, minute, null, null, null)
+            HowOftenItRecurs.DAILY -> WhatItFixes(hour, minute, null, null, null)
+            HowOftenItRecurs.WEEKLY -> WhatItFixes(hour, minute, weekday, null, null)
+            HowOftenItRecurs.MONTHLY -> WhatItFixes(hour, minute, null, dayOfMonth, null)
+            HowOftenItRecurs.YEARLY -> WhatItFixes(hour, minute, null, dayOfMonth, month)
         }
 
     /**

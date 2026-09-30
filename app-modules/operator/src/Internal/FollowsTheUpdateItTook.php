@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -50,9 +50,9 @@ trait FollowsTheUpdateItTook
      * It does nothing unless the update is running, which is what keeps this
      * from being polling: a finished report answers the
      * same thing however often it is read. The interval is
-     * {@see HowOften}'s constant.
+     * {@see HowOftenAScreenLooks}'s constant.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->lastUpdate()->isWorking) {

@@ -8,7 +8,7 @@ use Illuminate\View\View;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -174,9 +174,9 @@ final class TakingACopyHere extends NativeComponent
      * Ask after the copy again while the stack is taking it.
      *
      * It does nothing unless a copy is being taken, so a finished report is
-     * not read over and over. The interval is {@see HowOften}'s constant.
+     * not read over and over. The interval is {@see HowOftenAScreenLooks}'s constant.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->lastCopy()->isWorking) {

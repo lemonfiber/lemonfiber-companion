@@ -7,7 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use Closure;
 use Illuminate\View\View;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -43,7 +43,7 @@ use function view;
  * Nothing here offers to put lemonfiber's value back over the operator's.
  *
  * **The run is work the stack names and this follows**, so the handle is held
- * and asked after at {@see HowOften::WhileWorkRuns} while it runs, the way
+ * and asked after at {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs, the way
  * {@see AskingSomebodyIn} follows an invitation.
  *
  * `Concealed` for the reason every stack-facing screen here is.
@@ -113,9 +113,9 @@ final class HowTheServicesAreWired extends NativeComponent
      * Ask after the run again while the stack is carrying it out.
      *
      * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOften}'s.
+     * for again. The interval is {@see HowOftenAScreenLooks}'s.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->howItIsGoing()->isWorking) {

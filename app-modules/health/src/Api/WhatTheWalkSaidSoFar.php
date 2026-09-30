@@ -7,7 +7,7 @@ namespace Modules\Health\Api;
 use Closure;
 use Modules\Health\Internal\AStepHeard;
 use Modules\Kernel\Api\ALineItSaid;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\WhatTheWalkSaid;
 
@@ -33,7 +33,7 @@ use Modules\Kernel\Api\WhatTheWalkSaid;
  * forward, and neither does this.
  *
  * **Opened again on a declared cadence, never sooner.** A subscription that broke
- * waits {@see HowOften::AfterABreak} before it is opened again. A screen the
+ * waits {@see HowOftenAScreenLooks::AfterABreak} before it is opened again. A screen the
  * operator left and came back to opens at once.
  */
 final readonly class WhatTheWalkSaidSoFar
@@ -77,7 +77,7 @@ final readonly class WhatTheWalkSaidSoFar
     public function mayListen(Instant $now): bool
     {
         return ! $this->closedAt instanceof Instant
-            || $now->epochSeconds() - $this->closedAt->epochSeconds() >= HowOften::AfterABreak->seconds();
+            || $now->epochSeconds() - $this->closedAt->epochSeconds() >= HowOftenAScreenLooks::AfterABreak->seconds();
     }
 
     /** Whether an open subscription has been silent past the contract's bound at `$now`. */
@@ -90,7 +90,7 @@ final readonly class WhatTheWalkSaidSoFar
      * Whether the subscription broke, closed or could not be opened, and has not been opened since.
      *
      * Only then could the stage not be heard, and only then is the screen
-     * waiting out {@see HowOften::AfterABreak}.
+     * waiting out {@see HowOftenAScreenLooks::AfterABreak}.
      */
     public function hasBroken(): bool
     {

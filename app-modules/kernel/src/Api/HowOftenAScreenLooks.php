@@ -28,7 +28,7 @@ use function intdiv;
  * started has finished. A cadence that runs only while the work runs is the
  * whole of what is asked for and no more.
  */
-enum HowOften: string
+enum HowOftenAScreenLooks: string
 {
     /**
      * While a stack is carrying out a repair the operator agreed to.

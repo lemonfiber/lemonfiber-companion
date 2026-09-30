@@ -11,7 +11,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\HearingTheWalk;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Obstacle;
@@ -180,10 +180,10 @@ final class WatchingOneArrive extends NativeComponent
      * It asks nothing unless the walk is running, which is what keeps this
      * from being polling: a finished record answers the same however often it
      * is read, and the stream is let go of once the walk is over. Taking the
-     * stage sends nothing to the stack. The interval is {@see HowOften}'s
+     * stage sends nothing to the stack. The interval is {@see HowOftenAScreenLooks}'s
      * constant.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if (! $this->answer()->isWorking) {

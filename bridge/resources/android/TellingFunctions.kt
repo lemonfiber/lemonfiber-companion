@@ -340,7 +340,7 @@ public object TellingFunctions {
 
         /** The recurrence the caller asked for, or nothing where it named none. */
         private fun asked(parameters: Map<String, Any>): Recurrence? =
-            HowOften.saying(parameters["frequency"] as? String)?.let { frequency ->
+            HowOftenItRecurs.saying(parameters["frequency"] as? String)?.let { frequency ->
                 Recurrence(
                     frequency = frequency,
                     hour = (parameters["hour"] as? Number)?.toInt() ?: 0,
@@ -445,7 +445,7 @@ public object TellingFunctions {
 
         /** The recurrence this alarm carried, or nothing where it was a one-off. */
         private fun again(intent: Intent): Recurrence? =
-            HowOften.saying(intent.getStringExtra("frequency"))?.let { frequency ->
+            HowOftenItRecurs.saying(intent.getStringExtra("frequency"))?.let { frequency ->
                 Recurrence(
                     frequency = frequency,
                     hour = intent.getIntExtra("hour", 0),
