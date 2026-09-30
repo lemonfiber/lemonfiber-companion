@@ -21,7 +21,7 @@ namespace Lemonfiber\Native;
 final readonly class Repeat
 {
     private function __construct(
-        private HowOften $howOften,
+        private HowOftenItRecurs $howOften,
         private int $hour,
         private int $minute,
         private int $weekday,
@@ -32,32 +32,32 @@ final readonly class Repeat
     /** Every hour, on a minute. */
     public static function hourly(int $minute): self
     {
-        return new self(HowOften::Hourly, hour: 0, minute: $minute, weekday: 0, dayOfMonth: 1, month: 1);
+        return new self(HowOftenItRecurs::Hourly, hour: 0, minute: $minute, weekday: 0, dayOfMonth: 1, month: 1);
     }
 
     /** Every day, at an hour and a minute. */
     public static function daily(int $hour, int $minute): self
     {
-        return new self(HowOften::Daily, hour: $hour, minute: $minute, weekday: 0, dayOfMonth: 1, month: 1);
+        return new self(HowOftenItRecurs::Daily, hour: $hour, minute: $minute, weekday: 0, dayOfMonth: 1, month: 1);
     }
 
     /** Every week, on a day counted from Sunday as zero. */
     public static function weekly(int $weekday, int $hour, int $minute): self
     {
-        return new self(HowOften::Weekly, hour: $hour, minute: $minute, weekday: $weekday, dayOfMonth: 1, month: 1);
+        return new self(HowOftenItRecurs::Weekly, hour: $hour, minute: $minute, weekday: $weekday, dayOfMonth: 1, month: 1);
     }
 
     /** Every month, on a date. */
     public static function monthly(int $dayOfMonth, int $hour, int $minute): self
     {
-        return new self(HowOften::Monthly, hour: $hour, minute: $minute, weekday: 0, dayOfMonth: $dayOfMonth, month: 1);
+        return new self(HowOftenItRecurs::Monthly, hour: $hour, minute: $minute, weekday: 0, dayOfMonth: $dayOfMonth, month: 1);
     }
 
     /** Every year, on a date in a month counted from one. */
     public static function yearly(int $month, int $dayOfMonth, int $hour, int $minute): self
     {
         return new self(
-            HowOften::Yearly,
+            HowOftenItRecurs::Yearly,
             hour: $hour,
             minute: $minute,
             weekday: 0,

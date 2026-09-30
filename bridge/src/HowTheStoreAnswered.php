@@ -24,4 +24,17 @@ enum HowTheStoreAnswered: string
 
     /** A value was removed. */
     case Forgotten = 'forgotten';
+
+    /**
+     * What the store answered under `outcome`, where it is one of these.
+     *
+     * Two branches rather than `tryFrom($said ?? '')`, for the reason
+     * {@see WhyNothingWasKept::orTheStoreWouldNotOpen()} gives.
+     */
+    public static function in(WhatTheBridgeAnswered $said): ?self
+    {
+        $word = $said->outcome();
+
+        return $word === null ? null : self::tryFrom($word);
+    }
 }

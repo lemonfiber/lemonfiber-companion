@@ -7,7 +7,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowLongAgo;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -399,7 +399,7 @@ it('waits out a break before it asks a stack that could not be heard again', fun
 
     expect($hearing->asked())->toBe(1);
 
-    $clock->moveTo(Instant::atEpochSeconds(NOW + HowOften::AfterABreak->seconds()));
+    $clock->moveTo(Instant::atEpochSeconds(NOW + HowOftenAScreenLooks::AfterABreak->seconds()));
     $screen->listen();
 
     expect($hearing->asked())->toBe(2)

@@ -6,6 +6,7 @@ namespace Modules\Dx\Api;
 
 use function intdiv;
 
+use Modules\Dx\Internal\AnAddressThatResolvesNowhere;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
@@ -13,7 +14,6 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 
-use function sprintf;
 use function str_repeat;
 
 /**
@@ -89,7 +89,7 @@ enum AStandInStack: string
         return Stack::of(
             StackId::of(Nonce::of(str_repeat($this->seed(), Nonce::SHORTEST))),
             StackName::of($this->called()),
-            Address::of(sprintf('https://%s.invalid:8443', $this->value)),
+            Address::of(AnAddressThatResolvesNowhere::of($this->value)),
             Fingerprint::of(str_repeat('ab', intdiv(Fingerprint::CHARACTERS, 2))),
         );
     }

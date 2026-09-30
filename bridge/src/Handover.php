@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace Lemonfiber\Native;
 
-use function array_key_exists;
-use function is_array;
-use function is_string;
-use function json_decode;
-use function json_encode;
-use function nativephp_call;
-
 use const SODIUM_BASE64_VARIANT_ORIGINAL;
 
 use function sodium_bin2base64;
@@ -83,9 +76,9 @@ final readonly class Handover
      */
     private function offered(Call $call, array $with): Offered
     {
-        $said = $this->answering($call, $with);
+        $said = WhatTheBridgeAnswered::to($call, $with);
 
-        if ($this->wordUnder($said, 'outcome') === self::OFFERED) {
+        if ($said->outcome() === self::OFFERED) {
             return Offered::toThem();
         }
 
@@ -99,72 +92,10 @@ final readonly class Handover
      * all all land on *the platform would not*, which is the refusal a caller
      * can act on: it says try again, where the other says the report was never
      * assembled and trying again will do nothing.
-     *
-     * @param array<mixed>|null $said
      */
-    private function why(?array $said): WhyNothingWasHandedOver
+    private function why(WhatTheBridgeAnswered $said): WhyNothingWasHandedOver
     {
-        return WhyNothingWasHandedOver::tryFrom((string) $this->wordUnder($said, 'because'))
+        return WhyNothingWasHandedOver::tryFrom((string) $said->word(WhatAnAnswerHolds::Because))
             ?? WhyNothingWasHandedOver::ThePlatformWouldNot;
-    }
-
-    /**
-     * What the bridge said, decoded, or nothing where it said nothing.
-     *
-     * @param array<string, string> $with
-     *
-     * @return array<mixed>|null
-     */
-    private function answering(Call $call, array $with): ?array
-    {
-        // A payload that will not encode is not sent.
-        //
-        // `json_encode` answers false for a string that is not valid UTF-8.
-        // A `(string)` cast turns that false into `''`, which reaches the
-        // device as a call carrying no parameters at all — indistinguishable
-        // from one that meant to carry none. The device answers whatever it
-        // answers to a call with everything missing, and the operator sees the
-        // result of a request nobody made.
-        //
-        // Refused here instead, as the same nothing every other way of
-        // not reaching the bridge produces: nobody answered, because nobody
-        // was asked. It is also the only shape a test can hold: a cast
-        // between two values nothing downstream can tell apart is a line
-        // nothing can fail on.
-        $payload = json_encode($with);
-
-        if (! is_string($payload)) {
-            return null;
-        }
-
-        $said = nativephp_call($call->value, $payload);
-
-        if (! is_string($said)) {
-            return null;
-        }
-
-        $decoded = json_decode($said, associative: true);
-
-        return is_array($decoded) ? $decoded : null;
-    }
-
-    /**
-     * One named word out of the answer, where the answer holds one.
-     *
-     * Written out rather than coalesced, which `C9` refuses: a `??` folds
-     * absent, present-and-null and present-and-the-wrong-type into one answer,
-     * and the one it picks reads as *carry on*.
-     *
-     * @param array<mixed>|null $said
-     */
-    private function wordUnder(?array $said, string $named): ?string
-    {
-        if ($said === null || ! array_key_exists($named, $said)) {
-            return null;
-        }
-
-        $word = $said[$named];
-
-        return is_string($word) ? $word : null;
     }
 }

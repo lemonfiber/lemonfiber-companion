@@ -7,7 +7,7 @@ namespace Modules\Health\Api;
 use Closure;
 use Modules\Health\Internal\ASummaryHeard;
 use Modules\Health\Internal\TheHeartbeat;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheHealthSummary;
@@ -29,7 +29,7 @@ use Modules\Kernel\Api\WhatWasHeard;
  * summary in the same position.
  *
  * **Opened again on a declared cadence, never sooner.** A subscription that broke
- * waits {@see HowOften::AfterABreak} before it is opened again. A screen the
+ * waits {@see HowOftenAScreenLooks::AfterABreak} before it is opened again. A screen the
  * operator left and came back to has nothing to wait for: it opens at once, and
  * shows what it held as not current until something new arrives.
  */
@@ -88,7 +88,7 @@ final readonly class WhatWasHeardSoFar
     public function mayListen(Instant $now): bool
     {
         return ! $this->closedAt instanceof Instant
-            || $now->epochSeconds() - $this->closedAt->epochSeconds() >= HowOften::AfterABreak->seconds();
+            || $now->epochSeconds() - $this->closedAt->epochSeconds() >= HowOftenAScreenLooks::AfterABreak->seconds();
     }
 
     /**

@@ -12,11 +12,11 @@ use Modules\Kernel\Api\KeyHeld;
 use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\SealKey;
 use Modules\Kernel\Api\WhyNothingIsSealed;
+use Modules\Vault\Internal\KeptUnder;
 
 use function preg_match;
 use function sodium_bin2hex;
 use function sodium_hex2bin;
-use function sprintf;
 
 /**
  * The seal keys, in the device's own secure store.
@@ -39,9 +39,6 @@ use function sprintf;
  */
 final readonly class PlatformSealKeys implements HoldsTheSealKeys
 {
-    /** What a key's name is prefixed with, so nothing else in the store collides. */
-    private const string UNDER = 'lemonfiber.seal';
-
     /** A key as the store holds it: thirty-two bytes, as sixty-four lowercase hex digits. */
     private const string WRITTEN_AS = '/\A[0-9a-f]{64}\z/';
 
@@ -99,6 +96,6 @@ final readonly class PlatformSealKeys implements HoldsTheSealKeys
             SealKey::TheStackKey => 'stack',
         };
 
-        return sprintf('%s.%s', self::UNDER, $key);
+        return KeptUnder::SealKeys->beneath($key);
     }
 }

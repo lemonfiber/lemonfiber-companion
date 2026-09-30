@@ -12,7 +12,7 @@ use function is_string;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\RemovingSomebody;
@@ -49,7 +49,7 @@ use function view;
  *
  * **How far it reached is the stack's word**, and only *everywhere* is drawn
  * as done. Every act is work the stack names and this follows, at
- * {@see HowOften::WhileWorkRuns} while it runs.
+ * {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -166,9 +166,9 @@ final class TakingSomebodyOut extends NativeComponent
      * Ask after the work again while the stack is carrying it out.
      *
      * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOften}'s.
+     * for again. The interval is {@see HowOftenAScreenLooks}'s.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->answer()->isWorking) {

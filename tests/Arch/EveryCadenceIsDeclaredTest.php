@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Tests\Support\Screens;
 use Tests\Support\Tree;
 
@@ -14,7 +14,7 @@ use Tests\Support\Tree;
 // screen looks tells an operator nothing about whether what they are looking at
 // is current, and the age a stale reading carries already does. So this asks
 // two things of every poll in the application: that its interval is one
-// `HowOften` declares, where this can read it, and that a screen stands behind
+// `HowOftenAScreenLooks` declares, where this can read it, and that a screen stands behind
 // it. And one thing of every screen: that it hands a template no cadence to
 // print.
 //
@@ -51,7 +51,7 @@ function everyFileThatPolls(): array
  * What each `#[Poll]` in a source was given, in the order they are written.
  *
  * The attribute is found inside the brackets rather than as the whole of them.
- * PHP lets a group carry several — `#[Lazy, Poll(HowOften::WHILE_WORK_RUNS_MS)]`
+ * PHP lets a group carry several — `#[Lazy, Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]`
  * is one `#[` and two attributes — and an expression that required `)]` to
  * follow the arguments reads that as no poll at all. The file still counts as
  * one that polls, so the rule below examines it, finds no interval to judge and
@@ -67,7 +67,7 @@ function everyPollIntervalIn(string $source): array
     return array_map(trim(...), $found[1]);
 }
 
-it('every cadence is one `HowOften` declares, never a number at the attribute', function (): void {
+it('every cadence is one `HowOftenAScreenLooks` declares, never a number at the attribute', function (): void {
     $written = [];
 
     foreach (everyFileThatPolls() as $path) {
@@ -83,7 +83,7 @@ it('every cadence is one `HowOften` declares, never a number at the attribute', 
         }
 
         foreach ($intervals as $said) {
-            if (str_starts_with($said, 'HowOften::')) {
+            if (str_starts_with($said, 'HowOftenAScreenLooks::')) {
                 continue;
             }
 
@@ -94,7 +94,7 @@ it('every cadence is one `HowOften` declares, never a number at the attribute', 
     expect($written)->toBe([], sprintf(
         "These poll at a number written at the attribute:\n  %s\n\n"
         . '`#[Poll]` takes a constant expression, and a literal there is a cadence no test '
-        . "can read. `HowOften` holds each interval once.\n",
+        . "can read. `HowOftenAScreenLooks` holds each interval once.\n",
         implode("\n  ", $written),
     ));
 });
@@ -103,8 +103,8 @@ it('the reading finds a poll however the attributes were grouped', function (): 
     // The judgement, handed both spellings. Planting the grouped one would mean
     // rewriting a real screen's attributes for the length of a run, and what
     // would be proven is the same thing this asserts in one line.
-    expect(everyPollIntervalIn('#[Poll(HowOften::WHILE_WORK_RUNS_MS)]'))->toBe(['HowOften::WHILE_WORK_RUNS_MS']);
-    expect(everyPollIntervalIn('#[Lazy, Poll(HowOften::WHILE_WORK_RUNS_MS)]'))->toBe(['HowOften::WHILE_WORK_RUNS_MS']);
+    expect(everyPollIntervalIn('#[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]'))->toBe(['HowOftenAScreenLooks::WHILE_WORK_RUNS_MS']);
+    expect(everyPollIntervalIn('#[Lazy, Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]'))->toBe(['HowOftenAScreenLooks::WHILE_WORK_RUNS_MS']);
     expect(everyPollIntervalIn('#[Poll(30_000), Lazy]'))->toBe(['30_000']);
 
     // And a mention of the attribute is not a use of it: every screen that
@@ -170,14 +170,14 @@ it('no screen hands a template a cadence to show', function (): void {
         foreach ($screen->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $type = $method->getReturnType();
 
-            if ($type instanceof ReflectionNamedType && $type->getName() === HowOften::class) {
+            if ($type instanceof ReflectionNamedType && $type->getName() === HowOftenAScreenLooks::class) {
                 $shown[] = sprintf('%s::%s()', $screen->getShortName(), $method->getName());
             }
         }
     }
 
     foreach (Tree::filesUnder(Tree::at('app-modules'), '.blade.php') as $view) {
-        if (str_contains((string) file_get_contents($view), 'HowOften')) {
+        if (str_contains((string) file_get_contents($view), 'HowOftenAScreenLooks')) {
             $shown[] = basename($view);
         }
     }
@@ -197,7 +197,7 @@ it('the cadences this app declares are each a whole number of seconds', function
     // is why it is asked here rather than left to arithmetic.
     $ragged = [];
 
-    foreach (HowOften::cases() as $often) {
+    foreach (HowOftenAScreenLooks::cases() as $often) {
         if ($often->seconds() * 1_000 !== $often->milliseconds()) {
             $ragged[] = sprintf('%s — %dms', $often->name, $often->milliseconds());
         }

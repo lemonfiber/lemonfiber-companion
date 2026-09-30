@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function sprintf;
-
 /**
  * Why the camera came back without a pairing code.
  *
@@ -88,7 +86,7 @@ enum WhyNothingWasScanned: string
      */
     public function remedy(): string
     {
-        return sprintf('connection.%s_action', $this->value);
+        return InTheConnectionCatalogue::under($this->value)->remedy();
     }
 
     /**
@@ -113,6 +111,6 @@ enum WhyNothingWasScanned: string
      */
     public function saidOnTheScreen(): string
     {
-        return sprintf('connection.%s', $this->value);
+        return InTheConnectionCatalogue::under($this->value)->said();
     }
 }

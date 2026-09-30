@@ -6,7 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\Mended;
 use Modules\Kernel\Api\Nonce;
@@ -634,7 +634,7 @@ it('declares its cadence on the attribute, from the one constant', function (): 
     }
 
     expect($polls)->toHaveCount(1)
-        ->and($polls[0]->newInstance()->ms)->toBe(HowOften::WhileWorkRuns->milliseconds());
+        ->and($polls[0]->newInstance()->ms)->toBe(HowOftenAScreenLooks::WhileWorkRuns->milliseconds());
 });
 
 it('N3-R13 — a refused credential on the outcome read signs this device out', function (): void {
