@@ -7,7 +7,7 @@ use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\HowTheGuardIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
@@ -224,7 +224,7 @@ it('asks after the guard on the declared cadence while it guards, by the name it
 
     expect($guarding->followed())->toHaveCount(2)
         ->and(array_map(static fn(Job $job): string => $job->shown(), $guarding->followed()))->toBe([AStackThatGuards::THE_JOB, AStackThatGuards::THE_JOB])
-        ->and($poll)->toBe([HowOften::WhileWorkRuns->milliseconds()]);
+        ->and($poll)->toBe([HowOftenAScreenLooks::WhileWorkRuns->milliseconds()]);
 });
 
 it('a guard that saw the data location go and stopped the forms says so, with why it ended and each form', function (): void {

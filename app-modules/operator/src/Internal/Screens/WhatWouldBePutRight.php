@@ -11,7 +11,7 @@ use function is_string;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Confirmed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
 use Modules\Kernel\Api\Obstacle;
@@ -262,10 +262,10 @@ final class WhatWouldBePutRight extends NativeComponent
      * to wait for, so the cadence costs a machine on a home network nothing in
      * either state.
      *
-     * The interval is {@see HowOften}'s constant rather than a number written
+     * The interval is {@see HowOftenAScreenLooks}'s constant rather than a number written
      * here, so every screen that waits on work waits on the same one.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if (! $this->isWorking()) {

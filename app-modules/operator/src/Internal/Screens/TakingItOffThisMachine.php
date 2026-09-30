@@ -12,7 +12,7 @@ use function is_string;
 use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -204,9 +204,9 @@ final class TakingItOffThisMachine extends NativeComponent
      * Ask after the removal again while the stack is carrying it out.
      *
      * Nothing happens unless it is running. The interval is
-     * {@see HowOften}'s.
+     * {@see HowOftenAScreenLooks}'s.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->answer()->isWorking) {

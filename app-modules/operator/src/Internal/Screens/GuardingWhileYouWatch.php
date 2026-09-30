@@ -16,7 +16,7 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\Guarding;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\HowTheGuardIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -202,9 +202,9 @@ final class GuardingWhileYouWatch extends NativeComponent
      *
      * Asking is what keeps it: the stack holds the guard only while somebody
      * asks. It does nothing once the guard has ended, so an ending is not read
-     * over and over. The interval is {@see HowOften}'s constant.
+     * over and over. The interval is {@see HowOftenAScreenLooks}'s constant.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItGuards(): void
     {
         if ($this->lastGuard()->isGuarding) {

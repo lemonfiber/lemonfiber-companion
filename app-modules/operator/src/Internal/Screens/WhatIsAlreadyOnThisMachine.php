@@ -9,7 +9,7 @@ use Illuminate\View\View;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\MovingIn;
 use Modules\Kernel\Api\MovingInBy;
@@ -50,7 +50,7 @@ use function view;
  * answer that is pending; it sends the act that answer was about.
  *
  * **Every answer is work the stack names and this follows**, so the handle is
- * held and asked after at {@see HowOften::WhileWorkRuns} while it runs, the
+ * held and asked after at {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs, the
  * way {@see AskingSomebodyIn} follows an invitation.
  *
  * `Concealed` for the reason every stack-facing screen here is.
@@ -171,9 +171,9 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent
      * Ask after the work again while the stack is carrying it out.
      *
      * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOften}'s.
+     * for again. The interval is {@see HowOftenAScreenLooks}'s.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->howTheMoveIsGoing()->isWorking) {

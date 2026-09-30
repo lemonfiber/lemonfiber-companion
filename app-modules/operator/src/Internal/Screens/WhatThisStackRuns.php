@@ -7,7 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use Illuminate\View\View;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
@@ -124,7 +124,7 @@ final class WhatThisStackRuns extends NativeComponent
      * services are all in standing states answers the same thing however often
      * it is read.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItSettles(): void
     {
         if (! $this->answer()->isSettling) {

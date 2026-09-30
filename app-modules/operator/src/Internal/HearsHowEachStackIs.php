@@ -6,7 +6,7 @@ namespace Modules\Operator\Internal;
 
 use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\Configured;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -33,7 +33,7 @@ use Native\Mobile\Edge\NativeComponent;
  *
  * Every other rule is the stack's own screen's, per stack: it is held only
  * while somebody can see it, a silence past the contract's bound breaks it, and
- * a broken one is opened again on {@see HowOften::AfterABreak}'s cadence.
+ * a broken one is opened again on {@see HowOftenAScreenLooks::AfterABreak}'s cadence.
  * Letting go of a quiet one lets go of every stream the list holds, because
  * {@see \Modules\Kernel\Api\Hearing::letGo()} takes no stack; the others
  * open again on their next wake.
@@ -55,7 +55,7 @@ trait HearsHowEachStackIs
      * Opens a stack's subscription where it is not open and its break has been
      * waited out. Taking sends nothing to the stack.
      */
-    #[Poll(HowOften::WHILE_LISTENING_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]
     public function listen(): void
     {
         // Only a launch that found a stack to open on reaches one. A locked

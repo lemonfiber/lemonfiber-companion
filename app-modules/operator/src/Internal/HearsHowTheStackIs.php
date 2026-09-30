@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Health\Api\WhatWasHeardSoFar;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -31,7 +31,7 @@ use Native\Mobile\Edge\NativeComponent;
  * a push, a pop, a replace, and the platform parking the app.
  *
  * **A silence past the contract's bound is a broken subscription**, let go of on
- * the wake that notices, and opened again on {@see HowOften::AfterABreak}'s
+ * the wake that notices, and opened again on {@see HowOftenAScreenLooks::AfterABreak}'s
  * cadence. {@see WhatWasHeardSoFar} decides both; this carries out what it
  * decides.
  *
@@ -70,7 +70,7 @@ trait HearsHowTheStackIs
      * Opens it where it is not open and the break before has been waited out.
      * Taking sends nothing to the stack; it reads what the stack already sent.
      */
-    #[Poll(HowOften::WHILE_LISTENING_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]
     public function listen(): void
     {
         $with = $this->listensWith();

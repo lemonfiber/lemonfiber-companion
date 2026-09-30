@@ -12,7 +12,7 @@ use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PuttingBack;
@@ -217,10 +217,10 @@ final class PuttingACopyBack extends NativeComponent
      * Ask after the copy being put back while the stack is doing it.
      *
      * It does nothing unless that is running, so a rehearsal and a finished
-     * report are not read over and over. The interval is {@see HowOften}'s
+     * report are not read over and over. The interval is {@see HowOftenAScreenLooks}'s
      * constant.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->isWorking()) {

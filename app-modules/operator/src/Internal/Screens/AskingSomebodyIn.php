@@ -13,7 +13,7 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Encoding;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -58,7 +58,7 @@ use function view;
  * the rehearsal was asked with rather than whatever is in the fields now.
  *
  * **Every answer is work the stack names and this follows**, so the handle is
- * held and asked after at {@see HowOften::WhileWorkRuns} while it runs, the way
+ * held and asked after at {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs, the way
  * {@see HowCurrentThisStackIs} follows an update.
  *
  * **The address is handed over as it came**: as text, as a code another phone
@@ -294,9 +294,9 @@ final class AskingSomebodyIn extends NativeComponent
      * Ask after the work again while the stack is carrying it out.
      *
      * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOften}'s.
+     * for again. The interval is {@see HowOftenAScreenLooks}'s.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
         if ($this->howItIsGoing()->isWorking) {

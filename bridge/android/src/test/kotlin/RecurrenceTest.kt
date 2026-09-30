@@ -29,7 +29,7 @@ class RecurrenceTest {
 
     private val daily: Recurrence =
         Recurrence(
-            frequency = HowOften.DAILY,
+            frequency = HowOftenItRecurs.DAILY,
             hour = 9,
             minute = 0,
             weekday = 0,
@@ -50,7 +50,7 @@ class RecurrenceTest {
 
     @Test
     fun `an hourly repeat lands on the minute asked for`() {
-        val landed = next(daily.copy(frequency = HowOften.HOURLY, minute = 45))
+        val landed = next(daily.copy(frequency = HowOftenItRecurs.HOURLY, minute = 45))
 
         assertEquals(45, landed.minute)
         assertTrue(landed.isAfter(halfPastTwelve))
@@ -72,7 +72,7 @@ class RecurrenceTest {
         // Sunday, which the wire counts as zero and the two calendars count
         // differently again. An off-by-one here is an alert arriving on the
         // wrong day every week, with nothing on any screen to say so.
-        val landed = next(daily.copy(frequency = HowOften.WEEKLY, weekday = 0))
+        val landed = next(daily.copy(frequency = HowOftenItRecurs.WEEKLY, weekday = 0))
 
         assertEquals(DayOfWeek.SUNDAY, landed.dayOfWeek)
         assertTrue(landed.isAfter(halfPastTwelve))
@@ -81,7 +81,7 @@ class RecurrenceTest {
 
     @Test
     fun `a monthly repeat lands on the date asked for`() {
-        val landed = next(daily.copy(frequency = HowOften.MONTHLY, dayOfMonth = 20))
+        val landed = next(daily.copy(frequency = HowOftenItRecurs.MONTHLY, dayOfMonth = 20))
 
         assertEquals(20, landed.dayOfMonth)
         assertEquals(9, landed.hour)
@@ -90,7 +90,7 @@ class RecurrenceTest {
 
     @Test
     fun `a yearly repeat lands in the month asked for`() {
-        val landed = next(daily.copy(frequency = HowOften.YEARLY, dayOfMonth = 25, month = 12))
+        val landed = next(daily.copy(frequency = HowOftenItRecurs.YEARLY, dayOfMonth = 25, month = 12))
 
         assertEquals(12, landed.monthValue)
         assertEquals(25, landed.dayOfMonth)
@@ -117,10 +117,10 @@ class RecurrenceTest {
         // reach instead, and the two platforms reach different things. Refusing
         // is the only answer both can give, so it is the one both give.
         assertNull(nothing(daily.copy(hour = 24)))
-        assertNull(nothing(daily.copy(frequency = HowOften.HOURLY, minute = 60)))
-        assertNull(nothing(daily.copy(frequency = HowOften.WEEKLY, weekday = 7)))
-        assertNull(nothing(daily.copy(frequency = HowOften.MONTHLY, dayOfMonth = 31)))
-        assertNull(nothing(daily.copy(frequency = HowOften.YEARLY, month = 13)))
+        assertNull(nothing(daily.copy(frequency = HowOftenItRecurs.HOURLY, minute = 60)))
+        assertNull(nothing(daily.copy(frequency = HowOftenItRecurs.WEEKLY, weekday = 7)))
+        assertNull(nothing(daily.copy(frequency = HowOftenItRecurs.MONTHLY, dayOfMonth = 31)))
+        assertNull(nothing(daily.copy(frequency = HowOftenItRecurs.YEARLY, month = 13)))
     }
 
     @Test
@@ -130,11 +130,11 @@ class RecurrenceTest {
         // fields, the other hands them to a repeating trigger — so a field
         // fixed on one platform and left open on the other is a repeat that
         // arrives at a different moment on each, with nothing to say so.
-        assertEquals(WhatItFixes(null, 0, null, null, null), daily.copy(frequency = HowOften.HOURLY).fixes())
+        assertEquals(WhatItFixes(null, 0, null, null, null), daily.copy(frequency = HowOftenItRecurs.HOURLY).fixes())
         assertEquals(WhatItFixes(9, 0, null, null, null), daily.fixes())
-        assertEquals(WhatItFixes(9, 0, 0, null, null), daily.copy(frequency = HowOften.WEEKLY).fixes())
-        assertEquals(WhatItFixes(9, 0, null, 15, null), daily.copy(frequency = HowOften.MONTHLY).fixes())
-        assertEquals(WhatItFixes(9, 0, null, 15, 12), daily.copy(frequency = HowOften.YEARLY).fixes())
+        assertEquals(WhatItFixes(9, 0, 0, null, null), daily.copy(frequency = HowOftenItRecurs.WEEKLY).fixes())
+        assertEquals(WhatItFixes(9, 0, null, 15, null), daily.copy(frequency = HowOftenItRecurs.MONTHLY).fixes())
+        assertEquals(WhatItFixes(9, 0, null, 15, 12), daily.copy(frequency = HowOftenItRecurs.YEARLY).fixes())
     }
 
     @Test
@@ -142,12 +142,12 @@ class RecurrenceTest {
         // Refused rather than defaulted. A word this does not know is a caller
         // asking for something that will not happen, and arming a daily repeat
         // instead reports success for an alert nobody chose.
-        assertEquals(HowOften.DAILY, HowOften.saying("daily"))
-        assertNull(HowOften.saying("fortnightly"))
-        assertNull(HowOften.saying(null))
+        assertEquals(HowOftenItRecurs.DAILY, HowOftenItRecurs.saying("daily"))
+        assertNull(HowOftenItRecurs.saying("fortnightly"))
+        assertNull(HowOftenItRecurs.saying(null))
         assertEquals(
             listOf("hourly", "daily", "weekly", "monthly", "yearly"),
-            HowOften.entries.map { it.word },
+            HowOftenItRecurs.entries.map { it.word },
         )
     }
 }

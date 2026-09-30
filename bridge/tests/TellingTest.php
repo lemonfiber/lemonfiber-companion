@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Lemonfiber\Native\HowOften;
+use Lemonfiber\Native\HowOftenItRecurs;
 use Lemonfiber\Native\Repeat;
 use Lemonfiber\Native\Telling;
 use Lemonfiber\Native\Told;
@@ -232,35 +232,35 @@ it('describes each of the five ways a notification can repeat, in full', functio
     // silent one matters. Asserting the whole array is the same test with
     // nothing left out of it.
     expect(Repeat::hourly(15)->asAsked())->toBe([
-        'frequency' => HowOften::Hourly->value,
+        'frequency' => HowOftenItRecurs::Hourly->value,
         'hour' => 0,
         'minute' => 15,
         'weekday' => 0,
         'dayOfMonth' => 1,
         'month' => 1,
     ])->and(Repeat::daily(9, 0)->asAsked())->toBe([
-        'frequency' => HowOften::Daily->value,
+        'frequency' => HowOftenItRecurs::Daily->value,
         'hour' => 9,
         'minute' => 0,
         'weekday' => 0,
         'dayOfMonth' => 1,
         'month' => 1,
     ])->and(Repeat::weekly(3, 9, 0)->asAsked())->toBe([
-        'frequency' => HowOften::Weekly->value,
+        'frequency' => HowOftenItRecurs::Weekly->value,
         'hour' => 9,
         'minute' => 0,
         'weekday' => 3,
         'dayOfMonth' => 1,
         'month' => 1,
     ])->and(Repeat::monthly(12, 9, 0)->asAsked())->toBe([
-        'frequency' => HowOften::Monthly->value,
+        'frequency' => HowOftenItRecurs::Monthly->value,
         'hour' => 9,
         'minute' => 0,
         'weekday' => 0,
         'dayOfMonth' => 12,
         'month' => 1,
     ])->and(Repeat::yearly(6, 12, 9, 0)->asAsked())->toBe([
-        'frequency' => HowOften::Yearly->value,
+        'frequency' => HowOftenItRecurs::Yearly->value,
         'hour' => 9,
         'minute' => 0,
         'weekday' => 0,

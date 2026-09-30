@@ -13,7 +13,7 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Hearing;
-use Modules\Kernel\Api\HowOften;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\SecureStorage;
@@ -290,7 +290,7 @@ final class WhatToDoWithThis extends NativeComponent
      * that is refused: a finished report and a stack whose services are all
      * in standing states answer the same thing however often they are read.
      */
-    #[Poll(HowOften::WHILE_WORK_RUNS_MS)]
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItSettles(): void
     {
         $this->listenWhileItStarts();
