@@ -6,6 +6,8 @@ namespace Modules\Operator\Internal;
 
 use Modules\Stacks\Api\AStacksScreen;
 
+use function str_replace;
+
 /**
  * Every screen that is not about one stack, and the one place its path is written.
  *
@@ -42,4 +44,18 @@ enum AScreenWithoutAStack: string
 
     /** Typing it, for a camera that is refused or absent. */
     case PairByTyping = '/pair/typed';
+
+    /**
+     * A screen this version of the app does not have yet, saying so.
+     *
+     * The segment names which one, as {@see WhatIsNotHereYet} spells it, so
+     * the menu keeps its item and opening it is not a dead end.
+     */
+    case NotHereYet = '/not-yet/{what}';
+
+    /** This screen's path, saying which item this version of the app does not have yet. */
+    public function saying(WhatIsNotHereYet $what): string
+    {
+        return str_replace('{what}', $what->value, $this->value);
+    }
 }

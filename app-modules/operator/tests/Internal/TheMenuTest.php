@@ -18,6 +18,7 @@ use function json_decode;
 use const JSON_THROW_ON_ERROR;
 
 use Modules\Operator\Internal\TheMenu;
+use Modules\Operator\Internal\WhatIsNotHereYet;
 use Modules\Operator\Internal\WhereInTheMenu;
 
 use function sprintf;
@@ -70,6 +71,19 @@ it('opens a screen of one stack from every item, and no two items open the same 
     foreach (TheMenu::cases() as $item) {
         expect($item->screen()->alsoNeedsAService())->toBeFalse();
     }
+});
+
+it('gives What\'s new and the two settings an icon each platform has, and a label of their own', function (): void {
+    $material = theIconsIn('material-icons');
+    $symbols = theIconsIn('sf-symbols');
+
+    foreach (WhatIsNotHereYet::cases() as $item) {
+        expect($material)->toContain($item->glyph())
+            ->and($symbols)->toContain($item->iosGlyph());
+    }
+
+    expect(WhatIsNotHereYet::WhatsNew->said())->toBe('navigation.menu.whats_new')
+        ->and(WhatIsNotHereYet::AppSettings->goes())->toBe('/not-yet/app_settings');
 });
 
 it('names each group by a key of its own', function (): void {
