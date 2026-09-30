@@ -106,4 +106,16 @@ final class PairingIsNotReadable extends InvalidArgumentException
             $key,
         ));
     }
+
+    /**
+     * The stack answered with a blank line to pair with.
+     *
+     * The line is the stack's to write and never this app's, so a blank one is a
+     * stack that produced nothing, and a code of nothing is one another phone
+     * would scan and pair with nothing.
+     */
+    public static function becauseTheLineIsBlank(): self
+    {
+        return new self('The stack answered with a blank line to pair with, and a code of nothing pairs nothing.');
+    }
 }

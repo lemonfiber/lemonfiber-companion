@@ -112,4 +112,15 @@ final class MustNotLeaveThisProcess extends LogicException
         // concatenated message is several mutants that no test can tell apart.
         return new self('A credential may not be serialised. N1-R7 exchanges it for a session once and keeps nothing to re-send, and N1-R23 keeps it out of every cache — a credential that reached one can be replayed, and unlike a session nothing on the server expires it on a schedule.');
     }
+
+    /**
+     * The line another phone pairs with.
+     *
+     * It carries no credential, and it is still pairing material: where a machine
+     * is and which certificate it presents, which is kept out of every cache.
+     */
+    public static function aPairingLine(): self
+    {
+        return new self('A pairing line may not be serialised. It is pairing material, held on the screen that asked for it and kept out of every cache, and anything that serialises one writes where a machine is and which certificate it presents wherever the result is kept.');
+    }
 }

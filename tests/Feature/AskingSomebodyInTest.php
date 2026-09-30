@@ -276,7 +276,7 @@ it('hands over the address the stack gave, with its caution, as text, as a code,
         ->and($drawn->said())->toContain('carol')
         ->and($drawn->offers())->toContain(__('stacks.invitation.pass_on'))
         ->and($drawn->offers())->not->toContain(__('stacks.invitation.send', ['name' => 'anna']))
-        ->and($encoding->given()?->url())->toBe('http://192.168.1.42:8096')
+        ->and($encoding->given()?->carried())->toBe('http://192.168.1.42:8096')
         ->and(implode("\n", $drawn->said()))->not->toContain('8443');
 });
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Codes\Api\QrCodes;
 use Modules\Kernel\Api\AnAddressToHand;
+use Modules\Kernel\Api\APairingLine;
 use Modules\Kernel\Api\AScannableCode;
 use Modules\Kernel\Api\Encoding;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
@@ -11,8 +12,8 @@ use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 // The Encoding contract, run against the adapter and against the fake.
 //
 // `G2`'s shape. What both owe a screen is a square of dark and light it can
-// draw for an address, and none at all for text that cannot be drawn — never
-// an empty square somebody would try to scan.
+// draw for an address or a pairing line, and none at all for text that cannot
+// be drawn — never an empty square somebody would try to scan.
 
 /** Whether a code is a square with dark and light in it. */
 function isASquareWithSomethingInIt(AScannableCode $code): bool
@@ -31,6 +32,14 @@ it('draws an address as a square of dark and light', function (): void {
 
     foreach (['the fake' => ACodeOfWhatItWasGiven::working(), 'the adapter' => new QrCodes()] as $which => $encoding) {
         expect(isASquareWithSomethingInIt($encoding->codeFor($address)))->toBeTrue($which);
+    }
+});
+
+it('draws a pairing line as a square of dark and light', function (): void {
+    $line = APairingLine::asWritten('{"address":"https://den.local:8443","fingerprint":"ab","expires":1790813400,"stack":"00"}');
+
+    foreach (['the fake' => ACodeOfWhatItWasGiven::working(), 'the adapter' => new QrCodes()] as $which => $encoding) {
+        expect(isASquareWithSomethingInIt($encoding->codeFor($line)))->toBeTrue($which);
     }
 });
 

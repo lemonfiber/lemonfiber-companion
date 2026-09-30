@@ -14,7 +14,8 @@ use function trim;
  * this app put together from a host and a port would be one nobody checked
  * answers. None at all is a door the machine will not say how to reach.
  *
- * `caution` is empty where the address keeps working on its own.
+ * `caution` is empty where the address keeps working on its own. What a code
+ * of it carries is the address alone, never its caution.
  */
 final readonly class AnAddressToHand
 {
@@ -42,6 +43,12 @@ final readonly class AnAddressToHand
 
     /** The whole address, as it would be typed or followed, or empty where there is none. */
     public function url(): string
+    {
+        return $this->url;
+    }
+
+    /** What a code of it carries, which is the address and never its caution. */
+    public function carried(): string
     {
         return $this->url;
     }

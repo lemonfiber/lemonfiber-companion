@@ -27,6 +27,7 @@ elements and painted only through the roles.
 | `action` | A tall filled button, `primary` or `tonal` (`View\Prominence`) |
 | `link` | Words that are tapped, with a chevron, on a target a thumb can find |
 | `chips` and `chip` | A wrapping row of choices, each chosen or not |
+| `scannable` | A code another device scans off the screen, dark squares on the accent, or the words given where there is none |
 
 A container element opens before its slot and closes after it
 (`View\HoldsItsSlot`), because a slot is drawn before its component.
