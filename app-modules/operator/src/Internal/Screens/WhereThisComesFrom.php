@@ -46,6 +46,7 @@ use function view;
 final class WhereThisComesFrom extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What came back, once the frame has asked.

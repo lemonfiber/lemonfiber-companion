@@ -65,6 +65,7 @@ use function view;
 final class PuttingACopyBack extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What the rehearsal came to, once the frame has asked.

@@ -103,6 +103,7 @@ final readonly class Fixtures
             ...SizeAndPlacement::placement(),
             ...Templates::templates(),
             ...Templates::screensNobodyCanReach(),
+            ...Templates::theWayAround(),
             ...FloorsAndRules::floors(),
             ...FloorsAndRules::rulesAboutRules(),
             ...WhatASurfaceIsNeverShown::whatASurfaceIsNeverShown(),

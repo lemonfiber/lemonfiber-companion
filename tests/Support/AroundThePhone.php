@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function app;
+
+use Illuminate\Contracts\Translation\Translator;
 use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\TheWayAround;
 
@@ -17,6 +20,6 @@ final readonly class AroundThePhone
 {
     public static function holding(Stacks $stacks): TheWayAround
     {
-        return new TheWayAround($stacks);
+        return new TheWayAround($stacks, app(Translator::class));
     }
 }

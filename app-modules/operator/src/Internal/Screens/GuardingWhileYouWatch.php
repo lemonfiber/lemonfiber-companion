@@ -68,6 +68,7 @@ use function view;
 final class GuardingWhileYouWatch extends NativeComponent
 {
     use AsksWhatTheStackIsRunning;
+    use FindsItsWayAround;
 
     /**
      * The forms named so far, by name, before any guard is asked about.

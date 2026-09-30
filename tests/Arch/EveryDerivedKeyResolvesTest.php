@@ -80,6 +80,8 @@ use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
+use Modules\Operator\Internal\TheMenu;
+use Modules\Operator\Internal\WhereInTheMenu;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Tests\Support\Catalogue;
 use Tests\Support\Tree;
@@ -441,6 +443,14 @@ function everyDerivedKey(): array
         // The first run, which is the one sequence whose steps are copy and
         // nothing else — a step with no sentence behind it is a blank frame
         // between two that read, and the sequence is what it breaks.
+        TheMenu::class => aPairPerCase(
+            TheMenu::cases(),
+            static fn(TheMenu $item): array => [$item->said()],
+        ),
+        WhereInTheMenu::class => aPairPerCase(
+            WhereInTheMenu::cases(),
+            static fn(WhereInTheMenu $group): array => [$group->said()],
+        ),
         WhereTheFirstRunIs::class => aPairPerCase(
             WhereTheFirstRunIs::cases(),
             static fn(WhereTheFirstRunIs $at): array => [$at->said(), $at->explained()],

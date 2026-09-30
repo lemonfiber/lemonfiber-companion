@@ -55,6 +55,7 @@ use function view;
 final class PuttingTheConfigurationBack extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What the preview came to, once the frame has asked.

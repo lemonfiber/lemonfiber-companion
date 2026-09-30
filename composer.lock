@@ -3643,7 +3643,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/operator",
-                "reference": "34a41b9f30a12bb083fcc17ca8c941cb31cd5a1c"
+                "reference": "4ebbd483b735787c464883c4cb086a8e7b1255f9"
             },
             "require": {
                 "modules/backups": "dev-main",
@@ -3654,6 +3654,7 @@
                 "modules/stacks": "dev-main",
                 "modules/updates": "dev-main",
                 "nativephp/mobile": "^4.4",
+                "nativephp/mobile-ui": "^0.6",
                 "php": "^8.5"
             },
             "type": "library",

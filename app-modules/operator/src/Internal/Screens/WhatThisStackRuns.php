@@ -75,6 +75,7 @@ use function view;
 final class WhatThisStackRuns extends NativeComponent
 {
     use AsksWhatTheStackIsRunning;
+    use FindsItsWayAround;
 
     public function __construct(
         private readonly Supervising $supervising,

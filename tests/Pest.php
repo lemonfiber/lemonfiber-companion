@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Http;
+use Native\Mobile\Edge\ChromeContributorRegistry;
 use Saloon\Http\Faking\MockClient;
 use Tests\Support\OurCode;
 use Tests\TestCase;
@@ -71,3 +72,13 @@ pest()->beforeEach(function (): void {
 pest()->beforeEach(function (): void {
     Http::preventStrayRequests();
 })->in('Feature', 'Templates', 'Contract', sprintf('%s/../bridge/tests', __DIR__));
+
+/*
+ * Every boot of the application hands NativePHP the side menu, and NativePHP
+ * keeps what it is handed for as long as the process runs. On the phone the
+ * application boots once; each test boots it anew, so the list is emptied after
+ * every test and a frame carries the menu once, as it does on the phone.
+ */
+pest()->afterEach(function (): void {
+    ChromeContributorRegistry::reset();
+})->in(...OurCode::testDirectories());

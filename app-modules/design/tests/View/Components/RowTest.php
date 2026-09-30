@@ -52,6 +52,13 @@ it('starts a row that stands for something with a state with that state\'s glyph
         ->and(data_get($row, 'props.leading_type'))->toBe('icon');
 });
 
+it('starts a row that names somewhere to go with its own glyph, beside its headline', function (): void {
+    $row = WhatMarkupDraws::drawn('<x-design::row headline="Passwords" icon="key" ios-icon="key.horizontal" goes="\'/s\'" />');
+
+    expect(data_get($row, 'props.leading_icon'))->toBe('key')
+        ->and(data_get($row, 'props.headline'))->toBe('Passwords');
+});
+
 it('refuses a tone it has no glyph for', function (): void {
     WhatMarkupDraws::drawn('<x-design::row headline="Sonarr" tone="grand" />');
 })->throws(ViewException::class);

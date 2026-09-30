@@ -53,6 +53,7 @@ use function view;
 final class HowTheServicesAreWired extends NativeComponent
 {
     use AsksWhatTheStackIsRunning;
+    use FindsItsWayAround;
 
     /** The handle of the run being followed, while there is one. */
     public ?string $following = null;

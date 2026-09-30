@@ -101,6 +101,7 @@ final class WhatToDoWithThis extends NativeComponent
 {
     use AsksWhatTheStackIsRunning;
     use FollowsWhatTheVerbCameTo;
+    use FindsItsWayAround;
 
     /** What the operator has been asked about, where a verb is waiting on a yes. */
     public ?AgreedTo $asking = null;

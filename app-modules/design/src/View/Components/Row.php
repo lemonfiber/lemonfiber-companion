@@ -20,8 +20,10 @@ use function view;
  * value instead. `answersTo` is the name a reader hears where the headline
  * alone would be ambiguous, as in a list of rows that each say "Open".
  * `tone` puts that tone's glyph at its start, for a row that stands for
- * something with a state, such as a service; a row without one starts with
- * its headline.
+ * something with a state, such as a service. `icon` and `iosIcon` put a glyph
+ * of the row's own there instead, beside the headline and never in its place,
+ * for a row that names somewhere to go, such as a menu item. A row with
+ * neither starts with its headline.
  */
 final class Row extends Component
 {
@@ -39,11 +41,13 @@ final class Row extends Component
         public readonly string $goes = '',
         string $answersTo = '',
         string $tone = '',
+        string $icon = '',
+        string $iosIcon = '',
     ) {
         $this->named = $answersTo === '' ? $headline : $answersTo;
         $says = $tone === '' ? null : Tone::from($tone);
-        $this->glyph = $says?->glyph();
-        $this->iosGlyph = $says?->iosGlyph();
+        $this->glyph = $icon === '' ? $says?->glyph() : $icon;
+        $this->iosGlyph = $iosIcon === '' ? $says?->iosGlyph() : $iosIcon;
     }
 
     public function render(): View

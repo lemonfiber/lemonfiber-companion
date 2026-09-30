@@ -52,6 +52,7 @@ final class HowCurrentThisStackIs extends NativeComponent
 {
     use FollowsTheUpdateItTook;
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What came back, once the frame has asked.

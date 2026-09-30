@@ -52,6 +52,7 @@ use function view;
 final class WhatThisStackIsSetTo extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What the operator has typed, bound to the one input on this screen.

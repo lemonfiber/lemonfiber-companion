@@ -72,6 +72,7 @@ use function view;
 final class WhatWouldBePutRight extends NativeComponent
 {
     use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
 
     /**
      * What came back, once the frame has asked.

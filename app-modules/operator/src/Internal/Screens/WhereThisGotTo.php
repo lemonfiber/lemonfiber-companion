@@ -49,6 +49,7 @@ final class WhereThisGotTo extends NativeComponent
 {
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
+    use FindsItsWayAround;
 
     /** What was typed and followed instead of what the route names, or empty. */
     public string $following = '';

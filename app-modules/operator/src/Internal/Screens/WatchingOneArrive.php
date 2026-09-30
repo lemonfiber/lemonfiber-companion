@@ -76,6 +76,7 @@ final class WatchingOneArrive extends NativeComponent
     use HearsWhereTheWalkIs;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
+    use FindsItsWayAround;
 
     /** What is typed into the box, walked only when asked to. Public for {@see WhatThisServiceSaid::$looking}'s reason. */
     public string $looking = '';
