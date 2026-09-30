@@ -237,6 +237,7 @@ return [
             'household' => 'Telling a household member something',
             'updates' => 'Checking for a newer lemonfiber',
             'plugin-source' => 'Fetching a plugin from its source',
+            'catalogue' => 'Looking up a plugin in the catalogue',
         ],
         'allowed' => [
             'allowed' => 'Allowed by this machine\'s settings',
