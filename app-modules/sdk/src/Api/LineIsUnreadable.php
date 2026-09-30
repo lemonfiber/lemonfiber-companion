@@ -8,6 +8,7 @@ use function array_map;
 use function implode;
 
 use InvalidArgumentException;
+use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\Stream;
 
 use function sprintf;
@@ -49,6 +50,19 @@ final class LineIsUnreadable extends InvalidArgumentException
             implode(', ', array_map(
                 static fn(Stream $stream): string => sprintf('`%s`', $stream->value),
                 Stream::cases(),
+            )),
+        ));
+    }
+
+    public static function level(string $said, int $position): self
+    {
+        return new self(sprintf(
+            'Line %d of the log window says it is `%s`, and this app reads %s. It is refused rather than shown unmarked, because an error drawn as an ordinary line is the one an operator scrolls past.',
+            $position,
+            $said,
+            implode(', ', array_map(
+                static fn(HowSeriousALineIs $level): string => sprintf('`%s`', $level->value),
+                HowSeriousALineIs::cases(),
             )),
         ));
     }

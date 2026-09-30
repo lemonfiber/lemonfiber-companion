@@ -655,4 +655,17 @@ enum WireField: string implements NamesAWireField
      * directory.
      */
     case Path = 'path';
+
+    /**
+     * What a service that has ended exited with, absent while it runs: on a
+     * service in the listing, and on an item of the health summary that is a
+     * service which stopped.
+     */
+    case Exit = 'exit';
+
+    /**
+     * How far along a scale something stands: where a machine, or one of its
+     * volumes, stands for room, and the severity a log line declared.
+     */
+    case Level = 'level';
 }

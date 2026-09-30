@@ -21,6 +21,7 @@ use Modules\Kernel\Api\HowItWasReached;
 use Modules\Kernel\Api\HowLemonfiberWasInstalled;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowSeriousAConnectionIs;
+use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheImportLinked;
@@ -540,6 +541,15 @@ it('N1-R13 — every stream the contract describes has a case', function (): voi
     expect(valuesOf(Stream::cases()))->toBe($streams);
 });
 
+it('N1-R13 — every severity a log line can declare has a case', function (): void {
+    // Read off the log envelope, where the union is declared; the space
+    // envelope's `level` is a different field under the same word.
+    $levels = unionIn(theGeneratedLogEnvelope(), 'level');
+
+    expect($levels)->not->toBe([], 'no level union was found in the generated envelope');
+    expect(valuesOf(HowSeriousALineIs::cases()))->toBe($levels);
+});
+
 it('N1-R13 — every cost the contract describes has a case', function (): void {
     $costs = unionIn(theGeneratedConfigEnvelope(), 'cost');
 
@@ -1016,6 +1026,7 @@ const CHECKED_AGAINST_THE_WIRE = [
     Awaiting::class => 'until',
     Standing::class => 'state',
     Stream::class => 'stream',
+    HowSeriousALineIs::class => 'level',
     Medium::class => 'medium',
     Cost::class => 'cost',
     Stance::class => 'stance',

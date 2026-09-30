@@ -32,6 +32,7 @@ enum DashboardField: string implements NamesAWireField
     /** What else is wrong because of one affected item. */
     case Downstream = 'downstream';
 
+
     /** What stopped moving in the queue, by kind, worst first. */
     case Stuck = 'stuck';
 

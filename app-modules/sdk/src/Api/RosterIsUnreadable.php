@@ -86,7 +86,7 @@ final class RosterIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'Service %d in the status envelope carries an `%s` that is neither absent, empty, nor a number. It is refused rather than read as still running, which is the reading that turns a service that died into one nobody looks at.',
             $position,
-            StatusField::Exit->value,
+            WireField::Exit->value,
         ));
     }
 

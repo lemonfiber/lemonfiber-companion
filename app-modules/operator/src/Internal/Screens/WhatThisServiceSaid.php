@@ -108,6 +108,9 @@ final class WhatThisServiceSaid extends NativeComponent
      */
     public array $unfolded = [];
 
+    /** Whether somebody jumped to the first error, so the lines start there. */
+    public bool $fromTheFirstError = false;
+
     public function __construct(
         private readonly Saying $saying,
         private readonly SecureStorage $storage,
@@ -203,6 +206,26 @@ final class WhatThisServiceSaid extends NativeComponent
         $this->held = null;
         $this->readIn = null;
         $this->unfolded = [];
+        $this->fromTheFirstError = false;
+    }
+
+    /**
+     * Start the lines at the first one that declared an error.
+     *
+     * The platform offers no way to scroll a screen to a line, so the jump
+     * leaves out what came before instead, and the screen opens at its top
+     * rather than at its end. Nothing is asked again: it is the lines already
+     * here, drawn from a later one.
+     */
+    public function jumpToTheFirstError(): void
+    {
+        $this->fromTheFirstError = true;
+    }
+
+    /** Show every line again, from the top of the window. */
+    public function showEveryLine(): void
+    {
+        $this->fromTheFirstError = false;
     }
 
     /**
@@ -260,7 +283,13 @@ final class WhatThisServiceSaid extends NativeComponent
         $held = $this->held;
 
         if ($held instanceof Scrollback) {
-            return new HowAScrollbackReads()->this($held, $this->lookingFor(), $this->zone(), $this->unfolded);
+            return new HowAScrollbackReads()->this(
+                $held,
+                $this->lookingFor(),
+                $this->zone(),
+                $this->unfolded,
+                fromTheFirstError: $this->fromTheFirstError,
+            );
         }
 
         return $this->ask();
@@ -295,6 +324,7 @@ final class WhatThisServiceSaid extends NativeComponent
         $looking = $this->lookingFor();
         $zone = $this->zone();
         $unfolded = $this->unfolded;
+        $fromTheFirstError = $this->fromTheFirstError;
 
         return $this->saying->saidBy(
             $stack,
@@ -302,10 +332,10 @@ final class WhatThisServiceSaid extends NativeComponent
             $this->service(),
             HowManyLines::asMuchAsAPhoneShows(),
         )->either(
-            this_: function (Scrollback $scrollback) use ($looking, $zone, $unfolded): WhatTheServiceTurnedOutToSay {
+            this_: function (Scrollback $scrollback) use ($looking, $zone, $unfolded, $fromTheFirstError): WhatTheServiceTurnedOutToSay {
                 $this->held = $scrollback;
 
-                return new HowAScrollbackReads()->this($scrollback, $looking, $zone, $unfolded);
+                return new HowAScrollbackReads()->this($scrollback, $looking, $zone, $unfolded, fromTheFirstError: $fromTheFirstError);
             },
             met: function (Obstacle $why) use ($stack): WhatTheServiceTurnedOutToSay {
                 $this->letGoOfTheSession($why, $stack);
