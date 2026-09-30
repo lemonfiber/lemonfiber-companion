@@ -27,6 +27,9 @@ return [
     ],
     'menu' => [
         'open' => 'Menu',
+        'whats_new' => 'Wat is nieuw',
+        'stack_settings' => 'Stack-instellingen',
+        'app_settings' => 'App-instellingen',
         'requests' => 'Verzoeken',
         'stuck_downloads' => 'Vastgelopen downloads',
         'follow_a_download' => 'Download volgen',

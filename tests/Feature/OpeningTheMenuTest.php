@@ -10,9 +10,12 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
+use Modules\Operator\Internal\Screens\NotInThisVersionYet;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\TheMenu;
+use Modules\Operator\Internal\WhatIsNotHereYet;
 use Modules\Operator\Internal\WhereInTheMenu;
+use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
@@ -50,12 +53,12 @@ function aScreenTheMenuOpens(): WhatTheWordsMean
     return $screen;
 }
 
-it('draws the stack, then every group with every item under it, in the menu\'s order', function (): void {
+it('draws the stack and what is new, every group with every item under it, and the two settings, in the menu\'s order', function (): void {
     $screen = aTabWithTheMenu();
     $drawn = WhatTheDeviceWouldDraw::inTheMenu($screen, $screen->drawerOverride());
 
-    $expected = ['The attic'];
-    $items = [];
+    $expected = ['The attic', __('navigation.menu.whats_new')];
+    $items = [__('navigation.menu.whats_new')];
 
     foreach (WhereInTheMenu::cases() as $group) {
         $expected[] = __($group->said());
@@ -66,9 +69,12 @@ it('draws the stack, then every group with every item under it, in the menu\'s o
         }
     }
 
+    $expected = [...$expected, __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')];
+    $items = [...$items, __('navigation.menu.stack_settings'), __('navigation.menu.app_settings')];
+
     expect(array_values(array_diff($drawn->said(), ['chevron_right'])))->toBe($expected)
         ->and($drawn->offers())->toBe($items)
-        ->and($items)->toHaveCount(count(TheMenu::cases()));
+        ->and($items)->toHaveCount(count(TheMenu::cases()) + 3);
 });
 
 it('names the control that opens the menu in the operator\'s language', function (): void {
@@ -119,4 +125,23 @@ it('marks one tab in the bar, the one the screen is under', function (): void {
 
     expect(array_column(array_column($tabs, 'props'), 'active', 'id'))
         ->toBe(['health' => false, 'services' => false, 'updates' => true, 'repairs' => false]);
+});
+
+it('keeps What\'s new and the two settings, and opening one says it is not in this version yet', function (): void {
+    foreach (WhatIsNotHereYet::cases() as $item) {
+        $screen = new NotInThisVersionYet();
+        $screen->setParams(['what' => data_get(NativeRouter::resolve($item->goes()), 'params.what')]);
+
+        expect($screen->which())->toBe($item)
+            ->and(data_get(NativeRouter::resolve($item->goes()), 'class'))->toBe(NotInThisVersionYet::class)
+            ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('device.not_in_this_version'))
+            ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('connection.back_to_your_stacks')]);
+    }
+});
+
+it('titles a placeholder it does not know as What\'s new', function (): void {
+    $screen = new NotInThisVersionYet();
+    $screen->setParams(['what' => 'the-weather']);
+
+    expect($screen->which())->toBe(WhatIsNotHereYet::WhatsNew);
 });

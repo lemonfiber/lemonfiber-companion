@@ -27,6 +27,9 @@ return [
     ],
     'menu' => [
         'open' => 'Menu',
+        'whats_new' => 'What\'s new',
+        'stack_settings' => 'Stack settings',
+        'app_settings' => 'App settings',
         'requests' => 'Requests',
         'stuck_downloads' => 'Stuck downloads',
         'follow_a_download' => 'Follow a download',

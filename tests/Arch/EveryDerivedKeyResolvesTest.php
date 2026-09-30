@@ -81,6 +81,7 @@ use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\TheMenu;
+use Modules\Operator\Internal\WhatIsNotHereYet;
 use Modules\Operator\Internal\WhereInTheMenu;
 use Modules\Operator\Internal\WhereTheFirstRunIs;
 use Tests\Support\Catalogue;
@@ -446,6 +447,10 @@ function everyDerivedKey(): array
         TheMenu::class => aPairPerCase(
             TheMenu::cases(),
             static fn(TheMenu $item): array => [$item->said()],
+        ),
+        WhatIsNotHereYet::class => aPairPerCase(
+            WhatIsNotHereYet::cases(),
+            static fn(WhatIsNotHereYet $item): array => [$item->said()],
         ),
         WhereInTheMenu::class => aPairPerCase(
             WhereInTheMenu::cases(),

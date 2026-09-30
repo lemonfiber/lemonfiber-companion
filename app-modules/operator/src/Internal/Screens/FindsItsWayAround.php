@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Modules\Operator\Internal\TheTabs;
+use Modules\Operator\Internal\WhatIsNotHereYet;
 use Modules\Operator\Internal\WhereInTheMenu;
 use Native\Mobile\Edge\Layouts\Builders\TabBarOptions;
 use Native\Mobile\UI\Builders\Drawer;
@@ -39,7 +40,9 @@ trait FindsItsWayAround
     {
         return Drawer::make(view('operator::the-menu', [
             'stack' => $this->stack(),
+            'whatsNew' => WhatIsNotHereYet::WhatsNew,
             'groups' => WhereInTheMenu::cases(),
+            'settings' => [WhatIsNotHereYet::StackSettings, WhatIsNotHereYet::AppSettings],
         ]))
             ->label($this->around->theMenuIsCalled())
             ->besideBack(besideBack: ! TheTabs::drawnBy(self::class))
