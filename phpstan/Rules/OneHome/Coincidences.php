@@ -25,6 +25,7 @@ use Modules\Kernel\Api\SomethingStillComing;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
+use Modules\Vault\Internal\KeptInAShape;
 
 use function sprintf;
 
@@ -73,10 +74,8 @@ final readonly class Coincidences
         SomethingStillComing::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],
         AtAGlance::class => ['MIXED_BY' => 'the hash a fingerprint is mixed by before it is read at a glance'],
         ChoosesWhatABundleHolds::class => ['MORE_LINES' => 'the widest log window a support bundle offers'],
-        PlatformWorkLeftRunning::class => [
-            'SHAPE_UNDER' => 'the field of a kept record that says which shape it was written in',
-            'JOB_UNDER' => 'the field of a kept record that holds the handle',
-        ],
+        PlatformWorkLeftRunning::class => ['JOB_UNDER' => 'the field of a kept record that holds the handle'],
+        KeptInAShape::class => ['SHAPE' => 'the field of a kept record that says which shape it was written in'],
         Handover::class => ['OFFERED' => "the native half's word for a sheet that was presented"],
         Link::class => ['UNREACHABLE' => "the native half's word for no network"],
         Scanning::class => ['READ' => "the native half's word for a code that was read"],

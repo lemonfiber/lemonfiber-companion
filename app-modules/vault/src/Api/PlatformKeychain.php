@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
+use Modules\Vault\Internal\KeptUnder;
 
 use function sprintf;
 
@@ -45,9 +46,6 @@ use function sprintf;
  */
 final readonly class PlatformKeychain implements SecureStorage
 {
-    /** What a stored key is prefixed with, so nothing else in the store collides. */
-    private const string UNDER = 'lemonfiber.session';
-
     public function __construct(private Keeps $store) {}
 
     public function isAvailable(): bool
@@ -165,6 +163,6 @@ final readonly class PlatformKeychain implements SecureStorage
     /** One key per stack, so two paired stacks never share a session. */
     private function keyFor(StackId $stack): string
     {
-        return sprintf('%s.%s', self::UNDER, $stack->stored());
+        return KeptUnder::Session->beneath($stack->stored());
     }
 }

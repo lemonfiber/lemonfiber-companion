@@ -26,6 +26,8 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
+use Modules\Vault\Internal\KeptInAShape;
+use Modules\Vault\Internal\KeptUnder;
 use Modules\Vault\Internal\WhetherAnythingIsHeld;
 
 /**
@@ -62,9 +64,6 @@ use Modules\Vault\Internal\WhetherAnythingIsHeld;
  */
 final readonly class PlatformStacks implements Stacks
 {
-    /** The one key the whole record lives under. */
-    private const string UNDER = 'lemonfiber.stacks';
-
     /** The shape this build writes, and the only one it reads. */
     private const int SHAPE = 1;
 
@@ -98,7 +97,7 @@ final readonly class PlatformStacks implements Stacks
      */
     public function configured(): Configured
     {
-        return $this->store->read(self::UNDER)->either(
+        return $this->store->read(KeptUnder::Stacks->value)->either(
             found: fn(string $written): Configured => $this->read($written),
             nothing: static fn(): Configured => Configured::none(),
             refused: static fn(): Configured => Configured::none(),
@@ -123,7 +122,7 @@ final readonly class PlatformStacks implements Stacks
      */
     public function holdsAny(): bool
     {
-        return $this->store->read(self::UNDER)->either(
+        return $this->store->read(KeptUnder::Stacks->value)->either(
             found: static fn(string $written): WhetherAnythingIsHeld => $written === ''
                 || $written === self::NOTHING_WRITTEN_DOWN
                     ? WhetherAnythingIsHeld::itIsNot()
@@ -151,7 +150,7 @@ final readonly class PlatformStacks implements Stacks
         // Folded into what is already there rather than written on its own, so
         // that re-pairing replaces a machine instead of adding a second row —
         // the rule lives in `Configured::with()` and this does not restate it.
-        $written = json_encode($this->shaped($this->configured()->with($stack)));
+        $written = json_encode(KeptInAShape::written(self::SHAPE, $this->shaped($this->configured()->with($stack))));
 
         // Every part of the record is a string this build validated on its way
         // into a value type, so there is no input an operator can supply that
@@ -163,7 +162,7 @@ final readonly class PlatformStacks implements Stacks
             return Remembered::refused(WhyAStackCannotBeRemembered::StoreWouldNotOpen);
         }
 
-        return $this->store->keep(self::UNDER, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
+        return $this->store->keep(KeptUnder::Stacks->value, $written, WhenAValueMayBeRead::WhileUnlocked)->either(
             done: static fn(): Remembered => Remembered::safely(),
             refused: static fn(WhyNothingWasKept $why): Remembered => Remembered::refused(self::meaning($why)),
         );
@@ -179,14 +178,14 @@ final readonly class PlatformStacks implements Stacks
     }
 
     /**
-     * The record as it goes into the store.
+     * The record's fields as they go into the store, beside its shape.
      *
      * The address is taken with `forTheClient()` rather than by letting
      * `json_encode` reach `Address::jsonSerialize()`, which answers with a
      * placeholder on purpose. Writing it down has to be a deliberate
      * act in one visible place, and this is the place.
      *
-     * @return array{shape: int, stacks: list<array{id: string, name: string, address: string, fingerprint: string}>}
+     * @return array{stacks: list<array{id: string, name: string, address: string, fingerprint: string}>}
      */
     private function shaped(Configured $record): array
     {
@@ -201,7 +200,7 @@ final readonly class PlatformStacks implements Stacks
             ];
         }
 
-        return ['shape' => self::SHAPE, 'stacks' => $stacks];
+        return ['stacks' => $stacks];
     }
 
     /**
@@ -237,7 +236,7 @@ final readonly class PlatformStacks implements Stacks
      */
     private function rowsIn(mixed $found): ?array
     {
-        if (! is_array($found) || ! array_key_exists('shape', $found) || $found['shape'] !== self::SHAPE) {
+        if (! KeptInAShape::isIn($found, self::SHAPE)) {
             return null;
         }
 
