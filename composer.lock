@@ -3112,12 +3112,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lemonfiber/sdk-php.git",
-                "reference": "c11b4bc61533f954a6bb257011ecb56a25220973"
+                "reference": "c5b1597c4a3f01781bdfbfc8a2cf1535faa0a7ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/c11b4bc61533f954a6bb257011ecb56a25220973",
-                "reference": "c11b4bc61533f954a6bb257011ecb56a25220973",
+                "url": "https://api.github.com/repos/lemonfiber/sdk-php/zipball/c5b1597c4a3f01781bdfbfc8a2cf1535faa0a7ac",
+                "reference": "c5b1597c4a3f01781bdfbfc8a2cf1535faa0a7ac",
                 "shasum": ""
             },
             "require": {
@@ -3251,7 +3251,7 @@
                 "source": "https://github.com/lemonfiber/sdk-php/tree/main",
                 "issues": "https://github.com/lemonfiber/sdk-php/issues"
             },
-            "time": "2026-09-30T13:47:28+00:00"
+            "time": "2026-09-30T15:18:33+00:00"
         },
         {
             "name": "marc-mabe/php-enum",
