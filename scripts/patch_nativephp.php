@@ -1015,6 +1015,118 @@ private struct A11yHintModifier: ViewModifier {
 BECOMES,
     ],
     [
+        // A row marked `flex-wrap` does not wrap on iOS. The layout that
+        // places a row's children takes the flag and never reads it, so every
+        // child is squeezed onto the one line: eight category chips each got
+        // a sliver of the width, and their words ran down the screen one
+        // letter at a time. Android wraps them. A wrapping row is laid out by
+        // a layout of its own, which puts each child at the width it asks for
+        // and starts a new line when the next one would not fit, the gap
+        // between them both ways.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIRowRenderer.swift',
+        'ships' => <<<'SHIPS'
+        if node.children.isEmpty {
+            Color.clear
+        } else {
+            FlexContainer(
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        if node.children.isEmpty {
+            Color.clear
+        } else if node.layout?.flexWrap == 1 {
+            NativeUIWrappingRow(gap: CGFloat(node.layout?.gap ?? 0)) {
+                ForEach(node.children) { child in
+                    NodeView(node: child)
+                        .equatable()
+                }
+            }
+        } else {
+            FlexContainer(
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIRowRenderer.swift',
+        'ships' => <<<'SHIPS'
+import SwiftUI
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import SwiftUI
+
+/// A row whose children start a new line when the next would not fit, as a CSS
+/// `flex-wrap: wrap` row does. Each child is as wide as it asks to be, no wider
+/// than the row, and centred on its line.
+struct NativeUIWrappingRow: Layout {
+    let gap: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let lines = arrange(subviews, within: proposal.width ?? .infinity)
+        let height = lines.reduce(0) { $0 + $1.height } + gap * CGFloat(max(lines.count - 1, 0))
+        let widest = lines.map(\.width).max() ?? 0
+
+        return CGSize(width: proposal.width ?? widest, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+
+        for line in arrange(subviews, within: bounds.width) {
+            var x = bounds.minX
+
+            for item in line.items {
+                subviews[item.index].place(
+                    at: CGPoint(x: x, y: y + (line.height - item.size.height) / 2),
+                    proposal: ProposedViewSize(item.size)
+                )
+                x += item.size.width + gap
+            }
+
+            y += line.height + gap
+        }
+    }
+
+    private struct Item {
+        let index: Int
+        let size: CGSize
+    }
+
+    private struct Line {
+        var items: [Item] = []
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+    }
+
+    private func arrange(_ subviews: Subviews, within width: CGFloat) -> [Line] {
+        var lines: [Line] = []
+        var line = Line()
+
+        for index in subviews.indices {
+            var size = subviews[index].sizeThatFits(.unspecified)
+            if size.width > width {
+                size = subviews[index].sizeThatFits(ProposedViewSize(width: width, height: nil))
+            }
+
+            if !line.items.isEmpty && line.width + gap + size.width > width {
+                lines.append(line)
+                line = Line()
+            }
+
+            line.width = line.items.isEmpty ? size.width : line.width + gap + size.width
+            line.height = max(line.height, size.height)
+            line.items.append(Item(index: index, size: size))
+        }
+
+        if !line.items.isEmpty {
+            lines.append(line)
+        }
+
+        return lines
+    }
+}
+
+BECOMES,
+    ],
+    [
         // What a bridge call carries stays out of the device log. The bridge
         // writes every call's parameters and result to logcat at INFO, in
         // debug and release builds alike, and this app's storage calls carry
