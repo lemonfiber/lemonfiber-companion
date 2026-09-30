@@ -1,0 +1,32 @@
+# Temporary probe for the head-analysis gate (Q-R67). Not for merging.
+name: sonar-probe
+on:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  probe:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      PROJECT: lemonfiber_lemonfiber-companion
+      BRANCH: probe/pull/${{ github.event.pull_request.number }}/merge
+      SHA: ${{ github.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: probe the token and clean up
+        run: |
+          set -uo pipefail
+          auth=$(printf '%s:' "$SONAR_TOKEN" | base64 | tr -d '\n')
+          call() { echo "--- $1 $2"; curl -sS --max-time 30 -X "$1" -o out.json -w 'HTTP %{http_code}\n' -H "Authorization: Basic ${auth}" "https://sonarcloud.io/api/$2"; head -c 1500 out.json; echo; }
+          call GET "users/current"
+          call POST "project_branches/delete?project=${PROJECT}&branch=probe-none"
+          call POST "project_branches/delete?project=${PROJECT}&branch=${BRANCH}-warm"
+          call POST "project_branches/delete?project=${PROJECT}&branch=${BRANCH}"
+          call GET "autoscan/eligibility?autoEnable=false&projectKey=${PROJECT}"
+          call GET "project_branches/list?project=${PROJECT}"
