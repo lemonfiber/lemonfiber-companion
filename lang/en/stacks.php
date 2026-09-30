@@ -236,6 +236,7 @@ return [
             'usenet' => 'Proving a Usenet login',
             'household' => 'Telling a household member something',
             'updates' => 'Checking for a newer lemonfiber',
+            'plugin-source' => 'Fetching a plugin from its source',
         ],
         'allowed' => [
             'allowed' => 'Allowed by this machine\'s settings',
