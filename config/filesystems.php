@@ -20,4 +20,26 @@ return [
 
     'links' => [],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Disks
+    |--------------------------------------------------------------------------
+    |
+    | The local disk as the framework defines it, less `serve`. Serving it
+    | registers `GET` and `PUT storage/{path}`, an upload door answering to a
+    | URL signed with the application key, and this app serves no files to
+    | anybody.
+    |
+    */
+
+    'disks' => [
+        'local' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'serve' => false,
+            'throw' => false,
+            'report' => false,
+        ],
+    ],
+
 ];
