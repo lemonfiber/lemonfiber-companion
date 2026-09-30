@@ -130,11 +130,16 @@ class RecurrenceTest {
         // fields, the other hands them to a repeating trigger — so a field
         // fixed on one platform and left open on the other is a repeat that
         // arrives at a different moment on each, with nothing to say so.
-        assertEquals(WhatItFixes(null, 0, null, null, null), daily.copy(frequency = HowOftenItRecurs.HOURLY).fixes())
+        val hourly = daily.copy(frequency = HowOftenItRecurs.HOURLY)
+        val weekly = daily.copy(frequency = HowOftenItRecurs.WEEKLY)
+        val monthly = daily.copy(frequency = HowOftenItRecurs.MONTHLY)
+        val yearly = daily.copy(frequency = HowOftenItRecurs.YEARLY)
+
+        assertEquals(WhatItFixes(null, 0, null, null, null), hourly.fixes())
         assertEquals(WhatItFixes(9, 0, null, null, null), daily.fixes())
-        assertEquals(WhatItFixes(9, 0, 0, null, null), daily.copy(frequency = HowOftenItRecurs.WEEKLY).fixes())
-        assertEquals(WhatItFixes(9, 0, null, 15, null), daily.copy(frequency = HowOftenItRecurs.MONTHLY).fixes())
-        assertEquals(WhatItFixes(9, 0, null, 15, 12), daily.copy(frequency = HowOftenItRecurs.YEARLY).fixes())
+        assertEquals(WhatItFixes(9, 0, 0, null, null), weekly.fixes())
+        assertEquals(WhatItFixes(9, 0, null, 15, null), monthly.fixes())
+        assertEquals(WhatItFixes(9, 0, null, 15, 12), yearly.fixes())
     }
 
     @Test
