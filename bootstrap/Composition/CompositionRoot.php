@@ -24,6 +24,7 @@ use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
 use Modules\Codes\Api\QrCodes;
+use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\TheLock;
 use Modules\Connection\Internal\SettingsKept;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
@@ -64,6 +65,7 @@ use Modules\Kernel\Api\HoldsTheSealKeys;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\KeepingCurrent;
+use Modules\Kernel\Api\KeepsReadingsFor;
 use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\MakingPairingCodes;
 use Modules\Kernel\Api\Measuring;
@@ -368,6 +370,11 @@ final class CompositionRoot extends ServiceProvider
         // `connection`'s settings — how long the app may be away before the
         // lock asks again — sealed by `connection` before they reach it.
         $this->app->bind(SettingsKept::class, SettingsInTheDatabase::class);
+
+        // How long readings are kept is one of the phone's settings, kept in
+        // `connection`'s row beside the lock's time away; `health` asks for it
+        // through the kernel.
+        $this->app->bind(KeepsReadingsFor::class, KeepingReadingsFor::class);
 
         // Every store of what the phone keeps, registered under one tag and
         // cleared together where the seal's key had to be made afresh: what

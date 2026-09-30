@@ -82,6 +82,7 @@ use Modules\Kernel\Api\WhoSetIt;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
+use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\TheMenu;
 use Modules\Operator\Internal\WhatIsNotHereYet;
 use Modules\Operator\Internal\WhereInTheMenu;
@@ -457,6 +458,10 @@ function everyDerivedKey(): array
         WhatIsNotHereYet::class => aPairPerCase(
             WhatIsNotHereYet::cases(),
             static fn(WhatIsNotHereYet $item): array => [$item->said()],
+        ),
+        NotACountOfDays::class => aPairPerCase(
+            NotACountOfDays::cases(),
+            static fn(NotACountOfDays $choice): array => [$choice->said()],
         ),
         LockAfter::class => aPairPerCase(
             LockAfter::cases(),
