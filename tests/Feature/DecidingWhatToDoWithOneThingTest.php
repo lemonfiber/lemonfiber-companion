@@ -652,7 +652,7 @@ it('says a service that ended stopped with an error, and leaves its exit code fo
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($screen->thing()->service?->exited)->toBe('137')
-        ->and($screen->thing()->service?->carriedToTheLogs())->toBe(['exited' => '137'])
+        ->and($screen->thing()->service?->carriedToTheLogs())->toBe(['exited' => '137', 'called' => 'Sonarr'])
         ->and($drawn)->toContain(__('health.it_stopped_with_an_error'))
         ->and(implode("\n", $drawn))->not->toContain('137');
 });

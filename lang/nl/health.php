@@ -290,6 +290,7 @@ return [
         'stdout' => 'Uitvoer',
         'stderr' => 'Opgemerkt',
     ],
+    'about_the_service' => ':about · :service',
     'what_a_service_said' => 'Bekijk wat deze dienst zei',
     'what_that_service_said' => 'Bekijk wat :service zei',
     'logs_for' => 'Wat :service heeft gezegd',

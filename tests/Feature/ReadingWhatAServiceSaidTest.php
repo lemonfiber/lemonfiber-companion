@@ -195,6 +195,19 @@ it('says no code where the road here carried none', function (): void {
         ->and($screen->exited())->toBe('');
 });
 
+it('heads the lines with what the stack calls the service, where the road here carried it', function (): void {
+    $named = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+    $named->setData(['called' => 'Gluetun']);
+    $unnamed = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
+    $unnamed->setData(['called' => 42]);
+
+    // The route still names it by its id, which is what the logs are asked
+    // for with; only the heading takes the name.
+    expect($named->called())->toBe('Gluetun')
+        ->and($named->service()->named())->toBe('gluetun')
+        ->and($unnamed->called())->toBe('gluetun');
+});
+
 it('N2-R10 — names the service it is about, from the route', function (): void {
     // From the route rather than held, because a screen holding the service it
     // was opened with, on a frame whose URI names another, would show one

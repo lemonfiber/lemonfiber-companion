@@ -32,15 +32,21 @@ use function trim;
  * service and the service a log window is read for are the same name for the
  * same thing, and a screen that sent an operator from one to the other used to
  * do it by passing a bare string — which is exactly the mistake `D2` names.
+ *
+ * **What the stack calls it travels beside the id.** The id is a key, not a
+ * name: capitalising `qbittorrent` does not arrive at qBittorrent, and the
+ * stack has already written the name down. So the name is the report's to give,
+ * and a finding whose report gave none says so rather than being handed its id
+ * to show in its place.
  */
 final readonly class AboutWhat
 {
-    private function __construct(private ?ServiceId $service) {}
+    private function __construct(private ?ServiceId $service, private ?string $called) {}
 
     /** The machine itself, rather than anything running on it. */
     public static function theMachine(): self
     {
-        return new self(null);
+        return new self(null, null);
     }
 
     /** One of the services, named as the stack names it. */
@@ -50,7 +56,19 @@ final readonly class AboutWhat
             throw ServiceIsUnnamed::onAFinding();
         }
 
-        return new self(ServiceId::called($service));
+        return new self(ServiceId::called($service), null);
+    }
+
+    /** One of the services, with what the stack calls it in front of an operator. */
+    public static function theNamedService(string $service, string $called): self
+    {
+        $name = trim($called);
+
+        if ($name === '') {
+            throw ServiceIsUnnamed::calledNothing();
+        }
+
+        return new self(self::theService($service)->service, $name);
     }
 
     /**
@@ -66,5 +84,24 @@ final readonly class AboutWhat
         return $this->service instanceof ServiceId
             ? $theService($this->service)
             : $theMachine();
+    }
+
+    /**
+     * What the stack calls it, where the report said.
+     *
+     * The machine is called nothing, and so is a service whose report gave no
+     * name — an engine from before the name was carried, or a service the stack
+     * does not declare.
+     *
+     * @template TCalled of object
+     * @template TUnsaid of object
+     *
+     * @param  Closure(string): TCalled  $called
+     * @param  Closure(): TUnsaid  $unsaid
+     * @return TCalled|TUnsaid
+     */
+    public function whatItIsCalled(Closure $called, Closure $unsaid): object
+    {
+        return $this->called === null ? $unsaid() : $called($this->called);
     }
 }

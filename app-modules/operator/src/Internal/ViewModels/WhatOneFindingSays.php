@@ -49,6 +49,7 @@ final readonly class WhatOneFindingSays
      * @param string   $code     the identifier an operator quotes, or empty
      * @param string   $meaning  what it means for them, or empty
      * @param string   $service  which service this is about, or empty
+     * @param string   $called   what the stack calls that service, or empty where the report gave no name
      * @param string   $because  the title of what explains this, or empty
      * @param Remedies $remedies what to try, likeliest first, empty where none
      * @param string   $underneath the technical detail the core added, or empty
@@ -61,6 +62,7 @@ final readonly class WhatOneFindingSays
         public string $code,
         public string $meaning,
         public string $service,
+        public string $called,
         public string $because,
         public Remedies $remedies,
         public string $underneath,
@@ -80,13 +82,17 @@ final readonly class WhatOneFindingSays
     }
 
     /**
-     * What the road to the service's logs carries: the code, where there is one.
+     * What the road to the service's logs carries: the code, and what the stack
+     * calls the service, where there is each.
      *
      * @return array<string, string>
      */
     public function carriedToTheLogs(): array
     {
-        return WhatTheLogsAreOpenedWith::Reported->carrying($this->code);
+        return [
+            ...WhatTheLogsAreOpenedWith::Reported->carrying($this->code),
+            ...WhatTheLogsAreOpenedWith::Called->carrying($this->called),
+        ];
     }
 
     /** Whether there is anything to explain, which is what the template asks. */

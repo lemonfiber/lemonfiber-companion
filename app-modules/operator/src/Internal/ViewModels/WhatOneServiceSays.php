@@ -67,13 +67,17 @@ final readonly class WhatOneServiceSays
     ) {}
 
     /**
-     * What the road to its logs carries: the exit code, where there is one.
+     * What the road to its logs carries: the exit code, where there is one, and
+     * the name the listing gives it.
      *
      * @return array<string, string>
      */
     public function carriedToTheLogs(): array
     {
-        return WhatTheLogsAreOpenedWith::Exited->carrying($this->exited);
+        return [
+            ...WhatTheLogsAreOpenedWith::Exited->carrying($this->exited),
+            ...WhatTheLogsAreOpenedWith::Called->carrying($this->name),
+        ];
     }
 
     /**

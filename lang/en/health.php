@@ -294,6 +294,7 @@ return [
         'stdout' => 'Output',
         'stderr' => 'Noticed',
     ],
+    'about_the_service' => ':about · :service',
     'what_a_service_said' => 'See what this service said',
     'what_that_service_said' => 'See what :service said',
     'logs_for' => 'What :service has been saying',

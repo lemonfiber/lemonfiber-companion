@@ -22,4 +22,7 @@ enum DoctorField: string implements NamesAWireField
 
     /** What a whole run came to, in the run's own judgement. */
     case Overall = 'overall';
+
+    /** What the stack calls a finding's service in front of an operator. */
+    case ServiceName = 'service_name';
 }

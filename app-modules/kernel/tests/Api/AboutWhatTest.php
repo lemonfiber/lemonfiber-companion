@@ -54,3 +54,34 @@ it('refuses a name that is whitespace, which is a name nobody can read', functio
 it('keeps the name, less the whitespace around it', function (): void {
     expect(whatItWasAbout(AboutWhat::theService("  sonarr\n")))->toBe('sonarr');
 });
+
+/** What the stack calls it, or the word for none, since the arm hands back an object. */
+function whatItWasCalled(AboutWhat $about): string
+{
+    return $about->whatItIsCalled(
+        called: static fn(string $name): WhatTheFindingWasAbout => new WhatTheFindingWasAbout($name),
+        unsaid: static fn(): WhatTheFindingWasAbout => new WhatTheFindingWasAbout('unsaid'),
+    )->said;
+}
+
+it('carries what the stack calls the service beside its id', function (): void {
+    $about = AboutWhat::theNamedService('qbittorrent', " qBittorrent\n");
+
+    expect(whatItWasCalled($about))->toBe('qBittorrent')
+        ->and(whatItWasAbout($about))->toBe('qbittorrent');
+});
+
+it('calls nothing by a name the report did not give, rather than by its id', function (): void {
+    expect(whatItWasCalled(AboutWhat::theService('gluetun')))->toBe('unsaid')
+        ->and(whatItWasCalled(AboutWhat::theMachine()))->toBe('unsaid');
+});
+
+it('refuses a name given as nothing, and a named service with no id', function (): void {
+    foreach (['', ' ', "\t\n"] as $blank) {
+        expect(fn(): AboutWhat => AboutWhat::theNamedService('gluetun', $blank))
+            ->toThrow(ServiceIsUnnamed::class, 'gives the name');
+    }
+
+    expect(fn(): AboutWhat => AboutWhat::theNamedService(' ', 'Gluetun'))
+        ->toThrow(ServiceIsUnnamed::class, 'names none');
+});

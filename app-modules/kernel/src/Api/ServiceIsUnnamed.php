@@ -24,6 +24,20 @@ final class ServiceIsUnnamed extends InvalidArgumentException
     }
 
     /**
+     * A finding gives its service's name as nothing at all.
+     *
+     * Its own sentence rather than {@see self::onAFinding()}'s: the service is
+     * there and its name is not, and a card drawing that would show a blank
+     * where the name the operator knows belongs.
+     */
+    public static function calledNothing(): self
+    {
+        return new self(
+            'A finding gives the name of the service it is about as nothing, so the name could not be shown.',
+        );
+    }
+
+    /**
      * A service was named where one is the whole point of the call.
      *
      * Its own sentence rather than {@see self::onAFinding()}'s, because the two
