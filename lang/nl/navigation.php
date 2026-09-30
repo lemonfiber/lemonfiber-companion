@@ -42,6 +42,7 @@ return [
         'front_door' => 'Voordeur',
         'watch_apps' => 'Kijk-apps',
         'passwords' => 'Wachtwoorden',
+        'pair_a_phone' => 'Telefoon koppelen',
         'storage' => 'Opslag',
         'backups' => 'Back-ups',
         'after_a_restart' => 'Na een herstart',

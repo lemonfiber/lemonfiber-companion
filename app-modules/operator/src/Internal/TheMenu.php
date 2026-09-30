@@ -27,6 +27,7 @@ enum TheMenu: string
     case FrontDoor = 'front_door';
     case WatchApps = 'watch_apps';
     case Passwords = 'passwords';
+    case PairAPhone = 'pair_a_phone';
     case Storage = 'storage';
     case Backups = 'backups';
     case AfterARestart = 'after_a_restart';
@@ -57,7 +58,7 @@ enum TheMenu: string
     {
         return match ($this) {
             self::Requests, self::Allowance, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
-            self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords => WhereInTheMenu::Access,
+            self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::PairAPhone => WhereInTheMenu::Access,
             self::Storage, self::Backups, self::AfterARestart, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
             self::General, self::Quality, self::Connections, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::History, self::Sources => WhereInTheMenu::Settings,
             self::GetHelp, self::Glossary, self::ServicesExplained => WhereInTheMenu::Help,
@@ -76,6 +77,7 @@ enum TheMenu: string
             self::FrontDoor => AStacksScreen::FrontDoor,
             self::WatchApps => AStacksScreen::Clients,
             self::Passwords => AStacksScreen::Credentials,
+            self::PairAPhone => AStacksScreen::Pair,
             self::Storage => AStacksScreen::Room,
             self::Backups => AStacksScreen::Keeps,
             self::AfterARestart => AStacksScreen::Hosting,
@@ -125,6 +127,7 @@ enum TheMenu: string
             self::FrontDoor => ['door_front', 'door.left.hand.open'],
             self::WatchApps => ['tv', 'tv'],
             self::Passwords => ['key', 'key'],
+            self::PairAPhone => ['qr_code', 'qrcode'],
             self::Storage => ['storage', 'internaldrive'],
             self::Backups => ['backup', 'externaldrive'],
             self::AfterARestart => ['restart_alt', 'arrow.clockwise'],

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use function mb_str_split;
-
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AScannableCode;
 use Modules\Kernel\Api\Obstacle;
@@ -25,9 +23,6 @@ use Modules\Operator\Internal\ViewModels\WhatWasGrantedAsShown;
  */
 final readonly class HowTheInvitationReads
 {
-    /** How a dark square is written in an {@see AScannableCode}'s rows. */
-    private const string A_DARK_SQUARE = '1';
-
     /** Nothing has been asked yet. */
     public function notAsked(): TheInvitationTurnedOutToBe
     {
@@ -110,7 +105,7 @@ final readonly class HowTheInvitationReads
                     url: $toHand->address()->url(),
                     caution: $toHand->address()->caution(),
                     hours: $toHand->hours(),
-                    code: $handsOver ? $this->squares($code) : [],
+                    code: $handsOver ? new HowACodeReads()->squares($code) : [],
                     handsOver: $handsOver,
                     lapses: $somethingToHand,
                 ),
@@ -143,28 +138,6 @@ final readonly class HowTheInvitationReads
             requestingSaid: $granted->requesting()->saidOnTheScreen(),
             filtering: $granted->filtering(),
         );
-    }
-
-    /**
-     * The code as rows of squares, dark where true.
-     *
-     * @return list<list<bool>>
-     */
-    private function squares(AScannableCode $code): array
-    {
-        $rows = [];
-
-        foreach ($code as $row) {
-            $squares = [];
-
-            foreach (mb_str_split($row) as $square) {
-                $squares[] = $square === self::A_DARK_SQUARE;
-            }
-
-            $rows[] = $squares;
-        }
-
-        return $rows;
     }
 
     /** A state with no invitation in it. */

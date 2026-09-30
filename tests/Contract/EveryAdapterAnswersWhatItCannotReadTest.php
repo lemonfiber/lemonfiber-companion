@@ -135,6 +135,7 @@ use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Lookouts;
 use Modules\Sdk\Api\Menders;
 use Modules\Sdk\Api\Narrators;
+use Modules\Sdk\Api\Pairers;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
@@ -387,6 +388,9 @@ function everyAdapterCallThatReads(): array
         'Listeners::howItIs' => static fn(): object => new Listeners($clients)->howItIs($stack, $session),
         'Listeners::whatAStartWaitsOn' => static fn(): object => new Listeners($clients)->whatAStartWaitsOn($stack, $session),
         'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
+        'Pairers::make' => static fn(): object => new Pairers($clients)->make($stack, $session),
+        'Pairers::whatBecameOf' => static fn(): object
+            => new Pairers($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
         'Lookouts::leaving' => static fn(): object => new Lookouts($clients)->leaving($stack, $session),
         'Menders::wouldPutRight' => static fn(): object => new Menders($clients, $entropy)->wouldPutRight($stack, $session),
@@ -535,6 +539,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Reversers::whatBecameOf' => sprintf('%sUndoEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Removers::whatBecameOf' => sprintf('%sRemovalEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Dismantlers::whatBecameOf' => sprintf('%sUninstallEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Pairers::whatBecameOf' => sprintf('%sPairingEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }

@@ -213,6 +213,9 @@ enum AStacksScreen: string
     /** Asking somebody in: what an invitation would grant, sending it, and handing it over. */
     case Invite = '/stacks/{stack}/invite';
 
+    /** Pairing another phone with this machine: a code it scans, or a line it types. */
+    case Pair = '/stacks/{stack}/pair';
+
     /**
      * Taking one member out of the household, said as what it would cost before it is agreed to.
      *

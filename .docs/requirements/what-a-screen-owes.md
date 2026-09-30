@@ -75,8 +75,8 @@ requirement is about doing — so the one rule that would have caught the gap
 below was written down as something it is not. This page's own header says the
 spec is canonical and a disagreement is a defect here; this was one.
 
-**The measurement.** The SDK ships 65 envelopes and this app follows 55.
-Of the rest, 9 are never named by the code in `app-modules` or `bridge`, tests
+**The measurement.** The SDK ships 65 envelopes and this app follows 56.
+Of the rest, 8 are never named by the code in `app-modules` or `bridge`, tests
 aside, and 1 more — `Pull` — is named without being followed. `Admission` is
 followed through the SDK: signing in opens a door whose class reads that
 envelope itself, so no reader here opens it.
@@ -111,8 +111,9 @@ back from it: what goes with the run said from the record's own rows before the
 yes, and the stack's report leading with what it left and why (`N11-R1` to
 `N11-R3`, `N11-R9`, `N11-R10`, `N6-R6`); `E3` is the list of copies, taking one and putting one back: an empty list told apart from one that could not be read, the scope named before and after, what a copy removed, how its size stood against the minute, a rehearsal labelled as one and where a restore put the data, and putting the configuration back, previewed file by file and connection by connection before the yes (`N6-R1` to `N6-R5`, `N6-R8` to `N6-R10`); `C4` is a support bundle, chosen, described before it is written and read in full here, with a refusal drawn as one, and handed over by the operator through the phone's own sharing (`N22-R1` to `N22-R10`); `C7` is queue health: what stopped moving by kind, worst first, one row per cause with the service's own words and how long, slow drawn apart from stuck, what could not be read named, and each item leading to its trace (`N23-R6` to `N23-R10`); `G8` is what leaves the machine, ours and
 theirs apart (`N10-R1` to `N10-R3`, `N10-R12`); `C6` is the material a phone is paired with, read,
-compared and pinned here, while showing it so another phone can pair and replacing the
-certificate it pins are not offered (`N1-R18` to `N1-R20`, `N1-R47` to `N1-R51`). Each is kept on
+compared and pinned here, and made on *Pair a phone* so another phone can pair, while
+replacing the certificate it pins is not offered (`N1-R18` to `N1-R20`, `N1-R47` to
+`N1-R51`, `N1-R74`). Each is kept on
 [pairing a machine](pairing-a-machine.md),
 [what leaves a machine](what-leaves-a-machine.md),
 [moving in](moving-in.md),

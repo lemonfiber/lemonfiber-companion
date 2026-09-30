@@ -21,6 +21,7 @@ use Modules\Kernel\Api\TakingThemOut;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
+use Modules\Kernel\Api\WhatToDoAboutPairing;
 use Modules\Kernel\Api\WhatToDoAboutQuality;
 use Modules\Kernel\Api\WhatToDoAboutWiring;
 use Modules\Kernel\Api\WhatToDoWithACopy;
@@ -199,6 +200,8 @@ const VERBS_THE_APP_ASKS_FOR = [
     'invite' => 'says what an invitation would grant and when it lapses, and makes the account only when that same request is agreed to',
 
     'reissue' => 'takes a member\'s password off so they choose the next one, naming the person and never a password',
+
+    'companion-pair' => 'makes a fresh pairing code another phone adds this stack with; it carries no credential and admits nobody, and nothing is asked until the operator taps',
 
     // Two requests under one name. Without the yes it says what taking
     // somebody out would cost and takes nobody out; with it, it takes out the
@@ -540,6 +543,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(TakingThemOut $out): string => $out->asked(), TakingThemOut::cases()),
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
+        ...array_map(static fn(WhatToDoAboutPairing $pairing): string => $pairing->asked(), WhatToDoAboutPairing::cases()),
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
         ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
         ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),

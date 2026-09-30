@@ -25,7 +25,6 @@ use Modules\Kernel\Api\Unsupported;
 use Modules\Kernel\Api\WhatAdoptingOneWouldDo;
 use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Sdk\Api\Fields\AdoptionField;
-use Modules\Sdk\Api\Fields\BesideField;
 use Modules\Sdk\Api\Fields\ImportField;
 use Modules\Sdk\Api\Fields\ReplacementField;
 use Modules\Sdk\Internal\Required;
@@ -123,7 +122,7 @@ final readonly class WhatMovingInCameTo
 
         return WhatAMoveCarries::came($data, $kind, TheStandingBeside::of(
             ThePortsMoved::of(...self::ports($data)),
-            WhatAMoveCarries::optional($data, BesideField::Written, $kind),
+            WhatAMoveCarries::optional($data, WireField::Written, $kind),
         ));
     }
 

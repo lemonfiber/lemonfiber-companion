@@ -440,6 +440,20 @@ return [
         'nothing_beside' => 'Nothing else is open to the household',
     ],
 
+    // Pairing another phone with this stack: a code it scans, or a line it types.
+    'pairing' => [
+        'heading' => 'Pair a phone',
+        'what_it_is' => 'A code another phone scans to add this stack. It carries no password: that phone still signs in with yours.',
+        'make' => 'Make a code',
+        'no_code' => 'This could not be drawn as a code. Type the line instead',
+        'or_type' => 'Or type this on the phone:',
+        'compare' => 'When it is typed, the other phone shows this. Check that it matches.',
+        'until' => 'It stops being good at :until.',
+        'reaches' => 'The phone reaches this machine at :address.',
+        'expired' => 'This code has expired',
+        'make_a_new_one' => 'Make a new one',
+    ],
+
     // Asking somebody in: what an invitation grants, sending it, handing it
     // over, and letting somebody choose a new password.
     'invitation' => [

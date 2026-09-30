@@ -7,7 +7,6 @@ use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Api\Fields\BackupField;
 use Modules\Sdk\Api\Fields\BandwidthField;
-use Modules\Sdk\Api\Fields\BesideField;
 use Modules\Sdk\Api\Fields\BundleField;
 use Modules\Sdk\Api\Fields\CatalogueField;
 use Modules\Sdk\Api\Fields\ClientsField;
@@ -29,6 +28,7 @@ use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Api\Fields\MusicField;
 use Modules\Sdk\Api\Fields\OutboundField;
+use Modules\Sdk\Api\Fields\PairingField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\QualityField;
@@ -74,7 +74,6 @@ function everyFieldNamedOnTheWire(): array
         ...ArchivesField::cases(),
         ...BackupField::cases(),
         ...BandwidthField::cases(),
-        ...BesideField::cases(),
         ...CatalogueField::cases(),
         ...BundleField::cases(),
         ...ClientsField::cases(),
@@ -96,6 +95,7 @@ function everyFieldNamedOnTheWire(): array
         ...MigrationField::cases(),
         ...MusicField::cases(),
         ...OutboundField::cases(),
+        ...PairingField::cases(),
         ...PreviewField::cases(),
         ...ProvenanceField::cases(),
         ...QualityField::cases(),

@@ -20,6 +20,7 @@ use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\NotInThisVersionYet;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
+use Modules\Operator\Internal\Screens\PairingAPhone;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
@@ -292,6 +293,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // in. Four screens, because each is its own question.
             Router::native(AStacksScreen::Credentials->value, WhatItHoldsToLetThemIn::class);
             Router::native(AStacksScreen::Clients->value, WhichAppToWatchOn::class);
+            Router::native(AStacksScreen::Pair->value, PairingAPhone::class);
             Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);
             Router::native(AStacksScreen::Invite->value, AskingSomebodyIn::class);
 

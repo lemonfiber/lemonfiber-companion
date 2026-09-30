@@ -249,6 +249,31 @@ it('finds screens to draw', function (): void {
  */
 const NEVER_REACHES_THE_MACHINE = ['Shelf'];
 
+/**
+ * Screens that ask the machine nothing until the operator taps, and why each does not.
+ *
+ * Opening one of these meets nothing, so there is nothing for it to report
+ * about a machine that would not answer or a session it refused; what it owes
+ * instead is the tap, which the walk below holds it to. Asking is what meets
+ * the machine, and that is held where the screen's own act is tested.
+ *
+ * @var array<string, string> the screen's name => why nothing is asked on open
+ */
+const ASKS_NOTHING_UNTIL_TAPPED = [
+    'Pair' => 'a pairing code is fresh material that stops being good minutes later, so one is made when the operator asks for it and never on open',
+];
+
+it('N1-R3 — a screen that asks nothing on open still offers the act that asks', function (): void {
+    withNoStackRunning();
+
+    $drawn = whatEachScreenDrewOf(AStandInStack::NotAnswering);
+
+    foreach (array_keys(ASKS_NOTHING_UNTIL_TAPPED) as $name) {
+        expect($drawn)->toHaveKey($name)
+            ->and($drawn[$name]->offers())->not->toBe([], $name);
+    }
+});
+
 it('N1-R10 — a machine that does not answer draws what stood in the way, and the way back', function (): void {
     withNoStackRunning();
 
@@ -257,7 +282,7 @@ it('N1-R10 — a machine that does not answer draws what stood in the way, and t
     $wayBackIn = theScreenASignedOutOperatorIsSentTo(AStandInStack::NotAnswering->asAStack()->id()->stored());
 
     foreach (whatEachScreenDrewOf(AStandInStack::NotAnswering) as $name => $drawn) {
-        if ($name === $wayBackIn || in_array($name, NEVER_REACHES_THE_MACHINE, strict: true)) {
+        if ($name === $wayBackIn || in_array($name, NEVER_REACHES_THE_MACHINE, strict: true) || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
             continue;
         }
 
@@ -300,7 +325,7 @@ it('N3-R13 — a machine that refuses the session draws the way back in', functi
     $wayBackIn = theScreenASignedOutOperatorIsSentTo(AStandInStack::RefusingTheSession->asAStack()->id()->stored());
 
     foreach (whatEachScreenDrewOf(AStandInStack::RefusingTheSession) as $name => $drawn) {
-        if ($name === $wayBackIn) {
+        if ($name === $wayBackIn || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
             continue;
         }
 
