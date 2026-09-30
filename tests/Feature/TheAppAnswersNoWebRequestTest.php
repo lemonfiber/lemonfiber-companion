@@ -50,7 +50,7 @@ it('holds no route but a screen, so nothing can be posted, put or called', funct
         ->and(everyRouteThatIsNotAScreen())->toBe([]);
 });
 
-it('no longer carries the routes that built a class or called the bridge by name', function (): void {
+it('carries no route that builds a class, calls the bridge by name or serves a file', function (): void {
     $paths = array_map(static fn(Route $route): string => $route->uri(), everyRouteTheAppRegisters());
 
     expect($paths)->not->toContain('_native/api/events')
