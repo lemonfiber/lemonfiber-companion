@@ -20,7 +20,7 @@ final readonly class HowTheVerbWent
      * @param bool                         $wasRehearsed            whether the report is of a rehearsal, which changed nothing
      * @param ?string                      $cameToSaid              the catalogue key for what it came to, in the tense the report allows
      * @param string                       $because                 the stack's reason for declining, or empty where it ran
-     * @param ?string                      $amountsToSaid           the catalogue key for what the stack says those services amount to
+     * @param ?string                      $amountsToSaid           the catalogue key for what the stack says those services amount to, or empty where it did not say
      * @param bool                         $namesWhatDidNotComeBack whether a verb that brings services up ran and did not bring everything back, so what did not is named
      * @param list<AServiceNotBackAsShown> $notBack                 every service short of running, with where it stood
      * @param ?string                      $leftOutSaid             the catalogue key for a service left out, in the tense the report allows

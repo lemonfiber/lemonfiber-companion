@@ -130,7 +130,7 @@ it('says a stop was carried out, and does not judge it by what came back', funct
         ->and($read->namesWhatDidNotComeBack)->toBeFalse();
 });
 
-it('says a start that brought everything back did, with nothing to name, and a report that does not say as unsaid', function (): void {
+it('says a start that brought everything back did, with nothing to name, and says nothing for a report that does not say what they amount to', function (): void {
     $everything = WhatTheVerbCameTo::reported(
         WhetherItWasRehearsed::CarriedOut,
         WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Running)),
@@ -143,7 +143,7 @@ it('says a start that brought everything back did, with nothing to name, and a r
     expect($complete->cameToSaid)->toBe('health.came_to.everything_back')
         ->and($complete->namesWhatDidNotComeBack)->toBeFalse()
         ->and($unsaid->cameToSaid)->toBe('health.came_to.not_everything_back')
-        ->and($unsaid->amountsToSaid)->toBe('health.came_to.unsaid')
+        ->and($unsaid->amountsToSaid)->toBe('')
         ->and($unsaid->namesWhatDidNotComeBack)->toBeTrue()
         ->and($unsaid->notBack)->toBe([]);
 });

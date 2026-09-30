@@ -86,7 +86,7 @@ final readonly class HowAVerbEndedReads
             because: $because,
             amountsToSaid: $report->amountsTo(
                 said: static fn(HowTheStackIsRunning $condition): AsText => AsText::of($condition->saidOnTheScreen()),
-                unsaid: static fn(): AsText => AsText::of('health.came_to.unsaid'),
+                unsaid: static fn(): AsText => AsText::nothing(),
             )->said,
             namesWhatDidNotComeBack: $ran && ! $rehearsed && $verb->bringsSomethingUp() && ! $report->broughtEverythingBack(),
             notBack: $this->notBack($report->whatDidNotComeBack()),

@@ -128,6 +128,26 @@ function whatStartingSonarrDrew(WhatToDoWithThis $screen): array
     return WhatTheDeviceWouldDraw::by($screen)->said();
 }
 
+/**
+ * The line a frame draws straight after another, or empty where it draws none.
+ *
+ * @param list<string> $drawn
+ */
+function whatIsDrawnAfter(string $line, array $drawn): string
+{
+    $seen = false;
+
+    foreach ($drawn as $said) {
+        if ($seen) {
+            return $said;
+        }
+
+        $seen = $said === $line;
+    }
+
+    return '';
+}
+
 it('follows a verb it sent until the stack reports, on the cadence it declares', function (): void {
     $supervising = aStoppedSonarrThatCameTo(HowTheVerbIsGoing::stillRunning());
     $screen = theScreenAVerbIsFollowedFrom($supervising);
@@ -210,9 +230,23 @@ it('is not a completed start where the stack called it active and a service is s
 it('says a report that does not say what the services amount to is not a completed start, and names nothing it did not name', function (): void {
     $drawn = whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done(aVerbThatRan()))));
 
-    expect($drawn)->toContain(__('health.came_to.not_everything_back'))
-        ->toContain(__('health.came_to.unsaid'))
-        ->toContain(__('health.came_to.none_named'));
+    // Nothing stands in for what the stack did not say: the next line is
+    // the one naming what did not come back.
+    expect(whatIsDrawnAfter(whatTheCatalogueSays('health.came_to.not_everything_back'), $drawn))
+        ->toBe(whatTheCatalogueSays('health.came_to.none_named'));
+});
+
+it('lets a stop the stack did not sum up stand on its own', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->whichCameTo(HowTheVerbIsGoing::done(aVerbThatRan()));
+    $screen = theScreenAVerbIsFollowedFrom($supervising);
+
+    $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
+    $screen->agree();
+    $screen->whileItSettles();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect(whatIsDrawnAfter(whatTheCatalogueSays('health.came_to.heading'), $drawn))->toBe(whatTheCatalogueSays('health.came_to.stopped'))
+        ->and($screen->whatItCameTo()->amountsToSaid)->toBe('');
 });
 
 it('says a start that brought everything back did', function (): void {

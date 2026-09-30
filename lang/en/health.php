@@ -410,7 +410,6 @@ return [
         'not_everything_back' => 'It did not bring everything back.',
         'stopped' => 'The stack carried out the stop.',
         'fetched' => 'The stack fetched what it could. What it says it came to is below.',
-        'unsaid' => 'The stack did not say what those services amount to.',
         'not_back' => ':name did not come back: :runs',
         'none_named' => 'The stack named no service as short of running.',
         'left_out' => ':name was left out: :needs',
