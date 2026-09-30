@@ -12,7 +12,8 @@ use Modules\Stacks\Api\AStacksScreen;
  * Where the screens are that answer who gets in to one machine.
  *
  * What it holds to let services in, which app the household watches on,
- * where the household comes in, asking somebody in, and taking somebody out.
+ * where the household comes in, asking somebody in, connecting their device,
+ * and taking somebody out.
  * Apart from {@see WhereAStackIs} for {@see WhatItKeepsOfItself}'s reason: one
  * accessor there hands out this, and the next screen of this kind costs it
  * nothing.
@@ -35,6 +36,12 @@ final readonly class WhoGetsIn
         return AStacksScreen::Clients->forTheStack($this->stack);
     }
 
+    /** Where the household comes in. */
+    public function frontDoor(): string
+    {
+        return TheMenu::FrontDoor->screen()->forTheStack($this->stack);
+    }
+
     /** Where somebody is asked in. */
     public function invite(): string
     {
@@ -50,5 +57,25 @@ final readonly class WhoGetsIn
     public function takingOut(string $named): string
     {
         return AStacksScreen::TakeOut->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+    }
+
+    /**
+     * Where somebody is asked in with their name already typed.
+     *
+     * Text on the way in, for {@see self::takingOut()}'s reason.
+     */
+    public function inviting(string $named): string
+    {
+        return AStacksScreen::InviteNamed->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+    }
+
+    /**
+     * Where one member's device is connected, by the name their account is held under.
+     *
+     * Text on the way in, for {@see self::takingOut()}'s reason.
+     */
+    public function connecting(string $named): string
+    {
+        return AStacksScreen::Device->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
     }
 }

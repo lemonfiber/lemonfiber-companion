@@ -466,7 +466,8 @@ enum WireField: string implements NamesAWireField
     /**
      * What would put something right, in one sentence: the single thing to do
      * about an unverified check, what would fix a layout that cannot hold a
-     * hardlink, and what to try about a walkthrough that stopped.
+     * hardlink, and what to try about a walkthrough that stopped; and, on a
+     * `handoff`, the name of what there is to do next.
      */
     case Remedy = 'remedy';
 
@@ -675,4 +676,16 @@ enum WireField: string implements NamesAWireField
      * volumes, stands for room, and the severity a log line declared.
      */
     case Level = 'level';
+
+    /**
+     * What somebody would call a device: one an app is recommended for, one a
+     * hand-off names an app for, and one signed in to an account.
+     */
+    case Device = 'device';
+
+    /** The app on a device: the one recommended for it, or the one it signed in with. */
+    case Client = 'client';
+
+    /** Whether an app is open source, where one is recommended or handed over. */
+    case OpenSource = 'open_source';
 }

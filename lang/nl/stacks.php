@@ -326,6 +326,8 @@ return [
             'fallback' => 'Werkt overal, niets te installeren',
         ],
         'instead' => 'In plaats daarvan: :instead',
+        // Said of an app that is named and never the recommended path.
+        'not_open_source' => 'Niet open source',
         'straining' => 'Afspelen kan hier moeite hebben met de voorinstelling :preset',
         'no_devices' => 'Er staan geen apparaten in de lijst',
         'trouble' => 'Als het niet werkt',
@@ -356,6 +358,27 @@ return [
         'no_address' => 'Deze machine zei niet waar hij bereikt wordt',
         'beside' => 'Wat ze verder kunnen bereiken',
         'nothing_beside' => 'Verder staat niets open voor het huishouden',
+    ],
+
+    // Het apparaat van één lid verbinden, vanaf hun kaart onder wie er binnen is.
+    'handoff' => [
+        'title' => 'Apparaat verbinden',
+        // De naam van dezelfde link op de kaart van elk lid, zodat ze te onderscheiden zijn.
+        'title_for' => 'Apparaat verbinden voor :name',
+        'show' => 'Code tonen',
+        'stands' => [
+            'ready' => 'Code klaar',
+            'pending' => 'Wacht op hen',
+            'connected' => 'Aangemeld',
+            'failed' => 'Werkte niet',
+        ],
+        'invite_them' => 'Nodig ze uit',
+        'on_their_device' => 'Op hun apparaat',
+        'which_app' => 'Welke app',
+        'opens_at_this_server' => 'Een link die :client op deze server opent',
+        'signed_in_devices' => 'Aangemelde apparaten',
+        'last_seen' => 'Voor het laatst gezien :when',
+        'first_given' => 'Code voor het eerst gegeven :when',
     ],
 
     // Een andere telefoon aan deze stack koppelen: een code om te scannen, of een regel om te typen.

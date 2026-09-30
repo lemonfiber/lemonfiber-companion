@@ -213,6 +213,14 @@ enum AStacksScreen: string
     /** Asking somebody in: what an invitation would grant, sending it, and handing it over. */
     case Invite = '/stacks/{stack}/invite';
 
+    /**
+     * Asking somebody in with their name already typed, opened where handing over a device found no account.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the name they were asked for by.
+     */
+    case InviteNamed = '/stacks/{stack}/invite/{service}';
+
     /** Pairing another phone with this machine: a code it scans, or a line it types. */
     case Pair = '/stacks/{stack}/pair';
 
@@ -223,6 +231,15 @@ enum AStacksScreen: string
      * here it is the name the member's account is held under.
      */
     case TakeOut = '/stacks/{stack}/household/{service}';
+
+    /**
+     * Connecting one member's device: the code that points it at the media server, and whether it has signed in.
+     *
+     * The second segment is the one {@see self::Logs} fills with a service;
+     * here it is the name the member's account is held under. It is not under
+     * {@see self::TakeOut}'s path, whose name takes the rest of it.
+     */
+    case Device = '/stacks/{stack}/device/{service}';
 
     /** What is already on this machine that is not lemonfiber's, and what may be done about it. */
     case AlreadyHere = '/stacks/{stack}/already-here';

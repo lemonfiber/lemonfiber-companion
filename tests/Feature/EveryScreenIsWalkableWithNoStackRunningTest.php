@@ -260,6 +260,7 @@ const NEVER_REACHES_THE_MACHINE = ['Shelf'];
  * @var array<string, string> the screen's name => why nothing is asked on open
  */
 const ASKS_NOTHING_UNTIL_TAPPED = [
+    'Device' => 'the first asking writes down when the code was given and which devices were signed in then, so it is the operator who starts a hand-off and never the screen appearing',
     'Pair' => 'a pairing code is fresh material that stops being good minutes later, so one is made when the operator asks for it and never on open',
 ];
 

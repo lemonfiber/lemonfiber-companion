@@ -10,6 +10,7 @@ use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
+use Modules\Operator\Internal\Screens\ConnectingADeviceForThem;
 use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
@@ -296,12 +297,20 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Pair->value, PairingAPhone::class);
             Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);
             Router::native(AStacksScreen::Invite->value, AskingSomebodyIn::class);
+            // Asking somebody in by a name another screen found no account
+            // for. A name can hold anything the media server allows, for the
+            // reason taking one out gives below.
+            Router::native(AStacksScreen::InviteNamed->value, AskingSomebodyIn::class)->where('service', '.+');
 
             // Taking one member out. A screen of its own, reached from who is
             // in, because what taking them out would cost is read and drawn
             // before anything is agreed to. A name can hold anything the media
             // server allows, so it is encoded and takes the rest of the path.
             Router::native(AStacksScreen::TakeOut->value, TakingSomebodyOut::class)->where('service', '.+');
+
+            // Connecting one member's device, reached from who is in. Nothing
+            // is asked on the way in; the code is shown when it is asked for.
+            Router::native(AStacksScreen::Device->value, ConnectingADeviceForThem::class)->where('service', '.+');
 
             // What is already on the machine, before anything is moved in. Its
             // own screen, because the survey is read before any mode is chosen.

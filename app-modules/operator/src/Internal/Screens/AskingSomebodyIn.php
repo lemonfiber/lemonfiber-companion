@@ -40,6 +40,7 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
+use function trim;
 use function view;
 
 /**
@@ -128,6 +129,20 @@ final class AskingSomebodyIn extends NativeComponent
         private readonly TheWayAround $around,
         private readonly Translator $catalogue,
     ) {}
+
+    /**
+     * Open with a name already typed, where another screen sent somebody here for them.
+     *
+     * Only the field is filled: nothing is asked until the operator taps.
+     */
+    public function mount(string $service = ''): void
+    {
+        if (trim($service) === '') {
+            return;
+        }
+
+        $this->name = $service;
+    }
 
     /** The stack this screen is about, read from the route on every frame. */
     public function stack(): Stack

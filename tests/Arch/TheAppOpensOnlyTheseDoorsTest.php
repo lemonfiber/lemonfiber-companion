@@ -7,6 +7,7 @@ use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\AgainstThePins;
 use Modules\Kernel\Api\AGuardAskedFor;
 use Modules\Kernel\Api\AskingThemIn;
+use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
@@ -201,6 +202,7 @@ const VERBS_THE_APP_ASKS_FOR = [
 
     'reissue' => 'takes a member\'s password off so they choose the next one, naming the person and never a password',
 
+    'household-handoff' => 'hands one member\'s device the server\'s address and reads whether a device of theirs has signed in since; it writes down only when the code was first given, carries no credential, and nothing is asked until the operator taps',
     'companion-pair' => 'makes a fresh pairing code another phone adds this stack with; it carries no credential and admits nobody, and nothing is asked until the operator taps',
 
     // Two requests under one name. Without the yes it says what taking
@@ -544,6 +546,7 @@ it('N2-R7 — every action this app asks for has a reason, and every reason an a
         ...array_map(static fn(WhatToDoAboutQuality $about): string => $about->asked(), WhatToDoAboutQuality::cases()),
         ...array_map(static fn(WhatToDoWithACopy $copy): string => $copy->asked(), WhatToDoWithACopy::cases()),
         ...array_map(static fn(WhatToDoAboutPairing $pairing): string => $pairing->asked(), WhatToDoAboutPairing::cases()),
+        ...array_map(static fn(ConnectingADevice $connecting): string => $connecting->asked(), ConnectingADevice::cases()),
         ...array_map(static fn(MovingInBy $by): string => $by->asked(), MovingInBy::cases()),
         ...array_map(static fn(WhatToDoAboutWiring $about): string => $about->asked(), WhatToDoAboutWiring::cases()),
         ...array_map(static fn(WhatToDoWithADownload $download): string => $download->asked(), WhatToDoWithADownload::cases()),

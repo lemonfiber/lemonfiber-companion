@@ -52,12 +52,14 @@ use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatSortItIs;
+use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
+use Modules\Kernel\Api\WhereTheHandoffStands;
 use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
@@ -803,6 +805,21 @@ it('every rating a device can be given has a case', function (): void {
     expect(valuesOf(HowWellADeviceIsServed::cases()))->toBe($words);
 });
 
+it('everywhere a hand-off can stand has a case', function (): void {
+    $words = unionIn(theGeneratedEnvelope('HandoffEnvelope'), 'state');
+
+    expect($words)->not->toBe([], 'no state union was found in the generated envelope');
+    expect(valuesOf(WhereTheHandoffStands::cases()))->toBe($words);
+});
+
+it('every remedy a hand-off can name has a case, beside the one for naming none', function (): void {
+    $words = unionIn(theGeneratedEnvelope('HandoffEnvelope'), 'remedy');
+    $named = array_values(array_filter(WhatTheHandoffNeedsNext::cases(), static fn(WhatTheHandoffNeedsNext $next): bool => $next !== WhatTheHandoffNeedsNext::Nothing));
+
+    expect($words)->not->toBe([], 'no remedy union was found in the generated envelope');
+    expect(valuesOf($named))->toBe($words);
+});
+
 it('everywhere a front door can stand has a case', function (): void {
     $words = unionIn(theGeneratedEnvelope('FrontDoorEnvelope'), 'standing');
 
@@ -1051,6 +1068,8 @@ const CHECKED_AGAINST_THE_WIRE = [
     WhoMadeACredential::class => 'origin',
     HowWellADeviceIsServed::class => 'support',
     WhereTheFrontDoorStands::class => 'standing',
+    WhereTheHandoffStands::class => 'state',
+    WhatTheHandoffNeedsNext::class => 'remedy',
     WhatItFaces::class => 'facing',
     HowTheDoorWasChosen::class => 'chosen',
     WhereTheInvitationStands::class => 'standing',

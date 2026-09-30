@@ -178,6 +178,13 @@
                     tap="wouldTakeThePasswordOff('{{ $member->name }}')"
                 />
             @endif
+            {{-- Connecting a device of theirs is its own screen, where the
+                 code is shown only when it is asked for. --}}
+            <x-design::link
+                label="{{ __('stacks.handoff.title') }}"
+                answers-to="{{ __('stacks.handoff.title_for', ['name' => $member->name]) }}"
+                :goes="$this->goes()->whoGetsIn()->connecting($member->name)"
+            />
             {{-- Taking them out of the household is its own screen, where
                  what it would cost is read before anything is agreed to. --}}
             <x-design::link

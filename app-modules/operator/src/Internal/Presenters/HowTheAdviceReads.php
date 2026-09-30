@@ -67,6 +67,7 @@ final readonly class HowTheAdviceReads
             device: $device->device(),
             client: $device->client(),
             supportSaid: $device->support()->saidOnTheScreen(),
+            openSource: $device->isOpenSource(),
             caution: $device->caution(),
             instead: $device->instead(),
         );
