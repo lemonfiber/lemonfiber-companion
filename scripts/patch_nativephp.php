@@ -749,6 +749,44 @@ SHIPS,
                             label = { Text(label, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {}) },
 BECOMES,
     ],
+    [
+        // What a bridge call carries stays out of the device log. The bridge
+        // writes every call's parameters and result to logcat at INFO, in
+        // debug and release builds alike, and this app's storage calls carry
+        // the session token, the stack's address and its pinned fingerprint.
+        // Anything that can read the log reads them. The function's name is
+        // still logged; what it was handed and what it handed back are not.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/cpp/bridge_jni.cpp',
+        'ships' => <<<'SHIPS'
+    if (parametersJSON) {
+        LOGI("📦 BridgeJNI: Parameters JSON: %s", parametersJSON);
+    } else {
+        LOGI("📦 BridgeJNI: Parameters JSON: NULL");
+    }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    // What a call carries is not logged: this app's calls carry its session.
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/cpp/bridge_jni.cpp',
+        'ships' => <<<'SHIPS'
+    LOGI("📤 BridgeJNI: Result JSON: %s", resultStr);
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    // What a call returned is not logged, for the reason its parameters are not.
+BECOMES,
+    ],
+    [
+        // The same on iOS, where the router prints every call's parameters.
+        'in' => '/../vendor/nativephp/mobile/resources/xcode/NativePHP/Bridge/BridgeRouter.swift',
+        'ships' => <<<'SHIPS'
+    print("🚀 NativePHPCall('\(functionName)') with parameters: \(parameters)")
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    print("🚀 NativePHPCall('\(functionName)')")
+BECOMES,
+    ],
 ];
 
 /**
@@ -774,7 +812,7 @@ const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites i
 const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %s is not there.\n\nThe package no longer ships the file this patch rewrites. Either it was renamed, in which case point that entry at the new path, or it is gone, in which case delete the entry — and if it was the last one, this script and the two `composer.json` hooks that call it. Skipping it quietly leaves a build fatalling on a device with nothing having said so. Do not ignore this.\n";
 
 /**
- * What to do when the Android project this tree built from does not carry a line the package does.
+ * What to do when the native project this tree builds from does not carry a line the package does.
  *
  * Its own sentence, because the remedy is not the other two's. The project
  * is a copy `native:install` took of the package, so a line missing from it
@@ -799,17 +837,19 @@ const WHAT_THE_BUNDLE_LEAVES_OUT = '/../vendor/nativephp/mobile/resources';
 /**
  * Where `native:install` copies a package template, which is what a build compiles.
  *
- * `native:install` copies the Android project out of the package into
- * `nativephp/android` once, and every build after that compiles the copy
- * without reading the package again. A rewrite of the template reaches a
- * project installed after it and never one installed before it, so an entry
- * under the template is made to the installed copy as well. A tree with no
- * installed project has nothing there to patch: a fresh checkout, whose install
- * copies the template this run patched, and the bundle's copy, which leaves
- * `nativephp` out as `BundleExclusions::PROJECT` says.
+ * `native:install` copies the Android and Xcode projects out of the package
+ * into `nativephp/android` and `nativephp/ios` once, and every build after that
+ * compiles the copy without reading the package again. A rewrite of the
+ * template reaches a project installed after it and never one installed before
+ * it, so an entry under the template is made to the installed copy as well. A
+ * tree with no installed project has nothing there to patch: a fresh
+ * checkout, whose install copies the template this run patched, and the
+ * bundle's copy, which leaves `nativephp` out as `BundleExclusions::PROJECT`
+ * says.
  */
 const WHERE_AN_INSTALL_COPIES_A_TEMPLATE = [
     '/../vendor/nativephp/mobile/resources/androidstudio' => '/../nativephp/android',
+    '/../vendor/nativephp/mobile/resources/xcode' => '/../nativephp/ios',
 ];
 
 /**
