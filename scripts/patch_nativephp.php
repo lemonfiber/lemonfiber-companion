@@ -914,6 +914,107 @@ SHIPS,
 BECOMES,
     ],
     [
+        // The iOS half of the text field fix above. A field compares what PHP
+        // answers only with the last value it sent, so typing faster than PHP
+        // answers lets an earlier answer land after a later keystroke was
+        // sent, and it replaces what the person typed. Measured on 2026-09-30
+        // on an iPhone 12 mini: a pairing code typed at a few characters a
+        // second kept only its last character. Each field now remembers what
+        // it sent and PHP has not answered, as the Android fields do, and only
+        // a value it never sent replaces the text.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
+        'ships' => <<<'SHIPS'
+    @State private var lastSentValue: String = ""
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    @State private var lastSentValue: String = ""
+    /// What this field sent that PHP has not answered yet, oldest first. PHP
+    /// answers in the order it was asked, so a server value matching one of
+    /// these answers it, and everything sent before it.
+    @State private var inFlight: [String] = []
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
+        'ships' => <<<'SHIPS'
+            if newServerValue != lastSentValue {
+                text = newServerValue
+                lastSentValue = newServerValue
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            if let answered = inFlight.firstIndex(of: newServerValue) {
+                inFlight.removeFirst(answered + 1)
+                return
+            }
+            if newServerValue != lastSentValue {
+                text = newServerValue
+                lastSentValue = newServerValue
+                inFlight.removeAll()
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
+        'ships' => <<<'SHIPS'
+    private func commit(_ value: String, onChangeCb: Int) {
+        lastSentValue = value
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    private func commit(_ value: String, onChangeCb: Int) {
+        lastSentValue = value
+        inFlight.append(value)
+        if inFlight.count > 64 { inFlight.removeFirst() }
+BECOMES,
+    ],
+    [
+        // A field whose error line appears loses the keyboard. The hint that
+        // announces the error is applied only while there is one, and a
+        // modifier that is there on one render and not the next makes SwiftUI
+        // build the field again, which drops its focus. So the first
+        // keystroke that makes a pairing code unreadable closes the keyboard.
+        // The hint is always applied now, empty when there is nothing to say,
+        // so the field is the same field before and after.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIOutlinedTextInputRenderer.swift',
+        'ships' => <<<'SHIPS'
+private struct A11yHintModifier: ViewModifier {
+    let hint: String
+    func body(content: Content) -> some View {
+        if hint.isEmpty { content }
+        else { content.accessibilityHint(hint) }
+    }
+}
+SHIPS,
+        'becomes' => <<<'BECOMES'
+private struct A11yHintModifier: ViewModifier {
+    let hint: String
+    func body(content: Content) -> some View {
+        content.accessibilityHint(hint)
+    }
+}
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIFilledTextInputRenderer.swift',
+        'ships' => <<<'SHIPS'
+private struct A11yHintModifier: ViewModifier {
+    let hint: String
+    func body(content: Content) -> some View {
+        if hint.isEmpty { content }
+        else { content.accessibilityHint(hint) }
+    }
+}
+SHIPS,
+        'becomes' => <<<'BECOMES'
+private struct A11yHintModifier: ViewModifier {
+    let hint: String
+    func body(content: Content) -> some View {
+        content.accessibilityHint(hint)
+    }
+}
+BECOMES,
+    ],
+    [
         // What a bridge call carries stays out of the device log. The bridge
         // writes every call's parameters and result to logcat at INFO, in
         // debug and release builds alike, and this app's storage calls carry
