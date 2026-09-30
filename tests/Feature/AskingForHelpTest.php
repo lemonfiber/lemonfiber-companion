@@ -33,6 +33,7 @@ use Modules\Operator\Internal\ViewModels\APieceAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatBundles;
@@ -71,7 +72,7 @@ function theHelpScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new AskingForHelpHere($helping, $keychain, StacksInMemory::holding($stack), $sheet ?? AShareSheetThatWasOffered::working());
+    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

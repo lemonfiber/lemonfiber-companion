@@ -37,6 +37,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -145,7 +146,7 @@ function aScreenListeningTo(AStackThatSpeaksUp $stream, ?ACaptureInMemory $windo
     $screen = new HowThisStackIs(
         AStackThatWasAsked::saying(aRunWithOneFinding()),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         $stream,
         $clock,
         $window,
@@ -441,7 +442,7 @@ it('draws the summary it heard where the device would not keep the word', functi
     $screen = new HowThisStackIs(
         AStackThatWasAsked::saying(aRunWithOneFinding()),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(aSummaryOfAFillingDisk())),
         FrozenClock::at(secondsAfterOpening(0)),
         ACaptureInMemory::inFront(),

@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Api\Queries\InCategory;
 use Modules\Health\Api\Queries\TheCauseBeforeItsSymptoms;
@@ -26,8 +23,6 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\HearsHowTheStackIs;
@@ -35,6 +30,7 @@ use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
 use Modules\Operator\Internal\Presenters\HowAFindingReads;
 use Modules\Operator\Internal\Presenters\HowAStackReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
@@ -136,7 +132,7 @@ final class HowThisStackIs extends NativeComponent
     public function __construct(
         private readonly Asking $asking,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
         private readonly Hearing $hearing,
         private readonly Clock $clock,
         private readonly Capture $capture,
@@ -154,11 +150,7 @@ final class HowThisStackIs extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /**

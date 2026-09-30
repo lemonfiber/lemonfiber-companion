@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackWithSomethingAlreadyOnIt;
 use Tests\Support\Fakes\StacksInMemory;
@@ -108,7 +109,7 @@ function theSurveyScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatIsAlreadyOnThisMachine($movingIn, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatIsAlreadyOnThisMachine($movingIn, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

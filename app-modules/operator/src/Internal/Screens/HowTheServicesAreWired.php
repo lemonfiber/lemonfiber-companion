@@ -6,9 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Job;
@@ -16,14 +13,13 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\Presenters\HowTheWiringReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheWiringTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -68,17 +64,13 @@ final class HowTheServicesAreWired extends NativeComponent
         private readonly WiringTheServices $wiring,
         private readonly Supervising $supervising,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /** The stack this screen is about, read from the route on every frame. */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /** The services the stack runs, which a run wires to each other; asked once per frame. */

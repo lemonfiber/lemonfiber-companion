@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatHoldsCredentials;
 use Tests\Support\Fakes\StacksInMemory;
@@ -73,7 +74,7 @@ function theCredentialsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatItHoldsToLetThemIn($safekeeping, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatItHoldsToLetThemIn($safekeeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

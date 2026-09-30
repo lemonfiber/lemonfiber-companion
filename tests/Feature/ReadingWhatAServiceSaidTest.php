@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AServiceThatSpoke;
 use Tests\Support\Fakes\StacksInMemory;
@@ -84,7 +85,7 @@ function theLogScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisServiceSaid($saying, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatThisServiceSaid($saying, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams([
         'stack' => $named ?? $stack->id()->stored(),
         'service' => $service ?? theServiceOnTheScreen()->named(),

@@ -31,6 +31,7 @@ use Modules\Sdk\Api\Storekeepers;
 use Native\Mobile\Edge\NativeRouter;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatListsItsCopies;
 use Tests\Support\Fakes\AStackThatSaysWhatItKeeps;
@@ -84,7 +85,7 @@ function theKeepingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisMachineKeepsHere($storing, $copying, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatThisMachineKeepsHere($storing, $copying, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

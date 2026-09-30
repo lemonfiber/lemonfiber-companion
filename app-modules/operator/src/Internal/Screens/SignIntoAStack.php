@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
@@ -19,10 +16,10 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Operator\Internal\AScreenWithoutAStack;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
 use Native\Mobile\Attributes\Lazy;
@@ -116,7 +113,7 @@ final class SignIntoAStack extends NativeComponent
     public function __construct(
         private readonly Admitting $admitting,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /** What the operator has typed into the password field. */
@@ -151,11 +148,7 @@ final class SignIntoAStack extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /** Whether the operator is in, which is when the way onwards is offered. */

@@ -32,6 +32,7 @@ use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -76,7 +77,7 @@ function theScreenAVerbIsFollowedFrom(
         $supervising,
         AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()))),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         $hearing ?? AStackThatSpeaksUp::whileItStarts(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);

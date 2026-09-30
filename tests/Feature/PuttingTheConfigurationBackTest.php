@@ -24,6 +24,7 @@ use Modules\Operator\Internal\ViewModels\ADiffLineAsShown;
 use Modules\Operator\Internal\ViewModels\AnEditAsShown;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatResets;
 use Tests\Support\Fakes\StacksInMemory;
@@ -74,7 +75,7 @@ function thePuttingItAllBackScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new PuttingTheConfigurationBack($resetting, $keychain, StacksInMemory::holding($stack));
+    $screen = new PuttingTheConfigurationBack($resetting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

@@ -6,9 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\Concealed;
@@ -20,14 +17,13 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TheSurvey;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAMoveReads;
 use Modules\Operator\Internal\Presenters\HowTheSurveyReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheMoveTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSurveyTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -87,7 +83,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent
     public function __construct(
         private readonly MovingIn $movingIn,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /**
@@ -98,11 +94,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /**

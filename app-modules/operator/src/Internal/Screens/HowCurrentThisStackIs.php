@@ -5,22 +5,18 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\KeepingCurrent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -81,7 +77,7 @@ final class HowCurrentThisStackIs extends NativeComponent
     public function __construct(
         private readonly KeepingCurrent $keeping,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /**
@@ -92,11 +88,7 @@ final class HowCurrentThisStackIs extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /**

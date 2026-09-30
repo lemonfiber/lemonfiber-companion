@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\ViewModels\AWordAsShown;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\StacksInMemory;
@@ -63,7 +64,7 @@ function theWordsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatTheWordsMean($explaining, $keychain, StacksInMemory::holding($stack));
+    $screen = new WhatTheWordsMean($explaining, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

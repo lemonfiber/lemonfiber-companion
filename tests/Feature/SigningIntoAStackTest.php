@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\StacksInMemory;
@@ -68,7 +69,7 @@ function signInScreen(
     $screen = new SignIntoAStack(
         $door,
         $keychain ?? AKeychainInMemory::working(),
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
     );
 
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);

@@ -28,6 +28,7 @@ use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatStopsSeeding;
 use Tests\Support\Fakes\StacksInMemory;
@@ -85,7 +86,7 @@ function theLettingGoScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new LettingADownloadGo($stopping, $keychain, StacksInMemory::holding($stack));
+    $screen = new LettingADownloadGo($stopping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $download]);
 
     return $screen;

@@ -46,6 +46,7 @@ use Modules\Operator\Internal\ViewModels\TheReadingAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTakingItOffDidAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatTakesItOff;
 use Tests\Support\Fakes\StacksInMemory;
@@ -78,7 +79,7 @@ function theTakingItOffScreen(AStackThatTakesItOff $removing, ?AKeychainInMemory
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingItOffThisMachine($removing, $keychain, $stacks ?? StacksInMemory::holding($stack));
+    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

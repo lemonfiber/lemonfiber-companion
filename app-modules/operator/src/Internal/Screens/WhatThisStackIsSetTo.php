@@ -6,9 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Concealed;
@@ -17,14 +14,13 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Settings;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackIsSetToTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -88,7 +84,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
         private readonly Arranging $arranging,
         private readonly Adjusting $adjusting,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
     ) {}
 
     /** What the operator has typed into the one field. */
@@ -99,11 +95,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
 
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /**

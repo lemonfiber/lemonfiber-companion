@@ -24,6 +24,7 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
@@ -89,7 +90,7 @@ function theScreenTheFourAreReachedFrom(): HowThisStackIs
     $screen = new HowThisStackIs(
         AStackThatWasAsked::saying(aRunTouchingEachOfTheFour()),
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         AStackThatSpeaksUp::holdingOpen(),
         FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)),
         ACaptureInMemory::inFront(),

@@ -7,23 +7,19 @@ namespace Modules\Operator\Internal\Screens;
 use function count;
 
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stalling;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAStallReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -85,7 +81,7 @@ final class WhatStoppedComingIn extends NativeComponent
     public function __construct(
         private readonly Stalling $stalling,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
         private readonly Explaining $explaining,
     ) {}
 
@@ -99,11 +95,7 @@ final class WhatStoppedComingIn extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /** How many are shown, which is what the empty state asks. */

@@ -38,6 +38,7 @@ use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\WhatOneRecordedChangeSays;
 use Modules\Operator\Internal\ViewModels\WhatPuttingARunBackWouldShow;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatKeepsARecord;
 use Tests\Support\Fakes\AStackThatPutsRunsBack;
@@ -109,7 +110,7 @@ function thePuttingARunBackScreen(
         $history,
         $puttingBack,
         $keychain,
-        StacksInMemory::holding($stack),
+        AroundThePhone::holding(StacksInMemory::holding($stack)),
         FrozenClock::at(Instant::atEpochSeconds(A_RUN_IS_PUT_BACK_AT)),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $stamp]);

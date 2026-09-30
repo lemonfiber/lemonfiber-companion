@@ -20,8 +20,6 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -30,6 +28,7 @@ use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
+use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\AStartLineAsShown;
 use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
@@ -121,7 +120,7 @@ final class WhatToDoWithThis extends NativeComponent
         private readonly Supervising $supervising,
         private readonly Rehearsing $rehearsing,
         private readonly SecureStorage $storage,
-        private readonly Stacks $stacks,
+        private readonly TheWayAround $around,
         private readonly Hearing $hearing,
     ) {}
 
@@ -145,11 +144,7 @@ final class WhatToDoWithThis extends NativeComponent
      */
     public function stack(): Stack
     {
-        $named = $this->param('stack');
-
-        return $this->stacks->configured()->stack(
-            StackId::rememberedAs(is_string($named) ? $named : ''),
-        );
+        return $this->around->stackNamed($this->param('stack'));
     }
 
     /**

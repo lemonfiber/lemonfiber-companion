@@ -27,6 +27,7 @@ use Modules\Operator\Internal\ViewModels\AConnectionAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringAsShown;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatWires;
@@ -64,7 +65,7 @@ function theWiringScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheServicesAreWired($wiring, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, StacksInMemory::holding($stack));
+    $screen = new HowTheServicesAreWired($wiring, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
