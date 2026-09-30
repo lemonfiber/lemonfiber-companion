@@ -44,14 +44,14 @@ final readonly class Changelogs
      */
     public static function in(array $data): array
     {
-        if (! array_key_exists(UpdateField::Changelog->value, $data)) {
-            throw ChangelogIsUnreadable::missing(UpdateField::Changelog);
+        if (! array_key_exists(WireField::Changelog->value, $data)) {
+            throw ChangelogIsUnreadable::missing(WireField::Changelog);
         }
 
-        $changelog = $data[UpdateField::Changelog->value];
+        $changelog = $data[WireField::Changelog->value];
 
         if (! is_array($changelog)) {
-            throw ChangelogIsUnreadable::missing(UpdateField::Changelog);
+            throw ChangelogIsUnreadable::missing(WireField::Changelog);
         }
 
         return $changelog;
@@ -124,11 +124,11 @@ final readonly class Changelogs
      */
     private static function release(array $said, ChangelogIsUnreadable $unreadable): Release
     {
-        if (! array_key_exists(UpdateField::Version->value, $said)) {
+        if (! array_key_exists(WireField::Version->value, $said)) {
             throw $unreadable;
         }
 
-        $version = $said[UpdateField::Version->value];
+        $version = $said[WireField::Version->value];
 
         // Blank as well as absent, because {@see Release::called()} refuses a
         // blank one with its own kind, which no adapter catches.
@@ -155,11 +155,11 @@ final readonly class Changelogs
      */
     private static function noticeable(array $said, ChangelogIsUnreadable $unreadable): bool
     {
-        if (! array_key_exists(UpdateField::UserFacing->value, $said)) {
+        if (! array_key_exists(WireField::UserFacing->value, $said)) {
             throw $unreadable;
         }
 
-        $noticed = $said[UpdateField::UserFacing->value];
+        $noticed = $said[WireField::UserFacing->value];
 
         if (! is_bool($noticed)) {
             throw $unreadable;
@@ -180,11 +180,11 @@ final readonly class Changelogs
      */
     private static function delivers(array $said): WhatAReleaseDelivers
     {
-        if (! array_key_exists(UpdateField::Delivers->value, $said)) {
+        if (! array_key_exists(WireField::Delivers->value, $said)) {
             return WhatAReleaseDelivers::saidNothing();
         }
 
-        $prose = $said[UpdateField::Delivers->value];
+        $prose = $said[WireField::Delivers->value];
 
         return is_string($prose)
             ? WhatAReleaseDelivers::said($prose)

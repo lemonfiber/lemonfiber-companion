@@ -26,27 +26,8 @@ enum UpdateField: string implements NamesAWireField
      */
     case Irreversible = 'irreversible';
 
-    /** Where the releases a stack could be on are listed. */
-    case Changelog = 'changelog';
-
     /** The releases inside the changelog, newest as the stack ordered them. */
     case Releases = 'releases';
-
-    /** What one release is called. */
-    case Version = 'version';
-
-    /**
-     * What a release delivers, in the stack's own prose.
-     *
-     * Optional on the wire, and a release the generator had nothing to say
-     * about is a state rather than a defect — read into the two arms of
-     * {@see \Modules\Kernel\Api\WhatAReleaseDelivers} so that nothing said
-     * and nothing to print cannot be confused on a row.
-     */
-    case Delivers = 'delivers';
-
-    /** Whether somebody in the house would notice this release. */
-    case UserFacing = 'user_facing';
 
     /** How one service's share of an applied update finished. */
     case Ending = 'ending';

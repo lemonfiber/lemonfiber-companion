@@ -51,6 +51,9 @@
 
     <x-design::note>{{ __('stacks.itself.not_the_services') }}</x-design::note>
 
+    {{-- The versions under this one, and what the running release changed. --}}
+    <x-design::link label="{{ __('stacks.versions.road_in') }}" :goes="$this->goes()->ofItself()->versions()" />
+
     <x-design::action label="{{ __('health.ask_again') }}" tap="again()" tone="tonal" />
 </x-operator::content>
 @else

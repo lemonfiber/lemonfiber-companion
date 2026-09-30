@@ -201,6 +201,15 @@ enum AStacksScreen: string
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
     case Itself = '/stacks/{stack}/itself';
 
+    /**
+     * Which versions this machine runs — lemonfiber, the stack, the container
+     * engine — and what the running release changed.
+     *
+     * Under {@see self::Itself} because it is the detail of what that screen
+     * says is running, and is reached from there.
+     */
+    case Versions = '/stacks/{stack}/itself/versions';
+
     /** The credentials this machine holds to let services in, and what uses each. */
     case Credentials = '/stacks/{stack}/credentials';
 

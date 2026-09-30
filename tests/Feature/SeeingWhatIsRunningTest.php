@@ -108,7 +108,7 @@ it('shows the command to run at the machine, and offers nothing that would run i
 
     expect($drawn)->toContain(__('stacks.itself.run_at_the_machine'))
         ->and($drawn)->toContain('lemonfiber update self')
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('health.ask_again')]);
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.versions.road_in'), __('health.ask_again')]);
 });
 
 it('shows why there is no command where there is none, instead of a command', function (): void {
@@ -124,6 +124,13 @@ it('says who owns a copy another tool keeps up to date', function (): void {
     expect($drawn)->toContain(__('stacks.itself.owner', ['owner' => 'brew']))
         ->and($drawn)->toContain(__(WhereThisCopyStands::ManagedExternally->saidOnTheScreen()))
         ->and($drawn)->toContain('brew upgrade lemonfiber');
+});
+
+it('leads to which versions run, and what the running release changed', function (): void {
+    $screen = theCopyScreen(AStackThatChecksItself::with(aCopyWithANewerVersion()));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.versions.road_in'))
+        ->and(NativeRouter::resolve($screen->goes()->ofItself()->versions()))->not->toBeNull();
 });
 
 it('says what an update brings and leaves behind, and that the services are updated elsewhere', function (): void {

@@ -711,7 +711,51 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'path' => 'UpdateEnvelope.changelog.running.groups',
         'because' => 'The release notes for the version in use, grouped and entry by entry, and everything '
             . 'under them. `N2-R16` has the stack answer whether the household will notice, which it does '
-            . 'in a flag beside this; rendering the notes is the changelog screen no requirement asks for.',
+            . 'in a flag beside this. The notes are drawn on the version screen, which reads them off the '
+            . '`version` envelope.',
+    ],
+    [
+        'path' => 'VersionEnvelope.supported_schema',
+        'because' => 'The generations of the stack\'s own definition this copy of lemonfiber reads. Whether '
+            . 'a definition is one it can read is the machine\'s decision, taken before anything is shown, '
+            . 'and a list of generation numbers is nothing an operator can act on from a phone; the version '
+            . 'screen names the stack by the version it runs instead.',
+    ],
+    [
+        'path' => 'VersionEnvelope.changelog.releases',
+        'because' => 'Every release the record holds. The version screen answers what runs and what the '
+            . 'running release changed (`N14-R7`); the list of releases is the update screen\'s, which reads '
+            . 'the same list off the `update` envelope.',
+    ],
+    [
+        'path' => 'VersionEnvelope.changelog.requirements',
+        'because' => 'Which requirement each release shipped, for `UpdateEnvelope.changelog.requirements`\'s reason.',
+    ],
+    [
+        'path' => 'VersionEnvelope.changelog.running.carried',
+        'because' => 'What the release in use brought forward from the one before it, for '
+            . '`UpdateEnvelope.changelog.running.carried`\'s reason.',
+    ],
+    [
+        'path' => 'VersionEnvelope.changelog.running.patches',
+        'because' => 'The same, for what the release in use fixes.',
+    ],
+    [
+        'path' => 'VersionEnvelope.changelog.running.released_on',
+        'because' => 'The same, for when it was published.',
+    ],
+    [
+        'path' => 'VersionEnvelope.changelog.running.tag',
+        'because' => 'The name the release was published under, for `UpdateEnvelope.changelog.running.tag`\'s reason.',
+    ],
+    [
+        'path' => 'VersionEnvelope.changelog.running.groups[].entries[].reference',
+        'because' => 'Where a change was reviewed. The notes are read for what changed, in the stack\'s own '
+            . 'words; a link to a review on a forge is not something an operator decides anything with.',
+    ],
+    [
+        'path' => 'VersionEnvelope.changelog.running.groups[].entries[].requirements',
+        'because' => 'Which requirements a change served, for `UpdateEnvelope.changelog.requirements`\'s reason.',
     ],
     [
         'path' => 'UpdateEnvelope.changes[].because',

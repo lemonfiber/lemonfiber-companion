@@ -50,6 +50,7 @@ use Modules\Sdk\Api\Fields\UndoField;
 use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\UpgradeField;
+use Modules\Sdk\Api\Fields\VersionField;
 use Modules\Sdk\Api\Fields\WalkthroughField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
@@ -118,6 +119,7 @@ function everyFieldNamedOnTheWire(): array
         ...UninstallField::cases(),
         ...UpdateField::cases(),
         ...UpgradeField::cases(),
+        ...VersionField::cases(),
         ...WalkthroughField::cases(),
     ];
 }
