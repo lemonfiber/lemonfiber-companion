@@ -43,7 +43,7 @@ it('lists the menu in the five groups, in the order the navigation page names th
     );
 
     expect($drawn)->toBe([
-        ['household' => ['requests', 'stuck_downloads', 'follow_a_download']],
+        ['household' => ['requests', 'allowance', 'stuck_downloads', 'follow_a_download']],
         ['access' => ['invite_someone', 'front_door', 'watch_apps', 'passwords']],
         ['machine' => ['storage', 'backups', 'after_a_restart', 'already_installed', 'other_programs', 'about', 'uninstall']],
         ['settings' => ['general', 'quality', 'connections', 'bandwidth', 'outgoing_traffic', 'alerts', 'history', 'sources']],

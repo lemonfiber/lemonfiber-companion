@@ -62,6 +62,9 @@ enum AStacksScreen: string
     /** What the household has asked this machine for. */
     case Requests = '/stacks/{stack}/requests';
 
+    /** What this machine says the household may ask it for, read by the operator. */
+    case Allowance = '/stacks/{stack}/allowance';
+
     /** What this machine would put right, stated before any yes. */
     case Repairs = '/stacks/{stack}/repairs';
 

@@ -39,8 +39,8 @@ enum WhichSurfaceTheyAreGiven: string
      * The machine's own report, which is what the operator came for.
      *
      * They are given the household's application as well, not instead: nothing here
-     * takes a member's reading away from them, and the road to it is the one
-     * {@see WhereAStackIs::yours()} already offers from this surface.
+     * takes a member's reading away from them, and the road to it is Allowance
+     * in the menu.
      */
     case TheReport = 'the_report';
 

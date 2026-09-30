@@ -22,6 +22,7 @@ use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
@@ -244,7 +245,7 @@ final class SignIntoAStack extends NativeComponent
      * machine's report, and there is no setting between them. The stack said who
      * signed in, and that same answer picks the door they come through. Nothing is
      * taken from the operator by it — they are given the household's reading as
-     * well, by the road {@see WhereAStackIs::yours()} already offers from here.
+     * well, by Allowance in the menu.
      *
      * **Read off what the tap decided rather than out of the store.** The subject
      * is written down beside the session and could be read back, but a screen that
@@ -269,7 +270,7 @@ final class SignIntoAStack extends NativeComponent
 
         return match ($this->given) {
             WhichSurfaceTheyAreGiven::TheReport => $where->health(),
-            WhichSurfaceTheyAreGiven::WhatTheyAreOwed => $where->yours(),
+            WhichSurfaceTheyAreGiven::WhatTheyAreOwed => AStacksScreen::Owed->forTheStack($this->stack()->id()),
         };
     }
 

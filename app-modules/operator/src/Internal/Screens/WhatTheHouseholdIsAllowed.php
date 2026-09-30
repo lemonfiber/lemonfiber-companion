@@ -1,0 +1,99 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Operator\Internal\Screens;
+
+use Illuminate\View\View;
+use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Owing;
+use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Sentences;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
+use Modules\Operator\Internal\LetsGoOfARefusedSession;
+use Modules\Operator\Internal\Presenters\HowTheAllowanceReads;
+use Modules\Operator\Internal\TheWayAround;
+use Modules\Operator\Internal\ViewModels\TheAllowanceTurnedOutToBe;
+use Modules\Operator\Internal\WhereAStackIs;
+use Native\Mobile\Attributes\Lazy;
+use Native\Mobile\Edge\NativeComponent;
+
+use function view;
+
+/**
+ * What this machine says the household may ask it for, on the operator's side.
+ *
+ * The household's own reading, asked with the operator's session and drawn
+ * with the operator's menu: the core decides what comes back for whoever is
+ * signed in, and this screen shows it in the core's words.
+ */
+#[Lazy]
+#[Concealed]
+final class WhatTheHouseholdIsAllowed extends NativeComponent
+{
+    use LetsGoOfARefusedSession;
+    use FindsItsWayAround;
+
+    /** What came back, once the frame has asked. */
+    public ?TheAllowanceTurnedOutToBe $answered = null;
+
+    public function __construct(
+        private readonly Owing $owing,
+        private readonly SecureStorage $storage,
+        private readonly TheWayAround $around,
+    ) {}
+
+    /** The stack this screen is about. */
+    public function stack(): Stack
+    {
+        return $this->around->stackNamed($this->param('stack'));
+    }
+
+    /** Where this stack's screens are. */
+    public function goes(): WhereAStackIs
+    {
+        return WhereAStackIs::of($this->stack()->id());
+    }
+
+    /** Ask the stack again. */
+    public function again(): void
+    {
+        $this->answered = null;
+    }
+
+    /** What the stack said, asked once per frame. */
+    public function answer(): TheAllowanceTurnedOutToBe
+    {
+        return $this->answered ??= $this->ask();
+    }
+
+    /** The frame, by name. */
+    public function render(): View
+    {
+        return view('operator::what-the-household-is-allowed');
+    }
+
+    private function ask(): TheAllowanceTurnedOutToBe
+    {
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): TheAllowanceTurnedOutToBe => $this->asked($stack, $session),
+            notHeld: static fn(): TheAllowanceTurnedOutToBe => new HowTheAllowanceReads()->signedOut(),
+        );
+    }
+
+    private function asked(Stack $stack, Session $session): TheAllowanceTurnedOutToBe
+    {
+        return $this->owing->toHandOver($stack, $session)->either(
+            told: static fn(Sentences $said): TheAllowanceTurnedOutToBe => new HowTheAllowanceReads()->these($said),
+            refused: function (Obstacle $why) use ($stack): TheAllowanceTurnedOutToBe {
+                $this->letGoOfTheSession($why, $stack);
+
+                return new HowTheAllowanceReads()->met($why);
+            },
+        );
+    }
+}

@@ -36,6 +36,7 @@ use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
@@ -142,6 +143,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // matches in registration order, and a bare `{stack}` registered
             // first would swallow every path under it.
             Router::native(AStacksScreen::Requests->value, WhatTheHouseholdAsked::class);
+
+            // What the household may ask for, read with the operator's session
+            // and drawn with the operator's menu.
+            Router::native(AStacksScreen::Allowance->value, WhatTheHouseholdIsAllowed::class);
 
             // What the machine would put right, stated before anybody is asked
             // to agree. A screen rather than a dialog behind a

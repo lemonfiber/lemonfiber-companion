@@ -28,6 +28,7 @@ return [
     'menu' => [
         'open' => 'Menu',
         'requests' => 'Verzoeken',
+        'allowance' => 'Tegoed',
         'stuck_downloads' => 'Vastgelopen downloads',
         'follow_a_download' => 'Download volgen',
         'invite_someone' => 'Iemand uitnodigen',
