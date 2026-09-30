@@ -6,6 +6,7 @@ namespace Modules\Health\Api;
 
 use Closure;
 use Modules\Health\Internal\ASummaryHeard;
+use Modules\Health\Internal\TheHeartbeat;
 use Modules\Kernel\Api\HowOften;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
@@ -21,10 +22,9 @@ use Modules\Kernel\Api\WhatWasHeard;
  * question below is asked of the same moment.
  *
  * **A summary is current only while the subscription that carried it is open
- * and speaking.** The contract has the core break silence at least every
- * fifteen seconds and a client call twice that in silence a broken stream, so
- * past thirty seconds with nothing heard the subscription is let go of, and
- * from then on what it carried is shown with its age and reads as unknown. A
+ * and speaking.** Past {@see TheHeartbeat::silenceAllowed()} with nothing heard
+ * the subscription is let go of, and from then on what it carried is shown
+ * with its age and reads as unknown. A
  * subscription that closed, or that could not be opened, leaves the last
  * summary in the same position.
  *
@@ -35,12 +35,6 @@ use Modules\Kernel\Api\WhatWasHeard;
  */
 final readonly class WhatWasHeardSoFar
 {
-    /** How often the core breaks silence at the least, in seconds. */
-    private const int HEARTBEAT_SECONDS = 15;
-
-    /** How many heartbeats may go missing before a stream is broken rather than quiet. */
-    private const int BEATS_OF_SILENCE = 2;
-
     private function __construct(
         private ?ASummaryHeard $heard,
         private ?Instant $lastSignOfLife,
@@ -107,7 +101,7 @@ final readonly class WhatWasHeardSoFar
      */
     public static function isStillCurrent(Instant $heard, Instant $now): bool
     {
-        return $now->epochSeconds() - $heard->epochSeconds() <= self::HEARTBEAT_SECONDS * self::BEATS_OF_SILENCE;
+        return $now->epochSeconds() - $heard->epochSeconds() <= TheHeartbeat::silenceAllowed()->inSeconds();
     }
 
     /** Whether an open subscription has been silent past the contract's bound at `$now`. */
