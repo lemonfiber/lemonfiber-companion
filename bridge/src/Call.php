@@ -146,4 +146,13 @@ enum Call: string
     case LinkStatus = 'Lemonfiber.Link.Status';
 
     case Zone = 'Lemonfiber.Clock.Zone';
+
+    /**
+     * The payload of a call that carries nothing.
+     *
+     * On a handset `nativephp_call` is a C extension that takes exactly two
+     * arguments; only the development fallback declares a default for the
+     * second, so a call with nothing to carry still hands it this.
+     */
+    public const string CARRIES_NOTHING = '{}';
 }

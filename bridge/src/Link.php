@@ -39,9 +39,6 @@ final readonly class Link
     /** The one word that means no. Anything else, including silence, means yes. */
     private const string UNREACHABLE = 'unreachable';
 
-    /** The payload of a call that carries nothing. */
-    private const string NOTHING = '{}';
-
     /**
      * Whether anything is reachable from here.
      *
@@ -64,19 +61,17 @@ final readonly class Link
     /**
      * What the bridge said, decoded, or nothing where it said nothing.
      *
-     * The call carries nothing, and says so with `'{}'`. On a handset
-     * `nativephp_call` is a C extension that takes exactly two arguments; only
-     * the development fallback declares a default for the second, so leaving
-     * it out passes every test and fails on the phone.
+     * The call carries nothing, and says so with {@see Call::CARRIES_NOTHING}:
+     * leaving the second argument out passes every test and fails on the phone.
      *
-     * Every other call in this package encodes something somebody passed in,
-     * where an unencodable payload is a real answer and is refused as one.
+     * A call that carries something encodes what somebody passed in, where an
+     * unencodable payload is a real answer and is refused as one.
      *
      * @return array<mixed>|null
      */
     private function answering(): ?array
     {
-        $said = nativephp_call(Call::LinkStatus->value, self::NOTHING);
+        $said = nativephp_call(Call::LinkStatus->value, Call::CARRIES_NOTHING);
 
         if (! is_string($said)) {
             return null;

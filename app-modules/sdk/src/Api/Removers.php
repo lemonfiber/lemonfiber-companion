@@ -48,12 +48,6 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Removers implements RemovingSomebody
 {
-    /** The first status a stack answers a request it could not carry out with, rather than one it refused. */
-    private const int THE_STACK_ITSELF_FAILED = 500;
-
-    /** The first status that is a refusal at all. */
-    private const int A_REFUSAL = 400;
-
     public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function wouldRemove(Stack $stack, Session $session, SomebodyInTheHousehold $who): WhatBecameOfTheRemoval
@@ -135,28 +129,15 @@ final readonly class Removers implements RemovingSomebody
     }
 
     /**
-     * What a request the stack turned down means: its own sentence, or an obstacle.
-     *
-     * {@see Ushers::refusal()}'s reading: a machine that is not the one
-     * paired, a refused session and an account that may not ask are
-     * obstacles with remedies of their own, and anything else turned down in
-     * the asking, with a sentence, is the stack's refusal.
+     * What a request the stack turned down means: its own sentence, where
+     * {@see WhatARefusalMeant::inItsOwnWords()} finds one, or an obstacle.
      */
     private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheRemoval
     {
-        if ($why instanceof CertificateWasRefused) {
-            return WhatBecameOfTheRemoval::met(WhatARefusalMeant::obstacle($why));
-        }
+        $said = $why instanceof RequestFailed ? WhatARefusalMeant::inItsOwnWords($why) : null;
 
-        $obstacle = WhatARefusalMeant::obstacle($why);
-        $said = $why->said();
-
-        if ($obstacle !== Obstacle::StackDidNotAnswer || $said === null) {
-            return WhatBecameOfTheRemoval::met($obstacle);
-        }
-
-        return $why->status() >= self::A_REFUSAL && $why->status() < self::THE_STACK_ITSELF_FAILED
-            ? WhatBecameOfTheRemoval::refused($said)
-            : WhatBecameOfTheRemoval::met($obstacle);
+        return $said === null
+            ? WhatBecameOfTheRemoval::met(WhatARefusalMeant::obstacle($why))
+            : WhatBecameOfTheRemoval::refused($said);
     }
 }

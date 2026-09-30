@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Internal;
 
+use function intdiv;
 use function json_encode;
 
 use const JSON_THROW_ON_ERROR;
 
 use JsonException;
+use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\WhatPairingMaterialSays;
 
 use function str_repeat;
@@ -50,22 +52,15 @@ final readonly class WhatAPairingCodeWouldSay
      */
     private const string CALLING_ITSELF = '5e7a9c1b3d5f7092a4c6e8f0b2d4f6a8';
 
-    /** How many bytes a SHA-256 digest is, doubled by its hex spelling. */
-    private const int A_SHA256 = 32;
-
     /**
-     * Far enough ahead that a stand-in is never material that has expired.
+     * When the material expires: {@see LongAfterAnyRun}, so a stand-in is
+     * never material that has expired.
      *
      * `Pairing::read()` reads staleness before shape, which is right — a code
-     * too old should not be reported as a code that is malformed — and a
-     * stand-in that went stale would take the first run with it, at a moment
-     * nobody would connect to a date written here.
-     *
-     * Written rather than counted from a clock. `B1` keeps time behind a port,
-     * and material assembled from the moment it was read would make two runs of
-     * the same stand-in answer differently.
+     * too old should not be reported as a code that is malformed — so it is
+     * the first thing a stale stand-in would be refused for.
      */
-    private const int LONG_AFTER_ANY_RUN = 4_070_908_800;
+    private const int EXPIRES = LongAfterAnyRun::IN_SECONDS;
 
     /**
      * The code, as the characters a camera would have seen.
@@ -78,8 +73,8 @@ final readonly class WhatAPairingCodeWouldSay
     {
         return json_encode([
             WhatPairingMaterialSays::Address->value => self::AT,
-            WhatPairingMaterialSays::Fingerprint->value => str_repeat('cd', self::A_SHA256),
-            WhatPairingMaterialSays::Expires->value => self::LONG_AFTER_ANY_RUN,
+            WhatPairingMaterialSays::Fingerprint->value => str_repeat('cd', intdiv(Fingerprint::CHARACTERS, 2)),
+            WhatPairingMaterialSays::Expires->value => self::EXPIRES,
             WhatPairingMaterialSays::Stack->value => self::CALLING_ITSELF,
         ], JSON_THROW_ON_ERROR);
     }

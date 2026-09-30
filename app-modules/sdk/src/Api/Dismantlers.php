@@ -51,12 +51,6 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Dismantlers implements TakingLemonfiberOff
 {
-    /** The first status a stack answers a request it could not carry out with, rather than one it refused. */
-    private const int THE_STACK_ITSELF_FAILED = 500;
-
-    /** The first status that is a refusal at all. */
-    private const int A_REFUSAL = 400;
-
     public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function surveyed(Stack $stack, Session $session, WhichRemoval $tier): WhatWasFoundOfTheUninstall
@@ -143,28 +137,15 @@ final readonly class Dismantlers implements TakingLemonfiberOff
     }
 
     /**
-     * What a request the stack turned down means: its own sentence, or an obstacle.
-     *
-     * {@see Ushers::refusal()}'s reading: a machine that is not the one
-     * paired, a refused session and an account that may not ask are
-     * obstacles with remedies of their own, and anything else turned down in
-     * the asking, with a sentence, is the stack's refusal.
+     * What a request the stack turned down means: its own sentence, where
+     * {@see WhatARefusalMeant::inItsOwnWords()} finds one, or an obstacle.
      */
     private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheUninstall
     {
-        if ($why instanceof CertificateWasRefused) {
-            return WhatBecameOfTheUninstall::met(WhatARefusalMeant::obstacle($why));
-        }
+        $said = $why instanceof RequestFailed ? WhatARefusalMeant::inItsOwnWords($why) : null;
 
-        $obstacle = WhatARefusalMeant::obstacle($why);
-        $said = $why->said();
-
-        if ($obstacle !== Obstacle::StackDidNotAnswer || $said === null) {
-            return WhatBecameOfTheUninstall::met($obstacle);
-        }
-
-        return $why->status() >= self::A_REFUSAL && $why->status() < self::THE_STACK_ITSELF_FAILED
-            ? WhatBecameOfTheUninstall::refused($said)
-            : WhatBecameOfTheUninstall::met($obstacle);
+        return $said === null
+            ? WhatBecameOfTheUninstall::met(WhatARefusalMeant::obstacle($why))
+            : WhatBecameOfTheUninstall::refused($said);
     }
 }

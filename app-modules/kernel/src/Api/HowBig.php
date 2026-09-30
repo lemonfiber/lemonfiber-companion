@@ -40,9 +40,6 @@ use function round;
  */
 final readonly class HowBig
 {
-    /** What a figure may not reach, which is what keeps a separator out of it. */
-    private const int A_THOUSAND = 1000;
-
     /**
      * @param int    $figure how many of the unit, whole and under a thousand
      * @param string $said   the catalogue key for what the figure counts
@@ -72,7 +69,7 @@ final readonly class HowBig
     {
         $unit = SizeUnit::Megabytes;
 
-        while (self::inside($bytes, $unit) >= self::A_THOUSAND && $unit->next() !== $unit) {
+        while (self::inside($bytes, $unit) >= DecimalPrefix::Kilo->value && $unit->next() !== $unit) {
             $unit = $unit->next();
         }
 

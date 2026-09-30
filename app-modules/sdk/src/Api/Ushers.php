@@ -57,12 +57,6 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  */
 final readonly class Ushers implements Inviting
 {
-    /** The first status a stack answers a request it could not carry out with, rather than one it refused. */
-    private const int THE_STACK_ITSELF_FAILED = 500;
-
-    /** The first status that is a refusal at all. */
-    private const int A_REFUSAL = 400;
-
     public function __construct(private Clients $clients, private Entropy $entropy) {}
 
     public function whoIsIn(Stack $stack, Session $session): WhatWasFoundOfTheMembers
@@ -173,28 +167,15 @@ final readonly class Ushers implements Inviting
     }
 
     /**
-     * What a request the stack turned down means: its own sentence, or an obstacle.
-     *
-     * A machine that is not the one paired, a refused session and an account
-     * that may not ask are obstacles with remedies of their own. Anything else
-     * turned down in the asking or the naming, with a sentence, is the stack's
-     * refusal, and that sentence is the answer.
+     * What a request the stack turned down means: its own sentence, where
+     * {@see WhatARefusalMeant::inItsOwnWords()} finds one, or an obstacle.
      */
     private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheInvitation
     {
-        if ($why instanceof CertificateWasRefused) {
-            return WhatBecameOfTheInvitation::met(WhatARefusalMeant::obstacle($why));
-        }
+        $said = $why instanceof RequestFailed ? WhatARefusalMeant::inItsOwnWords($why) : null;
 
-        $obstacle = WhatARefusalMeant::obstacle($why);
-        $said = $why->said();
-
-        if ($obstacle !== Obstacle::StackDidNotAnswer || $said === null) {
-            return WhatBecameOfTheInvitation::met($obstacle);
-        }
-
-        return $why->status() >= self::A_REFUSAL && $why->status() < self::THE_STACK_ITSELF_FAILED
-            ? WhatBecameOfTheInvitation::refused($said)
-            : WhatBecameOfTheInvitation::met($obstacle);
+        return $said === null
+            ? WhatBecameOfTheInvitation::met(WhatARefusalMeant::obstacle($why))
+            : WhatBecameOfTheInvitation::refused($said);
     }
 }

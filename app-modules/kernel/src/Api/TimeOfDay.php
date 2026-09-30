@@ -16,12 +16,6 @@ use function sprintf;
  */
 final readonly class TimeOfDay
 {
-    private const int A_MINUTE = 60;
-
-    private const int AN_HOUR = 3600;
-
-    private const int A_DAY = 86_400;
-
     private function __construct(private int $secondsIntoTheDay) {}
 
     /**
@@ -33,7 +27,9 @@ final readonly class TimeOfDay
      */
     public static function secondsIntoTheDay(int $seconds): self
     {
-        return new self((($seconds % self::A_DAY) + self::A_DAY) % self::A_DAY);
+        $aDay = SecondsIn::ADay->value;
+
+        return new self((($seconds % $aDay) + $aDay) % $aDay);
     }
 
     /**
@@ -47,9 +43,9 @@ final readonly class TimeOfDay
     {
         return sprintf(
             '%02d:%02d:%02d',
-            intdiv($this->secondsIntoTheDay, self::AN_HOUR),
-            intdiv($this->secondsIntoTheDay % self::AN_HOUR, self::A_MINUTE),
-            $this->secondsIntoTheDay % self::A_MINUTE,
+            intdiv($this->secondsIntoTheDay, SecondsIn::AnHour->value),
+            intdiv($this->secondsIntoTheDay % SecondsIn::AnHour->value, SecondsIn::AMinute->value),
+            $this->secondsIntoTheDay % SecondsIn::AMinute->value,
         );
     }
 }

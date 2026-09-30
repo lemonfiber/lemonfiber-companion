@@ -55,22 +55,13 @@ enum SizeUnit: string
 
     case Terabytes = 'terabytes';
 
-    /** A thousand thousand, which is the smallest unit shown. */
-    private const int A_MEGABYTE = 1_000_000;
-
-    /** A thousand of those. */
-    private const int A_GIGABYTE = 1_000_000_000;
-
-    /** A thousand of those, which is where a season of anything ends up. */
-    private const int A_TERABYTE = 1_000_000_000_000;
-
     /** How many bytes one of this unit is, which is what the bands are. */
     public function bytes(): int
     {
         return match ($this) {
-            self::Megabytes => self::A_MEGABYTE,
-            self::Gigabytes => self::A_GIGABYTE,
-            self::Terabytes => self::A_TERABYTE,
+            self::Megabytes => DecimalPrefix::Mega->value,
+            self::Gigabytes => DecimalPrefix::Giga->value,
+            self::Terabytes => DecimalPrefix::Tera->value,
         };
     }
 

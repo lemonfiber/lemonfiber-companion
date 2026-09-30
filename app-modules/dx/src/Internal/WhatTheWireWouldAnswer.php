@@ -163,12 +163,9 @@ final readonly class WhatTheWireWouldAnswer
      * free-form and carries its own field name, which is what makes a stand-in
      * payload obvious on a screen; this one cannot.
      *
-     * Far enough ahead that it is never a session that has already ended, and
-     * written rather than counted from a clock: `B1` keeps time behind a port,
-     * and a payload assembled from the moment it was built would make two runs
-     * of the same stand-in answer differently.
+     * {@see LongAfterAnyRun}, so it is never a session that has already ended.
      */
-    private const string LONG_AFTER_ANY_RUN = '2099-01-01T00:00:00Z';
+    private const string WHEN_A_SESSION_ENDS = LongAfterAnyRun::WRITTEN;
 
     /**
      * When every stand-in change was made.
@@ -182,7 +179,7 @@ final readonly class WhatTheWireWouldAnswer
      *
      * In the past, so every change reads with an age rather than as something
      * yet to happen, and written rather than counted from a clock for the same
-     * reason {@see LONG_AFTER_ANY_RUN} is. Not `0`, which is how the stack says
+     * reason {@see LongAfterAnyRun} is. Not `0`, which is how the stack says
      * its clock could not be read.
      */
     private const string WHEN_A_CHANGE_WAS_MADE = '1700000000';
@@ -401,7 +398,7 @@ final readonly class WhatTheWireWouldAnswer
         // `array{...}` or a `list<...>` — so the other arm is a shape no
         // envelope has, and written across three lines it is a line no run
         // reaches and the coverage gate is right to say so.
-        $envelope['data'] = [...(is_array($data) ? $data : []), 'until' => self::LONG_AFTER_ANY_RUN];
+        $envelope['data'] = [...(is_array($data) ? $data : []), 'until' => self::WHEN_A_SESSION_ENDS];
 
         return $envelope;
     }

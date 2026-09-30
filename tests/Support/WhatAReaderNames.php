@@ -48,9 +48,6 @@ use function substr;
  */
 final readonly class WhatAReaderNames
 {
-    /** The namespace whose types are the SDK's rather than this app's. */
-    private const string THE_SDK = 'Lemonfiber\\Sdk\\';
-
     /**
      * How many times a method's local names are rebuilt before they settle.
      *
@@ -98,7 +95,7 @@ final readonly class WhatAReaderNames
 
             $resolved = EveryReaderOfTheWire::resolve($type->toString(), $reader['imports']);
 
-            if (str_starts_with($resolved, self::THE_SDK)) {
+            if (str_starts_with($resolved, WhatTheSdkHandsBack::THE_SDK)) {
                 $handed[$named] = $resolved;
             }
         }

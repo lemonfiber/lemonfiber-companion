@@ -36,8 +36,8 @@ use function str_starts_with;
  */
 final readonly class WhatTheSdkHandsBack
 {
-    /** The namespace whose docblocks are worth asking. */
-    private const string THE_SDK = 'Lemonfiber\\Sdk\\';
+    /** The namespace whose types are the SDK's rather than this app's, and whose docblocks are worth asking. */
+    public const string THE_SDK = 'Lemonfiber\\Sdk\\';
 
     /**
      * The kind of envelope a method of an SDK type answers with, if any.
