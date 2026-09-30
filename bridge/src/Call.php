@@ -144,4 +144,6 @@ enum Call: string
      * and a value held but not sent is one commit away from being sent.
      */
     case LinkStatus = 'Lemonfiber.Link.Status';
+
+    case Zone = 'Lemonfiber.Clock.Zone';
 }

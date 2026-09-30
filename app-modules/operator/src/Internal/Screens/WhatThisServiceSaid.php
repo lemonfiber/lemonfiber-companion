@@ -8,10 +8,12 @@ use function count;
 
 use Illuminate\View\View;
 
+use function in_array;
 use function is_string;
 
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowManyLines;
+use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\LookingFor;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Saying;
@@ -20,6 +22,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\Zone;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowAScrollbackReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -89,10 +92,27 @@ final class WhatThisServiceSaid extends NativeComponent
     /** What came back, once the frame has asked. */
     public ?Scrollback $held = null;
 
+    /**
+     * The zone the phone's clock was set to when the lines were read.
+     *
+     * Asked once with the lines rather than on every read of them: a frame
+     * reads the answer several times, and each asking is a call across the
+     * bridge. Asking again reads it afresh.
+     */
+    public ?Zone $readIn = null;
+
+    /**
+     * The folds of decorative lines somebody has opened, by their place among the folds.
+     *
+     * @var list<int>
+     */
+    public array $unfolded = [];
+
     public function __construct(
         private readonly Saying $saying,
         private readonly SecureStorage $storage,
         private readonly TheWayAround $around,
+        private readonly LocalZone $here,
     ) {}
 
     /**
@@ -181,6 +201,27 @@ final class WhatThisServiceSaid extends NativeComponent
     public function again(): void
     {
         $this->held = null;
+        $this->readIn = null;
+        $this->unfolded = [];
+    }
+
+    /**
+     * Open a fold of decorative lines, or close it again.
+     *
+     * Held on the screen rather than asked for, because the lines are already
+     * here: showing them is a change to what is drawn and not to what was read.
+     */
+    public function unfold(int $fold): void
+    {
+        $open = [];
+
+        foreach ($this->unfolded as $already) {
+            if ($already !== $fold) {
+                $open[] = $already;
+            }
+        }
+
+        $this->unfolded = in_array($fold, $this->unfolded, strict: true) ? $open : [...$open, $fold];
     }
 
     /**
@@ -219,7 +260,7 @@ final class WhatThisServiceSaid extends NativeComponent
         $held = $this->held;
 
         if ($held instanceof Scrollback) {
-            return new HowAScrollbackReads()->this($held, $this->lookingFor());
+            return new HowAScrollbackReads()->this($held, $this->lookingFor(), $this->zone(), $this->unfolded);
         }
 
         return $this->ask();
@@ -252,6 +293,8 @@ final class WhatThisServiceSaid extends NativeComponent
     private function read(Stack $stack, Session $session): WhatTheServiceTurnedOutToSay
     {
         $looking = $this->lookingFor();
+        $zone = $this->zone();
+        $unfolded = $this->unfolded;
 
         return $this->saying->saidBy(
             $stack,
@@ -259,10 +302,10 @@ final class WhatThisServiceSaid extends NativeComponent
             $this->service(),
             HowManyLines::asMuchAsAPhoneShows(),
         )->either(
-            this_: function (Scrollback $scrollback) use ($looking): WhatTheServiceTurnedOutToSay {
+            this_: function (Scrollback $scrollback) use ($looking, $zone, $unfolded): WhatTheServiceTurnedOutToSay {
                 $this->held = $scrollback;
 
-                return new HowAScrollbackReads()->this($scrollback, $looking);
+                return new HowAScrollbackReads()->this($scrollback, $looking, $zone, $unfolded);
             },
             met: function (Obstacle $why) use ($stack): WhatTheServiceTurnedOutToSay {
                 $this->letGoOfTheSession($why, $stack);
@@ -270,6 +313,12 @@ final class WhatThisServiceSaid extends NativeComponent
                 return new HowAScrollbackReads()->met($why);
             },
         );
+    }
+
+    /** The zone the lines are read in, asked of the phone the first time. */
+    private function zone(): Zone
+    {
+        return $this->readIn ??= $this->here->zone();
     }
 
     private function carried(WhatTheLogsAreOpenedWith $what): string
