@@ -98,64 +98,48 @@ enum TheMenu: string
     /** The Material icon Android draws beside the label. */
     public function glyph(): string
     {
-        return match ($this) {
-            self::Requests => 'inbox',
-            self::StuckDownloads => 'hourglass_empty',
-            self::FollowADownload => 'route',
-            self::InviteSomeone => 'person_add',
-            self::FrontDoor => 'door_front',
-            self::WatchApps => 'tv',
-            self::Passwords => 'key',
-            self::Storage => 'storage',
-            self::Backups => 'backup',
-            self::AfterARestart => 'restart_alt',
-            self::AlreadyInstalled => 'inventory_2',
-            self::OtherPrograms => 'apps',
-            self::About => 'info',
-            self::Uninstall => 'delete',
-            self::General => 'tune',
-            self::Quality => 'high_quality',
-            self::Connections => 'cable',
-            self::Bandwidth => 'speed',
-            self::OutgoingTraffic => 'upload',
-            self::Alerts => 'notifications',
-            self::History => 'history',
-            self::Sources => 'source',
-            self::GetHelp => 'support',
-            self::Glossary => 'menu_book',
-            self::ServicesExplained => 'category',
-        };
+        return $this->glyphs()[0];
     }
 
     /** The SF Symbol iOS draws beside the label. */
     public function iosGlyph(): string
     {
+        return $this->glyphs()[1];
+    }
+
+    /**
+     * The item's icon on each phone: the Material icon first, then the SF Symbol.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function glyphs(): array
+    {
         return match ($this) {
-            self::Requests => 'tray',
-            self::StuckDownloads => 'hourglass',
-            self::FollowADownload => 'point.topleft.down.to.point.bottomright.curvepath',
-            self::InviteSomeone => 'person.badge.plus',
-            self::FrontDoor => 'door.left.hand.open',
-            self::WatchApps => 'tv',
-            self::Passwords => 'key',
-            self::Storage => 'internaldrive',
-            self::Backups => 'externaldrive',
-            self::AfterARestart => 'arrow.clockwise',
-            self::AlreadyInstalled => 'shippingbox',
-            self::OtherPrograms => 'square.stack.3d.up',
-            self::About => 'info.circle',
-            self::Uninstall => 'trash',
-            self::General => 'slider.horizontal.3',
-            self::Quality => 'sparkles',
-            self::Connections => 'cable.connector',
-            self::Bandwidth => 'speedometer',
-            self::OutgoingTraffic => 'arrow.up.forward',
-            self::Alerts => 'bell',
-            self::History => 'clock.arrow.2.circlepath',
-            self::Sources => 'shippingbox.circle',
-            self::GetHelp => 'lifepreserver',
-            self::Glossary => 'character.book.closed',
-            self::ServicesExplained => 'list.bullet.rectangle',
+            self::Requests => ['inbox', 'tray'],
+            self::StuckDownloads => ['hourglass_empty', 'hourglass'],
+            self::FollowADownload => ['route', 'point.topleft.down.to.point.bottomright.curvepath'],
+            self::InviteSomeone => ['person_add', 'person.badge.plus'],
+            self::FrontDoor => ['door_front', 'door.left.hand.open'],
+            self::WatchApps => ['tv', 'tv'],
+            self::Passwords => ['key', 'key'],
+            self::Storage => ['storage', 'internaldrive'],
+            self::Backups => ['backup', 'externaldrive'],
+            self::AfterARestart => ['restart_alt', 'arrow.clockwise'],
+            self::AlreadyInstalled => ['inventory_2', 'shippingbox'],
+            self::OtherPrograms => ['apps', 'square.stack.3d.up'],
+            self::About => ['info', 'info.circle'],
+            self::Uninstall => ['delete', 'trash'],
+            self::General => ['tune', 'slider.horizontal.3'],
+            self::Quality => ['high_quality', 'sparkles'],
+            self::Connections => ['cable', 'cable.connector'],
+            self::Bandwidth => ['speed', 'speedometer'],
+            self::OutgoingTraffic => ['upload', 'arrow.up.forward'],
+            self::Alerts => ['notifications', 'bell'],
+            self::History => ['history', 'clock.arrow.2.circlepath'],
+            self::Sources => ['source', 'shippingbox.circle'],
+            self::GetHelp => ['support', 'lifepreserver'],
+            self::Glossary => ['menu_book', 'character.book.closed'],
+            self::ServicesExplained => ['category', 'list.bullet.rectangle'],
         };
     }
 }
