@@ -405,6 +405,8 @@ return [
             'fallback' => 'Works anywhere, nothing to install',
         ],
         'instead' => 'Instead: :instead',
+        // Said of an app that is named and never the recommended path.
+        'not_open_source' => 'Not open source',
         'straining' => 'Playback may struggle here with the :preset preset',
         'no_devices' => 'No devices are listed',
         'trouble' => 'When it does not work',
@@ -438,6 +440,27 @@ return [
         'no_address' => 'This machine did not say where it is reached',
         'beside' => 'What else they can reach',
         'nothing_beside' => 'Nothing else is open to the household',
+    ],
+
+    // Connecting one member's device, from their card under who is in.
+    'handoff' => [
+        'title' => 'Connect a device',
+        // The same link's name on each member's card, so each is told apart.
+        'title_for' => 'Connect a device for :name',
+        'show' => 'Show the code',
+        'stands' => [
+            'ready' => 'Code ready',
+            'pending' => 'Waiting for them',
+            'connected' => 'Signed in',
+            'failed' => 'Did not work',
+        ],
+        'invite_them' => 'Invite them',
+        'on_their_device' => 'On their device',
+        'which_app' => 'Which app',
+        'opens_at_this_server' => 'A link that opens :client at this server',
+        'signed_in_devices' => 'Signed-in devices',
+        'last_seen' => 'Last seen :when',
+        'first_given' => 'Code first given :when',
     ],
 
     // Pairing another phone with this stack: a code it scans, or a line it types.

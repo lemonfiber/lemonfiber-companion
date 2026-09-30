@@ -48,6 +48,7 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\Guarding;
+use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\History;
@@ -104,6 +105,7 @@ use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\Clients;
+use Modules\Sdk\Api\Connectors;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Dismantlers;
@@ -452,6 +454,7 @@ final class CompositionRoot extends ServiceProvider
         // copies for the same reason.
         $this->app->bind(TakingCopies::class, Copiers::class);
         $this->app->bind(MakingPairingCodes::class, Pairers::class);
+        $this->app->bind(HandingOverADevice::class, Connectors::class);
         $this->app->bind(PuttingBack::class, Restorers::class);
 
         // Putting the configuration back, bound beside putting a copy back:

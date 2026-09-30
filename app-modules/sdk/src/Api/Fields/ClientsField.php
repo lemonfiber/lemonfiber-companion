@@ -20,12 +20,6 @@ enum ClientsField: string implements NamesAWireField
     /** Every kind of device, in the order somebody is likely to be holding one. */
     case Devices = 'devices';
 
-    /** What somebody would call the device they are holding. */
-    case Device = 'device';
-
-    /** What to use on it. */
-    case Client = 'client';
-
     /** How well it is served. */
     case Support = 'support';
 

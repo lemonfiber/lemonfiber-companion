@@ -118,6 +118,7 @@ use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
+use Modules\Sdk\Api\Connectors;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
 use Modules\Sdk\Api\Dismantlers;
@@ -389,6 +390,9 @@ function everyAdapterCallThatReads(): array
         'Listeners::whatAStartWaitsOn' => static fn(): object => new Listeners($clients)->whatAStartWaitsOn($stack, $session),
         'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
         'Pairers::make' => static fn(): object => new Pairers($clients)->make($stack, $session),
+        'Connectors::handOver' => static fn(): object => new Connectors($clients)->handOver($stack, $session, SomebodyInTheHousehold::called('Sam')),
+        'Connectors::whatBecameOf' => static fn(): object
+            => new Connectors($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Pairers::whatBecameOf' => static fn(): object
             => new Pairers($clients)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Keyholders::heldOn' => static fn(): object => new Keyholders($clients)->heldOn($stack, $session),
@@ -540,6 +544,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Removers::whatBecameOf' => sprintf('%sRemovalEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Dismantlers::whatBecameOf' => sprintf('%sUninstallEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Pairers::whatBecameOf' => sprintf('%sPairingEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'Connectors::whatBecameOf' => sprintf('%sHandoffEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }

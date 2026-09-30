@@ -22,6 +22,12 @@ final readonly class AgoAsShown
         return new self('', 0);
     }
 
+    /** A moment nobody said, or said in a form no clock reads, which says nothing at all. */
+    public static function unsaid(): self
+    {
+        return new self('', 0);
+    }
+
     /** A change the stack's clock would not date, which says so rather than an age. */
     public static function undated(): self
     {

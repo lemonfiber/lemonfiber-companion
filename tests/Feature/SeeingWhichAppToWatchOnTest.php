@@ -49,10 +49,10 @@ function adviceForEveryDevice(): WhatToWatchOn
 {
     return WhatToWatchOn::advised(
         TheDevices::of(
-            ADeviceToWatchOn::rated('An iPhone', 'Jellyfin for iOS', HowWellADeviceIsServed::Good, '', ''),
-            ADeviceToWatchOn::rated('A Fire TV', 'Jellyfin for Fire TV', HowWellADeviceIsServed::Workable, 'Surround sound needs a setting changed', ''),
-            ADeviceToWatchOn::rated('An older smart TV', 'The TV browser', HowWellADeviceIsServed::Poor, '', 'A streaming stick'),
-            ADeviceToWatchOn::rated('Anything with a browser', 'The web player', HowWellADeviceIsServed::Fallback, 'Some formats are converted as they play', ''),
+            ADeviceToWatchOn::rated('An iPhone', 'Jellyfin for iOS', HowWellADeviceIsServed::Good, openSource: true, caution: '', instead: ''),
+            ADeviceToWatchOn::rated('A Fire TV', 'Jellyfin for Fire TV', HowWellADeviceIsServed::Workable, openSource: false, caution: 'Surround sound needs a setting changed', instead: ''),
+            ADeviceToWatchOn::rated('An older smart TV', 'The TV browser', HowWellADeviceIsServed::Poor, openSource: true, caution: '', instead: 'A streaming stick'),
+            ADeviceToWatchOn::rated('Anything with a browser', 'The web player', HowWellADeviceIsServed::Fallback, openSource: true, caution: 'Some formats are converted as they play', instead: ''),
         ),
         'Every one of these works on the home network only',
         'Nothing is installed on anybody\'s device for them',
@@ -107,6 +107,14 @@ it('says what to use instead of a poorly served device, and what to know before 
     expect($drawn)->toContain(__('stacks.clients.instead', ['instead' => 'A streaming stick']))
         ->and($drawn)->toContain('Surround sound needs a setting changed')
         ->and($drawn)->toContain('Some formats are converted as they play');
+});
+
+it('marks an app that is not open source, and only that one', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theAdviceScreen(AStackThatAdvises::advising(adviceForEveryDevice())))->said();
+
+    $chip = __('stacks.clients.not_open_source');
+
+    expect(array_filter($drawn, static fn(string $line): bool => $line === $chip))->toHaveCount(1);
 });
 
 it('says plainly that it works only at home, and what it will not do for them', function (): void {

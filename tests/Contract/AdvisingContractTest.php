@@ -50,8 +50,8 @@ function theSameAdvice(): WhatToWatchOn
 {
     return WhatToWatchOn::advised(
         TheDevices::of(
-            ADeviceToWatchOn::rated('An iPhone', 'Jellyfin for iOS', HowWellADeviceIsServed::Good, '', ''),
-            ADeviceToWatchOn::rated('An older smart TV', 'The TV browser', HowWellADeviceIsServed::Poor, 'Subtitles may lag', 'A streaming stick'),
+            ADeviceToWatchOn::rated('An iPhone', 'Jellyfin for iOS', HowWellADeviceIsServed::Good, openSource: true, caution: '', instead: ''),
+            ADeviceToWatchOn::rated('An older smart TV', 'The TV browser', HowWellADeviceIsServed::Poor, openSource: false, caution: 'Subtitles may lag', instead: 'A streaming stick'),
         ),
         'Every one of these works on the home network only',
         'Nothing is installed on anybody\'s device for them',
@@ -112,6 +112,12 @@ final readonly class WhatTheAdviceTurnedOutToSay
 }
 
 /** Everything the reading says, folded to lines, so two answers can be compared. */
+/** Whether a device's app is open source, as a word. */
+function howItIsLicensed(ADeviceToWatchOn $device): string
+{
+    return $device->isOpenSource() ? 'open' : 'closed';
+}
+
 function everythingTheAdviceSays(Advising $advising): string
 {
     return $advising->advisedBy(aStackGivingAdvice(), Session::of('a-session-not-a-secret'))->either(
@@ -123,7 +129,7 @@ function everythingTheAdviceSays(Advising $advising): string
             ];
 
             foreach ($advice->devices() as $device) {
-                $lines[] = sprintf('%s|%s|%s|%s|%s', $device->device(), $device->client(), $device->support()->value, $device->caution(), $device->instead());
+                $lines[] = sprintf('%s|%s|%s|%s|%s|%s', $device->device(), $device->client(), $device->support()->value, howItIsLicensed($device), $device->caution(), $device->instead());
             }
 
             foreach ($advice->troubles() as $trouble) {
@@ -146,8 +152,8 @@ it('comes away with every device, its rating and what to use instead, and what t
             "Every one of these works on the home network only\n"
             . "Nothing is installed on anybody's device for them\n"
             . "Archival|This machine cannot transcode 4K in hardware|Choose the Balanced preset\n"
-            . "An iPhone|Jellyfin for iOS|good||\n"
-            . "An older smart TV|The TV browser|poor|Subtitles may lag|A streaming stick\n"
+            . "An iPhone|Jellyfin for iOS|good|open||\n"
+            . "An older smart TV|The TV browser|poor|closed|Subtitles may lag|A streaming stick\n"
             . 'It keeps buffering|The Wi-Fi is weak|Only far from the router|Move closer',
             $which,
         );
@@ -171,6 +177,13 @@ it('tells a session that has ended from a stack that is not answering', function
 it('a rating this app cannot read is an obstacle, never the nearest rating', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode(whatAStackAdvises('excellent')))]);
+
+    expect(everythingTheAdviceSays(new Advisers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
+});
+
+it('an app that does not say whether it is open source is an obstacle, never a guess', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(str_replace(',"open_source":true', '', (string) json_encode(whatAStackAdvises())))]);
 
     expect(everythingTheAdviceSays(new Advisers(new PinnedClients())))->toBe(Obstacle::StackDidNotAnswer->value);
 });

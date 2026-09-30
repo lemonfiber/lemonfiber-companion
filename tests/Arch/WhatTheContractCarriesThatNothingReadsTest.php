@@ -76,8 +76,12 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'What replacing the certificate would cost every paired phone. It belongs where the certificate is replaced, which this app does not offer; the screen that makes a code shows what the approved design names and nothing else.',
     ],
     [
-        'path' => 'ClientsEnvelope.devices[].open_source',
-        'because' => 'Whether the client suggested for a device is open source. Which app to watch on is answered with the device, the client, how well it plays there and what to use instead, which are read; no requirement asks the app to say what licence a client carries.',
+        'path' => 'HandoffEnvelope.quick_connect',
+        'because' => 'Whether the media server lets a device be approved with a short code. Where it does, the stack says so in the steps, which are read and drawn in its words; the flag beside them says it again.',
+    ],
+    [
+        'path' => 'HandoffEnvelope.rehearsed',
+        'because' => 'Whether the hand-off was only described. This app never asks for a rehearsal: the first asking is the one that writes down when the code was given, which is the operator\'s tap.',
     ],
     [
         'path' => 'ClientsEnvelope.devices[].deep_link',

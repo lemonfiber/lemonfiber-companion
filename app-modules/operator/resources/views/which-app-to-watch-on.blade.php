@@ -24,6 +24,9 @@
             <x-design::body>{{ $device->client }}</x-design::body>
             {{-- Fallback is an answer, drawn in words of its own like the rest. --}}
             <x-design::note>{{ __($device->supportSaid) }}</x-design::note>
+            @if (! $device->openSource)
+                <x-design::note>{{ __('stacks.clients.not_open_source') }}</x-design::note>
+            @endif
             @if ($device->caution !== '')
                 <x-design::note>{{ $device->caution }}</x-design::note>
             @endif

@@ -13,6 +13,7 @@ final readonly class ADeviceAsShown
      * @param string $device      what somebody would call the device
      * @param string $client      what to use on it
      * @param string $supportSaid the catalogue key for how well it is served
+     * @param bool   $openSource  whether that app is open source
      * @param string $caution     what is worth knowing before starting, or empty
      * @param string $instead     what to use instead, or empty
      */
@@ -20,6 +21,7 @@ final readonly class ADeviceAsShown
         public string $device,
         public string $client,
         public string $supportSaid,
+        public bool $openSource,
         public string $caution,
         public string $instead,
     ) {}

@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * One kind of device somebody might watch on, the app to use on it, and how well it is served.
+ * One kind of device somebody might watch on, the app to use on it, whether that app is open source, and how well it is served.
  *
  * `caution` and `instead` are empty where the stack said nothing; a blank one
  * is refused.
@@ -18,6 +18,7 @@ final readonly class ADeviceToWatchOn
         private string $device,
         private string $client,
         private HowWellADeviceIsServed $support,
+        private bool $openSource,
         private string $caution,
         private string $instead,
     ) {}
@@ -27,6 +28,7 @@ final readonly class ADeviceToWatchOn
         string $device,
         string $client,
         HowWellADeviceIsServed $support,
+        bool $openSource,
         string $caution,
         string $instead,
     ): self {
@@ -42,7 +44,7 @@ final readonly class ADeviceToWatchOn
             }
         }
 
-        return new self($device, $client, $support, $caution, $instead);
+        return new self($device, $client, $support, $openSource, $caution, $instead);
     }
 
     /** What somebody would call the device they are holding. */
@@ -61,6 +63,12 @@ final readonly class ADeviceToWatchOn
     public function support(): HowWellADeviceIsServed
     {
         return $this->support;
+    }
+
+    /** Whether that app is open source. One that is not is named, and is never the recommended path. */
+    public function isOpenSource(): bool
+    {
+        return $this->openSource;
     }
 
     /** What is worth knowing before starting, or empty. */

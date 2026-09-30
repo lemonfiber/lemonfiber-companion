@@ -6,6 +6,7 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
+use function is_bool;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -83,9 +84,10 @@ final readonly class WhatToWatchWith
             }
 
             $found[] = ADeviceToWatchOn::rated(
-                self::text($row, ClientsField::Devices, ClientsField::Device, $position),
-                self::text($row, ClientsField::Devices, ClientsField::Client, $position),
+                self::text($row, ClientsField::Devices, WireField::Device, $position),
+                self::text($row, ClientsField::Devices, WireField::Client, $position),
                 self::support($row, $position),
+                self::flag($row, ClientsField::Devices, WireField::OpenSource, $position),
                 self::optional($row, ClientsField::Devices, WireField::Caution, $position),
                 self::optional($row, ClientsField::Devices, WireField::Instead, $position),
             );
@@ -241,6 +243,20 @@ final readonly class WhatToWatchWith
         }
 
         return self::text($row, $list, $field, $position);
+    }
+
+    /**
+     * A required field of one row, as a yes or a no.
+     *
+     * @param array<mixed> $row
+     */
+    private static function flag(array $row, NamesAWireField $list, NamesAWireField $field, int $position): bool
+    {
+        if (! array_key_exists($field->value, $row) || ! is_bool($row[$field->value])) {
+            throw ClientsIsUnreadable::said($list, $field, $position);
+        }
+
+        return $row[$field->value];
     }
 
     /**

@@ -17,14 +17,14 @@ use Modules\Kernel\Api\TheDevices;
 /** A device with the words given here. */
 function aDeviceSaying(string $device, string $client, string $caution, string $instead): ADeviceToWatchOn
 {
-    return ADeviceToWatchOn::rated($device, $client, HowWellADeviceIsServed::Poor, $caution, $instead);
+    return ADeviceToWatchOn::rated($device, $client, HowWellADeviceIsServed::Poor, openSource: true, caution: $caution, instead: $instead);
 }
 
 it('keeps everything it was rated with', function (): void {
-    $device = ADeviceToWatchOn::rated('An old TV', 'The TV browser', HowWellADeviceIsServed::Poor, 'Subtitles lag', 'A streaming stick');
+    $device = ADeviceToWatchOn::rated('An old TV', 'The TV browser', HowWellADeviceIsServed::Poor, openSource: false, caution: 'Subtitles lag', instead: 'A streaming stick');
 
-    expect([$device->device(), $device->client(), $device->support(), $device->caution(), $device->instead()])
-        ->toBe(['An old TV', 'The TV browser', HowWellADeviceIsServed::Poor, 'Subtitles lag', 'A streaming stick']);
+    expect([$device->device(), $device->client(), $device->support(), $device->isOpenSource(), $device->caution(), $device->instead()])
+        ->toBe(['An old TV', 'The TV browser', HowWellADeviceIsServed::Poor, false, 'Subtitles lag', 'A streaming stick']);
 });
 
 it('takes a caution and an instead that are empty', function (): void {
