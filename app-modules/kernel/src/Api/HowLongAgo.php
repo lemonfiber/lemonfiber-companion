@@ -39,14 +39,6 @@ enum HowLongAgo: string
     case Hours = 'hours';
 
     case Days = 'days';
-    /** Sixty seconds, which is where an age stops being *moments*. */
-    private const int A_MINUTE = 60;
-
-    /** Sixty of those. */
-    private const int AN_HOUR = 3_600;
-
-    /** Twenty-four of those, which is as coarse as this gets. */
-    private const int A_DAY = 86_400;
 
     /**
      * The unit the time since a reading is said in.
@@ -82,9 +74,9 @@ enum HowLongAgo: string
     public function seconds(): int
     {
         return match ($this) {
-            self::Minutes => self::A_MINUTE,
-            self::Hours => self::AN_HOUR,
-            self::Days => self::A_DAY,
+            self::Minutes => SecondsIn::AMinute->value,
+            self::Hours => SecondsIn::AnHour->value,
+            self::Days => SecondsIn::ADay->value,
         };
     }
 

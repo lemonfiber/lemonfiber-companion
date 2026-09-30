@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Dx\Api;
 
+use function intdiv;
+
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Nonce;
@@ -74,9 +76,6 @@ enum AStandInStack: string
     /** What a machine answers with when the session it was handed is not one. */
     private const int WILL_NOT_TAKE_THE_SESSION = 401;
 
-    /** Sixty-four hex characters, which is the written form a pin takes. */
-    private const int A_SHA256 = 32;
-
     /**
      * The stack as this device holds it.
      *
@@ -91,7 +90,7 @@ enum AStandInStack: string
             StackId::of(Nonce::of(str_repeat($this->seed(), Nonce::SHORTEST))),
             StackName::of($this->called()),
             Address::of(sprintf('https://%s.invalid:8443', $this->value)),
-            Fingerprint::of(str_repeat('ab', self::A_SHA256)),
+            Fingerprint::of(str_repeat('ab', intdiv(Fingerprint::CHARACTERS, 2))),
         );
     }
 

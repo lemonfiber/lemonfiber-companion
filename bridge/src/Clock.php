@@ -23,12 +23,10 @@ use function nativephp_call;
  */
 final readonly class Clock
 {
-    private const string NOTHING = '{}';
-
     /** The zone's name in the time zone database, or empty where none was given. */
     public function zone(): string
     {
-        $said = nativephp_call(Call::Zone->value, self::NOTHING);
+        $said = nativephp_call(Call::Zone->value, Call::CARRIES_NOTHING);
 
         if (! is_string($said)) {
             return '';

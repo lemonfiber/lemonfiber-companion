@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use Modules\Device\Api\SystemEntropy;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\Nonce;
@@ -27,8 +28,6 @@ use const STR_PAD_LEFT;
  */
 final class SequencedEntropy implements Entropy
 {
-    /** The adapter's width: sixteen bytes, hex-encoded. */
-    private const int WIDTH = 32;
     private int $answered = 0;
     private int $keys = 0;
 
@@ -43,7 +42,7 @@ final class SequencedEntropy implements Entropy
     {
         $this->answered++;
 
-        return Nonce::of(str_pad(sprintf('%x', $this->answered), self::WIDTH, '0', STR_PAD_LEFT));
+        return Nonce::of(str_pad(sprintf('%x', $this->answered), SystemEntropy::BYTES * 2, '0', STR_PAD_LEFT));
     }
 
     /**

@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Health\Api;
 
-use function max;
-
 use Modules\Health\Internal\HealthReadingsKept;
+use Modules\Health\Internal\HowLongAReadingIsKept;
 use Modules\Health\Internal\TheSummaryAsKept;
 use Modules\Health\Internal\WhatTheKeptSummaryHeld;
 use Modules\Kernel\Api\Forgotten;
@@ -38,9 +37,8 @@ use Modules\Kernel\Api\Unsealed;
  * is not a summary are all forgotten rather than shown: a reading can always
  * be read again from the stack.
  *
- * **Thirty days, then forgotten.** At launch every reading read longer ago than
- * that is let go of. The operator's own choice of how long replaces the thirty
- * when there is a setting to make it in.
+ * **{@see HowLongAReadingIsKept::standard()}, then forgotten.** At launch every
+ * reading read longer ago than that is let go of.
  *
  * Where nothing can be sealed, nothing is kept; and where the seal's keys
  * cannot be read, a stack's hash matches no row, so nothing is found and
@@ -48,12 +46,6 @@ use Modules\Kernel\Api\Unsealed;
  */
 final readonly class KeepingTheLastReading
 {
-    /** How many days a kept reading is kept for until the operator says otherwise. */
-    private const int DAYS_KEPT = 30;
-
-    /** A day, in the seconds an {@see Instant} counts. */
-    private const int SECONDS_IN_A_DAY = 86_400;
-
     public function __construct(private Sealed $seal, private HealthReadingsKept $kept) {}
 
     /** Keep this summary as the newest for this stack, sealed first. */
@@ -86,9 +78,7 @@ final readonly class KeepingTheLastReading
     /** Let go of every reading kept longer than a reading is kept for, as of now. */
     public function forgetTheOld(Instant $now): Forgotten
     {
-        return $this->kept->forgetOlderThan(
-            Instant::atEpochSeconds(max(0, $now->epochSeconds() - self::DAYS_KEPT * self::SECONDS_IN_A_DAY)),
-        );
+        return $this->kept->forgetOlderThan(HowLongAReadingIsKept::standard()->keepsWhatWasReadSince($now));
     }
 
     private function opened(SealedStack $sealed, SealedPayload $payload, Shape $shape, Instant $readAt): WhatWasHeardSoFar

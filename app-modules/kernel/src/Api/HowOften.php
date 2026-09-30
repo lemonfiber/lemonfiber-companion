@@ -68,9 +68,6 @@ enum HowOften: string
     /** The wait before a broken subscription is opened again, in milliseconds. */
     public const int AFTER_A_BREAK_MS = 10_000;
 
-    /** A thousand of them to the second, which is the only unit an operator reads. */
-    private const int A_SECOND = 1_000;
-
     /** How long this cadence is, in the milliseconds the platform counts. */
     public function milliseconds(): int
     {
@@ -89,6 +86,6 @@ enum HowOften: string
      */
     public function seconds(): int
     {
-        return intdiv($this->milliseconds(), self::A_SECOND);
+        return intdiv($this->milliseconds(), DecimalPrefix::Kilo->value);
     }
 }

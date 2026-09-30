@@ -38,18 +38,6 @@ use function nativephp_call;
  */
 final readonly class Storage implements Keeps
 {
-    /** The word the store answers a successful write with. */
-    private const string KEPT = 'kept';
-
-    /** The word the store answers a successful read with. */
-    private const string FOUND = 'found';
-
-    /** The word the store answers where it holds no such key. */
-    private const string NOTHING = 'nothing';
-
-    /** The word the store answers a successful removal with. */
-    private const string FORGOTTEN = 'forgotten';
-
     /** A key nothing is ever kept under, for asking whether the store answers at all. */
     private const string A_KEY_NOTHING_IS_KEPT_UNDER = 'lemonfiber.probe';
 
@@ -78,9 +66,9 @@ final readonly class Storage implements Keeps
     public function canBeAsked(): bool
     {
         $said = $this->answering(Call::Kept, ['key' => self::A_KEY_NOTHING_IS_KEPT_UNDER]);
-        $outcome = $this->wordUnder($said, 'outcome');
+        $outcome = $this->outcomeOf($said);
 
-        if ($outcome === self::FOUND || $outcome === self::NOTHING) {
+        if ($outcome === HowTheStoreAnswered::Found || $outcome === HowTheStoreAnswered::Nothing) {
             return true;
         }
 
@@ -104,7 +92,7 @@ final readonly class Storage implements Keeps
             'readable' => $when->value,
         ]);
 
-        return $this->wordUnder($said, 'outcome') === self::KEPT
+        return $this->outcomeOf($said) === HowTheStoreAnswered::Kept
             ? Wrote::done(WhenAValueMayBeRead::orTheNarrowest($this->wordUnder($said, 'readable')))
             : Wrote::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($this->wordUnder($said, 'because')));
     }
@@ -113,13 +101,13 @@ final readonly class Storage implements Keeps
     public function read(string $key): WasRead
     {
         $said = $this->answering(Call::Kept, ['key' => $key]);
-        $outcome = $this->wordUnder($said, 'outcome');
+        $outcome = $this->outcomeOf($said);
 
-        if ($outcome === self::FOUND) {
+        if ($outcome === HowTheStoreAnswered::Found) {
             return WasRead::found($this->wordUnder($said, 'value') ?? '');
         }
 
-        return $outcome === self::NOTHING
+        return $outcome === HowTheStoreAnswered::Nothing
             ? WasRead::nothing()
             : WasRead::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($this->wordUnder($said, 'because')));
     }
@@ -136,9 +124,17 @@ final readonly class Storage implements Keeps
     {
         $said = $this->answering(Call::Forget, ['key' => $key]);
 
-        return $this->wordUnder($said, 'outcome') === self::FORGOTTEN
+        return $this->outcomeOf($said) === HowTheStoreAnswered::Forgotten
             ? Wrote::done(WhenAValueMayBeRead::WhileUnlocked)
             : Wrote::refused(WhyNothingWasKept::orTheStoreWouldNotOpen($this->wordUnder($said, 'because')));
+    }
+
+    /** What the store answered under `outcome`, where it is a word both halves write. */
+    private function outcomeOf(mixed $said): ?HowTheStoreAnswered
+    {
+        $word = $this->wordUnder($said, 'outcome');
+
+        return $word === null ? null : HowTheStoreAnswered::tryFrom($word);
     }
 
     /**

@@ -34,7 +34,7 @@ use function sodium_bin2hex;
 final readonly class SystemEntropy implements Entropy
 {
     /** Sixteen bytes, which is thirty-two hex characters once encoded. */
-    private const int BYTES = 16;
+    public const int BYTES = 16;
 
     public function nonce(): Nonce
     {

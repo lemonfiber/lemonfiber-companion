@@ -18,9 +18,6 @@ use function round;
  */
 final readonly class HowFast
 {
-    /** What a figure may not reach, which is what keeps a separator out of it. */
-    private const int A_THOUSAND = 1000;
-
     /** Bits in a byte, which is the whole of the conversion. */
     private const int BITS_IN_A_BYTE = 8;
 
@@ -41,7 +38,7 @@ final readonly class HowFast
         $bits = $bytesASecond * self::BITS_IN_A_BYTE;
         $unit = RateUnit::Kilobits;
 
-        while (self::inside($bits, $unit) >= self::A_THOUSAND && $unit->next() !== $unit) {
+        while (self::inside($bits, $unit) >= DecimalPrefix::Kilo->value && $unit->next() !== $unit) {
             $unit = $unit->next();
         }
 

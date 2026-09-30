@@ -25,22 +25,13 @@ enum RateUnit: string
 
     case Gigabits = 'gigabits';
 
-    /** A thousand bits a second, which is the smallest unit shown. */
-    private const int A_KILOBIT = 1_000;
-
-    /** A thousand of those, which is what a line is usually sold in. */
-    private const int A_MEGABIT = 1_000_000;
-
-    /** A thousand of those, which is where fibre ends up. */
-    private const int A_GIGABIT = 1_000_000_000;
-
     /** How many bits a second one of this unit is, which is what the bands are. */
     public function bits(): int
     {
         return match ($this) {
-            self::Kilobits => self::A_KILOBIT,
-            self::Megabits => self::A_MEGABIT,
-            self::Gigabits => self::A_GIGABIT,
+            self::Kilobits => DecimalPrefix::Kilo->value,
+            self::Megabits => DecimalPrefix::Mega->value,
+            self::Gigabits => DecimalPrefix::Giga->value,
         };
     }
 

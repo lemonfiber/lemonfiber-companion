@@ -69,12 +69,6 @@ final readonly class AMomentAsWritten
 
     private const int FIVE_MONTHS = 5;
 
-    private const int A_MINUTE = 60;
-
-    private const int AN_HOUR = 3600;
-
-    private const int A_DAY = 86_400;
-
     private const int LAST_HOUR = 23;
 
     private const int LAST_MINUTE = 59;
@@ -127,9 +121,9 @@ final readonly class AMomentAsWritten
             return null;
         }
 
-        $seconds = self::daysSinceTheEpoch($year, $month, $day) * self::A_DAY
-            + $hour * self::AN_HOUR
-            + $minute * self::A_MINUTE
+        $seconds = self::daysSinceTheEpoch($year, $month, $day) * SecondsIn::ADay->value
+            + $hour * SecondsIn::AnHour->value
+            + $minute * SecondsIn::AMinute->value
             + $second
             - self::offset($part);
 
@@ -149,7 +143,7 @@ final readonly class AMomentAsWritten
             return 0;
         }
 
-        $ahead = (int) $part[9] * self::AN_HOUR + (int) $part[10] * self::A_MINUTE;
+        $ahead = (int) $part[9] * SecondsIn::AnHour->value + (int) $part[10] * SecondsIn::AMinute->value;
 
         return $part[8] === self::BEHIND ? -$ahead : $ahead;
     }
