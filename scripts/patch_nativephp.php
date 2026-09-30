@@ -705,6 +705,50 @@ SHIPS,
 }
 BECOMES,
     ],
+    [
+        // A tab carries its own name. The tab bar is laid out to the bottom
+        // edge and padded above the system navigation bar, and on a handset
+        // with three-button navigation the accessibility layer clips the
+        // window above where that padding ends. Each tab's label then falls
+        // outside the clip and is reported with no bounds at all, so the tab a
+        // screen reader focuses has no name of its own and nothing on it can
+        // be found by its label. The name goes on the tab, whose bounds start
+        // at the top of the bar, and the label beside the icon is left to the
+        // eye rather than said a second time.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.platform.LocalLayoutDirection
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+                        NavigationBarItem(
+                            selected = actualIdx == selection,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                        NavigationBarItem(
+                            modifier = Modifier.semantics { contentDescription = label },
+                            selected = actualIdx == selection,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+                            label = { Text(label, fontFamily = chromeFontFamily) },
+SHIPS,
+        'becomes' => <<<'BECOMES'
+                            label = { Text(label, fontFamily = chromeFontFamily, modifier = Modifier.clearAndSetSemantics {}) },
+BECOMES,
+    ],
 ];
 
 /**
@@ -729,10 +773,29 @@ const WHEN_THE_LINE_HAS_MOVED = "patch_nativephp: the line this patch rewrites i
  */
 const WHEN_THE_FILE_IS_NOT_THERE = "patch_nativephp: %s is not there.\n\nThe package no longer ships the file this patch rewrites. Either it was renamed, in which case point that entry at the new path, or it is gone, in which case delete the entry — and if it was the last one, this script and the two `composer.json` hooks that call it. Skipping it quietly leaves a build fatalling on a device with nothing having said so. Do not ignore this.\n";
 
+/**
+ * The package directory the bundle leaves out, so its copy of this tree has none.
+ *
+ * A build copies this tree without it, as `BundleExclusions::VENDOR_PATHS`
+ * says, and runs `composer install` in the copy, which runs this script again.
+ * The native project is built from this tree's own copy of that directory,
+ * which the first run patched, so in the bundle's copy there is nothing of it
+ * to patch. Where the directory is here and a file under it is not, the file
+ * moved, and that is still refused.
+ */
+const WHAT_THE_BUNDLE_LEAVES_OUT = '/../vendor/nativephp/mobile/resources';
+
 $rewritten = 0;
 
 foreach (WHAT_THIS_REWRITES as ['in' => $where, 'ships' => $ships, 'becomes' => $becomes]) {
     $path = sprintf('%s%s', __DIR__, $where);
+
+    $leftOutOfThisCopy = str_starts_with($where, sprintf('%s/', WHAT_THE_BUNDLE_LEAVES_OUT))
+        && ! is_dir(sprintf('%s%s', __DIR__, WHAT_THE_BUNDLE_LEAVES_OUT));
+
+    if ($leftOutOfThisCopy) {
+        continue;
+    }
 
     if (! file_exists($path)) {
         fwrite(STDERR, sprintf(WHEN_THE_FILE_IS_NOT_THERE, $path));
