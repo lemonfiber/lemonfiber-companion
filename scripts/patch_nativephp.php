@@ -750,6 +750,170 @@ SHIPS,
 BECOMES,
     ],
     [
+        // A glyph is a word in an icon font, drawn by its ligature, so every
+        // icon is a line of text to the accessibility layer: a screen reader
+        // reads "chevron_right" and "error" aloud, and the label the markup
+        // gave the glyph is dropped, because the helper that draws it takes a
+        // description and never applies it. The ligature is hidden from the
+        // reader, and the glyph says its label where it was given one and
+        // nothing where it was not. One place, because every icon the app
+        // draws on Android goes through it: a glyph on its own, a row's
+        // leading and trailing icons, and a tab's.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
+        'ships' => <<<'SHIPS'
+import androidx.compose.ui.graphics.Color
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
+        'ships' => <<<'SHIPS'
+            text = getIconName(name),
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            text = getIconName(name),
+            modifier = Modifier.clearAndSetSemantics {},
+
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
+        'ships' => <<<'SHIPS'
+        modifier = modifier.size(24.dp),
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        modifier = modifier.size(24.dp).saidAs(contentDescription),
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
+        'ships' => <<<'SHIPS'
+        modifier = modifier.size(size),
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        modifier = modifier.size(size).saidAs(contentDescription),
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/IconHelper.kt',
+        'ships' => <<<'SHIPS'
+/**
+ * Get the Material Icon ligature name for the given icon name.
+SHIPS,
+        'becomes' => <<<'BECOMES'
+/** The glyph's label for a screen reader, where it was given one. */
+private fun Modifier.saidAs(label: String?): Modifier =
+    if (label.isNullOrEmpty()) this else semantics { contentDescription = label }
+
+/**
+ * Get the Material Icon ligature name for the given icon name.
+BECOMES,
+    ],
+    [
+        // The tab carries its name itself, so the glyph beside it says
+        // nothing: now that a glyph says its label, a tab's would be the
+        // same name read twice.
+        'in' => '/../vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/nativerender/NativeRootTabsRenderer.kt',
+        'ships' => <<<'SHIPS'
+MaterialIcon(name = icon, contentDescription = label)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+MaterialIcon(name = icon, contentDescription = null)
+BECOMES,
+    ],
+    [
+        // A tappable area and a list row say the label the markup gave them.
+        // Both drop it: neither renderer reads `a11y_label`, so a reader is
+        // given the words drawn inside instead, and a row or a link whose
+        // words are the same on every card cannot say which one it opens.
+        // It is applied the way the package applies it to a button and a
+        // chip, through the helper they share.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ContainerRenderers.kt',
+        'ships' => <<<'SHIPS'
+object PressableRenderer {
+    @Composable
+    fun Render(node: NativeUINode, modifier: Modifier) {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+object PressableRenderer {
+    @Composable
+    fun Render(node: NativeUINode, given: Modifier) {
+        val modifier = given.nuiA11y(node.props.getString("a11y_label"), node.props.getString("a11y_hint"))
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/ListItemRenderer.kt',
+        'ships' => <<<'SHIPS'
+            modifier = clickModifier,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            modifier = clickModifier.nuiA11y(p.getString("a11y_label"), p.getString("a11y_hint")),
+BECOMES,
+    ],
+    [
+        // The same two on iOS, where neither renderer reads `a11y_label`
+        // either: a tappable area is read as the words inside it, one at a
+        // time, and a list row as its lines combined. Each becomes one
+        // element saying its label, a button where something handles its
+        // press. The modifier is shared by the two files, so it is not
+        // private to either.
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUISimpleRenderers.swift',
+        'ships' => <<<'SHIPS'
+        } else {
+            NativeUIColumnRenderer(node: node)
+        }
+    }
+}
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        } else {
+            NativeUIColumnRenderer(node: node)
+                .modifier(NativeUISaidAs(node: node))
+        }
+    }
+}
+
+/// The label the markup gave an element, said as one element, where it gave one.
+struct NativeUISaidAs: ViewModifier {
+    let node: NativeUINode
+
+    func body(content: Content) -> some View {
+        let label = node.props.getString("a11y_label", default: "")
+        let hint = node.props.getString("a11y_hint", default: "")
+        if label.isEmpty {
+            content
+        } else {
+            content
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(label)
+                .accessibilityHint(hint)
+                .accessibilityAddTraits(node.onPress != 0 ? .isButton : [])
+        }
+    }
+}
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUIListItemRenderer.swift',
+        'ships' => <<<'SHIPS'
+            .accessibilityElement(children: .combine)
+
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            .accessibilityElement(children: .combine)
+            .modifier(NativeUISaidAs(node: node))
+
+BECOMES,
+    ],
+    [
         // What a bridge call carries stays out of the device log. The bridge
         // writes every call's parameters and result to logcat at INFO, in
         // debug and release builds alike, and this app's storage calls carry
