@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
@@ -119,6 +120,7 @@ function aVerbThatRan(WhereAServiceEndedUp ...$services): WhatTheVerbCameTo
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
         TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
     );
 }
 
@@ -265,6 +267,15 @@ it('says a start that brought everything back did', function (): void {
     expect($drawn)->not->toContain(whatTheCatalogueSays('health.came_to.not_everything_back'), whatTheCatalogueSays('health.came_to.none_named'));
 });
 
+it('shows the command the stack ran, under its heading', function (): void {
+    $started = aVerbThatRan(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Healthy))->amountingTo(HowTheStackIsRunning::Active);
+
+    $drawn = whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($started))));
+
+    expect(whatIsDrawnAfter(whatTheCatalogueSays('stacks.command.ran'), $drawn))->toBe('docker compose up -d')
+        ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'));
+});
+
 it('says a start the stack declined, with the stack\'s reason, and names nothing as not back', function (): void {
     $declined = WhatTheVerbCameTo::declined(
         WhetherItWasRehearsed::CarriedOut,
@@ -281,6 +292,9 @@ it('says a start the stack declined, with the stack\'s reason, and names nothing
     expect($drawn)->not->toContain(
         whatTheCatalogueSays('health.came_to.not_everything_back'),
         whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => whatTheCatalogueSays('health.service.stopped')]),
+        // It ran nothing, so there is no command to show for it.
+        whatTheCatalogueSays('stacks.command.ran'),
+        whatTheCatalogueSays('stacks.command.will_run'),
     );
 });
 
@@ -291,12 +305,14 @@ it('labels a rehearsal as one, in the tense of what would happen, and names noth
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
         ThePortsHeld::of(),
         TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
     );
 
     $screen = theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($rehearsed)));
     $drawn = whatStartingSonarrDrew($screen);
 
     expect($screen->whatItCameTo()->wasRehearsed)->toBeTrue();
+    expect(whatIsDrawnAfter(whatTheCatalogueSays('stacks.command.will_run'), $drawn))->toBe('docker compose up -d');
     expect($drawn)->toContain(
         whatTheCatalogueSays('health.came_to.a_rehearsal'),
         whatTheCatalogueSays('health.came_to.rehearsed'),
@@ -306,6 +322,7 @@ it('labels a rehearsal as one, in the tense of what would happen, and names noth
         whatTheCatalogueSays('health.came_to.left_out', ['name' => 'qBittorrent', 'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent)]),
         whatTheCatalogueSays('health.came_to.not_everything_back'),
         whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => whatTheCatalogueSays('health.service.stopped')]),
+        whatTheCatalogueSays('stacks.command.ran'),
     );
 });
 
@@ -336,6 +353,7 @@ it('names what the plan left out with what each needed, and what holds each port
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
         ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media-server')),
         TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
     )->amountingTo(HowTheStackIsRunning::Active);
 
     $drawn = whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($started))));
@@ -633,6 +651,7 @@ it('says a file the operator edited is kept, with what lemonfiber would change i
             AStackEdit::at('compose.yaml', "- image: mine\n+ image: ours\n"),
             AStackEdit::at('env/sonarr.env', ''),
         ),
+        TheCommandLine::of('docker', 'compose', 'up', '-d'),
     );
 
     $drawn = whatStartingSonarrDrew(theScreenAVerbIsFollowedFrom(aStoppedSonarrThatCameTo(HowTheVerbIsGoing::done($started))));

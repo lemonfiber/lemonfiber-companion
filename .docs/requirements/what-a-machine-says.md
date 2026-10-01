@@ -17,6 +17,7 @@ requirement is right and this page is a defect.
 | `G4-R4` | Technical detail is available and does not lead | `WentWrong` — it is asked for by name rather than arriving beside everything else |
 | `ARCH-R79` | Answers and their names are separated | `Ability` |
 | `N19-R3` | A stack file the operator edited is shown as edited and kept, never as drift | `AStackEdit`, one shape for every edit the stack reports: a file a reset reverts, and a file a start or an update leaves as the operator set it. `StackEditsSent` reads `stack_edits` off the `lifecycle` and `update` envelopes into `WhatTheVerbCameTo::editsKept()` and `Upkeep::editsKept()`, and the `edits-kept` component draws each with what lemonfiber would change in it and a legend for the marks, with no tone and nothing offered |
+| `N19-R1` | Where the app offers an action, it can show the command that performs it | After a start, a stop or a restart: `Lifecycles` reads `command` into `TheCommandLine`, which `WhatTheVerbCameTo::whetherItRan()` hands only to a verb that ran, and the outcome card draws it verbatim at its foot under "The command it ran", or "The command it will run" for a rehearsal, the words joined by spaces as the stack's terminal prints them. A start the stack declined ran nothing and shows none. Before the yes no command is shown, because no web action takes a rehearsal |
 
 ## Putting something right
 

@@ -27,6 +27,8 @@ final readonly class HowTheVerbWent
      * @param list<AServiceLeftOutAsShown> $leftOut                 the services the plan left out, each with what it needed
      * @param list<APortHeldAsShown>       $portsHeld               the ports it wanted that something else holds, each naming what holds it
      * @param list<AnEditAsShown>          $editsKept               the stack files the operator edited, which it left as they set them
+     * @param ?string                      $commandSaid             the catalogue key for the command, in the tense the report allows, or null where nothing ran
+     * @param string                       $command                 the command line the stack ran, or would run, as somebody would type it
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -43,5 +45,7 @@ final readonly class HowTheVerbWent
         public array $leftOut,
         public array $portsHeld,
         public array $editsKept,
+        public ?string $commandSaid,
+        public string $command,
     ) {}
 }

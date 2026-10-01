@@ -457,13 +457,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'second answer beside that one, for `JobEnvelope.action`\'s reason.',
     ],
     [
-        'path' => 'LifecycleEnvelope.command',
-        'because' => 'The exact command line the stack ran. It is what somebody at a terminal checks a run '
-            . 'against, and no `N` requirement asks the phone to show it; `N16-R6` asks for what did not '
-            . 'come back, which is read off the services. Raise it against the spec before reading it, '
-            . 'which is `N1-R17`.',
-    ],
-    [
         'path' => 'LifecycleEnvelope.forwarding',
         'because' => 'What starting did about the VPN\'s forwarded port, where it did anything. No `N` '
             . 'requirement asks what a verb came to to carry it: `N2-R9` has VPN verification reachable, '

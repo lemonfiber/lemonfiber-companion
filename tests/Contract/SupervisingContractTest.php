@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
@@ -650,6 +651,7 @@ function theSameRestartReported(): WhatTheVerbCameTo
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
         ThePortsHeld::of(APortHeld::of(8096, 'jellyfin', 'media-server')),
         TheStackEdits::none(),
+        TheCommandLine::of('docker', 'compose', '--profile', 'media', 'restart'),
     )->amountingTo(HowTheStackIsRunning::Partial);
 }
 
@@ -701,7 +703,7 @@ function everyPartOfWhatTheVerbCameTo(WhatTheVerbCameTo $report): string
         implode(',', $leftOut),
         implode(',', $ports),
         $report->whetherItRan(
-            ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
+            ran: static fn(TheCommandLine $command): TheWordCarriedOut => new TheWordCarriedOut(sprintf('ran: %s', $command->asTyped())),
             declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('declined: %s', $why)),
         )->said,
     );
@@ -729,7 +731,7 @@ it('reads every part of what a finished verb came to', function (): void {
 
     foreach (everyWayOfFollowingAVerb($finished, HowTheVerbIsGoing::done(theSameRestartReported())) as $which => $build) {
         expect(whatBecameOfTheVerb($build()))
-            ->toBe('carried_out|partial|not back Sonarr:failed|left out qBittorrent:torrent|ports 8096:jellyfin:media-server|ran', $which);
+            ->toBe('carried_out|partial|not back Sonarr:failed|left out qBittorrent:torrent|ports 8096:jellyfin:media-server|ran: docker compose --profile media restart', $which);
     }
 });
 

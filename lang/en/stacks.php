@@ -1015,6 +1015,13 @@ return [
         'still_on_the_machine' => 'Nothing left this phone. The bundle is still on the machine.',
     ],
 
+    // The exact command behind a verb, as the stack's terminal prints it: what
+    // it ran, or for a rehearsal what it would run.
+    'command' => [
+        'ran' => 'The command it ran',
+        'will_run' => 'The command it will run',
+    ],
+
     // Stack files the operator edited, wherever the stack reports them. Each
     // file's lines are marked as the stack marks them: the operator's `-`,
     // lemonfiber's `+`, and the legend names the same marks.

@@ -891,6 +891,14 @@ return [
         'still_on_the_machine' => 'Er heeft niets deze telefoon verlaten. De bundel staat nog op de machine.',
     ],
 
+    // De precieze opdracht achter een handeling, zoals de terminal van de
+    // stack hem toont: wat er is uitgevoerd, of bij een voorproef wat er zou
+    // worden uitgevoerd.
+    'command' => [
+        'ran' => 'De opdracht die is uitgevoerd',
+        'will_run' => 'De opdracht die wordt uitgevoerd',
+    ],
+
     // Stackbestanden die de beheerder heeft aangepast, waar de stack ze ook
     // meldt. De regels van elk bestand zijn gemarkeerd zoals de stack ze
     // markeert: die van de beheerder `-`, die van lemonfiber `+`, en de

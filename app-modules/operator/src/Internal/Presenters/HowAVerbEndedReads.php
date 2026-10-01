@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -75,6 +76,10 @@ final readonly class HowAVerbEndedReads
             declined: static fn(string $why): AsText => AsText::of($why),
         )->said;
         $ran = $because === '';
+        $command = $report->whetherItRan(
+            ran: static fn(TheCommandLine $command): AsText => AsText::of($command->asTyped()),
+            declined: static fn(): AsText => AsText::nothing(),
+        )->said;
 
         return new HowTheVerbWent(
             went: HowTheReadingWent::itCameBack(),
@@ -94,7 +99,19 @@ final readonly class HowAVerbEndedReads
             leftOut: new HowWhatWasLeftOutReads()->of($report->leftOut()),
             portsHeld: $this->portsHeld($report->portsHeld()),
             editsKept: new HowAStackEditReads()->these($report->editsKept()),
+            commandSaid: $this->commandSaid($ran, $rehearsed),
+            command: $command,
         );
+    }
+
+    /** The heading over the command, in the tense the report allows, or none where nothing ran. */
+    private function commandSaid(bool $ran, bool $rehearsed): ?string
+    {
+        return match (true) {
+            ! $ran => null,
+            $rehearsed => 'stacks.command.will_run',
+            default => 'stacks.command.ran',
+        };
     }
 
     /** What a verb that ran came to, in the tense the report allows. */
@@ -155,6 +172,8 @@ final readonly class HowAVerbEndedReads
             leftOut: [],
             portsHeld: [],
             editsKept: [],
+            commandSaid: null,
+            command: '',
         );
     }
 }
