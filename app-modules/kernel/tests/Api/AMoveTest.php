@@ -179,3 +179,8 @@ it('names things in the stack\'s order, and refuses a blank one by the field it 
         ->and($named)->toHaveCount(2)
         ->and(static fn(): WhatWasNamed => WhatWasNamed::of('would_stop', 'sonarr', ' '))->toThrow(TheMoveSaysNothing::class, '`would_stop`');
 });
+
+it('says a replacement left something running only where something would not stop', function (): void {
+    expect(TheReplacement::of('media', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped', 'radarr'), WhatWasNamed::of('still_running', 'tautulli'))->leftSomethingRunning())->toBeTrue()
+        ->and(TheReplacement::of('media', WhatWasNamed::of('would_stop'), WhatWasNamed::of('stopped', 'radarr'), WhatWasNamed::of('still_running'))->leftSomethingRunning())->toBeFalse();
+});
