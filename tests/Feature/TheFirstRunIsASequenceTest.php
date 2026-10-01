@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
+use Modules\Kernel\Api\Permission;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
@@ -104,6 +105,7 @@ it('N1-R54 — the steps arrive in the order the requirement names them', functi
     expect($walked)->toBe([
         WhereTheFirstRunIs::WhatThisIs,
         WhereTheFirstRunIs::AtTheMachine,
+        WhereTheFirstRunIs::TheLocalNetwork,
         WhereTheFirstRunIs::Pairing,
         // One press past the end, which stays on it. The alternative is a step
         // that is nothing, and a screen drawing nothing is what an operator
@@ -120,24 +122,40 @@ it('N1-R55 — every step says which it is and how many there are', function ():
     }
 
     // Counted from one and against the cases, so a fourth step changes the
-    // denominator on all three by existing. A total written down somewhere is a
-    // total that reads "step 3 of 2" the day somebody adds one.
-    expect($seen)->toBe([[1, 3], [2, 3], [3, 3]]);
+    // denominator on every step by existing. A total written down somewhere is
+    // a total that reads "step 3 of 2" the day somebody adds one.
+    expect($seen)->toBe([[1, 4], [2, 4], [3, 4], [4, 4]]);
 });
 
-it('N1-R55 — leaving lands on pairing rather than on nothing', function (): void {
+it('N1-R55 — leaving lands on the way into pairing rather than on nothing', function (): void {
     $screen = theScreenAFirstRunLandsOn();
 
     $screen->skipAhead();
 
+    // The point of the requirement: somebody who skipped is not dropped on a
+    // blank screen, they are put where the sequence was going — one step short
+    // of pairing, on why the app reaches the local network, because pairing is
+    // where the platform asks.
+    expect($screen->firstRunIsAt())->toBe(WhereTheFirstRunIs::TheLocalNetwork);
+
+    $screen->goOn();
+
     expect($screen->firstRunIsAt())->toBe(WhereTheFirstRunIs::Pairing)
-        // The point of the requirement: somebody who skipped is not dropped on
-        // a blank screen, they are put where the sequence was going.
         ->and($screen->pairingIsOffered())->toBeTrue();
+});
+
+it('says why the app reaches the local network, and what still works without it, before pairing', function (): void {
+    expect([WhereTheFirstRunIs::TheLocalNetwork->said(), WhereTheFirstRunIs::TheLocalNetwork->explained()])
+        ->toBe([Permission::LocalNetwork->reason(), Permission::LocalNetwork->alternative()])
+        ->and(WhereTheFirstRunIs::TheLocalNetwork->andThen())->toBe(WhereTheFirstRunIs::Pairing);
 });
 
 it('N1-R54 — pairing is offered at the end of the sequence and not before', function (): void {
     $screen = theScreenAFirstRunLandsOn();
+
+    expect($screen->pairingIsOffered())->toBeFalse();
+
+    $screen->goOn();
 
     expect($screen->pairingIsOffered())->toBeFalse();
 
@@ -161,4 +179,14 @@ it('N1-R56 — a device holding a pairing is offered pairing and never the seque
     // is what somebody with one is on this screen to do, so the controls stay.
     expect($screen->nothingIsPairedYet())->toBeFalse()
         ->and($screen->pairingIsOffered())->toBeTrue();
+});
+
+it('offers a way to leave early only before the step it would land on', function (): void {
+    $leavable = [];
+
+    foreach (WhereTheFirstRunIs::cases() as $at) {
+        $leavable[$at->name] = $at->mayBeSkipped();
+    }
+
+    expect($leavable)->toBe(['WhatThisIs' => true, 'AtTheMachine' => true, 'TheLocalNetwork' => false, 'Pairing' => false]);
 });

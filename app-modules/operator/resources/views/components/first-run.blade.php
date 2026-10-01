@@ -15,8 +15,11 @@
 @unless ($at->isThePairing())
     <x-design::action label="{{ __('onboarding.go_on') }}" tap="{{ $on }}" />
 
-    {{-- Leavable, landing on pairing. Tonal, because skipping is the thing
-         somebody does when they already know, and going on is the way
-         forward. --}}
-    <x-design::action label="{{ __('onboarding.skip') }}" tap="{{ $leave }}" tone="tonal" />
+    {{-- Leavable, landing one step short of pairing. Tonal, because skipping
+         is the thing somebody does when they already know, and going on is
+         the way forward. Not offered from that step, where it would land
+         where it already is. --}}
+    @if ($at->mayBeSkipped())
+        <x-design::action label="{{ __('onboarding.skip') }}" tap="{{ $leave }}" tone="tonal" />
+    @endif
 @endunless

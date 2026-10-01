@@ -22,6 +22,7 @@ requirement is right and this page is a defect.
 | `N1-R64` | A re-pairing that changed the certificate ends the session, and the screen says to sign in again | `HowThePairingWent::PairedAgainOnANewCertificate` |
 | `N4-R1` | The platform's prompt is raised at the point of first use, not on launch | the camera opens when the operator asks for it |
 | `N4-R2` | The app's own sentence goes up first, in front of a button; the button is what opens the camera | `PairByScanning` |
+| `N4-R2` | The app's own reason for the local network, and what still works without it, come before the first pairing, which is the reach the platform asks permission at | `WhereTheFirstRunIs::TheLocalNetwork`, the step before pairing, drawing `Permission::LocalNetwork`'s reason and alternative; `TheFirstRunIsASequenceTest` |
 | `N4-R4` | Something declined is not re-asked for automatically | there is a button rather than an automatic retry |
 
 ## The first run, and the list of machines
@@ -34,7 +35,7 @@ requirement is right and this page is a defect.
 | `N4-R19` | The device's own authentication on a cold start | `WhatTheLaunchWas::locked()` |
 | `N1-R4` | The app says setup happens at the machine, and why, rather than omitting it | the first-run sequence |
 | `N1-R54` | A sequence rather than a screen, ending at pairing | `FirstRun` |
-| `N1-R55` | Every step is leavable, and leaving lands on pairing rather than on nothing | the exit is a step |
+| `N1-R55` | Every step is leavable, and leaving lands on pairing rather than on nothing | the exit is a step, one short of pairing: the local-network step, so leaving early never meets the platform's prompt unexplained |
 | `N1-R56` | A paired device never sees the sequence again | tied to an empty store rather than to a flag |
 
 ## What a machine is doing
