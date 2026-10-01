@@ -2,6 +2,12 @@
      slot is drawn inside this column, and the column inside a scroll view: a
      screen taller than the phone is read by scrolling it, not cut off at the
      fold. It opens at its end when the screen asked for that, and at its top
-     otherwise. --}}
-<native:scroll-view class="w-full" :scroll-anchor="$anchor">
+     otherwise.
+
+     The scroll view is as tall as the screen leaves it (`h-full`), not as tall
+     as what it holds. Its parent is the column the screen's top-level elements
+     are drawn in, and that column gives a child with no height of its own the
+     height of its content: on iOS a scroll view that tall is never shorter
+     than what it scrolls, so it does not move. --}}
+<native:scroll-view class="w-full h-full" :scroll-anchor="$anchor">
 <native:column class="w-full gap-4 px-6 py-4">
