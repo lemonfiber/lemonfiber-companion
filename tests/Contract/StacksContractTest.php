@@ -162,3 +162,51 @@ it('N4-R22 — reads a record written down as empty as holding nothing', functio
 
     expect(new PlatformStacks($store)->holdsAny())->toBeFalse();
 });
+
+/**
+ * The names of the stacks held, in the order they are listed.
+ *
+ * @return list<string>
+ */
+function namesInOrder(Stacks $stacks): array
+{
+    $names = [];
+
+    foreach ($stacks->configured() as $stack) {
+        $names[] = $stack->name()->shown();
+    }
+
+    return $names;
+}
+
+it('lists the stacks in the order they were put in, and keeps it across a re-pairing', function (Stacks $stacks): void {
+    $stacks->remember(aStackCalled('The loft', 'a'));
+    $stacks->remember(aStackCalled('The attic', 'b', 'https://192.168.1.77'));
+    $stacks->remember(aStackCalled('The shed', 'c', 'https://192.168.1.88'));
+
+    $put = $stacks->putInOrder(aStackCalled('The shed', 'c')->id(), aStackCalled('The loft', 'a')->id());
+    $stacks->remember(aStackCalled('The loft again', 'a', 'https://192.168.1.99'));
+
+    expect($put)->toBeTrue()
+        ->and(namesInOrder($stacks))->toBe(['The shed', 'The loft again', 'The attic']);
+})->with('every stacks implementation');
+
+it('passes over a stack it does not hold, and names one it does only once', function (Stacks $stacks): void {
+    $stacks->remember(aStackCalled('The loft', 'a'));
+    $stacks->remember(aStackCalled('The attic', 'b', 'https://192.168.1.77'));
+
+    $stacks->putInOrder(
+        aStackCalled('Nowhere', 'e')->id(),
+        aStackCalled('The attic', 'b')->id(),
+        aStackCalled('The attic', 'b')->id(),
+    );
+
+    expect(namesInOrder($stacks))->toBe(['The attic', 'The loft']);
+})->with('every stacks implementation');
+
+it('says an order it could not keep was not kept', function (Stacks $refusing): void {
+    expect($refusing->putInOrder(aStackCalled('The loft')->id()))->toBeFalse();
+})->with([
+    'the platform store' => [fn(): Stacks => new PlatformStacks(APlatformStore::refusing())],
+    'the fake' => [fn(): Stacks => StacksInMemory::refusing(WhyAStackCannotBeRemembered::StoreWouldNotOpen)],
+]);

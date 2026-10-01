@@ -124,6 +124,29 @@ final readonly class Configured implements IteratorAggregate
     }
 
     /**
+     * The same stacks, in the order the operator put them.
+     *
+     * Each stack named that is held takes the next place, once; a name this
+     * record does not hold is passed over, and a held stack the order leaves
+     * out keeps its place after the named ones, in the order it had. Putting
+     * the list in order never adds a stack or loses one.
+     */
+    public function inTheOrderOf(StackId ...$order): self
+    {
+        $ordered = self::none();
+
+        foreach ($order as $id) {
+            $ordered = $this->knows($id) && ! $ordered->knows($id) ? $ordered->with($this->stack($id)) : $ordered;
+        }
+
+        foreach ($this->stacks as $held) {
+            $ordered = $ordered->knows($held->id()) ? $ordered : $ordered->with($held);
+        }
+
+        return $ordered;
+    }
+
+    /**
      * Whether holding this stack would change the certificate pinned for it.
      *
      * True only for a stack already held whose pinned certificate differs. A

@@ -164,6 +164,16 @@
             "description": "Write one file into the app's own share cache, swept before the next, offer it to whoever the operator picks, and say whether the sheet was reached"
         }
     ],
+    "components": [
+        {
+            "type": "lemonfiber_reorderable",
+            "element": "Lemonfiber\\Native\\Reorderable",
+            "blade": "Lemonfiber\\Native\\ReorderableTag",
+            "android_renderer": "app.lemonfiber.native.ReorderableRenderer",
+            "ios_renderer": "ReorderableRenderer",
+            "self_closing": true
+        }
+    ],
     "android": {
         "min_version": 26,
         "init_function": "app.lemonfiber.native.installLemonfiber",

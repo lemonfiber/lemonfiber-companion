@@ -90,6 +90,7 @@ sourceSets {
             "LemonfiberInit.kt",
             "HandoverFunctions.kt",
             "ClockFunctions.kt",
+            "ReorderableRenderer.kt",
         )
     }
     test {

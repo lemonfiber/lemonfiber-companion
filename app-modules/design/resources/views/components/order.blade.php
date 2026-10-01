@@ -1,0 +1,1 @@
+<native:lemonfiber-reorderable :items="array_map(fn (array $row): array => [...$row, 'up' => __($moveUp, ['name' => $row['name']]), 'down' => __($moveDown, ['name' => $row['name']])], $rows)" @change="{{ $change }}" a11y-label="{{ $label }}" />

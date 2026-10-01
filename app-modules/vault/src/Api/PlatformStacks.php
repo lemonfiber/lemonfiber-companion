@@ -160,6 +160,11 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
         );
     }
 
+    public function putInOrder(StackId ...$order): bool
+    {
+        return $this->kept($this->pairings()->inTheOrderOf(...$order));
+    }
+
     public function forgetTheStack(StackId $stack): Forgotten
     {
         $pairings = $this->pairings();

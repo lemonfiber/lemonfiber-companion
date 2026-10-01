@@ -31,3 +31,8 @@ naming:
   # the two is caught there rather than by a rule about directory layout.
   InvalidPackageDeclaration:
     active: false
+  # A renderer's entry point is `Render`, because the registration NativePHP
+  # generates calls it by that name. Compose names a composable like a type,
+  # and this is the one place a function here is one.
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']

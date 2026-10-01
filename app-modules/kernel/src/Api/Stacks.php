@@ -77,4 +77,12 @@ interface Stacks extends ForgetsAStack
      * address, or with a renewed certificate, is the same machine.
      */
     public function remember(Stack $stack): Remembered;
+
+    /**
+     * Keep the stacks in the order the operator put them, and say whether it was kept.
+     *
+     * Every list of stacks reads {@see configured()}, so the order kept here is
+     * the order every list draws.
+     */
+    public function putInOrder(StackId ...$order): bool;
 }
