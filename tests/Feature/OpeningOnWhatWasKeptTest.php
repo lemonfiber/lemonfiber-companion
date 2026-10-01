@@ -36,6 +36,7 @@ use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\ReadingsKeptForInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -74,7 +75,7 @@ function theStackWhoseSummaryWasKept(): Stack
 /** What the phone kept of the attic's health, two hours before it was opened. */
 function whatTheAtticKept(): KeepingTheLastReading
 {
-    $keeping = new KeepingTheLastReading(ASealInMemory::working(), HealthReadingsInMemory::empty());
+    $keeping = new KeepingTheLastReading(ASealInMemory::working(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
     $keeping->keep(
         theStackWhoseSummaryWasKept()->id(),
         TheHealthSummary::of(HowItStands::Broken, 1, 'The disk that holds the photos is full', WhatStoppedMoving::nothing()),
@@ -181,7 +182,7 @@ function aSealWhoseKeysHaveGone(): ASealInMemory
 it('clears what the phone kept where its key has gone, and says so once', function (): void {
     $store = HealthReadingsInMemory::empty();
     $seal = aSealWhoseKeysHaveGone();
-    $keeping = new KeepingTheLastReading($seal, $store);
+    $keeping = new KeepingTheLastReading($seal, $store, ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
     $store->holdsOneALaterBuildWrote($seal->stack(theStackWhoseSummaryWasKept()->id()));
 
     $launch = theLaunchOver(new ClearingWhatCannotBeRead($seal, $store), $keeping);
@@ -200,7 +201,7 @@ it('touches nothing kept while the app is locked, and clears it once the lock is
     $attic = $seal->stack(theStackWhoseSummaryWasKept()->id());
     $store->holdsOneALaterBuildWrote($attic);
     $clearing = new ClearingWhatCannotBeRead($seal, $store);
-    $keeping = new KeepingTheLastReading($seal, $store);
+    $keeping = new KeepingTheLastReading($seal, $store, ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
 
     // While the lock stands the navigation stack builds the lock screen in
     // place of the launch, and the lock screen reads nothing kept.
@@ -218,7 +219,7 @@ it('touches nothing kept while the app is locked, and clears it once the lock is
 
 it('forgets on opening what was read longer ago than a reading is kept', function (): void {
     $store = HealthReadingsInMemory::empty();
-    $keeping = new KeepingTheLastReading(ASealInMemory::working(), $store);
+    $keeping = new KeepingTheLastReading(ASealInMemory::working(), $store, ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
     $keeping->keep(
         theStackWhoseSummaryWasKept()->id(),
         TheHealthSummary::of(HowItStands::Broken, 0, '', WhatStoppedMoving::nothing()),

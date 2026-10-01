@@ -18,6 +18,8 @@ use Modules\Kernel\Api\WhatStoppedMoving;
 use Modules\Seal\Api\EncrypterSeal;
 use Modules\Vault\Api\PlatformSealKeys;
 use Tests\Support\Fakes\APlatformStore;
+use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\ReadingsKeptForInMemory;
 
 // What the phone keeps, read the way anybody holding the file would read it.
 //
@@ -50,6 +52,8 @@ function keepTheSummaryIn(ConnectionInterface $database): string
     $keeping = new KeepingTheLastReading(
         new EncrypterSeal(new PlatformSealKeys(APlatformStore::working()), new SystemEntropy()),
         new HealthReadingsInTheDatabase($database),
+        ReadingsKeptForInMemory::standard(),
+        FrozenClock::at(Instant::atEpochSeconds(0)),
     );
 
     return $keeping->keep(

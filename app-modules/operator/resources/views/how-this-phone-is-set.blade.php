@@ -24,4 +24,34 @@
     </x-design::chips>
 
     <x-design::note>{{ __('settings.lock_after_is') }}</x-design::note>
+
+    {{-- How long readings are kept. A count of days is said as that count;
+         Other… opens a field for any count the offered ones do not name. --}}
+    <x-design::section :label="__('settings.readings')">
+        <x-design::row :headline="__('settings.keep_readings')" :trailing="trans_choice($this->keepReadings()->said, $this->keepReadings()->count)" />
+    </x-design::section>
+
+    <x-design::chips>
+        @forelse ($this->keepReadings()->offered as $choice)
+            <x-design::chip label="{{ trans_choice($choice->said, $choice->count) }}" tap="keepReadingsFor('{{ $choice->word }}')" :chosen="$choice->chosen" />
+        @empty
+            {{-- Nothing: there are always six choices. --}}
+        @endforelse
+    </x-design::chips>
+
+    @if ($this->typingDays)
+        <x-design::card>
+            <native:outlined-text-input
+                native:model="days"
+                label="{{ __('settings.days_label') }}"
+                supporting="{{ __('settings.days_between', $this->daysAllowed()) }}"
+                keyboard="number"
+                :error="$this->daysRefused"
+            />
+
+            <x-design::action label="{{ __('settings.save') }}" tap="saveDays()" />
+        </x-design::card>
+    @endif
+
+    <x-design::note>{{ __('settings.keep_readings_is') }}</x-design::note>
 </x-operator::content>

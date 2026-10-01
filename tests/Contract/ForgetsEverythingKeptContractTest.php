@@ -80,10 +80,13 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
 });
 
 it('forgets the settings a settings store keeps, and says how much that was', function (): void {
+    // Each store is made when its turn comes: the database the adapters stand
+    // on is one, and migrating it for the next adapter would empty the last.
     foreach ([
-        'the settings adapter' => new SettingsInTheDatabase(AKeptDatabase::migrated()),
-        'the settings fake' => ConnectionSettingsInMemory::empty(),
-    ] as $which => $store) {
+        'the settings adapter' => static fn(): SettingsInTheDatabase => new SettingsInTheDatabase(AKeptDatabase::migrated()),
+        'the settings fake' => static fn(): ConnectionSettingsInMemory => ConnectionSettingsInMemory::empty(),
+    ] as $which => $made) {
+        $store = $made();
         $store->keep(SealedPayload::of('sealed'), Shape::One, Instant::atEpochSeconds(1_790_000_000));
 
         expect($store->forgetEverything()->howMany())->toBe(1, $which)

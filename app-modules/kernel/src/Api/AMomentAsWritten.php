@@ -47,7 +47,7 @@ final readonly class AMomentAsWritten
     /** The calendar repeats exactly every four hundred years, leap days and all. */
     private const int YEARS_IN_AN_ERA = 400;
 
-    private const int DAYS_IN_A_YEAR = 365;
+    private const int DAYS_IN_A_YEAR = DaysIn::AYear->value;
 
     /** A leap year every fourth year… */
     private const int LEAP_EVERY = 4;

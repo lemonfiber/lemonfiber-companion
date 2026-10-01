@@ -6,8 +6,11 @@ namespace Tests\Support;
 
 use Modules\Connection\Api\ClearingWhatCannotBeRead;
 use Modules\Health\Api\KeepingTheLastReading;
+use Modules\Kernel\Api\Instant;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\ReadingsKeptForInMemory;
 
 /**
  * What a screen is handed about what the phone keeps, where a test is about something else.
@@ -22,7 +25,7 @@ final readonly class WhatThePhoneKeeps
     /** Deciding what is kept of a stack's health, with nothing kept yet. */
     public static function nothingYet(): KeepingTheLastReading
     {
-        return new KeepingTheLastReading(ASealInMemory::working(), HealthReadingsInMemory::empty());
+        return new KeepingTheLastReading(ASealInMemory::working(), HealthReadingsInMemory::empty(), ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
     }
 
     /** Clearing what the phone kept on opening, with nothing kept to clear. */

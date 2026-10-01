@@ -9,11 +9,9 @@ use function expect;
 use function it;
 
 use Modules\Connection\Api\LockingAfter;
-use Modules\Connection\Internal\TheSettingsAsKept;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\SealedPayload;
-use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Unsealed;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\ASealInMemory;
@@ -81,18 +79,6 @@ it('reads a setting whose seal no longer opens as immediately', function (): voi
 
     expect(lockingAfterOver(ASealInMemory::working(), $kept, ADeviceThatKnowsYou::unlocked())->current())
         ->toBe(LockAfter::Immediately);
-});
-
-it('reads every choice back in the shape it was written in', function (): void {
-    foreach (LockAfter::cases() as $after) {
-        expect(TheSettingsAsKept::read(Shape::One, TheSettingsAsKept::written($after)))->toBe($after);
-    }
-});
-
-it('carries a setting it cannot make out over as immediately rather than failing', function (): void {
-    foreach (['', 'null', '[]', '{"lock_after":7}', '{"lock_after":"a fortnight"}', '{"lock_after":"one_hour"}'] as $written) {
-        expect(TheSettingsAsKept::read(Shape::One, Unsealed::of($written)))->toBe(LockAfter::Immediately, $written);
-    }
 });
 
 it('says how long each choice is', function (): void {

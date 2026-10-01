@@ -16,13 +16,16 @@ use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
+use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KeptFor;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
+use Modules\Kernel\Api\SecondsIn;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\StackId;
@@ -35,7 +38,9 @@ use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
+use Tests\Support\Fakes\ReadingsKeptForInMemory;
 
 /** The moment a kept summary in these tests was heard at. */
 const WHEN_THE_SUMMARY_WAS_HEARD = 1_790_000_000;
@@ -158,9 +163,18 @@ final readonly class WhatIsKeptOfHealth
 {
     public KeepingTheLastReading $keeping;
 
-    public function __construct(public ASealInMemory $seal, public HealthReadingsInMemory $store)
+    public ReadingsKeptForInMemory $settings;
+
+    public function __construct(public ASealInMemory $seal, public HealthReadingsInMemory $store, ?Instant $now = null)
     {
-        $this->keeping = new KeepingTheLastReading($seal, $store);
+        $this->settings = ReadingsKeptForInMemory::standard();
+        $this->keeping = new KeepingTheLastReading($seal, $store, $this->settings, FrozenClock::at($now ?? Instant::atEpochSeconds(0)));
+    }
+
+    /** The same, with the clock reading this. */
+    public static function onAPhoneThatSealsAt(Instant $now): self
+    {
+        return new self(ASealInMemory::working(), HealthReadingsInMemory::empty(), $now);
     }
 
     public static function onAPhoneThatSeals(): self
@@ -322,10 +336,55 @@ it('finds nothing and lets go of nothing where the seal\'s keys cannot be read',
     // row: what was sealed stays for the day the keys read again.
     $store = HealthReadingsInMemory::empty();
     $sealing = ASealInMemory::working();
-    new KeepingTheLastReading($sealing, $store)->keep(theStackItIsKeptFor(), aSummaryWithEveryPart(), secondsAfterItWasHeard(0));
+    new KeepingTheLastReading($sealing, $store, ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)))->keep(theStackItIsKeptFor(), aSummaryWithEveryPart(), secondsAfterItWasHeard(0));
 
-    $locked = new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), $store);
+    $locked = new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), $store, ReadingsKeptForInMemory::standard(), FrozenClock::at(Instant::atEpochSeconds(0)));
 
     expect(whatTheScreenOpensOn($locked->lastKept(theStackItIsKeptFor())))->toBe('nothing')
         ->and($store->forgetEverything()->howMany())->toBe(1);
+});
+
+it('keeps readings for thirty days until the operator chooses', function (): void {
+    expect(WhatIsKeptOfHealth::onAPhoneThatSeals()->keeping->keptFor()->is(KeptFor::ThirtyDays))->toBeTrue();
+});
+
+it('keeps the operator\'s choice, and lets go of every reading older than it at once', function (): void {
+    $kept = WhatIsKeptOfHealth::onAPhoneThatSealsAt(secondsAfterItWasHeard(8 * SecondsIn::ADay->value));
+    $kept->keeping->keep(theStackItIsKeptFor(), aSummaryThatOnlySays(HowItStands::Broken), secondsAfterItWasHeard(0));
+    $kept->keeping->keep(theOtherStackItIsKeptFor(), aSummaryThatOnlySays(HowItStands::Healthy), secondsAfterItWasHeard(2 * SecondsIn::ADay->value));
+
+    $inForce = $kept->keeping->keepFor(HowLongReadingsAreKept::for(KeptFor::SevenDays));
+
+    expect($inForce->is(KeptFor::SevenDays))->toBeTrue()
+        ->and($kept->keeping->keptFor()->is(KeptFor::SevenDays))->toBeTrue()
+        ->and(whatTheScreenOpensOn($kept->keeping->lastKept(theStackItIsKeptFor())))->toBe('nothing')
+        ->and(whatTheScreenOpensOn($kept->keeping->lastKept(theOtherStackItIsKeptFor())))->not->toBe('nothing');
+});
+
+it('forgets the old by the length the operator chose', function (): void {
+    $kept = WhatIsKeptOfHealth::onAPhoneThatSeals();
+    $kept->keeping->keepFor(HowLongReadingsAreKept::days(3));
+    $kept->keeping->keep(theStackItIsKeptFor(), aSummaryThatOnlySays(HowItStands::Broken), secondsAfterItWasHeard(0));
+
+    expect($kept->keeping->forgetTheOld(secondsAfterItWasHeard(3 * SecondsIn::ADay->value))->howMany())->toBe(0)
+        ->and($kept->keeping->forgetTheOld(secondsAfterItWasHeard(3 * SecondsIn::ADay->value + 1))->howMany())->toBe(1);
+});
+
+it('lets go of no reading for its age where they are kept until removed', function (): void {
+    $kept = WhatIsKeptOfHealth::onAPhoneThatSeals();
+    $kept->keeping->keepFor(HowLongReadingsAreKept::untilRemoved());
+    $kept->keeping->keep(theStackItIsKeptFor(), aSummaryThatOnlySays(HowItStands::Broken), secondsAfterItWasHeard(0));
+
+    expect($kept->keeping->forgetTheOld(secondsAfterItWasHeard(10 * THIRTY_DAYS))->howMany())->toBe(0)
+        ->and($kept->keeping->keptFor()->isUntilRemoved())->toBeTrue();
+});
+
+it('lets go by the choice in force where the phone could not keep it', function (): void {
+    $store = HealthReadingsInMemory::empty();
+    $keeping = new KeepingTheLastReading(ASealInMemory::working(), $store, ReadingsKeptForInMemory::keepingNothing(), FrozenClock::at(secondsAfterItWasHeard(8 * SecondsIn::ADay->value)));
+    $keeping->keep(theStackItIsKeptFor(), aSummaryThatOnlySays(HowItStands::Broken), secondsAfterItWasHeard(0));
+
+    expect($keeping->keepFor(HowLongReadingsAreKept::for(KeptFor::SevenDays))->is(KeptFor::SevenDays))->toBeTrue()
+        ->and($keeping->keptFor()->is(KeptFor::ThirtyDays))->toBeTrue()
+        ->and(whatTheScreenOpensOn($keeping->lastKept(theStackItIsKeptFor())))->toBe('nothing');
 });
