@@ -359,6 +359,7 @@ automatic and the operator never sees the question.
 | F16 | The column a screen's content sits in is written once, in the `content` component, whose slot is drawn inside it | arch |
 | F17 | Every operator screen about a stack carries the side menu and the list of stacks, and one that goes without the menu is named with why | arch: every screen answering which stack it is about uses the menu's trait, against a register that may shrink and may not grow, and carries the list of stacks |
 | F18 | Every screen of one stack is a tab, a menu item, or a step of another screen named with where it begins | arch: read from the screens a stack has, against the menu, the tabs and a register that may shrink and may not grow |
+| F19 | Every text element takes its colour from a theme role, so it reads in a light and a dark setting alike | arch: over every element of every template |
 
 **Why F12 is a rule of its own, given the three beside it.** Three rules already
 ask about reachability and every one of them asks it of a single screen: each

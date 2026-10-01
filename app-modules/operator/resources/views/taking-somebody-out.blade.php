@@ -12,9 +12,9 @@
 
     @if ($this->answer()->isWorking)
         @if ($this->answer()->wasAgreed)
-            <native:text>{{ __('stacks.removal.removing', ['name' => $this->answer()->name]) }}</native:text>
+            <x-design::body>{{ __('stacks.removal.removing', ['name' => $this->answer()->name]) }}</x-design::body>
         @else
-            <native:text>{{ __('stacks.removal.reading', ['name' => $this->answer()->name]) }}</native:text>
+            <x-design::body>{{ __('stacks.removal.reading', ['name' => $this->answer()->name]) }}</x-design::body>
         @endif
     @elseif ($this->answer()->hasEnded)
         {{-- Not a failure and not a refusal: the stack has no outcome for it
@@ -30,7 +30,7 @@
         {{-- The stack's answer, with the name it was about, drawn as the
              reason it is rather than as something to try again. --}}
         <x-operator::emphasis>{{ __('stacks.removal.refused', ['name' => $this->answer()->name]) }}</x-operator::emphasis>
-        <native:text>{{ $this->answer()->refusal }}</native:text>
+        <x-design::body>{{ $this->answer()->refusal }}</x-design::body>
     @elseif ($this->answer()->removal !== null)
         @if (! $this->answer()->removal->carriedOut)
             {{-- What it would cost, said to be only that before anything
@@ -43,24 +43,24 @@
         @if ($this->answer()->removal->isDone)
             <x-operator::emphasis>{{ __($this->answer()->removal->revokedSaid, ['name' => $this->answer()->removal->name]) }}</x-operator::emphasis>
         @else
-            <native:text>{{ __($this->answer()->removal->revokedSaid, ['name' => $this->answer()->removal->name]) }}</native:text>
+            <x-design::body>{{ __($this->answer()->removal->revokedSaid, ['name' => $this->answer()->removal->name]) }}</x-design::body>
         @endif
 
         {{-- What goes with them: their requests, destroyed rather than handed
              to anybody, and whether there is an account on the request
              service to take at all. --}}
         @if ($this->answer()->removal->carriedOut)
-            <native:text>{{ trans_choice('stacks.removal.requests_went', $this->answer()->removal->requests) }}</native:text>
+            <x-design::body>{{ trans_choice('stacks.removal.requests_went', $this->answer()->removal->requests) }}</x-design::body>
         @else
-            <native:text>{{ trans_choice('stacks.removal.requests_go', $this->answer()->removal->requests) }}</native:text>
+            <x-design::body>{{ trans_choice('stacks.removal.requests_go', $this->answer()->removal->requests) }}</x-design::body>
         @endif
-        <native:text>{{ __($this->answer()->removal->asksSaid) }}</native:text>
+        <x-design::body>{{ __($this->answer()->removal->asksSaid) }}</x-design::body>
 
         {{-- What the stack found, in its own words, before the yes and after
              it alike. --}}
         <x-operator::heading>{{ __('stacks.removal.found') }}</x-operator::heading>
         @forelse ($this->answer()->removal->findings as $finding)
-            <native:text>{{ $finding }}</native:text>
+            <x-design::body>{{ $finding }}</x-design::body>
         @empty
             <x-operator::note>{{ __('stacks.removal.found_nothing') }}</x-operator::note>
         @endforelse

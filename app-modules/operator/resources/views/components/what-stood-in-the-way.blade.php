@@ -9,7 +9,7 @@
          so no screen describes a condition differently from the one beside
          it. --}}
     <x-operator::emphasis>{{ __($went->met) }}</x-operator::emphasis>
-    <native:text>{{ __($went->remedy) }}</native:text>
+    <x-design::body>{{ __($went->remedy) }}</x-design::body>
 
     {{-- The action is offered and the failure reported, rather than taken away
          because the stack is unreachable. Without it the only way back is
@@ -19,6 +19,6 @@
 @else
     {{-- The session has ended, so nothing was asked and there is nothing to
          report. The remedy is a screen rather than a sentence. --}}
-    <native:text>{{ __('connection.session_has_ended') }}</native:text>
+    <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
     <x-operator::action label="{{ __('connection.sign_in') }}" :goes="$signInGoesTo" />
 @endif

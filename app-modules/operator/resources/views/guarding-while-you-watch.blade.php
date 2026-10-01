@@ -7,14 +7,14 @@
     {{-- Said before the guard starts and for as long as it runs: it lives
          while this screen asks, and it is not hosted. The way to one that
          outlives the screen is the hosting screen, named here and kept apart. --}}
-    <native:text>{{ __('stacks.guard.lives_while_asked') }}</native:text>
+    <x-design::body>{{ __('stacks.guard.lives_while_asked') }}</x-design::body>
     <x-operator::note>{{ __('stacks.guard.not_hosted') }}</x-operator::note>
     <x-operator::quiet-action label="{{ __('stacks.guard.to_host_one') }}" :goes="$this->goes()->keepsRunning()" />
 
 @if ($this->asking !== null)
     {{-- Asked before it starts, naming the forms it would stop. --}}
     <x-operator::emphasis>{{ __('stacks.guard.about_to', ['forms' => $this->choosing()->named]) }}</x-operator::emphasis>
-    <native:text>{{ __('stacks.guard.would_do') }}</native:text>
+    <x-design::body>{{ __('stacks.guard.would_do') }}</x-design::body>
     <x-operator::note>{{ __('stacks.guard.not_said_before') }}</x-operator::note>
 
     <x-operator::action label="{{ __('health.go_ahead') }}" tap="agree()" />
@@ -33,13 +33,13 @@
 
             @if ($this->lastGuard()->said !== '')
                 {{-- The stack's own words for why. --}}
-                <native:text>{{ $this->lastGuard()->said }}</native:text>
+                <x-design::body>{{ $this->lastGuard()->said }}</x-design::body>
             @endif
 
             @if ($this->lastGuard()->stoppedSaid !== '')
                 {{-- Whether stopping the forms worked, which a guard that could
                      not stop them never reads as having done. --}}
-                <native:text>{{ __($this->lastGuard()->stoppedSaid) }}</native:text>
+                <x-design::body>{{ __($this->lastGuard()->stoppedSaid) }}</x-design::body>
                 @forelse ($this->lastGuard()->forms as $form)
                     <x-operator::note>{{ $form }}</x-operator::note>
                 @empty
@@ -62,7 +62,7 @@
 @if ($this->asking === null && ! $this->lastGuard()->wasAsked)
     {{-- Before any guard: what one does, in this app's words, and the forms
          the stack declares, each named or left out on a tap. --}}
-    <native:text>{{ __('stacks.guard.would_do') }}</native:text>
+    <x-design::body>{{ __('stacks.guard.would_do') }}</x-design::body>
     <x-operator::note>{{ __('stacks.guard.not_said_before') }}</x-operator::note>
 
     <x-operator::emphasis>{{ __('stacks.guard.which_forms') }}</x-operator::emphasis>

@@ -22,13 +22,13 @@
     {{-- Said in as many words, and nothing is offered: a yes here would be a
          yes to nothing. --}}
     <x-operator::emphasis>{{ __($this->answer()->words->heading) }}</x-operator::emphasis>
-    <native:text>{{ __($this->answer()->words->nothing) }}</native:text>
+    <x-design::body>{{ __($this->answer()->words->nothing) }}</x-design::body>
 @else
     {{-- Worded in the stack's own tense: a preview in the conditional, and
          only a report the stack says it carried out in the past. --}}
     <x-operator::emphasis>{{ __($this->answer()->words->heading) }}</x-operator::emphasis>
 
-    <native:text>{{ __($this->answer()->words->files) }}</native:text>
+    <x-design::body>{{ __($this->answer()->words->files) }}</x-design::body>
     @forelse ($this->answer()->edits as $edit)
         <x-operator::entry>
             <x-operator::emphasis>{{ $edit->path }}</x-operator::emphasis>
@@ -43,7 +43,7 @@
     @endforelse
 
     {{-- The connections are part of what it does, not a footnote to it. --}}
-    <native:text>{{ __($this->answer()->words->connections) }}</native:text>
+    <x-design::body>{{ __($this->answer()->words->connections) }}</x-design::body>
     @forelse ($this->answer()->connections as $connection)
         <x-operator::note>{{ $connection }}</x-operator::note>
     @empty

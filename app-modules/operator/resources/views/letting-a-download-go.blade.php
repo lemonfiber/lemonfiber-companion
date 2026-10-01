@@ -21,18 +21,18 @@
         {{-- Not a failure: the client may well have let it go, and how full
              the machine is says whether it is still there. --}}
         <x-operator::emphasis>{{ __('stacks.let_go.no_outcome', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
-        <native:text>{{ __('stacks.let_go.no_outcome_action') }}</native:text>
+        <x-design::body>{{ __('stacks.let_go.no_outcome_action') }}</x-design::body>
         <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->ofItself()->room()" />
     @elseif ($this->done()->wasRehearsed)
         {{-- A rehearsal, said to be one before anything else, and never
              worded as room freed: the client still holds all of it. --}}
         <x-operator::heading>{{ __('stacks.let_go.a_rehearsal') }}</x-operator::heading>
         <x-operator::emphasis>{{ __('stacks.let_go.rehearsed', ['download' => $this->done()->name]) }}</x-operator::emphasis>
-        <native:text>{{ __('stacks.let_go.nothing_freed', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</native:text>
+        <x-design::body>{{ __('stacks.let_go.nothing_freed', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</x-design::body>
         <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->ofItself()->room()" />
     @else
         <x-operator::emphasis>{{ __('stacks.let_go.let_go', ['download' => $this->done()->name]) }}</x-operator::emphasis>
-        <native:text>{{ __('stacks.let_go.occupied', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</native:text>
+        <x-design::body>{{ __('stacks.let_go.occupied', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</x-design::body>
         <x-operator::action label="{{ __('stacks.let_go.see_the_room') }}" :goes="$this->goes()->ofItself()->room()" />
     @endif
 
@@ -49,10 +49,10 @@
     {{-- The offer: its own act, and what it costs, all of it before the yes.
          Nothing below has happened, and nothing is worded as though it had. --}}
     <x-operator::heading>{{ __('stacks.let_go.what_it_costs') }}</x-operator::heading>
-    <native:text>{{ __('stacks.let_go.its_own_act') }}</native:text>
+    <x-design::body>{{ __('stacks.let_go.its_own_act') }}</x-design::body>
 
     <x-operator::entry>
-        <native:text>{{ $this->answer()->download->name }}</native:text>
+        <x-design::body>{{ $this->answer()->download->name }}</x-design::body>
         <x-operator::note>{{ __('stacks.room.takes', ['figure' => $this->answer()->download->size->figure, 'unit' => __($this->answer()->download->size->unit)]) }}</x-operator::note>
         <x-operator::note>{{ __($this->answer()->download->standingSaid) }}</x-operator::note>
 
@@ -65,7 +65,7 @@
         @endif
     </x-operator::entry>
 
-    <native:text>{{ $this->answer()->goes }}</native:text>
+    <x-design::body>{{ $this->answer()->goes }}</x-design::body>
 
     <x-operator::action label="{{ __('stacks.let_go.stop_it') }}" tap="agree()" />
     <x-operator::quiet-action label="{{ __('health.ask_again') }}" tap="again()" />
