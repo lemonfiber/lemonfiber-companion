@@ -206,8 +206,8 @@ it('a guard that never started carries the stack\'s own reason, from an error or
         expect(whatBecameOfTheGuard($build()))->toBe('refused|No data location is configured, so there is nothing to guard.', $which);
     }
 })->with([
-    'an error' => [MockResponse::make((string) json_encode(whatAStackSaysOfAGuardItCouldNotStart()), 409)],
-    'prose' => [MockResponse::make('No data location is configured, so there is nothing to guard.', 409)],
+    'an error' => [MockResponse::make((string) json_encode(whatAStackSaysOfAGuardItCouldNotStart()), 422)],
+    'prose' => [MockResponse::make('No data location is configured, so there is nothing to guard.', 422)],
 ]);
 
 it('a guard ended without an outcome is ended, and one the stack no longer knows is unknown', function (): void {

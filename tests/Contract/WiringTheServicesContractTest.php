@@ -206,7 +206,7 @@ it('hands on a refusal in the stack\'s own words', function (int $status): void 
         expect(everythingTheWiringSays($make()->wire(aStackToWire(), Session::of('a-session-not-a-secret'))))
             ->toBe('refused Nothing here to wire', $which);
     }
-})->with([400, 409, 499]);
+})->with([400, 422, 499]);
 
 it('hands on a refusal met while following the run, too', function (): void {
     MockClient::destroyGlobal();

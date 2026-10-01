@@ -274,7 +274,7 @@ it('reads every remedy the contract names', function (WhatTheHandoffNeedsNext $n
 
 it('hands on a refusal in the stack\'s own words, asking or following', function (): void {
     $said = 'Sam is not a name the media server knows';
-    $refused = static fn(): MockResponse => MockResponse::make($said, 409, ['Content-Type' => 'text/plain']);
+    $refused = static fn(): MockResponse => MockResponse::make($said, 422, ['Content-Type' => 'text/plain']);
     $fake = AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::refused($said));
 
     MockClient::destroyGlobal();

@@ -22,6 +22,12 @@ final class ObstacleIsNotOne extends InvalidArgumentException
         return new self(sprintf('An obstacle of the kind `%s` is met with the facts it names, and none were given.', $kind->name));
     }
 
+    /** A kind that names no versions was asked for them. */
+    public static function withoutVersions(KindOfObstacle $kind): self
+    {
+        return new self(sprintf('An obstacle of the kind `%s` names no versions.', $kind->name));
+    }
+
     /** Two versions that are the same, or below nought, are no disagreement. */
     public static function becauseTheVersionsAgree(int $answered, int $spoken): self
     {

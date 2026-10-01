@@ -53,14 +53,14 @@ final readonly class Obstacle
         return $this->kind === $kind;
     }
 
-    /** The key for what happened, filled with {@see self::filling()}. */
+    /** The key for what happened, filled with what {@see self::versionsSpoken()} names. */
     public function said(): string
     {
         return $this->kind->said();
     }
 
     /**
-     * The key for what to do about it, filled with {@see self::filling()}.
+     * The key for what to do about it, filled with what {@see self::versionsSpoken()} names.
      *
      * The kind's own remedy, except where the versions disagree and the stack
      * is the older: then it is the machine that is updated, not this app.
@@ -73,18 +73,15 @@ final readonly class Obstacle
     }
 
     /**
-     * What its sentences are filled with, by the names the catalogue gives them.
+     * The two versions that disagreed, which its sentences name.
      *
-     * The facts are held typed, above; this is their shape for the translator,
-     * made where a sentence is drawn and nowhere else.
-     *
-     * @return array<string, int>
+     * Only an obstacle of the kind {@see KindOfObstacle::VersionsDisagree}
+     * carries them; asking any other is refused rather than answered with
+     * nothing, so a screen asks {@see self::is()} first.
      */
-    public function filling(): array
+    public function versionsSpoken(): TheVersionsSpoken
     {
-        return $this->versions instanceof TheVersionsSpoken
-            ? ['answered' => $this->versions->answered(), 'spoken' => $this->versions->spoken()]
-            : [];
+        return $this->versions ?? throw ObstacleIsNotOne::withoutVersions($this->kind);
     }
 
     /** Whether meeting it means the session this device holds is no longer one; the kind decides. */

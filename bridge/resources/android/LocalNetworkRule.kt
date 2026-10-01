@@ -8,6 +8,7 @@ package app.lemonfiber.native
  * Deliberately mirrors `LocalNetworkRule.swift` line for line.
  */
 public enum class WhetherTheLocalNetworkIsOpen(
+    /** The word the answer carries across the bridge. */
     public val word: String,
 ) {
     /** Nothing about this app is refused on the way. The app reports what it meets. */
@@ -41,11 +42,14 @@ public data class LocalNetworkRule(
                 else -> WhetherTheLocalNetworkIsOpen.OPEN
             }
 
+    /** Where the starting states live, named so they read at a call site. */
     public companion object {
         /** A platform that let the path be taken. */
-        public val PERMITTED: LocalNetworkRule = LocalNetworkRule(pathWasReadable = true, platformDeniedIt = false)
+        public val PERMITTED: LocalNetworkRule =
+            LocalNetworkRule(pathWasReadable = true, platformDeniedIt = false)
 
         /** A platform that said nothing, which answers open. */
-        public val UNASKED: LocalNetworkRule = LocalNetworkRule(pathWasReadable = false, platformDeniedIt = false)
+        public val UNASKED: LocalNetworkRule =
+            LocalNetworkRule(pathWasReadable = false, platformDeniedIt = false)
     }
 }

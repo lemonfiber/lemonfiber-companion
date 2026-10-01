@@ -140,7 +140,7 @@ it('comes away from a preview the stack would not take on with the obstacle rath
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"no"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],
-        [MockResponse::make('{"error":"busy"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"busy"}', 409), Obstacle::of(KindOfObstacle::StackIsBusy)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [aResetTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
@@ -162,7 +162,7 @@ it('comes away from a yes with the job the stack named', function (): void {
 it('comes away from a refused yes with the obstacle rather than a job', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('{"error":"busy"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"busy"}', 409), Obstacle::of(KindOfObstacle::StackIsBusy)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [aResetTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];

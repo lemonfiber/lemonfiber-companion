@@ -248,7 +248,7 @@ it('comes away from a yes with the job the stack named', function (): void {
 it('comes away from a refused yes with the obstacle rather than a job', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('{"error":"no such run"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"no such run"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'undo', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
@@ -342,7 +342,7 @@ it('a run the stack no longer has a job for is ended, not unreachable and not ru
 it('asking after a run tells a refused session from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('{"error":"cannot succeed"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"cannot succeed"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 

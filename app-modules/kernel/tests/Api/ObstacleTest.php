@@ -167,12 +167,16 @@ it('meets a kind with nothing beyond itself, and answers for it as the kind does
         ->and($met->is(KindOfObstacle::StackIsBusy))->toBeTrue()
         ->and($met->is(KindOfObstacle::StackDidNotAnswer))->toBeFalse()
         ->and([$met->said(), $met->remedy()])->toBe(['connection.busy', 'connection.busy_action'])
-        ->and($met->filling())->toBe([])
         ->and($met->code()->shown())->toBe('COMPANION-STACK-BUSY')
         ->and($met->severity())->toBe(Severity::Warning)
         ->and($met->standing())->toBe(Standing::Guided)
         ->and($met->meansWeAreSignedOut())->toBeFalse()
         ->and(Obstacle::of(KindOfObstacle::CredentialWasRefused)->meansWeAreSignedOut())->toBeTrue();
+});
+
+it('names no versions for a kind that carries none', function (): void {
+    expect(static fn(): TheVersionsSpoken => Obstacle::of(KindOfObstacle::StackIsBusy)->versionsSpoken())
+        ->toThrow(ObstacleIsNotOne::class, '`StackIsBusy` names no versions');
 });
 
 it('refuses a version mismatch met without its versions', function (): void {
@@ -186,10 +190,10 @@ it('names both versions, and has whichever side is older updated', function (): 
 
     expect($newer->kind())->toBe(KindOfObstacle::VersionsDisagree)
         ->and($newer->said())->toBe('connection.version_mismatch')
-        ->and($newer->filling())->toBe(['answered' => 2, 'spoken' => 1])
+        ->and([$newer->versionsSpoken()->answered(), $newer->versionsSpoken()->spoken()])->toBe([2, 1])
         ->and($newer->remedy())->toBe('connection.version_mismatch_action')
         ->and($older->said())->toBe('connection.version_mismatch')
-        ->and($older->filling())->toBe(['answered' => 1, 'spoken' => 2])
+        ->and([$older->versionsSpoken()->answered(), $older->versionsSpoken()->spoken()])->toBe([1, 2])
         ->and($older->remedy())->toBe('connection.version_mismatch_older_action');
 });
 

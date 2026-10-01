@@ -198,7 +198,7 @@ it('comes away from asking what it would cost with the job the stack named', fun
 it('comes away from asking with the obstacle rather than a job where the stack would not take it on', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('{"error":"nothing holds it"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"nothing holds it"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [aStopTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
@@ -280,7 +280,7 @@ it('an offer the stack no longer has a job for is ended, not unreachable and not
 it('asking after an offer tells a refused session from a stack that is not answering', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('{"error":"nothing holds it"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"nothing holds it"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
@@ -300,7 +300,7 @@ it('comes away from a yes with the job the stack named', function (): void {
 it('comes away from a refused yes with the obstacle rather than a job', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('{"error":"another offer"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"another offer"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [aStopTakenOn(' '), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];

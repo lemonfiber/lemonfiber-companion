@@ -61,7 +61,7 @@ it('reads an envelope in another API version as the two versions disagreeing, na
     $met = $clients->whatStoodInTheWay(aStackThatWentQuiet(), ApiVersionMismatch::between(spoken: 1, answered: 2));
 
     expect($met)->toEqual(Obstacle::versionsDisagree(TheVersionsSpoken::between(answered: 2, spoken: 1)))
-        ->and($met->filling())->toBe(['answered' => 2, 'spoken' => 1]);
+        ->and([$met->versionsSpoken()->answered(), $met->versionsSpoken()->spoken()])->toBe([2, 1]);
 })->with('every set of clients');
 
 it('reads an answer it could not read as a stack that did not answer', function (Clients $clients): void {

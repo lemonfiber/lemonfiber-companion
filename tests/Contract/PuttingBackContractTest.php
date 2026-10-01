@@ -308,7 +308,7 @@ it('reads a listing whose data goes back where it came from, said as nothing', f
 it('refuses to list a copy the stack would not, with the obstacle rather than a listing', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('{"error":"too new"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"too new"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];
 
@@ -369,7 +369,7 @@ it('comes away from a yes with the job the stack named', function (): void {
 it('comes away from a refused yes with the obstacle rather than a job', function (): void {
     $table = [
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
-        [MockResponse::make('{"error":"still running"}', 409), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
+        [MockResponse::make('{"error":"still running"}', 422), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make('not json at all'), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'restore', 'job' => ' ']]), 202), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ];

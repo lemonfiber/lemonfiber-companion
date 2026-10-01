@@ -171,7 +171,7 @@ it('reads an address with nothing to say about it as having no caution', functio
 
 it('hands on a refusal in the stack\'s own words, asking or following', function (): void {
     $said = 'lemonfiber has not been served encrypted on your network, so a phone has nothing to reach';
-    $refused = static fn(): MockResponse => MockResponse::make($said, 409, ['Content-Type' => 'text/plain']);
+    $refused = static fn(): MockResponse => MockResponse::make($said, 422, ['Content-Type' => 'text/plain']);
     $fake = AStackThatMakesPairingCodes::answering(WhatBecameOfThePairingCode::refused($said));
 
     MockClient::destroyGlobal();

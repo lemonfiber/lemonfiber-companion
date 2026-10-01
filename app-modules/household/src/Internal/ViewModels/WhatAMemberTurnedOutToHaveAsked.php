@@ -97,7 +97,7 @@ final readonly class WhatAMemberTurnedOutToHaveAsked
      */
     public function filling(): array
     {
-        return $this->why instanceof Obstacle ? $this->why->filling() : [];
+        return $this->why instanceof Obstacle ? WhatAnObstacleNames::in($this->why) : [];
     }
 
     /**

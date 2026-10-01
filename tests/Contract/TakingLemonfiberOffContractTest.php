@@ -414,7 +414,7 @@ it('hands on a refusal in the stack\'s own words, whenever it arrives', function
 });
 
 it('says the stack did not answer where a refusal carries no sentence, or the stack itself failed', function (): void {
-    $silent = MockResponse::make('', 409, ['Content-Type' => 'text/plain']);
+    $silent = MockResponse::make('', 422, ['Content-Type' => 'text/plain']);
     $failed = MockResponse::make('It broke', 503, ['Content-Type' => 'text/plain']);
     $removing = everyWayOfTakingItOff(WhereTakingItOffGot::surveyed(), $silent, $failed)['the adapter']();
 
