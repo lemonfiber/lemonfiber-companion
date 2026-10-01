@@ -6,6 +6,7 @@ use Modules\Connection\Api\Opening;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stack;
@@ -91,7 +92,7 @@ it('lists the stacks on the phone in the order they were put in', function (): v
 
 it('offers the stacks to switch to in the order they were put in', function (): void {
     $screen = new WhatTheWordsMean(
-        AStackThatExplainsItsWords::met(Obstacle::DeviceHasNoNetwork),
+        AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)),
         AKeychainInMemory::working(),
         AroundThePhone::holding(threeStacksPutInOrder()),
     );
