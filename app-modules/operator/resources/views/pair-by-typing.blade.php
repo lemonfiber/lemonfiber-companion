@@ -19,7 +19,8 @@
                 placeholder="{{ __('connection.code_placeholder') }}"
                 supporting="{{ __($this->supportingTheCode()) }}"
                 :error="$this->isUnreadable() || $this->hasExpired()"
-                multiline
+                autocorrect="off"
+                autocapitalize="none"
             />
 
             <native:outlined-text-input

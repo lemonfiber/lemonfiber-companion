@@ -1152,6 +1152,193 @@ private struct A11yHintModifier: ViewModifier {
 BECOMES,
     ],
     [
+        // A field can be told to keep what is typed exactly as typed. A
+        // pairing code typed on an iPhone was refused as no pairing code:
+        // Smart Punctuation had turned its straight quotation marks into
+        // curly ones, and the field had no way to say no. The field takes
+        // HTML's `autocorrect`, and off turns off every rewrite the platform
+        // makes as somebody types: autocorrect, spell checking, predictions,
+        // and iOS's smart quotes, dashes and spacing. Unset, each platform
+        // derives it from the keyboard type as it did.
+        'in' => '/../vendor/nativephp/mobile-ui/src/Elements/BaseTextInput.php',
+        'ships' => <<<'SHIPS'
+        if (! empty($attrs['secure'])) {
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        $autocorrect = $attrs['autocorrect'] ?? $attrs['autoCorrect'] ?? $attrs['auto-correct'] ?? null;
+        if ($autocorrect !== null) {
+            $this->autocorrect(filter_var($autocorrect, FILTER_VALIDATE_BOOLEAN));
+        }
+        if (! empty($attrs['secure'])) {
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/src/Elements/BaseTextInput.php',
+        'ships' => <<<'SHIPS'
+    /**
+     * Mask the field's contents (password entry).
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    /**
+     * Whether the platform may rewrite what is typed, as HTML's `autocorrect`.
+     *
+     * Off turns off autocorrect, spell checking and predictions, and on iOS
+     * Smart Punctuation's quotes, dashes and spacing, so the field holds the
+     * characters that were typed. Unset, the field derives it from its
+     * `keyboard` type. Blade: `autocorrect="off"`.
+     */
+    public function autocorrect(bool $value = true): static
+    {
+        $this->inputProps['autocorrect'] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Mask the field's contents (password entry).
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
+        'ships' => <<<'SHIPS'
+        let autocorrect   = allowsAutocorrection(secure: secure, keyboard: keyboardKind)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        let autocorrect   = allowsAutocorrection(
+            explicit: p.has("autocorrect") ? p.getBool("autocorrect") : nil,
+            secure: secure,
+            keyboard: keyboardKind
+        )
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
+        'ships' => <<<'SHIPS'
+private func allowsAutocorrection(secure: Bool, keyboard: String) -> Bool {
+    if secure { return false }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+private func allowsAutocorrection(explicit: Bool?, secure: Bool, keyboard: String) -> Bool {
+    if secure { return false }
+    if let explicit { return explicit }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
+        'ships' => <<<'SHIPS'
+            } else {
+                scrollIntoView()
+            }
+SHIPS,
+        'becomes' => <<<'BECOMES'
+            } else {
+                scrollIntoView()
+                // A runloop later, so a field focused from code is first
+                // responder by then, and only while this field still is.
+                if !autocorrect {
+                    DispatchQueue.main.async {
+                        if isFocused { NativeUIKeepsWhatIsTyped.inTheFocusedField() }
+                    }
+                }
+            }
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift',
+        'ships' => <<<'SHIPS'
+/// Places the reveal ("eye") control inside the field's own chrome, so it sits
+SHIPS,
+        'becomes' => <<<'BECOMES'
+/// The traits of a UIKit field that decide what iOS rewrites as somebody types.
+@MainActor
+private protocol NativeUIRewritesWhatIsTyped: UIResponder {
+    var autocorrectionType: UITextAutocorrectionType { get set }
+    var spellCheckingType: UITextSpellCheckingType { get set }
+    var smartQuotesType: UITextSmartQuotesType { get set }
+    var smartDashesType: UITextSmartDashesType { get set }
+    var smartInsertDeleteType: UITextSmartInsertDeleteType { get set }
+    var inlinePredictionType: UITextInlinePredictionType { get set }
+}
+
+extension UITextField: NativeUIRewritesWhatIsTyped {}
+extension UITextView: NativeUIRewritesWhatIsTyped {}
+
+/// Keeps what is typed into the focused field exactly as typed.
+///
+/// SwiftUI can turn autocorrect off and has no modifier for the rest of what
+/// iOS rewrites: spell checking, inline predictions, and Smart Punctuation,
+/// which turns a typed `"` into `“` and `--` into `—`. Those are traits of the
+/// UIKit field SwiftUI draws. They are set on that field while it is first
+/// responder, which is when it is known to be the focused field, and the
+/// keyboard is asked to read them again.
+@MainActor
+private enum NativeUIKeepsWhatIsTyped {
+    static weak var firstResponder: UIResponder?
+
+    static func inTheFocusedField() {
+        firstResponder = nil
+        defer { firstResponder = nil }
+        UIApplication.shared.sendAction(#selector(UIResponder.nativeUIIsTheFirstResponder), to: nil, from: nil, for: nil)
+        guard let field = firstResponder as? NativeUIRewritesWhatIsTyped else { return }
+        field.autocorrectionType = .no
+        field.spellCheckingType = .no
+        field.smartQuotesType = .no
+        field.smartDashesType = .no
+        field.smartInsertDeleteType = .no
+        field.inlinePredictionType = .no
+        field.reloadInputViews()
+    }
+}
+
+extension UIResponder {
+    /// Sent to no target, so it reaches the first responder, which names itself.
+    @objc fileprivate func nativeUIIsTheFirstResponder() {
+        NativeUIKeepsWhatIsTyped.firstResponder = self
+    }
+}
+
+/// Places the reveal ("eye") control inside the field's own chrome, so it sits
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
+        'ships' => <<<'SHIPS'
+    val capitalization: KeyboardCapitalization?,
+SHIPS,
+        'becomes' => <<<'BECOMES'
+    val capitalization: KeyboardCapitalization?,
+    /** The `autocorrect` prop; null leaves Compose's own default alone. */
+    val autocorrect: Boolean?,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
+        'ships' => <<<'SHIPS'
+        capitalization = resolveCapitalization(p.getString("autocapitalize"), p.getBool("secure"), p.getString("keyboard")),
+SHIPS,
+        'becomes' => <<<'BECOMES'
+        capitalization = resolveCapitalization(p.getString("autocapitalize"), p.getBool("secure"), p.getString("keyboard")),
+        autocorrect  = if (p.has("autocorrect")) p.getBool("autocorrect") else null,
+BECOMES,
+    ],
+    [
+        'in' => '/../vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt',
+        'ships' => <<<'SHIPS'
+internal fun keyboardOptionsFor(props: TextInputProps): KeyboardOptions =
+    props.capitalization
+        ?.let { KeyboardOptions(keyboardType = props.keyboard, capitalization = it) }
+        ?: KeyboardOptions(keyboardType = props.keyboard)
+SHIPS,
+        'becomes' => <<<'BECOMES'
+internal fun keyboardOptionsFor(props: TextInputProps): KeyboardOptions =
+    KeyboardOptions(
+        keyboardType = props.keyboard,
+        capitalization = props.capitalization ?: KeyboardCapitalization.Unspecified,
+        autoCorrectEnabled = props.autocorrect,
+    )
+BECOMES,
+    ],
+    [
         // A row marked `flex-wrap` does not wrap on iOS. The layout that
         // places a row's children takes the flag and never reads it, so every
         // child is squeezed onto the one line: eight category chips each got
