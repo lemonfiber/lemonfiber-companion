@@ -10,6 +10,8 @@ use function is_array;
 use function is_int;
 use function is_string;
 use function json_decode;
+use function preg_replace;
+use function strtr;
 use function trim;
 
 /**
@@ -38,6 +40,26 @@ use function trim;
  */
 final readonly class Pairing
 {
+    /**
+     * The quotation marks a keyboard types in place of `"`, and the `"` each stands for.
+     *
+     * iOS Smart Punctuation turns a typed `"` into an opening or closing mark
+     * for the keyboard's language, and a Japanese keyboard types the
+     * full-width one. None of them is JSON, and none can be part of what a
+     * stack writes, so each is read as the `"` it was typed for.
+     */
+    private const array QUOTES_AS_TYPED = [
+        "\u{201C}" => '"',
+        "\u{201D}" => '"',
+        "\u{201E}" => '"',
+        "\u{00AB}" => '"',
+        "\u{00BB}" => '"',
+        "\u{FF02}" => '"',
+    ];
+
+    /** Every run of whitespace, line breaks and no-break spaces included. */
+    private const string WHITESPACE = '/\s+/u';
+
     private function __construct(
         private Address $at,
         private Fingerprint $presenting,
@@ -64,7 +86,7 @@ final readonly class Pairing
      */
     public static function read(string $said, HowItWasRead $how, Clock $clock): self
     {
-        $found = json_decode($said, associative: true);
+        $found = json_decode(self::asMeant($said), associative: true);
 
         if (! is_array($found)) {
             throw PairingIsNotReadable::fromWhatWasRead($how);
@@ -155,6 +177,24 @@ final readonly class Pairing
     public function how(): HowItWasRead
     {
         return $this->how;
+    }
+
+    /**
+     * The material with what a keyboard or a paste added taken out.
+     *
+     * Every value a stack writes is an address, a hexadecimal digest, a
+     * hexadecimal identifier or a number, so whitespace in material sits only
+     * between its parts, where JSON ignores it. Removing all of it reads a code
+     * wrapped across lines, pasted with a trailing newline or typed with
+     * spaces the same as the line the stack wrote. A curly quotation mark is
+     * read as the `"` it replaced.
+     *
+     * Material that is not valid UTF-8 comes out empty, and empty material is
+     * refused like any other that is not JSON.
+     */
+    private static function asMeant(string $said): string
+    {
+        return (string) preg_replace(self::WHITESPACE, '', strtr($said, self::QUOTES_AS_TYPED));
     }
 
     /**

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Tests\Api;
 
+use function dataset;
 use function expect;
+use function implode;
 use function it;
 use function json_encode;
 
@@ -21,6 +23,8 @@ use Modules\Kernel\Api\StackIsUnidentified;
 
 use function sprintf;
 use function str_repeat;
+use function str_replace;
+use function str_split;
 
 use Tests\Support\Fakes\FrozenClock;
 
@@ -157,6 +161,41 @@ it('reads material in the exact form a stack writes it', function (): void {
 
     expect($said->stack()->stored())->toBe('5e1d0a7b3c9f4e2d8a6b1c0f9e8d7c6b')
         ->and($said->presenting()->forComparingByEye())->toBe($digest);
+});
+
+dataset('the quotation marks a keyboard types for a straight one', [
+    'an opening one' => ["\u{201C}"],
+    'a closing one' => ["\u{201D}"],
+    'a low one' => ["\u{201E}"],
+    'an opening guillemet' => ["\u{00AB}"],
+    'a closing guillemet' => ["\u{00BB}"],
+    'a full-width one' => ["\u{FF02}"],
+]);
+
+it('reads material whose quotation marks a keyboard curled', function (string $curled): void {
+    $typed = str_replace('"', $curled, material());
+
+    $said = Pairing::read($typed, HowItWasRead::Typed, whenItIsRead());
+
+    expect($said->at()->forTheClient())->toBe(A_STACKS_ADDRESS)
+        ->and($said->presenting()->is(Fingerprint::of(A_STACKS_DIGEST)))->toBeTrue();
+})->with('the quotation marks a keyboard types for a straight one');
+
+it('reads material broken across lines and spaced out as the material the stack wrote', function (): void {
+    // Line breaks fall inside the values as well as between them, the way a
+    // screen wraps a long line and a paste keeps the wrapping.
+    $pasted = sprintf(" \t%s\u{00A0}\r\n", implode("\n", str_split(material(), 16)));
+
+    $said = Pairing::read($pasted, HowItWasRead::Typed, whenItIsRead());
+
+    expect($said->at()->forTheClient())->toBe(A_STACKS_ADDRESS)
+        ->and($said->presenting()->is(Fingerprint::of(A_STACKS_DIGEST)))->toBeTrue()
+        ->and($said->stack()->stored())->toBe(A_STACKS_OWN_NAME_FOR_ITSELF);
+});
+
+it('refuses material that is not text as material that is not readable', function (): void {
+    expect(fn(): Pairing => Pairing::read(sprintf("\xFF%s", material()), HowItWasRead::Typed, whenItIsRead()))
+        ->toThrow(PairingIsNotReadable::class);
 });
 
 it('refuses a half that is present and empty', function (): void {

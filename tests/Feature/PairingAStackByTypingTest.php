@@ -22,6 +22,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 // Pairing without a camera, and the comparison that makes it
 // safe enough to allow.
@@ -73,6 +74,45 @@ function typedInto(PairByTyping $screen, string $code, string $name = 'The loft'
     $screen->__syncProperty('called', $name);
 
     return $screen;
+}
+
+/**
+ * Every node of a tree the device is handed, the root first.
+ *
+ * @param array<mixed> $node
+ *
+ * @return list<array<mixed>>
+ */
+function everyNodeIn(array $node): array
+{
+    $nodes = [$node];
+    $children = array_key_exists('children', $node) && is_array($node['children']) ? $node['children'] : [];
+
+    foreach ($children as $child) {
+        $nodes = [...$nodes, ...(is_array($child) ? everyNodeIn($child) : [])];
+    }
+
+    return $nodes;
+}
+
+/**
+ * The props the device is handed for the field labelled with this key, empty where there is none.
+ *
+ * @param array<mixed> $tree
+ *
+ * @return array<mixed>
+ */
+function propsOfTheFieldLabelled(array $tree, string $key): array
+{
+    foreach (everyNodeIn($tree) as $node) {
+        $props = array_key_exists('props', $node) && is_array($node['props']) ? $node['props'] : [];
+
+        if (array_key_exists('label', $props) && $props['label'] === __($key)) {
+            return $props;
+        }
+    }
+
+    return [];
 }
 
 it('opens waiting rather than complaining about an empty field', function (): void {
@@ -338,3 +378,23 @@ it('says a machine already held and typed in again was updated, and lets go of a
         ->and(iterator_to_array($stacks->configured(), preserve_keys: false))->toHaveCount(1)
         ->and($sessions->isHolding($theLoft->id()))->toBeFalse();
 });
+
+it('keeps the code exactly as it is typed, on one line that Return submits', function (): void {
+    // iOS Smart Punctuation curled the quotation marks of a typed code, and
+    // Return put line breaks into it, so a correctly typed code was refused.
+    $code = propsOfTheFieldLabelled(WhatTheDeviceWouldDraw::tree(pairingScreen()), 'connection.code_label');
+
+    expect($code)->toMatchArray(['autocorrect' => false, 'autocapitalize' => 'none'])
+        ->and($code)->not->toHaveKey('multiline');
+});
+
+it('has both platforms read what the code field is told about typing', function (string $renderer): void {
+    // One template draws the field on both platforms, so a prop only one of
+    // them reads is a field that types differently on the other.
+    expect((string) file_get_contents(base_path($renderer)))
+        ->toContain('p.has("autocorrect")')
+        ->toContain('p.getString("autocapitalize")');
+})->with([
+    'iOS' => ['vendor/nativephp/mobile-ui/resources/ios/NativeUITextInputCore.swift'],
+    'Android' => ['vendor/nativephp/mobile-ui/resources/android/TextInputShared.kt'],
+]);
