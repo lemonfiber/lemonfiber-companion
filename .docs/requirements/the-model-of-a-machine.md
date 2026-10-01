@@ -59,7 +59,7 @@ requirement is right and this page is a defect.
 |---|---|---|
 | `N1-R32` | Anything kept between launches carries its shape | `Shape` |
 | `N1-R33` | Older state is migrated or discarded, never read as though it were current | `Shape` |
-| `N1-R34` | A discard of retained state does not take the pairing with it | `Stacks`, whose one removing method, `forgetTheStack()`, only Remove from phone calls; clearing what the phone keeps asks stores that hold no pairing (`APairingIsNotDiscardedTest`, `ClearingWhatThePhoneKeepsLeavesPairingsTest`) |
+| `N1-R34` | A discard of retained state does not take the pairing with it | `Stacks`, whose one removing method, `forgetTheStack()`, only Remove from phone calls; clearing what the phone keeps asks stores that hold no pairing (`APairingIsNotDiscardedTest`, `ClearingWhatThePhoneKeepsLeavesPairingsTest`); a record the store would not open, or one a newer build wrote, is held back rather than read as none, nothing is written over it, and Your stacks says why with what to do (`WhyTheStacksAreHeldBack`, `StacksThatCannotBeReadAreHeldBackTest`) |
 | `N1-R23`, `N4-R5` | What is retained is stated, and beside it what is not | `Configured` |
 | `N1-R38` | What a screen was holding when the operator left it | `Held` |
 | `N1-R24` | A retained reading may open a screen and may never stand as confirmation | `Reading` |

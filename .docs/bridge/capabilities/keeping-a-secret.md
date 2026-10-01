@@ -40,6 +40,8 @@ device cannot be asked whether it is paired* look identical to a caller that
 only knows the read came back empty, and they are opposite answers. A launch
 that read a refusal as "no stacks configured" would silently offer to pair a
 machine that is already paired.
+`PlatformStacks` reads `store_would_not_open` as a record held back: it lists
+no stack, writes nothing over the record, and the launch says why.
 
 `Lemonfiber.Storage.Forget` answers `forgotten` or a refusal, and forgetting a
 key that was never kept is `forgotten` rather than an error — it is the ordinary

@@ -16,6 +16,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\StacksBeingRemoved;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Vault\Internal\KeptUnder;
 use Modules\Vault\Internal\ThePairings;
 use Modules\Vault\Internal\ThePairingsAsWritten;
@@ -42,16 +43,15 @@ use Modules\Vault\Internal\WhetherAnythingIsHeld;
  *
  * **A shape number, because everything retained carries one.** The version of
  * the shape a value was written in travels with it, and a shape this build does
- * not recognise is migrated or discarded — never interpreted as though it were
- * current. There is one shape so far, so there is nothing to migrate
- * and discarding is what happens: a record from a newer build of this app, or a
- * record that is not this record at all, reads as *no stacks configured* and
- * the operator lands on the screen for a device with no stacks.
+ * not recognise is never interpreted as though it were current. There is one
+ * shape so far, so there is nothing to migrate. A record that is not this
+ * record at all reads as *no stacks configured*. A record from a newer build of
+ * this app is held back instead: the stacks in it are still on the phone, the
+ * newer build reads them, and this one neither lists them nor writes over them.
  *
- * That is the conservative direction and it is worth being explicit about the
- * alternative. Reading an unrecognised record optimistically — taking the parts
- * that parse — would produce a stack list assembled from something nobody
- * wrote, which is an app offering to operate a machine it cannot name.
+ * Reading an unrecognised record optimistically — taking the parts that parse —
+ * would produce a stack list assembled from something nobody wrote, which is
+ * an app offering to operate a machine it cannot name.
  */
 final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
 {
@@ -71,17 +71,12 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
     /**
      * Every stack this device is paired with, as far as it can tell.
      *
-     * **A store that could not be asked answers the same as a store holding
-     * nothing, and that is a known collapse rather than an oversight.** The two
-     * are opposite — one device is unpaired, the other cannot say whether it is
-     * — and telling them apart here means `Configured` carrying a refusal to
-     * every screen that draws a stack list. That is a change to the port and to
-     * around a dozen call sites, so it is not made on the way past; the arm is
-     * written out so that the collapse is visible at the point it happens
-     * rather than hidden behind a status comparison.
-     *
-     * {@see holdsAny()} is the one question where the distinction already
-     * matters enough to be made, because getting it wrong there unlocks the app.
+     * **A store that would not open is a record held back, not a device
+     * holding nothing.** The two are opposite: one device is unpaired, the
+     * other cannot say this launch what it holds. Read as nothing, the first
+     * run would offer a pairing that writes a new record over the stacks still
+     * in the store. A device with no store at all holds nothing, because
+     * nothing can have been kept on it.
      *
      * A stack whose removal has begun is left out, whether or not its pairing
      * has been let go of yet: it is in no list from the moment its removal is
@@ -137,12 +132,21 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
 
     public function remember(Stack $stack): Remembered
     {
+        $pairings = $this->pairings();
+
+        // A record held back is never written over. The screens offer no
+        // pairing while one is, so this is the store refusing on its own
+        // account, and the refusal says the store would not take the stack.
+        if ($pairings->isHeldBack()) {
+            return Remembered::refused(WhyAStackCannotBeRemembered::StoreWouldNotOpen);
+        }
+
         // Folded into what is already there rather than written on its own, so
         // that re-pairing replaces a machine instead of adding a second row —
         // the rule lives in `Configured::with()` and this does not restate it.
         // Pairing a stack again is the operator taking it back, so a removal
         // of it that had not finished is over with it.
-        $written = ThePairingsAsWritten::written($this->pairings()->pairing($stack));
+        $written = ThePairingsAsWritten::written($pairings->pairing($stack));
 
         // Every part of the record is a string this build validated on its way
         // into a value type, so there is no input an operator can supply that
@@ -179,9 +183,7 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
     public function keepsAnythingOf(StackId $stack): bool
     {
         return $this->store->read(KeptUnder::Stacks->value)->either(
-            found: static fn(string $written): WhetherAnythingIsHeld => ThePairingsAsWritten::read($written)->stacks->knows($stack)
-                ? WhetherAnythingIsHeld::itIs()
-                : WhetherAnythingIsHeld::itIsNot(),
+            found: static fn(string $written): WhetherAnythingIsHeld => self::whetherItKeeps(ThePairingsAsWritten::read($written), $stack),
             nothing: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
             refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
         )->held;
@@ -215,24 +217,55 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
         };
     }
 
-    /** The record as the store holds it; one that cannot be read holds nothing. */
+    /**
+     * Whether these pairings keep anything of this stack.
+     *
+     * A record held back may: what is in it cannot be read this launch.
+     */
+    private static function whetherItKeeps(ThePairings $pairings, StackId $stack): WhetherAnythingIsHeld
+    {
+        return $pairings->isHeldBack() || $pairings->stacks->knows($stack)
+            ? WhetherAnythingIsHeld::itIs()
+            : WhetherAnythingIsHeld::itIsNot();
+    }
+
+    /**
+     * The record as the store holds it.
+     *
+     * A store that would not open holds a record back; a device with no store
+     * holds nothing.
+     */
     private function pairings(): ThePairings
     {
         return $this->store->read(KeptUnder::Stacks->value)->either(
             found: static fn(string $written): ThePairings => ThePairingsAsWritten::read($written),
             nothing: static fn(): ThePairings => ThePairings::none(),
-            refused: static fn(): ThePairings => ThePairings::none(),
+            refused: static fn(WhyNothingWasKept $why): ThePairings => match ($why) {
+                WhyNothingWasKept::StoreWouldNotOpen => ThePairings::heldBack(WhyTheStacksAreHeldBack::TheStoreWouldNotOpen),
+                WhyNothingWasKept::NoStoreOnThisDevice => ThePairings::none(),
+            },
         );
     }
 
     /**
      * Write the record down in place of the one before, and say whether it was.
      *
+     * A record held back is neither written nor let go of: the stacks still in
+     * it are only ever read again, by a launch that can.
+     */
+    private function kept(ThePairings $pairings): bool
+    {
+        return ! $pairings->isHeldBack() && $this->writtenDown($pairings);
+    }
+
+    /**
+     * The record written down in place of the one before.
+     *
      * A record with no pairing and no removal under way is let go of rather
      * than written empty: a phone paired with nothing holds nothing, and the
      * lock reads it so.
      */
-    private function kept(ThePairings $pairings): bool
+    private function writtenDown(ThePairings $pairings): bool
     {
         if ($pairings->isEmpty()) {
             return $this->store->forget(KeptUnder::Stacks->value)->either(

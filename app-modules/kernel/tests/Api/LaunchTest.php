@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Launch;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use ReflectionMethod;
 
 /**
@@ -29,6 +30,7 @@ function whichArm(Launch $launch): string
         unpaired: static fn(): Code => Code::of('unpaired'),
         blocked: static fn(Obstacle $obstacle): Code => Code::of($obstacle->kind()->value),
         ready: static fn(StackId $stack): Code => Code::of($stack->stored()),
+        heldBack: static fn(WhyTheStacksAreHeldBack $why): Code => Code::of($why->value),
     )->shown();
 }
 
@@ -51,12 +53,16 @@ it('a paired stack that was reached names the stack it reached', function (): vo
     expect(whichArm(Launch::ready($stack)))->toBe(A_LAUNCHED_STACK);
 });
 
+it('stacks that could not be read are held back, which is neither a first run nor a stack to reach', function (WhyTheStacksAreHeldBack $why): void {
+    expect(whichArm(Launch::heldBack($why)))->toBe($why->value);
+})->with(WhyTheStacksAreHeldBack::cases());
+
 it('every arm is required, so two cases cannot quietly become one', function (): void {
     // Not a test of behaviour but of the signature, and it is the one that
     // keeps the others honest: an optional arm is a default, and a default
     // is where two of these silently share an answer.
     $signature = new ReflectionMethod(Launch::class, 'either');
 
-    expect($signature->getNumberOfParameters())->toBe(3);
-    expect($signature->getNumberOfRequiredParameters())->toBe(3);
+    expect($signature->getNumberOfParameters())->toBe(4);
+    expect($signature->getNumberOfRequiredParameters())->toBe(4);
 });

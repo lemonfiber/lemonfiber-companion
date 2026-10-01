@@ -11,6 +11,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Operator\Internal\Presenters\HowTheLaunchReads;
 
 use function sprintf;
@@ -21,8 +22,8 @@ use Tests\Support\AnObstacleOfEachKind;
 /**
  * The four a launch can be, kept apart on the way to a template.
  *
- * `Launch::either()` requires all three arms, which is the requirement
- * expressed as a signature. This is where those three become fields, and the
+ * `Launch::either()` requires all four arms, which is the requirement
+ * expressed as a signature. This is where those four become fields, and the
  * failure it guards against is the collapse happening here instead.
  */
 it('says no machine is paired, which is not an obstacle', function (): void {
@@ -31,6 +32,7 @@ it('says no machine is paired, which is not an obstacle', function (): void {
     $unpaired = new HowTheLaunchReads()->unpaired();
 
     expect($unpaired->isPaired)->toBeFalse()
+        ->and($unpaired->isHeldBack)->toBeFalse()
         ->and($unpaired->met)->toBe('')
         ->and($unpaired->remedy)->toBe('')
         ->and($unpaired->opensOn)->toBe('');
@@ -51,6 +53,7 @@ it('says what stood in the way, by a key built from the obstacle', function (): 
             // happened is a fact about the world, what to do about it is advice.
             ->and($blocked->remedy)->toBe(sprintf('connection.%s_action', $why->value), $why->value)
             ->and($blocked->isPaired)->toBeTrue($why->value)
+            ->and($blocked->isHeldBack)->toBeFalse($why->value)
             ->and($blocked->opensOn)->toBe('', $why->value);
     }
 });
@@ -61,6 +64,7 @@ it('names which machine a ready launch is about', function (): void {
 
     expect($ready->opensOn)->toBe($stack->stored())
         ->and($ready->isPaired)->toBeTrue()
+        ->and($ready->isHeldBack)->toBeFalse()
         ->and($ready->met)->toBe('')
         ->and($ready->remedy)->toBe('');
 });
@@ -72,3 +76,13 @@ it('tells blocked from unpaired, which both have no stack to open on', function 
     expect(new HowTheLaunchReads()->unpaired()->isPaired)
         ->not->toBe(new HowTheLaunchReads()->blockedBy(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->isPaired);
 });
+
+it('says why the stacks are held back, with what to do, and opens on none of them', function (WhyTheStacksAreHeldBack $why): void {
+    $heldBack = new HowTheLaunchReads()->heldBack($why);
+
+    expect($heldBack->isHeldBack)->toBeTrue()
+        ->and($heldBack->isPaired)->toBeTrue()
+        ->and($heldBack->met)->toBe($why->said())
+        ->and($heldBack->remedy)->toBe($why->remedy())
+        ->and($heldBack->opensOn)->toBe('');
+})->with(WhyTheStacksAreHeldBack::cases());

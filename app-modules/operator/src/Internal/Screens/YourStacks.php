@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Kernel\Api\WireVersion;
 use Modules\Operator\Internal\AScreenWithoutAStack;
 use Modules\Operator\Internal\HearsHowEachStackIs;
@@ -233,10 +234,13 @@ final class YourStacks extends NativeComponent
      * the end of the sequence: a *pair now* button visible under step one is
      * the wall the sequence exists to refuse, because a control that skips the
      * reading makes the reading optional and an optional sentence is unread.
+     *
+     * Never while the stacks are held back: a pairing writes the record, and
+     * the record it would write over is the one still holding them.
      */
     public function pairingIsOffered(): bool
     {
-        return ! $this->theFirstRunIsStillRunning();
+        return ! $this->howItOpened()->isHeldBack && ! $this->theFirstRunIsStillRunning();
     }
 
     /**
@@ -496,6 +500,7 @@ final class YourStacks extends NativeComponent
             unpaired: static fn(): WhatTheLaunchWas => new HowTheLaunchReads()->unpaired(),
             blocked: static fn(Obstacle $why): WhatTheLaunchWas => new HowTheLaunchReads()->blockedBy($why),
             ready: static fn(StackId $stack): WhatTheLaunchWas => new HowTheLaunchReads()->readyFor($stack),
+            heldBack: static fn(WhyTheStacksAreHeldBack $why): WhatTheLaunchWas => new HowTheLaunchReads()->heldBack($why),
         );
     }
 

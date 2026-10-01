@@ -19,8 +19,10 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Vault\Api\PlatformStacks;
 
+use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\APlatformStore;
@@ -102,7 +104,7 @@ it('N1-R33 — discards a record written in a shape it does not know', function 
     // Never interpreted as though it were current. Reading the parts that
     // happen to parse would assemble a stack list out of something nobody
     // wrote, which is an app offering to operate a machine it cannot name.
-    $stacks = new PlatformStacks(holding(recorded(shape: 2)));
+    $stacks = new PlatformStacks(holding(recorded(shape: 0)));
 
     expect($stacks->configured()->isEmpty())->toBeTrue();
 });
@@ -224,4 +226,62 @@ it('holds nothing where every pairing has been forgotten', function (): void {
     // that has been unpaired answers *found* with something in it. A lock
     // reading the status alone would engage in front of nothing.
     expect(new PlatformStacks(holding('[]'))->holdsAny())->toBeFalse();
+});
+
+/** Which arm the record came to, as a word. Named for this file (`G10`). */
+function whatWasHeldBack(Configured $record): string
+{
+    return $record->either(
+        listed: static fn(): Code => Code::of('listed'),
+        heldBack: static fn(WhyTheStacksAreHeldBack $why): Code => Code::of(sprintf('held-back-%s', $why->value)),
+    )->shown();
+}
+
+it('holds back a record written by a newer build of this app, rather than reading it as nothing', function (): void {
+    $stacks = new PlatformStacks(holding(recorded(shape: 2)));
+
+    expect(whatWasHeldBack($stacks->configured()))->toBe('held-back-store_newer')
+        ->and($stacks->configured()->isEmpty())->toBeFalse()
+        ->and($stacks->holdsAny())->toBeTrue()
+        ->and($stacks->keepsAnythingOf(aStack()->id()))->toBeTrue();
+});
+
+it('holds back a record the store would not open, rather than reading it as nothing', function (): void {
+    $stacks = new PlatformStacks(APlatformStore::refusing()->alreadyHolding(UNDER, recorded()));
+
+    expect(whatWasHeldBack($stacks->configured()))->toBe('held-back-store_unreadable')
+        ->and($stacks->configured()->isEmpty())->toBeFalse()
+        ->and($stacks->keepsAnythingOf(aStack('The shed', 'b')->id()))->toBeTrue();
+});
+
+it('writes no pairing over a record held back', function (): void {
+    $newer = recorded(shape: 2);
+    $store = holding($newer);
+    $stacks = new PlatformStacks($store);
+
+    expect(whyItWasRefused($stacks->remember(aStack('The shed', 'b'))))->toBe('store_would_not_open')
+        ->and($store->whatIsUnder(UNDER))->toBe($newer);
+});
+
+it('writes no removal over a record held back', function (): void {
+    $newer = recorded(shape: 2);
+    $store = holding($newer);
+    $stacks = new PlatformStacks($store);
+    $loft = aStack()->id();
+
+    expect($stacks->begin($loft))->toBeFalse()
+        ->and($stacks->forgetTheStack($loft)->howMany())->toBe(0)
+        ->and($stacks->finished($loft))->toBeFalse()
+        ->and($stacks->putInOrder($loft))->toBeFalse()
+        ->and($store->whatIsUnder(UNDER))->toBe($newer);
+});
+
+it('writes nothing over a record the store would not open', function (): void {
+    $written = recorded();
+    $store = APlatformStore::refusing()->alreadyHolding(UNDER, $written);
+    $stacks = new PlatformStacks($store);
+
+    expect(whyItWasRefused($stacks->remember(aStack('The shed', 'b'))))->toBe('store_would_not_open')
+        ->and($stacks->begin(aStack()->id()))->toBeFalse()
+        ->and($store->whatIsUnder(UNDER))->toBe($written);
 });

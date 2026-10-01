@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\StacksBeingRemoved;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 
 /**
  * The record of pairings as it is written into the store and read back out.
@@ -39,10 +40,20 @@ final readonly class ThePairingsAsWritten
         return json_encode(KeptInAShape::written(self::SHAPE, self::shaped($pairings)));
     }
 
-    /** What the store was holding; a part of it this build cannot read is none. */
+    /**
+     * What the store was holding; a part of it this build cannot read is none.
+     *
+     * A record in a later shape is held back rather than read as none: a newer
+     * build of this app wrote it, the stacks in it are still on the phone, and
+     * reading it as none is how the next pairing writes over them.
+     */
     public static function read(string $written): ThePairings
     {
         $found = json_decode($written, associative: true);
+
+        if (KeptInAShape::isNewerThan($found, self::SHAPE)) {
+            return ThePairings::heldBack(WhyTheStacksAreHeldBack::ANewerAppWroteThem);
+        }
 
         return new ThePairings(self::stacksIn($found), self::removingIn($found));
     }

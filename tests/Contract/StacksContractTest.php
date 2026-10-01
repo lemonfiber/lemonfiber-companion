@@ -12,6 +12,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
+use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
 use Modules\Vault\Api\PlatformStacks;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\StacksInMemory;
@@ -210,3 +211,47 @@ it('says an order it could not keep was not kept', function (Stacks $refusing): 
     'the platform store' => [fn(): Stacks => new PlatformStacks(APlatformStore::refusing())],
     'the fake' => [fn(): Stacks => StacksInMemory::refusing(WhyAStackCannotBeRemembered::StoreWouldNotOpen)],
 ]);
+
+/** Why a record was held back, or that it was listed. Named for this file (`G10`). */
+function whyTheRecordWasHeldBack(Stacks $stacks): string
+{
+    return $stacks->configured()->either(
+        listed: static fn(): Code => Code::of('listed'),
+        heldBack: static fn(WhyTheStacksAreHeldBack $why): Code => Code::of($why->value),
+    )->shown();
+}
+
+/** @return array<string, array{Closure(): Stacks, WhyTheStacksAreHeldBack}> */
+dataset('every record held back', [
+    'the platform store, over a record from a newer build' => [
+        fn(): Stacks => new PlatformStacks(APlatformStore::working()->alreadyHolding('lemonfiber.stacks', '{"shape":2,"stacks":[]}')),
+        WhyTheStacksAreHeldBack::ANewerAppWroteThem,
+    ],
+    'the fake, over a record from a newer build' => [
+        fn(): Stacks => StacksInMemory::heldBack(WhyTheStacksAreHeldBack::ANewerAppWroteThem),
+        WhyTheStacksAreHeldBack::ANewerAppWroteThem,
+    ],
+    'the platform store, over a record it would not open' => [
+        fn(): Stacks => new PlatformStacks(APlatformStore::refusing()->alreadyHolding('lemonfiber.stacks', '{"shape":1,"stacks":[]}')),
+        WhyTheStacksAreHeldBack::TheStoreWouldNotOpen,
+    ],
+    'the fake, over a record it would not open' => [
+        fn(): Stacks => StacksInMemory::heldBack(WhyTheStacksAreHeldBack::TheStoreWouldNotOpen),
+        WhyTheStacksAreHeldBack::TheStoreWouldNotOpen,
+    ],
+]);
+
+it('says why a record it cannot read is held back, and never reads it as nothing', function (Stacks $stacks, WhyTheStacksAreHeldBack $why): void {
+    expect(whyTheRecordWasHeldBack($stacks))->toBe($why->value)
+        ->and($stacks->configured()->isEmpty())->toBeFalse()
+        ->and($stacks->holdsAny())->toBeTrue()
+        ->and($stacks->keepsAnythingOf(aStackCalled('The loft')->id()))->toBeTrue();
+})->with('every record held back');
+
+it('writes nothing over a record held back', function (Stacks $stacks): void {
+    $loft = aStackCalled('The loft')->id();
+
+    expect(howTheStackWentDown($stacks->remember(aStackCalled('The loft'))))->toBe(WhyAStackCannotBeRemembered::StoreWouldNotOpen->value)
+        ->and($stacks->forgetTheStack($loft)->howMany())->toBe(0)
+        ->and($stacks->putInOrder($loft))->toBeFalse();
+})->with('every record held back');

@@ -10,6 +10,7 @@ use function array_map;
 use function array_values;
 
 use ArrayIterator;
+use Closure;
 use IteratorAggregate;
 use Traversable;
 
@@ -50,7 +51,20 @@ use Traversable;
 final readonly class Configured implements IteratorAggregate
 {
     /** @param list<Stack> $stacks */
-    private function __construct(private array $stacks) {}
+    private function __construct(private array $stacks, private ?WhyTheStacksAreHeldBack $heldBack) {}
+
+    /**
+     * A record that is there and could not be read this launch.
+     *
+     * It lists nothing, because nothing in it could be read, and it is not a
+     * device paired with nothing: it says why it is held back, and whatever
+     * would write the record down asks {@see isHeldBack()} first, so the
+     * stacks still in it are never written over.
+     */
+    public static function heldBack(WhyTheStacksAreHeldBack $why): self
+    {
+        return new self([], $why);
+    }
 
     /**
      * A device that has been introduced to nothing.
@@ -61,7 +75,7 @@ final readonly class Configured implements IteratorAggregate
      */
     public static function none(): self
     {
-        return new self([]);
+        return new self([], null);
     }
 
     /**
@@ -108,10 +122,10 @@ final readonly class Configured implements IteratorAggregate
             return new self(array_map(
                 static fn(Stack $held): Stack => $held->id()->is($stack->id()) ? $stack : $held,
                 $this->stacks,
-            ));
+            ), $this->heldBack);
         }
 
-        return new self([...$this->stacks, $stack]);
+        return new self([...$this->stacks, $stack], $this->heldBack);
     }
 
     /** The same record, without the stack under this id. */
@@ -120,7 +134,7 @@ final readonly class Configured implements IteratorAggregate
         return new self(array_values(array_filter(
             $this->stacks,
             static fn(Stack $held): bool => ! $held->id()->is($id),
-        )));
+        )), $this->heldBack);
     }
 
     /**
@@ -133,7 +147,7 @@ final readonly class Configured implements IteratorAggregate
      */
     public function inTheOrderOf(StackId ...$order): self
     {
-        $ordered = self::none();
+        $ordered = new self([], $this->heldBack);
 
         foreach ($order as $id) {
             $ordered = $this->knows($id) && ! $ordered->knows($id) ? $ordered->with($this->stack($id)) : $ordered;
@@ -192,10 +206,36 @@ final readonly class Configured implements IteratorAggregate
         throw StackIsNotConfigured::here($id);
     }
 
-    /** Whether a launch reaches the first-run screen rather than an operator's. */
+    /** Whether the record is there and could not be read this launch. */
+    public function isHeldBack(): bool
+    {
+        return $this->heldBack instanceof WhyTheStacksAreHeldBack;
+    }
+
+    /**
+     * The stacks, or why they are held back.
+     *
+     * @template T of object
+     *
+     * @param Closure(self): T                    $listed
+     * @param Closure(WhyTheStacksAreHeldBack): T $heldBack
+     *
+     * @return T
+     */
+    public function either(Closure $listed, Closure $heldBack): object
+    {
+        return $this->heldBack instanceof WhyTheStacksAreHeldBack ? $heldBack($this->heldBack) : $listed($this);
+    }
+
+    /**
+     * Whether a launch reaches the first-run screen rather than an operator's.
+     *
+     * A record held back lists no stack and is not empty: the stacks are still
+     * on the phone, and a first run is the road to writing a new record over them.
+     */
     public function isEmpty(): bool
     {
-        return $this->stacks === [];
+        return $this->stacks === [] && ! $this->heldBack instanceof WhyTheStacksAreHeldBack;
     }
 
     public function getIterator(): Traversable
