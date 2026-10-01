@@ -5,9 +5,9 @@
 <x-operator::emphasis>{{ $refused->said }}</x-operator::emphasis>
 
 @if ($refused->meaning !== '')
-    <native:text>{{ $refused->meaning }}</native:text>
+    <x-design::body>{{ $refused->meaning }}</x-design::body>
 @endif
 
 @if ($refused->named !== '')
-    <native:text>{{ __('stacks.refusal.named', ['named' => $refused->named]) }}</native:text>
+    <x-design::body>{{ __('stacks.refusal.named', ['named' => $refused->named]) }}</x-design::body>
 @endif

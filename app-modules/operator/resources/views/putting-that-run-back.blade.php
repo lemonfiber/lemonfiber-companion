@@ -20,20 +20,20 @@
 
         {{-- The stack says what went back once it has finished, and not while
              it runs. --}}
-        <native:text>{{ __('stacks.run_back.no_progress_while_running') }}</native:text>
+        <x-design::body>{{ __('stacks.run_back.no_progress_while_running') }}</x-design::body>
     @elseif ($this->done()->refused !== null)
         {{-- The stack's answer, in its words, and not a fault: asking after
              the same work is answered the same way, so the one road offered
              is back to the record. --}}
         <x-operator::heading>{{ __('stacks.run_back.refused') }}</x-operator::heading>
         <x-operator::refused-in-its-words :refused="$this->done()->refused" />
-        <native:text>{{ __('stacks.run_back.refused_same_answer') }}</native:text>
+        <x-design::body>{{ __('stacks.run_back.refused_same_answer') }}</x-design::body>
         <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
     @elseif ($this->done()->hasEnded)
         {{-- Not a failure: it may well have gone back, and the record is where
              to look. --}}
         <x-operator::emphasis>{{ __('stacks.run_back.no_outcome') }}</x-operator::emphasis>
-        <native:text>{{ __('stacks.run_back.no_outcome_action') }}</native:text>
+        <x-design::body>{{ __('stacks.run_back.no_outcome_action') }}</x-design::body>
         <x-operator::action label="{{ __('stacks.record.road_in') }}" :goes="$this->goes()->ofItself()->record()" />
     @else
         @if ($this->done()->rehearsed)
@@ -50,7 +50,7 @@
         @forelse ($this->done()->left as $left)
             <x-operator::entry>
                 <x-operator::emphasis>{{ $left->target }}</x-operator::emphasis>
-                <native:text>{{ $left->because }}</native:text>
+                <x-design::body>{{ $left->because }}</x-design::body>
             </x-operator::entry>
         @empty
             {{-- Nothing was left, which the line above says. --}}
@@ -66,7 +66,7 @@
 
             <x-operator::entry>
                 <x-operator::emphasis>{{ $noted->target }}</x-operator::emphasis>
-                <native:text>{{ $noted->because }}</native:text>
+                <x-design::body>{{ $noted->because }}</x-design::body>
             </x-operator::entry>
         @empty
             {{-- Nothing about going back needed saying. --}}
@@ -76,7 +76,7 @@
 
         @forelse ($this->done()->reversed as $reversed)
             <x-operator::entry>
-                <native:text>{{ $reversed->target }}</native:text>
+                <x-design::body>{{ $reversed->target }}</x-design::body>
                 <x-operator::note>{{ __($reversed->doesSaid) }}</x-operator::note>
             </x-operator::entry>
         @empty
@@ -106,7 +106,7 @@
         <x-operator::entry>
             <x-operator::emphasis>{{ $change->did }}</x-operator::emphasis>
             <x-operator::note>{{ __('stacks.record.by', ['operation' => $change->operation, 'target' => $change->target]) }}</x-operator::note>
-            <native:text>{{ __($change->reversalSaid) }}</native:text>
+            <x-design::body>{{ __($change->reversalSaid) }}</x-design::body>
 
             @if ($change->because !== '')
                 <x-operator::note>{{ __('stacks.record.stops_short', ['because' => $change->because]) }}</x-operator::note>
@@ -123,7 +123,7 @@
     @endforelse
 
     @if ($this->answer()->goesBack)
-        <native:text>{{ __('stacks.run_back.whole_or_nothing') }}</native:text>
+        <x-design::body>{{ __('stacks.run_back.whole_or_nothing') }}</x-design::body>
         <x-operator::action label="{{ __('stacks.run_back.put_it_back') }}" tap="agree()" />
     @else
         {{-- A row says it cannot go back, and the stack judges every change

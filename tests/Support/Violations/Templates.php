@@ -127,6 +127,14 @@ final readonly class Templates
                 </native:column>
                 BLADE, 'no template but the component writes the content column out', 'a-content-column-written-out'),
 
+            // A sentence in the platform's own colour, which is black on a
+            // dark screen.
+            Fixture::suite('F19', sprintf('%s/text-in-no-colour.blade.php', $views), <<<'BLADE'
+                <native:column class="w-full">
+                    <native:text>{{ __('health.standing.healthy') }}</native:text>
+                </native:column>
+                BLADE, 'every text element takes its colour from a theme role', 'text-in-no-colour'),
+
             Fixture::suite('L1', sprintf('%s/english-sentence.blade.php', $views), <<<'BLADE'
                 <native:column class="w-full">
                     <native:text>This stack cannot be reached from here.</native:text>

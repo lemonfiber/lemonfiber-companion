@@ -9,7 +9,7 @@
          offered. --}}
     <x-operator::heading>{{ __('stacks.catalogue.refused') }}</x-operator::heading>
     <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
-    <native:text>{{ __('stacks.catalogue.same_answer') }}</native:text>
+    <x-design::body>{{ __('stacks.catalogue.same_answer') }}</x-design::body>
 @else
     {{-- Said once, over the list: every sentence below is the stack's own
          description of itself, read with nothing started. --}}
@@ -22,7 +22,7 @@
              matters. --}}
         <x-operator::entry>
             <x-operator::emphasis>{{ $service->describes }}</x-operator::emphasis>
-            <native:text>{{ __('stacks.catalogue.without_it', ['without' => $service->withoutIt]) }}</native:text>
+            <x-design::body>{{ __('stacks.catalogue.without_it', ['without' => $service->withoutIt]) }}</x-design::body>
             <x-operator::note>{{ __($service->mattersSaid) }}</x-operator::note>
             <x-operator::note>{{ $service->name }}</x-operator::note>
         </x-operator::entry>
@@ -39,7 +39,7 @@
              remembers, with why it went and what took its place. --}}
         <x-operator::entry>
             <x-operator::emphasis>{{ $dropped->id }}</x-operator::emphasis>
-            <native:text>{{ __('stacks.catalogue.removed_in', ['version' => $dropped->removedIn, 'reason' => $dropped->reason]) }}</native:text>
+            <x-design::body>{{ __('stacks.catalogue.removed_in', ['version' => $dropped->removedIn, 'reason' => $dropped->reason]) }}</x-design::body>
 
             @if ($dropped->replacedBy !== '')
                 <x-operator::note>{{ __('stacks.catalogue.replaced_by', ['by' => $dropped->replacedBy]) }}</x-operator::note>

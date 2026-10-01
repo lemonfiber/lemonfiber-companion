@@ -9,11 +9,11 @@
     <x-operator::emphasis>{{ $row->name }}</x-operator::emphasis>
 
     @if ($row->items > 1)
-        <native:text>{{ trans_choice('health.stopped_stands_for', $row->items) }}</native:text>
+        <x-design::body>{{ trans_choice('health.stopped_stands_for', $row->items) }}</x-design::body>
     @endif
 
     @if ($row->blocking !== '')
-        <native:text>{{ __('health.stopped_blocking', ['words' => $row->blocking]) }}</native:text>
+        <x-design::body>{{ __('health.stopped_blocking', ['words' => $row->blocking]) }}</x-design::body>
     @endif
 
     <x-operator::note>{{ trans_choice($row->heldSaid, $row->heldCount) }}</x-operator::note>
