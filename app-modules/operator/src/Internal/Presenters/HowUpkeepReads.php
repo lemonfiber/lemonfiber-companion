@@ -56,6 +56,7 @@ final readonly class HowUpkeepReads
             // as the versions screen does.
             inUse: $upkeep->notes() === HowTheNotesStand::Current ? $on->notes : null,
             notesWithheld: new HowWithheldNotesRead()->of($upkeep->notes()),
+            editsKept: new HowAStackEditReads()->these($upkeep->editsKept()),
             history: $history,
             // Asked of the reading rather than worked out from the history.
             // Releases are listed whether or not a service would move, so a
@@ -89,6 +90,7 @@ final readonly class HowUpkeepReads
             runningWasWithdrawn: false,
             inUse: null,
             notesWithheld: new HowWithheldNotesRead()->of(HowTheNotesStand::Current),
+            editsKept: [],
             history: [],
             offer: null,
         );

@@ -93,6 +93,7 @@ final readonly class HowAVerbEndedReads
             leftOutSaid: $rehearsed ? 'health.came_to.would_be_left_out' : 'health.came_to.left_out',
             leftOut: new HowWhatWasLeftOutReads()->of($report->leftOut()),
             portsHeld: $this->portsHeld($report->portsHeld()),
+            editsKept: new HowAStackEditReads()->these($report->editsKept()),
         );
     }
 
@@ -153,6 +154,7 @@ final readonly class HowAVerbEndedReads
             leftOutSaid: null,
             leftOut: [],
             portsHeld: [],
+            editsKept: [],
         );
     }
 }

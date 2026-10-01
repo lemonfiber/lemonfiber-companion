@@ -27,6 +27,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param bool                           $runningWasWithdrawn whether the version in use has been taken back
      * @param ?WhatOneReleaseSays            $inUse      what the release in use changed, where the stack named it and its notes are current
      * @param WhatWithheldNotesSay           $notesWithheld why those notes are not shown, where they are not
+     * @param list<AnEditAsShown>            $editsKept  the stack files the operator edited, which the update leaves as they set them
      * @param list<WhatOneReleaseSays>       $history    every release the stack's record holds, newest first
      * @param ?TakingAnUpdate                $offer      the update to take, where the stack offered one
      */
@@ -37,6 +38,7 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public bool $runningWasWithdrawn,
         public ?WhatOneReleaseSays $inUse,
         public WhatWithheldNotesSay $notesWithheld,
+        public array $editsKept,
         public array $history,
         public ?TakingAnUpdate $offer,
     ) {}

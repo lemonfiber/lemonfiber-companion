@@ -20,9 +20,6 @@ enum ResetField: string implements NamesAWireField
     /** The files whose edits a reset reverts, or would. */
     case Reverted = 'reverted';
 
-    /** The lines of one of those files that differ, the operator's marked `-` and lemonfiber's `+`. */
-    case Diff = 'diff';
-
     /** The connections whose drifted value a reset returns to lemonfiber's, or would. */
     case RevertedConnections = 'reverted_connections';
 }

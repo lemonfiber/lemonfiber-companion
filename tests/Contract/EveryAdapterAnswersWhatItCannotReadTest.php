@@ -40,7 +40,6 @@ use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\Decided;
-use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
@@ -81,6 +80,7 @@ use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\TheReset;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
@@ -235,6 +235,7 @@ function anUpdateToSpoilTheAnswerTo(): TakingAnUpdate
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     ));
 }
 
@@ -446,7 +447,7 @@ function everyAdapterCallThatReads(): array
             => new Reversers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Resetters::wouldRevert' => static fn(): object => new Resetters($clients, $entropy)->wouldRevert($stack, $session),
         'Resetters::revert' => static fn(): object
-            => new Resetters($clients, $entropy)->revert($stack, $session, AResetAgreed::to(TheReset::previewed(EditsReverted::these(), ConnectionsReverted::these('sonarr → qbittorrent')))),
+            => new Resetters($clients, $entropy)->revert($stack, $session, AResetAgreed::to(TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent')))),
         'Resetters::whatBecameOf' => static fn(): object
             => new Resetters($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),

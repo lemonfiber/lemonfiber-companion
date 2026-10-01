@@ -17,6 +17,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheHoldSaysNothing;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhereAServiceEndedUp;
@@ -35,6 +36,7 @@ function aRestartReported(WhereAServiceEndedUp ...$services): WhatTheVerbCameTo
         WhereTheServicesEndedUp::of(...$services),
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
+        TheStackEdits::none(),
     );
 }
 
@@ -47,6 +49,7 @@ function aRestartDeclined(string $why, WhereAServiceEndedUp ...$services): WhatT
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
         $why,
+        TheStackEdits::none(),
     );
 }
 
@@ -123,8 +126,8 @@ it('carries whether it was rehearsed, what was left out and which ports are held
     $leftOut = TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('hunt'))));
     $ports = ThePortsHeld::of(APortHeld::of(8096, 'jellyfin', 'media'));
     $reports = [
-        WhatTheVerbCameTo::reported(WhetherItWasRehearsed::Rehearsed, WhereTheServicesEndedUp::of(), $leftOut, $ports)->amountingTo(HowTheStackIsRunning::Active),
-        WhatTheVerbCameTo::declined(WhetherItWasRehearsed::Rehearsed, WhereTheServicesEndedUp::of(), $leftOut, $ports, 'Autostart was never asked for.')->amountingTo(HowTheStackIsRunning::Active),
+        WhatTheVerbCameTo::reported(WhetherItWasRehearsed::Rehearsed, WhereTheServicesEndedUp::of(), $leftOut, $ports, TheStackEdits::none())->amountingTo(HowTheStackIsRunning::Active),
+        WhatTheVerbCameTo::declined(WhetherItWasRehearsed::Rehearsed, WhereTheServicesEndedUp::of(), $leftOut, $ports, 'Autostart was never asked for.', TheStackEdits::none())->amountingTo(HowTheStackIsRunning::Active),
     ];
 
     foreach ($reports as $report) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Tests\Api;
 
 use function array_diff_key;
+use function count;
 use function expect;
 use function implode;
 use function it;
@@ -14,6 +15,7 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Sdk\Api\LifecycleIsUnreadable;
 use Modules\Sdk\Api\Lifecycles;
+use Modules\Sdk\Api\StackEditsAreUnreadable;
 
 use function sprintf;
 
@@ -231,3 +233,26 @@ it('refuses the first entry by its position, not as a list that is missing', fun
         ->and(fn(): WhatTheVerbCameTo => Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'port_conflicts' => [8989]])))
         ->toThrow(LifecycleIsUnreadable::class, 'Entry 0 of the lifecycle\'s `port_conflicts`');
 });
+
+it('reads the stack files the operator edited, each with its diff', function (): void {
+    $report = Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'stack_edits' => [
+        ['path' => 'compose.yaml', 'diff' => "- image: mine\n+ image: ours\n"],
+        ['path' => 'env/sonarr.env', 'diff' => ''],
+    ]]));
+    $read = [];
+
+    foreach ($report->editsKept() as $edit) {
+        $read[] = sprintf('%s:%d', $edit->path(), count($edit));
+    }
+
+    expect($read)->toBe(['compose.yaml:2', 'env/sonarr.env:0']);
+});
+
+it('refuses a list of edited files it cannot read', function (mixed $edits): void {
+    expect(static fn(): WhatTheVerbCameTo => Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'stack_edits' => $edits])))
+        ->toThrow(StackEditsAreUnreadable::class);
+})->with([
+    'not a list' => ['compose.yaml'],
+    'a file with no diff' => [[['path' => 'compose.yaml']]],
+    'a file that is not one' => [['compose.yaml']],
+]);

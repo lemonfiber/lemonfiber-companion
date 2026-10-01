@@ -471,12 +471,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
             . 'spec before reading it, which is `N1-R17`.',
     ],
     [
-        'path' => 'LifecycleEnvelope.stack_edits',
-        'because' => 'Stack files the operator edited, which an upgrade would change. A warning about an '
-            . 'upgrade, and this screen offers start, stop and restart (`N2-R7`); the edits are the '
-            . 'operator\'s, made at the machine, and no requirement asks a verb\'s outcome to list them.',
-    ],
-    [
         'path' => 'LifecycleEnvelope.status',
         'because' => 'The exit status of the command. What the verb came to is read off the condition and '
             . 'off each service the stack waited for, which say what came back; a process status beside '
@@ -776,12 +770,6 @@ const WHAT_THIS_APP_DOES_NOT_READ = [
         'because' => 'How large the version jump is — major, minor, patch, or untellable. `N2-R16` already '
             . 'has the stack answer the question an operator is actually asking, which is whether the '
             . 'household will notice; a semantic-version magnitude is a different claim and a weaker one.',
-    ],
-    [
-        'path' => 'UpdateEnvelope.stack_edits',
-        'because' => 'The diffs an update would make to the stack\'s own configuration, and the paths they '
-            . 'touch. `N2-R12` refuses to let this app set or change a value; showing a diff of one is the '
-            . 'near neighbour of that and wants a requirement of its own before it wants a screen.',
     ],
     [
         'path' => 'RepairEnvelope.beyond',

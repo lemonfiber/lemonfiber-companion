@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Sdk\Api\Fields\UpdateField;
@@ -105,6 +106,7 @@ function theUpdateTheAdapterIsHanded(): TakingAnUpdate
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     ));
 }
 

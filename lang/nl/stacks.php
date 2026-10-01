@@ -887,11 +887,22 @@ return [
         'still_on_the_machine' => 'Er heeft niets deze telefoon verlaten. De bundel staat nog op de machine.',
     ],
 
+    // Stackbestanden die de beheerder heeft aangepast, waar de stack ze ook
+    // meldt. De regels van elk bestand zijn gemarkeerd zoals de stack ze
+    // markeert: die van de beheerder `-`, die van lemonfiber `+`, en de
+    // legenda noemt dezelfde tekens.
+    'edits' => [
+        'heading' => 'Bestanden die je hebt aangepast',
+        'kept' => 'Je hebt :path aangepast, dus het blijft zoals je het achterliet.',
+        'would_change' => 'Wat lemonfiber erin zou veranderen',
+        'legend' => 'Regels met - zijn van jou, en regels met + zijn wat lemonfiber zou schrijven.',
+        'theirs' => '- :line',
+        'lemonfibers' => '+ :line',
+    ],
+
     // De configuratie terugzetten. Een voorproef staat in de voorwaardelijke
     // wijs en nooit alsof het gebeurd is; alleen een verslag waarvan de stack
-    // zegt dat het is uitgevoerd staat in de verleden tijd. De regels van elk
-    // bestand zijn gemarkeerd zoals de stack ze markeert: die van de beheerder
-    // `-`, die van lemonfiber `+`.
+    // zegt dat het is uitgevoerd staat in de verleden tijd.
     'reset' => [
         'heading' => 'De configuratie terugzetten',
         'a_preview' => 'Een voorproef. Er is niets teruggezet.',
@@ -908,8 +919,6 @@ return [
         'reverted_no_connection' => 'Er ging geen verbinding terug.',
         'would_change_nothing' => 'Er zou niets veranderen. Geen bestand en geen verbinding verschilt van die van lemonfiber.',
         'changed_nothing' => 'Er veranderde niets. Geen bestand en geen verbinding verschilde van die van lemonfiber.',
-        'theirs' => '- :line',
-        'lemonfibers' => '+ :line',
         'put_them_back' => 'Zet deze terug',
         'asking' => 'De stack zoekt uit wat het terugzetten van de configuratie zou veranderen.',
         'putting_back' => 'De stack zet de configuratie terug.',

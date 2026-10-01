@@ -20,6 +20,7 @@ use Modules\Kernel\Api\SettingsToReveal;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TakingItOff;
 use Modules\Kernel\Api\TakingThemOut;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatToChange;
@@ -384,6 +385,7 @@ function anUpdateSomebodyAgreedTo(): TakingAnUpdate
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     ));
 }
 

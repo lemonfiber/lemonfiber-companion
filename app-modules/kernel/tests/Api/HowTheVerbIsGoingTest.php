@@ -13,6 +13,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
@@ -38,6 +39,7 @@ it('takes the arm for each state, and carries the report and the obstacle', func
         WhereTheServicesEndedUp::of(),
         TheServicesLeftOut::of(),
         ThePortsHeld::of(),
+        TheStackEdits::none(),
     );
 
     expect(howTheVerbIsGoingReads(HowTheVerbIsGoing::stillRunning()))->toBe('running')

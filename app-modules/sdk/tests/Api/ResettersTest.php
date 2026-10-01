@@ -10,10 +10,9 @@ use function it;
 
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Kernel\Api\Address;
-use Modules\Kernel\Api\AnEditReverted;
 use Modules\Kernel\Api\AResetAgreed;
+use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\ConnectionsReverted;
-use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
@@ -22,6 +21,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheReset;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Resetters;
 use RuntimeException;
@@ -82,7 +82,7 @@ it('asks what putting the configuration back would revert without a yes, and wit
 it('puts the configuration back with the yes, under a key', function (): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not an envelope at all')]);
-    $previewed = TheReset::previewed(EditsReverted::these(AnEditReverted::at('compose.yaml', '')), ConnectionsReverted::these());
+    $previewed = TheReset::previewed(TheStackEdits::these(AStackEdit::at('compose.yaml', '')), ConnectionsReverted::these());
 
     new Resetters(new PinnedClients(), SequencedEntropy::counting())->revert(theStackTheResetterAsks(), Session::of('a-session-not-a-secret'), AResetAgreed::to($previewed));
 

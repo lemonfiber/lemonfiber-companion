@@ -16,6 +16,7 @@ requirement is right and this page is a defect.
 | `N2-R3` | A finding carries its meaning and its remedy, in the core's words, and its code one step away | `CouldNotSay` is what the core says when a check produced no verdict at all |
 | `G4-R4` | Technical detail is available and does not lead | `WentWrong` — it is asked for by name rather than arriving beside everything else |
 | `ARCH-R79` | Answers and their names are separated | `Ability` |
+| `N19-R3` | A stack file the operator edited is shown as edited and kept, never as drift | `AStackEdit`, one shape for every edit the stack reports: a file a reset reverts, and a file a start or an update leaves as the operator set it. `StackEditsSent` reads `stack_edits` off the `lifecycle` and `update` envelopes into `WhatTheVerbCameTo::editsKept()` and `Upkeep::editsKept()`, and the `edits-kept` component draws each with what lemonfiber would change in it and a legend for the marks, with no tone and nothing offered |
 
 ## Putting something right
 

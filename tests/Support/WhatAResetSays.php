@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use Modules\Kernel\Api\AnEditReverted;
+use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\ConnectionsReverted;
-use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\TheReset;
+use Modules\Kernel\Api\TheStackEdits;
 
 /**
  * One reset, as the kernel holds it and as a stack sends it.
@@ -57,11 +57,11 @@ final readonly class WhatAResetSays
     }
 
     /** The files it reverts. */
-    private static function edits(): EditsReverted
+    private static function edits(): TheStackEdits
     {
-        return EditsReverted::these(
-            AnEditReverted::at('compose.yaml', self::THE_DIFF),
-            AnEditReverted::at('env/sonarr.env', ''),
+        return TheStackEdits::these(
+            AStackEdit::at('compose.yaml', self::THE_DIFF),
+            AStackEdit::at('env/sonarr.env', ''),
         );
     }
 }

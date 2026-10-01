@@ -94,6 +94,11 @@
         </x-design::card>
     @endif
 
+    {{-- The files the operator edited, which the update leaves as they set
+         them, with what it would have changed in each. Beside the offer,
+         because what an update leaves alone is part of what taking it means. --}}
+    <x-operator::edits-kept :edits="$this->answer()->editsKept" />
+
     @if ($this->answer()->inUse !== null)
         {{-- What the release in use changed. Its build carries the pins, so
              this is the reason an update would move anything — and whether the

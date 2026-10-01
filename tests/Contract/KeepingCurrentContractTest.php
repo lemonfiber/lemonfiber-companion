@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Sdk\Api\PinnedClients;
@@ -79,9 +80,8 @@ function theSessionTheStackIsAskedAboutItsUpkeepWith(): Session
  */
 function theSameStanding(): Upkeep
 {
-    return Upkeep::runningOn(
+    return Upkeep::reported(
         AgainstThePins::Partial,
-        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
         Releases::these(
             Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
             Release::called('4.0.17', noticeable: true, withdrawn: true, delivers: WhatAReleaseDelivers::saidNothing()),
@@ -94,7 +94,8 @@ function theSameStanding(): Upkeep
         Services::none(),
         theSameApplying(),
         HowTheNotesStand::Current,
-    );
+        TheStackEdits::none(),
+    )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
 }
 
 /**
@@ -224,9 +225,8 @@ function whatAStackWithAnUpdateAvailableSends(): array
 /** The reading both implementations answer that payload with. */
 function theSameStandingWithAnUpdateAvailable(): Upkeep
 {
-    return Upkeep::runningOn(
+    return Upkeep::reported(
         AgainstThePins::UpdatesAvailable,
-        Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
         Releases::these(
             Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')),
             Release::called('4.0.16', noticeable: false, withdrawn: false, delivers: WhatAReleaseDelivers::saidNothing()),
@@ -235,7 +235,8 @@ function theSameStandingWithAnUpdateAvailable(): Upkeep
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
-    );
+        TheStackEdits::none(),
+    )->runningOn(Release::called('4.1.0', noticeable: true, withdrawn: false, delivers: WhatAReleaseDelivers::said('Adds series search.')));
 }
 
 /**
@@ -286,6 +287,7 @@ function theSameStandingWithPendingNotes(): Upkeep
         Services::none(),
         HowServicesTookIt::none(),
         HowTheNotesStand::Current,
+        TheStackEdits::none(),
     );
 }
 

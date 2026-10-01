@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
-use Modules\Kernel\Api\AnEditReverted;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\ConnectionsReverted;
-use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheResetIsGoing;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -18,6 +17,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheReset;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
@@ -92,7 +92,7 @@ function aStackPreviewingTheReset(?HowTheResetIsGoing $after = null): AStackThat
 /** A preview that would revert nothing at all. */
 function aPreviewRevertingNothing(): TheReset
 {
-    return TheReset::previewed(EditsReverted::these(), ConnectionsReverted::these());
+    return TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these());
 }
 
 /**
@@ -208,7 +208,7 @@ function theUsualResetAsDrawn(): array
 {
     return [
         'edits' => [
-            ['compose.yaml', [['stacks.reset.theirs', 'image: sonarr:4.0.1'], ['stacks.reset.lemonfibers', 'image: sonarr:4.0.0']]],
+            ['compose.yaml', [['stacks.edits.theirs', 'image: sonarr:4.0.1'], ['stacks.edits.lemonfibers', 'image: sonarr:4.0.0']]],
             ['env/sonarr.env', []],
         ],
         'connections' => ['sonarr → qbittorrent'],
@@ -233,8 +233,8 @@ it('previews first, labelled as one, with every file\'s lines and every connecti
         ->and($drawn->said())->toContain(__('stacks.reset.a_preview'))
         ->and($drawn->said())->toContain(__('stacks.reset.would_revert_files'))
         ->and($drawn->said())->toContain('compose.yaml')
-        ->and($drawn->said())->toContain(__('stacks.reset.theirs', ['line' => 'image: sonarr:4.0.1']))
-        ->and($drawn->said())->toContain(__('stacks.reset.lemonfibers', ['line' => 'image: sonarr:4.0.0']))
+        ->and($drawn->said())->toContain(__('stacks.edits.theirs', ['line' => 'image: sonarr:4.0.1']))
+        ->and($drawn->said())->toContain(__('stacks.edits.lemonfibers', ['line' => 'image: sonarr:4.0.0']))
         ->and($drawn->said())->toContain('env/sonarr.env')
         ->and($drawn->said())->toContain(__('stacks.reset.differs_in_no_line'))
         ->and($drawn->said())->toContain(__('stacks.reset.would_revert_connections'))
@@ -249,8 +249,8 @@ it('previews first, labelled as one, with every file\'s lines and every connecti
 it('marks the operator\'s line with a minus and lemonfiber\'s with a plus, in both languages', function (string $locale): void {
     app()->setLocale($locale);
 
-    expect(aLineOfPuttingItAllBack('stacks.reset.theirs', ['line' => 'TZ=UTC']))->toBe('- TZ=UTC')
-        ->and(aLineOfPuttingItAllBack('stacks.reset.lemonfibers', ['line' => 'TZ=UTC']))->toBe('+ TZ=UTC');
+    expect(aLineOfPuttingItAllBack('stacks.edits.theirs', ['line' => 'TZ=UTC']))->toBe('- TZ=UTC')
+        ->and(aLineOfPuttingItAllBack('stacks.edits.lemonfibers', ['line' => 'TZ=UTC']))->toBe('+ TZ=UTC');
 })->with(['en', 'nl']);
 
 it('says a preview reverting no file, or no connection, says so', function (TheReset $previewed, string $said, string $notSaid): void {
@@ -261,8 +261,8 @@ it('says a preview reverting no file, or no connection, says so', function (TheR
         ->and($drawn->said())->not->toContain(__($notSaid))
         ->and($drawn->offers())->toContain(__('stacks.reset.put_them_back'));
 })->with([
-    'no file' => [TheReset::previewed(EditsReverted::these(), ConnectionsReverted::these('sonarr → qbittorrent')), 'stacks.reset.would_revert_no_file', 'stacks.reset.would_revert_no_connection'],
-    'no connection' => [TheReset::previewed(EditsReverted::these(AnEditReverted::at('compose.yaml', '')), ConnectionsReverted::these()), 'stacks.reset.would_revert_no_connection', 'stacks.reset.would_revert_no_file'],
+    'no file' => [TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent')), 'stacks.reset.would_revert_no_file', 'stacks.reset.would_revert_no_connection'],
+    'no connection' => [TheReset::previewed(TheStackEdits::these(AStackEdit::at('compose.yaml', '')), ConnectionsReverted::these()), 'stacks.reset.would_revert_no_connection', 'stacks.reset.would_revert_no_file'],
 ]);
 
 it('says plainly that nothing would change, and offers nothing to agree to', function (): void {
@@ -447,7 +447,7 @@ it('reports what went back and which connections went with it, in the past tense
 });
 
 it('says a reset carried out that reverted nothing changed nothing', function (): void {
-    $screen = thePuttingItAllBackScreen(aStackPreviewingTheReset(HowTheResetIsGoing::done(TheReset::carriedOut(EditsReverted::these(), ConnectionsReverted::these()))));
+    $screen = thePuttingItAllBackScreen(aStackPreviewingTheReset(HowTheResetIsGoing::done(TheReset::carriedOut(TheStackEdits::these(), ConnectionsReverted::these()))));
     $screen->answer();
     $screen->agree();
     $screen->whileItRuns();

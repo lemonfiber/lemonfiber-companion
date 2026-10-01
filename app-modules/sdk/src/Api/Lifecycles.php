@@ -20,6 +20,7 @@ use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Api\Fields\LifecycleField;
 use Modules\Sdk\Internal\Required;
+use Modules\Sdk\Internal\StackEditsSent;
 use Modules\Sdk\Internal\WhatWasLeftOut;
 use Modules\Sdk\Internal\Wire;
 use Throwable;
@@ -54,10 +55,11 @@ final readonly class Lifecycles
         $services = WhereTheServicesEndedUp::of(...self::services($data));
         $leftOut = self::leftOut(Required::rows($data, LifecycleField::Plan, LifecycleIsUnreadable::missing(LifecycleField::Plan)));
         $portsHeld = ThePortsHeld::of(...self::portsHeld($data));
+        $edits = StackEditsSent::in($data, WireField::StackEdits);
 
         $report = self::carries($data, WireField::Held)
-            ? WhatTheVerbCameTo::declined($was, $services, $leftOut, $portsHeld, Required::text($data, WireField::Held, LifecycleIsUnreadable::missing(WireField::Held)))
-            : WhatTheVerbCameTo::reported($was, $services, $leftOut, $portsHeld);
+            ? WhatTheVerbCameTo::declined($was, $services, $leftOut, $portsHeld, Required::text($data, WireField::Held, LifecycleIsUnreadable::missing(WireField::Held)), $edits)
+            : WhatTheVerbCameTo::reported($was, $services, $leftOut, $portsHeld, $edits);
 
         return self::condition($data, $report);
     }

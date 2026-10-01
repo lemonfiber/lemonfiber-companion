@@ -29,16 +29,17 @@ final readonly class Upkeep
         private Services $cannotBePutBack,
         private HowServicesTookIt $went,
         private HowTheNotesStand $notes,
+        private TheStackEdits $edits,
         private ?Release $inUse,
     ) {}
 
     /**
      * A reading where the stack did not say which release is running.
      *
-     * Its own constructor rather than a null argument, which is `C2`'s cure and
-     * {@see Daemon::thatExited()}'s shape: a screen handed a null would print
-     * an empty version where one belongs, and an operator would read that as
-     * *it is running nothing*.
+     * The release is named only by {@see runningOn()}, never by a null
+     * argument, which is `C2`'s cure and {@see Daemon::thatExited()}'s shape:
+     * a screen handed a null would print an empty version where one belongs,
+     * and an operator would read that as *it is running nothing*.
      */
     public static function reported(
         AgainstThePins $pins,
@@ -47,21 +48,15 @@ final readonly class Upkeep
         Services $cannotBePutBack,
         HowServicesTookIt $went,
         HowTheNotesStand $notes,
+        TheStackEdits $edits,
     ): self {
-        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, null);
+        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, $edits, null);
     }
 
     /** The same reading, where the stack named the release that is running. */
-    public static function runningOn(
-        AgainstThePins $pins,
-        Release $inUse,
-        Releases $history,
-        Services $changing,
-        Services $cannotBePutBack,
-        HowServicesTookIt $went,
-        HowTheNotesStand $notes,
-    ): self {
-        return new self($pins, $history, $changing, $cannotBePutBack, $went, $notes, $inUse);
+    public function runningOn(Release $inUse): self
+    {
+        return new self($this->pins, $this->history, $this->changing, $this->cannotBePutBack, $this->went, $this->notes, $this->edits, $inUse);
     }
 
     public function againstThePins(): AgainstThePins
@@ -102,6 +97,17 @@ final readonly class Upkeep
     public function notes(): HowTheNotesStand
     {
         return $this->notes;
+    }
+
+    /**
+     * The stack files the operator edited, which the update leaves as they set them.
+     *
+     * Each with the lines where it differs from what lemonfiber would write,
+     * which is what the update would have changed in it.
+     */
+    public function editsKept(): TheStackEdits
+    {
+        return $this->edits;
     }
 
     /** Every release the stack's record holds, newest first, withdrawn ones included. */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use function count;
 use function expect;
 use function it;
 
@@ -449,4 +450,17 @@ it('stands in for a stack with payloads the contract would accept', function ():
                 $which,
             ));
     }
+});
+
+it('reads the stack files the operator edited, which the update leaves as they set them', function (): void {
+    $upkeep = theUpkeepIn(whatAStackSaysAboutItsUpkeep(differently: ['stack_edits' => [
+        ['path' => 'compose.yaml', 'diff' => "- image: mine\n+ image: ours\n"],
+    ]]));
+    $read = [];
+
+    foreach ($upkeep->editsKept() as $edit) {
+        $read[] = sprintf('%s:%d', $edit->path(), count($edit));
+    }
+
+    expect($read)->toBe(['compose.yaml:2']);
 });

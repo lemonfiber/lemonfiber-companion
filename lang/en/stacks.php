@@ -1011,10 +1011,21 @@ return [
         'still_on_the_machine' => 'Nothing left this phone. The bundle is still on the machine.',
     ],
 
+    // Stack files the operator edited, wherever the stack reports them. Each
+    // file's lines are marked as the stack marks them: the operator's `-`,
+    // lemonfiber's `+`, and the legend names the same marks.
+    'edits' => [
+        'heading' => 'Files you edited',
+        'kept' => 'You edited :path, so it is kept as you left it.',
+        'would_change' => 'What lemonfiber would change in it',
+        'legend' => 'Lines marked - are yours, and lines marked + are what lemonfiber would write.',
+        'theirs' => '- :line',
+        'lemonfibers' => '+ :line',
+    ],
+
     // Putting the configuration back. A preview is worded in the conditional
     // and never as having happened; only a report the stack says it carried
-    // out is worded in the past. Each file's lines are marked as the stack
-    // marks them: the operator's `-`, lemonfiber's `+`.
+    // out is worded in the past.
     'reset' => [
         'heading' => 'Putting the configuration back',
         'a_preview' => 'A preview. Nothing has been put back.',
@@ -1031,8 +1042,6 @@ return [
         'reverted_no_connection' => 'No connection went back.',
         'would_change_nothing' => 'Nothing would change. No file and no connection differs from lemonfiber\'s own.',
         'changed_nothing' => 'Nothing changed. No file and no connection differed from lemonfiber\'s own.',
-        'theirs' => '- :line',
-        'lemonfibers' => '+ :line',
         'put_them_back' => 'Put these back',
         'asking' => 'The stack is working out what putting the configuration back would change.',
         'putting_back' => 'The stack is putting the configuration back.',

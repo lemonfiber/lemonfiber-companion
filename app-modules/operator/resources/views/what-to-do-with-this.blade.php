@@ -149,6 +149,8 @@
                 @endforelse
             @endif
         </x-design::card>
+
+        <x-operator::edits-kept :edits="$this->whatItCameTo()->editsKept" />
     @endif
 
     @if ($this->thing()->isAForm)

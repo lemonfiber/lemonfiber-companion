@@ -28,6 +28,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatLeansOnIt;
@@ -649,6 +650,7 @@ function theSameRestartReported(): WhatTheVerbCameTo
         ),
         TheServicesLeftOut::of(AServiceLeftOut::needing(ServiceId::called('qbittorrent'), 'qBittorrent', WhatItWouldNeed::Torrent, Forms::these(Form::called('library')))),
         ThePortsHeld::of(APortHeld::of(8096, 'jellyfin', 'media-server')),
+        TheStackEdits::none(),
     )->amountingTo(HowTheStackIsRunning::Partial);
 }
 

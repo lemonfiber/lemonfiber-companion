@@ -10,11 +10,11 @@ use function it;
 
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ConnectionsReverted;
-use Modules\Kernel\Api\EditsReverted;
 use Modules\Kernel\Api\HowTheResetIsGoing;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheReset;
+use Modules\Kernel\Api\TheStackEdits;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 
 use function sprintf;
@@ -34,7 +34,7 @@ function howTheResetIsGoingReads(HowTheResetIsGoing $going): string
 }
 
 it('takes the arm for each state, and carries the report, the refusal and the obstacle', function (): void {
-    $reset = TheReset::previewed(EditsReverted::these(), ConnectionsReverted::these('sonarr → qbittorrent'));
+    $reset = TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent'));
 
     expect(howTheResetIsGoingReads(HowTheResetIsGoing::stillRunning()))->toBe('running')
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::done($reset)))->toBe('done:1')
