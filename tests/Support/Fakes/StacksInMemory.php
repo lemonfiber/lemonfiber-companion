@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Modules\Kernel\Api\Configured;
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Remembered;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 
@@ -28,6 +30,9 @@ final class StacksInMemory implements Stacks
 
     /** How many times something has read the list, for asserting an order. */
     private int $asked = 0;
+
+    /** Whether this device refuses to let go of a pairing. */
+    private bool $holdsOn = false;
 
     private function __construct(private readonly ?WhyAStackCannotBeRemembered $refusing)
     {
@@ -124,5 +129,31 @@ final class StacksInMemory implements Stacks
         $this->held = $this->held->with($stack);
 
         return Remembered::safely();
+    }
+
+    /** The same device, that from now on will not let go of a pairing. */
+    public function thenHoldingOn(): self
+    {
+        $device = new self($this->refusing);
+        $device->held = $this->held;
+        $device->holdsOn = true;
+
+        return $device;
+    }
+
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        if ($this->holdsOn || ! $this->held->knows($stack)) {
+            return Forgotten::nothing();
+        }
+
+        $this->held = $this->held->without($stack);
+
+        return Forgotten::rows(1);
+    }
+
+    public function keepsAnythingOf(StackId $stack): bool
+    {
+        return $this->held->knows($stack);
     }
 }

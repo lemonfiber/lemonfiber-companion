@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatAReturnFinds;
 use Modules\Kernel\Api\WorkLeftRunning;
+use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
@@ -47,14 +48,14 @@ function whatAReturnWouldFind(WhatAReturnFinds $finds): string
 
 /** @return array<string, array{Closure(): WorkLeftRunning}> */
 dataset('every implementation that keeps work left running', [
-    'the platform store' => [fn(): WorkLeftRunning => new PlatformWorkLeftRunning(APlatformStore::working())],
+    'the platform store' => [fn(): WorkLeftRunning => new PlatformWorkLeftRunning(APlatformStore::working(), new PlatformStacks(APlatformStore::working()))],
     'the fake' => [fn(): WorkLeftRunning => WorkLeftRunningInMemory::working()],
 ]);
 
 /** @return array<string, array{Closure(): WorkLeftRunning}> */
 dataset('every implementation that will not keep one', [
-    'a platform store that will not open' => [fn(): WorkLeftRunning => new PlatformWorkLeftRunning(APlatformStore::refusing())],
-    'a device with no store' => [fn(): WorkLeftRunning => new PlatformWorkLeftRunning(APlatformStore::absent())],
+    'a platform store that will not open' => [fn(): WorkLeftRunning => new PlatformWorkLeftRunning(APlatformStore::refusing(), new PlatformStacks(APlatformStore::refusing()))],
+    'a device with no store' => [fn(): WorkLeftRunning => new PlatformWorkLeftRunning(APlatformStore::absent(), new PlatformStacks(APlatformStore::absent()))],
     'the fake' => [fn(): WorkLeftRunning => WorkLeftRunningInMemory::refusing()],
 ]);
 

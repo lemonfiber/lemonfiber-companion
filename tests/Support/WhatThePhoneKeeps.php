@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use Bootstrap\Composition\EveryKeeperOfAStack;
 use Modules\Connection\Api\ClearingWhatCannotBeRead;
+use Modules\Connection\Api\RemovingAStack;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Instant;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\HealthReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
+use Tests\Support\Fakes\RemovalsUnderWayInMemory;
 
 /**
  * What a screen is handed about what the phone keeps, where a test is about something else.
@@ -32,5 +35,11 @@ final readonly class WhatThePhoneKeeps
     public static function nothingToClear(): ClearingWhatCannotBeRead
     {
         return new ClearingWhatCannotBeRead(ASealInMemory::working(), HealthReadingsInMemory::empty());
+    }
+
+    /** Removing a stack, with nothing left from a removal before. */
+    public static function nothingToFinish(): RemovingAStack
+    {
+        return new RemovingAStack(RemovalsUnderWayInMemory::working(), new EveryKeeperOfAStack());
     }
 }

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 use function array_any;
+use function array_filter;
 use function array_map;
+use function array_values;
 
 use ArrayIterator;
 use IteratorAggregate;
@@ -110,6 +112,15 @@ final readonly class Configured implements IteratorAggregate
         }
 
         return new self([...$this->stacks, $stack]);
+    }
+
+    /** The same record, without the stack under this id. */
+    public function without(StackId $id): self
+    {
+        return new self(array_values(array_filter(
+            $this->stacks,
+            static fn(Stack $held): bool => ! $held->id()->is($id),
+        )));
     }
 
     /**

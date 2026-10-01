@@ -409,6 +409,7 @@ function aScreen(): YourStacks
         WhatThePhoneKeeps::nothingYet(),
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
+        WhatThePhoneKeeps::nothingToFinish(),
     );
 }
 

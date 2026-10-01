@@ -14,6 +14,7 @@ use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatAReturnFinds;
+use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 
 use function sprintf;
@@ -63,13 +64,13 @@ function aStoreWithAWalkLeft(mixed $value): APlatformStore
 /** What the adapter over that store finds for the stack's walkthrough. */
 function whatIsFoundIn(APlatformStore $store): string
 {
-    return whatTheStoreGivesBack(new PlatformWorkLeftRunning($store)->whatWasLeft(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough));
+    return whatTheStoreGivesBack(new PlatformWorkLeftRunning($store, new PlatformStacks($store))->whatWasLeft(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough));
 }
 
 it('writes the handle with the shape it reads, under a key for the stack and the kind of work', function (): void {
     $store = APlatformStore::working();
 
-    new PlatformWorkLeftRunning($store)->remember(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough, Job::named('a-walk-left-running'));
+    new PlatformWorkLeftRunning($store, new PlatformStacks($store))->remember(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough, Job::named('a-walk-left-running'));
 
     expect($store->keysHeld())->toBe([whereAWalkIsKeptFor(aStackAWalkWasLeftOn())])
         ->and($store->whatIsUnder(whereAWalkIsKeptFor(aStackAWalkWasLeftOn())))->toBe('{"shape":1,"job":"a-walk-left-running"}');
@@ -77,7 +78,7 @@ it('writes the handle with the shape it reads, under a key for the stack and the
 
 it('keeps each stack under a key of its own', function (): void {
     $store = APlatformStore::working();
-    $left = new PlatformWorkLeftRunning($store);
+    $left = new PlatformWorkLeftRunning($store, new PlatformStacks($store));
 
     $left->remember(aStackAWalkWasLeftOn('a'), KindOfWork::Walkthrough, Job::named('the-walk-on-one'));
     $left->remember(aStackAWalkWasLeftOn('b'), KindOfWork::Walkthrough, Job::named('the-walk-on-the-other'));
@@ -91,7 +92,7 @@ it('reads back what an earlier session wrote, which is the point of the store', 
     // opening the screen again that a test can arrange.
     $store = APlatformStore::working();
 
-    new PlatformWorkLeftRunning($store)->remember(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough, Job::named('a-walk-left-running'));
+    new PlatformWorkLeftRunning($store, new PlatformStacks($store))->remember(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough, Job::named('a-walk-left-running'));
 
     expect(whatIsFoundIn($store))->toBe('follows:a-walk-left-running');
 });
@@ -99,7 +100,7 @@ it('reads back what an earlier session wrote, which is the point of the store', 
 it('takes the handle out of the store when it lets go of it', function (): void {
     $store = aStoreWithAWalkLeft(['shape' => 1, 'job' => 'a-walk-that-ended']);
 
-    new PlatformWorkLeftRunning($store)->forget(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough);
+    new PlatformWorkLeftRunning($store, new PlatformStacks($store))->forget(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough);
 
     expect($store->keysHeld())->toBe([]);
 });
@@ -152,7 +153,7 @@ it('keeps no handle whose value cannot be written down, and says a return will f
     // false. Nothing is written, and that is what a return will find.
     $store = APlatformStore::working();
 
-    $went = new PlatformWorkLeftRunning($store)->remember(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough, Job::named("a handle with a broken byte \xB1\x31 in it"));
+    $went = new PlatformWorkLeftRunning($store, new PlatformStacks($store))->remember(aStackAWalkWasLeftOn(), KindOfWork::Walkthrough, Job::named("a handle with a broken byte \xB1\x31 in it"));
 
     expect(whatTheStoreGivesBack($went))->toBe('nothing-to-follow')
         ->and($store->keysHeld())->toBe([]);

@@ -27,7 +27,7 @@ namespace Modules\Kernel\Api;
  * a session out of `Resumed` without saying what happens when there is none, so
  * a speculative read is a read that has to name its own else-branch.
  */
-interface SecureStorage
+interface SecureStorage extends ForgetsAStack
 {
     /**
      * Whether this device has somewhere a session may legitimately go.

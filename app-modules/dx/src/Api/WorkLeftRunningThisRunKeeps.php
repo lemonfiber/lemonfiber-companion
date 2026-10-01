@@ -6,6 +6,7 @@ namespace Modules\Dx\Api;
 
 use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Kernel\Api\WorkLeftRunning;
+use Modules\Vault\Api\PlatformStacks;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 
 /**
@@ -33,6 +34,6 @@ final readonly class WorkLeftRunningThisRunKeeps implements StandsIn
 
     public function which(): WorkLeftRunning
     {
-        return new PlatformWorkLeftRunning($this->store);
+        return new PlatformWorkLeftRunning($this->store, new PlatformStacks($this->store));
     }
 }

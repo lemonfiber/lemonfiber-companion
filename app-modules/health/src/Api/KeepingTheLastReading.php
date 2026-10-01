@@ -9,7 +9,9 @@ use function max;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\TheSummaryAsKept;
 use Modules\Health\Internal\WhatTheKeptSummaryHeld;
+use Modules\Health\Internal\WhetherAReadingIsKept;
 use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\HowLongReadingsAreKept;
 use Modules\Kernel\Api\Instant;
@@ -18,6 +20,7 @@ use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\Sealed;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
+use Modules\Kernel\Api\SealStanding;
 use Modules\Kernel\Api\SecondsIn;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\StackId;
@@ -52,7 +55,7 @@ use Modules\Kernel\Api\Unsealed;
  * cannot be read, a stack's hash matches no row, so nothing is found and
  * nothing is let go of — what was sealed stays for the day the keys read again.
  */
-final readonly class KeepingTheLastReading
+final readonly class KeepingTheLastReading implements ForgetsAStack
 {
     public function __construct(
         private Sealed $seal,
@@ -92,6 +95,32 @@ final readonly class KeepingTheLastReading
     public function forgetTheOld(Instant $now): Forgotten
     {
         return $this->forgetOlderThan($this->keptFor(), $now);
+    }
+
+    /** Let go of every reading kept for this stack. */
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        return $this->kept->forget($this->seal->stack($stack));
+    }
+
+    /**
+     * Whether a reading is kept for this stack, or might be.
+     *
+     * Where the seal's keys cannot be read, a stack's hash matches no row, so
+     * the store cannot say; that is answered as might be, and a removal waits
+     * for the keys rather than leaving a reading behind it.
+     */
+    public function keepsAnythingOf(StackId $stack): bool
+    {
+        if ($this->seal->standing() === SealStanding::Unavailable) {
+            return true;
+        }
+
+        return $this->kept->newest($this->seal->stack($stack))->either(
+            found: static fn(): WhetherAReadingIsKept => new WhetherAReadingIsKept(is: true),
+            none: static fn(): WhetherAReadingIsKept => new WhetherAReadingIsKept(is: false),
+            unreadable: static fn(): WhetherAReadingIsKept => new WhetherAReadingIsKept(is: true),
+        )->is;
     }
 
     /** How long readings are kept, as the operator chose, or the standard. */

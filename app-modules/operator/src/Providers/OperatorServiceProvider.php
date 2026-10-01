@@ -31,6 +31,7 @@ use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
 use Modules\Operator\Internal\Screens\TakingSomebodyOut;
+use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
@@ -207,6 +208,10 @@ final class OperatorServiceProvider extends ServiceProvider
             // does not know, and should not have to guess, which service owns
             // it.
             Router::native(AStacksScreen::Settings->value, WhatThisStackIsSetTo::class);
+
+            // What this phone keeps of the machine, and taking it off the
+            // phone: the menu's Stack settings.
+            Router::native(AStacksScreen::OnThisPhone->value, ThisStackOnThisPhone::class);
 
             // One of the things it runs, and the verbs about that one
             // Split out of the listing above rather than drawn on

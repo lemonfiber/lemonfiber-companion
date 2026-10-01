@@ -11,14 +11,17 @@ use function json_encode;
 
 use Lemonfiber\Native\Keeps;
 use Lemonfiber\Native\WhenAValueMayBeRead;
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\WhatAReturnFinds;
 use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\Vault\Internal\KeptInAShape;
 use Modules\Vault\Internal\KeptUnder;
+use Modules\Vault\Internal\WhetherAnythingIsHeld;
 
 /**
  * The handle of work left running on each stack, kept in the platform's own store.
@@ -51,7 +54,7 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
     /** The field of a stored value that holds the handle. */
     private const string JOB_UNDER = 'job';
 
-    public function __construct(private Keeps $store) {}
+    public function __construct(private Keeps $store, private Stacks $stacks) {}
 
     public function whatWasLeft(StackId $stack, KindOfWork $work): WhatAReturnFinds
     {
@@ -90,6 +93,64 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
         $this->store->forget($this->keyFor($stack, $work));
 
         return WhatAReturnFinds::nothing();
+    }
+
+    /**
+     * Let go of the handle of every kind of work on every stack paired here.
+     *
+     * The store cannot list what it holds, so the handles are found where they
+     * can be: under every stack this phone is paired with, for every kind of work.
+     */
+    public function forgetEverything(): Forgotten
+    {
+        $forgotten = Forgotten::nothing();
+
+        foreach ($this->stacks->configured() as $stack) {
+            foreach (KindOfWork::cases() as $work) {
+                $forgotten = $forgotten->beside($this->forgetOne($this->keyFor($stack->id(), $work)));
+            }
+        }
+
+        return $forgotten;
+    }
+
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        $forgotten = Forgotten::nothing();
+
+        foreach (KindOfWork::cases() as $work) {
+            $forgotten = $forgotten->beside($this->forgetOne($this->keyFor($stack, $work)));
+        }
+
+        return $forgotten;
+    }
+
+    public function keepsAnythingOf(StackId $stack): bool
+    {
+        $held = false;
+
+        foreach (KindOfWork::cases() as $work) {
+            $held = $held || $this->store->read($this->keyFor($stack, $work))->either(
+                found: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+                nothing: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
+                refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
+            )->held;
+        }
+
+        return $held;
+    }
+
+    /** Let go of the handle under this key, counting it where there was one. */
+    private function forgetOne(string $key): Forgotten
+    {
+        return $this->store->read($key)->either(
+            found: fn(): Forgotten => $this->store->forget($key)->either(
+                done: static fn(): Forgotten => Forgotten::rows(1),
+                refused: static fn(): Forgotten => Forgotten::nothing(),
+            ),
+            nothing: static fn(): Forgotten => Forgotten::nothing(),
+            refused: static fn(): Forgotten => Forgotten::nothing(),
+        );
     }
 
     /**

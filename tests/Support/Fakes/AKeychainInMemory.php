@@ -6,6 +6,7 @@ namespace Tests\Support\Fakes;
 
 use function array_key_exists;
 
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\Kept;
 use Modules\Kernel\Api\Resumed;
 use Modules\Kernel\Api\SecureStorage;
@@ -104,6 +105,19 @@ final class AKeychainInMemory implements SecureStorage
 
     /** Whether this store is holding a session for that stack — for a test to ask. */
     public function isHolding(StackId $stack): bool
+    {
+        return array_key_exists($stack->stored(), $this->kept);
+    }
+
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        $held = array_key_exists($stack->stored(), $this->kept) ? 1 : 0;
+        $this->forget($stack);
+
+        return Forgotten::rows($held);
+    }
+
+    public function keepsAnythingOf(StackId $stack): bool
     {
         return array_key_exists($stack->stored(), $this->kept);
     }

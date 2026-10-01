@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Modules\Operator\Internal\ThePhonesSettingsInTheMenu;
+use Modules\Operator\Internal\TheStacksSettingsInTheMenu;
 use Modules\Operator\Internal\TheTabs;
 use Modules\Operator\Internal\WhatIsNotHereYet;
 use Modules\Operator\Internal\WhereInTheMenu;
@@ -46,7 +47,7 @@ trait FindsItsWayAround
             'stack' => $this->stack(),
             'whatsNew' => WhatIsNotHereYet::WhatsNew,
             'groups' => WhereInTheMenu::cases(),
-            'stackSettings' => WhatIsNotHereYet::StackSettings,
+            'stackSettings' => new TheStacksSettingsInTheMenu(),
             'appSettings' => new ThePhonesSettingsInTheMenu(),
         ]))
             ->label($this->around->theMenuIsCalled())

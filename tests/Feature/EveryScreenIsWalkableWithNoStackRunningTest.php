@@ -48,15 +48,23 @@ pest()->group(
  * the application builds one. A screen the router serves nothing under is left
  * out here and named by `F12`, whose question it is.
  *
+ * Only the screens named, where some are.
+ *
+ * @param list<string> $only
+ *
  * @return array<string, WhatTheDeviceWouldDraw>
  */
-function whatEachScreenDrewOf(AStandInStack $machine): array
+function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
 {
     $served = WhereAScreenCanSendYou::read()->screensTheRouterServes();
     $stack = $machine->asAStack()->id()->stored();
     $drawn = [];
 
     foreach (AStacksScreen::cases() as $case) {
+        if ($only !== [] && ! in_array($case->name, $only, strict: true)) {
+            continue;
+        }
+
         $class = $served[sprintf('AStacksScreen::%s', $case->name)] ?? '';
         $screen = $class === '' ? null : app()->make($class);
 
@@ -275,6 +283,37 @@ it('N1-R3 — a screen that asks nothing on open still offers the act that asks'
     }
 });
 
+/**
+ * Screens about what this phone keeps of a stack, which ask the stack nothing.
+ *
+ * Held to what they are rather than to the rules below, which are about a
+ * screen that asked: one of these draws the same against a machine that
+ * answers, one that does not and one that refuses the session, never says
+ * anything stood in the way, and always leaves a way off. The rule after this
+ * list holds them to exactly that, so a screen named here that starts asking
+ * its machine is caught rather than excused.
+ */
+const ASKS_NOTHING_OF_THE_MACHINE = ['OnThisPhone'];
+
+it('draws a screen that asks its machine nothing the same against every machine, and never what stood in the way', function (): void {
+    withNoStackRunning();
+
+    $drawn = [
+        whatEachScreenDrewOf(AStandInStack::Answering, ASKS_NOTHING_OF_THE_MACHINE),
+        whatEachScreenDrewOf(AStandInStack::NotAnswering, ASKS_NOTHING_OF_THE_MACHINE),
+        whatEachScreenDrewOf(AStandInStack::RefusingTheSession, ASKS_NOTHING_OF_THE_MACHINE),
+    ];
+
+    foreach (ASKS_NOTHING_OF_THE_MACHINE as $name) {
+        foreach ($drawn as $against) {
+            expect($against)->toHaveKey($name)
+                ->and($against[$name]->offers())->not->toBe([], $name)
+                ->and($against[$name]->offers())->toBe($drawn[0][$name]->offers(), $name)
+                ->and(array_intersect(whatNoAnswerLooksLike(), $against[$name]->said()))->toBe([], $name);
+        }
+    }
+});
+
 it('N1-R10 — a machine that does not answer draws what stood in the way, and the way back', function (): void {
     withNoStackRunning();
 
@@ -283,7 +322,7 @@ it('N1-R10 — a machine that does not answer draws what stood in the way, and t
     $wayBackIn = theScreenASignedOutOperatorIsSentTo(AStandInStack::NotAnswering->asAStack()->id()->stored());
 
     foreach (whatEachScreenDrewOf(AStandInStack::NotAnswering) as $name => $drawn) {
-        if ($name === $wayBackIn || in_array($name, NEVER_REACHES_THE_MACHINE, strict: true) || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
+        if ($name === $wayBackIn || in_array($name, [...NEVER_REACHES_THE_MACHINE, ...ASKS_NOTHING_OF_THE_MACHINE], strict: true) || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
             continue;
         }
 
@@ -326,7 +365,7 @@ it('N3-R13 — a machine that refuses the session draws the way back in', functi
     $wayBackIn = theScreenASignedOutOperatorIsSentTo(AStandInStack::RefusingTheSession->asAStack()->id()->stored());
 
     foreach (whatEachScreenDrewOf(AStandInStack::RefusingTheSession) as $name => $drawn) {
-        if ($name === $wayBackIn || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
+        if ($name === $wayBackIn || in_array($name, ASKS_NOTHING_OF_THE_MACHINE, strict: true) || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
             continue;
         }
 

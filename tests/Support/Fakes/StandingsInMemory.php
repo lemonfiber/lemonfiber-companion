@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support\Fakes;
 
+use function array_key_exists;
+use function count;
+
+use Modules\Kernel\Api\Forgotten;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Noted;
@@ -94,5 +98,26 @@ final class StandingsInMemory implements Standings
         $this->lastHeard($stack, $standing, $at);
 
         return Noted::downAt($at);
+    }
+
+    public function forgetEverything(): Forgotten
+    {
+        $held = count($this->held);
+        $this->held = [];
+
+        return Forgotten::rows($held);
+    }
+
+    public function forgetTheStack(StackId $stack): Forgotten
+    {
+        $held = array_key_exists($stack->stored(), $this->held) ? 1 : 0;
+        unset($this->held[$stack->stored()]);
+
+        return Forgotten::rows($held);
+    }
+
+    public function keepsAnythingOf(StackId $stack): bool
+    {
+        return array_key_exists($stack->stored(), $this->held);
     }
 }

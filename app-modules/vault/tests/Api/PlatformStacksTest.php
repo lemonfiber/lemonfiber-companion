@@ -212,6 +212,13 @@ it('refuses a stack whose name cannot be written down', function (): void {
     expect(whyItWasRefused($refused))->toBe('store_would_not_open');
 });
 
+it('begins no removal whose record cannot be written down', function (): void {
+    $stacks = new PlatformStacks(APlatformStore::working());
+
+    expect($stacks->begin(StackId::rememberedAs("a stack with a broken byte \xB1\x31 in it")))->toBeFalse()
+        ->and($stacks->underWay()->isEmpty())->toBeTrue();
+});
+
 it('holds nothing where every pairing has been forgotten', function (): void {
     // The store keeps the key and writes an empty list into it, so a device
     // that has been unpaired answers *found* with something in it. A lock

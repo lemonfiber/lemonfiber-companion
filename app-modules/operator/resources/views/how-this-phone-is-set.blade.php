@@ -54,4 +54,17 @@
     @endif
 
     <x-design::note>{{ __('settings.keep_readings_is') }}</x-design::note>
+
+    {{-- Every reading, setting and marker, and never a pairing or a session.
+         Asked on this screen rather than in a dialog, where the question can
+         say what goes and what stays. --}}
+    <x-design::section :label="__('settings.saved_data')">
+        <x-design::row :headline="__('settings.clear_saved_data')" tap="askToClear()" />
+    </x-design::section>
+
+    @if ($this->confirmingTheClear)
+        <x-design::body>{{ __('settings.clear_confirm') }}</x-design::body>
+        <x-design::action label="{{ __('settings.clear') }}" tap="clearSavedData()" />
+        <x-design::action label="{{ __('settings.keep_it') }}" tap="keepSavedData()" tone="tonal" />
+    @endif
 </x-operator::content>

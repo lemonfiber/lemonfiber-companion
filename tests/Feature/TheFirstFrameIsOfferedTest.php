@@ -83,6 +83,7 @@ function theLaunchScreen(
         WhatThePhoneKeeps::nothingYet(),
         AStackThatSpeaksUp::holdingOpen(),
         ACaptureInMemory::inFront(),
+        WhatThePhoneKeeps::nothingToFinish(),
     );
 }
 
