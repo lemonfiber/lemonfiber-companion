@@ -47,7 +47,7 @@ it('opens no scroll view inside the content it is drawn in', function (): void {
         . '</x-operator::content>',
         ['went' => HowTheReadingWent::somethingStopped($met)],
     ))->toBe(sprintf(
-        'scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}'
+        'scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}'
         . '[Before, %s, %s, button{"width":"fill"}[]]]',
         WhatMarkupDraws::words($met->said()),
         WhatMarkupDraws::words($met->remedy()),

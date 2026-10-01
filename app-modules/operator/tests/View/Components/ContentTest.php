@@ -20,7 +20,15 @@ uses(TestCase::class);
 it('draws its slot inside one padded column that scrolls', function (): void {
     expect(WhatMarkupDraws::outline(
         '<x-operator::content><native:text>Inside</native:text></x-operator::content>',
-    ))->toBe('scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]]');
+    ))->toBe('scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]]');
+});
+
+// A scroll view as tall as what it holds has nothing to scroll.
+it('is as tall as the screen leaves it rather than as tall as what it holds', function (): void {
+    expect(data_get(WhatMarkupDraws::drawn(
+        '<x-operator::content><native:text>Inside</native:text></x-operator::content>'
+        . '<native:text>After</native:text>',
+    ), 'children.0.layout.height'))->toBe('fill');
 });
 
 it('draws what follows it beside the column rather than in it', function (): void {
@@ -29,7 +37,7 @@ it('draws what follows it beside the column rather than in it', function (): voi
         . '<native:text>After</native:text>',
     ))->toBe(
         'column{"width":"fill","height":"fill"}'
-        . '[scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]], After]',
+        . '[scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]], After]',
     );
 });
 
@@ -39,7 +47,7 @@ it('draws a component in its slot inside the column too', function (): void {
         . '<native:text>After</native:text>',
     ))->toBe(
         'column{"width":"fill","height":"fill"}'
-        . '[scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[column{"width":"fill","gap":4}[Inside]]], After]',
+        . '[scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[column{"width":"fill","gap":4}[Inside]]], After]',
     );
 });
 
@@ -54,5 +62,5 @@ it('opens at its end when asked to, around the same column', function (): void {
 
     expect(data_get(WhatMarkupDraws::drawn($markup), 'props.scroll_anchor'))->toBe('bottom')
         ->and(WhatMarkupDraws::outline($markup))
-        ->toBe('scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]]');
+        ->toBe('scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}[Inside]]');
 });

@@ -22,7 +22,7 @@ it('draws what stood in the way inside one padded column that scrolls', function
         '<x-operator::what-stopped-the-reading :went="$went" sign-in-goes-to="/sign-in" />',
         ['went' => HowTheReadingWent::somethingStopped($met)],
     ))->toBe(sprintf(
-        'scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}'
+        'scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}'
         . '[%s, %s, button{"width":"fill"}[]]]',
         WhatMarkupDraws::words($met->said()),
         WhatMarkupDraws::words($met->remedy()),
@@ -34,7 +34,7 @@ it('draws an ended session inside one padded column that scrolls', function (): 
         '<x-operator::what-stopped-the-reading :went="$went" sign-in-goes-to="/sign-in" />',
         ['went' => HowTheReadingWent::theSessionEnded()],
     ))->toBe(sprintf(
-        'scroll_view{"overflow":2,"width":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}'
+        'scroll_view{"overflow":2,"width":"fill","height":"fill"}[column{"width":"fill","padding":[16,24,16,24],"gap":16}'
         . '[%s, button{"width":"fill"}[]]]',
         WhatMarkupDraws::words('connection.session_has_ended'),
     ));
