@@ -22,7 +22,7 @@ requirement is right and this page is a defect.
 
 | Requirement | What it asks | What keeps it |
 |---|---|---|
-| `N1-R65` | One reading per frame, and the screen renders what came back | every screen holds what one asking produced; `tests/Arch/EveryCadenceIsDeclaredTest.php` |
+| `N1-R65` | One reading per frame, and the screen renders what came back | every screen holds what one asking produced, and a screen with a second reading takes it on the next frame through `ReadsAStackOnceAFrame`; `tests/Feature/EveryScreenTheRouterServesDrawsTest.php` draws three frames of every screen the router serves and counts what each read; `tests/Arch/EveryCadenceIsDeclaredTest.php` |
 | `N1-R66` | Beyond that, only a declared cadence or an operator's act — never a value read, a key pressed, or a screen rebuilt | the screens that poll declare their `HowOftenAScreenLooks`, and poll only while something is settling |
 | `N1-R24` | A session lives no longer than the reach it was made for | opening a screen is a reach, and it carries when it was read |
 

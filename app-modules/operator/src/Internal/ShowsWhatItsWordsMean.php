@@ -19,7 +19,9 @@ use Native\Mobile\Edge\NativeComponent;
  *
  * The glossary is asked for the first time a word is drawn and held after,
  * so a screen that draws no word asks for nothing and one that draws many
- * asks once. A glossary that could not be had explains nothing, and the
+ * asks once. It is a reading of the stack like the screen's own, so where the
+ * frame has read the stack already the words are drawn as they came and the
+ * glossary is asked on the next frame ({@see ReadsAStackOnceAFrame}). A glossary that could not be had explains nothing, and the
  * screen's words are then drawn as they came; the screen's own reading says
  * what stood in the way.
  *
@@ -37,6 +39,10 @@ trait ShowsWhatItsWordsMean
     /** What a word this screen draws means, or nothing where the glossary does not carry it. */
     public function gloss(string $word): AGlossAsShown
     {
+        if (! $this->glossary instanceof TheGlossary && ! $this->mayReadItsStack()) {
+            return new HowAGlossReads()->waiting(AWordInUse::named($word));
+        }
+
         $this->glossary ??= $this->glossaryOf($this->stack());
 
         return new HowAGlossReads()->of($this->glossary, AWordInUse::named($word), $this->goes());

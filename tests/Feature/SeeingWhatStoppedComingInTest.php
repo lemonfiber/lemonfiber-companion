@@ -297,7 +297,7 @@ it('explains a stage in place by any name the glossary gives it, and leaves one 
     $explaining = AStackThatExplainsItsWords::with(TheGlossary::of(
         AWord::explained('search', 'Looking through the indexers for a release', '', 'searching'),
     ));
-    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()), explaining: $explaining))->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()), explaining: $explaining))->said();
 
     expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']))
         ->and(array_filter($drawn, static fn(string $line): bool => str_starts_with($line, 'search:')))->toHaveCount(1)
@@ -310,7 +310,7 @@ it('explains a stage in place by the form lemonfiber writes it in', function ():
             WhatElseItIsCalled::formsOf('searching', 'searched'),
         ),
     ));
-    $drawn = WhatTheDeviceWouldDraw::by(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()), explaining: $explaining))->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()), explaining: $explaining))->said();
 
     expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'search', 'short' => 'Looking through the indexers for a release']));
 });
@@ -393,7 +393,7 @@ it('offers asking again, following an item and asking what an unexplained stage 
         Stuck::at('A film nobody has seen', 'radarr', Stage::Searching),
     )));
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([
+    expect(WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->offers())->toBe([
         __('stacks.words.ask_in_place', ['word' => 'searching']),
         __('health.trace.road_in', ['item' => 'A film nobody has seen']),
         __('health.ask_again'),

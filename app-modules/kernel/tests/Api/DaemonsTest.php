@@ -57,7 +57,6 @@ it('N2-R7 — holds what the stack runs, in the order it listed them', function 
     // past the row they opened the app for.
     $daemons = Daemons::of(
         HowTheStackIsRunning::Degraded,
-        Forms::these(Form::called('media')),
         whatTheseVerbsCost(),
         oneItRuns('sonarr', HowAServiceRuns::Failed),
         oneItRuns('radarr'),
@@ -73,7 +72,6 @@ it('carries what the stack says it all amounts to, rather than adding it up', fu
     // time the machine weighs something differently.
     $daemons = Daemons::of(
         HowTheStackIsRunning::Degraded,
-        Forms::none(),
         whatTheseVerbsCost(),
         oneItRuns('sonarr'),
     );
@@ -81,33 +79,11 @@ it('carries what the stack says it all amounts to, rather than adding it up', fu
     expect($daemons->running())->toBe(HowTheStackIsRunning::Degraded);
 });
 
-it('N2-R7 — carries the forms beside the services, not derived from them', function (): void {
-    // A form with nothing running in it still exists, and it is the one an
-    // operator most wants: a stack whose whole media form is stopped has a form
-    // to start, and a list built from the running services would be missing
-    // exactly that one.
-    $daemons = Daemons::of(
-        HowTheStackIsRunning::Partial,
-        Forms::these(Form::called('media'), Form::called('network')),
-        whatTheseVerbsCost(),
-        oneItRuns('sonarr'),
-    );
-
-    $named = [];
-
-    foreach ($daemons->forms() as $form) {
-        $named[] = $form->named();
-    }
-
-    expect($named)->toBe(['media', 'network']);
-});
-
 it('a stack that runs nothing is a state rather than a missing list', function (): void {
     $none = Daemons::none(whatTheseVerbsCost());
 
     expect($none->count())->toBe(0)
-        ->and($none->running())->toBe(HowTheStackIsRunning::Inactive)
-        ->and($none->forms()->count())->toBe(0);
+        ->and($none->running())->toBe(HowTheStackIsRunning::Inactive);
 });
 
 it('reads by position, whatever keys the variadic arrived with', function (): void {
@@ -122,7 +98,6 @@ it('reads by position, whatever keys the variadic arrived with', function (): vo
     // reason.
     $daemons = Daemons::of(
         running: HowTheStackIsRunning::Active,
-        forms: Forms::none(),
         disturbs: whatTheseVerbsCost(),
         first: oneItRuns('sonarr'),
         second: oneItRuns('radarr'),

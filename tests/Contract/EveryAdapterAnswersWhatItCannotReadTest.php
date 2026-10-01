@@ -462,6 +462,7 @@ function everyAdapterCallThatReads(): array
             => new Shelves($clients)->theShelfOf($stack, $session, Whose::member('robin')),
         'Stalls::stoppedOn' => static fn(): object => new Stalls($clients)->stoppedOn($stack, $session),
         'Storekeepers::storedOn' => static fn(): object => new Storekeepers($clients)->storedOn($stack, $session),
+        'Supervisors::formsOn' => static fn(): object => new Supervisors($clients, $entropy)->formsOn($stack, $session),
         'Supervisors::running' => static fn(): object => new Supervisors($clients, $entropy)->running($stack, $session),
         'Supervisors::told' => static fn(): object => new Supervisors($clients, $entropy)->told(
             $stack,
@@ -472,7 +473,7 @@ function everyAdapterCallThatReads(): array
             => new Supervisors($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
         'Surveyors::measuredOn' => static fn(): object => new Surveyors($clients)->measuredOn($stack, $session),
         'TheirOwn::toHandOver' => static fn(): object => new TheirOwn($clients)->toHandOver($stack, $session),
-        'TheirOwn::whatTheyAsked' => static fn(): object => new TheirOwn($clients)->whatTheyAsked($stack, $session),
+        'TheirOwn::theirRequests' => static fn(): object => new TheirOwn($clients)->theirRequests($stack, $session)->asked(),
         'Upgraders::whatItWouldComeTo' => static fn(): object
             => new Upgraders($clients)->whatItWouldComeTo($stack, $session),
         'Upgraders::upgrade' => static fn(): object

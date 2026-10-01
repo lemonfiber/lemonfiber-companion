@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhatTheirAskingSaid;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
 use Override;
@@ -38,7 +39,6 @@ final class AMemberWhoIsOwed implements Owing
         private readonly Requested $wanted,
         private ?Stack $asked = null,
         private int $askings = 0,
-        private int $listings = 0,
     ) {}
 
     /** A member the stack has something to tell. */
@@ -99,18 +99,6 @@ final class AMemberWhoIsOwed implements Owing
         return $this->askings;
     }
 
-    /**
-     * How many times it has been asked what they asked for.
-     *
-     * Counted apart from {@see askings()} because they are two questions, and one
-     * counter for both would let a screen ask one of them twice and the other not
-     * at all while the total looked right.
-     */
-    public function listings(): int
-    {
-        return $this->listings;
-    }
-
     #[Override]
     public function toHandOver(Stack $stack, Session $session): WhatTheyAreOwed
     {
@@ -123,13 +111,13 @@ final class AMemberWhoIsOwed implements Owing
     }
 
     #[Override]
-    public function whatTheyAsked(Stack $stack, Session $session): WhatTheyAsked
+    public function theirRequests(Stack $stack, Session $session): WhatTheirAskingSaid
     {
         $this->asked = $stack;
-        $this->listings++;
+        $this->askings++;
 
         return $this->why instanceof Obstacle
-            ? WhatTheyAsked::refused($this->why)
-            : WhatTheyAsked::told($this->wanted);
+            ? WhatTheirAskingSaid::bothRefused($this->why)
+            : WhatTheirAskingSaid::of(WhatTheyAreOwed::told($this->said), WhatTheyAsked::told($this->wanted));
     }
 }

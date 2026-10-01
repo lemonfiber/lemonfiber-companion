@@ -350,7 +350,7 @@ it('stands in for a household with a payload the contract would accept', functio
 /** What a stack said they asked for, as one string, whichever arm it took. */
 function whatAMemberAskedFor(Owing $owing): string
 {
-    return $owing->whatTheyAsked(theHouseAMemberBelongsTo(), theSessionAMemberHolds())->either(
+    return $owing->theirRequests(theHouseAMemberBelongsTo(), theSessionAMemberHolds())->asked()->either(
         told: static function (Requested $wanted): TheWordCarriedOut {
             $rows = [];
 
@@ -474,15 +474,25 @@ it('N3-R3 — a household the stack could not read reaches the member as a refus
     expect(whatAMemberWasOwed(new TheirOwn(new PinnedClients())))->toBe('refused:no_answer');
 });
 
-it('N1-R65 — asks the stack it was given for their requests, once', function (): void {
+it('asks the stack it was given for both halves of their requests, once', function (): void {
     $owing = AMemberWhoIsOwed::asking(Requested::none());
     $stack = theHouseAMemberBelongsTo();
 
-    $owing->whatTheyAsked($stack, theSessionAMemberHolds());
+    $owing->theirRequests($stack, theSessionAMemberHolds());
 
     expect($owing->askedAbout())->toBe($stack)
-        ->and($owing->listings())->toBe(1)
-        ->and($owing->askings())->toBe(0);
+        ->and($owing->askings())->toBe(1);
+});
+
+it('reads the requests once for both halves, each with an outcome of its own', function (): void {
+    MockClient::destroyGlobal();
+    $mock = MockClient::global([MockResponse::make((string) json_encode(whatAStackSendsOneMemberWhoHasAsked(theRequestsAMemberMade())))]);
+
+    $read = new TheirOwn(new PinnedClients())->theirRequests(theHouseAMemberBelongsTo(), theSessionAMemberHolds());
+
+    expect($mock->getRecordedResponses())->toHaveCount(1)
+        ->and($read->owed()->either(told: static fn(): TheWordCarriedOut => new TheWordCarriedOut('told'), refused: static fn(): TheWordCarriedOut => new TheWordCarriedOut('refused'))->said)->toBe('told')
+        ->and($read->asked()->either(told: static fn(): TheWordCarriedOut => new TheWordCarriedOut('told'), refused: static fn(): TheWordCarriedOut => new TheWordCarriedOut('refused'))->said)->toBe('told');
 });
 
 it('stands in for a member who has asked with a payload the contract would accept', function (): void {

@@ -32,15 +32,14 @@ final readonly class HowWhatIsKeptReads
         return $this->nothingFrom(HowTheReadingWent::theSessionEnded());
     }
 
-    /** The stack said what it keeps, and the copies went as they went. */
-    public function this(WhatThisMachineKeeps $keeps, TheCopiesAsFound $copies): WhatIsKeptTurnedOutToBe
+    /** The stack said what it keeps. */
+    public function this(WhatThisMachineKeeps $keeps): WhatIsKeptTurnedOutToBe
     {
         return new WhatIsKeptTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             roots: $this->roots($keeps->roots()),
             kept: $this->kept($keeps->kept()),
             beside: $this->beside($keeps->beside()),
-            copies: $copies,
         );
     }
 
@@ -68,12 +67,13 @@ final readonly class HowWhatIsKeptReads
         return new TheCopiesAsFound(HowTheReadingWent::somethingStopped($why), []);
     }
 
-    /**
-     * An answer with nothing in it, for a reading that did not come back.
-     *
-     * The copies take the same outcome. They are asked only once the first
-     * reading has answered, so whatever stopped that reading stopped this one.
-     */
+    /** The session ended between the two readings, so the copies were not asked. */
+    public function copiesSignedOut(): TheCopiesAsFound
+    {
+        return new TheCopiesAsFound(HowTheReadingWent::theSessionEnded(), []);
+    }
+
+    /** An answer with nothing in it, for a reading that did not come back. */
     private function nothingFrom(HowTheReadingWent $went): WhatIsKeptTurnedOutToBe
     {
         return new WhatIsKeptTurnedOutToBe(
@@ -81,7 +81,6 @@ final readonly class HowWhatIsKeptReads
             roots: [],
             kept: [],
             beside: [],
-            copies: new TheCopiesAsFound($went, []),
         );
     }
 

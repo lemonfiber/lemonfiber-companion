@@ -13,9 +13,10 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatToDoWithIt;
-use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\TheWayAround;
+use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Operator\Internal\WhereAStackIs;
 use Native\Mobile\Attributes\Lazy;
@@ -77,7 +78,7 @@ use function view;
 final class WhatThisStackRuns extends NativeComponent
 {
     use OffersTheAppsSettings;
-    use AsksWhatTheStackIsRunning;
+    use TakesItsFormsAFrameLater;
     use FindsItsWayAround;
 
     /**
@@ -100,11 +101,17 @@ final class WhatThisStackRuns extends NativeComponent
      *
      * One accessor handing out the whole fold rather than one per field, which
      * is what keeps this screen under `H3`'s twenty methods. The asking itself
-     * is {@see AsksWhatTheStackIsRunning}'s, and is handed what it needs.
+     * is {@see TakesItsFormsAFrameLater}'s, and is handed what it needs.
      */
     public function answer(): WhatThisStackRunsTurnedOutToBe
     {
-        return $this->answered ??= $this->askWhatIsRunning($this->stack(), $this->storage, $this->supervising);
+        return $this->listingOf($this->stack(), $this->storage, $this->supervising);
+    }
+
+    /** The forms the stack declares, or nothing while they wait for the next frame. */
+    public function forms(): ?TheFormsAsFound
+    {
+        return $this->formsOf($this->stack(), $this->storage, $this->supervising);
     }
 
     /**
@@ -158,6 +165,8 @@ final class WhatThisStackRuns extends NativeComponent
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::what-this-stack-runs');
     }
 }

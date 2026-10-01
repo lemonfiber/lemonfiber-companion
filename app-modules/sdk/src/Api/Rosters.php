@@ -13,7 +13,6 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\StatusEnvelope;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
-use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -43,14 +42,14 @@ use function trim;
  * with the machine the first time lemonfiber changed how it weighs a degraded
  * service, and the phone would be the one that was wrong.
  *
- * **The forms are handed in rather than read here.** This envelope's `forms`
+ * **The forms the stack declares are not read here.** This envelope's `forms`
  * are the forms the reading was asked about, and the whole-stack reading asks
  * about none — so on this answer the field is empty however many forms the
  * stack declares. Nor are they taken from the rows: each row's `profile` is the
  * one compose profile the service belongs to, which is not a form, and a list
  * built from the rows would also hide a form with everything in it stopped —
- * the one an operator opens the app to start. {@see Repertoires} reads the
- * forms off the one answer that lists them.
+ * the one an operator opens the app to start. {@see Repertoires} reads them
+ * off the one answer that lists them.
  *
  * **A service that ended is built by a different constructor.** The wire may
  * carry `exit` and may not, and {@see Daemon::thatExited()} is what `C2` leaves
@@ -63,9 +62,8 @@ final readonly class Rosters
      * What the stack is running, in the order it listed it.
      *
      * @param Envelope<mixed> $envelope the `status` envelope, as the client returned it
-     * @param Forms           $forms    every form the stack declares, as {@see Repertoires} read them
      */
-    public static function in(Envelope $envelope, Forms $forms): Daemons
+    public static function in(Envelope $envelope): Daemons
     {
         $data = self::payload(Wire::checked($envelope));
 
@@ -75,7 +73,6 @@ final readonly class Rosters
 
         return Daemons::of(
             self::condition($data),
-            $forms,
             Costs::in($data),
             ...self::services($data),
         )->asked(

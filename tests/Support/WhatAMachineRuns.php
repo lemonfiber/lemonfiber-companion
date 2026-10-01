@@ -61,27 +61,28 @@ final readonly class WhatAMachineRuns
         );
     }
 
-    /**
-     * Two services, one of them leaned on by the other, on a stack declaring
-     * two forms.
-     */
+    /** Two services, one of them leaned on by the other. */
+    /** The two forms a stack running {@see twoThings()} declares. */
+    public static function libraryAndFull(): Forms
+    {
+        return Forms::these(Form::called('library'), Form::called('full'));
+    }
+
     public static function twoThings(): Daemons
     {
         return Daemons::of(
             HowTheStackIsRunning::Active,
-            Forms::these(Form::called('library'), Form::called('full')),
             self::whatTheVerbsCost(),
             self::aService('sonarr', leaning: WhatLeansOnIt::these(ServiceId::called('jellyfin'))),
             self::aService('jellyfin'),
         );
     }
 
-    /** One service, on a stack declaring one form, however that one is running. */
+    /** One service, however it is running. */
     public static function oneThing(string $id, HowAServiceRuns $runs, HowTheStackIsRunning $overall): Daemons
     {
         return Daemons::of(
             $overall,
-            Forms::these(Form::called('library')),
             self::whatTheVerbsCost(),
             self::aService($id, $runs),
         );
@@ -97,7 +98,6 @@ final readonly class WhatAMachineRuns
     {
         return Daemons::of(
             HowTheStackIsRunning::Active,
-            Forms::these(Form::called('library'), Form::called('hunt'), Form::called('full')),
             self::whatTheVerbsCost(),
             self::aService('jellyfin')->broughtInBy(Forms::these(Form::called('library'), Form::called('hunt'))),
             self::aService('qbittorrent', HowAServiceRuns::Absent),

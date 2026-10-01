@@ -338,7 +338,7 @@ it('explains the ratio where it is drawn, once asked for however many downloads 
         AWord::explained('ratio', 'How much you have shared against what you took', 'Private trackers ask for at least one to one.'),
     ));
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), explaining: $explaining);
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect($drawn)->toContain(__('stacks.words.in_place', ['word' => 'ratio', 'short' => 'How much you have shared against what you took']))
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.words.more', ['word' => 'ratio']))
@@ -358,7 +358,7 @@ it('lets the session go where the stack refuses it the glossary', function (): v
     $keychain = AKeychainInMemory::working();
     $screen = theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft()), $keychain, explaining: AStackThatExplainsItsWords::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
 
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect($drawn)->toContain(__('stacks.room.ratio', ['ratio' => '1.25']))
         ->and($keychain->isHolding(theStackWhoseRoomIsRead()->id()))->toBeFalse();

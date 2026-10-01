@@ -7,11 +7,9 @@ namespace Modules\Operator\Internal\ViewModels;
 /**
  * What asking a stack what it keeps produced, flattened for a template.
  *
- * Two readings, one after the other. `$went` is the first: what the stack
- * keeps, and whether it answered at all. `$copies` is the second, with an
- * outcome of its own. A stack can say what it keeps and still fail to list
- * its archives, and an empty list is a different answer from one that could
- * not be read.
+ * The first of two readings: what the stack keeps, and whether it answered at
+ * all. The copies are the second, read on a frame of their own, with an outcome
+ * of their own in {@see TheCopiesAsFound}.
  */
 final readonly class WhatIsKeptTurnedOutToBe
 {
@@ -25,6 +23,5 @@ final readonly class WhatIsKeptTurnedOutToBe
         public array $roots,
         public array $kept,
         public array $beside,
-        public TheCopiesAsFound $copies,
     ) {}
 }

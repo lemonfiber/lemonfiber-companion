@@ -8,6 +8,7 @@ use Closure;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowTheVerbIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -16,6 +17,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatElseIsRunning;
+use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
 
@@ -57,14 +59,20 @@ final class AStackThatSupervises implements Supervising
     private array $followed = [];
 
     /**
+    /** How many times it was asked for its forms, which are counted apart from {@see askings()}. */
+    private int $formsAskings = 0;
+
+    /**
      * @param Closure(): WhatIsRunning $answer
      * @param Closure(): Underway      $acting
      * @param ?HowTheVerbIsGoing       $becoming what asking after a verb answers, where a test said; still running where none did
+     * @param ?WhatFormsThereAre       $declares what asking for its forms answers, where a test said; none where nobody did, or the obstacle {@see met()} meets
      */
     private function __construct(
         private readonly Closure $answer,
         private readonly Closure $acting,
         private readonly ?HowTheVerbIsGoing $becoming = null,
+        private readonly ?WhatFormsThereAre $declares = null,
     ) {}
 
     /** A stack running these, which takes what it is told. */
@@ -115,6 +123,7 @@ final class AStackThatSupervises implements Supervising
             static fn(): WhatIsRunning => WhatIsRunning::met($why),
             static fn(): Underway => Underway::met($why),
             HowTheVerbIsGoing::met($why),
+            WhatFormsThereAre::met($why),
         );
     }
 
@@ -204,7 +213,30 @@ final class AStackThatSupervises implements Supervising
      */
     public function whichCameTo(HowTheVerbIsGoing $became): self
     {
-        return new self($this->answer, $this->acting, $became);
+        return new self($this->answer, $this->acting, $became, $this->declares);
+    }
+
+    /**
+     * The same stack, which declares these forms.
+     *
+     * A wither for {@see whichCameTo()}'s reason: what a stack declares is
+     * independent of what it lists running.
+     */
+    public function declaring(Forms $forms): self
+    {
+        return new self($this->answer, $this->acting, $this->becoming, WhatFormsThereAre::these($forms));
+    }
+
+    /** The same stack, whose forms could not be listed, for the reason given. */
+    public function whoseFormsMeet(Obstacle $why): self
+    {
+        return new self($this->answer, $this->acting, $this->becoming, WhatFormsThereAre::met($why));
+    }
+
+    /** How many times it was asked for its forms. */
+    public function formsAskings(): int
+    {
+        return $this->formsAskings;
     }
 
     /** The stack it was last asked about, or nothing where it never was. */
@@ -238,6 +270,7 @@ final class AStackThatSupervises implements Supervising
     public function running(Stack $stack, Session $session): WhatIsRunning
     {
         $this->remember($stack, $session);
+        $this->askings++;
 
         return ($this->answer)();
     }
@@ -245,9 +278,18 @@ final class AStackThatSupervises implements Supervising
     public function told(Stack $stack, Session $session, AgreedTo $agreed): Underway
     {
         $this->remember($stack, $session);
+        $this->askings++;
         $this->told[] = $agreed;
 
         return ($this->acting)();
+    }
+
+    public function formsOn(Stack $stack, Session $session): WhatFormsThereAre
+    {
+        $this->remember($stack, $session);
+        $this->formsAskings++;
+
+        return $this->declares ?? WhatFormsThereAre::these(Forms::none());
     }
 
     /**
@@ -280,7 +322,6 @@ final class AStackThatSupervises implements Supervising
     private function remember(Stack $stack, Session $session): void
     {
         $this->askedAbout = $stack;
-        $this->askings++;
 
         // The session is read and the value dropped, which is
         // {@see AStackThatStalled::stoppedOn()}'s argument: a fake holding one

@@ -18,6 +18,7 @@ use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatIsKeptReads;
+use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheCopiesAsFound;
 use Modules\Operator\Internal\ViewModels\WhatIsKeptTurnedOutToBe;
@@ -35,16 +36,17 @@ use function view;
  * reads carries a value. What is on the machine and is not the stack's is
  * listed beside it.
  *
- * **Two readings.** What the stack keeps is asked first, and an obstacle there
- * is the screen's obstacle, as on every other screen. The copies are asked
- * only after that has answered. A list that could not be read is drawn as its
- * own sentence, never as an empty list.
+ * **Two readings, one a frame.** What the stack keeps is asked first, and an
+ * obstacle there is the screen's obstacle, as on every other screen. A frame
+ * reads a stack once, so the copies are asked on the frame after, and the
+ * first frame says they are being read and asks for the next one at once.
+ * A list that could not be read is drawn as its own sentence, never as an
+ * empty list.
  *
  * **It reads and changes nothing.** Taking a copy and putting one back each
  * open a screen of their own, {@see TakingACopyHere} and
  * {@see PuttingACopyBack}, which say what they would do before anything is
- * agreed to. Putting back is offered only for a copy the stack listed. It
- * asks once, when the frame is built.
+ * agreed to. Putting back is offered only for a copy the stack listed.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -55,6 +57,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use ReadsAStackOnceAFrame;
 
     /**
      * What came back, once the frame has asked.
@@ -62,6 +65,9 @@ final class WhatThisMachineKeepsHere extends NativeComponent
      * `public` for {@see HowTheLineIsSharedHere::$answered}'s reason.
      */
     public ?WhatIsKeptTurnedOutToBe $answered = null;
+
+    /** The copies, once a frame has asked for them. `public` for the same reason. */
+    public ?TheCopiesAsFound $copiesFound = null;
 
     public function __construct(
         private readonly Storing $storing,
@@ -86,6 +92,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
     public function again(): void
     {
         $this->answered = null;
+        $this->copiesFound = null;
     }
 
     /** Where this machine's screens are. */
@@ -96,13 +103,46 @@ final class WhatThisMachineKeepsHere extends NativeComponent
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::what-this-machine-keeps-here');
     }
 
-    /** What came back, asked once per frame. */
+    /** What the machine keeps, asked once and held. */
     public function answer(): WhatIsKeptTurnedOutToBe
     {
-        return $this->answered ??= $this->ask();
+        if (! $this->answered instanceof WhatIsKeptTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->answered = $this->ask();
+        }
+
+        return $this->answered;
+    }
+
+    /** Whether the copies wait for the next frame, because this one has read the stack already. */
+    public function copiesAreBeingRead(): bool
+    {
+        return ! $this->copies() instanceof TheCopiesAsFound;
+    }
+
+    /**
+     * The copies the machine holds, or nothing while they wait for a frame of their own.
+     *
+     * Asked only once what the machine keeps has come back, and only on a frame
+     * that has not read the stack already.
+     */
+    public function copies(): ?TheCopiesAsFound
+    {
+        if ($this->copiesFound instanceof TheCopiesAsFound || ! $this->mayReadItsStack()) {
+            return $this->copiesFound;
+        }
+
+        $stack = $this->stack();
+
+        return $this->copiesFound = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): TheCopiesAsFound => $this->copiesOn($stack, $session),
+            notHeld: static fn(): TheCopiesAsFound => new HowWhatIsKeptReads()->copiesSignedOut(),
+        );
     }
 
     /** Resume the session, ask the machine, and flatten what came back. */
@@ -116,12 +156,12 @@ final class WhatThisMachineKeepsHere extends NativeComponent
         );
     }
 
-    /** What the machine said it keeps, with its copies, or what the operator met instead. */
+    /** What the machine said it keeps, or what the operator met instead. */
     private function asked(Stack $stack, Session $session): WhatIsKeptTurnedOutToBe
     {
         return $this->storing->storedOn($stack, $session)->either(
-            kept: fn(WhatThisMachineKeeps $keeps): WhatIsKeptTurnedOutToBe
-                => new HowWhatIsKeptReads()->this($keeps, $this->copies($stack, $session)),
+            kept: static fn(WhatThisMachineKeeps $keeps): WhatIsKeptTurnedOutToBe
+                => new HowWhatIsKeptReads()->this($keeps),
             met: function (Obstacle $why) use ($stack): WhatIsKeptTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
@@ -131,7 +171,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent
     }
 
     /** The copies the machine holds, or what stopped them being listed. */
-    private function copies(Stack $stack, Session $session): TheCopiesAsFound
+    private function copiesOn(Stack $stack, Session $session): TheCopiesAsFound
     {
         return $this->copying->copiesOn($stack, $session)->either(
             copies: static fn(TheCopies $copies): TheCopiesAsFound => new HowWhatIsKeptReads()->copies($copies),

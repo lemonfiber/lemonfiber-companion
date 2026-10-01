@@ -55,9 +55,12 @@
     {{-- The other granularity. The forms come from the stack's own list
          of the forms it declares rather than from the rows — a row's
          profile is not a form — so the form an operator opened this screen
-         to start, the one with nothing running in it, is here. --}}
+         to start, the one with nothing running in it, is here. They are
+         read on the frame after the listing, and until then the section is
+         not drawn. --}}
+    @if ($this->forms()?->went->cameBack())
     <x-design::section :label="__('health.by_form')">
-        @forelse ($this->answer()->forms as $form)
+        @forelse ($this->forms()->names as $form)
             <x-design::row
                 :headline="$form"
                 :goes="$this->goes()->doingWithTheForm($form)"
@@ -70,6 +73,7 @@
             <x-design::row :headline="__('health.no_forms_at_all')" />
         @endforelse
     </x-design::section>
+    @endif
 
     {{-- What the stack could run and no running form asked for, folded away
          at the foot: nothing is wrong with a service nobody wanted, so it
@@ -110,6 +114,10 @@
         :went="$this->answer()->went"
         :sign-in-goes-to="$this->goes()->signIn()"
     />
+@endif
+
+@if ($this->waitsForTheNextFrame())
+    <x-operator::the-next-frame />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" />

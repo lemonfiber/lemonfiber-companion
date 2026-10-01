@@ -27,8 +27,10 @@ use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\ViewModels\ARootAsShown;
 use Modules\Operator\Internal\ViewModels\SomethingBesideAsShown;
 use Modules\Operator\Internal\ViewModels\SomethingKeptAsShown;
+use Modules\Operator\Internal\ViewModels\TheCopiesAsFound;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Storekeepers;
+use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -93,6 +95,30 @@ function theKeepingScreen(
     return $screen;
 }
 
+/** The copies, as the frame after the first one reads them. */
+function theCopiesOnTheNextFrame(WhatThisMachineKeepsHere $screen): ?TheCopiesAsFound
+{
+    $screen->answer();
+    $screen->render();
+
+    return $screen->copies();
+}
+
+/**
+ * How soon the frame drawn last asked to be drawn again, in milliseconds, if it asked.
+ *
+ * Read off the package's own record of the intervals a template declared,
+ * which it keeps to itself, because that record is what wakes the next frame.
+ *
+ * @return list<int>
+ */
+function howSoonItAskedForTheNextFrame(WhatThisMachineKeepsHere $screen): array
+{
+    $asked = Closure::bind(static fn(NativeComponent $drawn): array => array_keys($drawn->bladePollDeadlines), null, NativeComponent::class)($screen);
+
+    return array_values(array_filter($asked, is_int(...)));
+}
+
 /** Two copies, newest first, as the stack lists them. */
 function twoCopies(): AStackThatListsItsCopies
 {
@@ -100,7 +126,9 @@ function twoCopies(): AStackThatListsItsCopies
 }
 
 it('N6-R7 — shows where things are kept, what, why, and whether each holds a secret', function (): void {
-    $answer = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies())->answer();
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies());
+    $answer = $screen->answer();
+    $copies = theCopiesOnTheNextFrame($screen);
 
     expect($answer->went->cameBack())->toBeTrue()
         ->and(array_map(static fn(ARootAsShown $r): array => [$r->where, $r->what], $answer->roots))->toBe([['/srv/lemonfiber', 'Everything the stack writes']])
@@ -109,8 +137,8 @@ it('N6-R7 — shows where things are kept, what, why, and whether each holds a s
             ['Sonarr\'s settings', '/srv/lemonfiber/config/sonarr', 'So Sonarr starts as it was left', WhetherItHoldsASecret::Plain->saidOnTheScreen()],
         ])
         ->and(array_map(static fn(SomethingBesideAsShown $b): array => [$b->what, $b->why], $answer->beside))->toBe([['/srv/media', 'Your library, which the stack reads and never removes']])
-        ->and($answer->copies->went->cameBack())->toBeTrue()
-        ->and($answer->copies->names)->toBe(['lemonfiber-20260924-0300-full', 'lemonfiber-20260923-0300-full']);
+        ->and($copies?->went->cameBack())->toBeTrue()
+        ->and($copies?->names)->toBe(['lemonfiber-20260924-0300-full', 'lemonfiber-20260923-0300-full']);
 });
 
 it('N6-R7 — a value the stack sends beside a secret never reaches the glass', function (): void {
@@ -144,9 +172,9 @@ it('N6-R7 — a value the stack sends beside a secret never reaches the glass', 
 });
 
 it('N6-R9 — no copy taken and a list that could not be read are different sentences on the glass', function (): void {
-    $none = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::with(TheCopies::named())))->said();
+    $none = WhatTheDeviceWouldDraw::onTheSecondFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::with(TheCopies::named())))->said();
     $unread = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
-    $unreadDrawn = WhatTheDeviceWouldDraw::by($unread)->said();
+    $unreadDrawn = WhatTheDeviceWouldDraw::onTheSecondFrame($unread)->said();
 
     expect($none)->toContain(__('stacks.keeps.no_copies'))
         ->and($none)->not->toContain(__('stacks.keeps.copies_unread'))
@@ -163,7 +191,7 @@ it('N6-R9 — no copy taken and a list that could not be read are different sent
 });
 
 it('N6-R9 — the copies drawn are the copies listed, each by its name', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()))->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()))->said();
 
     expect($drawn)->toContain('lemonfiber-20260924-0300-full')
         ->and($drawn)->toContain('lemonfiber-20260923-0300-full')
@@ -180,7 +208,7 @@ it('says so where the stack keeps nothing, names nowhere, and has nothing beside
 });
 
 it('offers putting back each copy listed, taking a copy and asking again, and never a first run', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()));
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()));
 
     // Each copy is a row that goes to putting it back, drawn by its name with
     // what tapping it does under the name.
@@ -194,14 +222,16 @@ it('offers putting back each copy listed, taking a copy and asking again, and ne
 });
 
 it('offers nothing to put back where no copy has been taken', function (): void {
-    $offers = WhatTheDeviceWouldDraw::by(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::with(TheCopies::named())))->offers();
+    $offers = WhatTheDeviceWouldDraw::onTheSecondFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::with(TheCopies::named())))->offers();
 
     expect($offers)->toBe([__('stacks.keeps.take_a_copy'), __('health.ask_again')]);
 });
 
 it('a stack that could not be asked is not a machine keeping nothing, and its copies are not asked', function (): void {
     $copying = twoCopies();
-    $answer = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $copying)->answer();
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $copying);
+    $answer = $screen->answer();
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
     expect($answer->went->cameBack())->toBeFalse()
         ->and($answer->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
@@ -209,8 +239,6 @@ it('a stack that could not be asked is not a machine keeping nothing, and its co
         ->and($answer->roots)->toBe([])
         ->and($answer->kept)->toBe([])
         ->and($answer->beside)->toBe([])
-        ->and($answer->copies->names)->toBe([])
-        ->and($answer->copies->went->cameBack())->toBeFalse()
         ->and($copying->askings())->toBe(0);
 });
 
@@ -239,31 +267,45 @@ it('N3-R13 — a credential refused for the copies lets the session go as well',
     $keychain = AKeychainInMemory::working();
     $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $keychain);
 
-    expect($screen->answer()->copies->went->isSignedIn)->toBeFalse()
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    expect($screen->copies()?->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseKeepingIsRead()->id()))->toBeFalse()
-        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.sign_in'));
+        ->and($drawn->said())->toContain(__('connection.session_has_ended'))
+        ->and($drawn->offers())->toContain(__('connection.sign_in'));
 });
 
 it('N1-R3 — copies that could not be read for another reason leave the session standing', function (): void {
     $keychain = AKeychainInMemory::working();
     $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain);
 
-    expect($screen->answer()->copies->went->isSignedIn)->toBeTrue()
-        ->and($screen->answer()->copies->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    $copies = theCopiesOnTheNextFrame($screen);
+
+    expect($copies?->went->isSignedIn)->toBeTrue()
+        ->and($copies?->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($keychain->isHolding(theStackWhoseKeepingIsRead()->id()))->toBeTrue();
 });
 
-it('each reading is asked once for a frame, about the machine the route names', function (): void {
+it('reads what is kept on the first frame and the copies on the next, each once, about the machine the route names', function (): void {
     $storing = AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps());
     $copying = twoCopies();
     $screen = theKeepingScreen($storing, $copying);
 
-    $screen->answer();
-    $screen->answer();
+    $first = WhatTheDeviceWouldDraw::by($screen);
+    $askedFor = howSoonItAskedForTheNextFrame($screen);
+
+    expect($storing->askings())->toBe(1)
+        ->and($copying->askings())->toBe(0)
+        ->and($first->said())->toContain(__('stacks.keeps.reading_copies'))
+        ->and($askedFor)->toBe([16]);
+
+    WhatTheDeviceWouldDraw::by($screen);
+    $askedForAfter = howSoonItAskedForTheNextFrame($screen);
+    WhatTheDeviceWouldDraw::by($screen);
 
     expect($storing->askings())->toBe(1)
         ->and($copying->askings())->toBe(1)
+        ->and($askedForAfter)->toBe([])
         ->and($storing->wasGivenASession())->toBeTrue()
         ->and($copying->wasGivenASession())->toBeTrue()
         ->and($storing->askedAbout()?->id()->stored())->toBe(theStackWhoseKeepingIsRead()->id()->stored())
@@ -275,9 +317,10 @@ it('N1-R3 — asking again asks both again', function (): void {
     $copying = AStackThatListsItsCopies::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
     $screen = theKeepingScreen($storing, $copying);
 
-    $screen->answer();
+    theCopiesOnTheNextFrame($screen);
     $screen->again();
-    $screen->answer();
+    $screen->render();
+    theCopiesOnTheNextFrame($screen);
 
     expect($storing->askings())->toBe(2)
         ->and($copying->askings())->toBe(2);
@@ -301,4 +344,18 @@ it('renders its own view', function (): void {
     $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies());
 
     expect($screen->render()->name())->toBe('operator::what-this-machine-keeps-here');
+});
+
+it('copies asked after the session ended between the two frames are a session that ended, and are not asked for', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $copying = twoCopies();
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), $copying, $keychain);
+    WhatTheDeviceWouldDraw::by($screen);
+    $keychain->forget(theStackWhoseKeepingIsRead()->id());
+
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->copiesFound?->went->isSignedIn)->toBeFalse()
+        ->and($screen->copiesFound?->names)->toBe([])
+        ->and($copying->askings())->toBe(0);
 });

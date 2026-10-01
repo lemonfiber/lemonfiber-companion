@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhereItGotTo;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowATraceReads;
+use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\TheWayAround;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
@@ -52,6 +53,7 @@ final class WhereThisGotTo extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
+    use ReadsAStackOnceAFrame;
     use FindsItsWayAround;
 
     /** What was typed and followed instead of what the route names, or empty. */
@@ -103,13 +105,20 @@ final class WhereThisGotTo extends NativeComponent
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::where-this-got-to', ['looking' => $this->looking]);
     }
 
     /** What came back, asked once per frame. */
     public function answer(): TheTraceTurnedOutToBe
     {
-        return $this->answered ??= $this->ask();
+        if (! $this->answered instanceof TheTraceTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->answered = $this->ask();
+        }
+
+        return $this->answered;
     }
 
     /** Where this screen's words are explained from. */
