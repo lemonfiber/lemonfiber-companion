@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfTheHandoff;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LetsGoOfARefusedSession;
 use Modules\Operator\Internal\Presenters\HowTheHandoffReads;
 use Modules\Operator\Internal\TheWayAround;
@@ -48,7 +49,7 @@ use function view;
  * signs nobody in.
  */
 #[Lazy]
-final class ConnectingADeviceForThem extends NativeComponent
+final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAnOutcome
 {
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
@@ -136,6 +137,12 @@ final class ConnectingADeviceForThem extends NativeComponent
     public function whileItRuns(): void
     {
         $this->going = null;
+    }
+
+    /** Whether the stack still held a handle for the work when it last answered. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->following !== null;
     }
 
     /** Draw the answer held, or ask after the hand-off being worked out. */

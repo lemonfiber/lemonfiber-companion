@@ -7,9 +7,11 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
+use Modules\Operator\Internal\Screens\ConnectingADeviceForThem;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
+use Modules\Operator\Internal\Screens\PairingAPhone;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
@@ -35,9 +37,11 @@ use Tests\Support\Fakes\AScreenUnderTheLock;
 const EVERY_SCREEN_FOLLOWING_WORK = [
     AskingForHelpHere::class,
     AskingSomebodyIn::class,
+    ConnectingADeviceForThem::class,
     HowCurrentThisStackIs::class,
     HowTheServicesAreWired::class,
     LettingADownloadGo::class,
+    PairingAPhone::class,
     PuttingACopyBack::class,
     PuttingThatRunBack::class,
     PuttingTheConfigurationBack::class,
